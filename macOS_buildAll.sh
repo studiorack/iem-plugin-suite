@@ -1,0 +1,19 @@
+mkdir -p "_compiledPlugins/macOS"
+
+for d in */; do
+
+    echo "Compiling $d for macOS..."
+    if [ -d "$PWD/${d}Builds/MacOSX" ]; then
+
+        cd "$PWD/${d}Builds/MacOSX"
+        xcodebuild -target "${d%/} - All" -configuration "Release" build
+        echo "done..."
+        cd "../../../"
+        cp -R -H "${d}/Builds/MacOSX/build/Release/${d%/}.vst" "_compiledPlugins/macOS/"
+
+    fi
+    if [ ! -d "$PWD/${d}Builds/MacOSX" ]; then
+        echo "no xcode project found, moving on..."
+    fi
+done
+echo "all done!"

@@ -1,0 +1,15 @@
+###########
+# Filetypes
+###########
+
+*.log
+*.asv
+*.vscode
+
+#########
+# Folders
+#########
+.vs/
+_compiledPlugins
+**/Builds
+**/JuceLibraryCode
