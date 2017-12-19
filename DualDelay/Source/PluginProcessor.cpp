@@ -36,7 +36,7 @@ DualDelayAudioProcessor::DualDelayAudioProcessor()
 #endif
                   ),
 #endif
-parameters(*this,nullptr)
+parameters(*this,nullptr), LFOLeft([] (float phi) { return std::sin(phi);}), LFORight([] (float phi) { return std::sin(phi);})
 {
     parameters.createAndAddParameter ("orderSetting", "Ambisonics Order", "",
                                       NormalisableRange<float> (0.0f, 7.0f, 1.0f), 0.0f,
@@ -157,8 +157,7 @@ parameters(*this,nullptr)
     parameters.addParameterListener("orderSetting", this);
 
     
-    LFOLeft.initialise([] ( float phi) { return std::sinf(phi);});
-    LFORight.initialise([] ( float phi) { return std::sinf(phi);});
+    
     
     cos_z.resize(8);
     sin_z.resize(8);
@@ -291,8 +290,8 @@ void DualDelayAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffe
         buffer.clear(channel, 0, spb);
     
     
-    LFOLeft.setFrequency(*lfoRateL, true);
-    LFORight.setFrequency(*lfoRateR, true);
+    LFOLeft.setFrequency(*lfoRateL);
+    LFORight.setFrequency(*lfoRateR);
     
     
     for (int i=0; i<nChannels; ++i)
@@ -639,7 +638,7 @@ void DualDelayAudioProcessor::checkOrderUpdateBuffers(int userSetInputOrder) {
     _nChannels = nChannels;
     _ambisonicOrder = ambisonicOrder;
     
-    int maxPossibleOrder = isqrt(getTotalNumInputChannels())-1;
+    maxPossibleOrder = isqrt(getTotalNumInputChannels())-1;
     if (userSetInputOrder == -1 || userSetInputOrder > maxPossibleOrder) ambisonicOrder = maxPossibleOrder; // Auto setting or requested order exceeds highest possible order
     else ambisonicOrder = userSetInputOrder;
     
