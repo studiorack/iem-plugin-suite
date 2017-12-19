@@ -1,14 +1,12 @@
 #!/bin/sh
-cd ${0/*}
-for d in */; do
+cd ${0%/*}
+for d in */*.jucer; do
+    d=${d%/*}
     echo "Compiling $d for Linux..."
-    if [ -d "$PWD/${d}Builds/LinuxMakefile" ]; then
-        cd "$PWD/${d}Builds/LinuxMakefile"
-        make CONFIG=Release AR=gcc-ar -j 6
-        cd ../../../
+    if [ -d "${d}/Builds/LinuxMakefile" ]; then
+        make CONFIG=Release AR=gcc-ar -j$(nproc) -k -C "${d}/Builds/LinuxMakefile"
         echo "done..."
-    fi
-    if [ ! -d "$PWD/${d}Builds/LinuxMakefile" ]; then
+    else
         echo "no makefile found, moving on..."
     fi
 done
