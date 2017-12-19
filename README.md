@@ -22,4 +22,4 @@ All you need for compiling the IEM Plug-in Suite is the latest version of JUCE a
 Instead of building each plug-in seperately, you can also use the provided shell-scripts to start a batch processing. However, the .jucer projects have to opened and saved first, to create the exporters. For Windows: the 'Developer Command Prompt' has to execute the win_compileAll.bat script.
 
 ## Known issues
-- On Linux: RoomEncoder and DualDelay might only build successfully if using JUCE from their develop branch: https://github.com/WeAreROLI/JUCE/tree/develop
+- On Linux: RoomEncoder might only build successfully if using JUCE 5.2.0 with [13d18e40](https://github.com/WeAreROLI/JUCE/commit/13d18e406c33724a9f8870c4602458fc6d94b750) applied.
