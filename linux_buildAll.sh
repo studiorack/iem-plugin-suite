@@ -5,8 +5,7 @@ for d in */; do
     if [ -d "$PWD/${d}Builds/LinuxMakefile" ]; then
         make CONFIG=Release AR=gcc-ar -j$(nproc) -k -C "$PWD/${d}Builds/LinuxMakefile"
         echo "done..."
-    fi
-    if [ ! -d "$PWD/${d}Builds/LinuxMakefile" ]; then
+    else
         echo "no makefile found, moving on..."
     fi
 done
