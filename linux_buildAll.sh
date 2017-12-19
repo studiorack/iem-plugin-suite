@@ -1,5 +1,5 @@
 #!/bin/sh
-cd ${0/*}
+cd ${0#/*}
 for d in */; do
     echo "Compiling $d for Linux..."
     if [ -d "$PWD/${d}Builds/LinuxMakefile" ]; then
