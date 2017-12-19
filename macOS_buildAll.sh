@@ -9,8 +9,7 @@ for d in */; do
         echo "done..."
         cd "../../../"
         cp -R -H "${d}/Builds/MacOSX/build/Release/${d%/}.vst" "_compiledPlugins/macOS/IEM/"
-    fi
-    if [ ! -d "$PWD/${d}Builds/MacOSX" ]; then
+    else
         echo "no xcode project found, moving on..."
     fi
 done
