@@ -46,7 +46,7 @@ public:
     }
     
     float decibelsToY (float dB) {
-        return offset - scale * std::tanhf(dB / minLevel * -2.0f);
+        return offset - scale * std::tanh(dB / minLevel * -2.0f);
     }
     
     void paint (Graphics& g) override
