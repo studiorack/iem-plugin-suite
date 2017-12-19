@@ -3,9 +3,7 @@ cd ${0#/*}
 for d in */; do
     echo "Compiling $d for Linux..."
     if [ -d "$PWD/${d}Builds/LinuxMakefile" ]; then
-        cd "$PWD/${d}Builds/LinuxMakefile"
-        make CONFIG=Release AR=gcc-ar -j 6
-        cd ../../../
+        make CONFIG=Release AR=gcc-ar -j 6 -C "$PWD/${d}Builds/LinuxMakefile"
         echo "done..."
     fi
     if [ ! -d "$PWD/${d}Builds/LinuxMakefile" ]; then
