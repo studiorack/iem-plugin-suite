@@ -1,5 +1,6 @@
+#!/bin/sh
 mkdir -p _compiledPlugins/macOS/IEM
-
+cd ${0/*}
 for d in */; do
   echo "Compiling $d for macOS..."
     if [ -d "$PWD/${d}Builds/MacOSX" ]; then
