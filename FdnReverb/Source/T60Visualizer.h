@@ -128,7 +128,6 @@ public:
         int xMax = hzToX(s.fMax);
         int yMax = t60ToY(s.yMin);
         int yMin = t60ToY(s.yMax);
-        //int yZero = t60ToY(60.f);
         
         g.excludeClipRegion(Rectangle<int>(0.0f, yMax+OH, getWidth(), getHeight()-yMax-OH));
         
@@ -172,7 +171,27 @@ public:
         }
         g.setColour(Colours::white);
         g.strokePath(magnitude, PathStrokeType(1.5f));
-        
+
+        magnitude.clear();
+        float tolerance;
+        tolerance = getToleranceT60 (xToHz (xMin), std::string ("upper"));
+        magnitude.startNewSubPath(xMin, jlimit((float) yMin, (float) yMax + OH + 1, t60ToYFloat (tolerance)))
+        ;
+        for (int x = xMin + 1; x<=xMax; ++x)
+        {   
+            tolerance = getToleranceT60 (xToHz (x), std::string ("upper"));
+            magnitude.lineTo (x, t60ToYFloat (tolerance));
+        }
+
+        for (int x = xMax; x>=xMin; --x)
+        {   
+            tolerance = getToleranceT60 (xToHz (x), std::string ("lower"));
+            magnitude.lineTo (x, t60ToYFloat (tolerance));
+        }
+        magnitude.closeSubPath();
+        g.setColour(Colours::green.withMultipliedAlpha(0.3f));
+        g.fillPath(magnitude);
+
         // magnitude.lineTo(xMax, yZero);
         // magnitude.lineTo(xMin, yZero);
         // magnitude.closeSubPath();
@@ -192,6 +211,39 @@ public:
         //     g.fillEllipse(circX - 5.0f, circY - 5.0f , 10.0f, 10.0f);
         // }
     };
+
+    float getToleranceT60 (float frequency, std::string which)
+    {   
+        float tempT60;
+        // if (frequency < 250)
+        //     {
+        //         if (which == std::string ("upper"))
+        //         {
+        //             tempT60 = gainToT60Float (overallGainInDb);
+        //             return tempT60 * (frequency * -0.02306405f + 0.246964856f);
+        //         }
+        //         else
+        //         {
+        //             tempT60 = gainToT60Float (overallGainInDb);
+        //             return tempT60 * (frequency * -0.001953034f + 1.334759358);
+        //         }
+        //     }
+        // else if (frequency < 2000)
+        // {
+            if (which == std::string ("upper"))
+                return gainToT60Float (overallGainInDb) * 1.2f;
+            else
+                return gainToT60Float (overallGainInDb) * 0.8f;
+        // }
+        // else
+        // {
+        //     if (which == std::string ("upper"))
+        //         return gainToT60Float (overallGainInDb) * 1.2f;
+        //     else
+        //         tempT60 = gainToT60Float (overallGainInDb);
+        //         return tempT60 * (frequency * -0.00005f + 0.9f);
+        // }
+    }
     
     float gainToT60Float (float db)
     {
