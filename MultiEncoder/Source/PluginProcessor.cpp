@@ -458,6 +458,7 @@ void MultiEncoderAudioProcessor::checkOrderUpdateBuffers(int samplesPerBlock) {
     if (*inputSetting == 0 || *inputSetting > maxNumInputs) nChIn = maxNumInputs; // Auto setting or requested order exceeds highest possible order
     else nChIn = *inputSetting;
     
+    
     _nChOut = nChOut;
     _ambisonicOrder = ambisonicOrder;
     DBG(getTotalNumOutputChannels());
@@ -472,5 +473,14 @@ void MultiEncoderAudioProcessor::checkOrderUpdateBuffers(int samplesPerBlock) {
         DBG("Now updating filters and buffers.");
         bufferCopy.setSize(nChIn, samplesPerBlock);
     }
+    
+    
+    // disable solo and mute for deleted input channels
+    for (int i = nChIn; i < _nChIn; ++i)
+    {
+        parameters.getParameter("mute" + String(i))->setValue(0.0f);
+        parameters.getParameter("solo" + String(i))->setValue(0.0f);
+    }
+    
 }
 
