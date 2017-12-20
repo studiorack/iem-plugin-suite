@@ -2,6 +2,7 @@
 cd ${0%/*}
 mkdir -p _compiledPlugins/macOS/IEM
 for d in */*.jucer; do
+  open -W -n ${PWD}/${d} --args --resave ${PWD}/${d}
   d=${d%/*}
   echo "Compiling $d for macOS..."
     if [ -d "${d}/Builds/MacOSX" ]; then
