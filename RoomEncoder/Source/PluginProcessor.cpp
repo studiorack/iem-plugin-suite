@@ -37,7 +37,7 @@ RoomEncoderAudioProcessor::RoomEncoderAudioProcessor()
 parameters (*this, nullptr)
 {
     parameters.createAndAddParameter ("directivityOrderSetting", "Input Directivity Order", "",
-                                      NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
+                                      NormalisableRange<float> (0.0f, 8.0f, 1.0f), 1.0f,
                                       [](float value) {
                                           if (value >= 0.5f && value < 1.5f) return "0th";
                                           else if (value >= 1.5f && value < 2.5f) return "1st";

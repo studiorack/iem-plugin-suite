@@ -307,7 +307,7 @@ void FdnReverbAudioProcessorEditor::resized()
     const int rotSliderHeight = 55;
     const int rotSliderSpacing = 10;
     //const int sliderSpacing = 3;
-    const int rotSliderWidth = 40;
+    const int rotSliderWidth = 55;
     const int labelHeight = 15;
     //const int labelWidth = 20;
 
