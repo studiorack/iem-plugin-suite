@@ -30,6 +30,11 @@ class FeedbackDelayNetwork : private ProcessorBase
 public:
     enum FdnSize {
         uninitialized = 0,
+        ato = 1,
+        femto = 2,
+        pico = 4,
+        nano = 8,
+        tiny = 16,
         small = 32,
         big = 64
     };
