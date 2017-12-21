@@ -107,14 +107,14 @@ parameters (*this, nullptr)
                                      NormalisableRange<float> (20.0f, 20000.0f, 1.0f), 100.0,
                                      [](float value) {return String(value);}, nullptr);
     parameters.createAndAddParameter("lowShelfGain", "LowShelf Gain", "dB",
-                                     NormalisableRange<float> (-15.0f, 5.0f, 0.1f), -10.0f,
+                                     NormalisableRange<float> (-15.0f, 5.0f, 0.1f), -5.0f,
                                      [](float value) {return String(value);}, nullptr);
     
     parameters.createAndAddParameter("highShelfFreq", "HighShelf Frequency", "Hz",
                                      NormalisableRange<float> (20., 20000.0f, 1.0f), 8000.0,
                                      [](float value) {return String(value);}, nullptr);
     parameters.createAndAddParameter("highShelfGain", "HighShelf Gain", "dB",
-                                     NormalisableRange<float> (-15.0f, 5.0f, 0.1f), -10.0f,
+                                     NormalisableRange<float> (-15.0f, 5.0f, 0.1f), -5.0f,
                                      [](float value) {return String(value);}, nullptr);
     
     parameters.createAndAddParameter("reflCoeff", "Reflection Coefficient", "",
