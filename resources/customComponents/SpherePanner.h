@@ -48,6 +48,14 @@ public:
         return Point<float>(atan2f(pos.y,pos.x), atan2f(hypxy,pos.z)-M_PI/2);
     }
     
+    class Listener
+    {
+    public:
+        virtual ~Listener() {}
+        virtual void mouseWheelOnSpherePannerMoved (SpherePanner* sphere, const MouseEvent &event, const MouseWheelDetails &wheel) {};
+    };
+    
+    
     class Element
     {
     public:
@@ -136,15 +144,6 @@ public:
         String label = "";
     };
     
-//    class IEMSphereListener
-//    {
-//    public:
-//
-//        virtual ~IEMSphereListener () {}
-//
-//        virtual void IEMSphereElementChanged (IEMSphere* sphere, IEMSphereElement* element) = 0;
-//        virtual void IEMSphereMouseWheelMoved (IEMSphere* sphere, const MouseEvent &event, const MouseWheelDetails &wheel) {};
-//    };
 
 
     void resized () override
@@ -256,8 +255,8 @@ public:
     
     
     void mouseWheelMove(const MouseEvent &event, const MouseWheelDetails &wheel) override {
-//        for (int i = listeners.size (); --i >= 0;)
-//            ((IEMSphereListener*) listeners.getUnchecked (i))->IEMSphereMouseWheelMoved (this, event, wheel);
+        for (int i = listeners.size(); --i >= 0;)
+            listeners.getUnchecked(i)->mouseWheelOnSpherePannerMoved (this, event, wheel);
     }
     
     void mouseMove (const MouseEvent &event) override {
@@ -312,23 +311,16 @@ public:
     }
     
     
+    void addListener (Listener* const listener) {
+        jassert (listener != nullptr);
+        if (listener != nullptr)
+            listeners.add (listener);
+    };
     
-    
-//    void addListener (IEMSphereListener* const listener) {
-//        jassert (listener != 0);
-//        if (listener !=0)
-//            listeners.add (listener);
-//    };
-//    void removeListener (IEMSphereListener* const listener) {
-//        listeners.removeFirstMatchingValue(listener);
-//    };
-//
-//    void sendChanges(Element* element)
-//    {
-//        for (int i = listeners.size (); --i >= 0;)
-//            ((IEMSphereListener*) listeners.getUnchecked (i))->IEMSphereElementChanged (this, element);
-//    }
-//
+    void removeListener (Listener* const listener) {
+        listeners.removeFirstMatchingValue(listener);
+    };
+
     void addElement (Element* const element) {
         jassert (element != nullptr);
         if (element !=0)
@@ -357,7 +349,7 @@ private:
     Point<int> centre;
     int activeElem;
     bool activeElemWasUpBeforeDrag;
-    Array<void*> listeners;
+    Array<Listener*> listeners;
     Array<Element*> elements;
 };
 
