@@ -32,20 +32,21 @@
 StereoEncoderAudioProcessor::StereoEncoderAudioProcessor()
 
 #ifndef JucePlugin_PreferredChannelConfigurations
-        : AudioProcessor(BusesProperties()
+: AudioProcessor(BusesProperties()
 #if !JucePlugin_IsMidiEffect
 #if !JucePlugin_IsSynth
-                                 .withInput("Input", AudioChannelSet::stereo(), true)
+                 .withInput("Input", AudioChannelSet::stereo(), true)
 #endif
-                                 .withOutput("Output", AudioChannelSet::discreteChannels(64), true)
+                 .withOutput("Output", AudioChannelSet::discreteChannels(64), true)
 #endif
-),
+                 ),
 #endif
-          posC(1.0f, 0.0f, 0.0f),
-          posL(1.0f, 0.0f, 0.0f),
-          posR(1.0f, 0.0f, 0.0f),
-          updatedPositionData(true),
-          parameters(*this, nullptr) {
+posC(1.0f, 0.0f, 0.0f),
+posL(1.0f, 0.0f, 0.0f),
+posR(1.0f, 0.0f, 0.0f),
+updatedPositionData(true),
+parameters(*this, nullptr)
+{
     parameters.createAndAddParameter("orderSetting", "Ambisonics Order", "",
                                      NormalisableRange<float>(0.0f, 8.0f, 1.0f), 0.0f,
                                      [](float value) {
@@ -65,7 +66,7 @@ StereoEncoderAudioProcessor::StereoEncoderAudioProcessor()
                                          if (value >= 0.5f) return "SN3D";
                                          else return "N3D";
                                      }, nullptr);
-
+    
     parameters.createAndAddParameter("qw", "Quaternion W", "",
                                      NormalisableRange<float>(-1.0f, 1.0f, 0.001f), 1.0,
                                      [](float value) { return String(value); }, nullptr);
@@ -90,10 +91,14 @@ StereoEncoderAudioProcessor::StereoEncoderAudioProcessor()
     parameters.createAndAddParameter("width", "Stereo Width", "deg",
                                      NormalisableRange<float>(-360.0f, 360.0f, 0.01f), 0.0,
                                      [](float value) { return String(value); }, nullptr);
-
-
+    
+    parameters.createAndAddParameter("highQuality", "High-quality panning", "",
+                                     NormalisableRange<float>(0.0f, 1.0f, 1.0f), 0.0f,
+                                     [](float value) { return value < 0.5f ? "OFF" : "ON"; }, nullptr);
+    
+    
     parameters.state = ValueTree(Identifier("StereoEncoder"));
-
+    
     parameters.addParameterListener("qw", this);
     parameters.addParameterListener("qx", this);
     parameters.addParameterListener("qy", this);
@@ -102,7 +107,7 @@ StereoEncoderAudioProcessor::StereoEncoderAudioProcessor()
     parameters.addParameterListener("pitch", this);
     parameters.addParameterListener("roll", this);
     parameters.addParameterListener("orderSetting", this);
-
+    
     orderSetting = parameters.getRawParameterValue("orderSetting");
     useSN3D = parameters.getRawParameterValue("useSN3D");
     qw = parameters.getRawParameterValue("qw");
@@ -113,12 +118,17 @@ StereoEncoderAudioProcessor::StereoEncoderAudioProcessor()
     pitch = parameters.getRawParameterValue("pitch");
     roll = parameters.getRawParameterValue("roll");
     width = parameters.getRawParameterValue("width");
-
+    highQuality = parameters.getRawParameterValue("highQuality");
+    
     processorUpdatingParams = false;
-
+    
     yprInput = true; //input from ypr
-
-
+    
+    
+    smoothYaw.setValue(*yaw / 180.0f * (float) M_PI, true);
+    smoothPitch.setValue(*pitch / 180.0f * (float) M_PI, true);
+    
+    
     FloatVectorOperations::clear(SHL, 64);
     FloatVectorOperations::clear(SHR, 64);
 }
@@ -173,6 +183,8 @@ void StereoEncoderAudioProcessor::changeProgramName(int index, const String &new
 //==============================================================================
 void StereoEncoderAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) {
     checkOrderUpdateBuffers(roundFloatToInt(*orderSetting - 1));
+    smoothYaw.reset(1, samplesPerBlock);
+    smoothPitch.reset(1, samplesPerBlock);
 }
 
 void StereoEncoderAudioProcessor::releaseResources() {
@@ -190,15 +202,17 @@ bool StereoEncoderAudioProcessor::isBusesLayoutSupported(const BusesLayout &layo
 
 void StereoEncoderAudioProcessor::processBlock(AudioSampleBuffer &buffer, MidiBuffer &midiMessages) {
     if (userChangedOrderSettings) checkOrderUpdateBuffers(roundFloatToInt(*orderSetting - 1));
-
+    
+    const int L = buffer.getNumSamples();
+    
     FloatVectorOperations::copy(_SHL, SHL, nChannels);
     FloatVectorOperations::copy(_SHR, SHR, nChannels);
-
+    
     if (yprInput) {
         ypr[0] = *yaw / 180 * (float) M_PI;
         ypr[1] = *pitch / 180 * (float) M_PI;
         ypr[2] = *roll / 180 *(float) M_PI;
-
+        
         //updating not active params
         quat.fromYPR(ypr);
         processorUpdatingParams = true;
@@ -211,62 +225,87 @@ void StereoEncoderAudioProcessor::processBlock(AudioSampleBuffer &buffer, MidiBu
         quat = iem::Quaternion<float>(*qw, *qx, *qy, *qz);
         quat.normalize();
         quat.toYPR(ypr);
-
+        
         //updating not active params
         processorUpdatingParams = true;
         parameters.getParameter("yaw")->setValue(
-                parameters.getParameterRange("yaw").convertTo0to1(ypr[0] / (float) M_PI * 180));
+                                                 parameters.getParameterRange("yaw").convertTo0to1(ypr[0] / (float) M_PI * 180));
         parameters.getParameter("pitch")->setValue(
-                parameters.getParameterRange("pitch").convertTo0to1(ypr[1] / (float) M_PI * 180));
+                                                   parameters.getParameterRange("pitch").convertTo0to1(ypr[1] / (float) M_PI * 180));
         parameters.getParameter("roll")->setValue(
-                parameters.getParameterRange("roll").convertTo0to1(ypr[2] / (float) M_PI * 180));
+                                                  parameters.getParameterRange("roll").convertTo0to1(ypr[2] / (float) M_PI * 180));
         processorUpdatingParams = false;
     }
-
+    
     quat.toCartesian(xyz);
-
+    
     quatLRot = iem::Quaternion<float>(cos(*width / 4 / 180 * M_PI), 0.0f, 0.0f, sin(*width / 4 / 180 * M_PI));
     quatL = quat * quatLRot;
     quatR = quat * (quatLRot.getConjugate());
-
+    
     quatL.toCartesian(xyzL);
     quatR.toCartesian(xyzR);
-
-    SHEval(ambisonicOrder, xyzL[0], xyzL[1], xyzL[2], SHL);
-    SHEval(ambisonicOrder, xyzR[0], xyzR[1], xyzR[2], SHR);
-
-    if (*useSN3D > 0.5f) {
-        FloatVectorOperations::multiply(SHL, SHL, n3d2sn3d, nChannels);
-        FloatVectorOperations::multiply(SHR, SHR, n3d2sn3d, nChannels);
+    
+    if (*highQuality < 0.5f)
+    {
+        SHEval(ambisonicOrder, xyzL[0], xyzL[1], xyzL[2], SHL);
+        SHEval(ambisonicOrder, xyzR[0], xyzR[1], xyzR[2], SHR);
+        
+        if (*useSN3D > 0.5f) {
+            FloatVectorOperations::multiply(SHL, SHL, n3d2sn3d, nChannels);
+            FloatVectorOperations::multiply(SHR, SHR, n3d2sn3d, nChannels);
+        }
+        
+        const int totalNumInputChannels = getTotalNumInputChannels() < 2 ? 1 : 2;
+        
+        AudioBuffer<float> bufferCopy(totalNumInputChannels, buffer.getNumSamples());
+        for (int i = 0; i < totalNumInputChannels; ++i) {
+            bufferCopy.copyFrom(i, 0, buffer.getReadPointer(i), buffer.getNumSamples());
+        }
+        
+        buffer.clear();
+        
+        const float *leftIn = bufferCopy.getReadPointer(0);
+        const float *rightIn = bufferCopy.getReadPointer(1);
+        for (int i = 0; i < nChannels; ++i) {
+            buffer.copyFromWithRamp(i, 0, leftIn, buffer.getNumSamples(), _SHL[i], SHL[i]);
+            buffer.addFromWithRamp(i, 0, rightIn, buffer.getNumSamples(), _SHR[i], SHR[i]);
+        }
+    }
+    else
+    {
+        smoothYaw.setValue(*yaw / 180.0f * (float) M_PI);
+        smoothPitch.setValue(*pitch / 180.0f * (float) M_PI);
+ 
+        for (int i = 0; i < L; ++i)
+        {
+            const float yaw = smoothYaw.getNextValue();
+            const float pitch = smoothPitch.getNextValue();
+            float cosPitch = std::cosf(pitch);
+            float sample = buffer.getSample(0, i);
+            SHEval(ambisonicOrder, cosPitch * std::cos(yaw), cosPitch * std::sin(yaw), std::sin(-1.0f * pitch), SHL);
+            
+            for (int ch = 0; ch < nChannels; ++ch) {
+                buffer.setSample(ch, i, sample * SHL[ch]);
+            }
+        }
+        
+        if (*useSN3D > 0.5f) {
+            for (int ch = 0; ch < nChannels; ++ch) {
+                buffer.applyGain(ch, 0, L, n3d2sn3d[ch]);
+            }
+        }
     }
 
-    const int totalNumInputChannels = getTotalNumInputChannels() < 2 ? 1 : 2;
-
-    AudioBuffer<float> bufferCopy(totalNumInputChannels, buffer.getNumSamples());
-    for (int i = 0; i < totalNumInputChannels; ++i) {
-        bufferCopy.copyFrom(i, 0, buffer.getReadPointer(i), buffer.getNumSamples());
-    }
-
-    buffer.clear();
-//    for (int i = 0; i < totalNumOutputChannels; ++i)
-//        buffer.clear (i, 0, buffer.getNumSamples());
-
-
-
-
-    const float *leftIn = bufferCopy.getReadPointer(0);
-    const float *rightIn = bufferCopy.getReadPointer(1);
-    for (int i = 0; i < nChannels; i++) {
-        buffer.copyFromWithRamp(i, 0, leftIn, buffer.getNumSamples(), _SHL[i], SHL[i]);
-        buffer.addFromWithRamp(i, 0, rightIn, buffer.getNumSamples(), _SHR[i], SHR[i]);
-    }
-
+    
     // update LCR position information for GUI
     posC = Vector3D<float>(xyz[0], xyz[1], xyz[2]);
     posL = Vector3D<float>(xyzL[0], xyzL[1], xyzL[2]);
     posR = Vector3D<float>(xyzR[0], xyzR[1], xyzR[2]);
-
+    
     updatedPositionData = true;
+    
+    
 }
 
 //==============================================================================
@@ -317,7 +356,7 @@ void StereoEncoderAudioProcessor::checkOrderUpdateBuffers(int userSetOutputOrder
     if (userSetOutputOrder == -1 || userSetOutputOrder > maxPossibleOrder)
         ambisonicOrder = maxPossibleOrder; // Auto setting or requested order exceeds highest possible order
     else ambisonicOrder = userSetOutputOrder;
-
+    
     if (ambisonicOrder != _ambisonicOrder) {
         nChannels = squares[ambisonicOrder + 1];
         DBG("Used order has changed! Order: " << ambisonicOrder << ", numCH: " << nChannels);

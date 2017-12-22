@@ -91,6 +91,7 @@ public:
     float *pitch;
     float *roll;
     float *width;
+    float *highQuality;
     
     
     // -- variable order --
@@ -125,6 +126,7 @@ private:
     float _SHL[64];
     float _SHR[64];
     
+    LinearSmoothedValue<float> smoothYaw, smoothPitch;
     //float gains[4];
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (StereoEncoderAudioProcessor)
 };
