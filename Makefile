@@ -9,7 +9,6 @@ PROJECTS=$(patsubst %/, %, $(dir $(wildcard */*.jucer)))
 
 # helper applications
 PROJUCER=Projucer
-DOS2UNIX=$(shell which dos2unix true | head -1)
 TOUCH=touch
 
 # generic rules
@@ -37,5 +36,4 @@ $(PROJECTS:%=%-clean):
 
 %/Builds/LinuxMakefile/Makefile: %.jucer
 	$(PROJUCER) -resave "$^"
-	$(DOS2UNIX) "$^"
 	$(TOUCH) "$@"
