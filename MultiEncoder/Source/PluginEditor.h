@@ -29,7 +29,6 @@
 #include "../../resources/customComponents/ReverseSlider.h"
 #include "../../resources/lookAndFeel/IEM_LaF.h"
 #include "../../resources/customComponents/TitleBar.h"
-#include "../../resources/customComponents/IEMSphere.h"
 #include "../../resources/customComponents/SimpleLabel.h"
 #include "../../resources/customComponents/MuteSoloButton.h"
 #include "../../resources/customComponents/SpherePanner.h"
@@ -45,9 +44,7 @@ typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 /**
 */
 class MultiEncoderAudioProcessorEditor  : public AudioProcessorEditor,
-private Timer,
-public IEMSphere::IEMSphereListener,
-public IEMSphere::IEMSphereElement
+private Timer
 {
 public:
 
@@ -58,7 +55,7 @@ public:
     void paint (Graphics&) override;
     void resized() override;
 
-    void IEMSphereElementChanged (IEMSphere* sphere, IEMSphereElement* element) override;
+
 
     
 private:
@@ -77,11 +74,8 @@ private:
     ToggleButton tbLockedToMaster;
     ComboBox inputChooser;
 
-    //IEMSphere sphere;
-    //IEMSphereElement grabElement;
     
     SpherePanner sphere;
-    //SpherePanner::Element sphereElements[maxNumberOfInputs];
     SpherePanner::Element masterElement;
     
     AudioProcessorValueTreeState& valueTreeState;

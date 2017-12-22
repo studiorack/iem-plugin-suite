@@ -31,9 +31,6 @@
 MultiEncoderAudioProcessorEditor::MultiEncoderAudioProcessorEditor (MultiEncoderAudioProcessor& p, AudioProcessorValueTreeState& vts)
 : AudioProcessorEditor (&p), processor (p), valueTreeState(vts), encoderList(p, sphere, &vts)//, sphere_opengl(nullptr)
 {
-    // Make sure that before the constructor has finished, you've set the
-    // editor's size to whatever you need it to be.
-    setSize (600,450);
     setLookAndFeel (&globalLaF);
     
     // ==== SPHERE AND ELEMENTS ===============
@@ -131,22 +128,11 @@ MultiEncoderAudioProcessorEditor::MultiEncoderAudioProcessorEditor (MultiEncoder
     addAndMakeVisible(&lbGain);
     lbGain.setText("Gain");
     
+    
+    setResizeLimits(590, 455, 800, 1200);
     startTimer(10);
 }
 
-void MultiEncoderAudioProcessorEditor::IEMSphereElementChanged (IEMSphere* sphere, IEMSphereElement* element) {
-    
-    Vector3D<float> pos = element->getPosition();
-    float hypxy = sqrt(pos.x*pos.x+pos.y*pos.y);
-    
-    float yaw = atan2f(pos.y,pos.x);
-    float pitch = atan2f(hypxy,pos.z)-M_PI/2;
-    
-    if (element->getID() == "grabber") {
-        valueTreeState.getParameter("masterYaw")->setValue(valueTreeState.getParameterRange("masterYaw").convertTo0to1(yaw/M_PI*180.0f));
-        valueTreeState.getParameter("masterPitch")->setValue(valueTreeState.getParameterRange("masterPitch").convertTo0to1(pitch/M_PI*180.0f));
-    }
-}
 
 MultiEncoderAudioProcessorEditor::~MultiEncoderAudioProcessorEditor()
 {
@@ -221,6 +207,7 @@ void MultiEncoderAudioProcessorEditor::resized()
     Rectangle<int> headerArea = area.removeFromTop    (headerHeight);
     title.setBounds (headerArea);
     area.removeFromTop(10);
+    area.removeFromBottom(5);
     
     Rectangle<int> sliderRow;
     
@@ -257,10 +244,23 @@ void MultiEncoderAudioProcessorEditor::resized()
 
     // ============== SIDEBAR LEFT ====================
 
+    const int grapperAreaHeight = 70;
     area.removeFromRight(10); // spacing
     
+    
+    Rectangle<int> sphereArea (area);
+    sphereArea.removeFromBottom(grapperAreaHeight);
+    
+    if ((float)sphereArea.getWidth()/sphereArea.getHeight() > 1)
+        sphereArea.setWidth(sphereArea.getHeight());
+    else
+        sphereArea.setHeight(sphereArea.getWidth());
+    sphere.setBounds(sphereArea);
+    
+    area.removeFromTop(sphereArea.getHeight());
+    
     // ------------- Grabber ------------------------
-    Rectangle<int> grabberArea (area.removeFromBottom(70));
+    Rectangle<int> grabberArea (area.removeFromTop(grapperAreaHeight));
     quatGroup.setBounds (grabberArea);
     grabberArea.removeFromTop(25); //for box headline
     
@@ -274,13 +274,7 @@ void MultiEncoderAudioProcessorEditor::resized()
     tbLockedToMaster.setBounds (sliderRow.removeFromLeft(100));
     
     
-    Rectangle<int> sphereArea (area);
     
-    if ((float)sphereArea.getWidth()/sphereArea.getHeight() > 1)
-        sphereArea.setWidth(sphereArea.getHeight());
-    else
-        sphereArea.setHeight(sphereArea.getWidth());
-    sphere.setBounds(sphereArea);
     
 }
 
