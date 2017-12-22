@@ -35,8 +35,7 @@ MultiEncoderAudioProcessorEditor::MultiEncoderAudioProcessorEditor (MultiEncoder
     
     // ==== SPHERE AND ELEMENTS ===============
     addAndMakeVisible(&sphere);
-    //sphere.addListener(this);
-    
+    sphere.addListener(this);
     
     sphere.addElement(&masterElement);
     masterElement.setColour(Colours::black);
@@ -190,6 +189,16 @@ void MultiEncoderAudioProcessorEditor::timerCallback()
     
     //masterElement.setPosition(Vector3D<float>(processor.xyzGrab[0], processor.xyzGrab[1], processor.xyzGrab[2]));
     sphere.repaint();
+}
+
+void MultiEncoderAudioProcessorEditor::mouseWheelOnSpherePannerMoved (SpherePanner* sphere, const MouseEvent &event, const MouseWheelDetails &wheel)
+{
+    if (event.mods.isCommandDown() && event.mods.isAltDown())
+        slMasterRoll.mouseWheelMove(event, wheel);
+    else if (event.mods.isAltDown())
+        slMasterPitch.mouseWheelMove(event, wheel);
+    else if (event.mods.isCommandDown())
+        slMasterYaw.mouseWheelMove(event, wheel);
 }
 
 void MultiEncoderAudioProcessorEditor::resized()

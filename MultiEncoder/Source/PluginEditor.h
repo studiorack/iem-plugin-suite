@@ -44,7 +44,8 @@ typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 /**
 */
 class MultiEncoderAudioProcessorEditor  : public AudioProcessorEditor,
-private Timer
+private Timer,
+private SpherePanner::Listener
 {
 public:
 
@@ -63,7 +64,7 @@ private:
     Footer footer;
     LaF globalLaF;
     void timerCallback() override;
-
+    void mouseWheelOnSpherePannerMoved (SpherePanner* sphere, const MouseEvent &event, const MouseWheelDetails &wheel) override;
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     MultiEncoderAudioProcessor& processor;
