@@ -30,7 +30,8 @@ EnergyVisualizerAudioProcessorEditor::EnergyVisualizerAudioProcessorEditor (Ener
 {
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
-    setSize (680, 400);
+    
+    setResizeLimits(680, 400, 1500, 1200);
     setLookAndFeel (&globalLaF);
     
     
@@ -94,16 +95,25 @@ void EnergyVisualizerAudioProcessorEditor::resized()
     Rectangle<int> headerArea = area.removeFromTop    (headerHeight);
     title.setBounds (headerArea);
     area.removeFromTop(10);
+    area.removeFromBottom(5);
     
-    Rectangle<int> sliderCol = area.removeFromRight(50);
-    sliderCol.reduce(0, 80);
+    
+    Rectangle<int> UIarea = area.removeFromRight(80);
+    const Point<int> UIareaCentre = UIarea.getCentre();
+    UIarea.setHeight(220);
+    UIarea.setCentre(UIareaCentre);
+
+
+    Rectangle<int> sliderCol = UIarea.removeFromRight(50);
+    sliderCol.reduce(0,40);
+    
     lbPeakLevel.setBounds(sliderCol.removeFromBottom(12));
     slPeakLevel.setBounds(sliderCol);
     
-    area.removeFromRight(5);
-    sliderCol = area.removeFromRight(25);
-    sliderCol.reduce(0,40);
+    UIarea.removeFromRight(5);
+    sliderCol = UIarea.removeFromRight(25);
     colormap.setBounds(sliderCol);
+    
     
     area.removeFromRight(5);
     visualizer.setBounds(area);
