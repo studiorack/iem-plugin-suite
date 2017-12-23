@@ -241,7 +241,7 @@ public:
     }
     
     void setOverallGain(float newGain) {
-        overallGainInDb = Decibels::gainToDecibels(newGain);
+        overallGainInDb = Decibels::gainToDecibels(newGain, -500.0f);
     }
     
     void mouseDrag(const MouseEvent &event) override
