@@ -29,7 +29,6 @@
 #include "../../resources/customComponents/ReverseSlider.h"
 #include "../../resources/lookAndFeel/IEM_LaF.h"
 #include "../../resources/customComponents/TitleBar.h"
-#include "../../resources/customComponents/IEMSphere.h"
 #include "../../resources/customComponents/SimpleLabel.h"
 #include "../../resources/customComponents/MuteSoloButton.h"
 #include "../../resources/customComponents/SpherePanner.h"
@@ -46,8 +45,7 @@ typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 */
 class MultiEncoderAudioProcessorEditor  : public AudioProcessorEditor,
 private Timer,
-public IEMSphere::IEMSphereListener,
-public IEMSphere::IEMSphereElement
+private SpherePanner::Listener
 {
 public:
 
@@ -58,7 +56,7 @@ public:
     void paint (Graphics&) override;
     void resized() override;
 
-    void IEMSphereElementChanged (IEMSphere* sphere, IEMSphereElement* element) override;
+
 
     
 private:
@@ -66,7 +64,7 @@ private:
     Footer footer;
     LaF globalLaF;
     void timerCallback() override;
-
+    void mouseWheelOnSpherePannerMoved (SpherePanner* sphere, const MouseEvent &event, const MouseWheelDetails &wheel) override;
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     MultiEncoderAudioProcessor& processor;
@@ -77,11 +75,8 @@ private:
     ToggleButton tbLockedToMaster;
     ComboBox inputChooser;
 
-    //IEMSphere sphere;
-    //IEMSphereElement grabElement;
     
     SpherePanner sphere;
-    //SpherePanner::Element sphereElements[maxNumberOfInputs];
     SpherePanner::Element masterElement;
     
     AudioProcessorValueTreeState& valueTreeState;

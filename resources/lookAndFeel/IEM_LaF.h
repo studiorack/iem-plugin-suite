@@ -202,6 +202,22 @@ public:
         
     }
     
+    void drawCornerResizer (Graphics& g,
+                                            int w, int h,
+                                            bool /*isMouseOver*/,
+                                            bool /*isMouseDragging*/) override
+    {
+        g.setColour (Colours::white.withMultipliedAlpha(0.5f));
+        
+        Path triangle;
+        triangle.startNewSubPath(w, h);
+        triangle.lineTo(0.5 * w, h);
+        triangle.lineTo(w, 0.5 * h);
+        triangle.closeSubPath();
+        
+        g.fillPath(triangle);
+    }
+    
     void fillTextEditorBackground (Graphics& g, int width, int height, TextEditor& textEditor) override
     {
                 if (dynamic_cast<AlertWindow*> (textEditor.getParentComponent()) != nullptr)

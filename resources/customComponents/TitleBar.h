@@ -322,7 +322,7 @@ class IEMLogo : public Component
 public:
     IEMLogo() : Component() {
         IEMPath.loadPathFromData (IEMpathData, sizeof (IEMpathData));
-        url = URL("http://www.iem.at/");
+        url = URL("https://plugins.iem.at/");
     }
     ~IEMLogo() {};
     
@@ -383,7 +383,7 @@ public:
         char versionString[10];
         strcpy(versionString, "v");
         strcat(versionString, JucePlugin_VersionString);
-        g.drawText(versionString, 0, 0, bounds.getWidth()-3,bounds.getHeight()-2, Justification::bottomRight);
+        g.drawText(versionString, 0, 0, bounds.getWidth()-8,bounds.getHeight()-2, Justification::bottomRight);
     };
     
     void resized () override

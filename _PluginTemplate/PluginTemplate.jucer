@@ -1,34 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<JUCERPROJECT id="mbpAgi" name="EnergyVisualizer" displaySplashScreen="0" reportAppUsage="0"
-              splashScreenColour="Dark" projectType="audioplug" version="0.3.1"
-              bundleIdentifier="at.iem.EnergyVisualizer" includeBinaryInAppConfig="1"
-              cppLanguageStandard="14" buildVST="1" buildVST3="0" buildAU="0"
+<JUCERPROJECT id="mbpAgi" name="PluginTemplate" displaySplashScreen="0" reportAppUsage="0"
+              splashScreenColour="Dark" projectType="audioplug" version="0.1"
+              bundleIdentifier="at.iem.PluginTemplate" includeBinaryInAppConfig="1"
+              cppLanguageStandard="14" buildVST="1" buildVST3="0" buildAU="1"
               buildAUv3="0" buildRTAS="0" buildAAX="0" buildStandalone="1"
-              enableIAA="0" pluginName="EnergyVisualizer" pluginDesc="EnergyVisualizer"
-              pluginManufacturer="IEM" pluginManufacturerCode="IEMA" pluginCode="EnVi"
+              enableIAA="0" pluginName="PluginTemplate" pluginDesc="PluginTemplate"
+              pluginManufacturer="iem" pluginManufacturerCode="Manu" pluginCode="Mbpa"
               pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
-              pluginAUExportPrefix="EnergyVisualizerAU" pluginRTASCategory=""
-              aaxIdentifier="at.iem.EnergyVisualizer" pluginAAXCategory="AAX_ePlugInCategory_Dynamics"
-              jucerVersion="5.2.0" companyCopyright="IEM - Daniel Rudrich"
-              companyName="IEM" companyWebsite="iem.at">
-  <MAINGROUP id="LpzrV9" name="EnergyVisualizer">
+              pluginAUExportPrefix="PluginTemplateAU" pluginRTASCategory=""
+              aaxIdentifier="at.iem.PluginTemplate" pluginAAXCategory="AAX_ePlugInCategory_Dynamics"
+              jucerVersion="5.2.0" companyCopyright="">
+  <MAINGROUP id="LpzrV9" name="PluginTemplate">
     <GROUP id="{1B6BB8E4-E576-FBC7-B6B6-8603D2CEBF9D}" name="lookAndFeel">
-      <FILE id="JNnjS0" name="IEM_LaF.h" compile="0" resource="0" file="../resources/lookAndFeel/IEM_LaF.h"/>
-      <FILE id="OEYkxu" name="Roboto-Bold.ttf" compile="0" resource="1" file="../resources/lookAndFeel/Roboto-Bold.ttf"/>
-      <FILE id="fN9dnW" name="Roboto-Light.ttf" compile="0" resource="1"
+      <FILE id="AVFaGo" name="IEM_LaF.h" compile="0" resource="0" file="../resources/lookAndFeel/IEM_LaF.h"/>
+      <FILE id="zmzhlf" name="Roboto-Bold.ttf" compile="0" resource="1" file="../resources/lookAndFeel/Roboto-Bold.ttf"/>
+      <FILE id="Zvrmkk" name="Roboto-Light.ttf" compile="0" resource="1"
             file="../resources/lookAndFeel/Roboto-Light.ttf"/>
-      <FILE id="DyvwJc" name="Roboto-Medium.ttf" compile="0" resource="1"
+      <FILE id="F7V7pK" name="Roboto-Medium.ttf" compile="0" resource="1"
             file="../resources/lookAndFeel/Roboto-Medium.ttf"/>
-      <FILE id="a1JRRK" name="Roboto-Regular.ttf" compile="0" resource="1"
+      <FILE id="AoUkVi" name="Roboto-Regular.ttf" compile="0" resource="1"
             file="../resources/lookAndFeel/Roboto-Regular.ttf"/>
     </GROUP>
     <GROUP id="{508CBC88-3E2D-B197-3051-B94590C10F68}" name="Source">
-      <FILE id="Rsztgm" name="VisualizerColormap.h" compile="0" resource="0"
-            file="Source/VisualizerColormap.h"/>
-      <FILE id="f7JjzM" name="VisualizerComponent.h" compile="0" resource="0"
-            file="Source/VisualizerComponent.h"/>
       <FILE id="SLgq9s" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
       <FILE id="Jc4gSH" name="PluginProcessor.h" compile="0" resource="0"
@@ -37,16 +32,16 @@
             file="Source/PluginEditor.cpp"/>
       <FILE id="Ur0OCo" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
     </GROUP>
-    <FILE id="KPYWuC" name="efficientSHvanilla.cpp" compile="1" resource="0"
+    <FILE id="CRfF6w" name="efficientSHvanilla.cpp" compile="1" resource="0"
           file="../resources/efficientSHvanilla.cpp"/>
   </MAINGROUP>
   <EXPORTFORMATS>
     <XCODE_MAC targetFolder="Builds/MacOSX">
       <CONFIGURATIONS>
-        <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="EnergyVisualizer"
-                       enablePluginBinaryCopyStep="1" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"/>
-        <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="EnergyVisualizer"
-                       enablePluginBinaryCopyStep="1" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"/>
+        <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="PluginTemplate"
+                       enablePluginBinaryCopyStep="1"/>
+        <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="PluginTemplate"
+                       enablePluginBinaryCopyStep="1"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_core" path="../../../../../Applications/JUCE/modules"/>
@@ -67,19 +62,14 @@
         <MODULEPATH id="juce_dsp" path="../../../../../Applications/JUCE/modules"/>
       </MODULEPATHS>
     </XCODE_MAC>
-    <VS2017 targetFolder="Builds/VisualStudio2017" windowsTargetPlatformVersion="10.0.16299.0">
+    <VS2017 targetFolder="Builds/VisualStudio2017">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" winWarningLevel="4" generateManifest="1" winArchitecture="x64"
-                       isDebug="1" optimisation="1" targetName="EnergyVisualizer" debugInformationFormat="ProgramDatabase"
+                       isDebug="1" optimisation="1" targetName="PluginTemplate" debugInformationFormat="ProgramDatabase"
                        enablePluginBinaryCopyStep="0"/>
-        <CONFIGURATION name="Release 64bit" winWarningLevel="4" generateManifest="1"
-                       winArchitecture="x64" isDebug="0" optimisation="3" targetName="EnergyVisualizer_x64"
-                       debugInformationFormat="ProgramDatabase" enablePluginBinaryCopyStep="0"
-                       linkTimeOptimisation="1"/>
-        <CONFIGURATION name="Release 32bit" winWarningLevel="4" generateManifest="1"
-                       winArchitecture="Win32" isDebug="0" optimisation="3" targetName="EnergyVisualizer_Win32"
-                       debugInformationFormat="ProgramDatabase" enablePluginBinaryCopyStep="0"
-                       linkTimeOptimisation="1"/>
+        <CONFIGURATION name="Release" winWarningLevel="4" generateManifest="1" winArchitecture="x64"
+                       isDebug="0" optimisation="3" targetName="PluginTemplate" debugInformationFormat="ProgramDatabase"
+                       enablePluginBinaryCopyStep="0" linkTimeOptimisation="1"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_core" path="../../../../../Applications/JUCE/modules"/>
@@ -102,8 +92,8 @@
     </VS2017>
     <LINUX_MAKE targetFolder="Builds/LinuxMakefile">
       <CONFIGURATIONS>
-        <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="EnergyVisualizer"/>
-        <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="EnergyVisualizer"/>
+        <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="PluginTemplate"/>
+        <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="PluginTemplate"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_core" path="../../../../../Applications/JUCE/modules"/>
