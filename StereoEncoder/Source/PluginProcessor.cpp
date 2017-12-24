@@ -125,10 +125,6 @@ parameters(*this, nullptr)
     yprInput = true; //input from ypr
     
     
-    smoothYaw.setValue(*yaw / 180.0f * (float) M_PI, true);
-    smoothPitch.setValue(*pitch / 180.0f * (float) M_PI, true);
-    
-    
     FloatVectorOperations::clear(SHL, 64);
     FloatVectorOperations::clear(SHR, 64);
 }
@@ -183,8 +179,21 @@ void StereoEncoderAudioProcessor::changeProgramName(int index, const String &new
 //==============================================================================
 void StereoEncoderAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) {
     checkOrderUpdateBuffers(roundFloatToInt(*orderSetting - 1));
-    smoothYaw.reset(1, samplesPerBlock);
-    smoothPitch.reset(1, samplesPerBlock);
+    bufferCopy.setSize(2, samplesPerBlock);
+    
+    smoothYawL.reset(1, samplesPerBlock);
+    smoothPitchL.reset(1, samplesPerBlock);
+    smoothYawR.reset(1, samplesPerBlock);
+    smoothPitchR.reset(1, samplesPerBlock);
+    
+    smoothYawL.setValue(*yaw / 180.0f * (float) M_PI, true);
+    smoothPitchL.setValue(*pitch / 180.0f * (float) M_PI, true);
+    
+    smoothYawR.setValue(*yaw / 180.0f * (float) M_PI, true);
+    smoothPitchR.setValue(*pitch / 180.0f * (float) M_PI, true);
+    
+
+    
 }
 
 void StereoEncoderAudioProcessor::releaseResources() {
@@ -204,6 +213,12 @@ void StereoEncoderAudioProcessor::processBlock(AudioSampleBuffer &buffer, MidiBu
     if (userChangedOrderSettings) checkOrderUpdateBuffers(roundFloatToInt(*orderSetting - 1));
     
     const int L = buffer.getNumSamples();
+    
+    const int totalNumInputChannels = getTotalNumInputChannels() < 2 ? 1 : 2;
+    for (int i = 0; i < totalNumInputChannels; ++i)
+        bufferCopy.copyFrom(i, 0, buffer.getReadPointer(i), buffer.getNumSamples());
+    buffer.clear();
+    
     
     FloatVectorOperations::copy(_SHL, SHL, nChannels);
     FloatVectorOperations::copy(_SHR, SHR, nChannels);
@@ -246,8 +261,26 @@ void StereoEncoderAudioProcessor::processBlock(AudioSampleBuffer &buffer, MidiBu
     quatL.toCartesian(xyzL);
     quatR.toCartesian(xyzR);
     
+    //TODO: refactor into inline functions
+    float yawL, yawR, pitchL, pitchR, hypxy;
+    hypxy = sqrt(xyzL[0] * xyzL[0] + xyzL[1] * xyzL[1]);
+    yawL = atan2f(xyzL[1], xyzL[0]);
+    pitchL = atan2f(hypxy, xyzL[2])-M_PI/2;
+    
+    hypxy = sqrt(xyzR[0] * xyzR[0] + xyzR[1] * xyzR[1]);
+    yawR = atan2f(xyzR[1], xyzR[0]);
+    pitchR = atan2f(hypxy, xyzR[2])-M_PI/2;
+    
+    
+    
     if (*highQuality < 0.5f)
     {
+        smoothYawL.setValue(yawL, true);
+        smoothPitchL.setValue(pitchL, true);
+        smoothYawR.setValue(yawR, true);
+        smoothPitchR.setValue(pitchR, true);
+        
+        
         SHEval(ambisonicOrder, xyzL[0], xyzL[1], xyzL[2], SHL);
         SHEval(ambisonicOrder, xyzR[0], xyzR[1], xyzR[2], SHR);
         
@@ -256,15 +289,6 @@ void StereoEncoderAudioProcessor::processBlock(AudioSampleBuffer &buffer, MidiBu
             FloatVectorOperations::multiply(SHR, SHR, n3d2sn3d, nChannels);
         }
         
-        const int totalNumInputChannels = getTotalNumInputChannels() < 2 ? 1 : 2;
-        
-        AudioBuffer<float> bufferCopy(totalNumInputChannels, buffer.getNumSamples());
-        for (int i = 0; i < totalNumInputChannels; ++i) {
-            bufferCopy.copyFrom(i, 0, buffer.getReadPointer(i), buffer.getNumSamples());
-        }
-        
-        buffer.clear();
-        
         const float *leftIn = bufferCopy.getReadPointer(0);
         const float *rightIn = bufferCopy.getReadPointer(1);
         for (int i = 0; i < nChannels; ++i) {
@@ -272,17 +296,19 @@ void StereoEncoderAudioProcessor::processBlock(AudioSampleBuffer &buffer, MidiBu
             buffer.addFromWithRamp(i, 0, rightIn, buffer.getNumSamples(), _SHR[i], SHR[i]);
         }
     }
-    else
+    else // high-quality sampling
     {
-        smoothYaw.setValue(*yaw / 180.0f * (float) M_PI);
-        smoothPitch.setValue(*pitch / 180.0f * (float) M_PI);
- 
+        smoothYawL.setValue(yawL);
+        smoothPitchL.setValue(pitchL);
+        smoothYawR.setValue(yawR);
+        smoothPitchR.setValue(pitchR);
+        
         for (int i = 0; i < L; ++i)
         {
-            const float yaw = smoothYaw.getNextValue();
-            const float pitch = smoothPitch.getNextValue();
-            float cosPitch = std::cosf(pitch);
-            float sample = buffer.getSample(0, i);
+            const float yaw = smoothYawL.getNextValue();
+            const float pitch = smoothPitchL.getNextValue();
+            const float cosPitch = std::cosf(pitch);
+            float sample = bufferCopy.getSample(0, i);
             SHEval(ambisonicOrder, cosPitch * std::cos(yaw), cosPitch * std::sin(yaw), std::sin(-1.0f * pitch), SHL);
             
             for (int ch = 0; ch < nChannels; ++ch) {
@@ -290,10 +316,26 @@ void StereoEncoderAudioProcessor::processBlock(AudioSampleBuffer &buffer, MidiBu
             }
         }
         
+        for (int i = 0; i < L; ++i)
+        {
+            const float yaw = smoothYawR.getNextValue();
+            const float pitch = smoothPitchR.getNextValue();
+            const float cosPitch = std::cosf(pitch);
+            float sample = bufferCopy.getSample(1, i);
+            SHEval(ambisonicOrder, cosPitch * std::cos(yaw), cosPitch * std::sin(yaw), std::sin(-1.0f * pitch), SHR);
+            
+            for (int ch = 0; ch < nChannels; ++ch) {
+                buffer.addSample(ch, i, sample * SHR[ch]);
+                
+            }
+        }
+        
         if (*useSN3D > 0.5f) {
             for (int ch = 0; ch < nChannels; ++ch) {
                 buffer.applyGain(ch, 0, L, n3d2sn3d[ch]);
             }
+            FloatVectorOperations::multiply(SHL, SHL, n3d2sn3d, nChannels);
+            FloatVectorOperations::multiply(SHR, SHR, n3d2sn3d, nChannels);
         }
     }
 
@@ -304,8 +346,6 @@ void StereoEncoderAudioProcessor::processBlock(AudioSampleBuffer &buffer, MidiBu
     posR = Vector3D<float>(xyzR[0], xyzR[1], xyzR[2]);
     
     updatedPositionData = true;
-    
-    
 }
 
 //==============================================================================
