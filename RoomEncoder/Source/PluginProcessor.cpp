@@ -208,7 +208,7 @@ parameters (*this, nullptr)
     
     for (int i = 0; i<nImgSrc;++i) {
         oldDelay[i] = 44100/343.2f*interpMult; //init oldRadius
-        
+        allGains[i] = 0.0f;
         FloatVectorOperations::clear(SHcoeffsOld[i], 64);
         FloatVectorOperations::clear((float *) &SHsampleOld[i], 64);
     }
@@ -303,10 +303,15 @@ void RoomEncoderAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     for (int i = 0; i<16; ++i)
     {
         lowShelfArray.add(new IIR::Filter<juce::dsp::SIMDRegister<float>>(lowShelfCoefficients));
+        lowShelfArray.getLast()->reset();
         highShelfArray.add(new IIR::Filter<juce::dsp::SIMDRegister<float>>(highShelfCoefficients));
+        highShelfArray.getLast()->reset();
         lowShelfArray2.add(new IIR::Filter<juce::dsp::SIMDRegister<float>>(lowShelfCoefficients));
+        lowShelfArray2.getLast()->reset();
         highShelfArray2.add(new IIR::Filter<juce::dsp::SIMDRegister<float>>(highShelfCoefficients));
+        highShelfArray2.getLast()->reset();
         interleavedData.add(new AudioBlock<SIMDRegister<float>> (interleavedBlockData[i], 1, samplesPerBlock));
+        interleavedData.getLast()->clear();
     }
     zero = AudioBlock<float> (zeroData, SIMDRegister<float>::size(), samplesPerBlock);
     zero.clear();
@@ -525,6 +530,8 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
         smx[q] = - mSig[m&1] * mx[q];
         smy[q] = - mSig[n&1] * my[q];
         smz[q] = - mSig[o&1] * mz[q];
+        
+        oldDelay[q] = mRadius[q]*dist2smpls;
     }
     
     
