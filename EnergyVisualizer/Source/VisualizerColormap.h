@@ -64,8 +64,8 @@ public:
         
         
         Rectangle<int> colormapArea(getLocalBounds());
-        colormapArea.removeFromTop(12.0f);
-        colormapArea.removeFromBottom(6.0f);
+        colormapArea.removeFromTop(12);
+        colormapArea.removeFromBottom(6);
         ColourGradient gradient;
         gradient.point1 = colormapArea.getTopLeft().toFloat();
         gradient.point2 = colormapArea.getBottomLeft().toFloat();
