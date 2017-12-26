@@ -530,8 +530,6 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
         smx[q] = - mSig[m&1] * mx[q];
         smy[q] = - mSig[n&1] * my[q];
         smz[q] = - mSig[o&1] * mz[q];
-        
-        oldDelay[q] = mRadius[q]*dist2smpls;
     }
     
     
@@ -731,6 +729,10 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
         //oldDelay[q] = delay;
         oldDelay[q] = tempDelay;
     }
+    
+    //updating the remaining oldDelay values
+    for (int q = workingNumRefl + 1; q < nImgSrc; ++q)
+        oldDelay[q] = mRadius[q]*dist2smpls;
     
     // Read from buffer
     buffer.clear();
