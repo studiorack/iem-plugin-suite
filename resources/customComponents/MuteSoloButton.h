@@ -37,9 +37,7 @@ public:
     
     MuteSoloButton()
     {
-        // In your constructor, you should add any child components, and
-        // initialise any special settings that your component needs.
-
+        setType(Type::mute);
     }
     ~MuteSoloButton()
     {
@@ -48,39 +46,21 @@ public:
     void setType (Type newType)
     {
         type = newType;
+        setColour (ToggleButton::tickColourId, type == Type::mute ? Colours::red : Colours::yellow);
+        repaint();
     }
     void paint (Graphics& g) override
     {
-        Rectangle<int> bounds = getLocalBounds().reduced(1, 1);
+        Rectangle<int> bounds = getLocalBounds().reduced(1,1);
         const bool state = getToggleState();
+
+        getLookAndFeel().drawTickBox(g, *this, bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight(), getToggleState(), isEnabled(), isMouseOver(), isMouseButtonDown());
         
+        g.setFont(getLookAndFeel().getTypefaceForFont (Font(12.0f, 0)));
+        g.setFont(bounds.getHeight()-4);
         
-        Colour col;
-        switch (type) { //set colour
-            case mute:
-                col = juce::Colours::red;
-                break;
-            case solo:
-                col = juce::Colours::yellow;
-                break;
-                
-            default:
-                col = juce::Colours::blue;
-                break;
-        }
-        
-        
-        Path path;
-        path.addRoundedRectangle(bounds,bounds.getWidth()/5.0f);
-        
-        g.setColour(col.withMultipliedAlpha(state ? 1.0f : 0.8));
-        g.strokePath(path,PathStrokeType(1.0f));
-        
-        g.setColour(col.withMultipliedAlpha(state ? 1.0f : 0.5f));
-        g.fillPath(path);
-        g.setFont(bounds.getHeight()-1);
-        g.setColour(state ? Colours::black : col);
-        g.drawFittedText(type == solo ? "S" : "M",bounds, juce::Justification::centred, 1);
+        g.setColour(state ? Colours::black : findColour(ToggleButton::tickColourId));
+        g.drawFittedText(type == solo ? "S" : "M", bounds, juce::Justification::centred, 1);
         
     }
 

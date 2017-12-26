@@ -255,6 +255,16 @@ void DualDelayAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBl
     interpCoeffIdx.resize(samplesPerBlock);
     idx.resize(samplesPerBlock);
     
+    AudioIN.setSize(AudioIN.getNumChannels(), samplesPerBlock);
+    delayOutLeft.setSize(delayOutLeft.getNumChannels(), samplesPerBlock);
+    delayOutRight.setSize(delayOutRight.getNumChannels(), samplesPerBlock);
+    delayOutLeft.clear();
+    delayOutRight.clear();
+    
+    delayInLeft.setSize(delayInLeft.getNumChannels(), samplesPerBlock);
+    delayInRight.setSize(delayInRight.getNumChannels(), samplesPerBlock);
+    delayInLeft.clear();
+    delayInRight.clear();
     
     _delayL = *delayTimeL * sampleRate / 1000.0 * 128;
     _delayR = *delayTimeR * sampleRate / 1000.0 * 128;
@@ -684,7 +694,7 @@ void DualDelayAudioProcessor::checkOrderUpdateBuffers(int userSetInputOrder) {
 
         
         
-        AudioIN.setSize(nChannels,samplesPerBlock);
+        AudioIN.setSize(nChannels, samplesPerBlock);
         AudioIN.clear();
         
         delayBufferLeft.setSize(nChannels, 50000);

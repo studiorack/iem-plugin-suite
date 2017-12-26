@@ -268,10 +268,14 @@ void MultiEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBu
             if (!muteMask[i]) currGain = Decibels::decibelsToGain(*gain[i]);
         }
 
+        float cosPitch = std::cos(*pitch[i] * deg2rad);
+        float yawInRad = *yaw[i] * deg2rad;
+        float pitchInRad = *pitch[i] * deg2rad;
+        Vector3D<float> pos (cosPitch * std::cos(yawInRad), cosPitch * sinf(yawInRad), sinf(-1.0f * pitchInRad));
+    
+        SHEval(ambisonicOrder, pos.x, pos.y, pos.z, SH[i]);
         
-        SHEval(ambisonicOrder, xyz[i][0], xyz[i][1], xyz[i][2], SH[i]);
-        
-        if (*useSN3D > 0.5f)
+        if (*useSN3D >= 0.5f)
         {
             FloatVectorOperations::multiply(SH[i], SH[i], n3d2sn3d, nChOut);
         }
@@ -282,7 +286,6 @@ void MultiEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBu
         }
         _gain[i] = currGain;
     }
-    
 
     
 }
@@ -441,6 +444,7 @@ void MultiEncoderAudioProcessor::checkOrderUpdateBuffers(int samplesPerBlock) {
     if (*inputSetting == 0 || *inputSetting > maxNumInputs) nChIn = maxNumInputs; // Auto setting or requested order exceeds highest possible order
     else nChIn = *inputSetting;
     
+    
     _nChOut = nChOut;
     _ambisonicOrder = ambisonicOrder;
     DBG(getTotalNumOutputChannels());
@@ -455,5 +459,14 @@ void MultiEncoderAudioProcessor::checkOrderUpdateBuffers(int samplesPerBlock) {
         DBG("Now updating filters and buffers.");
         bufferCopy.setSize(nChIn, samplesPerBlock);
     }
+    
+    
+    // disable solo and mute for deleted input channels
+    for (int i = nChIn; i < _nChIn; ++i)
+    {
+        parameters.getParameter("mute" + String(i))->setValue(0.0f);
+        parameters.getParameter("solo" + String(i))->setValue(0.0f);
+    }
+    
 }
 
