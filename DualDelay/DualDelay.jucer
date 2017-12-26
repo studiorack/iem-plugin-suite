@@ -47,17 +47,15 @@
         <MODULEPATH id="juce_graphics" path="../../../../../Applications/JUCE/modules"/>
         <MODULEPATH id="juce_data_structures" path="../../../../../Applications/JUCE/modules"/>
         <MODULEPATH id="juce_gui_basics" path="../../../../../Applications/JUCE/modules"/>
-        <MODULEPATH id="juce_gui_extra" path="../../../../../Applications/JUCE/modules"/>
-        <MODULEPATH id="juce_cryptography" path="../../../../../Applications/JUCE/modules"/>
-        <MODULEPATH id="juce_video" path="../../../../../Applications/JUCE/modules"/>
         <MODULEPATH id="juce_opengl" path="../../../../../Applications/JUCE/modules"/>
         <MODULEPATH id="juce_audio_basics" path="../../../../../Applications/JUCE/modules"/>
         <MODULEPATH id="juce_audio_devices" path="../../../../../Applications/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_formats" path="../../../../../Applications/JUCE/modules"/>
         <MODULEPATH id="juce_audio_processors" path="../../../../../Applications/JUCE/modules"/>
         <MODULEPATH id="juce_audio_plugin_client" path="../../../../../Applications/JUCE/modules"/>
         <MODULEPATH id="juce_audio_utils" path="../../../../../Applications/JUCE/modules"/>
         <MODULEPATH id="juce_dsp" path="../../../../../Applications/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_formats" path="../../../../../Applications/JUCE/modules"/>
+        <MODULEPATH id="juce_gui_extra" path="../../../../../Applications/JUCE/modules"/>
       </MODULEPATHS>
     </XCODE_MAC>
     <VS2017 targetFolder="Builds/VisualStudio2017">
@@ -75,22 +73,20 @@
                        linkTimeOptimisation="1"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
-        <MODULEPATH id="juce_video" path="C:\JUCE\modules"/>
         <MODULEPATH id="juce_opengl" path="C:\JUCE\modules"/>
-        <MODULEPATH id="juce_gui_extra" path="C:\JUCE\modules"/>
         <MODULEPATH id="juce_gui_basics" path="C:\JUCE\modules"/>
         <MODULEPATH id="juce_graphics" path="C:\JUCE\modules"/>
         <MODULEPATH id="juce_events" path="C:\JUCE\modules"/>
         <MODULEPATH id="juce_data_structures" path="C:\JUCE\modules"/>
-        <MODULEPATH id="juce_cryptography" path="C:\JUCE\modules"/>
         <MODULEPATH id="juce_core" path="C:\JUCE\modules"/>
         <MODULEPATH id="juce_audio_utils" path="C:\JUCE\modules"/>
         <MODULEPATH id="juce_audio_processors" path="C:\JUCE\modules"/>
         <MODULEPATH id="juce_audio_plugin_client" path="C:\JUCE\modules"/>
-        <MODULEPATH id="juce_audio_formats" path="C:\JUCE\modules"/>
         <MODULEPATH id="juce_audio_devices" path="C:\JUCE\modules"/>
         <MODULEPATH id="juce_audio_basics" path="C:\JUCE\modules"/>
         <MODULEPATH id="juce_dsp" path="../../../../../Applications/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_formats" path="../../../../../Applications/JUCE/modules"/>
+        <MODULEPATH id="juce_gui_extra" path="../../../../../Applications/JUCE/modules"/>
       </MODULEPATHS>
     </VS2017>
     <LINUX_MAKE targetFolder="Builds/LinuxMakefile">
@@ -101,22 +97,20 @@
                        targetName="DualDelay"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
-        <MODULEPATH id="juce_video" path="../../../../../Applications/JUCE/modules"/>
         <MODULEPATH id="juce_opengl" path="../../../../../Applications/JUCE/modules"/>
-        <MODULEPATH id="juce_gui_extra" path="../../../../../Applications/JUCE/modules"/>
         <MODULEPATH id="juce_gui_basics" path="../../../../../Applications/JUCE/modules"/>
         <MODULEPATH id="juce_graphics" path="../../../../../Applications/JUCE/modules"/>
         <MODULEPATH id="juce_events" path="../../../../../Applications/JUCE/modules"/>
         <MODULEPATH id="juce_dsp" path="../../../../../Applications/JUCE/modules"/>
         <MODULEPATH id="juce_data_structures" path="../../../../../Applications/JUCE/modules"/>
-        <MODULEPATH id="juce_cryptography" path="../../../../../Applications/JUCE/modules"/>
         <MODULEPATH id="juce_core" path="../../../../../Applications/JUCE/modules"/>
         <MODULEPATH id="juce_audio_utils" path="../../../../../Applications/JUCE/modules"/>
         <MODULEPATH id="juce_audio_processors" path="../../../../../Applications/JUCE/modules"/>
         <MODULEPATH id="juce_audio_plugin_client" path="../../../../../Applications/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_formats" path="../../../../../Applications/JUCE/modules"/>
         <MODULEPATH id="juce_audio_devices" path="../../../../../Applications/JUCE/modules"/>
         <MODULEPATH id="juce_audio_basics" path="../../../../../Applications/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_formats" path="../../../../../Applications/JUCE/modules"/>
+        <MODULEPATH id="juce_gui_extra" path="../../../../../Applications/JUCE/modules"/>
       </MODULEPATHS>
     </LINUX_MAKE>
   </EXPORTFORMATS>
@@ -129,7 +123,6 @@
     <MODULE id="juce_audio_processors" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_audio_utils" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_core" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
-    <MODULE id="juce_cryptography" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_data_structures" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_dsp" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_events" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
@@ -137,7 +130,6 @@
     <MODULE id="juce_gui_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_gui_extra" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_opengl" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
-    <MODULE id="juce_video" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
   </MODULES>
   <JUCEOPTIONS JUCE_QUICKTIME="disabled"/>
 </JUCERPROJECT>
