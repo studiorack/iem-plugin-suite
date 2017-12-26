@@ -9,7 +9,6 @@ PROJECTS=$(patsubst %/, %, $(dir $(wildcard */*.jucer)))
 
 # helper applications
 PROJUCER=Projucer
-TOUCH=touch
 
 # generic rules
 .PHONY: distclean clean all
@@ -36,4 +35,3 @@ $(PROJECTS:%=%-clean):
 
 %/Builds/LinuxMakefile/Makefile: %.jucer
 	$(PROJUCER) -resave "$^"
-	$(TOUCH) "$@"
