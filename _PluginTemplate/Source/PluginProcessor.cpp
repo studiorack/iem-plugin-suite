@@ -135,6 +135,7 @@ void PluginTemplateAudioProcessor::prepareToPlay (double sampleRate, int samples
 {
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
+    checkInputAndOutput(this, 0, 0);
 }
 
 void PluginTemplateAudioProcessor::releaseResources()
@@ -185,7 +186,7 @@ bool PluginTemplateAudioProcessor::hasEditor() const
 
 AudioProcessorEditor* PluginTemplateAudioProcessor::createEditor()
 {
-    return new PluginTemplateAudioProcessorEditor (*this, parameters);
+    return new PluginTemplateAudioProcessorEditor (*this, parameters, *this);
 }
 
 //==============================================================================
