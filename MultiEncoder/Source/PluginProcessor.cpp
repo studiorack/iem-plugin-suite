@@ -112,7 +112,6 @@ parameters (*this, nullptr)
     
     parameters.state = ValueTree (Identifier ("MultiEncoder"));
     
-    
     parameters.addParameterListener("masterYaw", this);
     parameters.addParameterListener("masterPitch", this);
     parameters.addParameterListener("masterRoll", this);
@@ -123,6 +122,8 @@ parameters (*this, nullptr)
     
     muteMask.clear();
     soloMask.clear();
+    
+    
     
     for (int i = 0; i < maxNumberOfInputs; ++i)
     {
@@ -161,8 +162,27 @@ parameters (*this, nullptr)
         _gain[i] = 0.0f;
         //elemActive[i] = *gain[i] >= -59.9f;
         elementColours[i] = Colours::cyan;
-        
     }
+    
+    
+    float ypr[3];
+    ypr[2] = 0.0f;
+    iem::Quaternion<float> masterQuat;
+    float masterypr[3];
+    masterypr[0] = degreesToRadians(*masterYaw);
+    masterypr[1] = degreesToRadians(*masterPitch);
+    masterypr[2] = degreesToRadians(*masterRoll);
+    masterQuat.fromYPR(masterypr);
+    masterQuat.conjugate();
+    
+    for (int i = 0; i < maxNumberOfInputs; ++i)
+    {
+        ypr[0] = degreesToRadians(*yaw[i]);
+        ypr[1] = degreesToRadians(*pitch[i]);
+        quats[i].fromYPR(ypr);
+        quats[i] = masterQuat*quats[i];
+    }
+    
     
 }
 
@@ -262,15 +282,14 @@ bool MultiEncoderAudioProcessor::isBusesLayoutSupported (const BusesLayout& layo
 void MultiEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
     if (userChangedIOSettings) checkOrderUpdateBuffers(buffer.getNumSamples());
-
-    int N = jmin(nChIn, editorNChIn.get());
+    
+    int N = nChIn;
     
     for (int i = 0; i<N; ++i){
         bufferCopy.copyFrom(i, 0, buffer.getReadPointer(i), buffer.getNumSamples());
     }
     
     buffer.clear();
-
     
     for (int i = 0; i < N; ++i)
     {
@@ -409,38 +428,25 @@ void MultiEncoderAudioProcessor::parameterChanged (const String &parameterID, fl
 //==============================================================================
 void MultiEncoderAudioProcessor::getStateInformation (MemoryBlock& destData)
 {
-    //MemoryOutputStream (destData, true).writeFloat (*qw);
-    // You should use this method to store your parameters in the memory block.
-    // You could do that either as raw data, or use the XML or ValueTree classes
-    // as intermediaries to make it easy to save and load complex data.
+    for (int i = 0; i < maxNumberOfInputs; ++i)
+        parameters.state.setProperty("colour" + String(i), elementColours[i].toString(), nullptr);
     
-
-    XmlElement xml ("MultiEncoderElementColours");
-    //add our attributes
-    for (int i = 0; i < maxNumInputs; ++i) {
-        xml.setAttribute("colour" + String(i), elementColours[i].toString());
-    }
-    copyXmlToBinary (xml, destData);
-
+    ScopedPointer<XmlElement> xml (parameters.state.createXml());
+    copyXmlToBinary (*xml, destData);
 }
 
 void MultiEncoderAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
-{
-    //*qw = MemoryInputStream (data, static_cast<size_t> (sizeInBytes), false).readFloat();
-    // You should use this method to restore your parameters from this memory block,
-    // whose contents will have been created by the getStateInformation() call.
-    
+{    
     ScopedPointer<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
-    if (xmlState != 0)
-    {
-        if (xmlState->hasTagName ("MultiEncoderElementColours"))
-        {
-            for (int i = 0; i < maxNumInputs; ++i) {
-                elementColours[i] = Colour::fromString(xmlState->getStringAttribute ("colour" + String(i)));
-                updateColours = true;
-            }
-        }
-    }
+    if (xmlState != nullptr)
+        if (xmlState->hasTagName (parameters.state.getType()))
+            parameters.state = ValueTree::fromXml (*xmlState);
+    
+    for (int i = 0; i < maxNumInputs; ++i)
+        if (parameters.state.getProperty("colour" + String(i)).toString() != "0")
+            elementColours[i] = Colour::fromString(parameters.state.getProperty("colour" + String(i)).toString());
+        else elementColours[i] = Colours::cyan;
+    updateColours = true;
 }
 
 //==============================================================================
