@@ -133,6 +133,7 @@ void ProbeDecoderAudioProcessorEditor::timerCallback()
         maxPossibleOrder = processor.maxPossibleOrder;
         title.getInputWidgetPtr()->updateOrderCb(maxPossibleOrder);
     }
+    sphere.repaint();
 }
 
 void ProbeDecoderAudioProcessorEditor::resized()

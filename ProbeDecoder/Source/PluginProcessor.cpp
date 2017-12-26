@@ -147,21 +147,20 @@ bool ProbeDecoderAudioProcessor::isBusesLayoutSupported(const BusesLayout &layou
 void ProbeDecoderAudioProcessor::processBlock(AudioSampleBuffer &buffer, MidiBuffer &midiMessages) {
     if (userChangedOrderSettings) checkOrderUpdateBuffers(roundFloatToInt(*orderSetting - 1));
     
-    
     float yawInRad = degreesToRadians(*yaw);
     float pitchInRad = degreesToRadians(*pitch);
-    float cosPitch = cosf(yawInRad);
+    float cosPitch = cosf(pitchInRad);
     Vector3D<float> xyz(cosPitch * cosf(yawInRad), cosPitch * sinf(yawInRad), sinf(-1.0f * pitchInRad));
     
     float sh[64];
     
     SHEval(ambisonicOrder, xyz.x, xyz.y, xyz.z, sh);
+
     const int nCh = jmin(buffer.getNumChannels(), nChannels);
     const int numSamples = buffer.getNumSamples();
     
-    if (*useSN3D > 0.5f)
+    if (*useSN3D >= 0.5f)
         FloatVectorOperations::multiply(sh, sh, sn3d2n3d, nChannels);
-    
     
     buffer.applyGainRamp(0, 0, numSamples, previousSH[0], sh[0]);
     
