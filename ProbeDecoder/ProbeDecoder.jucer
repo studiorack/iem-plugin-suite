@@ -5,7 +5,7 @@
               buildVST="1" buildVST3="0" buildAU="0" buildAUv3="0" buildRTAS="0"
               buildAAX="0" pluginName="ProbeDecoder" pluginDesc="Sampling Ambisonic signals at a single direction"
               pluginManufacturer="IEM" pluginManufacturerCode="IEMA" pluginCode="PrDe"
-              pluginChannelConfigs="{64,1}" pluginIsSynth="0" pluginWantsMidiIn="0"
+              pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
               pluginAUExportPrefix="ProbeDecoderAU" pluginRTASCategory="" aaxIdentifier="at.iem.ProbeDecoder"
               pluginAAXCategory="AAX_ePlugInCategory_Dynamics" jucerVersion="5.2.0"

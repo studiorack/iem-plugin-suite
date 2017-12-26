@@ -154,7 +154,7 @@ void ProbeDecoderAudioProcessor::processBlock(AudioSampleBuffer &buffer, MidiBuf
     
     float sh[64];
     
-    SHEval(ambisonicOrder, xyz.x, xyz.y, xyz.z, sh);
+    SHEval(ambisonicOrder, xyz, sh);
 
     const int nCh = jmin(buffer.getNumChannels(), nChannels);
     const int numSamples = buffer.getNumSamples();
@@ -163,7 +163,6 @@ void ProbeDecoderAudioProcessor::processBlock(AudioSampleBuffer &buffer, MidiBuf
         FloatVectorOperations::multiply(sh, sh, sn3d2n3d, nChannels);
     
     buffer.applyGainRamp(0, 0, numSamples, previousSH[0], sh[0]);
-    
     
     for (int i = 1; i < nCh; i++) {
         buffer.addFromWithRamp(0, 0, buffer.getReadPointer(i), numSamples, previousSH[i], sh[i]);
@@ -211,7 +210,6 @@ void ProbeDecoderAudioProcessor::checkOrderUpdateBuffers(int userSetInputOrder) 
     //old values;
     _nChannels = nChannels;
     _ambisonicOrder = ambisonicOrder;
-    
     maxPossibleOrder = isqrt(getTotalNumInputChannels()) - 1;
     if (userSetInputOrder == -1 || userSetInputOrder > maxPossibleOrder)
         ambisonicOrder = maxPossibleOrder; // Auto setting or requested order exceeds highest possible order
