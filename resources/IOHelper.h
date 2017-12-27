@@ -33,11 +33,11 @@ namespace IOTypes {
     };
     
     template <int maxNumberOfInputChannels = 64>
-    class Audio
+    class AudioChannels
     {
     public:
-        Audio() {};
-        ~Audio() {};
+        AudioChannels() {};
+        ~AudioChannels() {};
         
         bool check(AudioProcessor* p, int setting)
         {
@@ -99,7 +99,7 @@ public:
     
     Input input;
     Output output;
-
+    
     bool inputSizeHasChanged;
     bool outputSizeHasChanged;
     
@@ -114,17 +114,22 @@ public:
      and at the beginning of the processBlock() with a check if
      the user has changed the input/output settings.
      */
-    void checkInputAndOutput(AudioProcessor* p, unsigned int inputSetting, unsigned int outputSetting) {
-        inputSizeHasChanged = false;
-        outputSizeHasChanged = false;
-        DBG("IOHelper: processors I/O channel count: " << p->getTotalNumInputChannels() << "/" << p->getTotalNumOutputChannels());
-        inputSizeHasChanged = input.check(p, inputSetting);
-        outputSizeHasChanged = output.check(p, outputSetting);
-        
-        if (inputSizeHasChanged || outputSizeHasChanged)
+    void checkInputAndOutput(AudioProcessor* p, unsigned int inputSetting, unsigned int outputSetting, bool force = false) {
+        if (force || userChangedIOSettings)
         {
-            DBG("IOHelper:  I/O sizes have changed. calling updateBuffers()");
-            updateBuffers();
+            inputSizeHasChanged = false;
+            outputSizeHasChanged = false;
+            DBG("IOHelper: processors I/O channel counts: " << p->getTotalNumInputChannels() << "/" << p->getTotalNumOutputChannels());
+            inputSizeHasChanged = input.check(p, inputSetting);
+            outputSizeHasChanged = output.check(p, outputSetting);
+            
+            if (inputSizeHasChanged || outputSizeHasChanged)
+            {
+                DBG("IOHelper:  I/O sizes have changed. calling updateBuffers()");
+                updateBuffers();
+            }
+            
+            userChangedIOSettings = false;
         }
     }
     
@@ -134,11 +139,11 @@ public:
         maxOutputSize = output.getMaxSize();
     }
     
+    bool userChangedIOSettings = true;
+    
 private:
     
-    
     /** Update buffers
-     
      @inputSetting and @outputSetting should hold the user's setting:
      Audio: 0 equals auto mode, >=1 equals number of channels
      Ambisonics: 0 equals auto mode, >=1 equals Ambisonic order - 1

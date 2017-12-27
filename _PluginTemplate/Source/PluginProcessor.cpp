@@ -26,7 +26,11 @@ PluginTemplateAudioProcessor::PluginTemplateAudioProcessor()
 #endif
 parameters(*this, nullptr)
 {
-    parameters.createAndAddParameter ("orderSetting", "Ambisonic Order", "",
+    parameters.createAndAddParameter("inputChannelsSetting", "Number of input channels ", "",
+                                     NormalisableRange<float> (0.0f, 10.0f, 1.0f), 0.0f,
+                                     [](float value) {return value < 0.5f ? "Auto" : String(value);}, nullptr);
+     
+    parameters.createAndAddParameter ("outputOrderSetting", "Ambisonic Order", "",
                                       NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
                                       [](float value) {
                                           if (value >= 0.5f && value < 1.5f) return "0th";
@@ -54,19 +58,27 @@ parameters(*this, nullptr)
                                      NormalisableRange<float> (-50.0f, 0.0f, 0.1f), -10.0,
                                      [](float value) {return String(value);}, nullptr);
     
+    // this must be initialised after all calls to createAndAddParameter().
+    parameters.state = ValueTree (Identifier ("PluginTemplate"));
+    // tip: you can also add other values to parameters.state, which are also saved and restored when the session is closed/reopened
     
     
+    // get pointers to the parameters
+    inputChannelsSetting = parameters.getRawParameterValue("inputChannelsSetting");
+    outputOrderSetting = parameters.getRawParameterValue ("outputOrderSetting");
+    useSN3D = parameters.getRawParameterValue ("useSN3D");
     param1 = parameters.getRawParameterValue ("param1");
     param2 = parameters.getRawParameterValue ("param2");
-    orderSetting = parameters.getRawParameterValue ("orderSetting");
+
     
-    
+    // add listeners to parameter changes
+    parameters.addParameterListener ("inputChannelsSetting", this);
+    parameters.addParameterListener ("outputOrderSetting", this);
+    parameters.addParameterListener ("useSN3D", this);
     parameters.addParameterListener ("param1", this);
     parameters.addParameterListener ("param2", this);
-    parameters.addParameterListener ("orderSetting", this);
     
     
-    parameters.state = ValueTree (Identifier ("PluginTemplate"));
     
     
 }
@@ -140,9 +152,13 @@ void PluginTemplateAudioProcessor::changeProgramName (int index, const String& n
 //==============================================================================
 void PluginTemplateAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
+    checkInputAndOutput(this, *inputChannelsSetting, *outputOrderSetting, true);
+    
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
-    checkInputAndOutput(this, 0, 0);
+    
+    
+    
 }
 
 void PluginTemplateAudioProcessor::releaseResources()
@@ -160,8 +176,9 @@ bool PluginTemplateAudioProcessor::isBusesLayoutSupported (const BusesLayout& la
 
 void PluginTemplateAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
+    checkInputAndOutput(this, *inputChannelsSetting, *outputOrderSetting, false);
     ScopedNoDenormals noDenormals;
-    _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON); // alternative?: fesetenv(FE_DFL_DISABLE_SSE_DENORMS_ENV);
+    _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
     
     const int totalNumInputChannels  = getTotalNumInputChannels();
     const int totalNumOutputChannels = getTotalNumOutputChannels();
@@ -202,20 +219,36 @@ void PluginTemplateAudioProcessor::getStateInformation (MemoryBlock& destData)
     // You should use this method to store your parameters in the memory block.
     // You could do that either as raw data, or use the XML or ValueTree classes
     // as intermediaries to make it easy to save and load complex data.
+    ScopedPointer<XmlElement> xml (parameters.state.createXml());
+    copyXmlToBinary (*xml, destData);
 }
+
+
 
 void PluginTemplateAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
+    ScopedPointer<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
+    if (xmlState != nullptr)
+        if (xmlState->hasTagName (parameters.state.getType()))
+            parameters.state = ValueTree::fromXml (*xmlState);
 }
 
 //==============================================================================
 void PluginTemplateAudioProcessor::parameterChanged (const String &parameterID, float newValue)
 {
     DBG("Parameter with ID " << parameterID << " has changed. New value: " << newValue);
+    
+    if (parameterID == "inputChannelsSetting" || parameterID == "outputOrderSetting" )
+        userChangedIOSettings = true;
 }
 
+void PluginTemplateAudioProcessor::updateBuffers()
+{
+    DBG("IOHelper:  input size: " << input.getSize());
+    DBG("IOHelper: output size: " << output.getSize());
+}
 //==============================================================================
 // This creates new instances of the plugin..
 AudioProcessor* JUCE_CALLTYPE createPluginFilter()

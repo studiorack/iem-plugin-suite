@@ -61,8 +61,7 @@ public:
     {
         if (selectable)
         {
-            --maxPossibleNumberOfChannels;
-            if (maxPossibleNumberOfChannels > -1) cbChannels->changeItemText(1, "Auto (" + String(maxPossibleNumberOfChannels) + ")");
+            if (maxPossibleNumberOfChannels > 0) cbChannels->changeItemText(1, "Auto (" + String(maxPossibleNumberOfChannels) + ")");
             else cbChannels->changeItemText(1, "(Auto)");
             int currId = cbChannels->getSelectedId();
             if (currId == 0) currId = 1; //bad work around

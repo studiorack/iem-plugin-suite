@@ -38,24 +38,42 @@ public:
     //==============================================================================
     void paint (Graphics&) override;
     void resized() override;
-
+    
+    
+    void timerCallback() override;
+    
 private:
-    // This reference is provided as a quick way for your editor to
-    // access the processor object that created it.
+    // ====================== beging essentials ==================
+    // stored references to the AudioProcessor and ValueTreeState holding all the parameters
     PluginTemplateAudioProcessor& processor;
     AudioProcessorValueTreeState& valueTreeState;
 
-    void timerCallback() override;
+    // lookAndFeel class with the IEM plug-in suite design
     LaF globalLaF;
-    TitleBar<AudioChannelsIOWidget<2,false>, AmbisonicIOWidget> title;
+    
+    /* title and footer component
+     title component can hold different widgets for in- and output:
+        - NoIOWidget (if there's no need for an input or output widget)
+        - AudioChannelsIOWidget<maxNumberOfChannels, isChoosable>
+        - AmbisonicIOWidget
+        - DirectivitiyIOWidget
+     */
+    TitleBar<AudioChannelsIOWidget<10,true>, AmbisonicIOWidget> title;
     Footer footer;
-
-    ReverseSlider slParam1, slParam2;
-    ComboBox cbOrderSetting;
-
-    ScopedPointer<SliderAttachment> slParam1Attachment, slParam2Attachment;
+    // =============== end essentials ============
+    
+    // Attachments to create a connection between IOWidgets comboboxes
+    // and the associated parameters
+    ScopedPointer<ComboBoxAttachment> cbInputChannelsSettingAttachment;
     ScopedPointer<ComboBoxAttachment> cbOrderSettingAttachment;
     ScopedPointer<ComboBoxAttachment> cbNormalizationSettingAttachment;
+    
+    // Demo stuff
+    ReverseSlider slParam1, slParam2;
+    ScopedPointer<SliderAttachment> slParam1Attachment, slParam2Attachment;
+    
+    
+
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginTemplateAudioProcessorEditor)
 };

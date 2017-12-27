@@ -16,20 +16,32 @@
 PluginTemplateAudioProcessorEditor::PluginTemplateAudioProcessorEditor (PluginTemplateAudioProcessor& p, AudioProcessorValueTreeState& vts)
     : AudioProcessorEditor (&p), processor (p), valueTreeState(vts)
 {
-    // Make sure that before the constructor has finished, you've set the
-    // editor's size to whatever you need it to be.
-    setResizeLimits(500, 300, 800, 500);
+    // ============== BEGIN: essentials ======================
+    // set GUI size and lookAndFeel
+    //setSize(500, 300); // use this to create a fixed-size GUI
+    setResizeLimits(500, 300, 800, 500); // use this to create a resizeable GUI
     setLookAndFeel (&globalLaF);
     
+    // make title and footer visible, and set the PluginName
     addAndMakeVisible(&title);
     title.setTitle(String("Plugin"),String("Template"));
-    title.setFont(globalLaF.robotoBold,globalLaF.robotoLight);
+    title.setFont(globalLaF.robotoBold, globalLaF.robotoLight);
     addAndMakeVisible (&footer);
+    // ============= END: essentials ========================
     
+    
+    // create the connection between title component's comboBoxes and parameters
+    cbInputChannelsSettingAttachment = new ComboBoxAttachment(valueTreeState, "inputChannelsSetting", *title.getInputWidgetPtr()->getChannelsCbPointer());
     cbNormalizationSettingAttachment = new ComboBoxAttachment(valueTreeState, "useSN3D", *title.getOutputWidgetPtr()->getNormCbPointer());
-    cbOrderSettingAttachment = new ComboBoxAttachment(valueTreeState, "orderSetting", *title.getOutputWidgetPtr()->getOrderCbPointer());
+    cbOrderSettingAttachment = new ComboBoxAttachment(valueTreeState, "outputOrderSetting", *title.getOutputWidgetPtr()->getOrderCbPointer());
+    
+    addAndMakeVisible(slParam1);
+    slParam1Attachment = new SliderAttachment(valueTreeState, "param1", slParam1);
+    addAndMakeVisible(slParam2);
+    slParam2Attachment = new SliderAttachment(valueTreeState, "param2", slParam2);
     
     
+    // start timer after everything is set up properly
     startTimer(20);
 }
 
@@ -46,8 +58,7 @@ void PluginTemplateAudioProcessorEditor::paint (Graphics& g)
 
 void PluginTemplateAudioProcessorEditor::resized()
 {
-    // This is generally where you'll want to lay out the positions of any
-    // subcomponents in your editor..
+    // ============ BEGIN: header and footer ============
     const int leftRightMargin = 30;
     const int headerHeight = 60;
     const int footerHeight = 25;
@@ -56,28 +67,32 @@ void PluginTemplateAudioProcessorEditor::resized()
     Rectangle<int> footerArea (area.removeFromBottom(footerHeight));
     footer.setBounds(footerArea);
 
-    
     area.removeFromLeft(leftRightMargin);
     area.removeFromRight(leftRightMargin);
     Rectangle<int> headerArea = area.removeFromTop(headerHeight);
     title.setBounds (headerArea);
     area.removeFromTop(10);
     area.removeFromBottom(5);
+    // =========== END: header and footer =================
     
     
-    
+    // try to not use explicit coordinates to position your GUI components
+    // the removeFrom...() methods are quite handy to create scaleable areas
+    // best practice would be the use of flexBoxes...
+    // the following is medium level practice ;-)
     Rectangle<int> sliderRow = area.removeFromTop(50);
     slParam1.setBounds(sliderRow.removeFromLeft(150));
     slParam2.setBounds(sliderRow.removeFromRight(150));
-    sliderRow.reduce(20, 10);
-    cbOrderSetting.setBounds(sliderRow);
     
 }
 
 void PluginTemplateAudioProcessorEditor::timerCallback()
 {
+    // === update titleBar widgets according to available input/output channel counts
     int maxInSize, maxOutSize;
     processor.getMaxSize(maxInSize, maxOutSize);
     title.setMaxSize(maxInSize, maxOutSize);
+    // ==========================================
     
+    // insert stuff you want to do be done at every timer callback
 }
