@@ -45,13 +45,16 @@ namespace IOTypes {
             int maxNumInputs = jmin(p->getTotalNumInputChannels(), maxNumberOfInputChannels);
             if (setting == 0 || setting > maxNumberOfInputChannels) nChannels = maxNumInputs; // Auto setting or requested order exceeds highest possible order
             else nChannels = setting;
+            maxSize = maxNumInputs;
             return previous != nChannels;
         };
         
+        int getMaxSize() { return maxSize; }
         int getSize() { return nChannels; }
         
     private:
         int nChannels;
+        int maxSize = maxNumberOfInputChannels;
     };
     
     template <int highestOrder = 7>
@@ -70,9 +73,11 @@ namespace IOTypes {
             if (setting == -1 || setting > maxPossibleOrder) order = maxPossibleOrder; // Auto setting or requested order exceeds highest possible order
             else order = setting;
             nChannels = square(order+1);
+            maxSize = maxPossibleOrder;
             return previousOrder != order;
         };
         
+        int getMaxSize() { return maxSize; }
         int getSize() { return getOrder(); }
         int getOrder() { return order; }
         int getNumberOfChannels() { return nChannels; }
@@ -80,6 +85,7 @@ namespace IOTypes {
     private:
         int order;
         int nChannels;
+        int maxSize = highestOrder;
     };
 }
 
@@ -120,6 +126,12 @@ public:
             DBG("IOHelper:  I/O sizes have changed. calling updateBuffers()");
             updateBuffers();
         }
+    }
+    
+    void getMaxSize(int& maxInputSize, int& maxOutputSize)
+    {
+        maxInputSize = input.getMaxSize();
+        maxOutputSize = output.getMaxSize();
     }
     
 private:

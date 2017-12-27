@@ -32,7 +32,7 @@ typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 class PluginTemplateAudioProcessorEditor  : public AudioProcessorEditor, private Timer
 {
 public:
-    PluginTemplateAudioProcessorEditor (PluginTemplateAudioProcessor&, AudioProcessorValueTreeState&, IOHelper<IOTypes::Audio<8>, IOTypes::Ambisonics<5>>& helper);
+    PluginTemplateAudioProcessorEditor (PluginTemplateAudioProcessor&, AudioProcessorValueTreeState&);
     ~PluginTemplateAudioProcessorEditor();
 
     //==============================================================================
@@ -52,9 +52,10 @@ private:
 
     ReverseSlider slParam1, slParam2;
     ComboBox cbOrderSetting;
-    IOHelper<IOTypes::Audio<8>, IOTypes::Ambisonics<5>>& ioHelper;
+
     ScopedPointer<SliderAttachment> slParam1Attachment, slParam2Attachment;
     ScopedPointer<ComboBoxAttachment> cbOrderSettingAttachment;
+    ScopedPointer<ComboBoxAttachment> cbNormalizationSettingAttachment;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginTemplateAudioProcessorEditor)
 };

@@ -31,7 +31,7 @@ public:
     NoIOWidget() : Component() {
     };
     ~NoIOWidget() {};
-    
+    void setMaxSize (int maxSize) {};
     void paint (Graphics& g) override {};
 };
 
@@ -57,23 +57,27 @@ public:
     };
     ~AudioChannelsIOWidget() {};
     
-    void updateMxPossibleChannelNumber (int maxPossibleChannelNumber)
+    void setMaxSize (int maxPossibleNumberOfChannels)
     {
-        if (maxPossibleChannelNumber > -1) cbChannels->changeItemText(1, "Auto (" + String(maxPossibleChannelNumber) + ")");
-        else cbChannels->changeItemText(1, "(Auto)");
-        int currId = cbChannels->getSelectedId();
-        if (currId == 0) currId = 1; //bad work around
-        int i;
-        for (i = 1; i <= maxPossibleChannelNumber; ++i)
+        if (selectable)
         {
-            cbChannels->changeItemText(i+1, String(i));
+            --maxPossibleNumberOfChannels;
+            if (maxPossibleNumberOfChannels > -1) cbChannels->changeItemText(1, "Auto (" + String(maxPossibleNumberOfChannels) + ")");
+            else cbChannels->changeItemText(1, "(Auto)");
+            int currId = cbChannels->getSelectedId();
+            if (currId == 0) currId = 1; //bad work around
+            int i;
+            for (i = 1; i <= maxPossibleNumberOfChannels; ++i)
+            {
+                cbChannels->changeItemText(i+1, String(i));
+            }
+            for (i = maxPossibleNumberOfChannels+1; i<=maxChannels; ++i)
+            {
+                cbChannels->changeItemText(i+1, String(i) + " (bus too small)");
+            }
+            
+            cbChannels->setText(cbChannels->getItemText(cbChannels->indexOfItemId((currId))));
         }
-        for (i = maxPossibleChannelNumber+1; i<=maxChannels; ++i)
-        {
-            cbChannels->changeItemText(i+1, String(i) + " (bus too small)");
-        }
-        
-        cbChannels->setText(cbChannels->getItemText(cbChannels->indexOfItemId((currId))));
     }
     
     ComboBox* getChannelsCbPointer()
@@ -143,7 +147,7 @@ public:
     };
     ~AmbisonicIOWidget() {};
     
-    void updateOrderCb (int maxPossibleOrder)
+    void setMaxSize (int maxPossibleOrder)
     {
         if (maxPossibleOrder > -1) cbOrder.changeItemText(1, "Auto (" + orderStrings[maxPossibleOrder] + ")");
         else cbOrder.changeItemText(1, "(Auto)");
@@ -212,7 +216,7 @@ public:
     };
     ~DirectivityIOWidget() {};
     
-    void updateOrderCb (int maxPossibleOrder)
+    void setMaxSize (int maxPossibleOrder)
     {
         if (maxPossibleOrder > -1) cbOrder.changeItemText(1, "Auto (" + orderStrings[maxPossibleOrder] + ")");
         else cbOrder.changeItemText(1, "(Auto)");
@@ -263,6 +267,7 @@ public:
     Tout* getOutputWidgetPtr() { return &outputWidget; }
     
     
+    
     void setTitle (String newBoldText, String newRegularText) {
         boldText = newBoldText;
         regularText = newRegularText;
@@ -277,7 +282,11 @@ public:
     {
         inputWidget.setBounds(getLocalBounds().removeFromLeft(110).reduced(0,15));
         outputWidget.setBounds(getLocalBounds().removeFromRight(110).reduced(0,15));
-        
+    }
+    void setMaxSize (int inputSize, int outputSize)
+    {
+        inputWidget.setMaxSize(inputSize);
+        outputWidget.setMaxSize(outputSize);
     }
     
     void paint (Graphics& g) override
@@ -329,7 +338,7 @@ public:
     void paint (Graphics& g) override
     {
         
-
+        
         Rectangle<int> bounds = getLocalBounds();
         IEMPath.applyTransform(IEMPath.getTransformToScaleToFit(bounds.reduced(2, 2).toFloat(), true, Justification::bottomLeft));
         

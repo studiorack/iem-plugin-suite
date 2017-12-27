@@ -26,16 +26,7 @@ PluginTemplateAudioProcessor::PluginTemplateAudioProcessor()
 #endif
 parameters(*this, nullptr)
 {
-    
-    parameters.createAndAddParameter("param1", "Parameter 1", "",
-                                     NormalisableRange<float> (-10.0f, 10.0f, 0.1f), 0.0,
-                                     [](float value) {return String(value);}, nullptr);
-    
-    parameters.createAndAddParameter("param2", "Parameter 2", "dB",
-                                     NormalisableRange<float> (-50.0f, 0.0f, 0.1f), -10.0,
-                                     [](float value) {return String(value);}, nullptr);
-    
-    parameters.createAndAddParameter ("orderSetting", "Input Order", "",
+    parameters.createAndAddParameter ("orderSetting", "Ambisonic Order", "",
                                       NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
                                       [](float value) {
                                           if (value >= 0.5f && value < 1.5f) return "0th";
@@ -48,6 +39,22 @@ parameters(*this, nullptr)
                                           else if (value >= 7.5f) return "7th";
                                           else return "Auto";},
                                       nullptr);
+    parameters.createAndAddParameter("useSN3D", "Normalization", "",
+                                     NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
+                                     [](float value) {
+                                         if (value >= 0.5f) return "SN3D";
+                                         else return "N3D";
+                                     }, nullptr);
+    
+    parameters.createAndAddParameter("param1", "Parameter 1", "",
+                                     NormalisableRange<float> (-10.0f, 10.0f, 0.1f), 0.0,
+                                     [](float value) {return String(value);}, nullptr);
+    
+    parameters.createAndAddParameter("param2", "Parameter 2", "dB",
+                                     NormalisableRange<float> (-50.0f, 0.0f, 0.1f), -10.0,
+                                     [](float value) {return String(value);}, nullptr);
+    
+    
     
     param1 = parameters.getRawParameterValue ("param1");
     param2 = parameters.getRawParameterValue ("param2");
@@ -186,7 +193,7 @@ bool PluginTemplateAudioProcessor::hasEditor() const
 
 AudioProcessorEditor* PluginTemplateAudioProcessor::createEditor()
 {
-    return new PluginTemplateAudioProcessorEditor (*this, parameters, *this);
+    return new PluginTemplateAudioProcessorEditor (*this, parameters);
 }
 
 //==============================================================================
