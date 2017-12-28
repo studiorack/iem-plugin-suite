@@ -28,7 +28,7 @@ namespace IOTypes {
     {
     public:
         Nothing() {};
-        bool check(AudioProcessor* p, int setting) {return false;};
+        bool check(AudioProcessor* p, int setting, bool isInput) {return false;};
         int getSize() { return 0; }
     };
     
@@ -39,10 +39,10 @@ namespace IOTypes {
         AudioChannels() {};
         ~AudioChannels() {};
         
-        bool check(AudioProcessor* p, int setting)
+        bool check(AudioProcessor* p, int setting, bool isInput)
         {
             int previous = nChannels;
-            int maxNumInputs = jmin(p->getTotalNumInputChannels(), maxNumberOfInputChannels);
+            int maxNumInputs = jmin(isInput ? p->getTotalNumInputChannels() : p->getTotalNumOutputChannels(), maxNumberOfInputChannels);
             if (setting == 0 || setting > maxNumberOfInputChannels) nChannels = maxNumInputs; // Auto setting or requested order exceeds highest possible order
             else nChannels = setting;
             maxSize = maxNumInputs;
@@ -64,12 +64,12 @@ namespace IOTypes {
         Ambisonics() {};
         ~Ambisonics() {};
         
-        bool check(AudioProcessor* p, int setting)
+        bool check(AudioProcessor* p, int setting, bool isInput)
         {
             int previousOrder = order;
             --setting;
             
-            int maxPossibleOrder = jmin(isqrt(p->getTotalNumOutputChannels())-1, highestOrder);
+            int maxPossibleOrder = jmin(isqrt(isInput ? p->getTotalNumInputChannels() : p->getTotalNumOutputChannels())-1, highestOrder);
             if (setting == -1 || setting > maxPossibleOrder) order = maxPossibleOrder; // Auto setting or requested order exceeds highest possible order
             else order = setting;
             nChannels = square(order+1);
@@ -120,8 +120,8 @@ public:
             inputSizeHasChanged = false;
             outputSizeHasChanged = false;
             DBG("IOHelper: processors I/O channel counts: " << p->getTotalNumInputChannels() << "/" << p->getTotalNumOutputChannels());
-            inputSizeHasChanged = input.check(p, inputSetting);
-            outputSizeHasChanged = output.check(p, outputSetting);
+            inputSizeHasChanged = input.check(p, inputSetting, true);
+            outputSizeHasChanged = output.check(p, outputSetting, false);
             
             if (inputSizeHasChanged || outputSizeHasChanged)
             {
