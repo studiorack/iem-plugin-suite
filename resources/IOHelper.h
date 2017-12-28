@@ -36,7 +36,12 @@ namespace IOTypes {
     class AudioChannels
     {
     public:
-        AudioChannels() {};
+        AudioChannels()
+        {
+            nChannels = 0;
+            _nChannels = 0;
+        };
+        
         ~AudioChannels() {};
         
         bool check(AudioProcessor* p, int setting, bool isInput)
@@ -51,9 +56,11 @@ namespace IOTypes {
         
         int getMaxSize() { return maxSize; }
         int getSize() { return nChannels; }
+        int getPreviousSize() { return _nChannels; }
         
     private:
         int nChannels;
+        int _nChannels;
         int maxSize = maxNumberOfInputChannels;
     };
     
@@ -61,7 +68,14 @@ namespace IOTypes {
     class Ambisonics
     {
     public:
-        Ambisonics() {};
+        Ambisonics()
+        {
+            order = -1;
+            nChannels = 0;
+            _order = -1;
+            _nChannels = 0;
+        };
+        
         ~Ambisonics() {};
         
         bool check(AudioProcessor* p, int setting, bool isInput)
@@ -77,14 +91,20 @@ namespace IOTypes {
             return previousOrder != order;
         };
         
-        int getMaxSize() { return maxSize; }
         int getSize() { return getOrder(); }
+        int getPreviousSize() { return getPreviousOrder(); };
+        
         int getOrder() { return order; }
+        int getPreviousOrder () { return _order; }
+        
         int getNumberOfChannels() { return nChannels; }
+        int getPreviousNumberOfChannels() { return _nChannels; }
+        
+        int getMaxSize() { return maxSize; }
         
     private:
-        int order;
-        int nChannels;
+        int order, _order;
+        int nChannels, _nChannels;
         int maxSize = highestOrder;
     };
 }
