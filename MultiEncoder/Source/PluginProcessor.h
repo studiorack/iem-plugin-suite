@@ -23,7 +23,7 @@
 #ifndef PLUGINPROCESSOR_H_INCLUDED
 #define PLUGINPROCESSOR_H_INCLUDED
 
-#define maxNumberOfInputs 32
+#define maxNumberOfInputs 64
 #define startNnumberOfInputs 5
 
 #ifndef M_PI

@@ -425,7 +425,7 @@ void MultiEncoderAudioProcessor::setStateInformation (const void* data, int size
         if (xmlState->hasTagName (parameters.state.getType()))
             parameters.state = ValueTree::fromXml (*xmlState);
     
-    for (int i = 0; i < maxNumInputs; ++i)
+    for (int i = 0; i < maxNumberOfInputs; ++i)
         if (parameters.state.getProperty("colour" + String(i)).toString() != "0")
             elementColours[i] = Colour::fromString(parameters.state.getProperty("colour" + String(i)).toString());
         else elementColours[i] = Colours::cyan;
