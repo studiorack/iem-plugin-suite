@@ -11,13 +11,15 @@
 #pragma once
 
 #include "../JuceLibraryCode/JuceHeader.h"
+#include "../../resources/IOHelper.h"
 
 
 //==============================================================================
 /**
 */
 class PluginTemplateAudioProcessor  : public AudioProcessor,
-                                        public AudioProcessorValueTreeState::Listener
+                                        public AudioProcessorValueTreeState::Listener,
+                                        public IOHelper<IOTypes::Audio<8>, IOTypes::Ambisonics<5>>
 {
 public:
     //==============================================================================
@@ -59,13 +61,13 @@ public:
 
     //==============================================================================
     void parameterChanged (const String &parameterID, float newValue) override;
-    AudioProcessorValueTreeState parameters;
+    
     
     
 private:
     
-    
     // parameter
+    AudioProcessorValueTreeState parameters;
     float *param1, *param2, *orderSetting;
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginTemplateAudioProcessor)

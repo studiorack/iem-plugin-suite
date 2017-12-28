@@ -126,7 +126,12 @@ private:
     float _SHL[64];
     float _SHR[64];
     
-    LinearSmoothedValue<float> smoothYaw, smoothPitch;
+    
+    AudioBuffer<float> bufferCopy;
+    
+    LinearSmoothedValue<float> smoothYawL, smoothPitchL;
+    LinearSmoothedValue<float> smoothYawR, smoothPitchR;
+    
     //float gains[4];
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (StereoEncoderAudioProcessor)
 };

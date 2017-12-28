@@ -109,9 +109,9 @@ public:
     void parameterChanged (const String &parameterID, float newValue) override;
     
     double oldDelay[nImgSrc];
-    float oldRGain[nImgSrc];
+    //float oldRGain[nImgSrc];
     float allGains[nImgSrc];
-    float* oldDelayPtr;
+    //float* oldDelayPtr;
     
     //int interpCoeffIdx;
     //int delayInt;

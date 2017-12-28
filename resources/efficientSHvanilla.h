@@ -37,37 +37,41 @@ void SHEval7(const float fX, const float fY, const float fZ, float *pSH);
 
 // encoding and decoding with same direction and order yields the same encoded signal
 constexpr float correction(int N) { return 4.0f/(N+1)/M_2_SQRTPI;}; 
-                                               
+
 inline void SHEval(int N, const float fX, const float fY, const float fZ, float *pSH)
 {
-    
     switch(N)
     {
-        case 0: SHEval0(fX,fY,fZ, pSH);
+        case 0: SHEval0(fX, fY, fZ, pSH);
             FloatVectorOperations::multiply(pSH, correction(0), 1);
             break;
-        case 1: SHEval1(fX,fY,fZ, pSH);
+        case 1: SHEval1(fX, fY, fZ, pSH);
             FloatVectorOperations::multiply(pSH, correction(1), 4);
             break;
-        case 2: SHEval2(fX,fY,fZ, pSH);
+        case 2: SHEval2(fX, fY, fZ, pSH);
             FloatVectorOperations::multiply(pSH, correction(2), 9);
             break;
-        case 3: SHEval3(fX,fY,fZ, pSH);
+        case 3: SHEval3(fX, fY, fZ, pSH);
             FloatVectorOperations::multiply(pSH, correction(3), 16);
             break;
-        case 4: SHEval4(fX,fY,fZ, pSH);
+        case 4: SHEval4(fX, fY, fZ, pSH);
             FloatVectorOperations::multiply(pSH, correction(4), 25);
             break;
-        case 5: SHEval5(fX,fY,fZ, pSH);
+        case 5: SHEval5(fX, fY, fZ, pSH);
             FloatVectorOperations::multiply(pSH, correction(5), 36);
             break;
-        case 6: SHEval6(fX,fY,fZ, pSH);
+        case 6: SHEval6(fX, fY, fZ, pSH);
             FloatVectorOperations::multiply(pSH, correction(6), 49);
             break;
-        case 7: SHEval7(fX,fY,fZ, pSH);
+        case 7: SHEval7(fX, fY, fZ, pSH);
             FloatVectorOperations::multiply(pSH, correction(7), 64);
             break;
     }
-    
-    
 };
+
+inline void SHEval(int N, Vector3D<float> position, float *pSH)
+{
+    SHEval(N, position.x, position.y, position.z, pSH);
+}
+
+

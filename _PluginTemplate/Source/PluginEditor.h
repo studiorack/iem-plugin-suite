@@ -32,7 +32,7 @@ typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 class PluginTemplateAudioProcessorEditor  : public AudioProcessorEditor, private Timer
 {
 public:
-    PluginTemplateAudioProcessorEditor (PluginTemplateAudioProcessor&, AudioProcessorValueTreeState&);
+    PluginTemplateAudioProcessorEditor (PluginTemplateAudioProcessor&, AudioProcessorValueTreeState&, IOHelper<IOTypes::Audio<8>, IOTypes::Ambisonics<5>>& helper);
     ~PluginTemplateAudioProcessorEditor();
 
     //==============================================================================
@@ -47,12 +47,12 @@ private:
 
     void timerCallback() override;
     LaF globalLaF;
-    TitleBar<AudioChannelsIOWidget<2,false>, NoIOWidget> title;
+    TitleBar<AudioChannelsIOWidget<2,false>, AmbisonicIOWidget> title;
     Footer footer;
 
     ReverseSlider slParam1, slParam2;
     ComboBox cbOrderSetting;
-    
+    IOHelper<IOTypes::Audio<8>, IOTypes::Ambisonics<5>>& ioHelper;
     ScopedPointer<SliderAttachment> slParam1Attachment, slParam2Attachment;
     ScopedPointer<ComboBoxAttachment> cbOrderSettingAttachment;
     

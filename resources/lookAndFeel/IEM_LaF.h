@@ -65,6 +65,7 @@ public:
         setColour (TextButton::buttonColourId, Colours::black);
         setColour (TextButton::textColourOnId, Colours::white);
         setColour (ResizableWindow::backgroundColourId, Colour(0xFF2D2D2D));
+        setColour (ScrollBar::thumbColourId, Colours::steelblue);
     }
     
     ~LaF() {}
@@ -663,20 +664,15 @@ public:
                       bool isButtonDown) override
     {
         const float boxSize = w * 0.8f;
+
+        Rectangle<float> buttonArea(x + (w - boxSize) * 0.5f, y + (h - boxSize) * 0.5f, boxSize, boxSize);
         
-        bool isDownOrDragging = component.isEnabled() && (component.isMouseOverOrDragging() || component.isMouseButtonDown());
-        const Colour colour (component.findColour (TextButton::buttonColourId).withMultipliedSaturation ((component.hasKeyboardFocus (false) || isDownOrDragging) ? 1.3f : 0.9f)
-                             .withMultipliedAlpha (component.isEnabled() ? 1.0f : 0.7f));
+
+        g.setColour(component.findColour(ToggleButton::tickColourId).withMultipliedAlpha(ticked ? 1.0f : isMouseOverButton ? 0.7f : 0.5f) );
         
-        //drawRoundThumb (g, x, y + (h - boxSize) * 0.5f, boxSize, colour,
-        //         isEnabled ? ((isButtonDown || isMouseOverButton) ? 1.1f : 0.5f) : 0.3f);
-        
-        
-        Rectangle<float> buttonArea(x, y + (h - boxSize) * 0.5f, boxSize, boxSize);
-        
-        g.setColour(ticked ? component.findColour(ToggleButton::tickColourId) : Colours::white.withMultipliedAlpha(isMouseOverButton ? 0.7f : 0.5f));
-        
-        if (isMouseOverButton) buttonArea.reduce(0.4f, 0.4f);
+
+        if (isMouseOverButton)
+            buttonArea.reduce(0.4f, 0.4f);
         g.drawRoundedRectangle(buttonArea, 2.0f, 1.0f);
         
         

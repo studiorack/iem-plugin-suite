@@ -13,8 +13,8 @@
 
 
 //==============================================================================
-PluginTemplateAudioProcessorEditor::PluginTemplateAudioProcessorEditor (PluginTemplateAudioProcessor& p, AudioProcessorValueTreeState& vts)
-    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts)
+PluginTemplateAudioProcessorEditor::PluginTemplateAudioProcessorEditor (PluginTemplateAudioProcessor& p, AudioProcessorValueTreeState& vts, IOHelper<IOTypes::Audio<8>, IOTypes::Ambisonics<5>>& helper)
+    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts), ioHelper(helper)
 {
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
