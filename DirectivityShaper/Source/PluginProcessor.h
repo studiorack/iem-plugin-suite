@@ -26,6 +26,7 @@
 #include "../../resources/efficientSHvanilla.h"
 #include "../../resources/ambisonicTools.h"
 #include "../../resources/Quaternion.h"
+#include "../../resources/IOHelper.h"
 #define numberOfBands 4
 using namespace juce::dsp;
 
@@ -33,7 +34,8 @@ using namespace juce::dsp;
 /**
 */
 class DirectivityShaperAudioProcessor  : public AudioProcessor,
-                                        public AudioProcessorValueTreeState::Listener
+                                        public AudioProcessorValueTreeState::Listener,
+                        public IOHelper<IOTypes::AudioChannels<1>, IOTypes::Ambisonics<>>
 {
 public:
     //==============================================================================
@@ -89,13 +91,6 @@ public:
     float probeGains[numberOfBands];
     bool updateFv = true;
     
-    // ====== VARIABLE ORDER =======================================================
-    int maxPossibleOrder = -1;
-    int ambisonicOrder = -1;
-    int nChannels = 0;
-    
-    bool userChangedOrderSettings = false;
-    void checkOrderUpdateBuffers(int userSetOutputOrder);
     
 private:
     const float maxRe[8][8] =
