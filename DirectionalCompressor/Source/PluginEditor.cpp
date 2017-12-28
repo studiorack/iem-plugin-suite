@@ -392,11 +392,13 @@ void AmbisonicCompressorAudioProcessorEditor::paint (Graphics& g)
 
 void AmbisonicCompressorAudioProcessorEditor::timerCallback()
 {
-    if (processor.maxPossibleOrder != maxPossibleOrder)
-    {
-        maxPossibleOrder = processor.maxPossibleOrder;
-        title.getInputWidgetPtr()->updateOrderCb(maxPossibleOrder);
-    }
+    // === update titleBar widgets according to available input/output channel counts
+    int maxInSize, maxOutSize;
+    processor.getMaxSize(maxInSize, maxOutSize);
+    maxOutSize = jmin(maxInSize, maxOutSize);
+    maxInSize = maxOutSize;
+    title.setMaxSize(maxInSize, maxOutSize);
+    // ==========================================
     
     if (sphereElem.setPosition(Vector3D<float>(processor.xyz[0], processor.xyz[1], processor.xyz[2])))
         sphere.repaint();

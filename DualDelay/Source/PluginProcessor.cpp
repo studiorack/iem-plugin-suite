@@ -155,7 +155,7 @@ parameters(*this,nullptr), LFOLeft([] (float phi) { return std::sin(phi);}), LFO
     lfoDepthR = parameters.getRawParameterValue("lfoDepthR");
     orderSetting = parameters.getRawParameterValue("orderSetting");
     parameters.addParameterListener("orderSetting", this);
-
+    
     
     
     
@@ -167,13 +167,13 @@ parameters(*this,nullptr), LFOLeft([] (float phi) { return std::sin(phi);}), LFO
 
 DualDelayAudioProcessor::~DualDelayAudioProcessor()
 {
-    for (int i=0; i<lowPassFiltersLeft.size(); ++i)
-    {
-        delete lowPassFiltersLeft[i];
-        delete lowPassFiltersRight[i];
-        delete highPassFiltersLeft[i];
-        delete highPassFiltersRight[i];
-    }
+//    for (int i=0; i<lowPassFiltersLeft.size(); ++i)
+//    {
+//        delete lowPassFiltersLeft[i];
+//        delete lowPassFiltersRight[i];
+//        delete highPassFiltersLeft[i];
+//        delete highPassFiltersRight[i];
+//    }
 }
 
 //==============================================================================
@@ -232,8 +232,7 @@ void DualDelayAudioProcessor::changeProgramName (int index, const String& newNam
 //==============================================================================
 void DualDelayAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    checkOrderUpdateBuffers(roundFloatToInt(*orderSetting - 1));
-    
+    checkInputAndOutput(this, *orderSetting, *orderSetting, true);
     
     dsp::ProcessSpec spec;
     spec.sampleRate = sampleRate;
@@ -242,6 +241,13 @@ void DualDelayAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBl
     LFOLeft.prepare(spec);
     LFORight.prepare(spec);
     
+    for (int i = lowPassFiltersLeft.size(); --i >= 0;)
+    {
+        lowPassFiltersLeft[i]->reset();
+        lowPassFiltersRight[i]->reset();
+        highPassFiltersLeft[i]->reset();
+        highPassFiltersRight[i]->reset();
+    }
     
     delayBufferLeft.clear();
     delayBufferRight.clear();
@@ -255,14 +261,14 @@ void DualDelayAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBl
     interpCoeffIdx.resize(samplesPerBlock);
     idx.resize(samplesPerBlock);
     
-    AudioIN.setSize(AudioIN.getNumChannels(), samplesPerBlock);
-    delayOutLeft.setSize(delayOutLeft.getNumChannels(), samplesPerBlock);
-    delayOutRight.setSize(delayOutRight.getNumChannels(), samplesPerBlock);
+    //AudioIN.setSize(AudioIN.getNumChannels(), samplesPerBlock);
+    //delayOutLeft.setSize(delayOutLeft.getNumChannels(), samplesPerBlock);
+    //delayOutRight.setSize(delayOutRight.getNumChannels(), samplesPerBlock);
     delayOutLeft.clear();
     delayOutRight.clear();
     
-    delayInLeft.setSize(delayInLeft.getNumChannels(), samplesPerBlock);
-    delayInRight.setSize(delayInRight.getNumChannels(), samplesPerBlock);
+    //delayInLeft.setSize(delayInLeft.getNumChannels(), samplesPerBlock);
+    //delayInRight.setSize(delayInRight.getNumChannels(), samplesPerBlock);
     delayInLeft.clear();
     delayInRight.clear();
     
@@ -281,11 +287,10 @@ bool DualDelayAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts
 
 void DualDelayAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
-    if (userChangedOrderSettings) checkOrderUpdateBuffers(roundFloatToInt(*orderSetting - 1));
+    checkInputAndOutput(this, *orderSetting, *orderSetting);
     
     const int totalNumInputChannels  =  getTotalNumInputChannels();
-    
-    const int workingOrder = jmin(isqrt(buffer.getNumChannels())-1, ambisonicOrder);
+    const int workingOrder = jmin(isqrt(buffer.getNumChannels())-1, input.getOrder());
     const int nCh = squares[workingOrder+1];
     
     
@@ -296,7 +301,7 @@ void DualDelayAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffe
     const int spb = buffer.getNumSamples();
     
     //clear not used channels
-    for (int channel = nChannels; channel<totalNumInputChannels; ++channel)
+    for (int channel = nCh; channel<totalNumInputChannels; ++channel)
         buffer.clear(channel, 0, spb);
     
     
@@ -304,7 +309,7 @@ void DualDelayAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffe
     LFORight.setFrequency(*lfoRateR);
     
     
-    for (int i=0; i<nChannels; ++i)
+    for (int i=0; i<nCh; ++i)
     {
         lowPassFiltersLeft[i]->setCoefficients(IIRCoefficients::makeLowPass(fs,*LPcutOffL));
         lowPassFiltersRight[i]->setCoefficients(IIRCoefficients::makeLowPass(fs,*LPcutOffR));
@@ -396,22 +401,22 @@ void DualDelayAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffe
     
     // left delay rotation
     calcParams(*rotationL/180.0f*M_PI);
-    rotateBuffer(&delayInLeft, spb);
+    rotateBuffer(&delayInLeft, nCh, spb);
     
     // right delay rotation
     calcParams(*rotationR/180.0f*M_PI);
-    rotateBuffer(&delayInRight, spb);
+    rotateBuffer(&delayInRight, nCh, spb);
     
     
     // =============== UPDATE DELAY PARAMETERS =====
     float delayL = *delayTimeL * msToFractSmpls;
     float delayR = *delayTimeR * msToFractSmpls;
-
+    
     int firstIdx, copyL;
     
     // ============= WRITE INTO DELAYLINE ========================
     // ===== LEFT CHANNEL
-
+    
     
     float delayStep = (delayL - _delayL)/spb;
     //calculate firstIdx and copyL
@@ -422,7 +427,7 @@ void DualDelayAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffe
     int lastIdx =  (((int) *std::max_element(delay.getRawDataPointer(),delay.getRawDataPointer()+spb)) >> interpShift) - interpOffset;
     copyL = abs(firstIdx - lastIdx) + interpLength;
     
-
+    
     
     delayTempBuffer.clear(0, copyL);
     //delayTempBuffer.clear();
@@ -486,7 +491,7 @@ void DualDelayAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffe
     
     
     delayTempBuffer.clear(0, copyL);
-
+    
     const float** readPtrArrR = delayInRight.getArrayOfReadPointers();
     
     for (int i=0; i<spb; ++i) {
@@ -583,13 +588,13 @@ void DualDelayAudioProcessor::calcParams(float phi)
     }
 }
 
-void DualDelayAudioProcessor::rotateBuffer(AudioBuffer<float>* bufferToRotate, int samples)
+void DualDelayAudioProcessor::rotateBuffer(AudioBuffer<float>* bufferToRotate, const int nCh, const int samples)
 {
     AudioBuffer<float> tempBuffer;
     tempBuffer.makeCopyOf(*bufferToRotate);
     bufferToRotate->clear();
     
-    int nCh = jmin(nChannels, bufferToRotate->getNumChannels());
+    //int nCh = jmin(nChannels, bufferToRotate->getNumChannels());
     
     for (int acn_out = 0; acn_out < nCh; ++acn_out)
     {
@@ -637,83 +642,52 @@ void DualDelayAudioProcessor::rotateBuffer(AudioBuffer<float>* bufferToRotate, i
 
 void DualDelayAudioProcessor::parameterChanged (const String &parameterID, float newValue)
 {
-    if (parameterID == "orderSetting") userChangedOrderSettings = true;
+    if (parameterID == "orderSetting") userChangedIOSettings = true;
 }
 
-void DualDelayAudioProcessor::checkOrderUpdateBuffers(int userSetInputOrder) {
-    const int sampleRate = getSampleRate();
-    const int samplesPerBlock = getBlockSize();
-    
-    //old values;
-    _nChannels = nChannels;
-    _ambisonicOrder = ambisonicOrder;
-    
-    maxPossibleOrder = isqrt(getTotalNumInputChannels())-1;
-    if (userSetInputOrder == -1 || userSetInputOrder > maxPossibleOrder) ambisonicOrder = maxPossibleOrder; // Auto setting or requested order exceeds highest possible order
-    else ambisonicOrder = userSetInputOrder;
-    
-    
-    if (ambisonicOrder != _ambisonicOrder) {
-        nChannels = squares[ambisonicOrder+1];
-        DBG("Used order has changed! Order: " << ambisonicOrder << ", numCH: " << nChannels);
-        DBG("Now updating filters and buffers.");
-        
-        
-        if (nChannels > _nChannels)
+void DualDelayAudioProcessor::updateBuffers()
+{
+    const int nChannels = jmin(input.getNumberOfChannels(), output.getNumberOfChannels());
+    const int _nChannels = jmin(input.getPreviousNumberOfChannels(), output.getPreviousNumberOfChannels());
+    const int blockSize = getBlockSize();
+    const double sampleRate = getSampleRate();
+    if (nChannels > _nChannels)
+    {
+        for (int i=_nChannels; i<nChannels; ++i)
         {
-            lowPassFiltersLeft.resize(nChannels);
-            lowPassFiltersRight.resize(nChannels);
-            highPassFiltersLeft.resize(nChannels);
-            highPassFiltersRight.resize(nChannels);
-            for (int i=_nChannels; i<nChannels; ++i)
-            {
-                lowPassFiltersLeft.set(i, new IIRFilter());
-                lowPassFiltersRight.set(i, new IIRFilter());
-                highPassFiltersLeft.set(i, new IIRFilter());
-                highPassFiltersRight.set(i, new IIRFilter());
-                lowPassFiltersLeft[i]->reset();
-                lowPassFiltersRight[i]->reset();
-                highPassFiltersLeft[i]->reset();
-                highPassFiltersRight[i]->reset();
-            }
+            lowPassFiltersLeft.add(new IIRFilter());
+            lowPassFiltersRight.add(new IIRFilter());
+            highPassFiltersLeft.add(new IIRFilter());
+            highPassFiltersRight.add(new IIRFilter());
         }
-        else {
-            for (int i=nChannels; i<highPassFiltersRight.size(); ++i)
-            {
-                delete lowPassFiltersLeft[i];
-                delete lowPassFiltersRight[i];
-                delete highPassFiltersLeft[i];
-                delete highPassFiltersRight[i];
-            }
-            lowPassFiltersLeft.resize(nChannels);
-            lowPassFiltersRight.resize(nChannels);
-            highPassFiltersLeft.resize(nChannels);
-            highPassFiltersRight.resize(nChannels);
-        }
-        
-
-        
-        
-        AudioIN.setSize(nChannels, samplesPerBlock);
-        AudioIN.clear();
-        
-        delayBufferLeft.setSize(nChannels, 50000);
-        delayBufferRight.setSize(nChannels, 50000);
-        delayBufferLeft.clear();
-        delayBufferRight.clear();
-        
-        int maxLfoDepth = (int) ceilf(parameters.getParameterRange("lfoDepthL").getRange().getEnd()*sampleRate/500.0f);
-        delayTempBuffer.setSize(nChannels,samplesPerBlock+interpOffset-1+maxLfoDepth+sampleRate*0.5);
-        
-        delayOutLeft.setSize(nChannels, samplesPerBlock);
-        delayOutRight.setSize(nChannels, samplesPerBlock);
-        delayOutLeft.clear();
-        delayOutRight.clear();
-        
-        delayInLeft.setSize(nChannels,samplesPerBlock);
-        delayInRight.setSize(nChannels,samplesPerBlock);
-        delayInLeft.clear();
-        delayInRight.clear();
     }
+    else {
+        const int diff = _nChannels - nChannels;
+        lowPassFiltersLeft.removeRange(nChannels, diff);
+        lowPassFiltersRight.removeRange(nChannels, diff);
+        highPassFiltersLeft.removeRange(nChannels, diff);
+        highPassFiltersRight.removeRange(nChannels, diff);
+    }
+    
+    AudioIN.setSize(nChannels, blockSize);
+    AudioIN.clear();
+    
+    delayBufferLeft.setSize(nChannels, 50000);
+    delayBufferRight.setSize(nChannels, 50000);
+    delayBufferLeft.clear();
+    delayBufferRight.clear();
+    
+    int maxLfoDepth = (int) ceilf(parameters.getParameterRange("lfoDepthL").getRange().getEnd()*sampleRate/500.0f);
+    delayTempBuffer.setSize(nChannels, blockSize+interpOffset-1+maxLfoDepth+sampleRate*0.5);
+    
+    delayOutLeft.setSize(nChannels, blockSize);
+    delayOutRight.setSize(nChannels, blockSize);
+    delayOutLeft.clear();
+    delayOutRight.clear();
+    
+    delayInLeft.setSize(nChannels, blockSize);
+    delayInRight.setSize(nChannels, blockSize);
+    delayInLeft.clear();
+    delayInRight.clear();
 }
 

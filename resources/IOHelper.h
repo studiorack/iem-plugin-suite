@@ -23,6 +23,16 @@
 #pragma once
 #include "ambisonicTools.h"
 
+
+/* Helper class to check the available input and output channels e.g. for auto settings of Ambisonic order
+ 
+ Use this in your editor's timer callback:
+ // === update titleBar widgets according to available input/output channel counts
+ int maxInSize, maxOutSize;
+ processor.getMaxSize(maxInSize, maxOutSize);
+ title.setMaxSize(maxInSize, maxOutSize);
+ // ==========================================
+ */
 namespace IOTypes {
     class Nothing
     {
@@ -30,6 +40,7 @@ namespace IOTypes {
         Nothing() {};
         bool check(AudioProcessor* p, int setting, bool isInput) {return false;};
         int getSize() { return 0; }
+        int getMaxSize() {return 0; }
     };
     
     template <int maxNumberOfInputChannels = 64>

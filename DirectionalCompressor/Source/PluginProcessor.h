@@ -31,12 +31,14 @@
 #include "../../resources/tDesignN7.h"
 #include "../../resources/Eigen/Dense"
 #include "../../resources/ambisonicTools.h"
+#include "../../resources/IOHelper.h"
 
 //==============================================================================
 /**
 */
 class AmbisonicCompressorAudioProcessor  : public AudioProcessor,
-                                            public AudioProcessorValueTreeState::Listener
+                                            public AudioProcessorValueTreeState::Listener,
+public IOHelper<IOTypes::Ambisonics<>, IOTypes::Ambisonics<>>
 {
 public:
     //==============================================================================
@@ -88,19 +90,11 @@ public:
     AudioProcessorValueTreeState parameters;
     void calcParams();
     
-    // -- variable order --
-    int maxPossibleOrder = -1;
-    int ambisonicOrder = -1;
-    int _ambisonicOrder = -1;
-    int nChannels = 0;
-    int _nChannels = 0;
-    
-    bool userChangedOrderSettings = false;
-    void checkOrderUpdateBuffers(int userSetOutputOrder, int samplesPerBlock);
-    // -------------------- //
     
 private:
     //==============================================================================
+    void updateBuffers() override;
+    
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AmbisonicCompressorAudioProcessor)
     IIRFilter c1MeanSqrFilter;
     IIRFilter c2MeanSqrFilter;

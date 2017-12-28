@@ -52,9 +52,10 @@ public:
     void IEMSphereElementChanged (IEMSphere* sphere, IEMSphereElement* element) override;
     void buttonStateChanged (Button* button) override;
     void buttonClicked (Button* button) override {};
+    
 private:
-    // This reference is provided as a quick way for your editor to
-    // access the processor object that created it.
+    LaF globalLaF;
+    
     AmbisonicCompressorAudioProcessor& processor;
     AudioProcessorValueTreeState& valueTreeState;
     
@@ -63,7 +64,7 @@ private:
     
     IEMSphere sphere;
     IEMSphereElement sphereElem;
-    LaF globalLaF;
+    
     
     int maxPossibleOrder = -1;
     ScopedPointer<ComboBoxAttachment> cbNormalizationAtachement;

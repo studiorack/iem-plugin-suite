@@ -281,15 +281,13 @@ void AmbisonicCompressorAudioProcessor::changeProgramName (int index, const Stri
 void AmbisonicCompressorAudioProcessor::parameterChanged (const String &parameterID, float newValue)
 {
     if (parameterID == "yaw" || parameterID == "pitch" || parameterID == "width") paramChanged = true;
-    else if (parameterID == "orderSetting") userChangedOrderSettings = true;
+    else if (parameterID == "orderSetting") userChangedIOSettings = true;
 }
 
 //==============================================================================
 void AmbisonicCompressorAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    // Use this method as the place to do any pre-playback
-    // initialisation that you need..
-    checkOrderUpdateBuffers(roundFloatToInt(*orderSetting - 1), samplesPerBlock);
+    checkInputAndOutput(this, *orderSetting, *orderSetting, true);
     
     omniW.setSize(1, samplesPerBlock);
     
@@ -324,24 +322,25 @@ bool AmbisonicCompressorAudioProcessor::isBusesLayoutSupported (const BusesLayou
 
 void AmbisonicCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
-    if (userChangedOrderSettings) checkOrderUpdateBuffers(roundFloatToInt(*orderSetting - 1), buffer.getNumSamples());
+    checkInputAndOutput(this, *orderSetting, *orderSetting);
     if (paramChanged) calcParams();
+    
+    const int totalNumInputChannels  = getTotalNumInputChannels();
+    const int totalNumOutputChannels = getTotalNumOutputChannels();
+    const int sampleRate = this->getSampleRate();
+    const int bufferSize = buffer.getNumSamples();
+    const int ambisonicOrder = input.getOrder();
     
     drivingPointers[0] = maskBuffer.getReadPointer(0);
     drivingPointers[1] = buffer.getReadPointer(0);
     drivingPointers[2] = omniW.getReadPointer(0);
     
-    const int totalNumInputChannels  = getTotalNumInputChannels();
-    const int totalNumOutputChannels = getTotalNumOutputChannels();
-    const int sampleRate = this->getSampleRate();
-    int bufferSize = buffer.getNumSamples();
     
-    int numCh = jmin(nChannels, buffer.getNumChannels());
+    
+    const int numCh = jmin(input.getNumberOfChannels(), buffer.getNumChannels());
     
     // preGain - can be tweaked by adding gain to compressor gains
     float preGainLinear = Decibels::decibelsToGain(*preGain);
-    
-    
     
     if (*useSN3D >= 0.5f)
         for (int i = 0; i < numCh; ++i)
@@ -602,6 +601,12 @@ void AmbisonicCompressorAudioProcessor::setStateInformation (const void* data, i
     // whose contents will have been created by the getStateInformation() call.
 }
 
+void AmbisonicCompressorAudioProcessor::updateBuffers()
+{
+    const int nChannels = input.getNumberOfChannels();
+    maskBuffer.setSize(nChannels, getBlockSize());
+}
+
 //==============================================================================
 // This creates new instances of the plugin..
 AudioProcessor* JUCE_CALLTYPE createPluginFilter()
@@ -609,22 +614,4 @@ AudioProcessor* JUCE_CALLTYPE createPluginFilter()
     return new AmbisonicCompressorAudioProcessor();
 }
 
-void AmbisonicCompressorAudioProcessor::checkOrderUpdateBuffers(int userSetInputOrder, int samplesPerBlock) {
-    userChangedOrderSettings = false;
-    //old values;
-    _nChannels = nChannels;
-    _ambisonicOrder = ambisonicOrder;
-    DBG(getTotalNumOutputChannels());
-    maxPossibleOrder = isqrt(getTotalNumInputChannels())-1;
-    if (userSetInputOrder == -1 || userSetInputOrder > maxPossibleOrder) ambisonicOrder = maxPossibleOrder; // Auto setting or requested order exceeds highest possible order
-    else ambisonicOrder = userSetInputOrder;
-    
-    if (ambisonicOrder != _ambisonicOrder) {
-        nChannels = squares[ambisonicOrder+1];
-        DBG("Used order has changed! Order: " << ambisonicOrder << ", numCH: " << nChannels);
-        DBG("Now updating filters and buffers.");
-    }
-    
-    //resize buffers
-    maskBuffer.setSize(nChannels, samplesPerBlock);
-}
+
