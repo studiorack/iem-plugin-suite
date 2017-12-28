@@ -146,24 +146,19 @@ void MultiEncoderAudioProcessorEditor::paint (Graphics& g)
 
 void MultiEncoderAudioProcessorEditor::timerCallback()
 {
-    // check max possible order and update combobox in title
-    if (processor.maxPossibleOrder != maxPossibleOrder)
-    {
-        maxPossibleOrder = processor.maxPossibleOrder;
-        title.getOutputWidgetPtr()->updateOrderCb(maxPossibleOrder);
-    }
+    // === update titleBar widgets according to available input/output channel counts
+    int maxInSize, maxOutSize;
+    processor.getMaxSize(maxInSize, maxOutSize);
+    title.setMaxSize(maxInSize, maxOutSize);
+    // ==========================================
     
-    if (processor.maxNumInputs != maxNumInputs)
-    {
-        maxNumInputs = processor.maxNumInputs;
-        title.getInputWidgetPtr()->updateMxPossibleChannelNumber(maxNumInputs); //TODO
-    }
     
-    if (processor.nChIn != lastSetNumChIn)
+    
+    const int nChIn = processor.input.getSize();
+    if (nChIn != lastSetNumChIn)
     {
-        encoderList.setNumberOfChannels(processor.nChIn);
-        lastSetNumChIn = processor.nChIn;
-        processor.editorNChIn = lastSetNumChIn;
+        encoderList.setNumberOfChannels(nChIn);
+        lastSetNumChIn = nChIn;
     }
 
     
@@ -256,7 +251,6 @@ void MultiEncoderAudioProcessorEditor::resized()
     const int grapperAreaHeight = 70;
     area.removeFromRight(10); // spacing
     
-    
     Rectangle<int> sphereArea (area);
     sphereArea.removeFromBottom(grapperAreaHeight);
     
@@ -281,9 +275,5 @@ void MultiEncoderAudioProcessorEditor::resized()
     slMasterRoll.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
     sliderRow.removeFromLeft(rotSliderSpacing);
     tbLockedToMaster.setBounds (sliderRow.removeFromLeft(100));
-    
-    
-    
-    
 }
 

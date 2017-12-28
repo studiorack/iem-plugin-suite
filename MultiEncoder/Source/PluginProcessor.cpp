@@ -165,23 +165,7 @@ parameters (*this, nullptr)
     }
     
     
-    float ypr[3];
-    ypr[2] = 0.0f;
-    iem::Quaternion<float> masterQuat;
-    float masterypr[3];
-    masterypr[0] = degreesToRadians(*masterYaw);
-    masterypr[1] = degreesToRadians(*masterPitch);
-    masterypr[2] = degreesToRadians(*masterRoll);
-    masterQuat.fromYPR(masterypr);
-    masterQuat.conjugate();
-    
-    for (int i = 0; i < maxNumberOfInputs; ++i)
-    {
-        ypr[0] = degreesToRadians(*yaw[i]);
-        ypr[1] = degreesToRadians(*pitch[i]);
-        quats[i].fromYPR(ypr);
-        quats[i] = masterQuat*quats[i];
-    }
+    updateQuaternions();
     
     
 }
@@ -246,7 +230,7 @@ void MultiEncoderAudioProcessor::changeProgramName (int index, const String& new
 //==============================================================================
 void MultiEncoderAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    checkOrderUpdateBuffers(samplesPerBlock);
+    checkInputAndOutput(this, *inputSetting, *orderSetting, true);
 }
 
 void MultiEncoderAudioProcessor::releaseResources()
@@ -264,17 +248,19 @@ bool MultiEncoderAudioProcessor::isBusesLayoutSupported (const BusesLayout& layo
 
 void MultiEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
-    if (userChangedIOSettings) checkOrderUpdateBuffers(buffer.getNumSamples());
+    checkInputAndOutput(this, *inputSetting, *orderSetting);
     
-    int N = nChIn;
+    const int nChOut = jmin(buffer.getNumChannels(), output.getNumberOfChannels());
+    const int nChIn = jmin(buffer.getNumChannels(), input.getSize());
+    const int ambisonicOrder = output.getOrder();
     
-    for (int i = 0; i<N; ++i){
+    for (int i = 0; i < nChIn; ++i){
         bufferCopy.copyFrom(i, 0, buffer.getReadPointer(i), buffer.getNumSamples());
     }
     
     buffer.clear();
     
-    for (int i = 0; i < N; ++i)
+    for (int i = 0; i < nChIn; ++i)
     {
         FloatVectorOperations::copy(_SH[i], SH[i], nChOut);
         float currGain = 0.0f;
@@ -286,12 +272,12 @@ void MultiEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBu
         {
             if (!muteMask[i]) currGain = Decibels::decibelsToGain(*gain[i]);
         }
-
+        
         float cosPitch = std::cos(*pitch[i] * deg2rad);
         float yawInRad = *yaw[i] * deg2rad;
         float pitchInRad = *pitch[i] * deg2rad;
         Vector3D<float> pos (cosPitch * std::cos(yawInRad), cosPitch * sinf(yawInRad), sinf(-1.0f * pitchInRad));
-    
+        
         SHEval(ambisonicOrder, pos.x, pos.y, pos.z, SH[i]);
         
         if (*useSN3D >= 0.5f)
@@ -305,7 +291,7 @@ void MultiEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBu
         }
         _gain[i] = currGain;
     }
-
+    
     
 }
 
@@ -341,7 +327,7 @@ void MultiEncoderAudioProcessor::parameterChanged (const String &parameterID, fl
         if (newValue >= 0.5f && !locked)
         {
             DBG("toggled");
-            
+            const int nChIn = input.getSize();
             float ypr[3];
             ypr[2] = 0.0f;
             for (int i = 0; i < nChIn; ++i)
@@ -375,6 +361,7 @@ void MultiEncoderAudioProcessor::parameterChanged (const String &parameterID, fl
         ypr[2] = degreesToRadians(*masterRoll);
         masterQuat.fromYPR(ypr);
         
+        const int nChIn = input.getSize();
         for (int i = 0; i < nChIn; ++i)
         {
             iem::Quaternion<float> temp = masterQuat*quats[i];
@@ -389,6 +376,7 @@ void MultiEncoderAudioProcessor::parameterChanged (const String &parameterID, fl
         DBG("yawPitch");
         float ypr[3];
         ypr[2] = 0.0f;
+        const int nChIn = input.getSize();
         for (int i = 0; i < nChIn; ++i)
         {
             iem::Quaternion<float> masterQuat;
@@ -423,13 +411,15 @@ void MultiEncoderAudioProcessor::setStateInformation (const void* data, int size
     ScopedPointer<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
     if (xmlState != nullptr)
         if (xmlState->hasTagName (parameters.state.getType()))
+        {
             parameters.state = ValueTree::fromXml (*xmlState);
-    
-    for (int i = 0; i < maxNumInputs; ++i)
-        if (parameters.state.getProperty("colour" + String(i)).toString() != "0")
-            elementColours[i] = Colour::fromString(parameters.state.getProperty("colour" + String(i)).toString());
-        else elementColours[i] = Colours::cyan;
-    updateColours = true;
+            updateQuaternions();
+            for (int i = 0; i < maxNumberOfInputs; ++i)
+                if (parameters.state.getProperty("colour" + String(i)).toString() != "0")
+                    elementColours[i] = Colour::fromString(parameters.state.getProperty("colour" + String(i)).toString());
+                else elementColours[i] = Colours::cyan;
+            updateColours = true;
+        }
 }
 
 //==============================================================================
@@ -439,33 +429,14 @@ AudioProcessor* JUCE_CALLTYPE createPluginFilter()
     return new MultiEncoderAudioProcessor();
 }
 
-void MultiEncoderAudioProcessor::checkOrderUpdateBuffers(int samplesPerBlock) {
-    userChangedIOSettings = false;
-    int userSetOutputOrder = *orderSetting - 1;
+void MultiEncoderAudioProcessor::updateBuffers() {
+    DBG("IOHelper:  input size: " << input.getSize());
+    DBG("IOHelper: output size: " << output.getSize());
     
-    DBG("NumOutputChannels: " << getTotalNumOutputChannels());
+    const int nChIn = input.getSize();
+    const int _nChIn = input.getPreviousSize();
     
-    _nChIn = nChIn;
-    maxNumInputs = jmin(getTotalNumInputChannels(), maxNumberOfInputs);
-    if (*inputSetting == 0 || *inputSetting > maxNumInputs) nChIn = maxNumInputs; // Auto setting or requested order exceeds highest possible order
-    else nChIn = *inputSetting;
-    
-    
-    _nChOut = nChOut;
-    _ambisonicOrder = ambisonicOrder;
-    DBG(getTotalNumOutputChannels());
-    maxPossibleOrder = isqrt(getTotalNumOutputChannels())-1;
-    if (userSetOutputOrder == -1 || userSetOutputOrder > maxPossibleOrder) ambisonicOrder = maxPossibleOrder; // Auto setting or requested order exceeds highest possible order
-    else ambisonicOrder = userSetOutputOrder;
-    
-
-    if (ambisonicOrder != _ambisonicOrder || nChIn != _nChIn) {
-        nChOut = squares[ambisonicOrder+1];
-        DBG("Used order has changed! Order: " << ambisonicOrder << ", nChOut: " << nChOut << ", nChIn: " << nChIn);
-        DBG("Now updating filters and buffers.");
-        bufferCopy.setSize(nChIn, samplesPerBlock);
-    }
-    
+    bufferCopy.setSize(nChIn, getBlockSize());
     
     // disable solo and mute for deleted input channels
     for (int i = nChIn; i < _nChIn; ++i)
@@ -473,6 +444,27 @@ void MultiEncoderAudioProcessor::checkOrderUpdateBuffers(int samplesPerBlock) {
         parameters.getParameter("mute" + String(i))->setValue(0.0f);
         parameters.getParameter("solo" + String(i))->setValue(0.0f);
     }
-    
-}
+};
 
+void MultiEncoderAudioProcessor::updateQuaternions()
+{
+    
+    float ypr[3];
+    ypr[2] = 0.0f;
+    
+    iem::Quaternion<float> masterQuat;
+    float masterypr[3];
+    masterypr[0] = degreesToRadians(*masterYaw);
+    masterypr[1] = degreesToRadians(*masterPitch);
+    masterypr[2] = degreesToRadians(*masterRoll);
+    masterQuat.fromYPR(masterypr);
+    masterQuat.conjugate();
+    
+    for (int i = 0; i < maxNumberOfInputs; ++i)
+    {
+        ypr[0] = degreesToRadians(*yaw[i]);
+        ypr[1] = degreesToRadians(*pitch[i]);
+        quats[i].fromYPR(ypr);
+        quats[i] = masterQuat*quats[i];
+    }
+}
