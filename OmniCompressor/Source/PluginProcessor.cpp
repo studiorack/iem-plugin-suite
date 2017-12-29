@@ -158,23 +158,20 @@ void AmbisonicCompressorAudioProcessor::changeProgramName (int index, const Stri
 
 void AmbisonicCompressorAudioProcessor::parameterChanged (const String &parameterID, float newValue)
 {
-    if (parameterID == "orderSetting") userChangedOrderSettings = true;
+    if (parameterID == "orderSetting") userChangedIOSettings = true;
 }
 
 //==============================================================================
 void AmbisonicCompressorAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    // Use this method as the place to do any pre-playback
-    // initialisation that you need..
-    checkOrderUpdateBuffers(roundFloatToInt(*orderSetting - 1));
+    checkInputAndOutput(this, *orderSetting, *orderSetting, true);
     
     RMS.resize(samplesPerBlock);
     gains.resize(samplesPerBlock);
     allGR.resize(samplesPerBlock);
     
     double A = exp(-1.0/(sampleRate*0.01)); //multiplicated value after sampleRate is rms time
-    meanSqrFilter.setCoefficients(juce::IIRCoefficients(1.0 - A,0.0,0.0,1.0,- A,0.0));
-    
+    meanSqrFilter.setCoefficients(juce::IIRCoefficients(1.0 - A, 0.0, 0.0, 1.0, - A, 0.0));
 }
 
 void AmbisonicCompressorAudioProcessor::releaseResources()
@@ -192,14 +189,16 @@ bool AmbisonicCompressorAudioProcessor::isBusesLayoutSupported (const BusesLayou
 
 void AmbisonicCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
-    if (userChangedOrderSettings) checkOrderUpdateBuffers(roundFloatToInt(*orderSetting - 1));
+    checkInputAndOutput(this, *orderSetting, *orderSetting);
+    
     const int totalNumInputChannels  = getTotalNumInputChannels();
     const int totalNumOutputChannels = getTotalNumOutputChannels();
     const int sampleRate = this->getSampleRate();
-    int bufferSize = buffer.getNumSamples();
+    const int bufferSize = buffer.getNumSamples();
     
-    int numCh = jmin(nChannels, buffer.getNumChannels());
     
+    const int numCh = jmin(buffer.getNumChannels(), input.getNumberOfChannels(), output.getNumberOfChannels());
+    const int ambisonicOrder = jmin(input.getOrder(), output.getOrder());
     const float* bufferReadPtr = buffer.getReadPointer(0);
 
     
@@ -276,23 +275,5 @@ void AmbisonicCompressorAudioProcessor::setStateInformation (const void* data, i
 AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new AmbisonicCompressorAudioProcessor();
-}
-
-void AmbisonicCompressorAudioProcessor::checkOrderUpdateBuffers(int userSetInputOrder) {
-    userChangedOrderSettings = false;
-    //old values;
-    _nChannels = nChannels;
-    _ambisonicOrder = ambisonicOrder;
-    DBG(getTotalNumOutputChannels());
-    maxPossibleOrder = isqrt(getTotalNumInputChannels())-1;
-    if (userSetInputOrder == -1 || userSetInputOrder > maxPossibleOrder) ambisonicOrder = maxPossibleOrder; // Auto setting or requested order exceeds highest possible order
-    else ambisonicOrder = userSetInputOrder;
-    
-    if (ambisonicOrder != _ambisonicOrder) {
-        nChannels = squares[ambisonicOrder+1];
-        DBG("Used order has changed! Order: " << ambisonicOrder << ", numCH: " << nChannels);
-        DBG("Now updating filters and buffers.");
-    }
-    
 }
 

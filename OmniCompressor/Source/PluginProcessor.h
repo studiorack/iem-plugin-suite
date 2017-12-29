@@ -25,12 +25,15 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "../../resources/MaxRE.h"
 #include "../../resources/ambisonicTools.h"
+#include "../../resources/IOHelper.h"
 
 //==============================================================================
 /**
 */
 class AmbisonicCompressorAudioProcessor  : public AudioProcessor,
-                                            public AudioProcessorValueTreeState::Listener
+                                            public AudioProcessorValueTreeState::Listener,
+public IOHelper<IOTypes::Ambisonics<>, IOTypes:: Ambisonics<>>
+
 {
 public:
     //==============================================================================
@@ -74,17 +77,6 @@ public:
 
     float maxRMS;
     float maxGR;
-    
-    // -- variable order --
-    int maxPossibleOrder = -1;
-    int ambisonicOrder = -1;
-    int _ambisonicOrder = -1;
-    int nChannels = 0;
-    int _nChannels = 0;
-    
-    bool userChangedOrderSettings = false;
-    void checkOrderUpdateBuffers(int userSetOutputOrder);
-    // -------------------- //
     
 private:
     //==============================================================================
