@@ -56,12 +56,13 @@ public:
     
 private:
     // ====================== beging essentials ==================
+    // lookAndFeel class with the IEM plug-in suite design
+    LaF globalLaF;
+    
     // stored references to the AudioProcessor and ValueTreeState holding all the parameters
     PluginTemplateAudioProcessor& processor;
     AudioProcessorValueTreeState& valueTreeState;
 
-    // lookAndFeel class with the IEM plug-in suite design
-    LaF globalLaF;
     
     /* title and footer component
      title component can hold different widgets for in- and output:

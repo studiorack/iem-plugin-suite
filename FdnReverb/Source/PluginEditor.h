@@ -52,15 +52,15 @@ public:
     void sliderValueChanged (Slider* slider) override;
 
 private:
-    // This reference is provided as a quick way for your editor to
-    // access the processor object that created it.
+    LaF globalLaF;
+    
     FdnReverbAudioProcessor& processor;
     AudioProcessorValueTreeState& valueTreeState;
 
     // Layout stuff (footers, headers, logos, etc.)
     TitleBar<NoIOWidget, NoIOWidget> title;
     Footer footer;
-    LaF globalLaF;
+    
     void timerCallback() override;
 
     SimpleLabel lbDelay, lbTime, lbDryWet, lbHighCutoff, lbHighQ, lbHighGain, lbLowCutoff, lbLowQ, lbLowGain;

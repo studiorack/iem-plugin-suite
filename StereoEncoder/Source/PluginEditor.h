@@ -57,9 +57,11 @@ public:
     void IEMSphereElementChanged (IEMSphere* sphere, IEMSphereElement* element) override;
     void IEMSphereMouseWheelMoved(IEMSphere* sphere, const juce::MouseEvent &event, const MouseWheelDetails &wheel) override;
 private:
+    LaF globalLaF;
+    
     TitleBar<AudioChannelsIOWidget<2,false>, AmbisonicIOWidget> title;
     Footer footer;
-    LaF globalLaF;
+    
     void timerCallback() override;
     
     // This reference is provided as a quick way for your editor to

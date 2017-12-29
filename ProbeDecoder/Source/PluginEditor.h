@@ -50,9 +50,11 @@ public:
     void resized() override;
 
 private:
+    LaF globalLaF;
+    
     TitleBar<AmbisonicIOWidget, AudioChannelsIOWidget<1,false>> title;
     Footer footer;
-    LaF globalLaF;
+    
     void timerCallback() override;
     
 
