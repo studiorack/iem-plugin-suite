@@ -267,12 +267,11 @@ void StereoEncoderAudioProcessorEditor::paint (Graphics& g)
 
 void StereoEncoderAudioProcessorEditor::timerCallback()
 {
-    // check max possible order and update combobox in title
-    if (processor.maxPossibleOrder != maxPossibleOrder)
-    {
-        maxPossibleOrder = processor.maxPossibleOrder;
-        title.getOutputWidgetPtr()->updateOrderCb(maxPossibleOrder);
-    }
+    // === update titleBar widgets according to available input/output channel counts
+    int maxInSize, maxOutSize;
+    processor.getMaxSize(maxInSize, maxOutSize);
+    title.setMaxSize(maxInSize, maxOutSize);
+    // ==========================================
     
     // update positions, if at least one of them was updated (new data): repaint the sphere
     if (processor.updatedPositionData.get())

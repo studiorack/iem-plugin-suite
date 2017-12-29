@@ -1,57 +1,60 @@
 /*
-  ==============================================================================
-
-    This file was auto-generated!
-
-    It contains the basic framework code for a JUCE plugin editor.
-
-  ==============================================================================
-*/
+ ==============================================================================
+ This file is part of the IEM plug-in suite.
+ Author: Daniel Rudrich
+ Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
+ https://www.iem.at
+ 
+ The IEM plug-in suite is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+ 
+ The IEM plug-in suite is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+ 
+ You should have received a copy of the GNU General Public License
+ along with this software.  If not, see <https://www.gnu.org/licenses/>.
+ ==============================================================================
+ */
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
 
 //==============================================================================
-PluginTemplateAudioProcessorEditor::PluginTemplateAudioProcessorEditor (PluginTemplateAudioProcessor& p, AudioProcessorValueTreeState& vts, IOHelper<IOTypes::Audio<8>, IOTypes::Ambisonics<5>>& helper)
-    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts), ioHelper(helper)
+PluginTemplateAudioProcessorEditor::PluginTemplateAudioProcessorEditor (PluginTemplateAudioProcessor& p, AudioProcessorValueTreeState& vts)
+    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts)
 {
-    // Make sure that before the constructor has finished, you've set the
-    // editor's size to whatever you need it to be.
-    setSize (500, 300);
+    // ============== BEGIN: essentials ======================
+    // set GUI size and lookAndFeel
+    //setSize(500, 300); // use this to create a fixed-size GUI
+    setResizeLimits(500, 300, 800, 500); // use this to create a resizeable GUI
     setLookAndFeel (&globalLaF);
     
-    
+    // make title and footer visible, and set the PluginName
     addAndMakeVisible(&title);
     title.setTitle(String("Plugin"),String("Template"));
-    title.setFont(globalLaF.robotoBold,globalLaF.robotoLight);
+    title.setFont(globalLaF.robotoBold, globalLaF.robotoLight);
     addAndMakeVisible (&footer);
-    
-    addAndMakeVisible(&cbOrderSetting);
-    cbOrderSetting.setJustificationType(Justification::centred);
-    cbOrderSetting.addSectionHeading("Order Setting");
-    cbOrderSetting.addItem("Auto", 1);
-    cbOrderSetting.addItem("0th", 2);
-    cbOrderSetting.addItem("1st", 3);
-    cbOrderSetting.addItem("2nd", 4);
-    cbOrderSetting.addItem("3rd", 5);
-    cbOrderSetting.addItem("4th", 6);
-    cbOrderSetting.addItem("5th", 7);
-    cbOrderSetting.addItem("6th", 8);
-    cbOrderSetting.addItem("7th", 9);
-    cbOrderSettingAttachment = new ComboBoxAttachment(valueTreeState, "orderSetting", cbOrderSetting);
+    // ============= END: essentials ========================
     
     
-    addAndMakeVisible(&slParam1);
+    // create the connection between title component's comboBoxes and parameters
+    cbInputChannelsSettingAttachment = new ComboBoxAttachment(valueTreeState, "inputChannelsSetting", *title.getInputWidgetPtr()->getChannelsCbPointer());
+    cbNormalizationSettingAttachment = new ComboBoxAttachment(valueTreeState, "useSN3D", *title.getOutputWidgetPtr()->getNormCbPointer());
+    cbOrderSettingAttachment = new ComboBoxAttachment(valueTreeState, "outputOrderSetting", *title.getOutputWidgetPtr()->getOrderCbPointer());
+    
+    addAndMakeVisible(slParam1);
     slParam1Attachment = new SliderAttachment(valueTreeState, "param1", slParam1);
-    slParam1.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
-    
-    addAndMakeVisible(&slParam2);
+    addAndMakeVisible(slParam2);
     slParam2Attachment = new SliderAttachment(valueTreeState, "param2", slParam2);
-    slParam2.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
-    slParam2.setReverse(true);
     
-    //startTimer(100);
+    
+    // start timer after everything is set up properly
+    startTimer(20);
 }
 
 PluginTemplateAudioProcessorEditor::~PluginTemplateAudioProcessorEditor()
@@ -62,44 +65,46 @@ PluginTemplateAudioProcessorEditor::~PluginTemplateAudioProcessorEditor()
 //==============================================================================
 void PluginTemplateAudioProcessorEditor::paint (Graphics& g)
 {
-    // (Our component is opaque, so we must completely fill the background with a solid colour)
-    g.fillAll (getLookAndFeel().findColour (ResizableWindow::backgroundColourId));
-
-    g.setColour (Colours::white);
-    g.setFont(getLookAndFeel().getTypefaceForFont (Font(12.0f, 0)));
-    g.setFont (25.0f);
-    g.drawFittedText ("Hello World!", getLocalBounds(), Justification::centred, 1);
+    g.fillAll (globalLaF.ClBackground);
 }
 
 void PluginTemplateAudioProcessorEditor::resized()
 {
-    // This is generally where you'll want to lay out the positions of any
-    // subcomponents in your editor..
+    // ============ BEGIN: header and footer ============
     const int leftRightMargin = 30;
     const int headerHeight = 60;
     const int footerHeight = 25;
     Rectangle<int> area (getLocalBounds());
     
-    Rectangle<int> footerArea (area.removeFromBottom (footerHeight));
+    Rectangle<int> footerArea (area.removeFromBottom(footerHeight));
     footer.setBounds(footerArea);
 
-    
     area.removeFromLeft(leftRightMargin);
     area.removeFromRight(leftRightMargin);
-    Rectangle<int> headerArea = area.removeFromTop    (headerHeight);
+    Rectangle<int> headerArea = area.removeFromTop(headerHeight);
     title.setBounds (headerArea);
     area.removeFromTop(10);
+    area.removeFromBottom(5);
+    // =========== END: header and footer =================
     
     
+    // try to not use explicit coordinates to position your GUI components
+    // the removeFrom...() methods are quite handy to create scaleable areas
+    // best practice would be the use of flexBoxes...
+    // the following is medium level practice ;-)
     Rectangle<int> sliderRow = area.removeFromTop(50);
     slParam1.setBounds(sliderRow.removeFromLeft(150));
     slParam2.setBounds(sliderRow.removeFromRight(150));
-    sliderRow.reduce(20, 10);
-    cbOrderSetting.setBounds(sliderRow);
     
 }
 
 void PluginTemplateAudioProcessorEditor::timerCallback()
 {
-    // timeCallback stuff
+    // === update titleBar widgets according to available input/output channel counts
+    int maxInSize, maxOutSize;
+    processor.getMaxSize(maxInSize, maxOutSize);
+    title.setMaxSize(maxInSize, maxOutSize);
+    // ==========================================
+    
+    // insert stuff you want to do be done at every timer callback
 }

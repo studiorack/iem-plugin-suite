@@ -68,8 +68,6 @@ private:
     LaF globalLaF;
     TitleBar<AmbisonicIOWidget, NoIOWidget> title;
     Footer footer;
-
-    int maxPossibleOrder = -1;
     
     ReverseSlider slPeakLevel;
     SimpleLabel lbPeakLevel;

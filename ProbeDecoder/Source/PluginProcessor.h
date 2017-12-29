@@ -26,13 +26,15 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "../../resources/efficientSHvanilla.h"
 #include "../../resources/ambisonicTools.h"
+#include "../../resources/IOHelper.h"
 
 
 //==============================================================================
 /**
 */
 class ProbeDecoderAudioProcessor  : public AudioProcessor,
-                                                public AudioProcessorValueTreeState::Listener
+                                                public AudioProcessorValueTreeState::Listener,
+public IOHelper<IOTypes::Ambisonics<>, IOTypes::AudioChannels<1>>
 {
 public:
     //==============================================================================
@@ -76,16 +78,6 @@ public:
     float *orderSetting;
     float *useSN3D;
 
-    // ====== VARIABLE ORDER =======================================================
-    int maxPossibleOrder = -1;
-    int ambisonicOrder = -1;
-    int _ambisonicOrder = -1;
-    int nChannels = 0;
-    int _nChannels = 0;
-    
-    bool userChangedOrderSettings = false;
-    void checkOrderUpdateBuffers(int userSetOutputOrder);
-    //==============================================================================
 
 private:
     //==============================================================================

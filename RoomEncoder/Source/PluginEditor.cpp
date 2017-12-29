@@ -525,17 +525,12 @@ void RoomEncoderAudioProcessorEditor::sliderValueChanged(Slider *slider)
 
 void RoomEncoderAudioProcessorEditor::timerCallback()
 {
-    // check max possible order and update combobox in title
-    if (processor.maxPossibleInputOrder != maxPossibleInputOrder)
-    {
-        maxPossibleInputOrder = processor.maxPossibleInputOrder;
-        title.getInputWidgetPtr()->updateOrderCb(maxPossibleInputOrder);
-    }
-    if (processor.maxPossibleOutputOrder != maxPossibleOutputOrder)
-    {
-        maxPossibleOutputOrder = processor.maxPossibleOutputOrder;
-        title.getOutputWidgetPtr()->updateOrderCb(maxPossibleOutputOrder);
-    }
+    // === update titleBar widgets according to available input/output channel counts
+    int maxInSize, maxOutSize;
+    processor.getMaxSize(maxInSize, maxOutSize);
+    title.setMaxSize(maxInSize, maxOutSize);
+    // ==========================================
+    
     if (processor.updateFv)
     {
         processor.updateFv = false;

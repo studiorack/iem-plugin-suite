@@ -76,8 +76,6 @@ private:
     ScopedPointer<ComboBoxAttachment> cbOrderAtachement;
 
     TooltipWindow toolTipWin;
-
-    int maxPossibleOrder = -1;
     
     // labels
     SimpleLabel lbYaw, lbPitch, lbRoll, lblWidth, lbW, lbX, lbY, lbZ;

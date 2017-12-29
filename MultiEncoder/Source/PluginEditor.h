@@ -20,8 +20,7 @@
  ==============================================================================
  */
 
-#ifndef PLUGINEDITOR_H_INCLUDED
-#define PLUGINEDITOR_H_INCLUDED
+#pragma once
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "PluginProcessor.h"
@@ -48,7 +47,6 @@ private Timer,
 private SpherePanner::Listener
 {
 public:
-
     MultiEncoderAudioProcessorEditor (MultiEncoderAudioProcessor&, AudioProcessorValueTreeState&);
     ~MultiEncoderAudioProcessorEditor();
 
@@ -56,17 +54,14 @@ public:
     void paint (Graphics&) override;
     void resized() override;
 
-
-
-    
 private:
+    LaF globalLaF;
     TitleBar<AudioChannelsIOWidget<maxNumberOfInputs>, AmbisonicIOWidget> title;
     Footer footer;
-    LaF globalLaF;
+    
     void timerCallback() override;
     void mouseWheelOnSpherePannerMoved (SpherePanner* sphere, const MouseEvent &event, const MouseWheelDetails &wheel) override;
-    // This reference is provided as a quick way for your editor to
-    // access the processor object that created it.
+
     MultiEncoderAudioProcessor& processor;
 
     GroupComponent quatGroup,ypGroup,settingsGroup;
@@ -75,7 +70,6 @@ private:
     ToggleButton tbLockedToMaster;
     ComboBox inputChooser;
 
-    
     SpherePanner sphere;
     SpherePanner::Element masterElement;
     
@@ -92,7 +86,6 @@ private:
     Viewport viewport;
     EncoderList encoderList;
     
-    
     TooltipWindow toolTipWin;
 
     int maxPossibleOrder = -1;
@@ -105,5 +98,3 @@ private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MultiEncoderAudioProcessorEditor)
 };
 
-
-#endif  // PLUGINEDITOR_H_INCLUDED

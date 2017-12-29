@@ -31,6 +31,7 @@
 #include "../../resources/Eigen/Dense"
 #include "../../resources/efficientSHvanilla.h"
 #include "../../resources/ambisonicTools.h"
+#include "../../resources/IOHelper.h"
 #include "../../resources/MaxRE.h"
 
 
@@ -39,7 +40,8 @@
 /**
 */
 class EnergyVisualizerAudioProcessor  : public AudioProcessor,
-                                        public AudioProcessorValueTreeState::Listener
+                                        public AudioProcessorValueTreeState::Listener,
+public IOHelper<IOTypes::Ambisonics<>, IOTypes::Nothing>
 {
 public:
     //==============================================================================
@@ -85,20 +87,9 @@ public:
     
     Array<float> rms;
     
-    void checkOrderUpdateBuffers(int userSetInputOrder);
-    
-    int maxPossibleOrder = -1;
 private:
     
-    // -- variable order --
-    
-    int ambisonicOrder = -1;
-    int _ambisonicOrder = -1;
-    int nChannels = 0;
-    int _nChannels = 0;
-    
-    bool userChangedOrderSettings = false;
-    
+
     Eigen::DiagonalMatrix<float, 64> maxReWeights;
     
     float timeConstant;

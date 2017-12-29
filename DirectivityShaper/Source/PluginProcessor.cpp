@@ -241,10 +241,7 @@ void DirectivityShaperAudioProcessor::changeProgramName (int index, const String
 //==============================================================================
 void DirectivityShaperAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    // Use this method as the place to do any pre-playback
-    // initialisation that you need..
-    
-    checkOrderUpdateBuffers(roundFloatToInt(*orderSetting - 1));
+    checkInputAndOutput(this, 1, *orderSetting, true);
     
     for (int i = 0; i < numberOfBands; ++i)
     {
@@ -270,17 +267,17 @@ bool DirectivityShaperAudioProcessor::isBusesLayoutSupported (const BusesLayout&
 
 void DirectivityShaperAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
+    checkInputAndOutput(this, 1, *orderSetting, true);
     ScopedNoDenormals noDenormals;
     _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON); // alternative?: fesetenv(FE_DFL_DISABLE_SSE_DENORMS_ENV);
-    if (userChangedOrderSettings) checkOrderUpdateBuffers(roundFloatToInt(*orderSetting - 1));
     
-    int nChToWorkWith = jmin(buffer.getNumChannels(), nChannels);
-    int orderToWorkWith = isqrt(nChToWorkWith) - 1;
+    
+    int nChToWorkWith = jmin(buffer.getNumChannels(), output.getNumberOfChannels());
+    const int orderToWorkWith = isqrt(nChToWorkWith) - 1;
     nChToWorkWith = squares[orderToWorkWith+1];
-    //DBG("nCh(user): " << nChannels << " bufferCh: " << buffer.getNumChannels() << " order: " << orderToWorkWith << " nCh:" << nChToWorkWith);
+    
     const int numSamples = buffer.getNumSamples();
 
-    
     AudioBlock<float> inBlock = AudioBlock<float>(buffer.getArrayOfWritePointers(), 1, numSamples);
     for (int i = 0; i < numberOfBands; ++i)
     {
@@ -333,9 +330,6 @@ void DirectivityShaperAudioProcessor::processBlock (AudioSampleBuffer& buffer, M
                 tempWeights[i] += orderBlend * ((1.0f-blend) *  basic[higherOrder][i] + blend * maxRe[higherOrder][i]); ;
             }
         }
-        
-
-        
         
         float cor = 4.0f * M_PI / (higherOrder*higherOrder + (2 * higherOrder+1)*orderBlend);
         cor = cor/correction(orderToWorkWith)/correction(orderToWorkWith);
@@ -392,7 +386,6 @@ void DirectivityShaperAudioProcessor::processBlock (AudioSampleBuffer& buffer, M
         for (int i = orderToWorkWith + 1; i < 8; ++i)
             weights[b][i] = 0.0f;
     }
-    
 }
 
 //==============================================================================
@@ -423,7 +416,7 @@ void DirectivityShaperAudioProcessor::setStateInformation (const void* data, int
 //==============================================================================
 void DirectivityShaperAudioProcessor::parameterChanged (const String &parameterID, float newValue)
 {
-    if (parameterID == "orderSetting") userChangedOrderSettings = true;
+    if (parameterID == "orderSetting") userChangedIOSettings = true;
     else if (parameterID == "masterToggle")
     {
        if (newValue >= 0.5f && !toggled)
@@ -505,24 +498,6 @@ void DirectivityShaperAudioProcessor::parameterChanged (const String &parameterI
 AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new DirectivityShaperAudioProcessor();
-}
-
-void DirectivityShaperAudioProcessor::checkOrderUpdateBuffers(int userSetOutputOrder) {
-    userChangedOrderSettings = false;
-    //old values;
-    int _ambisonicOrder = ambisonicOrder;
-    
-    maxPossibleOrder = isqrt(getTotalNumOutputChannels()) - 1;
-    DBG("NumOutputChannels: " << getTotalNumOutputChannels() << " -> maxOrder:" << maxPossibleOrder);
-    if (userSetOutputOrder == -1 || userSetOutputOrder > maxPossibleOrder)
-        ambisonicOrder = maxPossibleOrder; // Auto setting or requested order exceeds highest possible order
-    else ambisonicOrder = userSetOutputOrder;
-    
-    if (ambisonicOrder != _ambisonicOrder) {
-        nChannels = squares[ambisonicOrder + 1];
-        DBG("Used order has changed! Order: " << ambisonicOrder << ", numCH: " << nChannels);
-        DBG("Now updating filters and buffers.");
-    }
 }
 
 inline Vector3D<float> DirectivityShaperAudioProcessor::yawPitchToCartesian(float yawInRad, float pitchInRad) {

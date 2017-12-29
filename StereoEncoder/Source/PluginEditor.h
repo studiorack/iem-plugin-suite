@@ -62,7 +62,6 @@ private:
     LaF globalLaF;
     void timerCallback() override;
     
-
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     StereoEncoderAudioProcessor& processor;
@@ -90,8 +89,6 @@ private:
     ScopedPointer<ComboBoxAttachment> cbOrderAtachement;
 
     TooltipWindow toolTipWin;
-
-    int maxPossibleOrder = -1;
     
     // labels
     SimpleLabel lbYaw, lbPitch, lbRoll, lblWidth, lbW, lbX, lbY, lbZ;

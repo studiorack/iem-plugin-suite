@@ -126,9 +126,9 @@ void EnergyVisualizerAudioProcessorEditor::sliderValueChanged (Slider *slider)
 
 void EnergyVisualizerAudioProcessorEditor::timerCallback()
 {
-    if (processor.maxPossibleOrder != maxPossibleOrder)
-    {
-        maxPossibleOrder = processor.maxPossibleOrder;
-        title.getInputWidgetPtr()->updateOrderCb(maxPossibleOrder);
-    }
+    // === update titleBar widgets according to available input/output channel counts
+    int maxInSize, maxOutSize;
+    processor.getMaxSize(maxInSize, maxOutSize);
+    title.setMaxSize(maxInSize, maxOutSize);
+    // ==========================================
 }
