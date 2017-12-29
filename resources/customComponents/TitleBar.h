@@ -31,6 +31,7 @@ public:
     NoIOWidget() : Component() {
     };
     ~NoIOWidget() {};
+    const int getComponentSize() { return 0; }
     void setMaxSize (int maxSize) {};
     void paint (Graphics& g) override {};
 };
@@ -51,11 +52,13 @@ public:
             cbChannels->addItem("Auto", 1);
             for (int i=1; i<=maxChannels; ++i)
                 cbChannels->addItem(String(i), i+1);
-            cbChannels->setBounds(40, 8, 70, 15);
+            cbChannels->setBounds(35, 8, 70, 15);
         }
         
     };
     ~AudioChannelsIOWidget() {};
+    
+    const int getComponentSize() { return 110; }
     
     void setMaxSize (int maxPossibleNumberOfChannels)
     {
@@ -87,10 +90,7 @@ public:
     
     void paint (Graphics& g) override
     {
-        Rectangle<int> bounds = getLocalBounds();
-        const int h = bounds.getHeight();
-        
-        WaveformPath.applyTransform(WaveformPath.getTransformToScaleToFit(0,0,h, h, true,Justification::centred));
+        WaveformPath.applyTransform(WaveformPath.getTransformToScaleToFit(0, 0, 30, 30, true,Justification::centred));
         g.setColour((Colours::white).withMultipliedAlpha(0.5));
         g.fillPath(WaveformPath);
         
@@ -99,7 +99,7 @@ public:
             g.setColour((Colours::white).withMultipliedAlpha(0.5));
             g.setFont(getLookAndFeel().getTypefaceForFont (Font(12.0f, 1)));
             g.setFont(15.0f);
-            g.drawText(String(maxChannels), 40, 8, 70, 15, Justification::left);
+            g.drawText(String(maxChannels), 35, 8, 70, 15, Justification::left);
         }
     };
     
@@ -135,16 +135,18 @@ public:
         cbOrder.addItem("5th", 7);
         cbOrder.addItem("6th", 8);
         cbOrder.addItem("7th", 9);
-        cbOrder.setBounds(40, 15, 70, 15);
+        cbOrder.setBounds(35, 15, 70, 15);
         
         addAndMakeVisible(&cbNormalization);
         cbNormalization.setJustificationType(Justification::centred);
         cbNormalization.addSectionHeading("Normalization");
         cbNormalization.addItem("N3D", 1);
         cbNormalization.addItem("SN3D", 2);
-        cbNormalization.setBounds(40, 0, 70, 15);
+        cbNormalization.setBounds(35, 0, 70, 15);
     };
     ~AmbisonicIOWidget() {};
+    
+    const int getComponentSize() { return 110; }
     
     void setMaxSize (int maxPossibleOrder)
     {
@@ -170,10 +172,7 @@ public:
     
     void paint (Graphics& g) override
     {
-        Rectangle<int> bounds = getLocalBounds();
-        const int h = bounds.getHeight();
-        
-        AmbiLogoPath.applyTransform(AmbiLogoPath.getTransformToScaleToFit(0,0,h, h, true,Justification::centred));
+        AmbiLogoPath.applyTransform(AmbiLogoPath.getTransformToScaleToFit(0, 0, 30, 30, true,Justification::centred));
         g.setColour((Colours::white).withMultipliedAlpha(0.5));
         g.fillPath(AmbiLogoPath);
     };
@@ -211,9 +210,11 @@ public:
         cbOrder.addItem("5th", 7);
         cbOrder.addItem("6th", 8);
         cbOrder.addItem("7th", 9);
-        cbOrder.setBounds(40, 8, 70, 15);
+        cbOrder.setBounds(35, 8, 70, 15);
     };
     ~DirectivityIOWidget() {};
+    
+    const int getComponentSize() { return 110; }
     
     void setMaxSize (int maxPossibleOrder)
     {
@@ -237,10 +238,7 @@ public:
     
     void paint (Graphics& g) override
     {
-        Rectangle<int> bounds = getLocalBounds();
-        const int h = bounds.getHeight();
-        
-        DirectivityPath.applyTransform(DirectivityPath.getTransformToScaleToFit(0,0,h, h, true,Justification::centred));
+        DirectivityPath.applyTransform(DirectivityPath.getTransformToScaleToFit(0, 0, 30, 30, true,Justification::centred));
         g.setColour((Colours::white).withMultipliedAlpha(0.5));
         g.fillPath(DirectivityPath);
     };
@@ -291,10 +289,12 @@ public:
     void paint (Graphics& g) override
     {
         Rectangle<int> bounds = getLocalBounds();
-        const float centreX = bounds.getX() + bounds.getWidth()*0.5;
-        const float centreY = bounds.getY() + bounds.getHeight()*0.5;
+        const float centreX = bounds.getX() + bounds.getWidth() * 0.5f;
+        const float centreY = bounds.getY() + bounds.getHeight() * 0.5f;
         const float boldHeight = 25.f;
         const float regularHeight = 25.f;
+        const int leftWidth = inputWidget.getComponentSize();
+        const int rightWidth = outputWidget.getComponentSize();
         
         boldFont.setHeight(boldHeight);
         regularFont.setHeight(regularHeight);
@@ -302,8 +302,12 @@ public:
         const float boldWidth = boldFont.getStringWidth(boldText);
         const float regularWidth = regularFont.getStringWidth(regularText);
         
-        Rectangle<float> textArea (0, 0, boldWidth+regularWidth,jmax(boldHeight,regularHeight));
+        Rectangle<float> textArea (0, 0, boldWidth + regularWidth, jmax(boldHeight, regularHeight));
         textArea.setCentre(centreX,centreY);
+        
+        if (textArea.getX() < leftWidth) textArea.setX(leftWidth);
+        if (textArea.getRight() > bounds.getRight() - rightWidth) textArea.setRight(bounds.getRight() - rightWidth);
+  
         
         g.setColour(Colours::white);
         g.setFont(boldFont);
@@ -336,8 +340,6 @@ public:
     
     void paint (Graphics& g) override
     {
-        
-        
         Rectangle<int> bounds = getLocalBounds();
         IEMPath.applyTransform(IEMPath.getTransformToScaleToFit(bounds.reduced(2, 2).toFloat(), true, Justification::bottomLeft));
         
