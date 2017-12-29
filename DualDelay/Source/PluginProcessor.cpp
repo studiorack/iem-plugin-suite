@@ -38,19 +38,19 @@ DualDelayAudioProcessor::DualDelayAudioProcessor()
 #endif
 parameters(*this,nullptr), LFOLeft([] (float phi) { return std::sin(phi);}), LFORight([] (float phi) { return std::sin(phi);})
 {
-    parameters.createAndAddParameter ("orderSetting", "Ambisonics Order", "",
-                                      NormalisableRange<float> (0.0f, 7.0f, 1.0f), 0.0f,
-                                      [](float value)
-                                      {
-                                          if (value >= 0.5f && value < 1.5f) return "1st";
-                                          else if (value >= 1.5f && value < 2.5f) return "2nd";
-                                          else if (value >= 2.5f && value < 3.5f) return "3rd";
-                                          else if (value >= 3.5f && value < 4.5f) return "4th";
-                                          else if (value >= 4.5f && value < 5.5f) return "5th";
-                                          else if (value >= 5.5f && value < 6.5f) return "6th";
-                                          else if (value >= 6.5f) return "7th";
-                                          else return "Auto";
-                                      }, nullptr);
+    parameters.createAndAddParameter("orderSetting", "Ambisonics Order", "",
+                                     NormalisableRange<float>(0.0f, 8.0f, 1.0f), 0.0f,
+                                     [](float value) {
+                                         if (value >= 0.5f && value < 1.5f) return "0th";
+                                         else if (value >= 1.5f && value < 2.5f) return "1st";
+                                         else if (value >= 2.5f && value < 3.5f) return "2nd";
+                                         else if (value >= 3.5f && value < 4.5f) return "3rd";
+                                         else if (value >= 4.5f && value < 5.5f) return "4th";
+                                         else if (value >= 5.5f && value < 6.5f) return "5th";
+                                         else if (value >= 6.5f && value < 7.5f) return "6th";
+                                         else if (value >= 7.5f) return "7th";
+                                         else return "Auto";
+                                     }, nullptr);
     
     parameters.createAndAddParameter ("useSN3D", "Normalization", "",
                                       NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
@@ -290,7 +290,7 @@ void DualDelayAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffe
     checkInputAndOutput(this, *orderSetting, *orderSetting);
     
     const int totalNumInputChannels  =  getTotalNumInputChannels();
-    const int workingOrder = jmin(isqrt(buffer.getNumChannels())-1, input.getOrder());
+    const int workingOrder = jmin(isqrt(buffer.getNumChannels())-1, input.getOrder(), output.getOrder());
     const int nCh = squares[workingOrder+1];
     
     
@@ -652,7 +652,8 @@ void DualDelayAudioProcessor::updateBuffers()
     
     const int nChannels = jmin(input.getNumberOfChannels(), output.getNumberOfChannels());
     const int _nChannels = jmin(input.getPreviousNumberOfChannels(), output.getPreviousNumberOfChannels());
-    const int blockSize = getBlockSize();
+    const int samplesPerBlock = getBlockSize();
+    
     const double sampleRate = getSampleRate();
     if (nChannels > _nChannels)
     {
@@ -672,7 +673,7 @@ void DualDelayAudioProcessor::updateBuffers()
         highPassFiltersRight.removeRange(nChannels, diff);
     }
     
-    AudioIN.setSize(nChannels, blockSize);
+    AudioIN.setSize(nChannels, samplesPerBlock);
     AudioIN.clear();
     
     delayBufferLeft.setSize(nChannels, 50000);
@@ -681,15 +682,15 @@ void DualDelayAudioProcessor::updateBuffers()
     delayBufferRight.clear();
     
     int maxLfoDepth = (int) ceilf(parameters.getParameterRange("lfoDepthL").getRange().getEnd()*sampleRate/500.0f);
-    delayTempBuffer.setSize(nChannels, blockSize+interpOffset-1+maxLfoDepth+sampleRate*0.5);
+    delayTempBuffer.setSize(nChannels, samplesPerBlock+interpOffset-1+maxLfoDepth+sampleRate*0.5);
     
-    delayOutLeft.setSize(nChannels, blockSize);
-    delayOutRight.setSize(nChannels, blockSize);
+    delayOutLeft.setSize(nChannels, samplesPerBlock);
+    delayOutRight.setSize(nChannels, samplesPerBlock);
     delayOutLeft.clear();
     delayOutRight.clear();
     
-    delayInLeft.setSize(nChannels, blockSize);
-    delayInRight.setSize(nChannels, blockSize);
+    delayInLeft.setSize(nChannels, samplesPerBlock);
+    delayInRight.setSize(nChannels, samplesPerBlock);
     delayInLeft.clear();
     delayInRight.clear();
 }

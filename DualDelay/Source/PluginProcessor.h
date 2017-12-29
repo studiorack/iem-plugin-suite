@@ -35,7 +35,7 @@
 */
 class DualDelayAudioProcessor  : public AudioProcessor,
                                         public AudioProcessorValueTreeState::Listener,
-public IOHelper<IOTypes::Ambisonics<>, IOTypes::Ambisonics<>>
+public IOHelper<IOTypes::Ambisonics<>, IOTypes::Ambisonics<>, true>
 {
 public:
     //==============================================================================
