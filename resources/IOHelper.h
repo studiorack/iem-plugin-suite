@@ -120,7 +120,7 @@ namespace IOTypes {
     };
 }
 
-template <class Input, class Output, bool combine = false>
+template <class Input, class Output, bool combined = false>
 class IOHelper
 {
 public:
@@ -154,7 +154,7 @@ public:
             inputSizeHasChanged = input.check(p, inputSetting, true);
             outputSizeHasChanged = output.check(p, outputSetting, false);
             
-            if (inputSizeHasChanged || outputSizeHasChanged)
+            if (force || inputSizeHasChanged || outputSizeHasChanged)
             {
                 DBG("IOHelper:  I/O sizes have changed. calling updateBuffers()");
                 updateBuffers();
@@ -169,7 +169,7 @@ public:
         maxInputSize = input.getMaxSize();
         maxOutputSize = output.getMaxSize();
         
-        if (combine)
+        if (combined)
         {
             maxInputSize = jmin(maxInputSize, maxOutputSize);
             maxOutputSize = maxInputSize;
