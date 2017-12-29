@@ -120,7 +120,7 @@ namespace IOTypes {
     };
 }
 
-template <class Input, class Output>
+template <class Input, class Output, bool combine = false>
 class IOHelper
 {
 public:
@@ -168,6 +168,12 @@ public:
     {
         maxInputSize = input.getMaxSize();
         maxOutputSize = output.getMaxSize();
+        
+        if (combine)
+        {
+            maxInputSize = jmin(maxInputSize, maxOutputSize);
+            maxOutputSize = maxInputSize;
+        }
     }
     
     bool userChangedIOSettings = true;
