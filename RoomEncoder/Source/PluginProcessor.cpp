@@ -100,7 +100,7 @@ parameters (*this, nullptr)
                                      [](float value) {return String(value);}, nullptr);
     
     parameters.createAndAddParameter("numRefl", "number of reflections", "",
-                                     NormalisableRange<float> (0.0f, nImgSrc-1, 1.0f), 0.0f,
+                                     NormalisableRange<float> (0.0f, nImgSrc-1, 1.0f), 19.0f,
                                      [](float value) {return String(value);}, nullptr);
     
     parameters.createAndAddParameter("lowShelfFreq", "LowShelf Frequency", "Hz",
@@ -279,22 +279,12 @@ void RoomEncoderAudioProcessor::changeProgramName (int index, const String& newN
 //==============================================================================
 void RoomEncoderAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    bufferSize = round(180.0/343.2*sampleRate) + samplesPerBlock + 100;
-    bufferSize += samplesPerBlock - bufferSize%samplesPerBlock;
-    
-    delayBuffer.setSize(nChOutput, bufferSize);
-    delayBuffer.clear();
-    delayBufferWritePtrArray = delayBuffer.getArrayOfWritePointers();
-
-    checkOrderUpdateBuffers(roundFloatToInt(*directivityOrderSetting)-1, roundFloatToInt(*orderSetting)-1);
-    
     dist2smpls = sampleRate/343.2f*interpMult; //factor 128 is a small hack for Lagrange lookuptable
+    
+    checkInputAndOutput(this, *directivityOrderSetting, *orderSetting, true);
     
     readOffset = 0;
     bufferReadIdx = 0;
-    
-    monoBuffer.setSize(1, bufferSize);
-    monoBuffer.clear();
     
     lowShelfArray.clear();
     highShelfArray.clear();
@@ -334,7 +324,7 @@ bool RoomEncoderAudioProcessor::isBusesLayoutSupported (const BusesLayout& layou
 
 void RoomEncoderAudioProcessor::parameterChanged (const String &parameterID, float newValue)
 {
-    if (parameterID == "orderSetting" || parameterID == "directivityOrderSetting") userChangedOrderSettings = true;
+    if (parameterID == "orderSetting" || parameterID == "directivityOrderSetting") userChangedIOSettings = true;
     else if (parameterID == "reflCoeff") {
         if (editorFv != nullptr) editorFv->setOverallGainInDecibels(*reflCoeff);
         updateFv = true;
@@ -395,13 +385,13 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
     ScopedNoDenormals noDenormals;
     _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON); // alternative?: fesetenv(FE_DFL_DISABLE_SSE_DENORMS_ENV);
     
-    if (userChangedOrderSettings) checkOrderUpdateBuffers(roundFloatToInt(*directivityOrderSetting)-1, roundFloatToInt(*orderSetting)-1);
+    checkInputAndOutput(this, *directivityOrderSetting, *orderSetting);
     
     // =============================== settings and parameters
-    int maxNChIn = nChInput;
-    if (buffer.getNumChannels() < nChInput) maxNChIn = buffer.getNumChannels();
-    int maxNChOut = nChOutput;
-    if (buffer.getNumChannels() < nChOutput) maxNChOut = buffer.getNumChannels();
+    const int maxNChIn = jmin(buffer.getNumChannels(), input.getNumberOfChannels());
+    const int maxNChOut = jmin(buffer.getNumChannels(), output.getNumberOfChannels());
+    const int directivityOrder = input.getOrder();
+    const int ambisonicOrder = output.getOrder();
     
     const int sampleRate = getSampleRate();
     const int L = buffer.getNumSamples();
@@ -847,40 +837,54 @@ void RoomEncoderAudioProcessor::timerCallback()
 }
 
 
-void RoomEncoderAudioProcessor::checkOrderUpdateBuffers(int userSetDirectivityOrder, int userSetOutputOrder) {
-    userChangedOrderSettings = false;
-    //old values;
-    _nChInput = nChInput;
-    _nChOutput = nChOutput;
-    _directivityOrder = directivityOrder;
-    _ambisonicOrder = ambisonicOrder;
+//void RoomEncoderAudioProcessor::checkOrderUpdateBuffers(int userSetDirectivityOrder, int userSetOutputOrder) {
+//    userChangedOrderSettings = false;
+//    //old values;
+//    _nChInput = nChInput;
+//    _nChOutput = nChOutput;
+//    _directivityOrder = directivityOrder;
+//    _ambisonicOrder = ambisonicOrder;
+//
+//
+//    maxPossibleOutputOrder = isqrt(getTotalNumOutputChannels())-1;
+//    maxPossibleInputOrder = isqrt(getTotalNumInputChannels())-1;
+//
+//    // ================== CHECK INPUT
+//    if (userSetDirectivityOrder == -1 || userSetDirectivityOrder > maxPossibleInputOrder) directivityOrder = maxPossibleOutputOrder; // Auto setting or requested order exceeds highest possible order
+//    else directivityOrder = userSetDirectivityOrder;
+//
+//    if (directivityOrder != _directivityOrder) {
+//        nChInput = squares[directivityOrder+1];
+//        DBG(nChInput << " input channels ");
+//    }
+//
+//    // ================== CHECK OUTPUT
+//    if (userSetOutputOrder == -1 || userSetOutputOrder > maxPossibleOutputOrder) ambisonicOrder = maxPossibleOutputOrder; // Auto setting or requested order exceeds highest possible order
+//    else ambisonicOrder = userSetOutputOrder;
+//
+//    if (ambisonicOrder != _ambisonicOrder) {
+//        nChOutput = squares[ambisonicOrder+1];
+//        delayBuffer.setSize(nChOutput, bufferSize);
+//        delayBuffer.clear();
+//        delayBufferWritePtrArray = delayBuffer.getArrayOfWritePointers();
+//        DBG("Used order has changed! Order: " << ambisonicOrder << ", numCH: " << nChOutput);
+//        DBG("Now updating filters and buffers.");
+//    }
+//}
+
+void RoomEncoderAudioProcessor::updateBuffers() {
+    const int nChOut = output.getNumberOfChannels();
+    const int samplesPerBlock = getBlockSize();
     
+    bufferSize = round(180.0/343.2* getSampleRate()) + samplesPerBlock + 100;
+    bufferSize += samplesPerBlock - bufferSize%samplesPerBlock;
     
-    maxPossibleOutputOrder = isqrt(getTotalNumOutputChannels())-1;
-    maxPossibleInputOrder = isqrt(getTotalNumInputChannels())-1;
+    monoBuffer.setSize(1, bufferSize);
+    monoBuffer.clear();
     
-    // ================== CHECK INPUT
-    if (userSetDirectivityOrder == -1 || userSetDirectivityOrder > maxPossibleInputOrder) directivityOrder = maxPossibleOutputOrder; // Auto setting or requested order exceeds highest possible order
-    else directivityOrder = userSetDirectivityOrder;
-    
-    if (directivityOrder != _directivityOrder) {
-        nChInput = squares[directivityOrder+1];
-        DBG(nChInput << " input channels ");
-    }
-    
-    
-    // ================== CHECK OUTPUT
-    if (userSetOutputOrder == -1 || userSetOutputOrder > maxPossibleOutputOrder) ambisonicOrder = maxPossibleOutputOrder; // Auto setting or requested order exceeds highest possible order
-    else ambisonicOrder = userSetOutputOrder;
-    
-    if (ambisonicOrder != _ambisonicOrder) {
-        nChOutput = squares[ambisonicOrder+1];
-        delayBuffer.setSize(nChOutput, bufferSize);
-        delayBuffer.clear();
-        delayBufferWritePtrArray = delayBuffer.getArrayOfWritePointers();
-        DBG("Used order has changed! Order: " << ambisonicOrder << ", numCH: " << nChOutput);
-        DBG("Now updating filters and buffers.");
-    }
+    delayBuffer.setSize(nChOut, bufferSize);
+    delayBuffer.clear();
+    delayBufferWritePtrArray = delayBuffer.getArrayOfWritePointers();
 }
 
 void RoomEncoderAudioProcessor::setFilterVisualizer(FilterVisualizer* newFv)
