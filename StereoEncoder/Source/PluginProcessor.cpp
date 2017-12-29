@@ -27,7 +27,6 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-
 //==============================================================================
 StereoEncoderAudioProcessor::StereoEncoderAudioProcessor()
 
@@ -193,8 +192,6 @@ void StereoEncoderAudioProcessor::prepareToPlay(double sampleRate, int samplesPe
     smoothYawR.setValue(*yaw / 180.0f * (float) M_PI, true);
     smoothPitchR.setValue(*pitch / 180.0f * (float) M_PI, true);
     
-
-    
 }
 
 void StereoEncoderAudioProcessor::releaseResources() {
@@ -301,6 +298,51 @@ void StereoEncoderAudioProcessor::processBlock(AudioSampleBuffer &buffer, MidiBu
     }
     else // high-quality sampling
     {
+        if (smoothYawL.getTargetValue() - yawL > M_PI)
+        {
+            smoothYawL.setValue(smoothYawL.getTargetValue() - 2.0f * M_PI);
+            smoothYawL.reset(1,L);
+        }
+        else if (yawL - smoothYawL.getTargetValue() > M_PI)
+        {
+            smoothYawL.setValue(smoothYawL.getTargetValue() + 2.0f * M_PI);
+            smoothYawL.reset(1,L);
+        }
+        
+        if (smoothPitchL.getTargetValue() - pitchL > M_PI)
+        {
+            smoothPitchL.setValue(smoothPitchL.getTargetValue() - 2.0f * M_PI);
+            smoothPitchL.reset(1,L);
+        }
+        else if (pitchL - smoothPitchL.getTargetValue() > M_PI)
+        {
+            smoothPitchL.setValue(smoothPitchL.getTargetValue() + 2.0f * M_PI);
+            smoothPitchL.reset(1,L);
+        }
+        
+        if (smoothYawR.getTargetValue() - yawR > M_PI)
+        {
+            smoothYawR.setValue(smoothYawR.getTargetValue() - 2.0f * M_PI);
+            smoothYawR.reset(1,L);
+        }
+        else if (yawR - smoothYawR.getTargetValue() > M_PI)
+        {
+            smoothYawR.setValue(smoothYawR.getTargetValue() + 2.0f * M_PI);
+            smoothYawR.reset(1,L);
+        }
+        
+        if (smoothPitchR.getTargetValue() - pitchR > M_PI)
+        {
+            smoothPitchR.setValue(smoothPitchR.getTargetValue() - 2.0f * M_PI);
+            smoothPitchR.reset(1,L);
+        }
+        else if (pitchR - smoothPitchR.getTargetValue() > M_PI)
+        {
+            smoothPitchR.setValue(smoothPitchR.getTargetValue() + 2.0f * M_PI);
+            smoothPitchR.reset(1,L);
+        }
+        
+        
         smoothYawL.setValue(yawL);
         smoothPitchL.setValue(pitchL);
         smoothYawR.setValue(yawR);
