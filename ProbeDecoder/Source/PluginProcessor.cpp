@@ -30,12 +30,16 @@
 
 //==============================================================================
 ProbeDecoderAudioProcessor::ProbeDecoderAudioProcessor()
-
-
-: AudioProcessor(BusesProperties()
-                 .withInput("Input", AudioChannelSet::discreteChannels(64), true)
-                 .withOutput("Output", AudioChannelSet::mono(), true)
-                 ),
+#ifndef JucePlugin_PreferredChannelConfigurations
+: AudioProcessor (BusesProperties()
+#if ! JucePlugin_IsMidiEffect
+#if ! JucePlugin_IsSynth
+                  .withInput  ("Input",  AudioChannelSet::discreteChannels(64), true)
+#endif
+                  .withOutput ("Output", AudioChannelSet::mono(), true)
+#endif
+                  ),
+#endif
 parameters(*this, nullptr) {
     parameters.createAndAddParameter("orderSetting", "Ambisonics Order", "",
                                      NormalisableRange<float>(0.0f, 8.0f, 1.0f), 0.0f,
@@ -168,7 +172,9 @@ void ProbeDecoderAudioProcessor::processBlock(AudioSampleBuffer &buffer, MidiBuf
     
     for (int i = 1; i < nCh; i++) {
         buffer.addFromWithRamp(0, 0, buffer.getReadPointer(i), numSamples, previousSH[i], sh[i]);
+        buffer.clear(i, 0, numSamples);
     }
+    
     
     FloatVectorOperations::copy(previousSH, sh, nChannels);
 }

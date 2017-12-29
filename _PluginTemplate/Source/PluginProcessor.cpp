@@ -30,9 +30,9 @@ PluginTemplateAudioProcessor::PluginTemplateAudioProcessor()
      : AudioProcessor (BusesProperties()
                      #if ! JucePlugin_IsMidiEffect
                       #if ! JucePlugin_IsSynth
-                       .withInput  ("Input",  AudioChannelSet::ambisonic(), true)
+                       .withInput  ("Input",  AudioChannelSet::discreteChannels(10), true)
                       #endif
-                       .withOutput ("Output", AudioChannelSet::discreteChannels(36), true)
+                       .withOutput ("Output", AudioChannelSet::discreteChannels(64), true)
                      #endif
                        ),
 #endif
