@@ -58,7 +58,7 @@ public:
     };
     ~AudioChannelsIOWidget() {};
     
-    const int getComponentSize() { return 110; }
+    const int getComponentSize() { return selectable ? 110 : 75; }
     
     void setMaxSize (int maxPossibleNumberOfChannels)
     {
@@ -99,7 +99,7 @@ public:
             g.setColour((Colours::white).withMultipliedAlpha(0.5));
             g.setFont(getLookAndFeel().getTypefaceForFont (Font(12.0f, 1)));
             g.setFont(15.0f);
-            g.drawText(String(maxChannels), 35, 8, 70, 15, Justification::left);
+            g.drawText(String(maxChannels), 35, 8, 40, 15, Justification::left);
         }
     };
     
@@ -277,8 +277,11 @@ public:
     
     void resized () override
     {
-        inputWidget.setBounds(getLocalBounds().removeFromLeft(110).reduced(0,15));
-        outputWidget.setBounds(getLocalBounds().removeFromRight(110).reduced(0,15));
+        const int leftWidth = inputWidget.getComponentSize();
+        const int rightWidth = outputWidget.getComponentSize();
+        
+        inputWidget.setBounds(getLocalBounds().removeFromLeft(leftWidth).reduced(0,15));
+        outputWidget.setBounds(getLocalBounds().removeFromRight(rightWidth).reduced(0,15));
     }
     void setMaxSize (int inputSize, int outputSize)
     {
