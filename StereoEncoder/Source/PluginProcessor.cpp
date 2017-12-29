@@ -180,7 +180,6 @@ void StereoEncoderAudioProcessor::changeProgramName(int index, const String &new
 void StereoEncoderAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) {
     checkInputAndOutput(this, 2, *orderSetting, true);
     
-    //checkOrderUpdateBuffers(roundFloatToInt(*orderSetting - 1));
     bufferCopy.setSize(2, samplesPerBlock);
     
     smoothYawL.reset(1, samplesPerBlock);

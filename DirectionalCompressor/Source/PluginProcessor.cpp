@@ -603,6 +603,8 @@ void AmbisonicCompressorAudioProcessor::setStateInformation (const void* data, i
 
 void AmbisonicCompressorAudioProcessor::updateBuffers()
 {
+    DBG("IOHelper:  input size: " << input.getSize());
+    DBG("IOHelper: output size: " << output.getSize());
     const int nChannels = input.getNumberOfChannels();
     maskBuffer.setSize(nChannels, getBlockSize());
 }

@@ -65,7 +65,6 @@
         <MODULEPATH id="juce_dsp" path="../../../../../Applications/JUCE/modules"/>
       </MODULEPATHS>
     </XCODE_MAC>
-
     <VS2017 targetFolder="Builds/VisualStudio2017">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" winWarningLevel="4" generateManifest="1" winArchitecture="x64"

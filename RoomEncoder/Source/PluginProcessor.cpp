@@ -837,42 +837,11 @@ void RoomEncoderAudioProcessor::timerCallback()
 }
 
 
-//void RoomEncoderAudioProcessor::checkOrderUpdateBuffers(int userSetDirectivityOrder, int userSetOutputOrder) {
-//    userChangedOrderSettings = false;
-//    //old values;
-//    _nChInput = nChInput;
-//    _nChOutput = nChOutput;
-//    _directivityOrder = directivityOrder;
-//    _ambisonicOrder = ambisonicOrder;
-//
-//
-//    maxPossibleOutputOrder = isqrt(getTotalNumOutputChannels())-1;
-//    maxPossibleInputOrder = isqrt(getTotalNumInputChannels())-1;
-//
-//    // ================== CHECK INPUT
-//    if (userSetDirectivityOrder == -1 || userSetDirectivityOrder > maxPossibleInputOrder) directivityOrder = maxPossibleOutputOrder; // Auto setting or requested order exceeds highest possible order
-//    else directivityOrder = userSetDirectivityOrder;
-//
-//    if (directivityOrder != _directivityOrder) {
-//        nChInput = squares[directivityOrder+1];
-//        DBG(nChInput << " input channels ");
-//    }
-//
-//    // ================== CHECK OUTPUT
-//    if (userSetOutputOrder == -1 || userSetOutputOrder > maxPossibleOutputOrder) ambisonicOrder = maxPossibleOutputOrder; // Auto setting or requested order exceeds highest possible order
-//    else ambisonicOrder = userSetOutputOrder;
-//
-//    if (ambisonicOrder != _ambisonicOrder) {
-//        nChOutput = squares[ambisonicOrder+1];
-//        delayBuffer.setSize(nChOutput, bufferSize);
-//        delayBuffer.clear();
-//        delayBufferWritePtrArray = delayBuffer.getArrayOfWritePointers();
-//        DBG("Used order has changed! Order: " << ambisonicOrder << ", numCH: " << nChOutput);
-//        DBG("Now updating filters and buffers.");
-//    }
-//}
 
 void RoomEncoderAudioProcessor::updateBuffers() {
+    DBG("IOHelper:  input size: " << input.getSize());
+    DBG("IOHelper: output size: " << output.getSize());
+    
     const int nChOut = output.getNumberOfChannels();
     const int samplesPerBlock = getBlockSize();
     

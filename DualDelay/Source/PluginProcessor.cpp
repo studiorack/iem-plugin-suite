@@ -647,6 +647,9 @@ void DualDelayAudioProcessor::parameterChanged (const String &parameterID, float
 
 void DualDelayAudioProcessor::updateBuffers()
 {
+    DBG("IOHelper:  input size: " << input.getSize());
+    DBG("IOHelper: output size: " << output.getSize());
+    
     const int nChannels = jmin(input.getNumberOfChannels(), output.getNumberOfChannels());
     const int _nChannels = jmin(input.getPreviousNumberOfChannels(), output.getPreviousNumberOfChannels());
     const int blockSize = getBlockSize();
