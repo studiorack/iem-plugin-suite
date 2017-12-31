@@ -143,7 +143,7 @@ bool FdnReverbAudioProcessor::producesMidi() const
 
 double FdnReverbAudioProcessor::getTailLengthSeconds() const
 {
-    return 0.0;
+    return 60.0;
 }
 
 int FdnReverbAudioProcessor::getNumPrograms()
