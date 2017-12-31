@@ -28,12 +28,14 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "../../resources/ambisonicTools.h"
 #include "../../resources/interpCoeffsSIMD.h"
+#include "../../resources/IOHelper.h"
 
 //==============================================================================
 /**
 */
 class DualDelayAudioProcessor  : public AudioProcessor,
-                                        public AudioProcessorValueTreeState::Listener
+                                        public AudioProcessorValueTreeState::Listener,
+public IOHelper<IOTypes::Ambisonics<>, IOTypes::Ambisonics<>, true>
 {
 public:
     //==============================================================================
@@ -74,20 +76,8 @@ public:
 
     void parameterChanged (const String &parameterID, float newValue) override;
     
-    int getOrder() {return ambisonicOrder;}
     float getleftLPValue() {return *LPcutOffL;}
-    
-    // -- variable order --
-    int maxPossibleOrder = -1;
-    int ambisonicOrder = -1;
-    int _ambisonicOrder = -1;
-    int nChannels = 0;
-    int _nChannels = 0;
-    
-    bool userChangedOrderSettings = false;
-    void checkOrderUpdateBuffers(int userSetInputOrder);
-    // --------------------
-    
+    void updateBuffers() override;
 private:
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DualDelayAudioProcessor)
@@ -146,15 +136,11 @@ private:
     Array<float> cos_z;
     
     void calcParams(float phi);
-    void rotateBuffer(AudioBuffer<float>* bufferToRotate, int samples);
+    void rotateBuffer(AudioBuffer<float>* bufferToRotate, const int nChannels, const int samples);
     float feedback = 0.8f;
     
-    Array<IIRFilter*> lowPassFiltersLeft;
-    Array<IIRFilter*> lowPassFiltersRight;
-    Array<IIRFilter*> highPassFiltersLeft;
-    Array<IIRFilter*> highPassFiltersRight;
-
-//    IIRFilter* filtersLeft[4];
-//    IIRFilter* filtersRight[4];
-//    Array<IIRFilter*> filters;
+    OwnedArray<IIRFilter> lowPassFiltersLeft;
+    OwnedArray<IIRFilter> lowPassFiltersRight;
+    OwnedArray<IIRFilter> highPassFiltersLeft;
+    OwnedArray<IIRFilter> highPassFiltersRight;
 };

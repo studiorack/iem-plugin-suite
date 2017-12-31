@@ -1,12 +1,24 @@
 /*
-  ==============================================================================
-
-    This file was auto-generated!
-
-    It contains the basic framework code for a JUCE plugin editor.
-
-  ==============================================================================
-*/
+ ==============================================================================
+ This file is part of the IEM plug-in suite.
+ Author: Daniel Rudrich
+ Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
+ https://www.iem.at
+ 
+ The IEM plug-in suite is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+ 
+ The IEM plug-in suite is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+ 
+ You should have received a copy of the GNU General Public License
+ along with this software.  If not, see <https://www.gnu.org/licenses/>.
+ ==============================================================================
+ */
 
 #pragma once
 
@@ -32,29 +44,49 @@ typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 class PluginTemplateAudioProcessorEditor  : public AudioProcessorEditor, private Timer
 {
 public:
-    PluginTemplateAudioProcessorEditor (PluginTemplateAudioProcessor&, AudioProcessorValueTreeState&, IOHelper<IOTypes::Audio<8>, IOTypes::Ambisonics<5>>& helper);
+    PluginTemplateAudioProcessorEditor (PluginTemplateAudioProcessor&, AudioProcessorValueTreeState&);
     ~PluginTemplateAudioProcessorEditor();
 
     //==============================================================================
     void paint (Graphics&) override;
     void resized() override;
-
+    
+    
+    void timerCallback() override;
+    
 private:
-    // This reference is provided as a quick way for your editor to
-    // access the processor object that created it.
+    // ====================== beging essentials ==================
+    // lookAndFeel class with the IEM plug-in suite design
+    LaF globalLaF;
+    
+    // stored references to the AudioProcessor and ValueTreeState holding all the parameters
     PluginTemplateAudioProcessor& processor;
     AudioProcessorValueTreeState& valueTreeState;
 
-    void timerCallback() override;
-    LaF globalLaF;
-    TitleBar<AudioChannelsIOWidget<2,false>, AmbisonicIOWidget> title;
+    
+    /* title and footer component
+     title component can hold different widgets for in- and output:
+        - NoIOWidget (if there's no need for an input or output widget)
+        - AudioChannelsIOWidget<maxNumberOfChannels, isChoosable>
+        - AmbisonicIOWidget
+        - DirectivitiyIOWidget
+     */
+    TitleBar<AudioChannelsIOWidget<10,true>, AmbisonicIOWidget> title;
     Footer footer;
-
-    ReverseSlider slParam1, slParam2;
-    ComboBox cbOrderSetting;
-    IOHelper<IOTypes::Audio<8>, IOTypes::Ambisonics<5>>& ioHelper;
-    ScopedPointer<SliderAttachment> slParam1Attachment, slParam2Attachment;
+    // =============== end essentials ============
+    
+    // Attachments to create a connection between IOWidgets comboboxes
+    // and the associated parameters
+    ScopedPointer<ComboBoxAttachment> cbInputChannelsSettingAttachment;
     ScopedPointer<ComboBoxAttachment> cbOrderSettingAttachment;
+    ScopedPointer<ComboBoxAttachment> cbNormalizationSettingAttachment;
+    
+    // Demo stuff
+    ReverseSlider slParam1, slParam2;
+    ScopedPointer<SliderAttachment> slParam1Attachment, slParam2Attachment;
+    
+    
+
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginTemplateAudioProcessorEditor)
 };

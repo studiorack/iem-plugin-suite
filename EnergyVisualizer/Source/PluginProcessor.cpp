@@ -157,7 +157,7 @@ void EnergyVisualizerAudioProcessor::changeProgramName (int index, const String&
 //==============================================================================
 void EnergyVisualizerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    checkOrderUpdateBuffers(roundFloatToInt(*orderSetting - 1));
+    checkInputAndOutput(this, *orderSetting, 0, true);
 
     timeConstant = exp(-1.0/(sampleRate*0.1/samplesPerBlock)); //multiplicated value after sampleRate is rms time
     sampledSignals.setSize(nSamplePoints, samplesPerBlock);
@@ -181,11 +181,11 @@ void EnergyVisualizerAudioProcessor::processBlock (AudioSampleBuffer& buffer, Mi
     ScopedNoDenormals noDenormals;
     _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON); // alternative?: fesetenv(FE_DFL_DISABLE_SSE_DENORMS_ENV);
     
-    if (userChangedOrderSettings) checkOrderUpdateBuffers(roundFloatToInt(*orderSetting - 1));
+    checkInputAndOutput(this, *orderSetting, 0);
     
     //const int nCh = buffer.getNumChannels();
     const int L = buffer.getNumSamples();
-    const int workingOrder = jmin(isqrt(buffer.getNumChannels())-1, ambisonicOrder);
+    const int workingOrder = jmin(isqrt(buffer.getNumChannels())-1, input.getOrder());
     
     const int nCh = squares[workingOrder+1];
     //DBG(buffer.getNumChannels() << " - " << workingOrder << " - " << nCh);
@@ -246,7 +246,7 @@ void EnergyVisualizerAudioProcessor::setStateInformation (const void* data, int 
 //==============================================================================
 void EnergyVisualizerAudioProcessor::parameterChanged (const String &parameterID, float newValue)
 {
-    if (parameterID == "orderSetting") userChangedOrderSettings = true;
+    if (parameterID == "orderSetting") userChangedIOSettings = true;
 }
 
 //==============================================================================
@@ -256,19 +256,4 @@ AudioProcessor* JUCE_CALLTYPE createPluginFilter()
     return new EnergyVisualizerAudioProcessor();
 }
 
-void EnergyVisualizerAudioProcessor::checkOrderUpdateBuffers(int userSetInputOrder) {
-    userChangedOrderSettings = false;
-    //old values;
-    _nChannels = nChannels;
-    _ambisonicOrder = ambisonicOrder;
-    DBG(getTotalNumOutputChannels());
-    maxPossibleOrder = isqrt(getTotalNumInputChannels())-1;
-    if (userSetInputOrder == -1 || userSetInputOrder > maxPossibleOrder) ambisonicOrder = maxPossibleOrder; // Auto setting or requested order exceeds highest possible order
-    else ambisonicOrder = userSetInputOrder;
 
-    if (ambisonicOrder != _ambisonicOrder) {
-        nChannels = squares[ambisonicOrder+1];
-        DBG("Used order has changed! Order: " << ambisonicOrder << ", numCH: " << nChannels);
-        DBG("Now updating filters and buffers.");
-    }
-}

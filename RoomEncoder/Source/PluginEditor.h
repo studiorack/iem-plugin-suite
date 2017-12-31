@@ -54,13 +54,10 @@ public:
     void PositionPlaneElementChanged (PositionPlane* plane, PositionPlane::PositionPlaneElement* element) override;
     void sliderValueChanged(Slider *slider) override;
 private:
-    // This reference is provided as a quick way for your editor to
-    // access the processor object that created it.
- 
+    LaF globalLaF;
     TitleBar<DirectivityIOWidget, AmbisonicIOWidget> title;
     Footer footer;
     
-    LaF globalLaF;
     void timerCallback() override;
     
     
@@ -117,8 +114,7 @@ private:
     OpenGLContext mOpenGlContext;
     
     TooltipWindow toolTipWin;
-    int maxPossibleOutputOrder = -1;
-    int maxPossibleInputOrder = -1;
+
     RoomEncoderAudioProcessor& processor;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (RoomEncoderAudioProcessorEditor)

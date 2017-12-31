@@ -48,21 +48,19 @@ public:
     void resized() override;
 
 private:
-    // This reference is provided as a quick way for your editor to
-    // access the processor object that created it.
+    LaF globalLaF;
+
     AmbisonicCompressorAudioProcessor& processor;
     AudioProcessorValueTreeState& valueTreeState;
     
     TitleBar<AmbisonicIOWidget, NoIOWidget> title;
     Footer footer;
     
-    LaF globalLaF;
     
     void timerCallback() override;
     
     ReverseSlider sliderInpGain, sliderThreshold, sliderRatio, sliderAttackTime, sliderReleaseTime, sliderMakeupGain;
     
-    int maxPossibleOrder = -1;
     ScopedPointer<ComboBoxAttachment> cbNormalizationAtachement;
     ScopedPointer<ComboBoxAttachment> cbOrderAtachement;
     

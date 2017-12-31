@@ -143,7 +143,7 @@ bool FdnReverbAudioProcessor::producesMidi() const
 
 double FdnReverbAudioProcessor::getTailLengthSeconds() const
 {
-    return 0.0;
+    return 60.0;
 }
 
 int FdnReverbAudioProcessor::getNumPrograms()
@@ -270,6 +270,11 @@ void FdnReverbAudioProcessor::setNetworkOrder (int order)
 void FdnReverbAudioProcessor::setFreezeMode (bool freezeState)
 {
     fdn.setFreeze (freezeState);
+}
+
+void FdnReverbAudioProcessor::getT60ForFrequencyArray (double* frequencies, double* t60Data, size_t numSamples)
+{
+	fdn.getT60ForFrequencyArray(frequencies, t60Data, numSamples);
 }
 
 //==============================================================================

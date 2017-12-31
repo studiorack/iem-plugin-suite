@@ -27,7 +27,6 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-
 //==============================================================================
 StereoEncoderAudioProcessor::StereoEncoderAudioProcessor()
 
@@ -178,7 +177,8 @@ void StereoEncoderAudioProcessor::changeProgramName(int index, const String &new
 
 //==============================================================================
 void StereoEncoderAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) {
-    checkOrderUpdateBuffers(roundFloatToInt(*orderSetting - 1));
+    checkInputAndOutput(this, 2, *orderSetting, true);
+    
     bufferCopy.setSize(2, samplesPerBlock);
     
     smoothYawL.reset(1, samplesPerBlock);
@@ -191,8 +191,6 @@ void StereoEncoderAudioProcessor::prepareToPlay(double sampleRate, int samplesPe
     
     smoothYawR.setValue(*yaw / 180.0f * (float) M_PI, true);
     smoothPitchR.setValue(*pitch / 180.0f * (float) M_PI, true);
-    
-
     
 }
 
@@ -210,18 +208,20 @@ bool StereoEncoderAudioProcessor::isBusesLayoutSupported(const BusesLayout &layo
 #endif
 
 void StereoEncoderAudioProcessor::processBlock(AudioSampleBuffer &buffer, MidiBuffer &midiMessages) {
-    if (userChangedOrderSettings) checkOrderUpdateBuffers(roundFloatToInt(*orderSetting - 1));
+    checkInputAndOutput(this, 2, *orderSetting);
     
+    const int nChOut = jmin(buffer.getNumChannels(), output.getNumberOfChannels());
     const int L = buffer.getNumSamples();
-    
     const int totalNumInputChannels = getTotalNumInputChannels() < 2 ? 1 : 2;
+    const int ambisonicOrder = output.getOrder();
+    
     for (int i = 0; i < totalNumInputChannels; ++i)
         bufferCopy.copyFrom(i, 0, buffer.getReadPointer(i), buffer.getNumSamples());
     buffer.clear();
     
     
-    FloatVectorOperations::copy(_SHL, SHL, nChannels);
-    FloatVectorOperations::copy(_SHR, SHR, nChannels);
+    FloatVectorOperations::copy(_SHL, SHL, nChOut);
+    FloatVectorOperations::copy(_SHR, SHR, nChOut);
     
     if (yprInput) {
         ypr[0] = *yaw / 180 * (float) M_PI;
@@ -285,19 +285,64 @@ void StereoEncoderAudioProcessor::processBlock(AudioSampleBuffer &buffer, MidiBu
         SHEval(ambisonicOrder, xyzR[0], xyzR[1], xyzR[2], SHR);
         
         if (*useSN3D > 0.5f) {
-            FloatVectorOperations::multiply(SHL, SHL, n3d2sn3d, nChannels);
-            FloatVectorOperations::multiply(SHR, SHR, n3d2sn3d, nChannels);
+            FloatVectorOperations::multiply(SHL, SHL, n3d2sn3d, nChOut);
+            FloatVectorOperations::multiply(SHR, SHR, n3d2sn3d, nChOut);
         }
         
         const float *leftIn = bufferCopy.getReadPointer(0);
         const float *rightIn = bufferCopy.getReadPointer(1);
-        for (int i = 0; i < nChannels; ++i) {
+        for (int i = 0; i < nChOut; ++i) {
             buffer.copyFromWithRamp(i, 0, leftIn, buffer.getNumSamples(), _SHL[i], SHL[i]);
             buffer.addFromWithRamp(i, 0, rightIn, buffer.getNumSamples(), _SHR[i], SHR[i]);
         }
     }
     else // high-quality sampling
     {
+        if (smoothYawL.getTargetValue() - yawL > M_PI)
+        {
+            smoothYawL.setValue(smoothYawL.getTargetValue() - 2.0f * M_PI);
+            smoothYawL.reset(1,L);
+        }
+        else if (yawL - smoothYawL.getTargetValue() > M_PI)
+        {
+            smoothYawL.setValue(smoothYawL.getTargetValue() + 2.0f * M_PI);
+            smoothYawL.reset(1,L);
+        }
+        
+        if (smoothPitchL.getTargetValue() - pitchL > M_PI)
+        {
+            smoothPitchL.setValue(smoothPitchL.getTargetValue() - 2.0f * M_PI);
+            smoothPitchL.reset(1,L);
+        }
+        else if (pitchL - smoothPitchL.getTargetValue() > M_PI)
+        {
+            smoothPitchL.setValue(smoothPitchL.getTargetValue() + 2.0f * M_PI);
+            smoothPitchL.reset(1,L);
+        }
+        
+        if (smoothYawR.getTargetValue() - yawR > M_PI)
+        {
+            smoothYawR.setValue(smoothYawR.getTargetValue() - 2.0f * M_PI);
+            smoothYawR.reset(1,L);
+        }
+        else if (yawR - smoothYawR.getTargetValue() > M_PI)
+        {
+            smoothYawR.setValue(smoothYawR.getTargetValue() + 2.0f * M_PI);
+            smoothYawR.reset(1,L);
+        }
+        
+        if (smoothPitchR.getTargetValue() - pitchR > M_PI)
+        {
+            smoothPitchR.setValue(smoothPitchR.getTargetValue() - 2.0f * M_PI);
+            smoothPitchR.reset(1,L);
+        }
+        else if (pitchR - smoothPitchR.getTargetValue() > M_PI)
+        {
+            smoothPitchR.setValue(smoothPitchR.getTargetValue() + 2.0f * M_PI);
+            smoothPitchR.reset(1,L);
+        }
+        
+        
         smoothYawL.setValue(yawL);
         smoothPitchL.setValue(pitchL);
         smoothYawR.setValue(yawR);
@@ -311,7 +356,7 @@ void StereoEncoderAudioProcessor::processBlock(AudioSampleBuffer &buffer, MidiBu
             float sample = bufferCopy.getSample(0, i);
             SHEval(ambisonicOrder, cosPitch * std::cos(yaw), cosPitch * std::sin(yaw), std::sin(-1.0f * pitch), SHL);
             
-            for (int ch = 0; ch < nChannels; ++ch) {
+            for (int ch = 0; ch < nChOut; ++ch) {
                 buffer.setSample(ch, i, sample * SHL[ch]);
             }
         }
@@ -324,18 +369,18 @@ void StereoEncoderAudioProcessor::processBlock(AudioSampleBuffer &buffer, MidiBu
             float sample = bufferCopy.getSample(1, i);
             SHEval(ambisonicOrder, cosPitch * std::cos(yaw), cosPitch * std::sin(yaw), std::sin(-1.0f * pitch), SHR);
             
-            for (int ch = 0; ch < nChannels; ++ch) {
+            for (int ch = 0; ch < nChOut; ++ch) {
                 buffer.addSample(ch, i, sample * SHR[ch]);
                 
             }
         }
         
         if (*useSN3D > 0.5f) {
-            for (int ch = 0; ch < nChannels; ++ch) {
+            for (int ch = 0; ch < nChOut; ++ch) {
                 buffer.applyGain(ch, 0, L, n3d2sn3d[ch]);
             }
-            FloatVectorOperations::multiply(SHL, SHL, n3d2sn3d, nChannels);
-            FloatVectorOperations::multiply(SHR, SHR, n3d2sn3d, nChannels);
+            FloatVectorOperations::multiply(SHL, SHL, n3d2sn3d, nChOut);
+            FloatVectorOperations::multiply(SHR, SHR, n3d2sn3d, nChOut);
         }
     }
 
@@ -362,7 +407,7 @@ void StereoEncoderAudioProcessor::parameterChanged(const String &parameterID, fl
         if (parameterID == "qw" || parameterID == "qx" || parameterID == "qy" || parameterID == "qz") yprInput = false;
         else if (parameterID == "yaw" || parameterID == "pitch" || parameterID == "roll") yprInput = true;
     }
-    if (parameterID == "orderSetting") userChangedOrderSettings = true;
+    if (parameterID == "orderSetting") userChangedIOSettings = true;
 }
 
 
@@ -386,21 +431,4 @@ AudioProcessor *JUCE_CALLTYPE createPluginFilter() {
     return new StereoEncoderAudioProcessor();
 }
 
-void StereoEncoderAudioProcessor::checkOrderUpdateBuffers(int userSetOutputOrder) {
-    userChangedOrderSettings = false;
-    //old values;
-    _nChannels = nChannels;
-    _ambisonicOrder = ambisonicOrder;
-    DBG(getTotalNumOutputChannels());
-    maxPossibleOrder = isqrt(getTotalNumOutputChannels()) - 1;
-    if (userSetOutputOrder == -1 || userSetOutputOrder > maxPossibleOrder)
-        ambisonicOrder = maxPossibleOrder; // Auto setting or requested order exceeds highest possible order
-    else ambisonicOrder = userSetOutputOrder;
-    
-    if (ambisonicOrder != _ambisonicOrder) {
-        nChannels = squares[ambisonicOrder + 1];
-        DBG("Used order has changed! Order: " << ambisonicOrder << ", numCH: " << nChannels);
-        DBG("Now updating filters and buffers.");
-    }
-}
 

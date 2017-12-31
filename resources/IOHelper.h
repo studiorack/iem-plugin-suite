@@ -23,67 +23,104 @@
 #pragma once
 #include "ambisonicTools.h"
 
+
+/* Helper class to check the available input and output channels e.g. for auto settings of Ambisonic order
+ 
+ Use this in your editor's timer callback:
+ // === update titleBar widgets according to available input/output channel counts
+ int maxInSize, maxOutSize;
+ processor.getMaxSize(maxInSize, maxOutSize);
+ title.setMaxSize(maxInSize, maxOutSize);
+ // ==========================================
+ */
 namespace IOTypes {
     class Nothing
     {
     public:
         Nothing() {};
-        bool check(AudioProcessor* p, int setting) {return false;};
+        bool check(AudioProcessor* p, int setting, bool isInput) {return false;};
         int getSize() { return 0; }
+        int getMaxSize() {return 0; }
     };
     
     template <int maxNumberOfInputChannels = 64>
-    class Audio
+    class AudioChannels
     {
     public:
-        Audio() {};
-        ~Audio() {};
+        AudioChannels()
+        {
+            nChannels = 0;
+            _nChannels = 0;
+        };
         
-        bool check(AudioProcessor* p, int setting)
+        ~AudioChannels() {};
+        
+        bool check(AudioProcessor* p, int setting, bool isInput)
         {
             int previous = nChannels;
-            int maxNumInputs = jmin(p->getTotalNumInputChannels(), maxNumberOfInputChannels);
+            int maxNumInputs = jmin(isInput ? p->getTotalNumInputChannels() : p->getTotalNumOutputChannels(), maxNumberOfInputChannels);
             if (setting == 0 || setting > maxNumberOfInputChannels) nChannels = maxNumInputs; // Auto setting or requested order exceeds highest possible order
             else nChannels = setting;
+            maxSize = maxNumInputs;
             return previous != nChannels;
         };
         
+        int getMaxSize() { return maxSize; }
         int getSize() { return nChannels; }
+        int getPreviousSize() { return _nChannels; }
         
     private:
         int nChannels;
+        int _nChannels;
+        int maxSize = maxNumberOfInputChannels;
     };
     
     template <int highestOrder = 7>
     class Ambisonics
     {
     public:
-        Ambisonics() {};
+        Ambisonics()
+        {
+            order = -1;
+            nChannels = 0;
+            _order = -1;
+            _nChannels = 0;
+        };
+        
         ~Ambisonics() {};
         
-        bool check(AudioProcessor* p, int setting)
+        bool check(AudioProcessor* p, int setting, bool isInput)
         {
             int previousOrder = order;
             --setting;
             
-            int maxPossibleOrder = jmin(isqrt(p->getTotalNumOutputChannels())-1, highestOrder);
+            int maxPossibleOrder = jmin(isqrt(isInput ? p->getTotalNumInputChannels() : p->getTotalNumOutputChannels())-1, highestOrder);
             if (setting == -1 || setting > maxPossibleOrder) order = maxPossibleOrder; // Auto setting or requested order exceeds highest possible order
             else order = setting;
             nChannels = square(order+1);
+            maxSize = maxPossibleOrder;
             return previousOrder != order;
         };
         
         int getSize() { return getOrder(); }
+        int getPreviousSize() { return getPreviousOrder(); };
+        
         int getOrder() { return order; }
+        int getPreviousOrder () { return _order; }
+        
         int getNumberOfChannels() { return nChannels; }
+        int getPreviousNumberOfChannels() { return _nChannels; }
+        
+        int getMaxSize() { return maxSize; }
         
     private:
-        int order;
-        int nChannels;
+        int order, _order;
+        int nChannels, _nChannels;
+        int maxSize = highestOrder;
     };
 }
 
-template <class Input, class Output>
+template <class Input, class Output, bool combined = false>
 class IOHelper
 {
 public:
@@ -93,7 +130,7 @@ public:
     
     Input input;
     Output output;
-
+    
     bool inputSizeHasChanged;
     bool outputSizeHasChanged;
     
@@ -108,25 +145,42 @@ public:
      and at the beginning of the processBlock() with a check if
      the user has changed the input/output settings.
      */
-    void checkInputAndOutput(AudioProcessor* p, unsigned int inputSetting, unsigned int outputSetting) {
-        inputSizeHasChanged = false;
-        outputSizeHasChanged = false;
-        DBG("IOHelper: processors I/O channel count: " << p->getTotalNumInputChannels() << "/" << p->getTotalNumOutputChannels());
-        inputSizeHasChanged = input.check(p, inputSetting);
-        outputSizeHasChanged = output.check(p, outputSetting);
-        
-        if (inputSizeHasChanged || outputSizeHasChanged)
+    void checkInputAndOutput(AudioProcessor* p, unsigned int inputSetting, unsigned int outputSetting, bool force = false) {
+        if (force || userChangedIOSettings)
         {
-            DBG("IOHelper:  I/O sizes have changed. calling updateBuffers()");
-            updateBuffers();
+            inputSizeHasChanged = false;
+            outputSizeHasChanged = false;
+            DBG("IOHelper: processors I/O channel counts: " << p->getTotalNumInputChannels() << "/" << p->getTotalNumOutputChannels());
+            inputSizeHasChanged = input.check(p, inputSetting, true);
+            outputSizeHasChanged = output.check(p, outputSetting, false);
+            
+            if (force || inputSizeHasChanged || outputSizeHasChanged)
+            {
+                DBG("IOHelper:  I/O sizes have changed. calling updateBuffers()");
+                updateBuffers();
+            }
+            
+            userChangedIOSettings = false;
         }
     }
     
+    void getMaxSize(int& maxInputSize, int& maxOutputSize)
+    {
+        maxInputSize = input.getMaxSize();
+        maxOutputSize = output.getMaxSize();
+        
+        if (combined)
+        {
+            maxInputSize = jmin(maxInputSize, maxOutputSize);
+            maxOutputSize = maxInputSize;
+        }
+    }
+    
+    bool userChangedIOSettings = true;
+    
 private:
     
-    
     /** Update buffers
-     
      @inputSetting and @outputSetting should hold the user's setting:
      Audio: 0 equals auto mode, >=1 equals number of channels
      Ambisonics: 0 equals auto mode, >=1 equals Ambisonic order - 1

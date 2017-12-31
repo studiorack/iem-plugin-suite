@@ -50,9 +50,11 @@ public:
     void resized() override;
 
 private:
+    LaF globalLaF;
+    
     TitleBar<AmbisonicIOWidget, AudioChannelsIOWidget<1,false>> title;
     Footer footer;
-    LaF globalLaF;
+    
     void timerCallback() override;
     
 
@@ -76,8 +78,6 @@ private:
     ScopedPointer<ComboBoxAttachment> cbOrderAtachement;
 
     TooltipWindow toolTipWin;
-
-    int maxPossibleOrder = -1;
     
     // labels
     SimpleLabel lbYaw, lbPitch, lbRoll, lblWidth, lbW, lbX, lbY, lbZ;

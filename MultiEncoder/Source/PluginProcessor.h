@@ -20,8 +20,7 @@
  ==============================================================================
  */
 
-#ifndef PLUGINPROCESSOR_H_INCLUDED
-#define PLUGINPROCESSOR_H_INCLUDED
+#pragma once
 
 #define maxNumberOfInputs 64
 #define startNnumberOfInputs 5
@@ -34,6 +33,7 @@
 #include "../../resources/Quaternion.h"
 #include "../../resources/efficientSHvanilla.h"
 #include "../../resources/ambisonicTools.h"
+#include "../../resources/IOHelper.h"
 
 
 
@@ -42,7 +42,8 @@
 /**
 */
 class MultiEncoderAudioProcessor  : public AudioProcessor,
-                                                public AudioProcessorValueTreeState::Listener
+                                                public AudioProcessorValueTreeState::Listener,
+public IOHelper<IOTypes::AudioChannels<maxNumberOfInputs>, IOTypes::Ambisonics<>>
 {
 public:
     //==============================================================================
@@ -105,27 +106,17 @@ public:
     float *orderSetting;
     float *useSN3D;
     
-    // -- variable order --
-    int maxNumInputs = -1;
-    int maxPossibleOrder = -1;
-    int ambisonicOrder = -1;
-    int _ambisonicOrder = -1;
-    int nChIn = 0;
-    int _nChIn = 0;
-    int nChOut = 0;
-    int _nChOut = 0;
-    
-    bool userChangedIOSettings = false;
-    void checkOrderUpdateBuffers(int samplesPerBlock);
-    // --------------------
-    
+
     bool yprInput;
     double phi, theta;
     
-    Atomic<int> editorNChIn;
     bool updateColours = false;
     
     Colour elementColours[maxNumberOfInputs];
+    
+    void updateBuffers() override;
+    void updateQuaternions();
+    
 private:
     //==============================================================================
 //    iem::Quaternion quat;
@@ -152,6 +143,3 @@ private:
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MultiEncoderAudioProcessor)
 };
-
-
-#endif  // PLUGINPROCESSOR_H_INCLUDED

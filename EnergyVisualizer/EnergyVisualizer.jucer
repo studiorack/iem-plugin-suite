@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <JUCERPROJECT id="mbpAgi" name="EnergyVisualizer" displaySplashScreen="0" reportAppUsage="0"
-              splashScreenColour="Dark" projectType="audioplug" version="0.3.1"
+              splashScreenColour="Dark" projectType="audioplug" version="0.3.2"
               bundleIdentifier="at.iem.EnergyVisualizer" includeBinaryInAppConfig="1"
               cppLanguageStandard="14" buildVST="1" buildVST3="0" buildAU="0"
               buildAUv3="0" buildRTAS="0" buildAAX="0" buildStandalone="1"
@@ -65,7 +65,6 @@
         <MODULEPATH id="juce_dsp" path="../../../../../Applications/JUCE/modules"/>
       </MODULEPATHS>
     </XCODE_MAC>
-
     <VS2017 targetFolder="Builds/VisualStudio2017">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" winWarningLevel="4" generateManifest="1" winArchitecture="x64"
