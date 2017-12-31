@@ -139,25 +139,12 @@ public:
 
             float db = Decibels::gainToDecibels(handle->getMagnitudeForFrequency(xToHz(xMin), sampleRate));
             allMagnitudesInDb.setUnchecked(0, allMagnitudesInDb[0] + db);
-            //magnitude.startNewSubPath(xMin, jlimit((float) yMin, (float) yMax + OH + 1, t60ToYFloat (gainToT60Float (db))));
 
             for (int x = xMin+1; x<=xMax; ++x)
             {
                 float db = Decibels::gainToDecibels(handle->getMagnitudeForFrequency(xToHz(x), sampleRate));
                 allMagnitudesInDb.setUnchecked(x-xMin, allMagnitudesInDb[x-xMin] + db);
-                //DBG (gainToT60Float (db));
-                //float y = jlimit((float) yMin, (float) yMax + OH + 1, t60ToYFloat (gainToT60Float (db)));
-                //magnitude.lineTo(x, y);
             }
-
-            // g.setColour(arrayOfColours[i].withMultipliedAlpha(0.5f));
-            // g.strokePath(magnitude, PathStrokeType(isActive ? 2.5f : 0.9f));
-
-            // magnitude.lineTo(xMax, yZero);
-            // magnitude.lineTo(xMin, yZero);
-            // magnitude.closeSubPath();
-            // g.setColour(arrayOfColours[i].withMultipliedAlpha(0.3f));
-            // g.fillPath(magnitude);
         }
         
         //all magnitudes combined
@@ -189,60 +176,39 @@ public:
             magnitude.lineTo (x, t60ToYFloat (tolerance));
         }
         magnitude.closeSubPath();
-        g.setColour(Colours::green.withMultipliedAlpha(0.3f));
+        g.setColour(Colours::white.withMultipliedAlpha(0.3f));
         g.fillPath(magnitude);
-
-        // magnitude.lineTo(xMax, yZero);
-        // magnitude.lineTo(xMin, yZero);
-        // magnitude.closeSubPath();
-        // g.setColour(Colours::white.withMultipliedAlpha(0.3f));
-        // g.fillPath(magnitude);
-        
-        // for (int i = arrayOfCoefficients.size (); --i >= 0;) {
-        //     float circX = arrayOfFrequencySliders[i] == nullptr ? hzToX(0.0f) : hzToX(arrayOfFrequencySliders[i]->getValue());
-        //     float circY = arrayOfGainSliders[i] == nullptr ? t60ToY(0.0f) : t60ToY (arrayOfGainSliders[i]->getValue());
-            
-        //     g.setColour(Colour(0xFF191919));
-        //     g.drawEllipse(circX - 5.0f, circY - 5.0f , 10.0f, 10.0f, 3.0f);
-            
-        //     g.setColour(arrayOfColours[i]);
-        //     g.drawEllipse(circX - 5.0f, circY - 5.0f , 10.0f, 10.0f, 1.0f);
-        //     g.setColour(activeElem == i ? arrayOfColours[i] : arrayOfColours[i].withSaturation(0.2));
-        //     g.fillEllipse(circX - 5.0f, circY - 5.0f , 10.0f, 10.0f);
-        // }
     };
 
     float getToleranceT60 (float frequency, std::string which)
     {   
-        float tempT60;
-        // if (frequency < 250)
-        //     {
-        //         if (which == std::string ("upper"))
-        //         {
-        //             tempT60 = gainToT60Float (overallGainInDb);
-        //             return tempT60 * (frequency * -0.02306405f + 0.246964856f);
-        //         }
-        //         else
-        //         {
-        //             tempT60 = gainToT60Float (overallGainInDb);
-        //             return tempT60 * (frequency * -0.001953034f + 1.334759358);
-        //         }
-        //     }
-        // else if (frequency < 2000)
-        // {
+        float tempT60 = gainToT60Float (overallGainInDb);
+        if (frequency < 250)
+            {
+                if (which == std::string ("upper"))
+                {
+                    return tempT60 * (frequency * -0.002673797f + 1.868449198f);
+                }
+                else
+                {
+                    return tempT60 * (frequency * -0.002139037f + 1.334759358f);
+                }
+            }
+        else if (frequency < 2000)
+        {
             if (which == std::string ("upper"))
-                return gainToT60Float (overallGainInDb) * 1.2f;
+                return tempT60 * 1.2f;
             else
-                return gainToT60Float (overallGainInDb) * 0.8f;
-        // }
-        // else
-        // {
-        //     if (which == std::string ("upper"))
-        //         return gainToT60Float (overallGainInDb) * 1.2f;
-        //     else
-        //         tempT60 = gainToT60Float (overallGainInDb);
-        //         return tempT60 * (frequency * -0.00005f + 0.9f);
-        // }
+                return tempT60 * 0.8f;
+        }
+        else
+        {
+            if (which == std::string ("upper"))
+                return tempT60 * 1.2f;
+            else
+                return tempT60 * jlimit(0.1f, 1.f,
+                    frequency * -0.00005f + 0.9f);
+        }
     }
     
     float gainToT60Float (float db)
