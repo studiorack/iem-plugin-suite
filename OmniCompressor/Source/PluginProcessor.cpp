@@ -182,9 +182,6 @@ void AmbisonicCompressorAudioProcessor::prepareToPlay (double sampleRate, int sa
     spec.maximumBlockSize = samplesPerBlock;
     
     compressor.prepare(spec);
-    
-    double A = exp(-1.0/(sampleRate*0.01)); //multiplicated value after sampleRate is rms time
-    meanSqrFilter.setCoefficients(juce::IIRCoefficients(1.0 - A, 0.0, 0.0, 1.0, - A, 0.0));
 }
 
 void AmbisonicCompressorAudioProcessor::releaseResources()

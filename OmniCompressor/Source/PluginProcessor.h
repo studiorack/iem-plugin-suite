@@ -82,15 +82,11 @@ public:
 private:
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AmbisonicCompressorAudioProcessor)
-    IIRFilter meanSqrFilter;
     
     Compressor compressor;
     AudioProcessorValueTreeState parameters;
     
     Array<float> RMS, gains, allGR;
-    //float *RMS;
-    //float *gains;
-    //float *allGR;
     
     float GR;
     float *orderSetting;
