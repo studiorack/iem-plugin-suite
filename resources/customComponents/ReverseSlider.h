@@ -51,6 +51,12 @@ public:
             sliderToControl.setParameter(stateToControl.getParameter(parameterID));
         };
         
+        SliderAttachment (juce::AudioProcessorValueTreeState& stateToControl,
+                          const juce::String& parameterID,
+                          Slider& sliderToControl) : AudioProcessorValueTreeState::SliderAttachment (stateToControl, parameterID, sliderToControl)
+        {
+        };
+        
         virtual ~SliderAttachment() = default;
     };
     
@@ -92,7 +98,6 @@ public:
         const float normalizedVal = (float) range.convertTo0to1 (value);
         
         String result = parameter->getText (normalizedVal, getNumDecimalPlacesToDisplay()) + " " + parameter->getLabel();
-
         return result;
     }
     
