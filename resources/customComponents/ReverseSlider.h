@@ -99,8 +99,9 @@ public:
     double getValueFromText (const String& text) override
     {
         if (parameter == nullptr)
-            return Slider::getValueFromText (text);
-        return parameter->getValueForText (text);
+            return Slider::getValueFromText(text);
+        const NormalisableRange<double> range (getMinimum(), getMaximum());
+        return range.convertFrom0to1(parameter->getValueForText(text));
     }
 
     double proportionOfLengthToValue (double proportion) override
