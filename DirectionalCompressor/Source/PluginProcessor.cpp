@@ -92,17 +92,26 @@ parameters (*this, nullptr)
     parameters.createAndAddParameter("c1Threshold", "Threshold 1", "dB",
                                      NormalisableRange<float> (-50.0f, 0.0f, 0.1f), -10.0,
                                      [](float value) {return String(value);}, nullptr);
+    parameters.createAndAddParameter("c1Knee", "Knee", "dB",
+                                     NormalisableRange<float> (0.0f, 10.0f, 0.1f), 0.0f,
+                                     [](float value) {return String(value);}, nullptr);
+    
     parameters.createAndAddParameter("c1Attack", "Attack Time 1", "ms",
-                                     NormalisableRange<float> (1.0f, 100.0f, 0.1f), 30.0,
+                                     NormalisableRange<float> (0.0f, 100.0f, 0.1f), 30.0,
                                      [](float value) {return String(value);}, nullptr);
     parameters.createAndAddParameter("c1Release", "Release Time 1", "ms",
-                                     NormalisableRange<float> (1.0f, 500.0f, 0.1f), 150.0,
+                                     NormalisableRange<float> (0.0f, 500.0f, 0.1f), 150.0,
                                      [](float value) {return String(value);}, nullptr);
-    parameters.createAndAddParameter("c1Ratio", "Ratio 1", "",
-                                     NormalisableRange<float> (1.0f, 10.0f, .1f), 4.0,
-                                     [](float value) {return String(value);}, nullptr);
+    parameters.createAndAddParameter("c1Ratio", "Ratio", " : 1",
+                                     NormalisableRange<float> (1.0f, 16.0f, .2f), 4.0,
+                                     [](float value) {
+                                         if (value > 15.9f)
+                                             return String("inf");
+                                         return String(value);
+                                         
+                                     }, nullptr);
     parameters.createAndAddParameter("c1Makeup", "MakeUp Gain 1", "dB",
-                                     NormalisableRange<float> (-10.0f, 10.0f, 0.10f), 0.0,
+                                     NormalisableRange<float> (-10.0f, 20.0f, 0.10f), 0.0,
                                      [](float value) {return String(value);}, nullptr);
     
     // compressor 2
@@ -132,17 +141,26 @@ parameters (*this, nullptr)
     parameters.createAndAddParameter("c2Threshold", "Threshold 2", "dB",
                                      NormalisableRange<float> (-50.0f, 0.0f, 0.1f), -10.0,
                                      [](float value) {return String(value);}, nullptr);
+    parameters.createAndAddParameter("c2Knee", "Knee", "dB",
+                                     NormalisableRange<float> (0.0f, 10.0f, 0.1f), 0.0f,
+                                     [](float value) {return String(value);}, nullptr);
+    
     parameters.createAndAddParameter("c2Attack", "Attack Time 2", "ms",
-                                     NormalisableRange<float> (1.0f, 100.0f, 0.1f), 30.0,
+                                     NormalisableRange<float> (0.0f, 100.0f, 0.1f), 30.0,
                                      [](float value) {return String(value);}, nullptr);
     parameters.createAndAddParameter("c2Release", "Release Time 2", "ms",
-                                     NormalisableRange<float> (1.0f, 500.0f, 0.1f), 150.0,
+                                     NormalisableRange<float> (0.0f, 500.0f, 0.1f), 150.0,
                                      [](float value) {return String(value);}, nullptr);
-    parameters.createAndAddParameter("c2Ratio", "Ratio 2", "",
-                                     NormalisableRange<float> (1.0f, 10.0f, .1f), 4.0,
-                                     [](float value) {return String(value);}, nullptr);
+    parameters.createAndAddParameter("c2Ratio", "Ratio", " : 1",
+                                     NormalisableRange<float> (1.0f, 16.0f, .2f), 4.0,
+                                     [](float value) {
+                                         if (value > 15.9f)
+                                             return String("inf");
+                                         return String(value);
+                                         
+                                     }, nullptr);
     parameters.createAndAddParameter("c2Makeup", "MakeUp Gain 2", "dB",
-                                     NormalisableRange<float> (-10.0f, 10.0f, 0.10f), 0.0,
+                                     NormalisableRange<float> (-10.0f, 20.0f, 0.10f), 0.0,
                                      [](float value) {return String(value);}, nullptr);
     
     
@@ -183,6 +201,7 @@ parameters (*this, nullptr)
     c1DrivingSignal = parameters.getRawParameterValue ("c1DrivingSignal");
     c1Apply = parameters.getRawParameterValue ("c1Apply");
     c1Threshold = parameters.getRawParameterValue ("c1Threshold");
+    c1Knee = parameters.getRawParameterValue ("c1Knee");
     c1Attack = parameters.getRawParameterValue ("c1Attack");
     c1Release = parameters.getRawParameterValue ("c1Release");
     c1Ratio = parameters.getRawParameterValue ("c1Ratio");
@@ -192,6 +211,7 @@ parameters (*this, nullptr)
     c2DrivingSignal = parameters.getRawParameterValue ("c2DrivingSignal");
     c2Apply = parameters.getRawParameterValue ("c2Apply");
     c2Threshold = parameters.getRawParameterValue ("c2Threshold");
+    c2Knee = parameters.getRawParameterValue ("c2Knee");
     c2Attack = parameters.getRawParameterValue ("c2Attack");
     c2Release = parameters.getRawParameterValue ("c2Release");
     c2Ratio = parameters.getRawParameterValue ("c2Ratio");
@@ -289,21 +309,18 @@ void AmbisonicCompressorAudioProcessor::prepareToPlay (double sampleRate, int sa
 {
     checkInputAndOutput(this, *orderSetting, *orderSetting, true);
     
+    dsp::ProcessSpec spec;
+    spec.sampleRate = sampleRate;
+    spec.numChannels = 1;
+    spec.maximumBlockSize = samplesPerBlock;
+    
+    compressor1.prepare(spec);
+    compressor2.prepare(spec);
+    
     omniW.setSize(1, samplesPerBlock);
-    
-    
-    c1RMS.resize(samplesPerBlock);
     c1Gains.resize(samplesPerBlock);
-    c1GRarray.resize(samplesPerBlock);
-    
-    c2RMS.resize(samplesPerBlock);
     c2Gains.resize(samplesPerBlock);
-    c2GRarray.resize(samplesPerBlock);
 
-    
-    const double A = exp(-1.0/(sampleRate*0.01)); //multiplicated value after sampleRate is rms time
-    c1MeanSqrFilter.setCoefficients(juce::IIRCoefficients(1.0 - A,0.0,0.0,1.0,- A,0.0));
-    c2MeanSqrFilter.setCoefficients(juce::IIRCoefficients(1.0 - A,0.0,0.0,1.0,- A,0.0));
     calcParams();
 }
 
@@ -327,14 +344,38 @@ void AmbisonicCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer,
     
     const int totalNumInputChannels  = getTotalNumInputChannels();
     const int totalNumOutputChannels = getTotalNumOutputChannels();
-    const int sampleRate = this->getSampleRate();
     const int bufferSize = buffer.getNumSamples();
     const int ambisonicOrder = input.getOrder();
+    
+    const float gainCorrection = Decibels::gainToDecibels(ambisonicOrder+1.0f);
+    
+    // Compressor 1 settings
+    if (*c1Ratio > 15.9f)
+        compressor1.setRatio(INFINITY);
+    else
+        compressor1.setRatio(*c1Ratio);
+    compressor1.setKnee(*c1Knee);
+    compressor1.setAttackTime(*c1Attack / 1000.0f);
+    compressor1.setReleaseTime(*c1Release / 1000.0f);
+    compressor1.setThreshold(*c1Threshold - gainCorrection);
+    compressor1.setMakeUpGain(*c1Makeup);
+    
+    // Compressor 2 settings
+    if (*c2Ratio > 15.9f)
+        compressor2.setRatio(INFINITY);
+    else
+        compressor2.setRatio(*c2Ratio);
+    compressor2.setKnee(*c2Knee);
+    compressor2.setAttackTime(*c2Attack / 1000.0f);
+    compressor2.setReleaseTime(*c2Release / 1000.0f);
+    compressor2.setThreshold(*c2Threshold - gainCorrection);
+    compressor2.setMakeUpGain(*c2Makeup);
+
+    
     
     drivingPointers[0] = maskBuffer.getReadPointer(0);
     drivingPointers[1] = buffer.getReadPointer(0);
     drivingPointers[2] = omniW.getReadPointer(0);
-    
     
     
     const int numCh = jmin(input.getNumberOfChannels(), buffer.getNumChannels());
@@ -374,13 +415,6 @@ void AmbisonicCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer,
 
     // =============== COMPRESSOR 1 ====================
     {
-        // needed variables
-        float envSample, attackGain, releaseGain, ratioFactor;
-        // parameters
-        attackGain = expf(-1000.0f / sampleRate / *c1Attack);
-        releaseGain = expf(-1000.0f / sampleRate / *c1Release);
-        ratioFactor = -1.0f * (1 - 1/ *c1Ratio);
-        
         // set compressor driving signal
         const float* drivingSignalPtr = [this] () -> const float* {
             if (*c1DrivingSignal >= 0.5f && *c1DrivingSignal < 1.5f) return drivingPointers[0];
@@ -388,38 +422,13 @@ void AmbisonicCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer,
             else return drivingPointers[2];
         }();
         
-        // calculate RMS
-        FloatVectorOperations::multiply(c1RMS.getRawDataPointer(), drivingSignalPtr, drivingSignalPtr, bufferSize);
-        c1MeanSqrFilter.processSamples(c1RMS.getRawDataPointer(), bufferSize);
-        for (int i = 0; i<bufferSize; ++i) c1RMS.setUnchecked(i, Decibels::gainToDecibels(ambisonicOrder+1.0f) + 0.5f * Decibels::gainToDecibels(c1RMS[i],-120.0f));
-
-        c1MaxRMS = FloatVectorOperations::findMaximum(c1RMS.getRawDataPointer(), bufferSize); // for GUI
-        
-        FloatVectorOperations::add(c1RMS.getRawDataPointer(), -1.0 * *c1Threshold, bufferSize); // difference between RMS and threshold
-        
-        for (int i = 0; i<bufferSize; ++i)
-        {
-            envSample = c1RMS[i]>0.0 ? c1RMS[i] : 0.0f; //clipping, can maybe optimized bei FVO::clip(...)
-            if (c1GR < envSample) {
-                c1GR = envSample + attackGain * (c1GR - envSample);
-            } else {
-                c1GR = envSample + releaseGain * (c1GR - envSample);
-            }
-            c1GRarray.setUnchecked(i, c1GR * ratioFactor);
-            c1Gains.setUnchecked(i,Decibels::decibelsToGain(c1GRarray[i] + *c1Makeup));
-        }
-        c1MaxGR = FloatVectorOperations::findMaximum(c1GRarray.getRawDataPointer(), bufferSize);
+        compressor1.getGainFromSidechainSignal(drivingSignalPtr, c1Gains.getRawDataPointer(), bufferSize);
+        c1MaxRMS = compressor1.getMaxLevelInDecibels() + gainCorrection;
+        c1MaxGR = Decibels::gainToDecibels(FloatVectorOperations::findMinimum(c1Gains.getRawDataPointer(), bufferSize)) - *c1Makeup;
     }
     
     // =============== COMPRESSOR 2 ====================
     {
-        // needed variables
-        float envSample, attackGain, releaseGain, ratioFactor;
-        // parameters
-        attackGain = expf(-1000.0f / sampleRate / *c2Attack);
-        releaseGain = expf(-1000.0f / sampleRate / *c2Release);
-        ratioFactor = -1.0f * (1 - 1/ *c2Ratio);
-        
         // set compressor driving signal
         const float* drivingSignalPtr = [this] () -> const float* {
             if (*c2DrivingSignal >= 0.5f && *c2DrivingSignal < 1.5f) return drivingPointers[0];
@@ -427,26 +436,9 @@ void AmbisonicCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer,
             else return drivingPointers[2];
         }();
         
-        // calculate RMS
-        FloatVectorOperations::multiply(c2RMS.getRawDataPointer(), drivingSignalPtr, drivingSignalPtr, bufferSize);
-        c2MeanSqrFilter.processSamples(c2RMS.getRawDataPointer(), bufferSize);
-        for (int i = 0; i<bufferSize; ++i) c2RMS.setUnchecked(i, Decibels::gainToDecibels(ambisonicOrder+1.0f) + 0.5f * Decibels::gainToDecibels(c2RMS[i],-120.0f));
-        c2MaxRMS = FloatVectorOperations::findMaximum(c2RMS.getRawDataPointer(), bufferSize); // for GUI
-        
-        FloatVectorOperations::add(c2RMS.getRawDataPointer(), -1.0 * *c2Threshold, bufferSize); // difference between RMS and threshold
-        
-        for (int i = 0; i<bufferSize; ++i)
-        {
-            envSample = c2RMS[i]>0.0 ? c2RMS[i] : 0.0f; //clipping, can maybe optimized bei FVO::clip(...)
-            if (c2GR < envSample) {
-                c2GR = envSample + attackGain * (c2GR - envSample);
-            } else {
-                c2GR = envSample + releaseGain * (c2GR - envSample);
-            }
-            c2GRarray.setUnchecked(i, c2GR * ratioFactor);
-            c2Gains.setUnchecked(i, Decibels::decibelsToGain(c2GRarray[i] + *c2Makeup));
-        }
-        c2MaxGR = FloatVectorOperations::findMaximum(c2GRarray.getRawDataPointer(), bufferSize);
+        compressor2.getGainFromSidechainSignal(drivingSignalPtr, c2Gains.getRawDataPointer(), bufferSize);
+        c2MaxRMS = compressor2.getMaxLevelInDecibels() + gainCorrection;
+        c2MaxGR = Decibels::gainToDecibels(FloatVectorOperations::findMinimum(c2Gains.getRawDataPointer(), bufferSize)) - *c2Makeup;
     }
     
 
