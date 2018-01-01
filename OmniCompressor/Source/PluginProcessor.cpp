@@ -59,25 +59,30 @@ parameters (*this, nullptr)
                                          else return "N3D";
                                      }, nullptr);
     
-    parameters.createAndAddParameter("inGain", "Input Gain ", "dB",
-                                     NormalisableRange<float> (-10.0f, 10.0f, 0.1f), 0.0,
+    parameters.createAndAddParameter("threshold", "Threshold", "dB",
+                                     NormalisableRange<float> (-60.0f, 0.0f, 0.1f), -10.0,
                                      [](float value) {return String(value);}, nullptr);
     
-    parameters.createAndAddParameter("threshold", "Threshold", "dB",
-                                     NormalisableRange<float> (-50.0f, 0.0f, 0.1f), -10.0,
+    parameters.createAndAddParameter("knee", "Knee", "dB",
+                                     NormalisableRange<float> (0.0f, 10.0f, 0.1f), 0.0f,
                                      [](float value) {return String(value);}, nullptr);
     
     parameters.createAndAddParameter("attack", "Attack Time", "ms",
-                                     NormalisableRange<float> (1.0f, 100.0f, 0.1f), 30.0,
+                                     NormalisableRange<float> (0.0f, 100.0f, 0.1f), 30.0,
                                      [](float value) {return String(value);}, nullptr);
     
     parameters.createAndAddParameter("release", "Release Time", "ms",
-                                     NormalisableRange<float> (1.0f, 500.0f, 0.1f), 150.0,
+                                     NormalisableRange<float> (0.0f, 500.0f, 0.1f), 150.0,
                                      [](float value) {return String(value);}, nullptr);
     
-    parameters.createAndAddParameter("ratio", "Ratio", "",
-                                     NormalisableRange<float> (1.0f, 10.0f, .5f), 4.0,
-                                     [](float value) {return String(value);}, nullptr);
+    parameters.createAndAddParameter("ratio", "Ratio", " : 1",
+                                     NormalisableRange<float> (1.0f, 16.0f, .2f), 4.0,
+                                     [](float value) {
+                                         if (value > 15.9f)
+                                             return String("inf");
+                                         return String(value);
+                                         
+                                     }, nullptr);
     
     parameters.createAndAddParameter("outGain", "MakeUp Gain", "dB",
                                      NormalisableRange<float> (-10.0f, 10.0f, 0.10f), 0.0,
@@ -87,9 +92,10 @@ parameters (*this, nullptr)
     
     parameters.addParameterListener("orderSetting", this);
     
+    
     orderSetting = parameters.getRawParameterValue("orderSetting");
-    inGain = parameters.getRawParameterValue ("inGain");
     threshold = parameters.getRawParameterValue ("threshold");
+    knee = parameters.getRawParameterValue("knee");
     outGain = parameters.getRawParameterValue ("outGain");
     ratio = parameters.getRawParameterValue ("ratio");
     attack = parameters.getRawParameterValue ("attack");
@@ -170,8 +176,12 @@ void AmbisonicCompressorAudioProcessor::prepareToPlay (double sampleRate, int sa
     gains.resize(samplesPerBlock);
     allGR.resize(samplesPerBlock);
     
-    double A = exp(-1.0/(sampleRate*0.01)); //multiplicated value after sampleRate is rms time
-    meanSqrFilter.setCoefficients(juce::IIRCoefficients(1.0 - A, 0.0, 0.0, 1.0, - A, 0.0));
+    dsp::ProcessSpec spec;
+    spec.sampleRate = sampleRate;
+    spec.numChannels = 1;
+    spec.maximumBlockSize = samplesPerBlock;
+    
+    compressor.prepare(spec);
 }
 
 void AmbisonicCompressorAudioProcessor::releaseResources()
@@ -202,41 +212,27 @@ void AmbisonicCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer,
     const float* bufferReadPtr = buffer.getReadPointer(0);
 
     
-    FloatVectorOperations::multiply(RMS.getRawDataPointer(), bufferReadPtr, bufferReadPtr, bufferSize);
-    meanSqrFilter.processSamples(RMS.getRawDataPointer(), bufferSize);
-    for (int i = 0; i<bufferSize; ++i) RMS.setUnchecked(i, Decibels::gainToDecibels(ambisonicOrder+1.0f) + 0.5f * Decibels::gainToDecibels(RMS[i],-120.0f) + *inGain);
-    //maxRMS = FloatVectorOperations::findMaximum(RMS.getRawDataPointer(), bufferSize);
+    if (*ratio > 15.9f)
+        compressor.setRatio(INFINITY);
+    else
+        compressor.setRatio(*ratio);
+    
+    compressor.setKnee(*knee);
+    
+    compressor.setAttackTime(*attack / 1000.0f);
+    compressor.setReleaseTime(*release / 1000.0f);
+    float gainCorrection = Decibels::gainToDecibels(ambisonicOrder+1.0f);
+    compressor.setThreshold(*threshold - gainCorrection);
+    compressor.setMakeUpGain(*outGain);
+    
     
     for (int i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
     
     
-    float attackGain = expf(-1000.0/sampleRate / *attack);
-    float releaseGain = expf(-1000.0/sampleRate / *release);
-    float ratioFactor = -1.0f * (1 - 1/ *ratio);
-    maxRMS = FloatVectorOperations::findMaximum(RMS.getRawDataPointer(), bufferSize);
-    
-    FloatVectorOperations::add(RMS.getRawDataPointer(), -1.0 * *threshold, bufferSize);
-
-    float sumGain = *outGain + *inGain;
-    float envSample = 0;
-    for (int i = 0; i<bufferSize; ++i)
-    {
-        envSample = RMS[i]>0.0 ? RMS[i] : 0.0f;
-        if (GR < envSample) {
-            //GR = envSample + attackGain * (GR - envSample);
-            GR = envSample + attackGain * (GR - envSample);
-        } else {
-            GR = envSample + releaseGain * (GR - envSample);
-        }
-        allGR.set(i, GR * ratioFactor);
-        gains.set(i, Decibels::decibelsToGain(allGR[i] + sumGain));
-        
-    }
-    maxGR = FloatVectorOperations::findMaximum(allGR.getRawDataPointer(), bufferSize);
-    
-    
-    
+    compressor.getGainFromSidechainSignal(bufferReadPtr, gains.getRawDataPointer(), bufferSize);
+    maxRMS = compressor.getMaxLevelInDecibels() + gainCorrection;
+    maxGR = Decibels::gainToDecibels(FloatVectorOperations::findMinimum(gains.getRawDataPointer(), bufferSize)) - *outGain;
 
     for (int channel = 0; channel < numCh; ++channel)
     {

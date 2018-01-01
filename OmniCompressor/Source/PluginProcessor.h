@@ -26,6 +26,7 @@
 #include "../../resources/MaxRE.h"
 #include "../../resources/ambisonicTools.h"
 #include "../../resources/IOHelper.h"
+#include "../../resources/Compressor.h"
 
 //==============================================================================
 /**
@@ -81,21 +82,18 @@ public:
 private:
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AmbisonicCompressorAudioProcessor)
-    IIRFilter meanSqrFilter;
     
+    Compressor compressor;
     AudioProcessorValueTreeState parameters;
     
     Array<float> RMS, gains, allGR;
-    //float *RMS;
-    //float *gains;
-    //float *allGR;
     
     float GR;
     float *orderSetting;
-    float *inGain;
     float *threshold;
     float *outGain;
     float *ratio;
     float *attack;
     float *release;
+    float *knee;
 };
