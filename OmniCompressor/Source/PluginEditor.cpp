@@ -40,7 +40,7 @@ AmbisonicCompressorAudioProcessorEditor::AmbisonicCompressorAudioProcessorEditor
     KnAttachment = new SliderAttachment(valueTreeState,"knee", sliderKnee);
     sliderKnee.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     sliderKnee.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    sliderKnee.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
+    sliderKnee.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
     sliderKnee.setTextValueSuffix(" dB");
     
     cbNormalizationAtachement = new ComboBoxAttachment(valueTreeState,"useSN3D", *title.getInputWidgetPtr()->getNormCbPointer());
@@ -96,8 +96,8 @@ AmbisonicCompressorAudioProcessorEditor::AmbisonicCompressorAudioProcessorEditor
     
     
     // ===== LABELS =====
-    addAndMakeVisible(&lbInpGain);
-    lbInpGain.setText("Knee");
+    addAndMakeVisible(&lbKnee);
+    lbKnee.setText("Knee");
     
     addAndMakeVisible(&lbThreshold);
     lbThreshold.setText("Threshold");
@@ -181,16 +181,16 @@ void AmbisonicCompressorAudioProcessorEditor::resized()
     
     sliderRow = ctrlPlane.removeFromTop(sliderHeight);
     
-    sliderKnee.setBounds(sliderRow.removeFromLeft(sliderWidth));
-    sliderRow.removeFromLeft(sliderSpacing);
     sliderThreshold.setBounds(sliderRow.removeFromLeft(sliderWidth));
+    sliderRow.removeFromLeft(sliderSpacing);
+    sliderKnee.setBounds(sliderRow.removeFromLeft(sliderWidth));
     sliderRow.removeFromLeft(sliderSpacing);
     sliderMakeupGain.setBounds(sliderRow.removeFromLeft(sliderWidth));
     
     sliderRow = ctrlPlane.removeFromTop(labelHeight);
-    lbInpGain.setBounds(sliderRow.removeFromLeft(sliderWidth));
-    sliderRow.removeFromLeft(sliderSpacing);
     lbThreshold.setBounds(sliderRow.removeFromLeft(sliderWidth));
+    sliderRow.removeFromLeft(sliderSpacing);
+    lbKnee.setBounds(sliderRow.removeFromLeft(sliderWidth));
     sliderRow.removeFromLeft(sliderSpacing);
     lbOutGain.setBounds(sliderRow.removeFromLeft(sliderWidth));
     

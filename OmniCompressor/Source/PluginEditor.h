@@ -75,7 +75,7 @@ private:
 
     LevelMeter inpMeter, dbGRmeter;
     
-    SimpleLabel lbInpGain, lbThreshold, lbOutGain, lbRatio, lbAttack, lbRelease;
+    SimpleLabel lbKnee, lbThreshold, lbOutGain, lbRatio, lbAttack, lbRelease;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AmbisonicCompressorAudioProcessorEditor)
 };
