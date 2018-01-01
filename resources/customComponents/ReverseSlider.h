@@ -20,8 +20,10 @@
  ==============================================================================
  */
 
-#pragma once
+/* Parts of this code originate from Yair Chuchem's AudioProcessorParameterSlider class:
+ https://gist.github.com/yairchu */
 
+#pragma once
 
 #define RS_FLT_EPSILON 1.19209290E-07F
 class ReverseSlider : public Slider
@@ -92,6 +94,13 @@ public:
         String result = parameter->getText (normalizedVal, getNumDecimalPlacesToDisplay()) + " " + parameter->getLabel();
 
         return result;
+    }
+    
+    double AudioProcessorParameterSlider::getValueFromText (const String& text) override
+    {
+        if (parameter == nullptr)
+            return Slider::getValueFromText (text);
+        return parameter->getValueForText (text);
     }
 
     double proportionOfLengthToValue (double proportion) override
