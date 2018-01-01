@@ -96,7 +96,7 @@ public:
         return result;
     }
     
-    double AudioProcessorParameterSlider::getValueFromText (const String& text) override
+    double getValueFromText (const String& text) override
     {
         if (parameter == nullptr)
             return Slider::getValueFromText (text);
