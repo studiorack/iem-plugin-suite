@@ -38,6 +38,21 @@ public:
     ~ ReverseSlider () {}
 
 public:
+    
+    class SliderAttachment : public juce::AudioProcessorValueTreeState::SliderAttachment
+    {
+    public:
+        SliderAttachment (juce::AudioProcessorValueTreeState& stateToControl,
+                          const juce::String& parameterID,
+                          ReverseSlider& sliderToControl) : AudioProcessorValueTreeState::SliderAttachment (stateToControl, parameterID, sliderToControl)
+        {
+            sliderToControl.setParameter(stateToControl.getParameter(parameterID));
+        };
+        
+        virtual ~SliderAttachment() = default;
+    };
+    
+    
     void setReverse (bool shouldBeReversed)
     {
         if (reversed != shouldBeReversed)
@@ -55,7 +70,29 @@ public:
         }
     }
 
+    void setParameter (const AudioProcessorParameter* p)
+    {
+        if (parameter == p)
+            return;
+        parameter = p;
+        updateText();
+        repaint();
+    }
 
+    String getTextFromValue(double value) override
+    {
+        if (parameter == nullptr)
+            return Slider::getTextFromValue (value);
+        
+        // juce::AudioProcessorValueTreeState::SliderAttachment sets the slider minimum and maximum to custom values.
+        // We map the range to a 0 to 1 range.
+        const NormalisableRange<double> range (getMinimum(), getMaximum());
+        const float normalizedVal = (float) range.convertTo0to1 (value);
+        
+        String result = parameter->getText (normalizedVal, getNumDecimalPlacesToDisplay()) + " " + parameter->getLabel();
+
+        return result;
+    }
 
     double proportionOfLengthToValue (double proportion) override
     {
@@ -168,4 +205,5 @@ private:
     bool reversed;
     bool isDual;
     bool scrollWheelEnabled;
+    const AudioProcessorParameter* parameter {nullptr};
 };
