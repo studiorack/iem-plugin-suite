@@ -25,13 +25,12 @@
 class Compressor
 {
 public:
-    
     Compressor()
     {
     }
     ~Compressor() {}
     
-    void prepare (juce::dsp::ProcessSpec spec)
+    void prepare (const juce::dsp::ProcessSpec spec)
     {
         sampleRate = spec.sampleRate;
         
