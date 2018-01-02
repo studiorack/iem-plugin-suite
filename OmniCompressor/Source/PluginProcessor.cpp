@@ -25,7 +25,7 @@
 
 
 //==============================================================================
-AmbisonicCompressorAudioProcessor::AmbisonicCompressorAudioProcessor()
+OmniCompressorAudioProcessor::OmniCompressorAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
 : AudioProcessor (BusesProperties()
 #if ! JucePlugin_IsMidiEffect
@@ -104,18 +104,18 @@ parameters (*this, nullptr)
 }
 
 
-AmbisonicCompressorAudioProcessor::~AmbisonicCompressorAudioProcessor()
+OmniCompressorAudioProcessor::~OmniCompressorAudioProcessor()
 {
 
 }
 
 //==============================================================================
-const String AmbisonicCompressorAudioProcessor::getName() const
+const String OmniCompressorAudioProcessor::getName() const
 {
     return JucePlugin_Name;
 }
 
-bool AmbisonicCompressorAudioProcessor::acceptsMidi() const
+bool OmniCompressorAudioProcessor::acceptsMidi() const
 {
 #if JucePlugin_WantsMidiInput
     return true;
@@ -124,7 +124,7 @@ bool AmbisonicCompressorAudioProcessor::acceptsMidi() const
 #endif
 }
 
-bool AmbisonicCompressorAudioProcessor::producesMidi() const
+bool OmniCompressorAudioProcessor::producesMidi() const
 {
 #if JucePlugin_ProducesMidiOutput
     return true;
@@ -133,42 +133,42 @@ bool AmbisonicCompressorAudioProcessor::producesMidi() const
 #endif
 }
 
-double AmbisonicCompressorAudioProcessor::getTailLengthSeconds() const
+double OmniCompressorAudioProcessor::getTailLengthSeconds() const
 {
     return 0.0;
 }
 
-int AmbisonicCompressorAudioProcessor::getNumPrograms()
+int OmniCompressorAudioProcessor::getNumPrograms()
 {
     return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
     // so this should be at least 1, even if you're not really implementing programs.
 }
 
-int AmbisonicCompressorAudioProcessor::getCurrentProgram()
+int OmniCompressorAudioProcessor::getCurrentProgram()
 {
     return 0;
 }
 
-void AmbisonicCompressorAudioProcessor::setCurrentProgram (int index)
+void OmniCompressorAudioProcessor::setCurrentProgram (int index)
 {
 }
 
-const String AmbisonicCompressorAudioProcessor::getProgramName (int index)
+const String OmniCompressorAudioProcessor::getProgramName (int index)
 {
     return {};
 }
 
-void AmbisonicCompressorAudioProcessor::changeProgramName (int index, const String& newName)
+void OmniCompressorAudioProcessor::changeProgramName (int index, const String& newName)
 {
 }
 
-void AmbisonicCompressorAudioProcessor::parameterChanged (const String &parameterID, float newValue)
+void OmniCompressorAudioProcessor::parameterChanged (const String &parameterID, float newValue)
 {
     if (parameterID == "orderSetting") userChangedIOSettings = true;
 }
 
 //==============================================================================
-void AmbisonicCompressorAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
+void OmniCompressorAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     checkInputAndOutput(this, *orderSetting, *orderSetting, true);
     
@@ -184,34 +184,31 @@ void AmbisonicCompressorAudioProcessor::prepareToPlay (double sampleRate, int sa
     compressor.prepare(spec);
 }
 
-void AmbisonicCompressorAudioProcessor::releaseResources()
+void OmniCompressorAudioProcessor::releaseResources()
 {
     // When playback stops, you can use this as an opportunity to free up any
     // spare memory, etc.
 }
 
 #ifndef JucePlugin_PreferredChannelConfigurations
-bool AmbisonicCompressorAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
+bool OmniCompressorAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
 {
     return true;
 }
 #endif
 
-void AmbisonicCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
+void OmniCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
     checkInputAndOutput(this, *orderSetting, *orderSetting);
     
     const int totalNumInputChannels  = getTotalNumInputChannels();
     const int totalNumOutputChannels = getTotalNumOutputChannels();
-    const int sampleRate = this->getSampleRate();
     const int bufferSize = buffer.getNumSamples();
-    
     
     const int numCh = jmin(buffer.getNumChannels(), input.getNumberOfChannels(), output.getNumberOfChannels());
     const int ambisonicOrder = jmin(input.getOrder(), output.getOrder());
     const float* bufferReadPtr = buffer.getReadPointer(0);
 
-    
     if (*ratio > 15.9f)
         compressor.setRatio(INFINITY);
     else
@@ -242,25 +239,25 @@ void AmbisonicCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer,
 }
 
 //==============================================================================
-bool AmbisonicCompressorAudioProcessor::hasEditor() const
+bool OmniCompressorAudioProcessor::hasEditor() const
 {
     return true; // (change this to false if you choose to not supply an editor)
 }
 
-AudioProcessorEditor* AmbisonicCompressorAudioProcessor::createEditor()
+AudioProcessorEditor* OmniCompressorAudioProcessor::createEditor()
 {
-    return new AmbisonicCompressorAudioProcessorEditor (*this,parameters);
+    return new OmniCompressorAudioProcessorEditor (*this,parameters);
 }
 
 //==============================================================================
-void AmbisonicCompressorAudioProcessor::getStateInformation (MemoryBlock& destData)
+void OmniCompressorAudioProcessor::getStateInformation (MemoryBlock& destData)
 {
     // You should use this method to store your parameters in the memory block.
     // You could do that either as raw data, or use the XML or ValueTree classes
     // as intermediaries to make it easy to save and load complex data.
 }
 
-void AmbisonicCompressorAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
+void OmniCompressorAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
@@ -270,6 +267,6 @@ void AmbisonicCompressorAudioProcessor::setStateInformation (const void* data, i
 // This creates new instances of the plugin..
 AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
-    return new AmbisonicCompressorAudioProcessor();
+    return new OmniCompressorAudioProcessor();
 }
 

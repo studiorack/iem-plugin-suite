@@ -31,15 +31,15 @@
 //==============================================================================
 /**
 */
-class AmbisonicCompressorAudioProcessor  : public AudioProcessor,
+class OmniCompressorAudioProcessor  : public AudioProcessor,
                                             public AudioProcessorValueTreeState::Listener,
 public IOHelper<IOTypes::Ambisonics<>, IOTypes:: Ambisonics<>>
 
 {
 public:
     //==============================================================================
-    AmbisonicCompressorAudioProcessor();
-    ~AmbisonicCompressorAudioProcessor();
+    OmniCompressorAudioProcessor();
+    ~OmniCompressorAudioProcessor();
 
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
@@ -81,7 +81,7 @@ public:
     
 private:
     //==============================================================================
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AmbisonicCompressorAudioProcessor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OmniCompressorAudioProcessor)
     
     Compressor compressor;
     AudioProcessorValueTreeState parameters;

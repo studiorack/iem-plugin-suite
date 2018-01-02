@@ -37,12 +37,12 @@ typedef AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
 //==============================================================================
 /**
 */
-class AmbisonicCompressorAudioProcessorEditor  : public AudioProcessorEditor,
+class OmniCompressorAudioProcessorEditor  : public AudioProcessorEditor,
 private Timer
 {
 public:
-    AmbisonicCompressorAudioProcessorEditor (AmbisonicCompressorAudioProcessor&, AudioProcessorValueTreeState&);
-    ~AmbisonicCompressorAudioProcessorEditor();
+    OmniCompressorAudioProcessorEditor (OmniCompressorAudioProcessor&, AudioProcessorValueTreeState&);
+    ~OmniCompressorAudioProcessorEditor();
 
     //==============================================================================
     void paint (Graphics&) override;
@@ -51,7 +51,7 @@ public:
 private:
     LaF globalLaF;
 
-    AmbisonicCompressorAudioProcessor& processor;
+    OmniCompressorAudioProcessor& processor;
     AudioProcessorValueTreeState& valueTreeState;
     
     TitleBar<AmbisonicIOWidget, NoIOWidget> title;
@@ -77,5 +77,5 @@ private:
     
     SimpleLabel lbKnee, lbThreshold, lbOutGain, lbRatio, lbAttack, lbRelease;
     
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AmbisonicCompressorAudioProcessorEditor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OmniCompressorAudioProcessorEditor)
 };

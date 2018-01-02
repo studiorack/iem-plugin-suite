@@ -25,7 +25,7 @@
 
 
 //==============================================================================
-AmbisonicCompressorAudioProcessorEditor::AmbisonicCompressorAudioProcessorEditor (AmbisonicCompressorAudioProcessor& p,AudioProcessorValueTreeState& vts)
+OmniCompressorAudioProcessorEditor::OmniCompressorAudioProcessorEditor (OmniCompressorAudioProcessor& p,AudioProcessorValueTreeState& vts)
     : AudioProcessorEditor (&p), processor (p), valueTreeState(vts)
 {
     setSize (330, 280);
@@ -118,13 +118,13 @@ AmbisonicCompressorAudioProcessorEditor::AmbisonicCompressorAudioProcessorEditor
     startTimer(50);
 }
 
-AmbisonicCompressorAudioProcessorEditor::~AmbisonicCompressorAudioProcessorEditor()
+OmniCompressorAudioProcessorEditor::~OmniCompressorAudioProcessorEditor()
 {
     setLookAndFeel(nullptr);
 }
 
 //==============================================================================
-void AmbisonicCompressorAudioProcessorEditor::paint (Graphics& g)
+void OmniCompressorAudioProcessorEditor::paint (Graphics& g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
     g.fillAll (globalLaF.ClBackground);
@@ -132,7 +132,7 @@ void AmbisonicCompressorAudioProcessorEditor::paint (Graphics& g)
 
 }
 
-void AmbisonicCompressorAudioProcessorEditor::timerCallback()
+void OmniCompressorAudioProcessorEditor::timerCallback()
 {
     inpMeter.setLevel(processor.maxRMS);
     dbGRmeter.setLevel(processor.maxGR);
@@ -145,7 +145,7 @@ void AmbisonicCompressorAudioProcessorEditor::timerCallback()
 }
 
 
-void AmbisonicCompressorAudioProcessorEditor::resized()
+void OmniCompressorAudioProcessorEditor::resized()
 {
     const int leftRightMargin = 30;
     const int headerHeight = 60;
