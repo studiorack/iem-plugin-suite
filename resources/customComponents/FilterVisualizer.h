@@ -51,8 +51,22 @@ class  FilterVisualizer :  public Component
     const float OH = 3.0f;
     
 public:
-    FilterVisualizer() : Component(), overallGainInDb(0.0f), sampleRate(48000) {};
-    FilterVisualizer(float fMin, float fMax, float dbMin, float dbMax, float gridDiv, bool gainHandleLin = false) : Component(), sampleRate(48000), s{fMin, fMax, dbMin, dbMax, gridDiv, gainHandleLin} {};
+    FilterVisualizer() : Component(), overallGainInDb(0.0f), sampleRate(48000)
+    {
+        init();
+    };
+    
+    FilterVisualizer(float fMin, float fMax, float dbMin, float dbMax, float gridDiv, bool gainHandleLin = false) : Component(), sampleRate(48000), s{fMin, fMax, dbMin, dbMax, gridDiv, gainHandleLin}
+    {
+        init();
+    };
+    
+    void init ()
+    {
+        dyn = s.dbMax - s.dbMin;
+        zero = 2.0f * s.dbMax / dyn;
+        scale = 1.0f / (zero + std::tanh(s.dbMin/dyn * -2.0f));
+    }
     ~FilterVisualizer() {};
     
 
@@ -72,14 +86,12 @@ public:
         
         //g.setFont(Font(getLookAndFeel().getTypefaceForFont (Font(10.0f, 1)));
         g.setColour (Colours::white);
+        int lastTextDrawPos = -1;
         for (int i=0; i < numgridlines; i++)
         {
             float db_val = s.dbMax - i*s.gridDiv;
 
-            int ypos = dbToY(db_val);
-            
-            String axislabel = String((int)db_val);
-            g.drawText (axislabel, 0, ypos-6, 18, 12.0f, Justification::right, false);
+            lastTextDrawPos = drawLevelMark (g, 0, 20, db_val, String ((int) db_val), lastTextDrawPos);
         }
 
 
@@ -154,7 +166,8 @@ public:
                 coeffs->getPhaseForFrequencyArray(frequencies.getRawDataPointer(), phases.getRawDataPointer(), numPixels, sampleRate);
             
             float db = Decibels::gainToDecibels(magnitudes[0]);
-            magnitude.startNewSubPath(xMin, jlimit((float) yMin, (float) yMax + OH + 1, dbToYFloat(db)));
+            float y = dbToYFloat(db);
+            magnitude.startNewSubPath(xMin, jlimit((float) yMin, (float) yMax + OH + 1, y));
             
             for (int i = 1; i < numPixels; ++i)
             {
@@ -237,26 +250,50 @@ public:
         }
     };
     
-    int dbToY(float db)
+    int inline drawLevelMark(Graphics& g, int x, int width, const int level, const String& label, int lastTextDrawPos = -1)
     {
-        int ypos = dbToYFloat(db);
+        float yPos = dbToYFloat(level);
+        x = x + 1.0f;
+        width = width - 2.0f;
+        
+        if (yPos-4 > lastTextDrawPos)
+        {
+            g.drawText (label, x + 2, yPos - 4, width - 4, 9, Justification::right, false);
+            return yPos + 5;
+        }
+        return lastTextDrawPos;
+    }
+    
+    int dbToY(const float dB)
+    {
+        int ypos = dbToYFloat(dB);
         return ypos;
     }
     
-    float dbToYFloat(float db)
+    float dbToYFloat(const float dB)
     {
         float height = (float) getHeight() - mB - mT;
-        float dyn = s.dbMax - s.dbMin;
-        float ypos = height * (1.f - (db - s.dbMin) / dyn) + mT;
-        return ypos;
+        if (height <= 0.0f) return 0.0f;
+        float temp;
+        if (dB < 0.0f)
+            temp = zero + std::tanh(dB / dyn * -2.0f);
+        else
+            temp = zero - 2.0f * dB / dyn;
+
+        return mT + scale * height * temp;
     }
     
-    float yToDb (float y)
+    float yToDb (const float y)
     {
         float height = (float) getHeight() - mB - mT;
-        float dyn = s.dbMax - s.dbMin;
-        float db = (s.dbMax - (y - mT) / height * dyn);
-        return db;
+        
+        float temp = (y - mT) / height / scale - zero;
+        float dB;
+        if (temp > 0.0f)
+            dB =  std::atanh(temp) * dyn * -0.5f;
+        else
+            dB = - 0.5f * temp * dyn;
+        return isnan(dB) ? s.dbMin : dB;
     }
     
     int hzToX(float hz)
@@ -416,6 +453,7 @@ private:
     
     int activeElem = 0;
 
+    float dyn, zero, scale;
     
     Settings s;
     Path dbGridPath;
