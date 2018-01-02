@@ -26,13 +26,13 @@
 //==============================================================================
 FdnReverbAudioProcessorEditor::FdnReverbAudioProcessorEditor (FdnReverbAudioProcessor& p, AudioProcessorValueTreeState& vts)
     : AudioProcessorEditor (&p), processor (p), valueTreeState (vts),
-    tv (20.f, 20000.f, 0.1f, 60.f, 5.f),
-    fv (20.f, 20000.f, -25.f, 5.f, 5.f, true)
+    tv (20.f, 20000.f, 0.1f, 25.f, 5.f),
+    fv (20.f, 20000.f, -60.f, 5.f, 5.f, false)
 {
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
-
-    setSize (500, 450);
+    
+    setResizeLimits(600, 480, 1000, 950);
     setLookAndFeel (&globalLaF);
 
     //networkOrder.addListener (this);
@@ -45,25 +45,19 @@ FdnReverbAudioProcessorEditor::FdnReverbAudioProcessorEditor (FdnReverbAudioProc
     addAndMakeVisible(&footer);
     
     addAndMakeVisible(&delayGroup);
-    delayGroup.setText("Delay");
+    delayGroup.setText("General Settings");
     delayGroup.setTextLabelPosition (Justification::centredLeft);
     delayGroup.setColour (GroupComponent::outlineColourId, globalLaF.ClSeperator);
     delayGroup.setColour (GroupComponent::textColourId, Colours::white);
     delayGroup.setVisible(true);
 
-    addAndMakeVisible(&highsGroup);
-    highsGroup.setText("High Shelf Filter");
-    highsGroup.setTextLabelPosition (Justification::centredLeft);
-    highsGroup.setColour (GroupComponent::outlineColourId, globalLaF.ClSeperator);
-    highsGroup.setColour (GroupComponent::textColourId, Colours::blue);
-    highsGroup.setVisible(true);
+    addAndMakeVisible(&filterGroup);
+    filterGroup.setText("Filter Settings");
+//    highsGroup.setTextLabelPosition (Justification::centredLeft);
+//    highsGroup.setColour (GroupComponent::outlineColourId, globalLaF.ClSeperator);
+//    highsGroup.setColour (GroupComponent::textColourId, Colours::blue);
+//    highsGroup.setVisible(true);
 
-    addAndMakeVisible(&lowsGroup);
-    lowsGroup.setText("Low Shelf Filter");
-    lowsGroup.setTextLabelPosition (Justification::centredLeft);
-    lowsGroup.setColour (GroupComponent::outlineColourId, globalLaF.ClSeperator);
-    lowsGroup.setColour (GroupComponent::textColourId, Colours::red);
-    lowsGroup.setVisible(true);
 
     addAndMakeVisible(&t60Group);
     t60Group.setText("Reverberation Time");
@@ -72,57 +66,50 @@ FdnReverbAudioProcessorEditor::FdnReverbAudioProcessorEditor (FdnReverbAudioProc
     t60Group.setColour (GroupComponent::textColourId, Colours::red);
     t60Group.setVisible(true);
 
-    addAndMakeVisible(&gainGroup);
-    gainGroup.setText("Filter Gain Magnitudes");
-    gainGroup.setTextLabelPosition (Justification::centredLeft);
-    gainGroup.setColour (GroupComponent::outlineColourId, globalLaF.ClSeperator);
-    gainGroup.setColour (GroupComponent::textColourId, Colours::red);
-    gainGroup.setVisible(true);
-
     addAndMakeVisible (&delayLengthSlider);
     delayAttachment = new SliderAttachment (valueTreeState, "delayLength", delayLengthSlider);
-    delayLengthSlider.setSliderStyle (Slider::Rotary);
-    delayLengthSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 60, 20);
+    delayLengthSlider.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
+    delayLengthSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     delayLengthSlider.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
     delayLengthSlider.setTooltip("Room Size");
 
     addAndMakeVisible (&revTimeSlider);
     feedbackAttachment = new SliderAttachment (valueTreeState, "revTime", revTimeSlider);
-    revTimeSlider.setSliderStyle (Slider::Rotary);
-    revTimeSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 60, 20);
+    revTimeSlider.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
+    revTimeSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     revTimeSlider.setColour (Slider::rotarySliderOutlineColourId, Colours::white);
     revTimeSlider.setTooltip("Reverberation Time");
-    revTimeSlider.setSkewFactorFromMidPoint(10.f);
+    //revTimeSlider.setSkewFactorFromMidPoint(10.f);
     revTimeSlider.addListener(this);
 
     addAndMakeVisible (&dryWetSlider);
     dryWetAttachment = new SliderAttachment (valueTreeState, "dryWet", dryWetSlider);
-    dryWetSlider.setSliderStyle (Slider::Rotary);
-    dryWetSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 60, 20);
+    dryWetSlider.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
+    dryWetSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     dryWetSlider.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
     dryWetSlider.setTooltip("Dry/Wet");
 
     addAndMakeVisible (&lowCutoffSlider);
     lowCutoffAttachment = new SliderAttachment (valueTreeState, "lowCutoff", lowCutoffSlider);
     lowCutoffSlider.setSkewFactorFromMidPoint (2000.f);
-    lowCutoffSlider.setSliderStyle (Slider::Rotary);
-    lowCutoffSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 60, 20);
+    lowCutoffSlider.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
+    lowCutoffSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     lowCutoffSlider.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[3]);
     lowCutoffSlider.setTooltip("Low Shelf Cutoff Freq");
     lowCutoffSlider.addListener(this);
 
     addAndMakeVisible (&lowQSlider);
     lowQAttachment = new SliderAttachment (valueTreeState, "lowQ", lowQSlider);
-    lowQSlider.setSliderStyle (Slider::Rotary);
-    lowQSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 60, 20);
+    lowQSlider.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
+    lowQSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     lowQSlider.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[3]);
     lowQSlider.setTooltip("Low Shelf Q");
     lowQSlider.addListener(this);
 
     addAndMakeVisible (&lowGainSlider);
     lowGainAttachment = new SliderAttachment (valueTreeState, "lowGain", lowGainSlider);
-    lowGainSlider.setSliderStyle (Slider::Rotary);
-    lowGainSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 60, 20);
+    lowGainSlider.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
+    lowGainSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     lowGainSlider.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[3]);
     lowGainSlider.setTooltip("Low Shelf Gain");
     lowGainSlider.addListener(this);
@@ -130,8 +117,8 @@ FdnReverbAudioProcessorEditor::FdnReverbAudioProcessorEditor (FdnReverbAudioProc
     addAndMakeVisible (&highCutoffSlider);
     highCutoffAttachment = new SliderAttachment (valueTreeState, "highCutoff", highCutoffSlider);
     highCutoffSlider.setSkewFactorFromMidPoint (2000.f);
-    highCutoffSlider.setSliderStyle (Slider::Rotary);
-    highCutoffSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 60, 20);
+    highCutoffSlider.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
+    highCutoffSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     highCutoffSlider.setColour (Slider::rotarySliderOutlineColourId,
         globalLaF.ClWidgetColours[0]);;
     highCutoffSlider.setTooltip("High Shelf Cutoff Freq");
@@ -139,8 +126,8 @@ FdnReverbAudioProcessorEditor::FdnReverbAudioProcessorEditor (FdnReverbAudioProc
 
     addAndMakeVisible (&highQSlider);
     highQAttachment = new SliderAttachment (valueTreeState, "highQ", highQSlider);
-    highQSlider.setSliderStyle (Slider::Rotary);
-    highQSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 60, 20);
+    highQSlider.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
+    highQSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     highQSlider.setColour (Slider::rotarySliderOutlineColourId,
         globalLaF.ClWidgetColours[0]);
     highQSlider.setTooltip("High Shelf Q");
@@ -148,8 +135,8 @@ FdnReverbAudioProcessorEditor::FdnReverbAudioProcessorEditor (FdnReverbAudioProc
 
     addAndMakeVisible (&highGainSlider);
     highGainAttachment = new SliderAttachment (valueTreeState, "highGain", highGainSlider);
-    highGainSlider.setSliderStyle (Slider::Rotary);
-    highGainSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 60, 20);
+    highGainSlider.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
+    highGainSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     highGainSlider.setColour (Slider::rotarySliderOutlineColourId,
         globalLaF.ClWidgetColours[0]);
     highGainSlider.setTooltip("High Shelf Gain");
@@ -186,11 +173,10 @@ FdnReverbAudioProcessorEditor::FdnReverbAudioProcessorEditor (FdnReverbAudioProc
 
     // left side
     addAndMakeVisible(&tv);
-    
     lowpassCoeffs = IIR::Coefficients<float>::makeLowShelf(48000,
-        lowCutoffSlider.getValue(), lowQSlider.getValue(), lowGainSlider.getValue());
+                                                           lowCutoffSlider.getValue(), lowQSlider.getValue(), Decibels::decibelsToGain(lowGainSlider.getValue()));
     highpassCoeffs = IIR::Coefficients<float>::makeHighShelf(48000,
-        highCutoffSlider.getValue(), highQSlider.getValue(), highGainSlider.getValue());
+                                                             highCutoffSlider.getValue(), highQSlider.getValue(), Decibels::decibelsToGain(highGainSlider.getValue()));
 
     tv.addCoefficients(lowpassCoeffs, Colours::orangered, &lowCutoffSlider,
         &lowGainSlider);
@@ -207,6 +193,7 @@ FdnReverbAudioProcessorEditor::FdnReverbAudioProcessorEditor (FdnReverbAudioProc
         &lowGainSlider);
     fv.addCoefficients (&highpassCoeffs, globalLaF.ClWidgetColours[0], &highCutoffSlider,
         &highGainSlider);
+    fv.setOverallGain (gain);
     fv.repaint();
 }
 
@@ -252,7 +239,7 @@ void FdnReverbAudioProcessorEditor::sliderValueChanged(Slider* slider)
         slider == &highGainSlider)
     {   
         *highpassCoeffs = *IIR::Coefficients<float>::makeHighShelf(48000,
-            highCutoffSlider.getValue(), highQSlider.getValue(), highGainSlider.getValue());
+                 highCutoffSlider.getValue(), highQSlider.getValue(), Decibels::decibelsToGain(highGainSlider.getValue()));
 
         tv.repaint();
         fv.repaint();
@@ -262,7 +249,7 @@ void FdnReverbAudioProcessorEditor::sliderValueChanged(Slider* slider)
              slider == &lowGainSlider)
     {   
         *lowpassCoeffs = *IIR::Coefficients<float>::makeLowShelf(48000,
-            lowCutoffSlider.getValue(), lowQSlider.getValue(), lowGainSlider.getValue());
+            lowCutoffSlider.getValue(), lowQSlider.getValue(), Decibels::decibelsToGain(lowGainSlider.getValue()));
 
         tv.repaint();
         fv.repaint();
@@ -285,107 +272,106 @@ void FdnReverbAudioProcessorEditor::resized()
     const int leftRightMargin = 30;
     const int headerHeight = 60;
     const int footerHeight = 25;
+    //const int sliderHeight = 15;
+    const int rotSliderHeight = 55;
+    const int rotSliderSpacing = 10;
+    //const int sliderSpacing = 3;
+    const int rotSliderWidth = 40;
+    const int labelHeight = 20;
+    //const int labelWidth = 20;
+    
     Rectangle<int> area (getLocalBounds());
     
     Rectangle<int> footerArea (area.removeFromBottom (footerHeight));
     footer.setBounds(footerArea);
-    
+
     area.removeFromLeft(leftRightMargin);
     area.removeFromRight(leftRightMargin);
     Rectangle<int> headerArea = area.removeFromTop (headerHeight);
     title.setBounds (headerArea);
     area.removeFromTop(10);
+    area.removeFromBottom(5);
+    
+    
+    { //====================== DELAY SETTINGS GROUP ==================================
+        const int rotSliderWidth = 55;
+        
+        Rectangle<int> settingsArea (area.removeFromRight(185));
+        delayGroup.setBounds (settingsArea);
+        settingsArea.removeFromTop (25); //for box headline
+        
+        Rectangle<int> sliderRow (settingsArea.removeFromTop(rotSliderHeight));
+        
+        delayLengthSlider.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
+        sliderRow.removeFromLeft(rotSliderSpacing);
+        revTimeSlider.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
+        sliderRow.removeFromLeft(rotSliderSpacing);
+        dryWetSlider.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
+        //sliderRow.removeFromLeft(3);
+        //networkOrder.setBounds (sliderRow.removeFromLeft(70));
+        //sliderRow.removeFromLeft(rotSliderSpacing);
+        
+        sliderRow = settingsArea.removeFromTop(labelHeight);
 
-    Rectangle<int> sliderRow;
-    Rectangle<int> highRow;
-    Rectangle<int> lowRow;
-    Rectangle<int> t60Row;
-    Rectangle<int> gainRow;
+        lbDelay.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
+        sliderRow.removeFromLeft(rotSliderSpacing);
+        lbTime.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
+        sliderRow.removeFromLeft(rotSliderSpacing);
+        lbDryWet.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
+        //delayArea.removeFromLeft(3);
+        // freezeMode.setBounds (delayArea.removeFromLeft(70));
+    }
+    
+    area.removeFromRight(10); //spacing
 
-    Rectangle<int> sideBarArea (area.removeFromRight(190));
-    //const int sliderHeight = 15;
-    const int rotSliderHeight = 55;
-    const int rotSliderSpacing = 10;
-    //const int sliderSpacing = 3;
-    const int rotSliderWidth = 55;
-    const int labelHeight = 15;
-    //const int labelWidth = 20;
+    
+    { //====================== T60 GROUP ==================================
+        Rectangle<int> t60Area (area.removeFromTop(150));
+        t60Group.setBounds (t60Area);
+        t60Area.removeFromTop (25);
+        tv.setBounds(t60Area);
+    }
+    
+    area.removeFromTop(10); //spacing
+    
+    
+    { //====================== FILTER GROUP ==================================
+        Rectangle<int> filterArea(area);
+        filterGroup.setBounds(filterArea);
+        filterArea.removeFromTop(25);
+        
+        Rectangle<int> sliderRow(filterArea.removeFromBottom(labelHeight));
+        lbLowCutoff.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
+        sliderRow.removeFromLeft (rotSliderSpacing);
+        lbLowQ.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
+        sliderRow.removeFromLeft (rotSliderSpacing);
+        lbLowGain.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
+        
+        
+        lbHighGain.setBounds (sliderRow.removeFromRight(rotSliderWidth));
+        sliderRow.removeFromRight (rotSliderSpacing);
+        lbHighQ.setBounds (sliderRow.removeFromRight(rotSliderWidth));
+        sliderRow.removeFromRight (rotSliderSpacing);
+        lbHighCutoff.setBounds (sliderRow.removeFromRight(rotSliderWidth));
+        
+        sliderRow = filterArea.removeFromBottom(rotSliderHeight-10);
+        
+        lowCutoffSlider.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
+        sliderRow.removeFromLeft(rotSliderSpacing);
+        lowQSlider.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
+        sliderRow.removeFromLeft(rotSliderSpacing);
+        lowGainSlider.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
+        
+        highGainSlider.setBounds (sliderRow.removeFromRight(rotSliderWidth));
+        sliderRow.removeFromRight(rotSliderSpacing);
+        highQSlider.setBounds (sliderRow.removeFromRight(rotSliderWidth));
+        sliderRow.removeFromRight(rotSliderSpacing);
+        highCutoffSlider.setBounds (sliderRow.removeFromRight(rotSliderWidth));
+        
+        fv.setBounds(filterArea);
+    }
+    
+    
+    
 
-    Rectangle<int> graphArea (area.removeFromLeft (230));
-
-    Rectangle<int> t60Area (graphArea.removeFromTop (170));
-    t60Group.setBounds (t60Area);
-    t60Area.removeFromTop (25);
-
-    Rectangle<int> gainArea (graphArea.removeFromTop (170));
-    gainGroup.setBounds (gainArea);
-    gainArea.removeFromTop (25);
-
-    Rectangle<int> delayArea (sideBarArea.removeFromTop (50 + rotSliderHeight + labelHeight));
-    delayGroup.setBounds (delayArea);
-    delayArea.removeFromTop (25); //for box headline
-
-    Rectangle<int> lowsArea (sideBarArea.removeFromTop (50 + rotSliderHeight + labelHeight));
-    lowsGroup.setBounds (lowsArea);
-    lowsArea.removeFromTop (25);
-
-    Rectangle<int> highsArea (sideBarArea.removeFromTop (50 + rotSliderHeight + labelHeight));
-    highsGroup.setBounds (highsArea);
-    highsArea.removeFromTop (25);
-
-
-//====================== LEFT SIDE VISUAL ELEMENTS =============================
-    t60Row = t60Area.removeFromTop (170);
-    tv.setBounds (t60Row);
-
-    gainRow = gainArea.removeFromTop (170);
-    fv.setBounds (gainRow);
-
-//====================== DELAY SETTINGS GROUP ==================================
-    sliderRow = delayArea.removeFromTop (rotSliderHeight);    delayLengthSlider.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
-    sliderRow.removeFromLeft(rotSliderSpacing);
-    revTimeSlider.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
-    sliderRow.removeFromLeft(rotSliderSpacing);
-    dryWetSlider.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
-    sliderRow.removeFromLeft(3);
-    //networkOrder.setBounds (sliderRow.removeFromLeft(70));
-    sliderRow.removeFromLeft(rotSliderSpacing);
-
-    lbDelay.setBounds (delayArea.removeFromLeft(rotSliderWidth));
-    delayArea.removeFromLeft(rotSliderSpacing);
-    lbTime.setBounds (delayArea.removeFromLeft(rotSliderWidth));
-    delayArea.removeFromLeft(rotSliderSpacing);
-    lbDryWet.setBounds (delayArea.removeFromLeft(rotSliderWidth));
-    delayArea.removeFromLeft(3);
-    // freezeMode.setBounds (delayArea.removeFromLeft(70));
-
-//====================== LOW SHELF FILTER GROUP ================================
-    lowRow = lowsArea.removeFromTop (rotSliderHeight);
-    lowCutoffSlider.setBounds (lowRow.removeFromLeft (rotSliderWidth));
-    lowRow.removeFromLeft(rotSliderSpacing);
-    lowQSlider.setBounds (lowRow.removeFromLeft (rotSliderWidth));
-    lowRow.removeFromLeft(rotSliderSpacing);
-    lowGainSlider.setBounds (lowRow.removeFromLeft (rotSliderWidth));
-
-    lbLowCutoff.setBounds (lowsArea.removeFromLeft (rotSliderWidth));
-    lowsArea.removeFromLeft (rotSliderSpacing);
-    lbLowQ.setBounds (lowsArea.removeFromLeft (rotSliderWidth));
-    lowsArea.removeFromLeft (rotSliderSpacing);
-    lbLowGain.setBounds (lowsArea.removeFromLeft (rotSliderWidth));
-
-//====================== HIGH SHELF FILTER GROUP ===============================
-    highRow = highsArea.removeFromTop (rotSliderHeight);
-    highCutoffSlider.setBounds (highRow.removeFromLeft (rotSliderWidth));
-    highRow.removeFromLeft(rotSliderSpacing);
-    highQSlider.setBounds (highRow.removeFromLeft (rotSliderWidth));
-    highRow.removeFromLeft(rotSliderSpacing);
-    highGainSlider.setBounds (highRow.removeFromLeft (rotSliderWidth));
-
-    lbHighCutoff.setBounds (highsArea.removeFromLeft (rotSliderWidth));
-    highsArea.removeFromLeft (rotSliderSpacing);
-    lbHighQ.setBounds (highsArea.removeFromLeft (rotSliderWidth));
-    highsArea.removeFromLeft (rotSliderSpacing);
-    lbHighGain.setBounds (highsArea.removeFromLeft (rotSliderWidth));
-
-    sideBarArea.removeFromTop(20);
 }

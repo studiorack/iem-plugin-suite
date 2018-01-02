@@ -42,38 +42,41 @@ FdnReverbAudioProcessor::FdnReverbAudioProcessor()
 {   
     parameters.createAndAddParameter ("delayLength", "Room Size", "",
                                       NormalisableRange<float> (1.0f, 30.0f, 1.0f), 20.0f, 
-                                      [](float value) {return String (value);},
+                                      [](float value) {return String (value, 0);},
                                       nullptr);
-    parameters.createAndAddParameter ("revTime", "Rev. Time", "s",
-                                      NormalisableRange<float> (0.0f, 60.0f, 0.01f), 5.f, 
-                                      [](float value) {return String (value);},
+    parameters.createAndAddParameter ("revTime", "Reverberation Time", "s",
+                                      NormalisableRange<float> (0.1f, 10.0f, 0.1f), 5.f,
+                                      [](float value) {return String (value,1);},
                                       nullptr);
-    parameters.createAndAddParameter ("highCutoff", "Highs Cutoff Frequency", "Hz",
-                                      NormalisableRange<float> (20.f, 20000.f, 1.f), 1000.f,
-                                      [](float value) {return String (value);},
-                                      nullptr);
-    parameters.createAndAddParameter ("highQ", "Highs Q Factor", "",
-                                      NormalisableRange<float> (0.01f, 0.7f, 0.01f), 0.5f,
-                                      [](float value) {return String (value);},
-                                      nullptr);
-    parameters.createAndAddParameter ("highGain",
-                                      "Highs Gain", "",
-                                      NormalisableRange<float> (0.01f, 1.f, 0.01f), 1.f,
-                                      [](float value) {return String (value);},
-                                      nullptr);
+    
     parameters.createAndAddParameter ("lowCutoff", "Lows Cutoff Frequency", "Hz",
                                       NormalisableRange<float> (20.f, 20000.f, 1.f), 100.f,
-                                      [](float value) {return String (value);},
+                                      [](float value) {return String (value, 0);},
                                       nullptr);
     parameters.createAndAddParameter ("lowQ", "Lows Q Factor", "",
-                                      NormalisableRange<float> (0.01f, 0.7f, 0.01f), 0.5f,
-                                      [](float value) {return String (value);},
+                                      NormalisableRange<float> (0.01f, 0.9f, 0.01f), 0.5f,
+                                      [](float value) {return String (value, 2);},
                                       nullptr);
-    parameters.createAndAddParameter ("lowGain", 
-                                      "Lows Gain", "",
-                                      NormalisableRange<float> (0.01f, 1.f, 0.01f), 1.f,
-                                      [](float value) {return String (value);},
+    parameters.createAndAddParameter ("lowGain",
+                                      "Lows Gain", "dB/s",
+                                      NormalisableRange<float> (-60.0f, 4.0, 0.1f), 1.f,
+                                      [](float value) {return String (value, 1);},
                                       nullptr);
+    
+    parameters.createAndAddParameter ("highCutoff", "Highs Cutoff Frequency", "Hz",
+                                      NormalisableRange<float> (20.f, 20000.f, 1.f), 2000.f,
+                                      [](float value) {return String (value, 0);},
+                                      nullptr);
+    parameters.createAndAddParameter ("highQ", "Highs Q Factor", "",
+                                      NormalisableRange<float> (0.01f, 0.9f, 0.01f), 0.5f,
+                                      [](float value) {return String (value, 2);},
+                                      nullptr);
+    parameters.createAndAddParameter ("highGain",
+                                      "Highs Gain", "dB/s",
+                                      NormalisableRange<float> (-60.0f, 4.0f, 0.1f), -10.f,
+                                      [](float value) {return String (value, 1);},
+                                      nullptr);
+
     
 //    parameters.createAndAddParameter ("fdnSize",
 //                                      "FDN size", "",
@@ -82,7 +85,7 @@ FdnReverbAudioProcessor::FdnReverbAudioProcessor()
 //                                      nullptr);
     parameters.createAndAddParameter ("dryWet", "Dry/Wet", "",
                                       NormalisableRange<float> (0.f, 1.f, 0.01f), 0.5f,
-                                      [](float value) {return String (value);},
+                                      [](float value) {return String (value, 2);},
                                       nullptr);
 
 
@@ -143,7 +146,7 @@ bool FdnReverbAudioProcessor::producesMidi() const
 
 double FdnReverbAudioProcessor::getTailLengthSeconds() const
 {
-    return 60.0;
+    return 10.0;
 }
 
 int FdnReverbAudioProcessor::getNumPrograms()
@@ -182,27 +185,30 @@ void FdnReverbAudioProcessor::parameterChanged (const String & parameterID, floa
 //        fdn.setFdnSize(*fdnSize >= 0.5f ? FeedbackDelayNetwork::big : FeedbackDelayNetwork::small);
     else
         {
-            FeedbackDelayNetwork::FilterParameter lowShelf;
-            FeedbackDelayNetwork::FilterParameter highShelf;
-
-            lowShelf.frequency = *lowCutoff;
-            lowShelf.q = *lowQ;
-            lowShelf.linearGain = *lowGain;
-
-            highShelf.frequency = *highCutoff;
-            highShelf.q = *highQ;
-            highShelf.linearGain = *highGain;
-
-            fdn.setFilterParameter (lowShelf, highShelf);
+            updateFilterParameters();
         }
 }
 
+void FdnReverbAudioProcessor::updateFilterParameters()
+{
+    FeedbackDelayNetwork::FilterParameter lowShelf;
+    FeedbackDelayNetwork::FilterParameter highShelf;
+    
+    lowShelf.frequency = *lowCutoff;
+    lowShelf.q = *lowQ;
+    lowShelf.linearGain = Decibels::decibelsToGain(*lowGain);
+    
+    highShelf.frequency = *highCutoff;
+    highShelf.q = *highQ;
+    highShelf.linearGain = Decibels::decibelsToGain(*highGain);
+    
+    fdn.setFilterParameter (lowShelf, highShelf);
+}
 //==============================================================================
 void FdnReverbAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    // Use this method as the place to do any pre-playback
-    // initialisation that you need..
-
+    updateFilterParameters();
+    
     ProcessSpec spec;
     spec.sampleRate = sampleRate;
     spec.maximumBlockSize = samplesPerBlock;
@@ -228,22 +234,7 @@ void FdnReverbAudioProcessor::reset()
 #ifndef JucePlugin_PreferredChannelConfigurations
 bool FdnReverbAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
 {
-    #if JucePlugin_IsMidiEffect
-        ignoreUnused (layouts);
-        return true;
-    #else
-        // This is the place where you check if the layout is supported.
-        if (layouts.getMainOutputChannels() > 64
-            || layouts.getMainOutputChannels() > 64)
-            return false;
-
-        // This checks if the input layout matches the output layout
-        #if ! JucePlugin_IsSynth
-            if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet())
-                return false;
-        #endif
-        return true;
-    #endif
+    return true;
 }
 #endif
 

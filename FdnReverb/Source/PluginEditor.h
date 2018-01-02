@@ -33,7 +33,7 @@
 
 using namespace juce::dsp;
 
-typedef AudioProcessorValueTreeState::SliderAttachment SliderAttachment;
+typedef ReverseSlider::SliderAttachment SliderAttachment;
 typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 
 //==============================================================================
@@ -67,7 +67,7 @@ private:
 
     // Functional stuff (sliders, Indicators, OpenGL Voodoo magic, etc.)
     // Groups
-    GroupComponent delayGroup, highsGroup, lowsGroup, t60Group, gainGroup;
+    GroupComponent delayGroup, filterGroup, t60Group;
 
     // Sliders
     ReverseSlider delayLengthSlider, revTimeSlider, dryWetSlider, highCutoffSlider, highQSlider, highGainSlider, lowCutoffSlider, lowQSlider, lowGainSlider;
