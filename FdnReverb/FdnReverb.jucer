@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <JUCERPROJECT id="Az27uX" name="FdnReverb" displaySplashScreen="0" reportAppUsage="0"
               splashScreenColour="Dark" projectType="audioplug" version="0.5.3"
               bundleIdentifier="at.iem.FdnReverb" includeBinaryInAppConfig="1"

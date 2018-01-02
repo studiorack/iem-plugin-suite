@@ -119,8 +119,8 @@ private:
     
     float knee {0.0f}, kneeHalf {0.0f};
     float threshold {- 10.0f};
-    float attackTime {0.01};
-    float releaseTime {0.15};
+    float attackTime {0.01f};
+    float releaseTime {0.15f};
     float slope {0.0f};
     float makeUpGain {0.0f};
     
