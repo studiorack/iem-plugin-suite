@@ -61,32 +61,32 @@ parameters (*this, nullptr)
     
     parameters.createAndAddParameter("threshold", "Threshold", "dB",
                                      NormalisableRange<float> (-60.0f, 0.0f, 0.1f), -10.0,
-                                     [](float value) {return String(value);}, nullptr);
+                                     [](float value) {return String(value, 1);}, nullptr);
     
     parameters.createAndAddParameter("knee", "Knee", "dB",
                                      NormalisableRange<float> (0.0f, 10.0f, 0.1f), 0.0f,
-                                     [](float value) {return String(value);}, nullptr);
+                                     [](float value) {return String(value, 1);}, nullptr);
     
     parameters.createAndAddParameter("attack", "Attack Time", "ms",
                                      NormalisableRange<float> (0.0f, 100.0f, 0.1f), 30.0,
-                                     [](float value) {return String(value);}, nullptr);
+                                     [](float value) {return String(value, 1);}, nullptr);
     
     parameters.createAndAddParameter("release", "Release Time", "ms",
                                      NormalisableRange<float> (0.0f, 500.0f, 0.1f), 150.0,
-                                     [](float value) {return String(value);}, nullptr);
+                                     [](float value) {return String(value, 1);}, nullptr);
     
     parameters.createAndAddParameter("ratio", "Ratio", " : 1",
                                      NormalisableRange<float> (1.0f, 16.0f, .2f), 4.0,
                                      [](float value) {
                                          if (value > 15.9f)
                                              return String("inf");
-                                         return String(value);
+                                         return String(value, 1);
                                          
                                      }, nullptr);
     
     parameters.createAndAddParameter("outGain", "MakeUp Gain", "dB",
-                                     NormalisableRange<float> (-10.0f, 10.0f, 0.10f), 0.0,
-                                     [](float value) {return String(value);}, nullptr);
+                                     NormalisableRange<float> (-10.0f, 10.0f, 0.1f), 0.0,
+                                     [](float value) {return String(value, 1);}, nullptr);
     
     parameters.state = ValueTree (Identifier ("OmniCompressor"));
     
