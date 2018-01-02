@@ -153,6 +153,12 @@ AmbisonicCompressorAudioProcessorEditor::AmbisonicCompressorAudioProcessorEditor
     slC1Threshold.setTextValueSuffix(" dB");
     slC1Threshold.setEnabled(isOn);
     
+    addAndMakeVisible(&slC1Knee);
+    slC1KneeAttachment = new SliderAttachment(valueTreeState,"c1Knee", slC1Knee);
+    slC1Knee.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
+    slC1Knee.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
+    slC1Knee.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
+    
     addAndMakeVisible(&slC1Ratio);
     slC1RatioAttachment = new SliderAttachment(valueTreeState,"c1Ratio", slC1Ratio);
     slC1Ratio.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
@@ -242,6 +248,12 @@ AmbisonicCompressorAudioProcessorEditor::AmbisonicCompressorAudioProcessorEditor
     slC2Threshold.setTextValueSuffix(" dB");
     slC2Threshold.setEnabled(isOn);
     
+    addAndMakeVisible(&slC2Knee);
+    slC2KneeAttachment = new SliderAttachment(valueTreeState,"c2Knee", slC2Knee);
+    slC2Knee.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
+    slC2Knee.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
+    slC2Knee.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
+    
     addAndMakeVisible(&slC2Ratio);
     slC2RatioAttachment = new SliderAttachment(valueTreeState,"c2Ratio", slC2Ratio);
     slC2Ratio.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
@@ -298,6 +310,8 @@ AmbisonicCompressorAudioProcessorEditor::AmbisonicCompressorAudioProcessorEditor
     
     addAndMakeVisible(&lbC1Threshold);
     lbC1Threshold.setText("Threshold");
+    addAndMakeVisible(&lbC1Knee);
+    lbC1Knee.setText("Knee");
     addAndMakeVisible(&lbC1Ratio);
     lbC1Ratio.setText("Ratio");
     addAndMakeVisible(&lbC1Attack);
@@ -309,6 +323,8 @@ AmbisonicCompressorAudioProcessorEditor::AmbisonicCompressorAudioProcessorEditor
     
     addAndMakeVisible(&lbC2Threshold);
     lbC2Threshold.setText("Threshold");
+    addAndMakeVisible(&lbC2Knee);
+    lbC2Knee.setText("Knee");
     addAndMakeVisible(&lbC2Ratio);
     lbC2Ratio.setText("Ratio");
     addAndMakeVisible(&lbC2Attack);
@@ -354,6 +370,7 @@ void AmbisonicCompressorAudioProcessorEditor::buttonStateChanged (Button* button
         slC1Makeup.setEnabled(isOn);
      
         lbC1Threshold.setEnabled(isOn);
+        lbC1Knee.setEnabled(isOn);
         lbC1Ratio.setEnabled(isOn);
         lbC1Attack.setEnabled(isOn);
         lbC1Release.setEnabled(isOn);
@@ -365,6 +382,7 @@ void AmbisonicCompressorAudioProcessorEditor::buttonStateChanged (Button* button
     else if (button->getName() == "C2")
     {
         slC2Threshold.setEnabled(isOn);
+        lbC2Knee.setEnabled(isOn);
         slC2Ratio.setEnabled(isOn);
         slC2Attack.setEnabled(isOn);
         slC2Release.setEnabled(isOn);
@@ -460,16 +478,18 @@ void AmbisonicCompressorAudioProcessorEditor::resized()
         
         //first Sliders
         sliderRow = temp.removeFromTop(60);
-        sliderRow.removeFromLeft(25);
         slC1Threshold.setBounds(sliderRow.removeFromLeft(45));
-        sliderRow.removeFromRight(25);
-        slC1Makeup.setBounds(sliderRow.removeFromRight(45));
+        sliderRow.removeFromLeft(sliderSpacing);
+        slC1Knee.setBounds(sliderRow.removeFromLeft(45));
+        sliderRow.removeFromLeft(sliderSpacing);
+        slC1Makeup.setBounds(sliderRow.removeFromLeft(45));
         
         sliderRow = temp.removeFromTop(15);
-        sliderRow.removeFromLeft(20);
         lbC1Threshold.setBounds(sliderRow.removeFromLeft(50));
-        sliderRow.removeFromRight(25);
-        lbC1Makeup.setBounds(sliderRow.removeFromRight(45));
+        sliderRow.removeFromLeft(sliderSpacing);
+        lbC1Knee.setBounds(sliderRow.removeFromLeft(50));
+        sliderRow.removeFromLeft(sliderSpacing);
+        lbC1Makeup.setBounds(sliderRow.removeFromLeft(45));
         
         temp.removeFromTop(5);//spacing
         
@@ -513,16 +533,18 @@ void AmbisonicCompressorAudioProcessorEditor::resized()
         
         //first Sliders
         sliderRow = temp.removeFromTop(60);
-        sliderRow.removeFromLeft(25);
         slC2Threshold.setBounds(sliderRow.removeFromLeft(45));
-        sliderRow.removeFromRight(25);
-        slC2Makeup.setBounds(sliderRow.removeFromRight(45));
+        sliderRow.removeFromLeft(sliderSpacing);
+        slC2Knee.setBounds(sliderRow.removeFromLeft(45));
+        sliderRow.removeFromLeft(sliderSpacing);
+        slC2Makeup.setBounds(sliderRow.removeFromLeft(45));
         
         sliderRow = temp.removeFromTop(15);
-        sliderRow.removeFromLeft(20);
         lbC2Threshold.setBounds(sliderRow.removeFromLeft(50));
-        sliderRow.removeFromRight(25);
-        lbC2Makeup.setBounds(sliderRow.removeFromRight(45));
+        sliderRow.removeFromLeft(sliderSpacing);
+        lbC2Knee.setBounds(sliderRow.removeFromLeft(50));
+        sliderRow.removeFromLeft(sliderSpacing);
+        lbC2Makeup.setBounds(sliderRow.removeFromLeft(45));
         
         temp.removeFromTop(5);//spacing
         

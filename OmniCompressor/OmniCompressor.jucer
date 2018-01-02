@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <JUCERPROJECT id="PASmMZ" name="OmniCompressor" displaySplashScreen="0" reportAppUsage="0"
-              splashScreenColour="Dark" projectType="audioplug" version="0.9.4"
+              splashScreenColour="Dark" projectType="audioplug" version="1.0.1"
               bundleIdentifier="at.iem.OmniCompressor" includeBinaryInAppConfig="1"
               buildVST="1" buildVST3="0" buildAU="0" buildAUv3="0" buildRTAS="0"
               buildAAX="0" buildStandalone="1" enableIAA="0" pluginName="OmniCompressor"
@@ -10,7 +10,7 @@
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
               pluginAUExportPrefix="OmniCompressorAU" pluginRTASCategory=""
               aaxIdentifier="at.iem.OmniCompressor" pluginAAXCategory="AAX_ePlugInCategory_Dynamics"
-              jucerVersion="5.2.0" cppLanguageStandard="11" companyName="IEM"
+              jucerVersion="5.2.0" cppLanguageStandard="14" companyName="IEM"
               companyWebsite="IEM.at" companyCopyright="IEM - Daniel Rudrich">
   <MAINGROUP id="Ld9vSw" name="OmniCompressor">
     <GROUP id="{C32F7877-3111-BA83-FFEC-FCA65904B997}" name="customComponents"/>
@@ -56,6 +56,7 @@
         <MODULEPATH id="juce_audio_processors" path="../../../../../Applications/JUCE/modules"/>
         <MODULEPATH id="juce_audio_plugin_client" path="../../../../../Applications/JUCE/modules"/>
         <MODULEPATH id="juce_audio_utils" path="../../../../../Applications/JUCE/modules"/>
+        <MODULEPATH id="juce_dsp" path="../../../../../Applications/JUCE/modules"/>
       </MODULEPATHS>
     </XCODE_MAC>
     <VS2017 targetFolder="Builds/VisualStudio2017">
@@ -86,6 +87,7 @@
         <MODULEPATH id="juce_audio_formats" path="../../juce"/>
         <MODULEPATH id="juce_audio_devices" path="../../juce"/>
         <MODULEPATH id="juce_audio_basics" path="../../juce"/>
+        <MODULEPATH id="juce_dsp" path="../../../../../Applications/JUCE/modules"/>
       </MODULEPATHS>
     </VS2017>
     <LINUX_MAKE targetFolder="Builds/LinuxMakefile">
@@ -109,6 +111,7 @@
         <MODULEPATH id="juce_audio_formats" path="../../../../../Applications/JUCE/modules"/>
         <MODULEPATH id="juce_audio_devices" path="../../../../../Applications/JUCE/modules"/>
         <MODULEPATH id="juce_audio_basics" path="../../../../../Applications/JUCE/modules"/>
+        <MODULEPATH id="juce_dsp" path="../../../../../Applications/JUCE/modules"/>
       </MODULEPATHS>
     </LINUX_MAKE>
   </EXPORTFORMATS>
@@ -122,6 +125,7 @@
     <MODULE id="juce_audio_utils" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_core" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_data_structures" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_dsp" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_events" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_graphics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_gui_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>

@@ -30,18 +30,19 @@
 #include "../../resources/customComponents/SimpleLabel.h"
 #include "../../resources/customComponents/LevelMeter.h"
 
-typedef AudioProcessorValueTreeState::SliderAttachment SliderAttachment;
+//typedef AudioProcessorValueTreeState::SliderAttachment SliderAttachment;
+typedef ReverseSlider::SliderAttachment SliderAttachment;
 typedef AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
 
 //==============================================================================
 /**
 */
-class AmbisonicCompressorAudioProcessorEditor  : public AudioProcessorEditor,
+class OmniCompressorAudioProcessorEditor  : public AudioProcessorEditor,
 private Timer
 {
 public:
-    AmbisonicCompressorAudioProcessorEditor (AmbisonicCompressorAudioProcessor&, AudioProcessorValueTreeState&);
-    ~AmbisonicCompressorAudioProcessorEditor();
+    OmniCompressorAudioProcessorEditor (OmniCompressorAudioProcessor&, AudioProcessorValueTreeState&);
+    ~OmniCompressorAudioProcessorEditor();
 
     //==============================================================================
     void paint (Graphics&) override;
@@ -50,7 +51,7 @@ public:
 private:
     LaF globalLaF;
 
-    AmbisonicCompressorAudioProcessor& processor;
+    OmniCompressorAudioProcessor& processor;
     AudioProcessorValueTreeState& valueTreeState;
     
     TitleBar<AmbisonicIOWidget, NoIOWidget> title;
@@ -59,12 +60,12 @@ private:
     
     void timerCallback() override;
     
-    ReverseSlider sliderInpGain, sliderThreshold, sliderRatio, sliderAttackTime, sliderReleaseTime, sliderMakeupGain;
+    ReverseSlider sliderKnee, sliderThreshold, sliderRatio, sliderAttackTime, sliderReleaseTime, sliderMakeupGain;
     
     ScopedPointer<ComboBoxAttachment> cbNormalizationAtachement;
     ScopedPointer<ComboBoxAttachment> cbOrderAtachement;
     
-    ScopedPointer<SliderAttachment> IGAttachment;
+    ScopedPointer<SliderAttachment> KnAttachment;
     ScopedPointer<SliderAttachment> ThAttachment;
     ScopedPointer<SliderAttachment> RaAttachment;
     ScopedPointer<SliderAttachment> ATAttachment;
@@ -74,7 +75,7 @@ private:
 
     LevelMeter inpMeter, dbGRmeter;
     
-    SimpleLabel lbInpGain, lbThreshold, lbOutGain, lbRatio, lbAttack, lbRelease;
+    SimpleLabel lbKnee, lbThreshold, lbOutGain, lbRatio, lbAttack, lbRelease;
     
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AmbisonicCompressorAudioProcessorEditor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OmniCompressorAudioProcessorEditor)
 };

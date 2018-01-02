@@ -26,19 +26,20 @@
 #include "../../resources/MaxRE.h"
 #include "../../resources/ambisonicTools.h"
 #include "../../resources/IOHelper.h"
+#include "../../resources/Compressor.h"
 
 //==============================================================================
 /**
 */
-class AmbisonicCompressorAudioProcessor  : public AudioProcessor,
+class OmniCompressorAudioProcessor  : public AudioProcessor,
                                             public AudioProcessorValueTreeState::Listener,
 public IOHelper<IOTypes::Ambisonics<>, IOTypes:: Ambisonics<>>
 
 {
 public:
     //==============================================================================
-    AmbisonicCompressorAudioProcessor();
-    ~AmbisonicCompressorAudioProcessor();
+    OmniCompressorAudioProcessor();
+    ~OmniCompressorAudioProcessor();
 
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
@@ -80,22 +81,19 @@ public:
     
 private:
     //==============================================================================
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AmbisonicCompressorAudioProcessor)
-    IIRFilter meanSqrFilter;
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OmniCompressorAudioProcessor)
     
+    Compressor compressor;
     AudioProcessorValueTreeState parameters;
     
     Array<float> RMS, gains, allGR;
-    //float *RMS;
-    //float *gains;
-    //float *allGR;
     
     float GR;
     float *orderSetting;
-    float *inGain;
     float *threshold;
     float *outGain;
     float *ratio;
     float *attack;
     float *release;
+    float *knee;
 };

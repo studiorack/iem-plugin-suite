@@ -68,7 +68,7 @@ parameters(*this, nullptr)
     
     parameters.createAndAddParameter("param2", "Parameter 2", "dB",
                                      NormalisableRange<float> (-50.0f, 0.0f, 0.1f), -10.0,
-                                     [](float value) {return String(value);}, nullptr);
+                                     [](float value) {return String(value, 1);}, nullptr);
     
     // this must be initialised after all calls to createAndAddParameter().
     parameters.state = ValueTree (Identifier ("PluginTemplate"));

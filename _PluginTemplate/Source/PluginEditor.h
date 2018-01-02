@@ -34,7 +34,7 @@
 #include "../../resources/customComponents/SimpleLabel.h"
 
 
-typedef AudioProcessorValueTreeState::SliderAttachment SliderAttachment;
+typedef ReverseSlider::SliderAttachment SliderAttachment; // all ReverseSliders will make use of the parameters' valueToText() function
 typedef AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
 typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 
@@ -82,7 +82,8 @@ private:
     ScopedPointer<ComboBoxAttachment> cbNormalizationSettingAttachment;
     
     // Demo stuff
-    ReverseSlider slParam1, slParam2;
+    Slider slParam1;
+    ReverseSlider slParam2;
     ScopedPointer<SliderAttachment> slParam1Attachment, slParam2Attachment;
     
     

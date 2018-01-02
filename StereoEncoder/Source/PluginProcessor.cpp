@@ -181,17 +181,17 @@ void StereoEncoderAudioProcessor::prepareToPlay(double sampleRate, int samplesPe
     
     bufferCopy.setSize(2, samplesPerBlock);
     
+    smoothYawL.setValue(*yaw / 180.0f * (float) M_PI);
+    smoothPitchL.setValue(*pitch / 180.0f * (float) M_PI);
+    
+    smoothYawR.setValue(*yaw / 180.0f * (float) M_PI);
+    smoothPitchR.setValue(*pitch / 180.0f * (float) M_PI);
+    
+    
     smoothYawL.reset(1, samplesPerBlock);
     smoothPitchL.reset(1, samplesPerBlock);
     smoothYawR.reset(1, samplesPerBlock);
     smoothPitchR.reset(1, samplesPerBlock);
-    
-    smoothYawL.setValue(*yaw / 180.0f * (float) M_PI, true);
-    smoothPitchL.setValue(*pitch / 180.0f * (float) M_PI, true);
-    
-    smoothYawR.setValue(*yaw / 180.0f * (float) M_PI, true);
-    smoothPitchR.setValue(*pitch / 180.0f * (float) M_PI, true);
-    
 }
 
 void StereoEncoderAudioProcessor::releaseResources() {
@@ -275,10 +275,10 @@ void StereoEncoderAudioProcessor::processBlock(AudioSampleBuffer &buffer, MidiBu
     
     if (*highQuality < 0.5f)
     {
-        smoothYawL.setValue(yawL, true);
-        smoothPitchL.setValue(pitchL, true);
-        smoothYawR.setValue(yawR, true);
-        smoothPitchR.setValue(pitchR, true);
+//        smoothYawL.setValue(yawL, true);
+//        smoothPitchL.setValue(pitchL, true);
+//        smoothYawR.setValue(yawR, true);
+//        smoothPitchR.setValue(pitchR, true);
         
         
         SHEval(ambisonicOrder, xyzL[0], xyzL[1], xyzL[2], SHL);

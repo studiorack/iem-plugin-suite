@@ -410,7 +410,7 @@ public:
 private:
     
     bool filtersAreParallel = false;
-    float overallGainInDb;
+    float overallGainInDb {0.0};
     
     int sampleRate;
     

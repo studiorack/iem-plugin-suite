@@ -267,7 +267,7 @@ bool DirectivityShaperAudioProcessor::isBusesLayoutSupported (const BusesLayout&
 
 void DirectivityShaperAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
-    checkInputAndOutput(this, 1, *orderSetting, true);
+    checkInputAndOutput(this, 1, *orderSetting);
     ScopedNoDenormals noDenormals;
     _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON); // alternative?: fesetenv(FE_DFL_DISABLE_SSE_DENORMS_ENV);
     

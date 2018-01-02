@@ -32,7 +32,7 @@
 #include "../../resources/customComponents/SimpleLabel.h"
 #include "../../resources/customComponents/IEMSphere.h"
 
-typedef AudioProcessorValueTreeState::SliderAttachment SliderAttachment;
+typedef ReverseSlider::SliderAttachment SliderAttachment;
 typedef AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
 typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 
@@ -81,17 +81,17 @@ private:
     ToggleButton tbC2;
     
     ReverseSlider slPreGain, slYaw, slPitch, slWidth;
-    ReverseSlider slC1Threshold, slC1Ratio, slC1Attack, slC1Release, slC1Makeup;
-    ReverseSlider slC2Threshold, slC2Ratio, slC2Attack, slC2Release, slC2Makeup;
+    ReverseSlider slC1Threshold, slC1Knee, slC1Ratio, slC1Attack, slC1Release, slC1Makeup;
+    ReverseSlider slC2Threshold, slC2Knee, slC2Ratio, slC2Attack, slC2Release, slC2Makeup;
     
     ComboBox cbC1Driving, cbC1Apply;
     ComboBox cbC2Driving, cbC2Apply;
     ComboBox cbListen;
     
     ScopedPointer<SliderAttachment> slPreGainAttachment, slYawAttachment, slPitchAttachment, slWidthAttachment;
-    ScopedPointer<SliderAttachment> slC1ThresholdAttachment, slC1RatioAttachment;
+    ScopedPointer<SliderAttachment> slC1ThresholdAttachment, slC1KneeAttachment, slC1RatioAttachment;
     ScopedPointer<SliderAttachment> slC1AttackAttachment, slC1ReleaseAttachment, slC1MakeupAttachment;
-    ScopedPointer<SliderAttachment> slC2ThresholdAttachment, slC2RatioAttachment;
+    ScopedPointer<SliderAttachment> slC2ThresholdAttachment, slC2KneeAttachment, slC2RatioAttachment;
     ScopedPointer<SliderAttachment> slC2AttackAttachment, slC2ReleaseAttachment, slC2MakeupAttachment;
     
     ScopedPointer<ComboBoxAttachment> cbC1DrivingAttachment, cbC1ApplyAttachment;
@@ -104,8 +104,8 @@ private:
     LevelMeter dbC2GRmeter, dbC2RMSmeter;
     
     SimpleLabel lbPreGain, lbYaw, lbPitch, lbWidth;
-    SimpleLabel lbC1Threshold, lbC1Ratio, lbC1Attack, lbC1Release, lbC1Makeup;
-    SimpleLabel lbC2Threshold, lbC2Ratio, lbC2Attack, lbC2Release, lbC2Makeup;
+    SimpleLabel lbC1Threshold, lbC1Knee, lbC1Ratio, lbC1Attack, lbC1Release, lbC1Makeup;
+    SimpleLabel lbC2Threshold, lbC2Knee, lbC2Ratio, lbC2Attack, lbC2Release, lbC2Makeup;
     
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AmbisonicCompressorAudioProcessorEditor)

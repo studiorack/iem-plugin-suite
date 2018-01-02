@@ -20,8 +20,10 @@
  ==============================================================================
  */
 
-#pragma once
+/* Parts of this code originate from Yair Chuchem's AudioProcessorParameterSlider class:
+ https://gist.github.com/yairchu */
 
+#pragma once
 
 #define RS_FLT_EPSILON 1.19209290E-07F
 class ReverseSlider : public Slider
@@ -38,6 +40,27 @@ public:
     ~ ReverseSlider () {}
 
 public:
+    
+    class SliderAttachment : public juce::AudioProcessorValueTreeState::SliderAttachment
+    {
+    public:
+        SliderAttachment (juce::AudioProcessorValueTreeState& stateToControl,
+                          const juce::String& parameterID,
+                          ReverseSlider& sliderToControl) : AudioProcessorValueTreeState::SliderAttachment (stateToControl, parameterID, sliderToControl)
+        {
+            sliderToControl.setParameter(stateToControl.getParameter(parameterID));
+        };
+        
+        SliderAttachment (juce::AudioProcessorValueTreeState& stateToControl,
+                          const juce::String& parameterID,
+                          Slider& sliderToControl) : AudioProcessorValueTreeState::SliderAttachment (stateToControl, parameterID, sliderToControl)
+        {
+        };
+        
+        virtual ~SliderAttachment() = default;
+    };
+    
+    
     void setReverse (bool shouldBeReversed)
     {
         if (reversed != shouldBeReversed)
@@ -55,7 +78,36 @@ public:
         }
     }
 
+    void setParameter (const AudioProcessorParameter* p)
+    {
+        if (parameter == p)
+            return;
+        parameter = p;
+        updateText();
+        repaint();
+    }
 
+    String getTextFromValue(double value) override
+    {
+        if (parameter == nullptr)
+            return Slider::getTextFromValue (value);
+        
+        // juce::AudioProcessorValueTreeState::SliderAttachment sets the slider minimum and maximum to custom values.
+        // We map the range to a 0 to 1 range.
+        const NormalisableRange<double> range (getMinimum(), getMaximum());
+        const float normalizedVal = (float) range.convertTo0to1 (value);
+        
+        String result = parameter->getText (normalizedVal, getNumDecimalPlacesToDisplay()) + " " + parameter->getLabel();
+        return result;
+    }
+    
+    double getValueFromText (const String& text) override
+    {
+        if (parameter == nullptr)
+            return Slider::getValueFromText(text);
+        const NormalisableRange<double> range (getMinimum(), getMaximum());
+        return range.convertFrom0to1(parameter->getValueForText(text));
+    }
 
     double proportionOfLengthToValue (double proportion) override
     {
@@ -168,4 +220,5 @@ private:
     bool reversed;
     bool isDual;
     bool scrollWheelEnabled;
+    const AudioProcessorParameter* parameter {nullptr};
 };
