@@ -322,7 +322,7 @@ class IEMLogo : public Component
 public:
     IEMLogo() : Component() {
         IEMPath.loadPathFromData (IEMpathData, sizeof (IEMpathData));
-        url = URL("https://www.iem.at/");
+        url = URL("https://iem.at/");
     }
     ~IEMLogo() {};
     
