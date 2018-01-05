@@ -59,7 +59,7 @@ public:
         robotoMedium = Typeface::createSystemTypefaceFor(BinaryData::RobotoMedium_ttf, BinaryData::RobotoMedium_ttfSize);
         robotoBold = Typeface::createSystemTypefaceFor(BinaryData::RobotoBold_ttf, BinaryData::RobotoBold_ttfSize);
         robotoRegular = Typeface::createSystemTypefaceFor(BinaryData::RobotoRegular_ttf, BinaryData::RobotoRegular_ttfSize); //
-
+        
         setColour (Slider::rotarySliderFillColourId, Colours::black);
         setColour (Slider::thumbColourId, Colour (0xCCFFFFFF));
         setColour (TextButton::buttonColourId, Colours::black);
@@ -127,13 +127,13 @@ public:
                 layout.textBoxBounds.setHeight (textBoxHeight);
                 
                 if (textBoxPos == Slider::TextBoxLeft)           layout.textBoxBounds.setX (0);
-                    else if (textBoxPos == Slider::TextBoxRight)     layout.textBoxBounds.setX (localBounds.getWidth() - textBoxWidth);
-                        else /* above or below -> centre horizontally */ layout.textBoxBounds.setX ((localBounds.getWidth() - textBoxWidth) / 2);
-                            
-                            if (textBoxPos == Slider::TextBoxAbove)          layout.textBoxBounds.setY (0);
-                                else if (textBoxPos == Slider::TextBoxBelow)     layout.textBoxBounds.setY (localBounds.getHeight() - textBoxHeight);
-                                    else /* left or right -> centre vertically */    layout.textBoxBounds.setY ((localBounds.getHeight() - textBoxHeight) / 2);
-                                        }
+                else if (textBoxPos == Slider::TextBoxRight)     layout.textBoxBounds.setX (localBounds.getWidth() - textBoxWidth);
+                else /* above or below -> centre horizontally */ layout.textBoxBounds.setX ((localBounds.getWidth() - textBoxWidth) / 2);
+                
+                if (textBoxPos == Slider::TextBoxAbove)          layout.textBoxBounds.setY (0);
+                else if (textBoxPos == Slider::TextBoxBelow)     layout.textBoxBounds.setY (localBounds.getHeight() - textBoxHeight);
+                else /* left or right -> centre vertically */    layout.textBoxBounds.setY ((localBounds.getHeight() - textBoxHeight) / 2);
+            }
         }
         
         // 3. set the slider bounds
@@ -147,15 +147,15 @@ public:
         else
         {
             if (textBoxPos == Slider::TextBoxLeft)       layout.sliderBounds.removeFromLeft (textBoxWidth);
-                else if (textBoxPos == Slider::TextBoxRight) layout.sliderBounds.removeFromRight (textBoxWidth);
-                    else if (textBoxPos == Slider::TextBoxAbove) layout.sliderBounds.removeFromTop (textBoxHeight);
-                        else if (textBoxPos == Slider::TextBoxBelow) layout.sliderBounds.removeFromBottom (textBoxHeight);
-                            
-                            const int thumbIndent = getSliderThumbRadius (slider);
-                            
-                            if (slider.isHorizontal())    layout.sliderBounds.reduce (thumbIndent, 0);
-                                else if (slider.isVertical()) layout.sliderBounds.reduce (0, thumbIndent);
-                                    }
+            else if (textBoxPos == Slider::TextBoxRight) layout.sliderBounds.removeFromRight (textBoxWidth);
+            else if (textBoxPos == Slider::TextBoxAbove) layout.sliderBounds.removeFromTop (textBoxHeight);
+            else if (textBoxPos == Slider::TextBoxBelow) layout.sliderBounds.removeFromBottom (textBoxHeight);
+            
+            const int thumbIndent = getSliderThumbRadius (slider);
+            
+            if (slider.isHorizontal())    layout.sliderBounds.reduce (thumbIndent, 0);
+            else if (slider.isVertical()) layout.sliderBounds.reduce (0, thumbIndent);
+        }
         
         return layout;
         
@@ -204,9 +204,9 @@ public:
     }
     
     void drawCornerResizer (Graphics& g,
-                                            int w, int h,
-                                            bool /*isMouseOver*/,
-                                            bool /*isMouseDragging*/) override
+                            int w, int h,
+                            bool /*isMouseOver*/,
+                            bool /*isMouseDragging*/) override
     {
         g.setColour (Colours::white.withMultipliedAlpha(0.5f));
         
@@ -221,21 +221,21 @@ public:
     
     void fillTextEditorBackground (Graphics& g, int width, int height, TextEditor& textEditor) override
     {
-                if (dynamic_cast<AlertWindow*> (textEditor.getParentComponent()) != nullptr)
-                {
-                    g.setColour (textEditor.findColour (TextEditor::backgroundColourId));
-                    g.fillRect (0, 0, width, height);
-        
-                    g.setColour (textEditor.findColour (TextEditor::outlineColourId));
-                    g.drawHorizontalLine (height - 1, 0.0f, static_cast<float> (width));
-                }
-                else
-                {
-                    Path p;
-                    p.addRoundedRectangle(0, 0, width, height, height/2.0f);
-                    g.setColour (ClTextTextboxbg);
-                    g.fillPath (p);
-                }
+        if (dynamic_cast<AlertWindow*> (textEditor.getParentComponent()) != nullptr)
+        {
+            g.setColour (textEditor.findColour (TextEditor::backgroundColourId));
+            g.fillRect (0, 0, width, height);
+            
+            g.setColour (textEditor.findColour (TextEditor::outlineColourId));
+            g.drawHorizontalLine (height - 1, 0.0f, static_cast<float> (width));
+        }
+        else
+        {
+            Path p;
+            p.addRoundedRectangle(0, 0, width, height, 12.0f);
+            g.setColour (ClTextTextboxbg);
+            g.fillPath (p);
+        }
     }
     
     
@@ -278,18 +278,18 @@ public:
             
             if (style == Slider::LinearBarVertical)
                 p.addRectangle (fx, sliderPos, fw, 1.0f + fh - sliderPos);
-                else
-                    p.addRectangle (fx, fy, sliderPos - fx, fh);
-                    
-                    
-                    Colour baseColour (slider.findColour (Slider::rotarySliderFillColourId)
-                                       .withMultipliedSaturation (slider.isEnabled() ? 1.0f : 0.5f)
-                                       .withMultipliedAlpha (1.0f));
-                    
-                    g.setColour (baseColour);
-                    g.fillPath (p);
-                    
-                    const float lineThickness = jmin (15.0f, jmin (width, height) * 0.45f) * 0.1f;
+            else
+                p.addRectangle (fx, fy, sliderPos - fx, fh);
+            
+            
+            Colour baseColour (slider.findColour (Slider::rotarySliderFillColourId)
+                               .withMultipliedSaturation (slider.isEnabled() ? 1.0f : 0.5f)
+                               .withMultipliedAlpha (1.0f));
+            
+            g.setColour (baseColour);
+            g.fillPath (p);
+            
+            const float lineThickness = jmin (15.0f, jmin (width, height) * 0.45f) * 0.1f;
             g.drawRect (slider.getLocalBounds().toFloat(), lineThickness);
         }
         else
@@ -329,7 +329,7 @@ public:
             }
             else
             {
-            clbar.addRoundedRectangle(Rectangle<float>(Point<float>(x+width*zeroPos, iy), Point<float>(sliderPos, iy+sliderRadius)),sliderRadius/2.0,sliderRadius/2.0);
+                clbar.addRoundedRectangle(Rectangle<float>(Point<float>(x+width*zeroPos, iy), Point<float>(sliderPos, iy+sliderRadius)),sliderRadius/2.0,sliderRadius/2.0);
             }
         }
         else
@@ -348,7 +348,7 @@ public:
         g.setColour(ClFaceShadowOutline);
         
         g.strokePath(slbg, PathStrokeType(1.f));
-
+        
         
     }
     
@@ -442,7 +442,7 @@ public:
         
         //bool isDownOrDragging = slider.isEnabled() && (slider.isMouseOverOrDragging() || slider.isMouseButtonDown());
         //Colour knobColour (slider.findColour (Slider::thumbColourId).withMultipliedSaturation ((slider.hasKeyboardFocus (false) || isDownOrDragging) ? 1.3f : 0.9f)
-                          // .withMultipliedAlpha (slider.isEnabled() ? 1.0f : 0.7f));
+        // .withMultipliedAlpha (slider.isEnabled() ? 1.0f : 0.7f));
         Colour knobColour = slider.findColour(Slider::rotarySliderOutlineColourId).withMultipliedAlpha (slider.isEnabled() ? 1.0f : 0.7f);
         const float outlineThickness = slider.isEnabled() ? 1.9f : 0.3f;
         
@@ -461,7 +461,7 @@ public:
                 ky = y + height * 0.5f;
             }
             
-
+            
             
             drawRoundThumb (g,
                             kx,
@@ -482,7 +482,7 @@ public:
                             maxSliderPos,
                             sliderRadius * 2.0f,
                             knobColour, outlineThickness);
-            }
+        }
         else if (style == Slider::TwoValueHorizontal )
         {
             drawRoundThumb (g,
@@ -496,8 +496,8 @@ public:
                             jmax (sliderRadius, y + height * 0.5f),
                             sliderRadius * 2.0f,
                             knobColour, outlineThickness);
-
-            }
+            
+        }
         else
         {
             // Just call the base class for the demo
@@ -522,7 +522,7 @@ public:
         g.strokePath (p, PathStrokeType (outlineThickness));
         
         g.setColour (ClRotSliderArrowShadow);
-        g.drawEllipse (centreX + 1.0f - halfThickness, centreY + 1.0f - halfThickness, diameter - outlineThickness-1.0f, diameter - outlineThickness-1.0f, 1.4f);       
+        g.drawEllipse (centreX + 1.0f - halfThickness, centreY + 1.0f - halfThickness, diameter - outlineThickness-1.0f, diameter - outlineThickness-1.0f, 1.4f);
     }
     
     
@@ -531,7 +531,7 @@ public:
         return new TextButton (isIncrement ? "+" : "-", String());
         //return new ArrowButton (String(),isIncrement ? 0.75 : 0.25f,Colours::white);
     }
-
+    
     
     
     void drawButtonBackground (Graphics& g, Button& button, const Colour& backgroundColour,
@@ -541,19 +541,19 @@ public:
                            .withMultipliedAlpha (button.isEnabled() ? 1.0f : 0.5f));
         
         if (isButtonDown || isMouseOverButton) baseColour = baseColour.contrasting (isButtonDown ? 0.3f : 0.1f);
-            
+        
         const bool flatOnLeft   = button.isConnectedOnLeft();
         const bool flatOnRight  = button.isConnectedOnRight();
         const bool flatOnTop    = button.isConnectedOnTop();
         const bool flatOnBottom = button.isConnectedOnBottom();
-            
+        
         const float width  = button.getWidth();
         const float height = button.getHeight() ;
         
         if (width > 0 && height > 0)
         {
             const float cornerSize = jmin (15.0f, jmin (width, height) * 0.45f);
-
+            
             
             Path outline;
             outline.addRoundedRectangle (0.0f, 0.0f, width, height,
@@ -567,7 +567,7 @@ public:
             g.setColour (baseColour);
             g.fillPath (outline);
             
-
+            
         }
     }
     void drawButtonText (Graphics& g, TextButton& button, bool /*isMouseOverButton*/, bool /*isButtonDown*/) override
@@ -593,25 +593,25 @@ public:
     }
     
     void drawToggleButton (Graphics& g, ToggleButton& button,
-                                           bool isMouseOverButton, bool isButtonDown) override
+                           bool isMouseOverButton, bool isButtonDown) override
     {
         if (button.getButtonText() == "ON/OFF")
         {
             Colour baseColour (Colours::black.withMultipliedSaturation (button.hasKeyboardFocus (true) ? 1.3f : 0.9f)
                                .withMultipliedAlpha (button.isEnabled() ? 1.0f : 0.5f));
-
-                
+            
+            
             const float width  = button.getWidth();
             const float height = button.getHeight() ;
             bool isOn = button.getToggleState();
             const float cornerSize = jmin (15.0f, jmin (width, height) * 0.45f);
-                    
-                    
+            
+            
             Path outline;
             outline.addRoundedRectangle (0.5f, 0.5f, width-1, height-1,
-                                                 cornerSize, cornerSize);
-                    
-                    
+                                         cornerSize, cornerSize);
+            
+            
             g.setColour (baseColour);
             g.fillPath (outline);
             if (isMouseOverButton)
@@ -664,13 +664,13 @@ public:
                       bool isButtonDown) override
     {
         const float boxSize = w * 0.8f;
-
+        
         Rectangle<float> buttonArea(x + (w - boxSize) * 0.5f, y + (h - boxSize) * 0.5f, boxSize, boxSize);
         
-
+        
         g.setColour(component.findColour(ToggleButton::tickColourId).withMultipliedAlpha(ticked ? 1.0f : isMouseOverButton ? 0.7f : 0.5f) );
         
-
+        
         if (isMouseOverButton)
             buttonArea.reduce(0.4f, 0.4f);
         g.drawRoundedRectangle(buttonArea, 2.0f, 1.0f);
@@ -680,8 +680,8 @@ public:
         g.setColour(component.findColour(ToggleButton::tickColourId).withMultipliedAlpha(ticked ? 1.0f : 0.3f));
         
         g.fillRoundedRectangle(buttonArea, 2.0f);
-            
-    
+        
+        
     }
     
     Path getTickShape (const float height) override
@@ -718,17 +718,17 @@ public:
     }
     
     void drawComboBox (Graphics& g, int width, int height, bool isButtonDown,
-                            int buttonX, int buttonY, int buttonW, int buttonH,
-                            ComboBox& box) override
+                       int buttonX, int buttonY, int buttonW, int buttonH,
+                       ComboBox& box) override
     {
         //const auto cornerSize = box.findParentComponentOfClass<ChoicePropertyComponent>() != nullptr ? 0.0f : 3.0f;
-//        const Rectangle<int> boxBounds (0, 0, width, height);
-//        
-//        g.setColour (box.findColour (ComboBox::backgroundColourId));
-//        g.fillRoundedRectangle (boxBounds.toFloat(), cornerSize);
-//        
-//        g.setColour (box.findColour (ComboBox::outlineColourId));
-//        g.drawRoundedRectangle (boxBounds.toFloat().reduced (0.5f, 0.5f), cornerSize, 1.0f);
+        //        const Rectangle<int> boxBounds (0, 0, width, height);
+        //
+        //        g.setColour (box.findColour (ComboBox::backgroundColourId));
+        //        g.fillRoundedRectangle (boxBounds.toFloat(), cornerSize);
+        //
+        //        g.setColour (box.findColour (ComboBox::outlineColourId));
+        //        g.drawRoundedRectangle (boxBounds.toFloat().reduced (0.5f, 0.5f), cornerSize, 1.0f);
         
         Rectangle<int> buttonArea (buttonX, buttonY, buttonW, buttonH);
         Path path;
