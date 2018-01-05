@@ -257,7 +257,7 @@ void MatrixTransformerAudioProcessor::loadPreset(const File& presetFile)
 {
     ReferenceCountedMatrix::Ptr tempMatrix = nullptr;
     
-    Result result = DecoderHelper::parseFileForMatrix(presetFile, &tempMatrix);
+    Result result = DecoderHelper::parseFileForTransformationMatrix(presetFile, &tempMatrix);
     if (!result.wasOk()) {
         messageForEditor = result.getErrorMessage();
         return;
@@ -270,9 +270,9 @@ void MatrixTransformerAudioProcessor::loadPreset(const File& presetFile)
     {
         matTrans.setMatrix(tempMatrix);
         output += "Preset loaded succesfully!\n";
-        output += "    NAME: \t" + tempMatrix->getName() + "\n";
-        output += "    INPUT SIZE: " + String(tempMatrix->getMatrix()->cols()) + "\n";
-        output += "    OUTPUT SIZE: " + String(tempMatrix->getMatrix()->rows());
+        output += "    Name: \t" + tempMatrix->getName() + "\n";
+        output += "    Size: " + String(tempMatrix->getMatrix()->rows()) + "x" + String(tempMatrix->getMatrix()->cols()) + " (output x input)\n";
+        output += "    Description: \t" + tempMatrix->getDescription() + "\n";
     }
     else
         output = "ERROR: something went wrong!";
