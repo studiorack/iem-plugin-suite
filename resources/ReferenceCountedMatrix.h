@@ -28,8 +28,8 @@ class ReferenceCountedMatrix : public ReferenceCountedObject
 public:
     typedef ReferenceCountedObjectPtr<ReferenceCountedMatrix> Ptr;
     
-    ReferenceCountedMatrix (const String& nameToUse, int rows, int columns)
-    :   name (nameToUse), matrix (rows, columns)
+    ReferenceCountedMatrix (const String& nameToUse, const String& descriptionToUse, int rows, int columns)
+    :   name (nameToUse), description (descriptionToUse), matrix (rows, columns)
     {
         DBG ("Matrix named '" << name << "' constructed. Size: " << rows << "x" << columns);
     }
@@ -48,9 +48,15 @@ public:
         return name;
     }
     
+    const String getDescription()
+    {
+        return description;
+    }
+    
 
 private:
     String name;
+    String description;
     Eigen::MatrixXf matrix;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ReferenceCountedMatrix)
