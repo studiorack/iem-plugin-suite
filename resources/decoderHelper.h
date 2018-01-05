@@ -25,33 +25,42 @@
 
 class DecoderHelper {
 public:
-    static Result parseFileForMatrix(const File& fileToParse, ReferenceCountedMatrix::Ptr* matrix)
+    
+    static Result parseJsonFile (const File& fileToParse, var& dest)
     {
-        
         if (!fileToParse.exists())
-            return Result::fail("ERROR: File '" + fileToParse.getFullPathName() + "' does not exist!");
+            return Result::fail("File '" + fileToParse.getFullPathName() + "' does not exist!");
         
         String jsonString = fileToParse.loadFileAsString();
-        var parsedJson;
-        Result result = JSON::parse (jsonString, parsedJson);
+        Result result = JSON::parse (jsonString, dest);
         if (!result.wasOk())
+            return Result::fail("File '" + fileToParse.getFullPathName() + "' could not be parsed:\n" + result.getErrorMessage());
+        
+        return Result::ok();
+    }
+    
+    static Result transformationMatrixVarToMatrix (var& tmVar, ReferenceCountedMatrix::Ptr* matrix, var nameFallback = var(""), var descriptionFallback = var(""))
+    {
+        String name = tmVar.getProperty(Identifier("name"), nameFallback);
+        String description = tmVar.getProperty(Identifier("description"), descriptionFallback);
+        
+        if (! tmVar.hasProperty("matrix"))
+            return Result::fail("There is no 'matrix' array.");
+        
+        int rows, cols;
+        var matrixData = tmVar.getProperty("matrix", var());
+        Result result = getMatrixDataSize (matrixData, rows, cols);
+
+        if (! result.wasOk())
             return Result::fail(result.getErrorMessage());
         
-        String name = parsedJson.getProperty(Identifier("name"), var("no Name available")).toString();
         
-        var data = parsedJson.getProperty (Identifier("data"), var());
-        if (!data.isArray())
-            return Result::fail("ERROR: 'data' field missing or represents no proper matrix.");
-        
-        const int rows = data.size();
-        const int cols = data.getArray()->getUnchecked(0).size();
-        
-        ReferenceCountedMatrix::Ptr newMatrix = new ReferenceCountedMatrix(name, rows, cols);
+        ReferenceCountedMatrix::Ptr newMatrix = new ReferenceCountedMatrix(name, description, rows, cols);
         for (int r = 0; r < rows; ++r)
         {
-            var rowVar = data.getArray()->getUnchecked(r);
+            var rowVar = matrixData.getArray()->getUnchecked(r);
             if (rowVar.size() != cols)
-                return Result::fail("ERROR: Matrix rows differ in size.");
+                return Result::fail("Matrix rows differ in size.");
             
             for (int c = 0; c < cols; ++c)
             {
@@ -65,5 +74,35 @@ public:
         }
         
         return Result::ok();
-    } // method
+    }
+    
+    static Result getMatrixDataSize (var& matrixData, int& rows, int& cols)
+    {
+        rows = matrixData.size();
+        cols = matrixData.getArray()->getUnchecked(0).size();
+        
+        return Result::ok();
+    }
+    
+    
+    static Result parseFileForTransformationMatrix (const File& fileToParse, ReferenceCountedMatrix::Ptr* matrix)
+    {
+        // parse configuration file
+        var parsedJson;
+        {
+        Result result = parseJsonFile(fileToParse, parsedJson);
+        if (! result.wasOk())
+            return Result::fail(result.getErrorMessage());
+        }
+        
+        // looks for 'TransformationMatrix' object; if missing, it uses the 'root' to look for a 'matrix' object
+        var tmVar = parsedJson.getProperty("TransformationMatrix", parsedJson);
+        Result result = transformationMatrixVarToMatrix (tmVar, matrix,
+                                                         parsedJson.getProperty("name", var("")), parsedJson.getProperty("description", var("")));
+        
+        if (! result.wasOk())
+            return Result::fail(result.getErrorMessage());
+        
+        return Result::ok();
+    }
 };
