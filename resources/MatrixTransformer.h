@@ -52,7 +52,6 @@ public:
             return;
         }
         
-        
         auto& inputBlock = context.getInputBlock();
         auto& T = *retainedCurrentMatrix->getMatrix();
         
@@ -61,7 +60,8 @@ public:
         Eigen::Map<const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>> inpMatrix (inputBlock.getChannelPointer(0), nInputChannels, inputBlock.getNumSamples());
         
         //DBG("sizes: " << bufferMatrix.rows() << "x" << bufferMatrix.cols() << " is " << T.rows() << "x" << T.cols() << " times " << inpMatrix.rows() << "x" << inpMatrix.cols());
-        bufferMatrix = T * inpMatrix; // maybe get subBlock from bufferMatrix for blocksize different from specs
+        
+        bufferMatrix = T.block(0, 0, T.rows(), nInputChannels) * inpMatrix; // maybe get subBlock from bufferMatrix for blocksize different from specs
         
         auto& outputBlock = context.getOutputBlock();
         
@@ -86,7 +86,8 @@ public:
             else
             {
                 DBG("MatrixTransformer: New matrix with name '" << newMatrix->getName() << "' set.");
-                bufferMatrix.resize(newMatrix->getMatrix()->rows(), Eigen::NoChange);
+                int rows = (int) newMatrix->getMatrix()->rows();
+                bufferMatrix.resize(rows, Eigen::NoChange);
                 DBG("MatrixTransformer: buffer resized to " << bufferMatrix.rows() << "x" << bufferMatrix.cols());
             }
             
@@ -106,7 +107,6 @@ private:
     ProcessSpec spec = {-1, 0, 0};
     ReferenceCountedMatrix::Ptr currentMatrix {nullptr};
     ReferenceCountedMatrix::Ptr newMatrix {nullptr};
-    
     Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> bufferMatrix;
     bool newMatrixAvailable {false};
     
