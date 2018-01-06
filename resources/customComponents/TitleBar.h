@@ -80,6 +80,25 @@ public:
             
             cbChannels->setText(cbChannels->getItemText(cbChannels->indexOfItemId((currId))));
         }
+        else
+        {
+            if (maxPossibleNumberOfChannels < channelSizeIfNotSelectable)
+                displayTextIfNotSelectable = String(maxChannels) + " (bus too small)";
+            else
+                displayTextIfNotSelectable = String(maxChannels);
+            repaint();
+        }
+        availableChannels = maxPossibleNumberOfChannels;
+    }
+    
+    void setSizeIfUnselectable (int newSize)
+    {
+        if (! selectable)
+        {
+            channelSizeIfNotSelectable = newSize;
+            setMaxSize(availableChannels);
+            repaint();
+        }
     }
     
     ComboBox* getChannelsCbPointer()
@@ -99,13 +118,17 @@ public:
             g.setColour((Colours::white).withMultipliedAlpha(0.5));
             g.setFont(getLookAndFeel().getTypefaceForFont (Font(12.0f, 1)));
             g.setFont(15.0f);
-            g.drawText(String(maxChannels), 35, 8, 40, 15, Justification::left);
+            g.drawFittedText(displayTextIfNotSelectable, 35, 0, 40, 30, Justification::centredLeft, 2);
+
         }
     };
     
 private:
     ScopedPointer<ComboBox> cbChannels;
     Path WaveformPath;
+    int availableChannels {64};
+    int channelSizeIfNotSelectable = maxChannels;
+    String displayTextIfNotSelectable = String(maxChannels);
 };
 
 class  AmbisonicIOWidget :  public Component
