@@ -1,0 +1,13 @@
+{
+    "name" : "Generic decoder preset",
+    "description" : "This is a genericx decoder preset. The .json file shows you all available preferences.",
+    "Decoder" : {
+                "name" : "Example Decoder",
+                "description" : "This is a simple decoder.",
+                "expectedInputNormalization" : "sn3d",
+                "matrix" : [[0.0, 1.0, 0.0],
+                            [1.0, 0.0, 0.0],
+                            [0.5, 0.5, 0.0],
+                            [0.0, 0.0, 1.0]]
+                }
+}
