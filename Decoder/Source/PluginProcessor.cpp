@@ -25,24 +25,22 @@
 
 
 //==============================================================================
-PluginTemplateAudioProcessor::PluginTemplateAudioProcessor()
+DecoderAudioProcessor::DecoderAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
-     : AudioProcessor (BusesProperties()
-                     #if ! JucePlugin_IsMidiEffect
-                      #if ! JucePlugin_IsSynth
-                       .withInput  ("Input",  AudioChannelSet::discreteChannels(10), true)
-                      #endif
-                       .withOutput ("Output", AudioChannelSet::discreteChannels(64), true)
-                     #endif
-                       ),
+: AudioProcessor (BusesProperties()
+#if ! JucePlugin_IsMidiEffect
+#if ! JucePlugin_IsSynth
+                  .withInput  ("Input",  AudioChannelSet::discreteChannels(10), true)
 #endif
-parameters(*this, nullptr)
+                  .withOutput ("Output", AudioChannelSet::discreteChannels(64), true)
+#endif
+                  ),
+#endif
+parameters(*this, nullptr), test("decodereName", "some text bla bla", 5, 5)
 {
-    parameters.createAndAddParameter("inputChannelsSetting", "Number of input channels ", "",
-                                     NormalisableRange<float> (0.0f, 10.0f, 1.0f), 0.0f,
-                                     [](float value) {return value < 0.5f ? "Auto" : String(value);}, nullptr);
-     
-    parameters.createAndAddParameter ("outputOrderSetting", "Ambisonic Order", "",
+    
+    
+    parameters.createAndAddParameter ("inputOrderSetting", "Ambisonic Order", "",
                                       NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
                                       [](float value) {
                                           if (value >= 0.5f && value < 1.5f) return "0th";
@@ -62,6 +60,10 @@ parameters(*this, nullptr)
                                          else return "N3D";
                                      }, nullptr);
     
+    parameters.createAndAddParameter("outputChannelsSetting", "Number of input channels ", "",
+                                     NormalisableRange<float> (0.0f, 10.0f, 1.0f), 0.0f,
+                                     [](float value) {return value < 0.5f ? "Auto" : String(value);}, nullptr);
+    
     parameters.createAndAddParameter("param1", "Parameter 1", "",
                                      NormalisableRange<float> (-10.0f, 10.0f, 0.1f), 0.0,
                                      [](float value) {return String(value);}, nullptr);
@@ -71,17 +73,19 @@ parameters(*this, nullptr)
                                      [](float value) {return String(value, 1);}, nullptr);
     
     // this must be initialised after all calls to createAndAddParameter().
-    parameters.state = ValueTree (Identifier ("PluginTemplate"));
+    parameters.state = ValueTree (Identifier ("Decoder"));
     // tip: you can also add other values to parameters.state, which are also saved and restored when the session is closed/reopened
     
     
     // get pointers to the parameters
-    inputChannelsSetting = parameters.getRawParameterValue("inputChannelsSetting");
-    outputOrderSetting = parameters.getRawParameterValue ("outputOrderSetting");
+    inputOrderSetting = parameters.getRawParameterValue ("inputOrderSetting");
     useSN3D = parameters.getRawParameterValue ("useSN3D");
+    
+    outputChannelsSetting = parameters.getRawParameterValue("outputChannelsSetting");
+    
     param1 = parameters.getRawParameterValue ("param1");
     param2 = parameters.getRawParameterValue ("param2");
-
+    
     
     // add listeners to parameter changes
     parameters.addParameterListener ("inputChannelsSetting", this);
@@ -91,98 +95,98 @@ parameters(*this, nullptr)
     parameters.addParameterListener ("param2", this);
     
     
-    File cfg ("~/configTest.json");
-    String jsonString = cfg.loadFileAsString();
-    var parsedJson;
-    Result result = JSON::parse (jsonString, parsedJson);
-    if (! result.wasOk())
-    {
-        DBG ("Error parsing JSON: " + result.getErrorMessage());
-    }
-    else
-    {
-        DBG(jsonString);
-        if (parsedJson.hasProperty (Identifier("name")))
-           DBG("got it!");
-        Array<var> dataArr = parsedJson.getProperty(Identifier("data"), var(false));
-        int size = dataArr.size();
-        DBG("size: " << size);
-        for (int i = 0; i < size; ++i)
-            DBG(dataArr.getUnchecked(i).toString());
-    }
+    // global settings for all plug-in instances
+    PropertiesFile::Options options;
+    options.applicationName     = "Decoder";
+    options.filenameSuffix      = "settings";
+    options.folderName          = "IEM";
+    options.osxLibrarySubFolder = "Preferences";
     
+    properties = new PropertiesFile(options);
+    lastDir = File(properties->getValue("presetFolder"));
 }
 
-PluginTemplateAudioProcessor::~PluginTemplateAudioProcessor()
+DecoderAudioProcessor::~DecoderAudioProcessor()
 {
 }
 
+void DecoderAudioProcessor::setLastDir(File newLastDir)
+{
+    lastDir = newLastDir;
+    const var v (lastDir.getFullPathName());
+    properties->setValue("presetFolder", v);
+    
+}
+
+
 //==============================================================================
-const String PluginTemplateAudioProcessor::getName() const
+const String DecoderAudioProcessor::getName() const
 {
     return JucePlugin_Name;
 }
 
-bool PluginTemplateAudioProcessor::acceptsMidi() const
+bool DecoderAudioProcessor::acceptsMidi() const
 {
-   #if JucePlugin_WantsMidiInput
+#if JucePlugin_WantsMidiInput
     return true;
-   #else
+#else
     return false;
-   #endif
+#endif
 }
 
-bool PluginTemplateAudioProcessor::producesMidi() const
+bool DecoderAudioProcessor::producesMidi() const
 {
-   #if JucePlugin_ProducesMidiOutput
+#if JucePlugin_ProducesMidiOutput
     return true;
-   #else
+#else
     return false;
-   #endif
+#endif
 }
 
-bool PluginTemplateAudioProcessor::isMidiEffect() const
+bool DecoderAudioProcessor::isMidiEffect() const
 {
-   #if JucePlugin_IsMidiEffect
+#if JucePlugin_IsMidiEffect
     return true;
-   #else
+#else
     return false;
-   #endif
+#endif
 }
 
-double PluginTemplateAudioProcessor::getTailLengthSeconds() const
+double DecoderAudioProcessor::getTailLengthSeconds() const
 {
     return 0.0;
 }
 
-int PluginTemplateAudioProcessor::getNumPrograms()
+int DecoderAudioProcessor::getNumPrograms()
 {
     return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
-                // so this should be at least 1, even if you're not really implementing programs.
+    // so this should be at least 1, even if you're not really implementing programs.
 }
 
-int PluginTemplateAudioProcessor::getCurrentProgram()
+int DecoderAudioProcessor::getCurrentProgram()
 {
     return 0;
 }
 
-void PluginTemplateAudioProcessor::setCurrentProgram (int index)
+void DecoderAudioProcessor::setCurrentProgram (int index)
 {
 }
 
-const String PluginTemplateAudioProcessor::getProgramName (int index)
+const String DecoderAudioProcessor::getProgramName (int index)
 {
     return {};
 }
 
-void PluginTemplateAudioProcessor::changeProgramName (int index, const String& newName)
+void DecoderAudioProcessor::changeProgramName (int index, const String& newName)
 {
 }
 
 //==============================================================================
-void PluginTemplateAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
+void DecoderAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    checkInputAndOutput(this, *inputChannelsSetting, *outputOrderSetting, true);
+    checkInputAndOutput(this, *inputOrderSetting, *outputChannelsSetting, true);
+    //TODO: *outputChannelsSetting should be replaced by something like 'decoder.getOutputChannels()'
+    
     
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
@@ -191,28 +195,28 @@ void PluginTemplateAudioProcessor::prepareToPlay (double sampleRate, int samples
     
 }
 
-void PluginTemplateAudioProcessor::releaseResources()
+void DecoderAudioProcessor::releaseResources()
 {
     // When playback stops, you can use this as an opportunity to free up any
     // spare memory, etc.
 }
 
 #ifndef JucePlugin_PreferredChannelConfigurations
-bool PluginTemplateAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
+bool DecoderAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
 {
     return true;
 }
 #endif
 
-void PluginTemplateAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
+void DecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
-    checkInputAndOutput(this, *inputChannelsSetting, *outputOrderSetting, false);
+    checkInputAndOutput(this, *inputOrderSetting, *outputChannelsSetting, false);
     ScopedNoDenormals noDenormals;
     _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
     
     const int totalNumInputChannels  = getTotalNumInputChannels();
     const int totalNumOutputChannels = getTotalNumOutputChannels();
-
+    
     // In case we have more outputs than inputs, this code clears any output
     // channels that didn't contain input data, (because these aren't
     // guaranteed to be empty - they may contain garbage).
@@ -221,41 +225,42 @@ void PluginTemplateAudioProcessor::processBlock (AudioSampleBuffer& buffer, Midi
     // this code if your algorithm always overwrites all the output channels.
     for (int i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
-
+    
     // This is the place where you'd normally do the guts of your plugin's
     // audio processing...
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
         float* channelData = buffer.getWritePointer (channel);
-
+        
         // ..do something to the data...
     }
 }
 
 //==============================================================================
-bool PluginTemplateAudioProcessor::hasEditor() const
+bool DecoderAudioProcessor::hasEditor() const
 {
     return true; // (change this to false if you choose to not supply an editor)
 }
 
-AudioProcessorEditor* PluginTemplateAudioProcessor::createEditor()
+AudioProcessorEditor* DecoderAudioProcessor::createEditor()
 {
-    return new PluginTemplateAudioProcessorEditor (*this, parameters);
+    return new DecoderAudioProcessorEditor (*this, parameters);
 }
 
 //==============================================================================
-void PluginTemplateAudioProcessor::getStateInformation (MemoryBlock& destData)
+void DecoderAudioProcessor::getStateInformation (MemoryBlock& destData)
 {
     // You should use this method to store your parameters in the memory block.
     // You could do that either as raw data, or use the XML or ValueTree classes
     // as intermediaries to make it easy to save and load complex data.
+    parameters.state.setProperty("lastOpenedPresetFile", var(lastFile.getFullPathName()), nullptr);
     ScopedPointer<XmlElement> xml (parameters.state.createXml());
     copyXmlToBinary (*xml, destData);
 }
 
 
 
-void PluginTemplateAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
+void DecoderAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
@@ -263,10 +268,19 @@ void PluginTemplateAudioProcessor::setStateInformation (const void* data, int si
     if (xmlState != nullptr)
         if (xmlState->hasTagName (parameters.state.getType()))
             parameters.state = ValueTree::fromXml (*xmlState);
+    if (parameters.state.hasProperty("lastOpenedPresetFile"))
+    {
+        Value val = parameters.state.getPropertyAsValue("lastOpenedPresetFile", nullptr);
+        if (val.getValue().toString() != "")
+        {
+            const File f (val.getValue().toString());
+            loadPreset(f);
+        }
+    }
 }
 
 //==============================================================================
-void PluginTemplateAudioProcessor::parameterChanged (const String &parameterID, float newValue)
+void DecoderAudioProcessor::parameterChanged (const String &parameterID, float newValue)
 {
     DBG("Parameter with ID " << parameterID << " has changed. New value: " << newValue);
     
@@ -274,14 +288,45 @@ void PluginTemplateAudioProcessor::parameterChanged (const String &parameterID, 
         userChangedIOSettings = true;
 }
 
-void PluginTemplateAudioProcessor::updateBuffers()
+void DecoderAudioProcessor::updateBuffers()
 {
     DBG("IOHelper:  input size: " << input.getSize());
     DBG("IOHelper: output size: " << output.getSize());
 }
+
+void DecoderAudioProcessor::loadPreset(const File& presetFile)
+{
+    ReferenceCountedMatrix::Ptr tempMatrix = nullptr;
+    
+    Result result = DecoderHelper::parseFileForTransformationMatrix(presetFile, &tempMatrix);
+    if (!result.wasOk()) {
+        messageForEditor = result.getErrorMessage();
+        return;
+    }
+    
+    lastFile = presetFile;
+    
+    String output;
+    if (tempMatrix != nullptr)
+    {
+        //matTrans.setMatrix(tempMatrix);
+        output += "Preset loaded succesfully!\n";
+        output += "    Name: \t" + tempMatrix->getName() + "\n";
+        output += "    Size: " + String(tempMatrix->getMatrix()->rows()) + "x" + String(tempMatrix->getMatrix()->cols()) + " (output x input)\n";
+        output += "    Description: \t" + tempMatrix->getDescription() + "\n";
+    }
+    else
+        output = "ERROR: something went wrong!";
+    
+    messageForEditor = output;
+    messageChanged = true;
+}
+
 //==============================================================================
 // This creates new instances of the plugin..
 AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
-    return new PluginTemplateAudioProcessor();
+    return new DecoderAudioProcessor();
 }
+
+

@@ -25,7 +25,7 @@
 
 
 //==============================================================================
-PluginTemplateAudioProcessorEditor::PluginTemplateAudioProcessorEditor (PluginTemplateAudioProcessor& p, AudioProcessorValueTreeState& vts)
+DecoderAudioProcessorEditor::DecoderAudioProcessorEditor (DecoderAudioProcessor& p, AudioProcessorValueTreeState& vts)
     : AudioProcessorEditor (&p), processor (p), valueTreeState(vts)
 {
     // ============== BEGIN: essentials ======================
@@ -36,39 +36,49 @@ PluginTemplateAudioProcessorEditor::PluginTemplateAudioProcessorEditor (PluginTe
     
     // make title and footer visible, and set the PluginName
     addAndMakeVisible(&title);
-    title.setTitle(String("Plugin"),String("Template"));
+    title.setTitle(String("Simple"),String("Decoder"));
     title.setFont(globalLaF.robotoBold, globalLaF.robotoLight);
     addAndMakeVisible (&footer);
     // ============= END: essentials ========================
     
     
     // create the connection between title component's comboBoxes and parameters
-    cbInputChannelsSettingAttachment = new ComboBoxAttachment(valueTreeState, "inputChannelsSetting", *title.getInputWidgetPtr()->getChannelsCbPointer());
-    cbNormalizationSettingAttachment = new ComboBoxAttachment(valueTreeState, "useSN3D", *title.getOutputWidgetPtr()->getNormCbPointer());
-    cbOrderSettingAttachment = new ComboBoxAttachment(valueTreeState, "outputOrderSetting", *title.getOutputWidgetPtr()->getOrderCbPointer());
+    cbOrderSettingAttachment = new ComboBoxAttachment(valueTreeState, "inputOrderSetting", *title.getInputWidgetPtr()->getOrderCbPointer());
+    cbNormalizationSettingAttachment = new ComboBoxAttachment(valueTreeState, "useSN3D", *title.getInputWidgetPtr()->getNormCbPointer());
+    //cbOutputChannelsSettingAttachment = new ComboBoxAttachment(valueTreeState, "outputChannelsSetting", *title.getOutputWidgetPtr()->getChannelsCbPointer());
     
-    addAndMakeVisible(slParam1);
-    slParam1Attachment = new SliderAttachment(valueTreeState, "param1", slParam1);
-    addAndMakeVisible(slParam2);
-    slParam2Attachment = new SliderAttachment(valueTreeState, "param2", slParam2);
+    addAndMakeVisible(slCutoff);
+    slCutoffAttachment = new SliderAttachment(valueTreeState, "cutoff", slCutoff);
+
+    
+    addAndMakeVisible(btLoadFile);
+    btLoadFile.setButtonText("Load preset");
+    btLoadFile.addListener(this);
+    
+    addAndMakeVisible(edOutput);
+    edOutput.setMultiLine(true);
+    edOutput.setReadOnly(true);
+    edOutput.setTabKeyUsedAsCharacter(true);
+    edOutput.clear();
+    edOutput.setText(processor.getMessageForEditor());
     
     
     // start timer after everything is set up properly
     startTimer(20);
 }
 
-PluginTemplateAudioProcessorEditor::~PluginTemplateAudioProcessorEditor()
+DecoderAudioProcessorEditor::~DecoderAudioProcessorEditor()
 {
     setLookAndFeel(nullptr);
 }
 
 //==============================================================================
-void PluginTemplateAudioProcessorEditor::paint (Graphics& g)
+void DecoderAudioProcessorEditor::paint (Graphics& g)
 {
     g.fillAll (globalLaF.ClBackground);
 }
 
-void PluginTemplateAudioProcessorEditor::resized()
+void DecoderAudioProcessorEditor::resized()
 {
     // ============ BEGIN: header and footer ============
     const int leftRightMargin = 30;
@@ -93,12 +103,17 @@ void PluginTemplateAudioProcessorEditor::resized()
     // best practice would be the use of flexBoxes...
     // the following is medium level practice ;-)
     Rectangle<int> sliderRow = area.removeFromTop(50);
-    slParam1.setBounds(sliderRow.removeFromLeft(150));
-    slParam2.setBounds(sliderRow.removeFromRight(150));
+    slCutoff.setBounds(sliderRow.removeFromLeft(150));
+
+    sliderRow = area.removeFromRight(120);
+    btLoadFile.setBounds(sliderRow.removeFromTop(30));
+    
+    area.removeFromRight(10);
+    edOutput.setBounds(area);
     
 }
 
-void PluginTemplateAudioProcessorEditor::timerCallback()
+void DecoderAudioProcessorEditor::timerCallback()
 {
     // === update titleBar widgets according to available input/output channel counts
     int maxInSize, maxOutSize;
@@ -106,5 +121,39 @@ void PluginTemplateAudioProcessorEditor::timerCallback()
     title.setMaxSize(maxInSize, maxOutSize);
     // ==========================================
     
-    // insert stuff you want to do be done at every timer callback
+    if (processor.messageChanged)
+    {
+        edOutput.clear();
+        edOutput.setText(processor.getMessageForEditor());
+        processor.messageChanged = false;
+    }
+}
+
+void DecoderAudioProcessorEditor::buttonClicked(Button* button)
+{
+    if (button == &btLoadFile)
+    {
+        loadPresetFile();
+    }
+}
+
+void DecoderAudioProcessorEditor::buttonStateChanged(juce::Button *button)
+{
+    
+}
+
+void DecoderAudioProcessorEditor::loadPresetFile()
+{
+    FileChooser myChooser ("Please select the preset you want to load...",
+                           processor.getLastDir().exists() ? processor.getLastDir() : File::getSpecialLocation (File::userHomeDirectory),
+                           "*.json");
+    if (myChooser.browseForFileToOpen())
+    {
+        File presetFile (myChooser.getResult());
+        processor.setLastDir(presetFile.getParentDirectory());
+        processor.loadPreset (presetFile);
+        
+        edOutput.clear();
+        edOutput.setText(processor.getMessageForEditor());
+    }
 }

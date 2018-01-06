@@ -41,11 +41,11 @@ typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 //==============================================================================
 /**
 */
-class PluginTemplateAudioProcessorEditor  : public AudioProcessorEditor, private Timer
+class DecoderAudioProcessorEditor  : public AudioProcessorEditor, private Timer, private Button::Listener
 {
 public:
-    PluginTemplateAudioProcessorEditor (PluginTemplateAudioProcessor&, AudioProcessorValueTreeState&);
-    ~PluginTemplateAudioProcessorEditor();
+    DecoderAudioProcessorEditor (DecoderAudioProcessor&, AudioProcessorValueTreeState&);
+    ~DecoderAudioProcessorEditor();
 
     //==============================================================================
     void paint (Graphics&) override;
@@ -53,6 +53,9 @@ public:
     
     
     void timerCallback() override;
+    void buttonClicked (Button* button) override;
+    void buttonStateChanged (Button* button) override;
+    void loadPresetFile();
     
 private:
     // ====================== beging essentials ==================
@@ -60,7 +63,7 @@ private:
     LaF globalLaF;
     
     // stored references to the AudioProcessor and ValueTreeState holding all the parameters
-    PluginTemplateAudioProcessor& processor;
+    DecoderAudioProcessor& processor;
     AudioProcessorValueTreeState& valueTreeState;
 
     
@@ -71,23 +74,22 @@ private:
         - AmbisonicIOWidget
         - DirectivitiyIOWidget
      */
-    TitleBar<AudioChannelsIOWidget<10,true>, AmbisonicIOWidget> title;
+    TitleBar<AmbisonicIOWidget, AudioChannelsIOWidget<0,false>> title;
     Footer footer;
     // =============== end essentials ============
     
     // Attachments to create a connection between IOWidgets comboboxes
     // and the associated parameters
-    ScopedPointer<ComboBoxAttachment> cbInputChannelsSettingAttachment;
     ScopedPointer<ComboBoxAttachment> cbOrderSettingAttachment;
     ScopedPointer<ComboBoxAttachment> cbNormalizationSettingAttachment;
+    //ScopedPointer<ComboBoxAttachment> cbOutputChannelsSettingAttachment;
     
     // Demo stuff
-    Slider slParam1;
-    ReverseSlider slParam2;
-    ScopedPointer<SliderAttachment> slParam1Attachment, slParam2Attachment;
+    ReverseSlider slCutoff;
+    ScopedPointer<SliderAttachment> slCutoffAttachment;
     
-    
+    TextButton btLoadFile;
+    TextEditor edOutput;
 
-    
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginTemplateAudioProcessorEditor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DecoderAudioProcessorEditor)
 };

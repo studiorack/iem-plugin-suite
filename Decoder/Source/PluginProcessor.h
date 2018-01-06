@@ -24,7 +24,9 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "../../resources/IOHelper.h"
-
+#include "../../resources/MatrixTransformer.h"
+#include "../../resources/decoderHelper.h"
+#include "../../resources/ReferenceCountedDecoder.h"
 
 //==============================================================================
 /**
@@ -34,14 +36,14 @@
     - Ambisonics<maxOrder> (can also be used for directivity signals)
  You can leave `maxChannelCount` and `maxOrder` empty for default values (64 channels and 7th order)
 */
-class PluginTemplateAudioProcessor  : public AudioProcessor,
+class DecoderAudioProcessor  : public AudioProcessor,
                                         public AudioProcessorValueTreeState::Listener,
-                                        public IOHelper<IOTypes::AudioChannels<10>, IOTypes::Ambisonics<7>>
+                                        public IOHelper<IOTypes::Ambisonics<>, IOTypes::AudioChannels<>>
 {
 public:
     //==============================================================================
-    PluginTemplateAudioProcessor();
-    ~PluginTemplateAudioProcessor();
+    DecoderAudioProcessor();
+    ~DecoderAudioProcessor();
 
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
@@ -80,15 +82,31 @@ public:
     void parameterChanged (const String &parameterID, float newValue) override;
     void updateBuffers() override; // use this to implement a buffer update method
     
+    void setMatrix(ReferenceCountedMatrix::Ptr newMatrixToUse) {
+        //matTrans.setMatrix(newMatrixToUse);
+    }
+    
+    File getLastDir() {return lastDir;}
+    void setLastDir(File newLastDir);
+    void loadPreset(const File& presetFile);
+    
+    bool messageChanged {true};
+    String getMessageForEditor() {return messageForEditor;}
     
 private:
     // ====== parameters
     AudioProcessorValueTreeState parameters;
     
     // list of used audio parameters
-    float *inputChannelsSetting, *outputOrderSetting, *useSN3D, *param1, *param2;
+    float *outputChannelsSetting, *inputOrderSetting, *useSN3D, *param1, *param2;
+    // =========================================
     
+    File lastDir;
+    File lastFile;
+    ScopedPointer<PropertiesFile> properties;
     
+    String messageForEditor {"No preset loaded."};
+    ReferenceCountedDecoder test;
     //==============================================================================
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginTemplateAudioProcessor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DecoderAudioProcessor)
 };

@@ -53,7 +53,6 @@ MatrixTransformerAudioProcessorEditor::MatrixTransformerAudioProcessorEditor (Ma
     edOutput.setMultiLine(true);
     edOutput.setReadOnly(true);
     edOutput.setTabKeyUsedAsCharacter(true);
-    
     edOutput.clear();
     edOutput.setText(processor.getMessageForEditor());
     
