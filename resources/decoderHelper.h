@@ -22,7 +22,7 @@
 
 #pragma once
 #include "ReferenceCountedMatrix.h"
-
+#include "Eigen/Eigen"
 class DecoderHelper {
 public:
     
@@ -56,23 +56,12 @@ public:
         
         
         ReferenceCountedMatrix::Ptr newMatrix = new ReferenceCountedMatrix(name, description, rows, cols);
-        for (int r = 0; r < rows; ++r)
-        {
-            var rowVar = matrixData.getArray()->getUnchecked(r);
-            if (rowVar.size() != cols)
-                return Result::fail("Matrix rows differ in size.");
-            
-            for (int c = 0; c < cols; ++c)
-            {
-                var colVar = rowVar.getArray()->getUnchecked(c);
-                if (colVar.isDouble() || colVar.isInt())
-                {
-                    newMatrix->getMatrix()->coeffRef(r, c) = colVar;
-                }
-            }
-            *matrix = newMatrix;
-        }
+        result = getMatrix(matrixData, rows, cols, newMatrix->getMatrix());
         
+        if (! result.wasOk())
+            return Result::fail(result.getErrorMessage());
+        
+        *matrix = newMatrix;
         return Result::ok();
     }
     
@@ -84,6 +73,29 @@ public:
         return Result::ok();
     }
     
+    // call getMatrixDataSize() before and create the 'dest' matrix with the resulting size
+    static Result getMatrix (var&  matrixData, int rows, int cols, Eigen::MatrixXf* dest)
+    {
+        for (int r = 0; r < rows; ++r)
+        {
+            var rowVar = matrixData.getArray()->getUnchecked(r);
+            if (rowVar.size() != cols)
+                return Result::fail("Matrix row " + String(r+1) + " has wrong length (should be " + String(cols) + ").");
+            
+            for (int c = 0; c < cols; ++c)
+            {
+                var colVar = rowVar.getArray()->getUnchecked(c);
+                if (colVar.isDouble() || colVar.isInt())
+                {
+                    dest->coeffRef(r, c) = colVar;
+                }
+                else
+                    return Result::fail("Datatype of matrix element (" + String(r+1) + "," + String(c+1) + ") could not be parsed.");
+            }
+            
+        }
+        return Result::ok();
+    }
     
     static Result parseFileForTransformationMatrix (const File& fileToParse, ReferenceCountedMatrix::Ptr* matrix)
     {
