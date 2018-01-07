@@ -22,6 +22,7 @@
 
 #pragma once
 #include "ReferenceCountedMatrix.h"
+#include "ReferenceCountedDecoder.h"
 #include "Eigen/Eigen"
 class DecoderHelper {
 public:
@@ -65,6 +66,50 @@ public:
         return Result::ok();
     }
     
+    static Result decoderObjectToDecoder (var& decoderObject, ReferenceCountedDecoder::Ptr* decoder, var nameFallback = var(""), var descriptionFallback = var(""))
+    {
+        String name = decoderObject.getProperty(Identifier("name"), nameFallback);
+        String description = decoderObject.getProperty(Identifier("description"), descriptionFallback);
+        
+        if (! decoderObject.hasProperty("matrix"))
+            return Result::fail("There is no 'matrix' array within the 'Decoder' object.");
+        
+        // get matrix size
+        int rows, cols;
+        var matrixData = decoderObject.getProperty("matrix", var());
+        Result result = getMatrixDataSize (matrixData, rows, cols);
+        if (! result.wasOk())
+            return Result::fail(result.getErrorMessage());
+        
+        // create decoder and get matrix from 'Decoder' object
+        ReferenceCountedDecoder::Ptr newDecoder = new ReferenceCountedDecoder(name, description, rows, cols);
+        result = getMatrix(matrixData, rows, cols, newDecoder->getMatrix());
+        if (! result.wasOk())
+            return Result::fail(result.getErrorMessage());
+        
+        ReferenceCountedDecoder::Settings settings;
+        // settings
+        if (decoderObject.hasProperty("expectedNormalization"))
+        {
+            var expectedNormalization (decoderObject.getProperty("expectedNormalization", var()));
+            if (expectedNormalization.toString().equalsIgnoreCase("sn3d"))
+            {
+                settings.expectedNormalization = ReferenceCountedDecoder::Normalization::sn3d;
+            }
+            else if (expectedNormalization.toString().equalsIgnoreCase("n3d"))
+            {
+                settings.expectedNormalization = ReferenceCountedDecoder::Normalization::n3d;
+            }
+            else
+                return Result::fail("Could not parse 'expectedNormalization' attribute. Expected 'sn3d' or 'n3d' but got '" + expectedNormalization.toString() + "'.");
+        }
+        
+        newDecoder->setSettings(settings);
+        
+        *decoder = newDecoder;
+        return Result::ok();
+    }
+    
     static Result getMatrixDataSize (var& matrixData, int& rows, int& cols)
     {
         rows = matrixData.size();
@@ -94,6 +139,29 @@ public:
             }
             
         }
+        return Result::ok();
+    }
+    
+    static Result parseFileForDecoder (const File& fileToParse, ReferenceCountedDecoder::Ptr* decoder)
+    {
+        // parse configuration file
+        var parsedJson;
+        Result result = parseJsonFile(fileToParse, parsedJson);
+        if (! result.wasOk())
+            return Result::fail(result.getErrorMessage());
+
+        
+        // looks for 'Decoder' object
+        if (! parsedJson.hasProperty("Decoder"))
+            return Result::fail("No 'Decoder' object found in the configuration file.");
+        
+        var decoderObject = parsedJson.getProperty("Decoder", parsedJson);
+        result = decoderObjectToDecoder (decoderObject, decoder,
+                                                         parsedJson.getProperty("name", var("")), parsedJson.getProperty("description", var("")));
+        
+        if (! result.wasOk())
+            return Result::fail(result.getErrorMessage());
+        
         return Result::ok();
     }
     
