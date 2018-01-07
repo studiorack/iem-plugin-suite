@@ -383,7 +383,6 @@ void RoomEncoderAudioProcessor::updateFilterCoefficients(int sampleRate) {
 void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
     ScopedNoDenormals noDenormals;
-    _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON); // alternative?: fesetenv(FE_DFL_DISABLE_SSE_DENORMS_ENV);
     
     checkInputAndOutput(this, *directivityOrderSetting, *orderSetting);
     

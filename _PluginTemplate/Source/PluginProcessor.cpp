@@ -190,7 +190,6 @@ void PluginTemplateAudioProcessor::processBlock (AudioSampleBuffer& buffer, Midi
 {
     checkInputAndOutput(this, *inputChannelsSetting, *outputOrderSetting, false);
     ScopedNoDenormals noDenormals;
-    _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
     
     const int totalNumInputChannels  = getTotalNumInputChannels();
     const int totalNumOutputChannels = getTotalNumOutputChannels();
