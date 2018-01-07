@@ -25,6 +25,9 @@
 
 class ReferenceCountedDecoder : public ReferenceCountedObject
 {
+public:
+    typedef ReferenceCountedObjectPtr<ReferenceCountedDecoder> Ptr;
+    
     enum Normalization
     {
         n3d,
@@ -34,9 +37,6 @@ class ReferenceCountedDecoder : public ReferenceCountedObject
     struct Settings {
         Normalization expectedNormalization = sn3d;
     };
-    
-public:
-    typedef ReferenceCountedObjectPtr<ReferenceCountedDecoder> Ptr;
     
     ReferenceCountedDecoder (const String& nameToUse, const String& descriptionToUse, int rows, int columns)
     :   name (nameToUse), description (descriptionToUse), matrix (rows, columns)
@@ -63,11 +63,36 @@ public:
         return description;
     }
     
+    void setSettings(Settings newSettings)
+    {
+        settings = newSettings;
+    }
+    
+    const Settings getSettings()
+    {
+        return settings;
+    }
+
+    const String getSettingsAsString()
+    {
+        return "Decoder expects Ambisonic input with " + String(settings.expectedNormalization == Normalization::n3d ? "N3D" : "SN3D") + " normalization.";
+    }
+    
+    const int getNumOutputChannels()
+    {
+        return (int) matrix.rows();
+    }
+    
+    const int getNumInputChannels()
+    {
+        return (int) matrix.cols();
+    }
     
 private:
     String name;
     String description;
     Eigen::MatrixXf matrix;
+    Settings settings;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ReferenceCountedDecoder)
 };

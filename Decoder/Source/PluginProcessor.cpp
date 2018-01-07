@@ -36,7 +36,7 @@ DecoderAudioProcessor::DecoderAudioProcessor()
 #endif
                   ),
 #endif
-parameters(*this, nullptr), test("decodereName", "some text bla bla", 5, 5)
+parameters(*this, nullptr)
 {
     
     
@@ -296,9 +296,9 @@ void DecoderAudioProcessor::updateBuffers()
 
 void DecoderAudioProcessor::loadPreset(const File& presetFile)
 {
-    ReferenceCountedMatrix::Ptr tempMatrix = nullptr;
+    ReferenceCountedDecoder::Ptr tempDecoder = nullptr;
     
-    Result result = DecoderHelper::parseFileForTransformationMatrix(presetFile, &tempMatrix);
+    Result result = DecoderHelper::parseFileForDecoder(presetFile, &tempDecoder);
     if (!result.wasOk()) {
         messageForEditor = result.getErrorMessage();
         return;
@@ -307,17 +307,19 @@ void DecoderAudioProcessor::loadPreset(const File& presetFile)
     lastFile = presetFile;
     
     String output;
-    if (tempMatrix != nullptr)
+    if (tempDecoder != nullptr)
     {
         //matTrans.setMatrix(tempMatrix);
         output += "Preset loaded succesfully!\n";
-        output += "    Name: \t" + tempMatrix->getName() + "\n";
-        output += "    Size: " + String(tempMatrix->getMatrix()->rows()) + "x" + String(tempMatrix->getMatrix()->cols()) + " (output x input)\n";
-        output += "    Description: \t" + tempMatrix->getDescription() + "\n";
+        output += "    Name: \t" + tempDecoder->getName() + "\n";
+        output += "    Size: " + String(tempDecoder->getMatrix()->rows()) + "x" + String(tempDecoder->getMatrix()->cols()) + " (output x input)\n";
+        output += "    Description: \t" + tempDecoder->getDescription() + "\n";
+        output += "    " + tempDecoder->getSettingsAsString();
     }
     else
         output = "ERROR: something went wrong!";
     
+    decoder = tempDecoder;
     messageForEditor = output;
     messageChanged = true;
 }

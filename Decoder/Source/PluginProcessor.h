@@ -93,6 +93,11 @@ public:
     bool messageChanged {true};
     String getMessageForEditor() {return messageForEditor;}
     
+    ReferenceCountedDecoder::Ptr getCurrentDecoder()
+    {
+        return decoder;
+    }
+    
 private:
     // ====== parameters
     AudioProcessorValueTreeState parameters;
@@ -105,8 +110,8 @@ private:
     File lastFile;
     ScopedPointer<PropertiesFile> properties;
     
+    ReferenceCountedDecoder::Ptr decoder {nullptr};
     String messageForEditor {"No preset loaded."};
-    ReferenceCountedDecoder test;
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DecoderAudioProcessor)
 };

@@ -127,6 +127,11 @@ void DecoderAudioProcessorEditor::timerCallback()
         edOutput.setText(processor.getMessageForEditor());
         processor.messageChanged = false;
     }
+    
+    ReferenceCountedDecoder::Ptr currentDecoder = processor.getCurrentDecoder();
+    if (currentDecoder != nullptr)
+        title.getOutputWidgetPtr()->setSizeIfUnselectable(currentDecoder->getNumOutputChannels());
+    
 }
 
 void DecoderAudioProcessorEditor::buttonClicked(Button* button)
