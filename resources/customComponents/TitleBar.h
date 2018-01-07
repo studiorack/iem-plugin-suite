@@ -83,9 +83,9 @@ public:
         else
         {
             if (maxPossibleNumberOfChannels < channelSizeIfNotSelectable)
-                displayTextIfNotSelectable = String(maxChannels) + " (bus too small)";
+                displayTextIfNotSelectable = String(channelSizeIfNotSelectable) + " (bus too small)";
             else
-                displayTextIfNotSelectable = String(maxChannels);
+                displayTextIfNotSelectable = String(channelSizeIfNotSelectable);
             repaint();
         }
         availableChannels = maxPossibleNumberOfChannels;
