@@ -1,6 +1,6 @@
 {
     "name" : "Generic decoder preset",
-    "description" : "This is a genericx decoder preset. The .json file shows you all available preferences.",
+    "description" : "This is a generic decoder preset. The .json file shows you all available preferences.",
     "Decoder" : {
                 "name" : "Example Decoder",
                 "description" : "This is a simple decoder.",
@@ -9,5 +9,8 @@
                             [1.0, 0.0, 0.0],
                             [0.5, 0.5, 0.0],
                             [0.0, 0.0, 1.0]]
-                }
+                },
+                "routing" : [1 2 4 3],
+                "weights" : "maxre_o1"
+
 }
