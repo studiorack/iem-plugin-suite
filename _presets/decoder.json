@@ -4,13 +4,12 @@
     "Decoder" : {
                 "name" : "Example Decoder",
                 "description" : "This is a simple decoder.",
-                "expectedNormalization" : "sn3d",
+                "expectedInputNormalization" : "sn3d",
+                "weights" : "maxrE",
+                "weightsAlreadyApplied" : true,
                 "matrix" : [[0.0, 1.0, 0.0],
                             [1.0, 0.0, 0.0],
                             [0.5, 0.5, 0.0],
                             [0.0, 0.0, 1.0]]
                 },
-                "routing" : [1 2 4 3],
-                "weights" : "maxre_o1"
-
 }
