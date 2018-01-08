@@ -53,6 +53,15 @@ public:
         return description;
     }
     
+    const int getNumOutputChannels()
+    {
+        return (int) matrix.rows();
+    }
+    
+    const int getNumInputChannels()
+    {
+        return (int) matrix.cols();
+    }
 
 private:
     String name;
