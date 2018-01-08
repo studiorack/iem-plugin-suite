@@ -25,7 +25,7 @@
 
 
 //==============================================================================
-MatrixTransformerAudioProcessorEditor::MatrixTransformerAudioProcessorEditor (MatrixTransformerAudioProcessor& p, AudioProcessorValueTreeState& vts)
+MatrixMultiplicatorAudioProcessorEditor::MatrixMultiplicatorAudioProcessorEditor (MatrixMultiplicatorAudioProcessor& p, AudioProcessorValueTreeState& vts)
     : AudioProcessorEditor (&p), processor (p), valueTreeState(vts)
 {
     // ============== BEGIN: essentials ======================
@@ -35,15 +35,15 @@ MatrixTransformerAudioProcessorEditor::MatrixTransformerAudioProcessorEditor (Ma
     
     // make title and footer visible, and set the PluginName
     addAndMakeVisible(&title);
-    title.setTitle(String("Matrix"),String("Transformer"));
+    title.setTitle(String("Matrix"),String("Multiplicator"));
     title.setFont(globalLaF.robotoBold, globalLaF.robotoLight);
     addAndMakeVisible (&footer);
     // ============= END: essentials ========================
     
     
     // create the connection between title component's comboBoxes and parameters
-    cbInputChannelsSettingAttachment = new ComboBoxAttachment(valueTreeState, "inputChannelsSetting", *title.getInputWidgetPtr()->getChannelsCbPointer());
-    cbOutputChannelsSettingAttachment = new ComboBoxAttachment(valueTreeState, "outputChannelsSetting", *title.getOutputWidgetPtr()->getChannelsCbPointer());
+//    cbInputChannelsSettingAttachment = new ComboBoxAttachment(valueTreeState, "inputChannelsSetting", *title.getInputWidgetPtr()->getChannelsCbPointer());
+//    cbOutputChannelsSettingAttachment = new ComboBoxAttachment(valueTreeState, "outputChannelsSetting", *title.getOutputWidgetPtr()->getChannelsCbPointer());
     
     addAndMakeVisible(btLoadFile);
     btLoadFile.setButtonText("Load preset");
@@ -60,18 +60,18 @@ MatrixTransformerAudioProcessorEditor::MatrixTransformerAudioProcessorEditor (Ma
     startTimer(20);
 }
 
-MatrixTransformerAudioProcessorEditor::~MatrixTransformerAudioProcessorEditor()
+MatrixMultiplicatorAudioProcessorEditor::~MatrixMultiplicatorAudioProcessorEditor()
 {
     setLookAndFeel(nullptr);
 }
 
 //==============================================================================
-void MatrixTransformerAudioProcessorEditor::paint (Graphics& g)
+void MatrixMultiplicatorAudioProcessorEditor::paint (Graphics& g)
 {
     g.fillAll (globalLaF.ClBackground);
 }
 
-void MatrixTransformerAudioProcessorEditor::resized()
+void MatrixMultiplicatorAudioProcessorEditor::resized()
 {
     // ============ BEGIN: header and footer ============
     const int leftRightMargin = 30;
@@ -99,7 +99,7 @@ void MatrixTransformerAudioProcessorEditor::resized()
     edOutput.setBounds(area);
 }
 
-void MatrixTransformerAudioProcessorEditor::timerCallback()
+void MatrixMultiplicatorAudioProcessorEditor::timerCallback()
 {
     // === update titleBar widgets according to available input/output channel counts
     int maxInSize, maxOutSize;
@@ -113,9 +113,16 @@ void MatrixTransformerAudioProcessorEditor::timerCallback()
         edOutput.setText(processor.getMessageForEditor());
         processor.messageChanged = false;
     }
+    
+    ReferenceCountedMatrix::Ptr currentMatrix = processor.getCurrentMatrix();
+    if (currentMatrix != nullptr)
+    {
+        title.getOutputWidgetPtr()->setSizeIfUnselectable(currentMatrix->getNumOutputChannels());
+        title.getInputWidgetPtr()->setSizeIfUnselectable(currentMatrix->getNumInputChannels());
+    }
 }
 
-void MatrixTransformerAudioProcessorEditor::buttonClicked(Button* button)
+void MatrixMultiplicatorAudioProcessorEditor::buttonClicked(Button* button)
 {
     if (button == &btLoadFile)
     {
@@ -123,12 +130,12 @@ void MatrixTransformerAudioProcessorEditor::buttonClicked(Button* button)
     }
 }
 
-void MatrixTransformerAudioProcessorEditor::buttonStateChanged(juce::Button *button)
+void MatrixMultiplicatorAudioProcessorEditor::buttonStateChanged(juce::Button *button)
 {
 
 }
 
-void MatrixTransformerAudioProcessorEditor::loadPresetFile()
+void MatrixMultiplicatorAudioProcessorEditor::loadPresetFile()
 {
     FileChooser myChooser ("Please select the preset you want to load...",
                            processor.getLastDir().exists() ? processor.getLastDir() : File::getSpecialLocation (File::userHomeDirectory),

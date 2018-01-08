@@ -41,11 +41,11 @@ typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 //==============================================================================
 /**
 */
-class MatrixTransformerAudioProcessorEditor  : public AudioProcessorEditor, private Timer, private Button::Listener
+class MatrixMultiplicatorAudioProcessorEditor  : public AudioProcessorEditor, private Timer, private Button::Listener
 {
 public:
-    MatrixTransformerAudioProcessorEditor (MatrixTransformerAudioProcessor&, AudioProcessorValueTreeState&);
-    ~MatrixTransformerAudioProcessorEditor();
+    MatrixMultiplicatorAudioProcessorEditor (MatrixMultiplicatorAudioProcessor&, AudioProcessorValueTreeState&);
+    ~MatrixMultiplicatorAudioProcessorEditor();
 
     //==============================================================================
     void paint (Graphics&) override;
@@ -64,7 +64,7 @@ private:
     LaF globalLaF;
     
     // stored references to the AudioProcessor and ValueTreeState holding all the parameters
-    MatrixTransformerAudioProcessor& processor;
+    MatrixMultiplicatorAudioProcessor& processor;
     AudioProcessorValueTreeState& valueTreeState;
 
     
@@ -75,17 +75,17 @@ private:
         - AmbisonicIOWidget
         - DirectivitiyIOWidget
      */
-    TitleBar<AudioChannelsIOWidget<64,true>, AudioChannelsIOWidget<64,true>> title;
+    TitleBar<AudioChannelsIOWidget<0,false>, AudioChannelsIOWidget<0,false>> title;
     Footer footer;
     // =============== end essentials ============
     
     // Attachments to create a connection between IOWidgets comboboxes
     // and the associated parameters
-    ScopedPointer<ComboBoxAttachment> cbInputChannelsSettingAttachment;
-    ScopedPointer<ComboBoxAttachment> cbOutputChannelsSettingAttachment;
+//    ScopedPointer<ComboBoxAttachment> cbInputChannelsSettingAttachment;
+//    ScopedPointer<ComboBoxAttachment> cbOutputChannelsSettingAttachment;
     
     TextButton btLoadFile;
     TextEditor edOutput;
     
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MatrixTransformerAudioProcessorEditor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MatrixMultiplicatorAudioProcessorEditor)
 };

@@ -24,7 +24,7 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "../../resources/IOHelper.h"
-#include "../../resources/MatrixTransformer.h"
+#include "../../resources/MatrixMultiplication.h"
 #include "../../resources/decoderHelper.h"
 
 
@@ -36,14 +36,14 @@
     - Ambisonics<maxOrder> (can also be used for directivity signals)
  You can leave `maxChannelCount` and `maxOrder` empty for default values (64 channels and 7th order)
 */
-class MatrixTransformerAudioProcessor  : public AudioProcessor,
+class MatrixMultiplicatorAudioProcessor  : public AudioProcessor,
                                         public AudioProcessorValueTreeState::Listener,
                                         public IOHelper<IOTypes::AudioChannels<64>, IOTypes::AudioChannels<64>>
 {
 public:
     //==============================================================================
-    MatrixTransformerAudioProcessor();
-    ~MatrixTransformerAudioProcessor();
+    MatrixMultiplicatorAudioProcessor();
+    ~MatrixMultiplicatorAudioProcessor();
 
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
@@ -93,14 +93,17 @@ public:
     bool messageChanged {true};
     String getMessageForEditor() {return messageForEditor;}
     
+    ReferenceCountedMatrix::Ptr getCurrentMatrix() {return currentMatrix;}
+    
 private:
     // ====== parameters
     AudioProcessorValueTreeState parameters;
     
     // list of used audio parameters
-    float *inputChannelsSetting, *outputChannelsSetting;
+//    float *inputChannelsSetting, *outputChannelsSetting;
     
-    MatrixTransformer matTrans;
+    MatrixMultiplication matTrans;
+    ReferenceCountedMatrix::Ptr currentMatrix {nullptr};
     
     File lastDir;
     File lastFile;
@@ -108,5 +111,5 @@ private:
     
     String messageForEditor {"No preset loaded."};
     //==============================================================================
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MatrixTransformerAudioProcessor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MatrixMultiplicatorAudioProcessor)
 };
