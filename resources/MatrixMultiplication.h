@@ -26,13 +26,13 @@
 #include "ReferenceCountedMatrix.h"
 
 using namespace dsp;
-class MatrixTransformer : private ProcessorBase
+class MatrixMultiplication : private ProcessorBase
 {
 public:
-    MatrixTransformer() {
+    MatrixMultiplication() {
     }
     
-    ~MatrixTransformer() {}
+    ~MatrixMultiplication() {}
     
     void prepare (const ProcessSpec& newSpec) override {
         spec = newSpec;
@@ -109,6 +109,5 @@ private:
     ReferenceCountedMatrix::Ptr newMatrix {nullptr};
     Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> bufferMatrix;
     bool newMatrixAvailable {false};
-    
     
 };
