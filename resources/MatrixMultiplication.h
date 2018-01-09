@@ -24,6 +24,7 @@
 #pragma once
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "ReferenceCountedMatrix.h"
+#include "ReferenceCountedDecoder.h"
 
 using namespace dsp;
 class MatrixMultiplication : private ProcessorBase
@@ -76,7 +77,7 @@ public:
     
     void reset() override {};
     
-    void checkIfNewMatrixAvailable() {
+    bool checkIfNewMatrixAvailable() {
         if (newMatrixAvailable)
         {
             if (newMatrix == nullptr)
@@ -94,12 +95,19 @@ public:
             currentMatrix = newMatrix;
             newMatrix = nullptr;
             newMatrixAvailable = false;
+            return true;
         }
+        return false;
     };
     
     void setMatrix(ReferenceCountedMatrix::Ptr newMatrixToUse) {
         newMatrix = newMatrixToUse;
         newMatrixAvailable = true;
+    }
+    
+    ReferenceCountedMatrix::Ptr getMatrix()
+    {
+        return currentMatrix;
     }
     
 private:
