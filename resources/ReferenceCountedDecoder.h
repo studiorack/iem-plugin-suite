@@ -21,9 +21,9 @@
  */
 
 #pragma once
-#include "Eigen/Dense"
+#include "ReferenceCountedMatrix.h"
 
-class ReferenceCountedDecoder : public ReferenceCountedObject
+class ReferenceCountedDecoder : public ReferenceCountedMatrix
 {
 public:
     typedef ReferenceCountedObjectPtr<ReferenceCountedDecoder> Ptr;
@@ -39,14 +39,20 @@ public:
     };
     
     ReferenceCountedDecoder (const String& nameToUse, const String& descriptionToUse, int rows, int columns)
-    :   name (nameToUse), description (descriptionToUse), matrix (rows, columns)
-    {
-        DBG ("Decoder named '" << name << "' constructed. Size: " << rows << "x" << columns);
-    }
+    :   ReferenceCountedMatrix(nameToUse, descriptionToUse, rows, columns)
+    {}
     
     ~ReferenceCountedDecoder()
+    {}
+    
+    virtual String getConstructorMessage() override
     {
-        DBG (String ("Decoder named '") + name + "' destroyed.");
+        return "Decoder named '" + name + "' constructed. Size: " + String(matrix.rows()) + "x" + String(matrix.cols());
+    }
+    
+    virtual String getDeconstructorMessage() override
+    {
+        return "Decoder named '" + name + "' destroyed.";
     }
     
     Eigen::MatrixXf* getMatrix()
@@ -87,11 +93,9 @@ public:
     {
         return (int) matrix.cols();
     }
-    
+
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 private:
-    String name;
-    String description;
-    Eigen::MatrixXf matrix;
     Settings settings;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ReferenceCountedDecoder)

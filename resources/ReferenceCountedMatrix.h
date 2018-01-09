@@ -31,12 +31,22 @@ public:
     ReferenceCountedMatrix (const String& nameToUse, const String& descriptionToUse, int rows, int columns)
     :   name (nameToUse), description (descriptionToUse), matrix (rows, columns)
     {
-        DBG ("Matrix named '" << name << "' constructed. Size: " << rows << "x" << columns);
+        DBG (getConstructorMessage());
     }
     
     ~ReferenceCountedMatrix()
     {
-        DBG (String ("Matrix named '") + name + "' destroyed.");
+        DBG (getDeconstructorMessage());
+    }
+    
+    virtual String getConstructorMessage()
+    {
+        return "Matrix named '" + name + "' constructed. Size: " + String(matrix.rows()) + "x" + String(matrix.cols());
+    }
+    
+    virtual String getDeconstructorMessage()
+    {
+        return "Matrix named '" + name + "' destroyed.";
     }
     
     Eigen::MatrixXf* getMatrix()
@@ -63,7 +73,8 @@ public:
         return (int) matrix.cols();
     }
 
-private:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+protected:
     String name;
     String description;
     Eigen::MatrixXf matrix;
