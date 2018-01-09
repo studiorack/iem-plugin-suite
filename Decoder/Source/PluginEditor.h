@@ -32,6 +32,7 @@
 //Custom Components
 #include "../../resources/customComponents/ReverseSlider.h"
 #include "../../resources/customComponents/SimpleLabel.h"
+#include "../../resources/customComponents/FilterVisualizer.h"
 
 
 typedef ReverseSlider::SliderAttachment SliderAttachment; // all ReverseSliders will make use of the parameters' valueToText() function
@@ -83,13 +84,23 @@ private:
     ScopedPointer<ComboBoxAttachment> cbOrderSettingAttachment;
     ScopedPointer<ComboBoxAttachment> cbNormalizationSettingAttachment;
     //ScopedPointer<ComboBoxAttachment> cbOutputChannelsSettingAttachment;
+      
+    GroupComponent gcFilter, gcSettings, gcConfiguration;
     
-    // Demo stuff
-    ReverseSlider slCutoff;
-    ScopedPointer<SliderAttachment> slCutoffAttachment;
+    // Filter slider
+    ReverseSlider slLowPassFrequency, slHighPassFrequency, slLowPassGain;
+    ScopedPointer<SliderAttachment> slLowPassFrequencyAttachment, slLowPassGainAttachment, slHighPassFrequencyAttachment;
+    SimpleLabel lbLowPassFrequency, lbLowPassGain, lbHighPassFrequency;
     
+    // Lfe mode
+    ComboBox cbLfeMode;
+    ScopedPointer<ComboBoxAttachment> cbLfeModeAttachment;
+    SimpleLabel lbLfeMode;
+    
+    //
     TextButton btLoadFile;
     TextEditor edOutput;
 
+    FilterVisualizer fv;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DecoderAudioProcessorEditor)
 };

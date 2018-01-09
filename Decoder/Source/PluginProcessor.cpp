@@ -30,7 +30,7 @@ DecoderAudioProcessor::DecoderAudioProcessor()
 : AudioProcessor (BusesProperties()
 #if ! JucePlugin_IsMidiEffect
 #if ! JucePlugin_IsSynth
-                  .withInput  ("Input",  AudioChannelSet::discreteChannels(10), true)
+                  .withInput  ("Input",  AudioChannelSet::discreteChannels(64), true)
 #endif
                   .withOutput ("Output", AudioChannelSet::discreteChannels(64), true)
 #endif
@@ -38,6 +38,9 @@ DecoderAudioProcessor::DecoderAudioProcessor()
 #endif
 parameters(*this, nullptr)
 {
+    // dummy values
+    lowPassCoefficients = IIR::Coefficients<float>::makeFirstOrderLowPass(48000.0, 100.0f);
+    highPassCoefficients = IIR::Coefficients<float>::makeFirstOrderHighPass(48000.0, 100.0f);
     
     
     parameters.createAndAddParameter ("inputOrderSetting", "Ambisonic Order", "",
@@ -53,6 +56,7 @@ parameters(*this, nullptr)
                                           else if (value >= 7.5f) return "7th";
                                           else return "Auto";},
                                       nullptr);
+    
     parameters.createAndAddParameter("useSN3D", "Normalization", "",
                                      NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value) {
@@ -60,17 +64,26 @@ parameters(*this, nullptr)
                                          else return "N3D";
                                      }, nullptr);
     
-    parameters.createAndAddParameter("outputChannelsSetting", "Number of input channels ", "",
-                                     NormalisableRange<float> (0.0f, 10.0f, 1.0f), 0.0f,
-                                     [](float value) {return value < 0.5f ? "Auto" : String(value);}, nullptr);
+    parameters.createAndAddParameter ("lowPassFrequency", "LowPass Cutoff Frequency", "Hz",
+                                      NormalisableRange<float> (20.f, 20000.f, 1.0f), 100.f,
+                                      [](float value) {return String (value, 0);},
+                                      nullptr);
+    parameters.createAndAddParameter ("lowPassGain", "LowPass Gain", "dB",
+                                      NormalisableRange<float> (-20.0f, 10.0, 0.1f), 1.f,
+                                      [](float value) {return String (value, 1);},
+                                      nullptr);
     
-    parameters.createAndAddParameter("param1", "Parameter 1", "",
-                                     NormalisableRange<float> (-10.0f, 10.0f, 0.1f), 0.0,
-                                     [](float value) {return String(value);}, nullptr);
-    
-    parameters.createAndAddParameter("param2", "Parameter 2", "dB",
-                                     NormalisableRange<float> (-50.0f, 0.0f, 0.1f), -10.0,
-                                     [](float value) {return String(value, 1);}, nullptr);
+    parameters.createAndAddParameter ("highPassFrequency", "HighPass Cutoff Frequency", "Hz",
+                                      NormalisableRange<float> (20.f, 20000.f, 1.f), 100.f,
+                                      [](float value) {return String (value, 0);},
+                                      nullptr);
+
+    parameters.createAndAddParameter ("lfeMode", "Low-Frequency-Effect Mode", "",
+                                     NormalisableRange<float> (0.0f, 2.0f, 1.0f), 1.0f,
+                                     [](float value) {
+                                         if (value < 0.5f) return "none";
+                                         else if (value >= 0.5f && value < 1.5f) return "append";
+                                         else return "Virtual LFE";}, nullptr);
     
     // this must be initialised after all calls to createAndAddParameter().
     parameters.state = ValueTree (Identifier ("Decoder"));
@@ -81,19 +94,29 @@ parameters(*this, nullptr)
     inputOrderSetting = parameters.getRawParameterValue ("inputOrderSetting");
     useSN3D = parameters.getRawParameterValue ("useSN3D");
     
-    outputChannelsSetting = parameters.getRawParameterValue("outputChannelsSetting");
+    lowPassFrequency = parameters.getRawParameterValue ("lowPassFrequency");
+    lowPassGain = parameters.getRawParameterValue ("lowPassGain");
+    highPassFrequency = parameters.getRawParameterValue ("highPassFrequency");
     
-    param1 = parameters.getRawParameterValue ("param1");
-    param2 = parameters.getRawParameterValue ("param2");
-    
+    lfeMode = parameters.getRawParameterValue ("lfeMode");
+ 
     
     // add listeners to parameter changes
-    parameters.addParameterListener ("inputChannelsSetting", this);
-    parameters.addParameterListener ("outputOrderSetting", this);
-    parameters.addParameterListener ("useSN3D", this);
-    parameters.addParameterListener ("param1", this);
-    parameters.addParameterListener ("param2", this);
     
+    parameters.addParameterListener ("inputOrderSetting", this);
+    parameters.addParameterListener ("useSN3D", this);
+    
+    parameters.addParameterListener ("lowPassFrequency", this);
+    parameters.addParameterListener ("lowPassQ", this);
+    parameters.addParameterListener ("lowPassGain", this);
+    parameters.addParameterListener ("highPassFrequency", this);
+    parameters.addParameterListener ("highPassQ", this);
+    
+    parameters.addParameterListener ("lfeMode", this);
+    
+    
+    
+    highPassSpecs.numChannels = 0;
     
     // global settings for all plug-in instances
     PropertiesFile::Options options;
@@ -104,6 +127,16 @@ parameters(*this, nullptr)
     
     properties = new PropertiesFile(options);
     lastDir = File(properties->getValue("presetFolder"));
+    
+    
+
+    
+    
+    highPassCoefficients = IIR::Coefficients<float>::makeHighPass(48000.0, *highPassFrequency);
+    highPassFilters.state = highPassCoefficients;
+    
+    lowPassFilter = new IIR::Filter<float>(lowPassCoefficients);
+    
 }
 
 DecoderAudioProcessor::~DecoderAudioProcessor()
@@ -184,15 +217,34 @@ void DecoderAudioProcessor::changeProgramName (int index, const String& newName)
 //==============================================================================
 void DecoderAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    checkInputAndOutput(this, *inputOrderSetting, *outputChannelsSetting, true);
+    checkInputAndOutput(this, *inputOrderSetting, 0, true);
     //TODO: *outputChannelsSetting should be replaced by something like 'decoder.getOutputChannels()'
     
     
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
     
+    lfeBuffer.setSize(1, samplesPerBlock);
+    lfeBuffer.clear();
+    
+    matMult.checkIfNewMatrixAvailable();
+    ReferenceCountedMatrix::Ptr matMultMatrix = matMult.getMatrix();
+    if (matMultMatrix != nullptr) {
+        highPassSpecs.numChannels = matMultMatrix->getNumInputChannels();
+    }
+    
+    *lowPassCoefficients = *IIR::Coefficients<float>::makeFirstOrderLowPass(sampleRate, *lowPassFrequency);
+    *highPassCoefficients = *IIR::Coefficients<float>::makeFirstOrderHighPass(sampleRate, *highPassFrequency);
+    
+    highPassSpecs.sampleRate = sampleRate;
+    highPassSpecs.maximumBlockSize = samplesPerBlock;
     
     
+    highPassFilters.prepare(highPassSpecs);
+    highPassFilters.reset();
+    
+    lowPassFilter->prepare(highPassSpecs);
+    lowPassFilter->reset();
 }
 
 void DecoderAudioProcessor::releaseResources()
@@ -210,29 +262,42 @@ bool DecoderAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) 
 
 void DecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
-    checkInputAndOutput(this, *inputOrderSetting, *outputChannelsSetting, false);
+    checkInputAndOutput(this, *inputOrderSetting, 0, false);
     ScopedNoDenormals noDenormals;
     _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
     
-    const int totalNumInputChannels  = getTotalNumInputChannels();
-    const int totalNumOutputChannels = getTotalNumOutputChannels();
-    
-    // In case we have more outputs than inputs, this code clears any output
-    // channels that didn't contain input data, (because these aren't
-    // guaranteed to be empty - they may contain garbage).
-    // This is here to avoid people getting screaming feedback
-    // when they first compile a plugin, but obviously you don't need to keep
-    // this code if your algorithm always overwrites all the output channels.
-    for (int i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-        buffer.clear (i, 0, buffer.getNumSamples());
-    
-    // This is the place where you'd normally do the guts of your plugin's
-    // audio processing...
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
+    int numChannels = buffer.getNumChannels();
+      
+    if (matMult.checkIfNewMatrixAvailable())
     {
-        float* channelData = buffer.getWritePointer (channel);
-        
-        // ..do something to the data...
+        highPassSpecs.numChannels = matMult.getMatrix()->getNumInputChannels();
+        highPassFilters.prepare(highPassSpecs);
+    }
+    
+    // decoder loaded?
+    if (matMult.getMatrix() == nullptr)
+        return;
+    
+    lfeBuffer.copyFrom(0, 0, buffer, 0, 0, buffer.getNumSamples());
+    
+    //
+    const int nChIn = jmin(matMult.getMatrix()->getNumInputChannels(), buffer.getNumChannels());
+    const int nChOut = jmin(matMult.getMatrix()->getNumOutputChannels(), buffer.getNumChannels());
+    
+    AudioBlock<float> highPassAudioBlock = AudioBlock<float>(buffer.getArrayOfWritePointers(), nChIn, buffer.getNumSamples());
+    ProcessContextReplacing<float> highPassContext (highPassAudioBlock);
+    highPassFilters.process(highPassContext);
+    
+    // low pass
+    AudioBlock<float> lowPassAudioBlock = AudioBlock<float>(lfeBuffer);
+    ProcessContextReplacing<float> lowPassContext(lowPassAudioBlock);
+    lowPassFilter->process(lowPassContext);
+    
+    matMult.process(highPassContext);
+    
+    if (nChOut < buffer.getNumChannels())
+    {
+        buffer.copyFrom(nChOut, 0, lfeBuffer, 0, 0, buffer.getNumSamples());
     }
 }
 
@@ -282,10 +347,22 @@ void DecoderAudioProcessor::setStateInformation (const void* data, int sizeInByt
 //==============================================================================
 void DecoderAudioProcessor::parameterChanged (const String &parameterID, float newValue)
 {
-    DBG("Parameter with ID " << parameterID << " has changed. New value: " << newValue);
-    
-    if (parameterID == "inputChannelsSetting" || parameterID == "outputOrderSetting" )
+    if (parameterID == "inputOrderSetting")
         userChangedIOSettings = true;
+    else if (parameterID == "highPassFrequency")
+    {
+        *highPassCoefficients = *IIR::Coefficients<float>::makeFirstOrderHighPass(highPassSpecs.sampleRate, *highPassFrequency);
+        updateFv = true;
+    }
+    else if (parameterID == "lowPassFrequency")
+    {
+        *lowPassCoefficients = *IIR::Coefficients<float>::makeFirstOrderLowPass(highPassSpecs.sampleRate, *lowPassFrequency);
+        updateFv = true;
+    }
+    else if (parameterID == "lowPassGain")
+    {
+        updateFv = true;
+    }
 }
 
 void DecoderAudioProcessor::updateBuffers()
@@ -309,7 +386,7 @@ void DecoderAudioProcessor::loadPreset(const File& presetFile)
     String output;
     if (tempDecoder != nullptr)
     {
-        //matTrans.setMatrix(tempMatrix);
+        matMult.setMatrix(tempDecoder);
         output += "Preset loaded succesfully!\n";
         output += "    Name: \t" + tempDecoder->getName() + "\n";
         output += "    Size: " + String(tempDecoder->getMatrix()->rows()) + "x" + String(tempDecoder->getMatrix()->cols()) + " (output x input)\n";
@@ -319,7 +396,11 @@ void DecoderAudioProcessor::loadPreset(const File& presetFile)
     else
         output = "ERROR: something went wrong!";
     
+    
+    highPassFilters.prepare(highPassSpecs);
     decoder = tempDecoder;
+    
+
     messageForEditor = output;
     messageChanged = true;
 }
@@ -330,5 +411,4 @@ AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new DecoderAudioProcessor();
 }
-
 

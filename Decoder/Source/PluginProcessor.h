@@ -24,10 +24,11 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "../../resources/IOHelper.h"
-#include "../../resources/MatrixTransformer.h"
+#include "../../resources/MatrixMultiplication.h"
 #include "../../resources/decoderHelper.h"
 #include "../../resources/ReferenceCountedDecoder.h"
 
+using namespace dsp;
 //==============================================================================
 /**
  Use the IOHelper to detect which amount of channels or which Ambisonic order is possible with the current bus layout.
@@ -82,9 +83,6 @@ public:
     void parameterChanged (const String &parameterID, float newValue) override;
     void updateBuffers() override; // use this to implement a buffer update method
     
-    void setMatrix(ReferenceCountedMatrix::Ptr newMatrixToUse) {
-        //matTrans.setMatrix(newMatrixToUse);
-    }
     
     File getLastDir() {return lastDir;}
     void setLastDir(File newLastDir);
@@ -98,17 +96,35 @@ public:
         return decoder;
     }
     
+    IIR::Coefficients<float>::Ptr highPassCoefficients, lowPassCoefficients;
+    bool updateFv {true};
+    
 private:
     // ====== parameters
     AudioProcessorValueTreeState parameters;
     
     // list of used audio parameters
-    float *outputChannelsSetting, *inputOrderSetting, *useSN3D, *param1, *param2;
+    float *inputOrderSetting, *useSN3D;
+    float *lowPassFrequency, *lowPassGain;
+    float *highPassFrequency;
+    
+    float *lfeMode;
+    
     // =========================================
     
     File lastDir;
     File lastFile;
     ScopedPointer<PropertiesFile> properties;
+    
+    AudioBuffer<float> lfeBuffer;
+    
+    ScopedPointer<IIR::Filter<float>> lowPassFilter;
+    ProcessorDuplicator<IIR::Filter<float>, IIR::Coefficients<float>> highPassFilters;
+    ProcessSpec highPassSpecs {48000, 0, 0};
+    
+    
+    // processor
+    MatrixMultiplication matMult;
     
     ReferenceCountedDecoder::Ptr decoder {nullptr};
     String messageForEditor {"No preset loaded."};

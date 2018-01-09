@@ -26,12 +26,12 @@
 
 //==============================================================================
 DecoderAudioProcessorEditor::DecoderAudioProcessorEditor (DecoderAudioProcessor& p, AudioProcessorValueTreeState& vts)
-    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts)
+    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts), fv(20, 20000, -20, 10, 5)
 {
     // ============== BEGIN: essentials ======================
     // set GUI size and lookAndFeel
     //setSize(500, 300); // use this to create a fixed-size GUI
-    setResizeLimits(500, 300, 800, 500); // use this to create a resizeable GUI
+    setResizeLimits(700, 280, 800, 700); // use this to create a resizeable GUI
     setLookAndFeel (&globalLaF);
     
     // make title and footer visible, and set the PluginName
@@ -47,9 +47,52 @@ DecoderAudioProcessorEditor::DecoderAudioProcessorEditor (DecoderAudioProcessor&
     cbNormalizationSettingAttachment = new ComboBoxAttachment(valueTreeState, "useSN3D", *title.getInputWidgetPtr()->getNormCbPointer());
     //cbOutputChannelsSettingAttachment = new ComboBoxAttachment(valueTreeState, "outputChannelsSetting", *title.getOutputWidgetPtr()->getChannelsCbPointer());
     
-    addAndMakeVisible(slCutoff);
-    slCutoffAttachment = new SliderAttachment(valueTreeState, "cutoff", slCutoff);
-
+    addAndMakeVisible(gcFilter);
+    gcFilter.setText("Frequency Bands");
+    
+    addAndMakeVisible(gcSettings);
+    gcSettings.setText("Settings");
+    
+    addAndMakeVisible(gcConfiguration);
+    gcConfiguration.setText("Configuration");
+    
+    
+    // ================= BEGIN: filter slider ================
+    addAndMakeVisible(slLowPassFrequency);
+    slLowPassFrequencyAttachment = new SliderAttachment(valueTreeState, "lowPassFrequency", slLowPassFrequency);
+    slLowPassFrequency.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
+    slLowPassFrequency.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
+    slLowPassFrequency.setColour (Slider::rotarySliderOutlineColourId, Colours::orangered);
+    addAndMakeVisible(lbLowPassFrequency);
+    lbLowPassFrequency.setText("Frequency");
+    
+    addAndMakeVisible(slLowPassGain);
+    slLowPassGainAttachment = new SliderAttachment(valueTreeState, "lowPassGain", slLowPassGain);
+    slLowPassGain.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
+    slLowPassGain.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
+    slLowPassGain.setColour (Slider::rotarySliderOutlineColourId, Colours::orangered);
+    addAndMakeVisible(lbLowPassGain);
+    lbLowPassGain.setText("Gain");
+    
+    addAndMakeVisible(slHighPassFrequency);
+    slHighPassFrequencyAttachment = new SliderAttachment(valueTreeState, "highPassFrequency", slHighPassFrequency);
+    slHighPassFrequency.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
+    slHighPassFrequency.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
+    slHighPassFrequency.setColour (Slider::rotarySliderOutlineColourId, Colours::cyan);
+    addAndMakeVisible(lbHighPassFrequency);
+    lbHighPassFrequency.setText("Frequency");
+    // ================= END: filter slider ==================
+    
+    // ================= BEGIN: LFE mode =====================
+    addAndMakeVisible(cbLfeMode);
+    cbLfeMode.addItem("none", 1);
+    cbLfeMode.addItem("append", 2);
+    cbLfeMode.addItem("virtual", 3);
+    cbLfeModeAttachment = new ComboBoxAttachment(valueTreeState, "lfeMode", cbLfeMode);
+    
+    addAndMakeVisible(lbLfeMode);
+    lbLfeMode.setText("LFE mode");
+    // ================= END: LFE mode =======================
     
     addAndMakeVisible(btLoadFile);
     btLoadFile.setButtonText("Load preset");
@@ -62,6 +105,10 @@ DecoderAudioProcessorEditor::DecoderAudioProcessorEditor (DecoderAudioProcessor&
     edOutput.clear();
     edOutput.setText(processor.getMessageForEditor());
     
+    addAndMakeVisible(fv);
+    fv.setParallel(true);
+    fv.addCoefficients(&processor.lowPassCoefficients, Colours::orangered, &slLowPassFrequency, &slLowPassGain);
+    fv.addCoefficients(&processor.highPassCoefficients, Colours::cyan, &slHighPassFrequency);
     
     // start timer after everything is set up properly
     startTimer(20);
@@ -84,6 +131,7 @@ void DecoderAudioProcessorEditor::resized()
     const int leftRightMargin = 30;
     const int headerHeight = 60;
     const int footerHeight = 25;
+    
     Rectangle<int> area (getLocalBounds());
     
     Rectangle<int> footerArea (area.removeFromBottom(footerHeight));
@@ -98,19 +146,56 @@ void DecoderAudioProcessorEditor::resized()
     // =========== END: header and footer =================
     
     
-    // try to not use explicit coordinates to position your GUI components
-    // the removeFrom...() methods are quite handy to create scaleable areas
-    // best practice would be the use of flexBoxes...
-    // the following is medium level practice ;-)
-    Rectangle<int> sliderRow = area.removeFromTop(50);
-    slCutoff.setBounds(sliderRow.removeFromLeft(150));
+    //const int sliderHeight = 15;
+    const int rotSliderHeight = 55;
+    const int rotSliderSpacing = 10;
+    //const int sliderSpacing = 3;
+    const int rotSliderWidth = 40;
+    const int labelHeight = 20;
 
-    sliderRow = area.removeFromRight(120);
-    btLoadFile.setBounds(sliderRow.removeFromTop(30));
+    { //====================== FILTER GROUP ==================================
+        Rectangle<int> filterArea(area.removeFromLeft(240));
+        gcFilter.setBounds(filterArea);
+        
+        const int rotSliderWidth = 60;
+        
+        filterArea.removeFromTop(25);
+        
+        Rectangle<int> sliderRow(filterArea.removeFromBottom(labelHeight));
+        lbLowPassFrequency.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
+        sliderRow.removeFromLeft (rotSliderSpacing);
+        lbLowPassGain.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
+        
+        
+        lbHighPassFrequency.setBounds (sliderRow.removeFromRight(rotSliderWidth));
+        
+        sliderRow = filterArea.removeFromBottom(rotSliderHeight-10);
+        
+        
+        slLowPassFrequency.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
+        sliderRow.removeFromLeft(rotSliderSpacing);
+        slLowPassGain.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
+        
+        
+        slHighPassFrequency.setBounds (sliderRow.removeFromRight(rotSliderWidth));
+        
+        fv.setBounds(filterArea);
+    }
     
-    area.removeFromRight(10);
-    edOutput.setBounds(area);
+    area.removeFromLeft(20);
     
+    Rectangle<int> loadArea (area);
+
+    Rectangle<int> loadColumn (loadArea.removeFromRight(120));
+    btLoadFile.setBounds(loadColumn.removeFromTop(30));
+    
+    loadArea.removeFromRight(10);
+    edOutput.setBounds(loadArea);
+    
+    
+  
+
+
 }
 
 void DecoderAudioProcessorEditor::timerCallback()
@@ -130,7 +215,16 @@ void DecoderAudioProcessorEditor::timerCallback()
     
     ReferenceCountedDecoder::Ptr currentDecoder = processor.getCurrentDecoder();
     if (currentDecoder != nullptr)
-        title.getOutputWidgetPtr()->setSizeIfUnselectable(currentDecoder->getNumOutputChannels());
+    {
+        int lfeMode = *valueTreeState.getRawParameterValue("lfeMode");
+        title.getOutputWidgetPtr()->setSizeIfUnselectable(currentDecoder->getNumOutputChannels() + lfeMode == 2 ? 1 : 0);
+    }
+    
+    if (processor.updateFv)
+    {
+        fv.repaint();
+        processor.updateFv = false;
+    }
     
 }
 
