@@ -24,7 +24,7 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "../../resources/IOHelper.h"
-#include "../../resources/MatrixMultiplication.h"
+#include "../../resources/AmbisonicDecoder.h"
 #include "../../resources/decoderHelper.h"
 #include "../../resources/ReferenceCountedDecoder.h"
 
@@ -91,9 +91,9 @@ public:
     bool messageChanged {true};
     String getMessageForEditor() {return messageForEditor;}
     
-    ReferenceCountedDecoder::Ptr getCurrentDecoder()
+    ReferenceCountedDecoder::Ptr getCurrentDecoderConfig()
     {
-        return decoder;
+        return decoderConfig;
     }
     
     IIR::Coefficients<float>::Ptr highPassCoefficients, lowPassCoefficients;
@@ -124,9 +124,9 @@ private:
     
     
     // processor
-    MatrixMultiplication matMult;
+    AmbisonicDecoder decoder;
     
-    ReferenceCountedDecoder::Ptr decoder {nullptr};
+    ReferenceCountedDecoder::Ptr decoderConfig {nullptr};
     String messageForEditor {"No preset loaded."};
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DecoderAudioProcessor)

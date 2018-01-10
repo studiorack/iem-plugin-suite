@@ -218,19 +218,19 @@ void DecoderAudioProcessor::changeProgramName (int index, const String& newName)
 void DecoderAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     checkInputAndOutput(this, *inputOrderSetting, 0, true);
-    //TODO: *outputChannelsSetting should be replaced by something like 'decoder.getOutputChannels()'
-    
-    
-    // Use this method as the place to do any pre-playback
-    // initialisation that you need..
     
     lfeBuffer.setSize(1, samplesPerBlock);
     lfeBuffer.clear();
     
-    matMult.checkIfNewMatrixAvailable();
-    ReferenceCountedMatrix::Ptr matMultMatrix = matMult.getMatrix();
-    if (matMultMatrix != nullptr) {
-        highPassSpecs.numChannels = matMultMatrix->getNumInputChannels();
+    ProcessSpec specs;
+    specs.sampleRate = sampleRate;
+    specs.maximumBlockSize = samplesPerBlock;
+    specs.numChannels = 64;
+    decoder.prepare(specs);
+    
+    ReferenceCountedDecoder::Ptr currentDecoder = decoder.getCurrentDecoder();
+    if (currentDecoder != nullptr) {
+        highPassSpecs.numChannels = currentDecoder->getNumInputChannels();
     }
     
     *lowPassCoefficients = *IIR::Coefficients<float>::makeFirstOrderLowPass(sampleRate, *lowPassFrequency);
@@ -239,7 +239,7 @@ void DecoderAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
     highPassSpecs.sampleRate = sampleRate;
     highPassSpecs.maximumBlockSize = samplesPerBlock;
     
-    
+
     highPassFilters.prepare(highPassSpecs);
     highPassFilters.reset();
     
@@ -264,41 +264,47 @@ void DecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
 {
     checkInputAndOutput(this, *inputOrderSetting, 0, false);
     ScopedNoDenormals noDenormals;
-    _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
     
-    int numChannels = buffer.getNumChannels();
-      
-    if (matMult.checkIfNewMatrixAvailable())
+    if (decoder.checkIfNewDecoderAvailable())
     {
-        highPassSpecs.numChannels = matMult.getMatrix()->getNumInputChannels();
+        highPassSpecs.numChannels = decoder.getCurrentDecoder()->getNumInputChannels();
         highPassFilters.prepare(highPassSpecs);
     }
     
-    // decoder loaded?
-    if (matMult.getMatrix() == nullptr)
+    // ====== is a decoder loaded? stop processing if not ===========
+    if (decoder.getCurrentDecoder() == nullptr)
         return;
+    // ==============================================================
     
-    lfeBuffer.copyFrom(0, 0, buffer, 0, 0, buffer.getNumSamples());
+    const int nChIn = jmin(decoder.getCurrentDecoder()->getNumInputChannels(), buffer.getNumChannels());
+    const int nChOut = jmin(decoder.getCurrentDecoder()->getNumOutputChannels(), buffer.getNumChannels());
+    const int lfeProcessing = *lfeMode;
     
-    //
-    const int nChIn = jmin(matMult.getMatrix()->getNumInputChannels(), buffer.getNumChannels());
-    const int nChOut = jmin(matMult.getMatrix()->getNumOutputChannels(), buffer.getNumChannels());
-    
+    if (lfeProcessing > 0)
+    {
+        lfeBuffer.copyFrom(0, 0, buffer, 0, 0, buffer.getNumSamples());
+        // low pass filtering
+        AudioBlock<float> lowPassAudioBlock = AudioBlock<float>(lfeBuffer);
+        ProcessContextReplacing<float> lowPassContext(lowPassAudioBlock);
+        lowPassFilter->process(lowPassContext);
+        lfeBuffer.applyGain(0, 0, lfeBuffer.getNumSamples(), Decibels::decibelsToGain(*lowPassGain));
+    }
+
     AudioBlock<float> highPassAudioBlock = AudioBlock<float>(buffer.getArrayOfWritePointers(), nChIn, buffer.getNumSamples());
     ProcessContextReplacing<float> highPassContext (highPassAudioBlock);
     highPassFilters.process(highPassContext);
     
-    // low pass
-    AudioBlock<float> lowPassAudioBlock = AudioBlock<float>(lfeBuffer);
-    ProcessContextReplacing<float> lowPassContext(lowPassAudioBlock);
-    lowPassFilter->process(lowPassContext);
     
-    matMult.process(highPassContext);
+    decoder.process(highPassContext);
+
     
-    if (nChOut < buffer.getNumChannels())
-    {
+    // =================== lfe processing ==================================
+    if (lfeProcessing == 1 && nChOut < buffer.getNumChannels())
         buffer.copyFrom(nChOut, 0, lfeBuffer, 0, 0, buffer.getNumSamples());
-    }
+    else if (lfeProcessing == 2)
+        for (int ch = 0; ch < nChOut; ++ch)
+            buffer.addFrom(ch, 0, lfeBuffer, 0, 0, buffer.getNumSamples());
+    // ======================================================================
 }
 
 //==============================================================================
@@ -386,7 +392,7 @@ void DecoderAudioProcessor::loadPreset(const File& presetFile)
     String output;
     if (tempDecoder != nullptr)
     {
-        matMult.setMatrix(tempDecoder);
+        decoder.setDecoder(tempDecoder);
         output += "Preset loaded succesfully!\n";
         output += "    Name: \t" + tempDecoder->getName() + "\n";
         output += "    Size: " + String(tempDecoder->getMatrix()->rows()) + "x" + String(tempDecoder->getMatrix()->cols()) + " (output x input)\n";
@@ -398,7 +404,7 @@ void DecoderAudioProcessor::loadPreset(const File& presetFile)
     
     
     highPassFilters.prepare(highPassSpecs);
-    decoder = tempDecoder;
+    decoderConfig = tempDecoder;
     
 
     messageForEditor = output;

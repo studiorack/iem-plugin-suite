@@ -32,8 +32,17 @@
             file="Source/PluginEditor.cpp"/>
       <FILE id="Ur0OCo" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
     </GROUP>
+    <FILE id="A8M9Gu" name="AmbisonicDecoder.h" compile="0" resource="0"
+          file="../resources/AmbisonicDecoder.h"/>
+    <FILE id="rvZfyU" name="decoderHelper.h" compile="0" resource="0" file="../resources/decoderHelper.h"/>
     <FILE id="CRfF6w" name="efficientSHvanilla.cpp" compile="1" resource="0"
           file="../resources/efficientSHvanilla.cpp"/>
+    <FILE id="gPm6rV" name="MatrixMultiplication.h" compile="0" resource="0"
+          file="../resources/MatrixMultiplication.h"/>
+    <FILE id="KsWY1t" name="ReferenceCountedDecoder.h" compile="0" resource="0"
+          file="../resources/ReferenceCountedDecoder.h"/>
+    <FILE id="VoXzxV" name="ReferenceCountedMatrix.h" compile="0" resource="0"
+          file="../resources/ReferenceCountedMatrix.h"/>
   </MAINGROUP>
   <EXPORTFORMATS>
     <XCODE_MAC targetFolder="Builds/MacOSX">

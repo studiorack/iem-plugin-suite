@@ -192,9 +192,8 @@ void DecoderAudioProcessorEditor::resized()
     loadArea.removeFromRight(10);
     edOutput.setBounds(loadArea);
     
-    
-  
 
+    cbLfeMode.setBounds(200, 40, 100, 40);
 
 }
 
@@ -213,7 +212,7 @@ void DecoderAudioProcessorEditor::timerCallback()
         processor.messageChanged = false;
     }
     
-    ReferenceCountedDecoder::Ptr currentDecoder = processor.getCurrentDecoder();
+    ReferenceCountedDecoder::Ptr currentDecoder = processor.getCurrentDecoderConfig();
     if (currentDecoder != nullptr)
     {
         int lfeMode = *valueTreeState.getRawParameterValue("lfeMode");
