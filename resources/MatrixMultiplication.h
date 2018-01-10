@@ -39,6 +39,9 @@ public:
         spec = newSpec;
         
         bufferMatrix.resize(Eigen::NoChange, spec.maximumBlockSize);
+        bufferMatrix.setZero();
+        
+        inputMatrix.resize(Eigen::NoChange, spec.maximumBlockSize);
         checkIfNewMatrixAvailable();
     }
     
@@ -58,16 +61,14 @@ public:
         
         const int nInputChannels = jmin( (int) inputBlock.getNumChannels(), (int) T.cols());
         
-        Eigen::Map<const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>> inpMatrix (inputBlock.getChannelPointer(0), nInputChannels, inputBlock.getNumSamples());
+        // make contiguous-memory copy of input data
+        for (int ch = 0; ch < nInputChannels; ++ch)
+            inputMatrix.row(ch) = Eigen::VectorXf::Map(inputBlock.getChannelPointer(ch), inputBlock.getNumSamples());
         
-        //DBG("sizes: " << bufferMatrix.rows() << "x" << bufferMatrix.cols() << " is " << T.rows() << "x" << T.cols() << " times " << inpMatrix.rows() << "x" << inpMatrix.cols());
-        
-        bufferMatrix = T.block(0, 0, T.rows(), nInputChannels) * inpMatrix; // maybe get subBlock from bufferMatrix for blocksize different from specs
-        
+        bufferMatrix.noalias() = T.block(0, 0, T.rows(), nInputChannels) * inputMatrix.block(0, 0, nInputChannels, inputBlock.getNumSamples()); // maybe get subBlock from bufferMatrix for blocksize different from specs
+
         auto& outputBlock = context.getOutputBlock();
-        
         const int nCH = jmin((int) outputBlock.getNumChannels(), (int) bufferMatrix.rows());
-        
         
         for (int ch = 0; ch < nCH; ++ch)
             FloatVectorOperations::copy(outputBlock.getChannelPointer(ch), bufferMatrix.data() + ch*spec.maximumBlockSize, spec.maximumBlockSize);
@@ -87,8 +88,11 @@ public:
             else
             {
                 DBG("MatrixTransformer: New matrix with name '" << newMatrix->getName() << "' set.");
-                int rows = (int) newMatrix->getMatrix()->rows();
+                const int rows = (int) newMatrix->getMatrix()->rows();
+                const int cols = (int) newMatrix->getMatrix()->cols();
                 bufferMatrix.resize(rows, Eigen::NoChange);
+                bufferMatrix.setZero();
+                inputMatrix.resize(cols, Eigen::NoChange);
                 DBG("MatrixTransformer: buffer resized to " << bufferMatrix.rows() << "x" << bufferMatrix.cols());
             }
             
@@ -100,22 +104,25 @@ public:
         return false;
     };
     
-    void setMatrix(ReferenceCountedMatrix::Ptr newMatrixToUse) {
+    void setMatrix(ReferenceCountedMatrix::Ptr newMatrixToUse, bool force = false) {
         newMatrix = newMatrixToUse;
         newMatrixAvailable = true;
+        if (force)
+            checkIfNewMatrixAvailable();
     }
     
     ReferenceCountedMatrix::Ptr getMatrix()
     {
         return currentMatrix;
     }
-    
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 private:
     //==============================================================================
     ProcessSpec spec = {-1, 0, 0};
     ReferenceCountedMatrix::Ptr currentMatrix {nullptr};
     ReferenceCountedMatrix::Ptr newMatrix {nullptr};
     Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> bufferMatrix;
+    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> inputMatrix;
     bool newMatrixAvailable {false};
     
 };
