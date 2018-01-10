@@ -22,7 +22,7 @@
 
 #pragma once
 #include "ReferenceCountedMatrix.h"
-
+//#include "ambisonicTools.h"
 class ReferenceCountedDecoder : public ReferenceCountedMatrix
 {
 public:
@@ -34,12 +34,22 @@ public:
         sn3d
     };
     
-    struct Settings {
-        Normalization expectedNormalization = sn3d;
+    enum Weights
+    {
+        none,
+        maxrE,
+        inPhase
     };
     
+    struct Settings {
+        Normalization expectedNormalization = sn3d;
+        Weights weights = none;
+        bool weightsAlreadyApplied = false;
+    };
+    
+    
     ReferenceCountedDecoder (const String& nameToUse, const String& descriptionToUse, int rows, int columns)
-    :   ReferenceCountedMatrix(nameToUse, descriptionToUse, rows, columns)
+    :   ReferenceCountedMatrix(nameToUse, descriptionToUse, rows, columns), order(isqrt(columns)-1)
     {}
     
     ~ReferenceCountedDecoder()
@@ -81,7 +91,18 @@ public:
 
     const String getSettingsAsString()
     {
-        return "Decoder expects Ambisonic input with " + String(settings.expectedNormalization == Normalization::n3d ? "N3D" : "SN3D") + " normalization.";
+
+        return "Decoder expects Ambisonic input up to " + getOrderString(order) + " order with " + String(settings.expectedNormalization == Normalization::n3d ? "N3D" : "SN3D") + " normalization. The weights are '" + getWeightsString() + "' and are " + String(settings.weightsAlreadyApplied ? "already applied." : "not aplied yet.");
+    }
+    
+    const String getWeightsString()
+    {
+        switch(settings.weights)
+        {
+            case 1: return String("maxrE");
+            case 2: return String("inPhase");
+            default: return String("none");
+        }
     }
     
     const int getNumOutputChannels()
@@ -97,7 +118,7 @@ public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 private:
     Settings settings;
-    
+    const int order;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ReferenceCountedDecoder)
 };
 
