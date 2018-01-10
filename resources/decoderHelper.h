@@ -24,9 +24,10 @@
 #include "ReferenceCountedMatrix.h"
 #include "ReferenceCountedDecoder.h"
 #include "Eigen/Eigen"
+#include "ambisonicTools.h"
+
 class DecoderHelper {
 public:
-    
     static Result parseJsonFile (const File& fileToParse, var& dest)
     {
         if (!fileToParse.exists())
@@ -81,28 +82,60 @@ public:
         if (! result.wasOk())
             return Result::fail(result.getErrorMessage());
         
+        //check if cols is a valid number of Ambisonic channels
+        const int decoderOrder = isqrt(cols) - 1;
+        if (cols != square(decoderOrder + 1))
+            return Result::fail("Decoder matrix's number of columns is no valid Ambisonic channel count: nCh = (order+1)^2.");
+        
         // create decoder and get matrix from 'Decoder' object
         ReferenceCountedDecoder::Ptr newDecoder = new ReferenceCountedDecoder(name, description, rows, cols);
         result = getMatrix(matrixData, rows, cols, newDecoder->getMatrix());
         if (! result.wasOk())
             return Result::fail(result.getErrorMessage());
         
+        if (decoderObject.hasProperty("routing"))
+        {
+            var routingData = decoderObject.getProperty("routing", var());
+            result = getRoutingArray(routingData, rows, newDecoder);
+            if (! result.wasOk())
+                return Result::fail(result.getErrorMessage());
+        }
+        
+        
+        // ============ SETTINGS =====================
         ReferenceCountedDecoder::Settings settings;
-        // settings
+        // normalization
         if (decoderObject.hasProperty("expectedNormalization"))
         {
             var expectedNormalization (decoderObject.getProperty("expectedNormalization", var()));
             if (expectedNormalization.toString().equalsIgnoreCase("sn3d"))
-            {
                 settings.expectedNormalization = ReferenceCountedDecoder::Normalization::sn3d;
-            }
             else if (expectedNormalization.toString().equalsIgnoreCase("n3d"))
-            {
                 settings.expectedNormalization = ReferenceCountedDecoder::Normalization::n3d;
-            }
             else
                 return Result::fail("Could not parse 'expectedNormalization' attribute. Expected 'sn3d' or 'n3d' but got '" + expectedNormalization.toString() + "'.");
         }
+        // weights
+        if (decoderObject.hasProperty("weights"))
+        {
+            var weights (decoderObject.getProperty("weights", var()));
+            if (weights.toString().equalsIgnoreCase("maxrE"))
+                settings.weights = ReferenceCountedDecoder::Weights::maxrE;
+            else if (weights.toString().equalsIgnoreCase("none"))
+                settings.weights = ReferenceCountedDecoder::Weights::none;
+            else
+                return Result::fail("Could not parse 'weights' attribute. Expected 'maxrE', 'inPhase' or 'none' but got '" + weights.toString() + "'.");
+        }
+        // weights already applied
+        if (decoderObject.hasProperty("weightsAlreadyApplied"))
+        {
+            var weightsAlreadyApplied (decoderObject.getProperty("weightsAlreadyApplied", var()));
+            if (weightsAlreadyApplied.isBool())
+                settings.weightsAlreadyApplied = weightsAlreadyApplied;
+            else
+                return Result::fail("Could not parse 'weightsAlreadyApplied' attribute. Expected bool but got '" + weightsAlreadyApplied.toString() + "'.");
+        }
+                     
         
         newDecoder->setSettings(settings);
         
@@ -119,7 +152,7 @@ public:
     }
     
     // call getMatrixDataSize() before and create the 'dest' matrix with the resulting size
-    static Result getMatrix (var&  matrixData, int rows, int cols, Eigen::MatrixXf* dest)
+    static Result getMatrix (var&  matrixData, const int rows, const int cols, Eigen::MatrixXf* dest)
     {
         for (int r = 0; r < rows; ++r)
         {
@@ -141,6 +174,28 @@ public:
         }
         return Result::ok();
     }
+    
+    
+    static Result getRoutingArray (var& routingData, const int rows, ReferenceCountedMatrix::Ptr dest)
+    {
+        if (routingData.size() != rows)
+            return Result::fail("Length of 'routing' attribute does not match number of matrix outputs (rows).");
+            
+        Array<int>& routingArray = dest->getRoutingArrayReference();
+        for (int r = 0; r < rows; ++r)
+        {
+            var element = routingData.getArray()->getUnchecked(r);
+            
+            if (element.isDouble() || element.isInt())
+            {
+                routingArray.set(r, element);
+            }
+            else
+                return Result::fail("Datatype of 'routing' element at position " + String(r+1) + " could not be parsed.");
+        }
+        return Result::ok();
+    }
+    
     
     static Result parseFileForDecoder (const File& fileToParse, ReferenceCountedDecoder::Ptr* decoder)
     {

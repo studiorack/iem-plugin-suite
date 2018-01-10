@@ -31,6 +31,10 @@ public:
     ReferenceCountedMatrix (const String& nameToUse, const String& descriptionToUse, int rows, int columns)
     :   name (nameToUse), description (descriptionToUse), matrix (rows, columns)
     {
+
+        for (int i = 0; i < rows;)
+            routingArray.add(++i);
+        
         DBG (getConstructorMessage());
     }
     
@@ -72,12 +76,18 @@ public:
     {
         return (int) matrix.cols();
     }
+    
+    Array<int>& getRoutingArrayReference()
+    {
+        return routingArray;
+    }
 
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 protected:
     String name;
     String description;
     Eigen::MatrixXf matrix;
+    Array<int> routingArray;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ReferenceCountedMatrix)
 };
