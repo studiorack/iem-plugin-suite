@@ -32,8 +32,8 @@ public:
     :   name (nameToUse), description (descriptionToUse), matrix (rows, columns)
     {
 
-        for (int i = 0; i < rows;)
-            routingArray.add(++i);
+        for (int i = 0; i < rows; ++i)
+            routingArray.add(i);
         
         DBG (getConstructorMessage());
     }
@@ -69,7 +69,14 @@ public:
     
     const int getNumOutputChannels()
     {
-        return (int) matrix.rows();
+        int maxChannel = 0;
+        for (int i = routingArray.size(); --i >= 0;)
+        {
+            int newValue = routingArray.getUnchecked(i);
+            if (newValue > maxChannel)
+                maxChannel = newValue;
+        }
+        return maxChannel + 1;
     }
     
     const int getNumInputChannels()
