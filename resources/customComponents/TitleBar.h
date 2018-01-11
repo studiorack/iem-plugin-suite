@@ -23,6 +23,7 @@
 #pragma once
 
 #include "TitleBarPaths.h"
+#include "../ambisonicTools.h"
 
 
 class  NoIOWidget :  public Component
@@ -130,35 +131,18 @@ private:
     int channelSizeIfNotSelectable = maxChannels;
     String displayTextIfNotSelectable = String(maxChannels);
 };
-
+template <int order = 7>
 class  AmbisonicIOWidget :  public Component
 {
 public:
     AmbisonicIOWidget() : Component() {
         AmbiLogoPath.loadPathFromData (AmbiLogoPathData, sizeof (AmbiLogoPathData));
         setBufferedToImage(true);
-        orderStrings[0] = String("0th");
-        orderStrings[1] = String("1st");
-        orderStrings[2] = String("2nd");
-        orderStrings[3] = String("3rd");
-        orderStrings[4] = String("4th");
-        orderStrings[5] = String("5th");
-        orderStrings[6] = String("6th");
-        orderStrings[7] = String("7th");
         
         addAndMakeVisible(&cbOrder);
         cbOrder.setJustificationType(Justification::centred);
-        cbOrder.addSectionHeading("Ambisonic Order");
-        cbOrder.addItem("Auto", 1);
-        cbOrder.addItem("0th", 2);
-        cbOrder.addItem("1st", 3);
-        cbOrder.addItem("2nd", 4);
-        cbOrder.addItem("3rd", 5);
-        cbOrder.addItem("4th", 6);
-        cbOrder.addItem("5th", 7);
-        cbOrder.addItem("6th", 8);
-        cbOrder.addItem("7th", 9);
         cbOrder.setBounds(35, 15, 70, 15);
+        updateMaxOrder();
         
         addAndMakeVisible(&cbNormalization);
         cbNormalization.setJustificationType(Justification::centred);
@@ -169,22 +153,42 @@ public:
     };
     ~AmbisonicIOWidget() {};
     
+    void updateMaxOrder()
+    {
+        const int previousIndex = cbOrder.getSelectedItemIndex();
+        cbOrder.clear();
+        cbOrder.addSectionHeading("Ambisonic Order");
+        cbOrder.addItem("Auto", 1);
+        for (int o = 0; o <= maxOrder; ++o)
+            cbOrder.addItem(getOrderString(o), o + 2);
+        
+        cbOrder.setSelectedItemIndex(previousIndex);
+    }
+    
+    void setMaxOrder (int newMaxOrder)
+    {
+        maxOrder = newMaxOrder;
+        updateMaxOrder();
+        setMaxSize (maxPossibleOrder);
+    }
+    
     const int getComponentSize() { return 110; }
     
-    void setMaxSize (int maxPossibleOrder)
+    void setMaxSize (int newMaxPossibleOrder)
     {
-        if (maxPossibleOrder > -1) cbOrder.changeItemText(1, "Auto (" + orderStrings[maxPossibleOrder] + ")");
+        maxPossibleOrder = jmin(newMaxPossibleOrder, maxOrder);
+        if (maxPossibleOrder > -1) cbOrder.changeItemText(1, "Auto (" + getOrderString(maxPossibleOrder) + ")");
         else cbOrder.changeItemText(1, "(Auto)");
         int currId = cbOrder.getSelectedId();
         if (currId == 0) currId = 1; //bad work around
         int i;
         for (i = 1; i <= maxPossibleOrder; ++i)
         {
-            cbOrder.changeItemText(i+2, orderStrings[i]);
+            cbOrder.changeItemText(i+2, getOrderString(i));
         }
-        for (i = maxPossibleOrder+1; i<=7; ++i)
+        for (i = maxPossibleOrder+1; i<=maxOrder; ++i)
         {
-            cbOrder.changeItemText(i+2, orderStrings[i] + " (bus too small)");
+            cbOrder.changeItemText(i+2, getOrderString(i) + " (bus too small)");
         }
         
         cbOrder.setText(cbOrder.getItemText(cbOrder.indexOfItemId((currId))));
@@ -201,9 +205,10 @@ public:
     };
     
 private:
-    String orderStrings[8];
     ComboBox cbNormalization, cbOrder;
     Path AmbiLogoPath;
+    int maxOrder = order;
+    int maxPossibleOrder = 7;
 };
 
 class  DirectivityIOWidget :  public Component
@@ -285,7 +290,6 @@ public:
     
     Tin* getInputWidgetPtr() { return &inputWidget; }
     Tout* getOutputWidgetPtr() { return &outputWidget; }
-    
     
     
     void setTitle (String newBoldText, String newRegularText) {
