@@ -1,9 +1,9 @@
  /*
  ==============================================================================
  This file is part of the IEM plug-in suite.
- Authors: Daniel Rudrich
+ Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
- https://www.iem.at
+ https://iem.at
  
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
