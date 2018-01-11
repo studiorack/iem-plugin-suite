@@ -33,6 +33,7 @@
 #include "../../resources/customComponents/ReverseSlider.h"
 #include "../../resources/customComponents/SimpleLabel.h"
 #include "../../resources/customComponents/FilterVisualizer.h"
+#include "../../resources/customComponents/DecoderInfoBox.h"
 
 
 typedef ReverseSlider::SliderAttachment SliderAttachment; // all ReverseSliders will make use of the parameters' valueToText() function
@@ -75,7 +76,8 @@ private:
         - AmbisonicIOWidget
         - DirectivitiyIOWidget
      */
-    TitleBar<AmbisonicIOWidget, AudioChannelsIOWidget<0,false>> title;
+    
+    TitleBar<AmbisonicIOWidget<0>, AudioChannelsIOWidget<0,false>> title;
     Footer footer;
     // =============== end essentials ============
     
@@ -85,7 +87,7 @@ private:
     ScopedPointer<ComboBoxAttachment> cbNormalizationSettingAttachment;
     //ScopedPointer<ComboBoxAttachment> cbOutputChannelsSettingAttachment;
       
-    GroupComponent gcFilter, gcSettings, gcConfiguration;
+    GroupComponent gcFilter, gcLfe, gcConfiguration;
     
     // Filter slider
     ReverseSlider slLowPassFrequency, slHighPassFrequency, slLowPassGain;
@@ -95,12 +97,15 @@ private:
     // Lfe mode
     ComboBox cbLfeMode;
     ScopedPointer<ComboBoxAttachment> cbLfeModeAttachment;
-    SimpleLabel lbLfeMode;
-    
+    SimpleLabel lbLfeMode, lbLfeChannel;
+    ReverseSlider slLfeChannel;
+    ScopedPointer<SliderAttachment> slLfeChannelAttachment;
     //
     TextButton btLoadFile;
-    TextEditor edOutput;
-
+    DecoderInfoBox dcInfoBox;
+    
+    ReferenceCountedDecoder::Ptr lastDecoder = nullptr;
+    
     FilterVisualizer fv;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DecoderAudioProcessorEditor)
 };

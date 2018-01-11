@@ -109,6 +109,7 @@ private:
     float *highPassFrequency;
     
     float *lfeMode;
+    float *lfeChannel;
     
     // =========================================
     
@@ -127,7 +128,7 @@ private:
     AmbisonicDecoder decoder;
     
     ReferenceCountedDecoder::Ptr decoderConfig {nullptr};
-    String messageForEditor {"No preset loaded."};
+    String messageForEditor {""};
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DecoderAudioProcessor)
 };

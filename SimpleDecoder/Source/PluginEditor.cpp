@@ -30,8 +30,7 @@ DecoderAudioProcessorEditor::DecoderAudioProcessorEditor (DecoderAudioProcessor&
 {
     // ============== BEGIN: essentials ======================
     // set GUI size and lookAndFeel
-    //setSize(500, 300); // use this to create a fixed-size GUI
-    setResizeLimits(700, 280, 800, 700); // use this to create a resizeable GUI
+    setResizeLimits(670, 280, 800, 700); // use this to create a resizeable GUI
     setLookAndFeel (&globalLaF);
     
     // make title and footer visible, and set the PluginName
@@ -50,11 +49,11 @@ DecoderAudioProcessorEditor::DecoderAudioProcessorEditor (DecoderAudioProcessor&
     addAndMakeVisible(gcFilter);
     gcFilter.setText("Frequency Bands");
     
-    addAndMakeVisible(gcSettings);
-    gcSettings.setText("Settings");
+    addAndMakeVisible(gcLfe);
+    gcLfe.setText("LFE");
     
     addAndMakeVisible(gcConfiguration);
-    gcConfiguration.setText("Configuration");
+    gcConfiguration.setText("Decoder Configuration");
     
     
     // ================= BEGIN: filter slider ================
@@ -85,25 +84,34 @@ DecoderAudioProcessorEditor::DecoderAudioProcessorEditor (DecoderAudioProcessor&
     
     // ================= BEGIN: LFE mode =====================
     addAndMakeVisible(cbLfeMode);
+    cbLfeMode.setJustificationType(Justification::centred);
     cbLfeMode.addItem("none", 1);
-    cbLfeMode.addItem("append", 2);
+    cbLfeMode.addItem("discrete", 2);
     cbLfeMode.addItem("virtual", 3);
     cbLfeModeAttachment = new ComboBoxAttachment(valueTreeState, "lfeMode", cbLfeMode);
     
     addAndMakeVisible(lbLfeMode);
     lbLfeMode.setText("LFE mode");
+    
+    addAndMakeVisible(lbLfeChannel);
+    lbLfeChannel.setText("LFE Channel");
+    
+    addAndMakeVisible(slLfeChannel);
+    slLfeChannelAttachment = new SliderAttachment(valueTreeState, "lfeChannel", slLfeChannel);
+    slLfeChannel.setSliderStyle(Slider::IncDecButtons);
+    slLfeChannel.setTextBoxStyle (Slider::TextBoxLeft, false, 200, 20);
+    
     // ================= END: LFE mode =======================
     
     addAndMakeVisible(btLoadFile);
-    btLoadFile.setButtonText("Load preset");
+    btLoadFile.setButtonText("Load configuration");
     btLoadFile.addListener(this);
+    btLoadFile.setColour(TextButton::buttonColourId, Colours::steelblue); //globalLaF.ClWidgetColours[0]);
     
-    addAndMakeVisible(edOutput);
-    edOutput.setMultiLine(true);
-    edOutput.setReadOnly(true);
-    edOutput.setTabKeyUsedAsCharacter(true);
-    edOutput.clear();
-    edOutput.setText(processor.getMessageForEditor());
+    dcInfoBox.setErrorMessage(processor.getMessageForEditor());
+    
+    addAndMakeVisible(dcInfoBox);
+    dcInfoBox.setDecoderConfig(processor.getCurrentDecoderConfig());
     
     addAndMakeVisible(fv);
     fv.setParallel(true);
@@ -152,48 +160,71 @@ void DecoderAudioProcessorEditor::resized()
     //const int sliderSpacing = 3;
     const int rotSliderWidth = 40;
     const int labelHeight = 20;
+    const int extraMargin = 6;
+    
+    const int width = 0.5f * (area.getWidth() - 10);
+    
+    
+    Rectangle<int> leftSide (area.removeFromLeft(280));
+    area.removeFromLeft(20);
+    Rectangle<int> rightSide (area.removeFromRight(100));
+    rightSide.removeFromTop(extraMargin);
+    area.removeFromRight(20);
+    
+    { //====================== CONFIGURATION GROUP ==================================
+        Rectangle<int> configArea(leftSide);
+        Rectangle<int> buttonArea = configArea;
+        buttonArea = buttonArea.removeFromRight(130).removeFromTop(21);
+        btLoadFile.setBounds(buttonArea);
+        configArea.removeFromTop(extraMargin);
+        gcConfiguration.setBounds(configArea);
+        configArea.removeFromTop(25);
+        
+        configArea.removeFromTop(5);
+        
+        dcInfoBox.setBounds(configArea);
+    }
+    
 
+    { //====================== LFE GROUP ==================================
+        Rectangle<int> lfeArea(rightSide);
+        gcLfe.setBounds(lfeArea);
+        lfeArea.removeFromTop(25);
+        
+        cbLfeMode.setBounds(lfeArea.removeFromTop(20));
+        lbLfeMode.setBounds(lfeArea.removeFromTop(labelHeight));
+
+        lfeArea.removeFromTop(10);
+
+        slLfeChannel.setBounds(lfeArea.removeFromTop(20));
+        lbLfeChannel.setBounds(lfeArea.removeFromTop(labelHeight));
+    }
+    
     { //====================== FILTER GROUP ==================================
-        Rectangle<int> filterArea(area.removeFromLeft(240));
+        Rectangle<int> filterArea(area);
+        filterArea.removeFromTop(extraMargin);
         gcFilter.setBounds(filterArea);
-        
-        const int rotSliderWidth = 60;
-        
         filterArea.removeFromTop(25);
+        
+        const int rotSliderWidth = 50;
         
         Rectangle<int> sliderRow(filterArea.removeFromBottom(labelHeight));
         lbLowPassFrequency.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
         sliderRow.removeFromLeft (rotSliderSpacing);
         lbLowPassGain.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
-        
-        
+
         lbHighPassFrequency.setBounds (sliderRow.removeFromRight(rotSliderWidth));
         
         sliderRow = filterArea.removeFromBottom(rotSliderHeight-10);
-        
-        
+
         slLowPassFrequency.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
         sliderRow.removeFromLeft(rotSliderSpacing);
         slLowPassGain.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
-        
-        
+
         slHighPassFrequency.setBounds (sliderRow.removeFromRight(rotSliderWidth));
         
         fv.setBounds(filterArea);
     }
-    
-    area.removeFromLeft(20);
-    
-    Rectangle<int> loadArea (area);
-
-    Rectangle<int> loadColumn (loadArea.removeFromRight(120));
-    btLoadFile.setBounds(loadColumn.removeFromTop(30));
-    
-    loadArea.removeFromRight(10);
-    edOutput.setBounds(loadArea);
-    
-
-    cbLfeMode.setBounds(200, 40, 100, 40);
 
 }
 
@@ -207,17 +238,33 @@ void DecoderAudioProcessorEditor::timerCallback()
     
     if (processor.messageChanged)
     {
-        edOutput.clear();
-        edOutput.setText(processor.getMessageForEditor());
+        dcInfoBox.setErrorMessage(processor.getMessageForEditor());
         processor.messageChanged = false;
     }
     
     ReferenceCountedDecoder::Ptr currentDecoder = processor.getCurrentDecoderConfig();
-    if (currentDecoder != nullptr)
+    if (lastDecoder != currentDecoder)
     {
-        int lfeMode = *valueTreeState.getRawParameterValue("lfeMode");
-        title.getOutputWidgetPtr()->setSizeIfUnselectable(currentDecoder->getNumOutputChannels() + lfeMode == 2 ? 1 : 0);
+        lastDecoder = currentDecoder;
+        if (lastDecoder != nullptr)
+        {
+            const int lfeMode = *valueTreeState.getRawParameterValue("lfeMode");
+            int neededChannels = 0;
+            if (lfeMode == 1)
+                neededChannels = jmax(currentDecoder->getNumOutputChannels(), (int) *valueTreeState.getRawParameterValue("lfeChannel"));
+            else
+                neededChannels = currentDecoder->getNumOutputChannels();
+            
+            title.getInputWidgetPtr()->setMaxOrder(currentDecoder->getOrder());
+            title.getOutputWidgetPtr()->setSizeIfUnselectable(neededChannels);
+        }
+        else
+        {
+            title.getInputWidgetPtr()->setMaxOrder(0);
+            title.getOutputWidgetPtr()->setSizeIfUnselectable(0);   
+        }
     }
+   
     
     if (processor.updateFv)
     {
@@ -251,7 +298,7 @@ void DecoderAudioProcessorEditor::loadPresetFile()
         processor.setLastDir(presetFile.getParentDirectory());
         processor.loadPreset (presetFile);
         
-        edOutput.clear();
-        edOutput.setText(processor.getMessageForEditor());
+        dcInfoBox.setDecoderConfig(processor.getCurrentDecoderConfig());
     }
+    
 }

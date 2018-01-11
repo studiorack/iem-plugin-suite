@@ -65,7 +65,7 @@ parameters(*this, nullptr)
                                      }, nullptr);
     
     parameters.createAndAddParameter ("lowPassFrequency", "LowPass Cutoff Frequency", "Hz",
-                                      NormalisableRange<float> (20.f, 20000.f, 1.0f), 100.f,
+                                      NormalisableRange<float> (20.f, 20000.f, 1.0f), 80.f,
                                       [](float value) {return String (value, 0);},
                                       nullptr);
     parameters.createAndAddParameter ("lowPassGain", "LowPass Gain", "dB",
@@ -74,7 +74,7 @@ parameters(*this, nullptr)
                                       nullptr);
     
     parameters.createAndAddParameter ("highPassFrequency", "HighPass Cutoff Frequency", "Hz",
-                                      NormalisableRange<float> (20.f, 20000.f, 1.f), 100.f,
+                                      NormalisableRange<float> (20.f, 20000.f, 1.f), 80.f,
                                       [](float value) {return String (value, 0);},
                                       nullptr);
 
@@ -82,8 +82,12 @@ parameters(*this, nullptr)
                                      NormalisableRange<float> (0.0f, 2.0f, 1.0f), 1.0f,
                                      [](float value) {
                                          if (value < 0.5f) return "none";
-                                         else if (value >= 0.5f && value < 1.5f) return "append";
+                                         else if (value >= 0.5f && value < 1.5f) return "Discrete LFE";
                                          else return "Virtual LFE";}, nullptr);
+    
+    parameters.createAndAddParameter ("lfeChannel", "LFE Channel Number", "",
+                                      NormalisableRange<float> (1.0f, 64.0f, 1.0f), 1.0f,
+                                      [](float value) { return String (value, 0);}, nullptr);
     
     // this must be initialised after all calls to createAndAddParameter().
     parameters.state = ValueTree (Identifier ("Decoder"));
@@ -99,7 +103,7 @@ parameters(*this, nullptr)
     highPassFrequency = parameters.getRawParameterValue ("highPassFrequency");
     
     lfeMode = parameters.getRawParameterValue ("lfeMode");
- 
+    lfeChannel = parameters.getRawParameterValue("lfeChannel");
     
     // add listeners to parameter changes
     
@@ -148,7 +152,6 @@ void DecoderAudioProcessor::setLastDir(File newLastDir)
     lastDir = newLastDir;
     const var v (lastDir.getFullPathName());
     properties->setValue("presetFolder", v);
-    
 }
 
 
@@ -227,6 +230,7 @@ void DecoderAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
     specs.maximumBlockSize = samplesPerBlock;
     specs.numChannels = 64;
     decoder.prepare(specs);
+    decoder.setInputNormalization(*useSN3D >= 0.5f ? ReferenceCountedDecoder::Normalization::sn3d : ReferenceCountedDecoder::Normalization::n3d);
     
     ReferenceCountedDecoder::Ptr currentDecoder = decoder.getCurrentDecoder();
     if (currentDecoder != nullptr) {
@@ -239,12 +243,13 @@ void DecoderAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
     highPassSpecs.sampleRate = sampleRate;
     highPassSpecs.maximumBlockSize = samplesPerBlock;
     
-
     highPassFilters.prepare(highPassSpecs);
     highPassFilters.reset();
     
     lowPassFilter->prepare(highPassSpecs);
     lowPassFilter->reset();
+    
+    decoder.setInputNormalization(*useSN3D >= 0.5f ? ReferenceCountedDecoder::Normalization::sn3d : ReferenceCountedDecoder::Normalization::n3d);
 }
 
 void DecoderAudioProcessor::releaseResources()
@@ -265,7 +270,7 @@ void DecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
     checkInputAndOutput(this, *inputOrderSetting, 0, false);
     ScopedNoDenormals noDenormals;
     
-    if (decoder.checkIfNewDecoderAvailable())
+    if (decoder.checkIfNewDecoderAvailable() && decoder.getCurrentDecoder() != nullptr)
     {
         highPassSpecs.numChannels = decoder.getCurrentDecoder()->getNumInputChannels();
         highPassFilters.prepare(highPassSpecs);
@@ -273,10 +278,13 @@ void DecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
     
     // ====== is a decoder loaded? stop processing if not ===========
     if (decoder.getCurrentDecoder() == nullptr)
+    {
+        buffer.clear();
         return;
+    }
     // ==============================================================
     
-    const int nChIn = jmin(decoder.getCurrentDecoder()->getNumInputChannels(), buffer.getNumChannels());
+    const int nChIn = jmin(decoder.getCurrentDecoder()->getNumInputChannels(), buffer.getNumChannels(), input.getNumberOfChannels());
     const int nChOut = jmin(decoder.getCurrentDecoder()->getNumOutputChannels(), buffer.getNumChannels());
     const int lfeProcessing = *lfeMode;
     
@@ -294,16 +302,30 @@ void DecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
     ProcessContextReplacing<float> highPassContext (highPassAudioBlock);
     highPassFilters.process(highPassContext);
     
-    
-    decoder.process(highPassContext);
+    AudioBlock<float> decoderAudioBlock = AudioBlock<float>(buffer.getArrayOfWritePointers(), jmax(nChIn, nChOut), buffer.getNumSamples());
+    ProcessContextReplacing<float> decoderContext (decoderAudioBlock);
+    decoder.process(decoderAudioBlock);
 
     
     // =================== lfe processing ==================================
     if (lfeProcessing == 1 && nChOut < buffer.getNumChannels())
-        buffer.copyFrom(nChOut, 0, lfeBuffer, 0, 0, buffer.getNumSamples());
-    else if (lfeProcessing == 2)
-        for (int ch = 0; ch < nChOut; ++ch)
-            buffer.addFrom(ch, 0, lfeBuffer, 0, 0, buffer.getNumSamples());
+    {
+        
+        const int lfeCh = ((int)*lfeChannel) - 1;
+        if (lfeCh < buffer.getNumChannels())
+            buffer.copyFrom(lfeCh, 0, lfeBuffer, 0, 0, buffer.getNumSamples());
+    }
+    
+    else if (lfeProcessing == 2) // virtual LFE
+    {
+        Array<int>& rArray = decoder.getCurrentDecoder()->getRoutingArrayReference();
+        for (int ch = rArray.size(); --ch >= 0;)
+        {
+            const int destCh = rArray.getUnchecked(ch);
+            if (destCh < buffer.getNumChannels())
+                buffer.addFrom(destCh, 0, lfeBuffer, 0, 0, buffer.getNumSamples());
+        }
+    }
     // ======================================================================
 }
 
@@ -369,6 +391,10 @@ void DecoderAudioProcessor::parameterChanged (const String &parameterID, float n
     {
         updateFv = true;
     }
+    else if (parameterID == "useSN3D")
+    {
+        decoder.setInputNormalization(*useSN3D >= 0.5f ? ReferenceCountedDecoder::Normalization::sn3d : ReferenceCountedDecoder::Normalization::n3d);
+    }
 }
 
 void DecoderAudioProcessor::updateBuffers()
@@ -384,31 +410,23 @@ void DecoderAudioProcessor::loadPreset(const File& presetFile)
     Result result = DecoderHelper::parseFileForDecoder(presetFile, &tempDecoder);
     if (!result.wasOk()) {
         messageForEditor = result.getErrorMessage();
-        return;
     }
     
-    lastFile = presetFile;
+    decoder.setDecoder(tempDecoder);
     
-    String output;
     if (tempDecoder != nullptr)
     {
-        decoder.setDecoder(tempDecoder);
-        output += "Preset loaded succesfully!\n";
-        output += "    Name: \t" + tempDecoder->getName() + "\n";
-        output += "    Size: " + String(tempDecoder->getMatrix()->rows()) + "x" + String(tempDecoder->getMatrix()->cols()) + " (output x input)\n";
-        output += "    Description: \t" + tempDecoder->getDescription() + "\n";
-        output += "    " + tempDecoder->getSettingsAsString();
+        tempDecoder->processAppliedWeights();
+        lastFile = presetFile;
+        messageForEditor = "";
     }
-    else
-        output = "ERROR: something went wrong!";
+
     
-    
-    highPassFilters.prepare(highPassSpecs);
+    //highPassFilters.prepare(highPassSpecs);
     decoderConfig = tempDecoder;
     
-
-    messageForEditor = output;
     messageChanged = true;
+    
 }
 
 //==============================================================================
