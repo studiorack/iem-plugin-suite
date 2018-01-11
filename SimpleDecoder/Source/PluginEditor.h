@@ -1,0 +1,111 @@
+/*
+ ==============================================================================
+ This file is part of the IEM plug-in suite.
+ Author: Daniel Rudrich
+ Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
+ https://www.iem.at
+ 
+ The IEM plug-in suite is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+ 
+ The IEM plug-in suite is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+ 
+ You should have received a copy of the GNU General Public License
+ along with this software.  If not, see <https://www.gnu.org/licenses/>.
+ ==============================================================================
+ */
+
+#pragma once
+
+#include "../JuceLibraryCode/JuceHeader.h"
+#include "PluginProcessor.h"
+
+//Plugin Design Essentials
+#include "../../resources/lookAndFeel/IEM_LaF.h"
+#include "../../resources/customComponents/TitleBar.h"
+
+//Custom Components
+#include "../../resources/customComponents/ReverseSlider.h"
+#include "../../resources/customComponents/SimpleLabel.h"
+#include "../../resources/customComponents/FilterVisualizer.h"
+#include "../../resources/customComponents/DecoderInfoBox.h"
+
+
+typedef ReverseSlider::SliderAttachment SliderAttachment; // all ReverseSliders will make use of the parameters' valueToText() function
+typedef AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
+typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
+
+//==============================================================================
+/**
+*/
+class DecoderAudioProcessorEditor  : public AudioProcessorEditor, private Timer, private Button::Listener
+{
+public:
+    DecoderAudioProcessorEditor (DecoderAudioProcessor&, AudioProcessorValueTreeState&);
+    ~DecoderAudioProcessorEditor();
+
+    //==============================================================================
+    void paint (Graphics&) override;
+    void resized() override;
+    
+    
+    void timerCallback() override;
+    void buttonClicked (Button* button) override;
+    void buttonStateChanged (Button* button) override;
+    void loadPresetFile();
+    
+private:
+    // ====================== beging essentials ==================
+    // lookAndFeel class with the IEM plug-in suite design
+    LaF globalLaF;
+    
+    // stored references to the AudioProcessor and ValueTreeState holding all the parameters
+    DecoderAudioProcessor& processor;
+    AudioProcessorValueTreeState& valueTreeState;
+
+    
+    /* title and footer component
+     title component can hold different widgets for in- and output:
+        - NoIOWidget (if there's no need for an input or output widget)
+        - AudioChannelsIOWidget<maxNumberOfChannels, isChoosable>
+        - AmbisonicIOWidget
+        - DirectivitiyIOWidget
+     */
+    
+    TitleBar<AmbisonicIOWidget<0>, AudioChannelsIOWidget<0,false>> title;
+    Footer footer;
+    // =============== end essentials ============
+    
+    // Attachments to create a connection between IOWidgets comboboxes
+    // and the associated parameters
+    ScopedPointer<ComboBoxAttachment> cbOrderSettingAttachment;
+    ScopedPointer<ComboBoxAttachment> cbNormalizationSettingAttachment;
+    //ScopedPointer<ComboBoxAttachment> cbOutputChannelsSettingAttachment;
+      
+    GroupComponent gcFilter, gcLfe, gcConfiguration;
+    
+    // Filter slider
+    ReverseSlider slLowPassFrequency, slHighPassFrequency, slLowPassGain;
+    ScopedPointer<SliderAttachment> slLowPassFrequencyAttachment, slLowPassGainAttachment, slHighPassFrequencyAttachment;
+    SimpleLabel lbLowPassFrequency, lbLowPassGain, lbHighPassFrequency;
+    
+    // Lfe mode
+    ComboBox cbLfeMode;
+    ScopedPointer<ComboBoxAttachment> cbLfeModeAttachment;
+    SimpleLabel lbLfeMode, lbLfeChannel;
+    ReverseSlider slLfeChannel;
+    ScopedPointer<SliderAttachment> slLfeChannelAttachment;
+    //
+    TextButton btLoadFile;
+    DecoderInfoBox dcInfoBox;
+    
+    ReferenceCountedDecoder::Ptr lastDecoder = nullptr;
+    
+    FilterVisualizer fv;
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DecoderAudioProcessorEditor)
+};

@@ -3,7 +3,7 @@
  This file is part of the IEM plug-in suite.
  Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
- http://www.iem.at
+ https://iem.at
  
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -16,13 +16,14 @@
  GNU General Public License for more details.
  
  You should have received a copy of the GNU General Public License
- along with this software.  If not, see <http://www.gnu.org/licenses/>.
+ along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
  */
 
 #pragma once
 
 #include "TitleBarPaths.h"
+#include "../ambisonicTools.h"
 
 
 class  NoIOWidget :  public Component
@@ -80,6 +81,25 @@ public:
             
             cbChannels->setText(cbChannels->getItemText(cbChannels->indexOfItemId((currId))));
         }
+        else
+        {
+            if (maxPossibleNumberOfChannels < channelSizeIfNotSelectable)
+                displayTextIfNotSelectable = String(channelSizeIfNotSelectable) + " (bus too small)";
+            else
+                displayTextIfNotSelectable = String(channelSizeIfNotSelectable);
+            repaint();
+        }
+        availableChannels = maxPossibleNumberOfChannels;
+    }
+    
+    void setSizeIfUnselectable (int newSize)
+    {
+        if (! selectable)
+        {
+            channelSizeIfNotSelectable = newSize;
+            setMaxSize(availableChannels);
+            repaint();
+        }
     }
     
     ComboBox* getChannelsCbPointer()
@@ -99,43 +119,30 @@ public:
             g.setColour((Colours::white).withMultipliedAlpha(0.5));
             g.setFont(getLookAndFeel().getTypefaceForFont (Font(12.0f, 1)));
             g.setFont(15.0f);
-            g.drawText(String(maxChannels), 35, 8, 40, 15, Justification::left);
+            g.drawFittedText(displayTextIfNotSelectable, 35, 0, 40, 30, Justification::centredLeft, 2);
+
         }
     };
     
 private:
     ScopedPointer<ComboBox> cbChannels;
     Path WaveformPath;
+    int availableChannels {64};
+    int channelSizeIfNotSelectable = maxChannels;
+    String displayTextIfNotSelectable = String(maxChannels);
 };
-
+template <int order = 7>
 class  AmbisonicIOWidget :  public Component
 {
 public:
     AmbisonicIOWidget() : Component() {
         AmbiLogoPath.loadPathFromData (AmbiLogoPathData, sizeof (AmbiLogoPathData));
         setBufferedToImage(true);
-        orderStrings[0] = String("0th");
-        orderStrings[1] = String("1st");
-        orderStrings[2] = String("2nd");
-        orderStrings[3] = String("3rd");
-        orderStrings[4] = String("4th");
-        orderStrings[5] = String("5th");
-        orderStrings[6] = String("6th");
-        orderStrings[7] = String("7th");
         
         addAndMakeVisible(&cbOrder);
         cbOrder.setJustificationType(Justification::centred);
-        cbOrder.addSectionHeading("Ambisonic Order");
-        cbOrder.addItem("Auto", 1);
-        cbOrder.addItem("0th", 2);
-        cbOrder.addItem("1st", 3);
-        cbOrder.addItem("2nd", 4);
-        cbOrder.addItem("3rd", 5);
-        cbOrder.addItem("4th", 6);
-        cbOrder.addItem("5th", 7);
-        cbOrder.addItem("6th", 8);
-        cbOrder.addItem("7th", 9);
         cbOrder.setBounds(35, 15, 70, 15);
+        updateMaxOrder();
         
         addAndMakeVisible(&cbNormalization);
         cbNormalization.setJustificationType(Justification::centred);
@@ -146,22 +153,42 @@ public:
     };
     ~AmbisonicIOWidget() {};
     
+    void updateMaxOrder()
+    {
+        const int previousIndex = cbOrder.getSelectedItemIndex();
+        cbOrder.clear();
+        cbOrder.addSectionHeading("Ambisonic Order");
+        cbOrder.addItem("Auto", 1);
+        for (int o = 0; o <= maxOrder; ++o)
+            cbOrder.addItem(getOrderString(o), o + 2);
+        
+        cbOrder.setSelectedItemIndex(previousIndex);
+    }
+    
+    void setMaxOrder (int newMaxOrder)
+    {
+        maxOrder = newMaxOrder;
+        updateMaxOrder();
+        setMaxSize (maxPossibleOrder);
+    }
+    
     const int getComponentSize() { return 110; }
     
-    void setMaxSize (int maxPossibleOrder)
+    void setMaxSize (int newMaxPossibleOrder)
     {
-        if (maxPossibleOrder > -1) cbOrder.changeItemText(1, "Auto (" + orderStrings[maxPossibleOrder] + ")");
+        maxPossibleOrder = jmin(newMaxPossibleOrder, maxOrder);
+        if (maxPossibleOrder > -1) cbOrder.changeItemText(1, "Auto (" + getOrderString(maxPossibleOrder) + ")");
         else cbOrder.changeItemText(1, "(Auto)");
         int currId = cbOrder.getSelectedId();
         if (currId == 0) currId = 1; //bad work around
         int i;
         for (i = 1; i <= maxPossibleOrder; ++i)
         {
-            cbOrder.changeItemText(i+2, orderStrings[i]);
+            cbOrder.changeItemText(i+2, getOrderString(i));
         }
-        for (i = maxPossibleOrder+1; i<=7; ++i)
+        for (i = maxPossibleOrder+1; i<=maxOrder; ++i)
         {
-            cbOrder.changeItemText(i+2, orderStrings[i] + " (bus too small)");
+            cbOrder.changeItemText(i+2, getOrderString(i) + " (bus too small)");
         }
         
         cbOrder.setText(cbOrder.getItemText(cbOrder.indexOfItemId((currId))));
@@ -178,9 +205,10 @@ public:
     };
     
 private:
-    String orderStrings[8];
     ComboBox cbNormalization, cbOrder;
     Path AmbiLogoPath;
+    int maxOrder = order;
+    int maxPossibleOrder = 7;
 };
 
 class  DirectivityIOWidget :  public Component
@@ -264,7 +292,6 @@ public:
     Tout* getOutputWidgetPtr() { return &outputWidget; }
     
     
-    
     void setTitle (String newBoldText, String newRegularText) {
         boldText = newBoldText;
         regularText = newRegularText;
@@ -337,7 +364,7 @@ class IEMLogo : public Component
 public:
     IEMLogo() : Component() {
         IEMPath.loadPathFromData (IEMpathData, sizeof (IEMpathData));
-        url = URL("https://plugins.iem.at/");
+        url = URL("https://iem.at/");
     }
     ~IEMLogo() {};
     
