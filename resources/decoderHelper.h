@@ -105,15 +105,15 @@ public:
         // ============ SETTINGS =====================
         ReferenceCountedDecoder::Settings settings;
         // normalization
-        if (decoderObject.hasProperty("expectedNormalization"))
+        if (decoderObject.hasProperty("expectedInputNormalization"))
         {
-            var expectedNormalization (decoderObject.getProperty("expectedNormalization", var()));
+            var expectedNormalization (decoderObject.getProperty("expectedInputNormalization", var()));
             if (expectedNormalization.toString().equalsIgnoreCase("sn3d"))
                 settings.expectedNormalization = ReferenceCountedDecoder::Normalization::sn3d;
             else if (expectedNormalization.toString().equalsIgnoreCase("n3d"))
                 settings.expectedNormalization = ReferenceCountedDecoder::Normalization::n3d;
             else
-                return Result::fail("Could not parse 'expectedNormalization' attribute. Expected 'sn3d' or 'n3d' but got '" + expectedNormalization.toString() + "'.");
+                return Result::fail("Could not parse 'expectedInputNormalization' attribute. Expected 'sn3d' or 'n3d' but got '" + expectedNormalization.toString() + "'.");
         }
         // weights
         if (decoderObject.hasProperty("weights"))
@@ -186,12 +186,12 @@ public:
         {
             var element = routingData.getArray()->getUnchecked(r);
             
-            if (element.isDouble() || element.isInt())
+            if (element.isInt())
             {
-                routingArray.set(r, element);
+                routingArray.set(r, (int) element - 1);
             }
             else
-                return Result::fail("Datatype of 'routing' element at position " + String(r+1) + " could not be parsed.");
+                return Result::fail("Datatype of 'routing' element at position " + String(r+1) + " could not be interpreted (expected integer).");
         }
         return Result::ok();
     }
