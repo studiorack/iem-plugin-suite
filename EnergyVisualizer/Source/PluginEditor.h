@@ -66,7 +66,7 @@ private:
     void sliderValueChanged (Slider *slider) override;
     void timerCallback() override;
     
-    TitleBar<AmbisonicIOWidget, NoIOWidget> title;
+    TitleBar<AmbisonicIOWidget<>, NoIOWidget> title;
     Footer footer;
     
     ReverseSlider slPeakLevel;

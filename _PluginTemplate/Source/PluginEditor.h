@@ -68,10 +68,10 @@ private:
      title component can hold different widgets for in- and output:
         - NoIOWidget (if there's no need for an input or output widget)
         - AudioChannelsIOWidget<maxNumberOfChannels, isChoosable>
-        - AmbisonicIOWidget
+        - AmbisonicIOWidget<maxOrder>
         - DirectivitiyIOWidget
      */
-    TitleBar<AudioChannelsIOWidget<10,true>, AmbisonicIOWidget> title;
+    TitleBar<AudioChannelsIOWidget<10,true>, AmbisonicIOWidget<>> title;
     Footer footer;
     // =============== end essentials ============
     

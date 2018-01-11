@@ -55,7 +55,7 @@ public:
     void sliderValueChanged(Slider *slider) override;
 private:
     LaF globalLaF;
-    TitleBar<DirectivityIOWidget, AmbisonicIOWidget> title;
+    TitleBar<DirectivityIOWidget, AmbisonicIOWidget<>> title;
     Footer footer;
     
     void timerCallback() override;

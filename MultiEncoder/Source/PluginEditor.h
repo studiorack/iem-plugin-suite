@@ -56,7 +56,7 @@ public:
 
 private:
     LaF globalLaF;
-    TitleBar<AudioChannelsIOWidget<maxNumberOfInputs>, AmbisonicIOWidget> title;
+    TitleBar<AudioChannelsIOWidget<maxNumberOfInputs>, AmbisonicIOWidget<>> title;
     Footer footer;
     
     void timerCallback() override;

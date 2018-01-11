@@ -54,7 +54,7 @@ private:
     OmniCompressorAudioProcessor& processor;
     AudioProcessorValueTreeState& valueTreeState;
     
-    TitleBar<AmbisonicIOWidget, NoIOWidget> title;
+    TitleBar<AmbisonicIOWidget<>, NoIOWidget> title;
     Footer footer;
     
     

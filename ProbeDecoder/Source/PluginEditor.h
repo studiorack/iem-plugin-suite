@@ -52,7 +52,7 @@ public:
 private:
     LaF globalLaF;
     
-    TitleBar<AmbisonicIOWidget, AudioChannelsIOWidget<1,false>> title;
+    TitleBar<AmbisonicIOWidget<>, AudioChannelsIOWidget<1,false>> title;
     Footer footer;
     
     void timerCallback() override;

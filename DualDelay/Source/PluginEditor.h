@@ -53,7 +53,7 @@ private:
     
     void timerCallback() override;
     
-    TitleBar<AmbisonicIOWidget, NoIOWidget> title;
+    TitleBar<AmbisonicIOWidget<>, NoIOWidget> title;
     Footer footer;
     
     ScopedPointer<ComboBoxAttachment> cbNormalizationAtachement;
