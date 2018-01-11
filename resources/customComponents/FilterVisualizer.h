@@ -123,11 +123,12 @@ public:
         Path magnitude;
         allMagnitudesInDb.fill(overallGainInDb);
         
-        int xMin = hzToX(s.fMin);
-        int xMax = hzToX(s.fMax);
-        int yMax = dbToY(s.dbMin);
-        int yMin = dbToY(s.dbMax);
-        int yZero = filtersAreParallel ? yMax + 10 : dbToY(0.0f);
+        const int xMin = hzToX(s.fMin);
+        const int xMax = hzToX(s.fMax);
+        const int yMin = jmax(dbToY(s.dbMax), 0);
+        const int yMax = jmax(dbToY(s.dbMin), yMin);
+        
+        const int yZero = filtersAreParallel ? yMax + 10 : dbToY(0.0f);
         
         g.excludeClipRegion(Rectangle<int>(0.0f, yMax+OH, getWidth(), getHeight()-yMax-OH));
         
