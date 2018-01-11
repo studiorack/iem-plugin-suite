@@ -66,6 +66,7 @@ public:
         setColour (TextButton::textColourOnId, Colours::white);
         setColour (ResizableWindow::backgroundColourId, Colour(0xFF2D2D2D));
         setColour (ScrollBar::thumbColourId, Colours::steelblue);
+        setColour (ScrollBar::thumbColourId, Colours::steelblue);
     }
     
     ~LaF() {}
@@ -347,7 +348,7 @@ public:
         g.fillPath(clbar);
         g.setColour(ClFaceShadowOutline);
         
-        g.strokePath(slbg, PathStrokeType(1.f));
+        g.strokePath(slbg, PathStrokeType(1.0f));
         
         
     }
@@ -537,18 +538,20 @@ public:
     void drawButtonBackground (Graphics& g, Button& button, const Colour& backgroundColour,
                                bool isMouseOverButton, bool isButtonDown) override
     {
-        Colour baseColour (backgroundColour.withMultipliedSaturation (button.hasKeyboardFocus (true) ? 1.3f : 0.9f)
+        Colour baseColour (Colours::black.withMultipliedSaturation (button.hasKeyboardFocus (true) ? 1.3f : 0.9f)
                            .withMultipliedAlpha (button.isEnabled() ? 1.0f : 0.5f));
+        Colour outlineColour (backgroundColour);
         
-        if (isButtonDown || isMouseOverButton) baseColour = baseColour.contrasting (isButtonDown ? 0.3f : 0.1f);
+        //if (isButtonDown || isMouseOverButton) baseColour = baseColour.contrasting (isButtonDown ? 0.3f : 0.1f);
+        if (isButtonDown || isMouseOverButton) baseColour = baseColour.overlaidWith (backgroundColour.withAlpha(isButtonDown ? 0.8f : 0.4f));
         
         const bool flatOnLeft   = button.isConnectedOnLeft();
         const bool flatOnRight  = button.isConnectedOnRight();
         const bool flatOnTop    = button.isConnectedOnTop();
         const bool flatOnBottom = button.isConnectedOnBottom();
         
-        const float width  = button.getWidth();
-        const float height = button.getHeight() ;
+        const float width  = button.getWidth()-2;
+        const float height = button.getHeight()-2;
         
         if (width > 0 && height > 0)
         {
@@ -556,18 +559,17 @@ public:
             
             
             Path outline;
-            outline.addRoundedRectangle (0.0f, 0.0f, width, height,
+            outline.addRoundedRectangle (1.0f, 1.0f, width, height,
                                          cornerSize, cornerSize,
                                          ! (flatOnLeft  || flatOnTop),
                                          ! (flatOnRight || flatOnTop),
                                          ! (flatOnLeft  || flatOnBottom),
                                          ! (flatOnRight || flatOnBottom));
             
-            
             g.setColour (baseColour);
             g.fillPath (outline);
-            
-            
+            g.setColour (backgroundColour);
+            g.strokePath (outline, PathStrokeType(1.3f));
         }
     }
     void drawButtonText (Graphics& g, TextButton& button, bool /*isMouseOverButton*/, bool /*isButtonDown*/) override
