@@ -106,7 +106,8 @@ SimpleDecoderAudioProcessorEditor::SimpleDecoderAudioProcessorEditor (SimpleDeco
     addAndMakeVisible(btLoadFile);
     btLoadFile.setButtonText("Load configuration");
     btLoadFile.addListener(this);
-    btLoadFile.setColour(TextButton::buttonColourId, Colours::steelblue); //globalLaF.ClWidgetColours[0]);
+    //btLoadFile.setColour(TextButton::textColourOffId, Colours::cornflowerblue);
+    //btLoadFile.setColour(TextButton::buttonColourId, Colours::cornflowerblue); //globalLaF.ClWidgetColours[0]);
     
     dcInfoBox.setErrorMessage(processor.getMessageForEditor());
     
