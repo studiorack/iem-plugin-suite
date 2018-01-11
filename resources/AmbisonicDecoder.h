@@ -27,6 +27,7 @@
 #include "ReferenceCountedDecoder.h"
 #include "MatrixMultiplication.h"
 #include "ambisonicTools.h"
+#include "MaxRE.h"
 
 using namespace dsp;
 class AmbisonicDecoder : private ProcessorBase
@@ -44,11 +45,38 @@ public:
         checkIfNewDecoderAvailable();
     }
     
+    void setInputNormalization(ReferenceCountedDecoder::Normalization newNormalization)
+    {
+        inputNormalization = newNormalization;
+    }
+    
     void process (const ProcessContextReplacing<float>& context) override {
         ScopedNoDenormals noDenormals;
         checkIfNewDecoderAvailable();
         
-        // TODO: preprocessing: weights, normalization
+        ReferenceCountedDecoder::Ptr retainedDecoder = currentDecoder;
+        AudioBlock<float> inputBlock = context.getInputBlock();
+        if (retainedDecoder->getSettings().expectedNormalization != inputNormalization)
+        {
+            const float* conversionPtr (inputNormalization == ReferenceCountedDecoder::Normalization::sn3d ? sn3d2n3d : n3d2sn3d);
+            for (int ch = 0; ch < inputBlock.getNumChannels(); ++ch)
+                FloatVectorOperations::multiply(inputBlock.getChannelPointer(ch), conversionPtr[ch], (int) inputBlock.getNumSamples());
+        }
+        
+        const int order = isqrt((int) inputBlock.getNumChannels()) - 1;
+        const int chAmbi = square(order+1);
+        
+        float weights[64];
+        copyMaxRE(order, weights);
+        
+        if (retainedDecoder->getSettings().expectedNormalization != inputNormalization)
+        {
+            const float* conversionPtr (inputNormalization == ReferenceCountedDecoder::Normalization::sn3d ? sn3d2n3d : n3d2sn3d);
+            FloatVectorOperations::multiply(weights, conversionPtr, chAmbi);
+        }
+        for (int ch = 0; ch < chAmbi; ++ch)
+            FloatVectorOperations::multiply(inputBlock.getChannelPointer(ch), weights[ch], (int) inputBlock.getNumSamples());
+        
         
         matMult.process(context);
     }
@@ -82,7 +110,11 @@ private:
     ProcessSpec spec = {-1, 0, 0};
     ReferenceCountedDecoder::Ptr currentDecoder {nullptr};
     ReferenceCountedDecoder::Ptr newDecoder {nullptr};
+    bool newDecoderAvailable {false};
+    
+    ReferenceCountedDecoder::Normalization inputNormalization {ReferenceCountedDecoder::Normalization:: sn3d};
     
     MatrixMultiplication matMult;
-    bool newDecoderAvailable {false};
+    
+    
 };
