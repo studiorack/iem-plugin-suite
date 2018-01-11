@@ -43,11 +43,11 @@ typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 //==============================================================================
 /**
 */
-class DecoderAudioProcessorEditor  : public AudioProcessorEditor, private Timer, private Button::Listener
+class SimpleDecoderAudioProcessorEditor  : public AudioProcessorEditor, private Timer, private Button::Listener
 {
 public:
-    DecoderAudioProcessorEditor (DecoderAudioProcessor&, AudioProcessorValueTreeState&);
-    ~DecoderAudioProcessorEditor();
+    SimpleDecoderAudioProcessorEditor (SimpleDecoderAudioProcessor&, AudioProcessorValueTreeState&);
+    ~SimpleDecoderAudioProcessorEditor();
 
     //==============================================================================
     void paint (Graphics&) override;
@@ -65,7 +65,7 @@ private:
     LaF globalLaF;
     
     // stored references to the AudioProcessor and ValueTreeState holding all the parameters
-    DecoderAudioProcessor& processor;
+    SimpleDecoderAudioProcessor& processor;
     AudioProcessorValueTreeState& valueTreeState;
 
     
@@ -107,5 +107,5 @@ private:
     ReferenceCountedDecoder::Ptr lastDecoder = nullptr;
     
     FilterVisualizer fv;
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DecoderAudioProcessorEditor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SimpleDecoderAudioProcessorEditor)
 };

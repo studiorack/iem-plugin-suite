@@ -37,14 +37,14 @@ using namespace dsp;
     - Ambisonics<maxOrder> (can also be used for directivity signals)
  You can leave `maxChannelCount` and `maxOrder` empty for default values (64 channels and 7th order)
 */
-class DecoderAudioProcessor  : public AudioProcessor,
+class SimpleDecoderAudioProcessor  : public AudioProcessor,
                                         public AudioProcessorValueTreeState::Listener,
                                         public IOHelper<IOTypes::Ambisonics<>, IOTypes::AudioChannels<>>
 {
 public:
     //==============================================================================
-    DecoderAudioProcessor();
-    ~DecoderAudioProcessor();
+    SimpleDecoderAudioProcessor();
+    ~SimpleDecoderAudioProcessor();
 
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
@@ -130,5 +130,5 @@ private:
     ReferenceCountedDecoder::Ptr decoderConfig {nullptr};
     String messageForEditor {""};
     //==============================================================================
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DecoderAudioProcessor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SimpleDecoderAudioProcessor)
 };

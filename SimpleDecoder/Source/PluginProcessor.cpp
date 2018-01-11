@@ -25,7 +25,7 @@
 
 
 //==============================================================================
-DecoderAudioProcessor::DecoderAudioProcessor()
+SimpleDecoderAudioProcessor::SimpleDecoderAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
 : AudioProcessor (BusesProperties()
 #if ! JucePlugin_IsMidiEffect
@@ -143,11 +143,11 @@ parameters(*this, nullptr)
     
 }
 
-DecoderAudioProcessor::~DecoderAudioProcessor()
+SimpleDecoderAudioProcessor::~SimpleDecoderAudioProcessor()
 {
 }
 
-void DecoderAudioProcessor::setLastDir(File newLastDir)
+void SimpleDecoderAudioProcessor::setLastDir(File newLastDir)
 {
     lastDir = newLastDir;
     const var v (lastDir.getFullPathName());
@@ -156,12 +156,12 @@ void DecoderAudioProcessor::setLastDir(File newLastDir)
 
 
 //==============================================================================
-const String DecoderAudioProcessor::getName() const
+const String SimpleDecoderAudioProcessor::getName() const
 {
     return JucePlugin_Name;
 }
 
-bool DecoderAudioProcessor::acceptsMidi() const
+bool SimpleDecoderAudioProcessor::acceptsMidi() const
 {
 #if JucePlugin_WantsMidiInput
     return true;
@@ -170,7 +170,7 @@ bool DecoderAudioProcessor::acceptsMidi() const
 #endif
 }
 
-bool DecoderAudioProcessor::producesMidi() const
+bool SimpleDecoderAudioProcessor::producesMidi() const
 {
 #if JucePlugin_ProducesMidiOutput
     return true;
@@ -179,7 +179,7 @@ bool DecoderAudioProcessor::producesMidi() const
 #endif
 }
 
-bool DecoderAudioProcessor::isMidiEffect() const
+bool SimpleDecoderAudioProcessor::isMidiEffect() const
 {
 #if JucePlugin_IsMidiEffect
     return true;
@@ -188,37 +188,37 @@ bool DecoderAudioProcessor::isMidiEffect() const
 #endif
 }
 
-double DecoderAudioProcessor::getTailLengthSeconds() const
+double SimpleDecoderAudioProcessor::getTailLengthSeconds() const
 {
     return 0.0;
 }
 
-int DecoderAudioProcessor::getNumPrograms()
+int SimpleDecoderAudioProcessor::getNumPrograms()
 {
     return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
     // so this should be at least 1, even if you're not really implementing programs.
 }
 
-int DecoderAudioProcessor::getCurrentProgram()
+int SimpleDecoderAudioProcessor::getCurrentProgram()
 {
     return 0;
 }
 
-void DecoderAudioProcessor::setCurrentProgram (int index)
+void SimpleDecoderAudioProcessor::setCurrentProgram (int index)
 {
 }
 
-const String DecoderAudioProcessor::getProgramName (int index)
+const String SimpleDecoderAudioProcessor::getProgramName (int index)
 {
     return {};
 }
 
-void DecoderAudioProcessor::changeProgramName (int index, const String& newName)
+void SimpleDecoderAudioProcessor::changeProgramName (int index, const String& newName)
 {
 }
 
 //==============================================================================
-void DecoderAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
+void SimpleDecoderAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     checkInputAndOutput(this, *inputOrderSetting, 0, true);
     
@@ -252,20 +252,20 @@ void DecoderAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
     decoder.setInputNormalization(*useSN3D >= 0.5f ? ReferenceCountedDecoder::Normalization::sn3d : ReferenceCountedDecoder::Normalization::n3d);
 }
 
-void DecoderAudioProcessor::releaseResources()
+void SimpleDecoderAudioProcessor::releaseResources()
 {
     // When playback stops, you can use this as an opportunity to free up any
     // spare memory, etc.
 }
 
 #ifndef JucePlugin_PreferredChannelConfigurations
-bool DecoderAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
+bool SimpleDecoderAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
 {
     return true;
 }
 #endif
 
-void DecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
+void SimpleDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
     checkInputAndOutput(this, *inputOrderSetting, 0, false);
     ScopedNoDenormals noDenormals;
@@ -302,9 +302,9 @@ void DecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
     ProcessContextReplacing<float> highPassContext (highPassAudioBlock);
     highPassFilters.process(highPassContext);
     
-    AudioBlock<float> decoderAudioBlock = AudioBlock<float>(buffer.getArrayOfWritePointers(), jmax(nChIn, nChOut), buffer.getNumSamples());
-    ProcessContextReplacing<float> decoderContext (decoderAudioBlock);
-    decoder.process(decoderAudioBlock);
+    AudioBlock<float> SimpleDecoderAudioBlock = AudioBlock<float>(buffer.getArrayOfWritePointers(), jmax(nChIn, nChOut), buffer.getNumSamples());
+    ProcessContextReplacing<float> decoderContext (SimpleDecoderAudioBlock);
+    decoder.process(SimpleDecoderAudioBlock);
 
     
     // =================== lfe processing ==================================
@@ -330,18 +330,18 @@ void DecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
 }
 
 //==============================================================================
-bool DecoderAudioProcessor::hasEditor() const
+bool SimpleDecoderAudioProcessor::hasEditor() const
 {
     return true; // (change this to false if you choose to not supply an editor)
 }
 
-AudioProcessorEditor* DecoderAudioProcessor::createEditor()
+AudioProcessorEditor* SimpleDecoderAudioProcessor::createEditor()
 {
-    return new DecoderAudioProcessorEditor (*this, parameters);
+    return new SimpleDecoderAudioProcessorEditor (*this, parameters);
 }
 
 //==============================================================================
-void DecoderAudioProcessor::getStateInformation (MemoryBlock& destData)
+void SimpleDecoderAudioProcessor::getStateInformation (MemoryBlock& destData)
 {
     // You should use this method to store your parameters in the memory block.
     // You could do that either as raw data, or use the XML or ValueTree classes
@@ -353,7 +353,7 @@ void DecoderAudioProcessor::getStateInformation (MemoryBlock& destData)
 
 
 
-void DecoderAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
+void SimpleDecoderAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
@@ -373,7 +373,7 @@ void DecoderAudioProcessor::setStateInformation (const void* data, int sizeInByt
 }
 
 //==============================================================================
-void DecoderAudioProcessor::parameterChanged (const String &parameterID, float newValue)
+void SimpleDecoderAudioProcessor::parameterChanged (const String &parameterID, float newValue)
 {
     if (parameterID == "inputOrderSetting")
         userChangedIOSettings = true;
@@ -397,13 +397,13 @@ void DecoderAudioProcessor::parameterChanged (const String &parameterID, float n
     }
 }
 
-void DecoderAudioProcessor::updateBuffers()
+void SimpleDecoderAudioProcessor::updateBuffers()
 {
     DBG("IOHelper:  input size: " << input.getSize());
     DBG("IOHelper: output size: " << output.getSize());
 }
 
-void DecoderAudioProcessor::loadPreset(const File& presetFile)
+void SimpleDecoderAudioProcessor::loadPreset(const File& presetFile)
 {
     ReferenceCountedDecoder::Ptr tempDecoder = nullptr;
     
@@ -433,6 +433,6 @@ void DecoderAudioProcessor::loadPreset(const File& presetFile)
 // This creates new instances of the plugin..
 AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
-    return new DecoderAudioProcessor();
+    return new SimpleDecoderAudioProcessor();
 }
 

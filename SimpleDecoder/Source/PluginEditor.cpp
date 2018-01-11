@@ -25,7 +25,7 @@
 
 
 //==============================================================================
-DecoderAudioProcessorEditor::DecoderAudioProcessorEditor (DecoderAudioProcessor& p, AudioProcessorValueTreeState& vts)
+SimpleDecoderAudioProcessorEditor::SimpleDecoderAudioProcessorEditor (SimpleDecoderAudioProcessor& p, AudioProcessorValueTreeState& vts)
     : AudioProcessorEditor (&p), processor (p), valueTreeState(vts), fv(20, 20000, -20, 10, 5)
 {
     // ============== BEGIN: essentials ======================
@@ -122,18 +122,18 @@ DecoderAudioProcessorEditor::DecoderAudioProcessorEditor (DecoderAudioProcessor&
     startTimer(20);
 }
 
-DecoderAudioProcessorEditor::~DecoderAudioProcessorEditor()
+SimpleDecoderAudioProcessorEditor::~SimpleDecoderAudioProcessorEditor()
 {
     setLookAndFeel(nullptr);
 }
 
 //==============================================================================
-void DecoderAudioProcessorEditor::paint (Graphics& g)
+void SimpleDecoderAudioProcessorEditor::paint (Graphics& g)
 {
     g.fillAll (globalLaF.ClBackground);
 }
 
-void DecoderAudioProcessorEditor::resized()
+void SimpleDecoderAudioProcessorEditor::resized()
 {
     // ============ BEGIN: header and footer ============
     const int leftRightMargin = 30;
@@ -228,7 +228,7 @@ void DecoderAudioProcessorEditor::resized()
 
 }
 
-void DecoderAudioProcessorEditor::timerCallback()
+void SimpleDecoderAudioProcessorEditor::timerCallback()
 {
     // === update titleBar widgets according to available input/output channel counts
     int maxInSize, maxOutSize;
@@ -274,7 +274,7 @@ void DecoderAudioProcessorEditor::timerCallback()
     
 }
 
-void DecoderAudioProcessorEditor::buttonClicked(Button* button)
+void SimpleDecoderAudioProcessorEditor::buttonClicked(Button* button)
 {
     if (button == &btLoadFile)
     {
@@ -282,12 +282,12 @@ void DecoderAudioProcessorEditor::buttonClicked(Button* button)
     }
 }
 
-void DecoderAudioProcessorEditor::buttonStateChanged(juce::Button *button)
+void SimpleDecoderAudioProcessorEditor::buttonStateChanged(juce::Button *button)
 {
     
 }
 
-void DecoderAudioProcessorEditor::loadPresetFile()
+void SimpleDecoderAudioProcessorEditor::loadPresetFile()
 {
     FileChooser myChooser ("Please select the preset you want to load...",
                            processor.getLastDir().exists() ? processor.getLastDir() : File::getSpecialLocation (File::userHomeDirectory),
