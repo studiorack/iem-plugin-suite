@@ -578,8 +578,8 @@ AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 void DualDelayAudioProcessor::calcParams(float phi)
 {
     // use mathematical negative angles!
-    cos_z.set(1, cosf(phi));
-    sin_z.set(1, sinf(phi));
+    cos_z.set(1, cos(phi));
+    sin_z.set(1, sin(phi));
     
     // chebyshev recursion
     for (int i = 2; i < 8; i++) {

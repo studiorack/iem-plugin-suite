@@ -529,10 +529,10 @@ void AmbisonicCompressorAudioProcessor::calcParams()
     paramChanged = false;
     
     // convert yaw and pitch to cartesian coordinates
-    float cospitch = cosf(*pitch*deg2rad);
-    xyz[0] = cospitch * cosf(*yaw*deg2rad);
-    xyz[1] = cospitch * sinf(*yaw*deg2rad);
-    xyz[2] = - sinf(*pitch*deg2rad);
+    float cospitch = cos(*pitch*deg2rad);
+    xyz[0] = cospitch * cos(*yaw*deg2rad);
+    xyz[1] = cospitch * sin(*yaw*deg2rad);
+    xyz[2] = - sin(*pitch*deg2rad);
     float norm = sqrt(xyz[0]*xyz[0] + xyz[1]*xyz[1] + xyz[2]*xyz[2]);
     xyz[0] /= norm;
     xyz[1] /= norm;
@@ -546,7 +546,7 @@ void AmbisonicCompressorAudioProcessor::calcParams()
         //dist[point] = acosf(xyz[0]*tDesignX[point] + xyz[1]*tDesignY[point] + xyz[2]*tDesignZ[point]); // could yield nans
         dist[point] = xyz[0]*tDesignX[point] + xyz[1]*tDesignY[point] + xyz[2]*tDesignZ[point];
         dist[point] /= sqrt(tDesignX[point]*tDesignX[point] + tDesignY[point]*tDesignY[point] + tDesignZ[point]*tDesignZ[point]); // optimize by normalising tDesign on startup
-        dist[point] = acosf(dist[point]);
+        dist[point] = acos(dist[point]);
     }
     
     float widthHalf = *width*deg2rad*0.25f; // it's actually width fourth (symmetric mask)
@@ -559,7 +559,7 @@ void AmbisonicCompressorAudioProcessor::calcParams()
     sumMaskWeights = 0.0f;
     for (int point=0; point<tDesignN; ++point)
     {
-        float g = cosf(dist[point]);
+        float g = cos(dist[point]);
         W.diagonal()[point] = g;
         sumMaskWeights += g;
     }

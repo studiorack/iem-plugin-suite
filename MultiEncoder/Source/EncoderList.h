@@ -188,19 +188,6 @@ public:
     void paint (Graphics& g) override {
     };
     
-    //    void IEMSphereElementChanged (IEMSphere* sphere, IEMSphere::IEMSphereElement* element) {
-    //        if (element->getID() != "grabber") {
-    //            Vector3D<float> pos = element->getPosition();
-    //            float hypxy = sqrt(pos.x*pos.x+pos.y*pos.y);
-    //
-    //            float yaw = atan2f(pos.y,pos.x);
-    //            float pitch = atan2f(hypxy,pos.z)-M_PI/2;
-    //
-    //            pVts->getParameter("yaw" + element->getID())->setValue(pVts->getParameterRange("yaw" + element->getID()).convertTo0to1(yaw/M_PI*180.0f));
-    //            pVts->getParameter("pitch" + element->getID())->setValue(pVts->getParameterRange("pitch" + element->getID()).convertTo0to1(pitch/M_PI*180.0f));
-    //        }
-    //    }
-    
     void resized() override {
         
         Rectangle<int> bounds = getBounds();

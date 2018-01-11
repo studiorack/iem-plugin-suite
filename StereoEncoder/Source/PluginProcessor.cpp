@@ -264,12 +264,12 @@ void StereoEncoderAudioProcessor::processBlock(AudioSampleBuffer &buffer, MidiBu
     //TODO: refactor into inline functions
     float yawL, yawR, pitchL, pitchR, hypxy;
     hypxy = sqrt(xyzL[0] * xyzL[0] + xyzL[1] * xyzL[1]);
-    yawL = atan2f(xyzL[1], xyzL[0]);
-    pitchL = atan2f(hypxy, xyzL[2])-M_PI/2;
+    yawL = atan2(xyzL[1], xyzL[0]);
+    pitchL = atan2(hypxy, xyzL[2])-M_PI/2;
     
     hypxy = sqrt(xyzR[0] * xyzR[0] + xyzR[1] * xyzR[1]);
-    yawR = atan2f(xyzR[1], xyzR[0]);
-    pitchR = atan2f(hypxy, xyzR[2])-M_PI/2;
+    yawR = atan2(xyzR[1], xyzR[0]);
+    pitchR = atan2(hypxy, xyzR[2])-M_PI/2;
     
     
     
@@ -352,9 +352,9 @@ void StereoEncoderAudioProcessor::processBlock(AudioSampleBuffer &buffer, MidiBu
         {
             const float yaw = smoothYawL.getNextValue();
             const float pitch = smoothPitchL.getNextValue();
-            const float cosPitch = std::cosf(pitch);
+            const float cosPitch = cos(pitch);
             float sample = bufferCopy.getSample(0, i);
-            SHEval(ambisonicOrder, cosPitch * std::cos(yaw), cosPitch * std::sin(yaw), std::sin(-1.0f * pitch), SHL);
+            SHEval(ambisonicOrder, cosPitch * cos(yaw), cosPitch * sin(yaw), sin(-1.0f * pitch), SHL);
             
             for (int ch = 0; ch < nChOut; ++ch) {
                 buffer.setSample(ch, i, sample * SHL[ch]);
@@ -365,9 +365,9 @@ void StereoEncoderAudioProcessor::processBlock(AudioSampleBuffer &buffer, MidiBu
         {
             const float yaw = smoothYawR.getNextValue();
             const float pitch = smoothPitchR.getNextValue();
-            const float cosPitch = std::cosf(pitch);
+            const float cosPitch = cos(pitch);
             float sample = bufferCopy.getSample(1, i);
-            SHEval(ambisonicOrder, cosPitch * std::cos(yaw), cosPitch * std::sin(yaw), std::sin(-1.0f * pitch), SHR);
+            SHEval(ambisonicOrder, cosPitch * std::cos(yaw), cosPitch * sin(yaw), sin(-1.0f * pitch), SHR);
             
             for (int ch = 0; ch < nChOut; ++ch) {
                 buffer.addSample(ch, i, sample * SHR[ch]);

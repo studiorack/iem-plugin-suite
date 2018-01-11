@@ -36,16 +36,16 @@ public:
     SpherePanner() : Component() {
         setBufferedToImage(true);
     };
-    ~SpherePanner() { };
+    ~SpherePanner() {};
     
     inline Vector3D<float> yawPitchToCartesian(float yawInRad, float pitchInRad) {
-        float cosPitch = cosf(pitchInRad);
-        return Vector3D<float>(cosPitch * cosf(yawInRad), cosPitch * sinf(yawInRad), sinf(-1.0f * pitchInRad));
+        float cosPitch = cos(pitchInRad);
+        return Vector3D<float>(cosPitch * cos(yawInRad), cosPitch * sin(yawInRad), sin(-1.0f * pitchInRad));
     }
     
     inline Point<float> cartesianToYawPitch(Vector3D<float> pos) {
         float hypxy = sqrt(pos.x*pos.x+pos.y*pos.y);
-        return Point<float>(atan2f(pos.y,pos.x), atan2f(hypxy,pos.z)-M_PI/2);
+        return Point<float>(atan2(pos.y,pos.x), atan2(hypxy,pos.z)-M_PI/2);
     }
     
     class Listener
@@ -81,7 +81,7 @@ public:
                 upBeforeDrag = !upBeforeDrag;
             }
             
-            float pitch = acosf(r);
+            float pitch = acos(r);
             if (upBeforeDrag) pitch *= -1.0f;
   
             if (yawSlider != nullptr)

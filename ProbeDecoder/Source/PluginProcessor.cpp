@@ -155,8 +155,8 @@ void ProbeDecoderAudioProcessor::processBlock(AudioSampleBuffer &buffer, MidiBuf
     
     float yawInRad = degreesToRadians(*yaw);
     float pitchInRad = degreesToRadians(*pitch);
-    float cosPitch = cosf(pitchInRad);
-    Vector3D<float> xyz(cosPitch * cosf(yawInRad), cosPitch * sinf(yawInRad), sinf(-1.0f * pitchInRad));
+    float cosPitch = cos(pitchInRad);
+    Vector3D<float> xyz(cosPitch * cos(yawInRad), cosPitch * sin(yawInRad), sin(-1.0f * pitchInRad));
     
     float sh[64];
     

@@ -276,7 +276,7 @@ void MultiEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBu
         float cosPitch = std::cos(*pitch[i] * deg2rad);
         float yawInRad = *yaw[i] * deg2rad;
         float pitchInRad = *pitch[i] * deg2rad;
-        Vector3D<float> pos (cosPitch * std::cos(yawInRad), cosPitch * sinf(yawInRad), sinf(-1.0f * pitchInRad));
+        Vector3D<float> pos (cosPitch * cos(yawInRad), cosPitch * sin(yawInRad), sin(-1.0f * pitchInRad));
         
         SHEval(ambisonicOrder, pos.x, pos.y, pos.z, SH[i]);
         
