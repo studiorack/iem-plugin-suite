@@ -52,7 +52,7 @@ class  FilterVisualizer :  public Component
     
 public:
     FilterVisualizer() : Component(), overallGainInDb(0.0f), sampleRate(48000) {};
-    FilterVisualizer(float fMin, float fMax, float dbMin, float dbMax, float gridDiv, bool gainHandleLin = false) : Component(), sampleRate(48000), s{fMin, fMax, dbMin, dbMax, gridDiv, gainHandleLin} {};
+    FilterVisualizer(float fMin, float fMax, float dbMin, float dbMax, float gridDiv, bool gainHandleLin = false) : Component(), overallGainInDb(0.0f), sampleRate(48000), s{fMin, fMax, dbMin, dbMax, gridDiv, gainHandleLin} {};
     ~FilterVisualizer() {};
     
     
