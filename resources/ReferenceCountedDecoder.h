@@ -24,6 +24,7 @@
 #include "ReferenceCountedMatrix.h"
 #include "ambisonicTools.h"
 #include "MaxRE.h"
+#include "inPhase.h"
 
 class ReferenceCountedDecoder : public ReferenceCountedMatrix
 {
@@ -113,6 +114,9 @@ public:
             if (settings.weights == Weights::maxrE)
                 for (int i = 0; i < matrix.cols(); ++i)
                     matrix.col(i) /= getMaxRELUT(order)[i];
+            else if (settings.weights == Weights::inPhase)
+                for (int i = 0; i < matrix.cols(); ++i)
+                    matrix.col(i) /= getInPhaseLUT(order)[i];
             settings.weightsAlreadyApplied = false;
         }
     }

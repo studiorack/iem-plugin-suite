@@ -28,6 +28,7 @@
 #include "MatrixMultiplication.h"
 #include "ambisonicTools.h"
 #include "MaxRE.h"
+#include "inPhase.h"
 
 using namespace dsp;
 class AmbisonicDecoder : private ProcessorBase
@@ -67,7 +68,14 @@ public:
         const int chAmbi = square(order+1);
         
         float weights[64];
-        copyMaxRE(order, weights);
+        if (retainedDecoder->getSettings().weights == ReferenceCountedDecoder::Weights::maxrE)
+            copyMaxRE(order, weights);
+        else if (retainedDecoder->getSettings().weights == ReferenceCountedDecoder::Weights::inPhase)
+            copyInPhase(order, weights);
+        else
+            for (int ch = 0; ch < chAmbi; ++ch)
+                weights[ch] = 1.0f;
+            
         
         if (retainedDecoder->getSettings().expectedNormalization != inputNormalization)
         {
