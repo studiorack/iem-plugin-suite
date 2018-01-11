@@ -538,12 +538,12 @@ public:
     void drawButtonBackground (Graphics& g, Button& button, const Colour& backgroundColour,
                                bool isMouseOverButton, bool isButtonDown) override
     {
-        Colour baseColour (Colours::black.withMultipliedSaturation (button.hasKeyboardFocus (true) ? 1.3f : 0.9f)
+        Colour baseColour (backgroundColour.withMultipliedSaturation (button.hasKeyboardFocus (true) ? 1.3f : 0.9f)
                            .withMultipliedAlpha (button.isEnabled() ? 1.0f : 0.5f));
-        Colour outlineColour (backgroundColour);
+        //Colour outlineColour (backgroundColour);
         
-        //if (isButtonDown || isMouseOverButton) baseColour = baseColour.contrasting (isButtonDown ? 0.3f : 0.1f);
-        if (isButtonDown || isMouseOverButton) baseColour = baseColour.overlaidWith (backgroundColour.withAlpha(isButtonDown ? 0.8f : 0.4f));
+        if (isButtonDown || isMouseOverButton) baseColour = baseColour.contrasting (isButtonDown ? 0.3f : 0.1f);
+        //if (isButtonDown || isMouseOverButton) baseColour = baseColour.overlaidWith (backgroundColour.withAlpha(isButtonDown ? 0.8f : 0.4f));
         
         const bool flatOnLeft   = button.isConnectedOnLeft();
         const bool flatOnRight  = button.isConnectedOnRight();
@@ -568,8 +568,8 @@ public:
             
             g.setColour (baseColour);
             g.fillPath (outline);
-            g.setColour (backgroundColour);
-            g.strokePath (outline, PathStrokeType(1.3f));
+//            g.setColour (backgroundColour);
+//            g.strokePath (outline, PathStrokeType(1.3f));
         }
     }
     void drawButtonText (Graphics& g, TextButton& button, bool /*isMouseOverButton*/, bool /*isButtonDown*/) override
