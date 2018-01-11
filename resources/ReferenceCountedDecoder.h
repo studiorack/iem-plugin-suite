@@ -22,7 +22,9 @@
 
 #pragma once
 #include "ReferenceCountedMatrix.h"
-//#include "ambisonicTools.h"
+#include "ambisonicTools.h"
+#include "MaxRE.h"
+
 class ReferenceCountedDecoder : public ReferenceCountedMatrix
 {
 public:
@@ -104,18 +106,22 @@ public:
             default: return String("none");
         }
     }
-    
-    const int getNumOutputChannels()
+    void processAppliedWeights()
     {
-        return (int) matrix.rows();
+        if (settings.weightsAlreadyApplied && settings.weights != Weights::none)
+        {
+            if (settings.weights == Weights::maxrE)
+                for (int i = 0; i < matrix.cols(); ++i)
+                    matrix.col(i) /= getMaxRELUT(order)[i];
+            settings.weightsAlreadyApplied = false;
+        }
     }
     
-    const int getNumInputChannels()
+    int getOrder()
     {
-        return (int) matrix.cols();
+        return order;
     }
 
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 private:
     Settings settings;
     const int order;
