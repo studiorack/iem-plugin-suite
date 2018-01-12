@@ -112,7 +112,7 @@ private:
     ScopedPointer<SliderAttachment> slMasterRollAttachment;
     ScopedPointer<ButtonAttachment> tbMasterToggleAttachment;
     DirectivityVisualizer dv;
-    FilterVisualizer fv;
+    FilterVisualizer<float> fv;
     
     ScopedPointer<SliderAttachment> slParam1Attachment, slParam2Attachment, slParam3Attachment;
     ScopedPointer<ComboBoxAttachment> cbOrderSettingAttachment;

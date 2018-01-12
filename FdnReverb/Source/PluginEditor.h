@@ -81,7 +81,7 @@ private:
     
     // filter visualization
     T60Visualizer tv;
-    FilterVisualizer fv;
+    FilterVisualizer<float> fv;
 
     IIR::Coefficients<float>::Ptr highpassCoeffs;
     IIR::Coefficients<float>::Ptr lowpassCoeffs;

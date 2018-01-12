@@ -121,7 +121,7 @@ public:
     IIR::Coefficients<float>::Ptr lowShelfCoefficients;
     IIR::Coefficients<float>::Ptr highShelfCoefficients;
     
-    void setFilterVisualizer(FilterVisualizer* newFv);
+    void setFilterVisualizer(FilterVisualizer<float>* newFv);
     bool userChangedFilterSettings = true;
     bool updateFv = false;
     
@@ -144,7 +144,7 @@ private:
     double phi;
     double theta;
     
-    FilterVisualizer* editorFv = nullptr;
+    FilterVisualizer<float>* editorFv = nullptr;
     
     // Parameters
     float *directivityOrderSetting;

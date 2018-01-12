@@ -855,7 +855,7 @@ void RoomEncoderAudioProcessor::updateBuffers() {
     delayBufferWritePtrArray = delayBuffer.getArrayOfWritePointers();
 }
 
-void RoomEncoderAudioProcessor::setFilterVisualizer(FilterVisualizer* newFv)
+void RoomEncoderAudioProcessor::setFilterVisualizer(FilterVisualizer<float>* newFv)
 {
     editorFv = newFv;
 }

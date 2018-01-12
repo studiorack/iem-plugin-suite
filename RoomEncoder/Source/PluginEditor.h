@@ -76,7 +76,7 @@ private:
     SimpleLabel lbReflCoeff, lbNumReflections;
     TripleLabel lbRoomDim;
     
-    FilterVisualizer fv;
+    FilterVisualizer<float> fv;
     ReflectionsVisualizer rv;
     
     ComboBox cbSyncChannel;
