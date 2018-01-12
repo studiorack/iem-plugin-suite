@@ -48,6 +48,7 @@ public:
         Normalization expectedNormalization = sn3d;
         Weights weights = none;
         bool weightsAlreadyApplied = false;
+        int lfeChannel = -1;
     };
     
     
@@ -92,11 +93,10 @@ public:
         return settings;
     }
 
-    const String getSettingsAsString()
-    {
-
-        return "Decoder expects Ambisonic input up to " + getOrderString(order) + " order with " + String(settings.expectedNormalization == Normalization::n3d ? "N3D" : "SN3D") + " normalization. The weights are '" + getWeightsString() + "' and are " + String(settings.weightsAlreadyApplied ? "already applied." : "not aplied yet.");
-    }
+//    const String getSettingsAsString()
+//    {
+//        return "Decoder expects Ambisonic input up to " + getOrderString(order) + " order with " + String(settings.expectedNormalization == Normalization::n3d ? "N3D" : "SN3D") + " normalization. The weights are '" + getWeightsString() + "' and are " + String(settings.weightsAlreadyApplied ? "already applied." : "not aplied yet.");
+//    }
     
     const String getWeightsString()
     {
