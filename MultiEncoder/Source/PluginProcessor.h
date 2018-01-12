@@ -111,6 +111,7 @@ public:
     double phi, theta;
     
     bool updateColours = false;
+    bool soloMuteChanged = true;
     
     Colour elementColours[maxNumberOfInputs];
     

@@ -56,7 +56,7 @@ MultiEncoderAudioProcessorEditor::MultiEncoderAudioProcessorEditor (MultiEncoder
     
     addAndMakeVisible(&viewport);
     viewport.setViewedComponent(&encoderList);
-
+    
     cbNumInputChannelsAttachment = new ComboBoxAttachment(valueTreeState,"inputSetting",*title.getInputWidgetPtr()->getChannelsCbPointer());
     cbNormalizationAtachment = new ComboBoxAttachment(valueTreeState,"useSN3D",*title.getOutputWidgetPtr()->getNormCbPointer());
     cbOrderAtachment = new ComboBoxAttachment(valueTreeState,"orderSetting",*title.getOutputWidgetPtr()->getOrderCbPointer());
@@ -123,13 +123,13 @@ MultiEncoderAudioProcessorEditor::MultiEncoderAudioProcessorEditor (MultiEncoder
     
     addAndMakeVisible(&lbPitch);
     lbPitch.setText("Pitch");
-
+    
     addAndMakeVisible(&lbGain);
     lbGain.setText("Gain");
     
     
     setResizeLimits(590, 455, 800, 1200);
-    startTimer(10);
+    startTimer(40);
 }
 
 
@@ -160,20 +160,23 @@ void MultiEncoderAudioProcessorEditor::timerCallback()
         encoderList.setNumberOfChannels(nChIn);
         lastSetNumChIn = nChIn;
     }
-
     
-    if (!processor.soloMask.isZero()) {
-        for (int i = 0; i<lastSetNumChIn; ++i)
-        {
-            encoderList.sphereElementArray[i]->setActive(processor.soloMask[i]);
-        }
-    }
-    else
+    if (processor.soloMuteChanged)
     {
-        for (int i = 0; i<lastSetNumChIn; ++i)
-        {
-            encoderList.sphereElementArray[i]->setActive(!processor.muteMask[i]);
+        if (! processor.soloMask.isZero()) {
+            for (int i = 0; i<lastSetNumChIn; ++i)
+            {
+                encoderList.sphereElementArray[i]->setActive(processor.soloMask[i]);
+            }
         }
+        else
+        {
+            for (int i = 0; i<lastSetNumChIn; ++i)
+            {
+                encoderList.sphereElementArray[i]->setActive(!processor.muteMask[i]);
+            }
+        }
+        processor.soloMuteChanged = false;
     }
     
     if (processor.updateColours)
@@ -225,14 +228,14 @@ void MultiEncoderAudioProcessorEditor::resized()
     const int rotSliderWidth = 40;
     //const int labelHeight = 15;
     //const int labelWidth = 20;
-
-
+    
+    
     // -------------- Yaw Pitch Roll Labels ------------------
     Rectangle<int> yprArea (sideBarArea);
     ypGroup.setBounds (yprArea);
     yprArea.removeFromTop(25); //for box headline
-
-
+    
+    
     sliderRow = (yprArea.removeFromTop(15));
     lbNum.setBounds(sliderRow.removeFromLeft(22));
     sliderRow.removeFromLeft(5);
@@ -241,13 +244,13 @@ void MultiEncoderAudioProcessorEditor::resized()
     lbPitch.setBounds(sliderRow.removeFromLeft(rotSliderWidth));
     sliderRow.removeFromLeft(rotSliderSpacing);
     lbGain.setBounds(sliderRow.removeFromLeft(rotSliderWidth));
-
-    viewport.setBounds(yprArea);
-
     
-
+    viewport.setBounds(yprArea);
+    
+    
+    
     // ============== SIDEBAR LEFT ====================
-
+    
     const int grapperAreaHeight = 70;
     area.removeFromRight(10); // spacing
     

@@ -314,13 +314,15 @@ void MultiEncoderAudioProcessor::parameterChanged (const String &parameterID, fl
     }
     else if (parameterID.startsWith("solo"))
     {
-        int id = parameterID.substring(4).getIntValue();
+        const int id = parameterID.substring(4).getIntValue();
         soloMask.setBit(id,newValue >= 0.5f);
+        soloMuteChanged = true;
     }
     else if (parameterID.startsWith("mute"))
     {
-        int id = parameterID.substring(4).getIntValue();
+        const int id = parameterID.substring(4).getIntValue();
         muteMask.setBit(id,newValue >= 0.5f);
+        soloMuteChanged = true;
     }
     else if (parameterID == "lockedToMaster")
     {

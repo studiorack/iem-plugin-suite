@@ -30,11 +30,10 @@
 #define rcirc75 0.965925826289068
 
 class  SpherePanner :  public Component
-
 {
 public:
     SpherePanner() : Component() {
-        setBufferedToImage(true);
+       // setBufferedToImage(true);
     };
     ~SpherePanner() {};
     
@@ -71,7 +70,6 @@ public:
         
         void moveElement (const MouseEvent &event, Point<int> centre, float radius, bool upBeforeDrag) {
             //bool leftClick = event.mods.isLeftButtonDown();
-            
 
             Point<int> pos = event.getPosition();
             float yaw = -1.0f * centre.getAngleToPoint(pos);
@@ -121,12 +119,6 @@ public:
         Vector3D<float> getPosition() {return position;}
         String getLabel() {return label;};
         String getID() {return ID;};
-        void calcZ(bool up) {
-//            float rr = position.x*position.x + position.y*position.y;
-//            if (rr<=1.0f) position.z = sqrt(1.0f - rr);
-//            else position.z = 0.0f;
-//            if (!up) position.z *= -1.0f;
-        }
         
         Slider *yawSlider = nullptr;
         Slider *pitchSlider = nullptr;
@@ -248,9 +240,6 @@ public:
             g.drawFittedText(handle->getLabel(), temp.toNearestInt(), Justification::centred, 1);
             panPos.clear();
         }
-        
-        
-        
     };
     
     
