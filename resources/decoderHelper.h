@@ -52,7 +52,7 @@ public:
         int rows, cols;
         var matrixData = tmVar.getProperty("matrix", var());
         Result result = getMatrixDataSize (matrixData, rows, cols);
-
+        
         if (! result.wasOk())
             return Result::fail(result.getErrorMessage());
         
@@ -105,16 +105,19 @@ public:
         // ============ SETTINGS =====================
         ReferenceCountedDecoder::Settings settings;
         // normalization
-        if (decoderObject.hasProperty("expectedInputNormalization"))
-        {
-            var expectedNormalization (decoderObject.getProperty("expectedInputNormalization", var()));
-            if (expectedNormalization.toString().equalsIgnoreCase("sn3d"))
-                settings.expectedNormalization = ReferenceCountedDecoder::Normalization::sn3d;
-            else if (expectedNormalization.toString().equalsIgnoreCase("n3d"))
-                settings.expectedNormalization = ReferenceCountedDecoder::Normalization::n3d;
-            else
-                return Result::fail("Could not parse 'expectedInputNormalization' attribute. Expected 'sn3d' or 'n3d' but got '" + expectedNormalization.toString() + "'.");
-        }
+        if ( !decoderObject.hasProperty("expectedInputNormalization"))
+            Result::fail("Could not find 'expectedInputNormalization' attribute.");
+        
+        
+        var expectedNormalization (decoderObject.getProperty("expectedInputNormalization", var()));
+        if (expectedNormalization.toString().equalsIgnoreCase("sn3d"))
+            settings.expectedNormalization = ReferenceCountedDecoder::Normalization::sn3d;
+        else if (expectedNormalization.toString().equalsIgnoreCase("n3d"))
+            settings.expectedNormalization = ReferenceCountedDecoder::Normalization::n3d;
+        else
+            return Result::fail("Could not parse 'expectedInputNormalization' attribute. Expected 'sn3d' or 'n3d' but got '" + expectedNormalization.toString() + "'.");
+        
+        
         // weights
         if (decoderObject.hasProperty("weights"))
         {
@@ -135,7 +138,19 @@ public:
             else
                 return Result::fail("Could not parse 'weightsAlreadyApplied' attribute. Expected bool but got '" + weightsAlreadyApplied.toString() + "'.");
         }
-                     
+        if (decoderObject.hasProperty("lfeChannel"))
+        {
+            var lfeChannel (decoderObject.getProperty("lfeChannel", var()));
+            if (lfeChannel.isInt())
+            {
+                if (static_cast<int>(lfeChannel) < 1 || static_cast<int>(lfeChannel) > 64)
+                    return Result::fail("'lfeChannel' attribute is not a valid channel number (1<=lfeChannel>=64).");
+                
+                settings.lfeChannel = lfeChannel;
+            }
+            else
+                return Result::fail("Could not parse 'lfeChannel' attribute. Expected channel number (int) but got '" + lfeChannel.toString() + "'.");
+        }
         
         newDecoder->setSettings(settings);
         
@@ -180,7 +195,7 @@ public:
     {
         if (routingData.size() != rows)
             return Result::fail("Length of 'routing' attribute does not match number of matrix outputs (rows).");
-            
+        
         Array<int>& routingArray = dest->getRoutingArrayReference();
         for (int r = 0; r < rows; ++r)
         {
@@ -204,7 +219,7 @@ public:
         Result result = parseJsonFile(fileToParse, parsedJson);
         if (! result.wasOk())
             return Result::fail(result.getErrorMessage());
-
+        
         
         // looks for 'Decoder' object
         if (! parsedJson.hasProperty("Decoder"))
@@ -212,7 +227,7 @@ public:
         
         var decoderObject = parsedJson.getProperty("Decoder", parsedJson);
         result = decoderObjectToDecoder (decoderObject, decoder,
-                                                         parsedJson.getProperty("name", var("")), parsedJson.getProperty("description", var("")));
+                                         parsedJson.getProperty("name", var("")), parsedJson.getProperty("description", var("")));
         
         if (! result.wasOk())
             return Result::fail(result.getErrorMessage());
@@ -225,9 +240,9 @@ public:
         // parse configuration file
         var parsedJson;
         {
-        Result result = parseJsonFile(fileToParse, parsedJson);
-        if (! result.wasOk())
-            return Result::fail(result.getErrorMessage());
+            Result result = parseJsonFile(fileToParse, parsedJson);
+            if (! result.wasOk())
+                return Result::fail(result.getErrorMessage());
         }
         
         // looks for 'TransformationMatrix' object; if missing, it uses the 'root' to look for a 'matrix' object
