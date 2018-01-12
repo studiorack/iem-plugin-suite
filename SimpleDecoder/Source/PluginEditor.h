@@ -106,6 +106,6 @@ private:
     
     ReferenceCountedDecoder::Ptr lastDecoder = nullptr;
     
-    FilterVisualizer fv;
+    FilterVisualizer<double> fv;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SimpleDecoderAudioProcessorEditor)
 };

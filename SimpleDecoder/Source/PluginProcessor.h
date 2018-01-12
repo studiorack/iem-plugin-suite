@@ -27,6 +27,7 @@
 #include "../../resources/AmbisonicDecoder.h"
 #include "../../resources/decoderHelper.h"
 #include "../../resources/ReferenceCountedDecoder.h"
+#include "../../resources/FilterVisualizerHelper.h"
 
 using namespace dsp;
 //==============================================================================
@@ -96,10 +97,12 @@ public:
         return decoderConfig;
     }
     
-    IIR::Coefficients<float>::Ptr highPassCoefficients, lowPassCoefficients;
+    IIR::Coefficients<double>::Ptr cascadedHighPassCoeffs, cascadedLowPassCoeffs;
     bool updateFv {true};
     
 private:
+    void updateLowPassCoefficients (double sampleRate, float frequency);
+    void updateHighPassCoefficients (double sampleRate, float frequency);
     // ====== parameters
     AudioProcessorValueTreeState parameters;
     
@@ -119,12 +122,18 @@ private:
     
     AudioBuffer<float> lfeBuffer;
     
-    ScopedPointer<IIR::Filter<float>> lowPassFilter;
-    ProcessorDuplicator<IIR::Filter<float>, IIR::Coefficients<float>> highPassFilters;
+
+    // processors
+    ScopedPointer<IIR::Filter<float>> lowPass1;
+    ScopedPointer<IIR::Filter<float>> lowPass2;
+    IIR::Coefficients<float>::Ptr highPassCoeffs;
+    IIR::Coefficients<float>::Ptr lowPassCoeffs;
+    
+    ProcessorDuplicator<IIR::Filter<float>, IIR::Coefficients<float>> highPass1;
+    ProcessorDuplicator<IIR::Filter<float>, IIR::Coefficients<float>> highPass2;
+    
     ProcessSpec highPassSpecs {48000, 0, 0};
-    
-    
-    // processor
+
     AmbisonicDecoder decoder;
     
     ReferenceCountedDecoder::Ptr decoderConfig {nullptr};

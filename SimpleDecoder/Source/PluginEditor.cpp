@@ -30,7 +30,7 @@ SimpleDecoderAudioProcessorEditor::SimpleDecoderAudioProcessorEditor (SimpleDeco
 {
     // ============== BEGIN: essentials ======================
     // set GUI size and lookAndFeel
-    setResizeLimits(670, 280, 800, 700); // use this to create a resizeable GUI
+    setResizeLimits(670, 280, 1000, 700); // use this to create a resizeable GUI
     setLookAndFeel (&globalLaF);
     
     // make title and footer visible, and set the PluginName
@@ -116,8 +116,8 @@ SimpleDecoderAudioProcessorEditor::SimpleDecoderAudioProcessorEditor (SimpleDeco
     
     addAndMakeVisible(fv);
     fv.setParallel(true);
-    fv.addCoefficients(&processor.lowPassCoefficients, Colours::orangered, &slLowPassFrequency, &slLowPassGain);
-    fv.addCoefficients(&processor.highPassCoefficients, Colours::cyan, &slHighPassFrequency);
+    fv.addCoefficients(&processor.cascadedLowPassCoeffs, Colours::orangered, &slLowPassFrequency, &slLowPassGain);
+    fv.addCoefficients(&processor.cascadedHighPassCoeffs, Colours::cyan, &slHighPassFrequency);
     
     // start timer after everything is set up properly
     startTimer(20);
@@ -210,18 +210,18 @@ void SimpleDecoderAudioProcessorEditor::resized()
         const int rotSliderWidth = 50;
         
         Rectangle<int> sliderRow(filterArea.removeFromBottom(labelHeight));
-        lbLowPassFrequency.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
-        sliderRow.removeFromLeft (rotSliderSpacing);
         lbLowPassGain.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
+        sliderRow.removeFromLeft (rotSliderSpacing);
+        lbLowPassFrequency.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
 
         lbHighPassFrequency.setBounds (sliderRow.removeFromRight(rotSliderWidth));
         
         sliderRow = filterArea.removeFromBottom(rotSliderHeight-10);
 
-        slLowPassFrequency.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
-        sliderRow.removeFromLeft(rotSliderSpacing);
         slLowPassGain.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
-
+        sliderRow.removeFromLeft(rotSliderSpacing);
+        slLowPassFrequency.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
+        
         slHighPassFrequency.setBounds (sliderRow.removeFromRight(rotSliderWidth));
         
         fv.setBounds(filterArea);

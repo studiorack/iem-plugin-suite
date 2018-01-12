@@ -39,10 +39,12 @@ SimpleDecoderAudioProcessor::SimpleDecoderAudioProcessor()
 parameters(*this, nullptr)
 {
     // dummy values
-    lowPassCoefficients = IIR::Coefficients<float>::makeFirstOrderLowPass(48000.0, 100.0f);
-    highPassCoefficients = IIR::Coefficients<float>::makeFirstOrderHighPass(48000.0, 100.0f);
+    cascadedLowPassCoeffs = IIR::Coefficients<double>::makeLowPass(48000.0, 100.0f);
+    cascadedHighPassCoeffs = IIR::Coefficients<double>::makeHighPass(48000.0, 100.0f);
     
-    
+    lowPassCoeffs = IIR::Coefficients<float>::makeHighPass(48000.0, 100.0f);
+    highPassCoeffs = IIR::Coefficients<float>::makeFirstOrderHighPass(48000.0, 100.0f);
+
     parameters.createAndAddParameter ("inputOrderSetting", "Ambisonic Order", "",
                                       NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
                                       [](float value) {
@@ -79,7 +81,7 @@ parameters(*this, nullptr)
                                       nullptr);
 
     parameters.createAndAddParameter ("lfeMode", "Low-Frequency-Effect Mode", "",
-                                     NormalisableRange<float> (0.0f, 2.0f, 1.0f), 1.0f,
+                                     NormalisableRange<float> (0.0f, 2.0f, 1.0f), 0.0f,
                                      [](float value) {
                                          if (value < 0.5f) return "none";
                                          else if (value >= 0.5f && value < 1.5f) return "Discrete LFE";
@@ -132,20 +134,42 @@ parameters(*this, nullptr)
     properties = new PropertiesFile(options);
     lastDir = File(properties->getValue("presetFolder"));
     
-    
 
+    // filters
     
+    highPass1.state = highPassCoeffs;
+    highPass2.state = highPassCoeffs;
     
-    highPassCoefficients = IIR::Coefficients<float>::makeHighPass(48000.0, *highPassFrequency);
-    highPassFilters.state = highPassCoefficients;
-    
-    lowPassFilter = new IIR::Filter<float>(lowPassCoefficients);
-    
+    lowPass1 = new IIR::Filter<float>(lowPassCoeffs);
+    lowPass2 = new IIR::Filter<float>(lowPassCoeffs);
 }
 
 SimpleDecoderAudioProcessor::~SimpleDecoderAudioProcessor()
 {
 }
+
+void SimpleDecoderAudioProcessor::updateLowPassCoefficients(double sampleRate, float frequency)
+{
+    *lowPassCoeffs = *IIR::Coefficients<float>::makeLowPass(sampleRate, frequency);
+
+    cascadedLowPassCoeffs->coefficients = FilterVisualizerHelper<double>::cascadeSecondOrderCoefficients
+    (
+     IIR::Coefficients<double>::makeLowPass(sampleRate, frequency)->coefficients,
+     IIR::Coefficients<double>::makeLowPass(sampleRate, frequency)->coefficients
+     );
+}
+
+void SimpleDecoderAudioProcessor::updateHighPassCoefficients(double sampleRate, float frequency)
+{
+    *highPassCoeffs = *IIR::Coefficients<float>::makeHighPass(sampleRate, frequency);
+
+    cascadedHighPassCoeffs->coefficients = FilterVisualizerHelper<double>::cascadeSecondOrderCoefficients
+    (
+     IIR::Coefficients<double>::makeHighPass(sampleRate, frequency)->coefficients,
+     IIR::Coefficients<double>::makeHighPass(sampleRate, frequency)->coefficients
+     );
+}
+
 
 void SimpleDecoderAudioProcessor::setLastDir(File newLastDir)
 {
@@ -236,21 +260,28 @@ void SimpleDecoderAudioProcessor::prepareToPlay (double sampleRate, int samplesP
     if (currentDecoder != nullptr) {
         highPassSpecs.numChannels = currentDecoder->getNumInputChannels();
     }
-    
-    *lowPassCoefficients = *IIR::Coefficients<float>::makeFirstOrderLowPass(sampleRate, *lowPassFrequency);
-    *highPassCoefficients = *IIR::Coefficients<float>::makeFirstOrderHighPass(sampleRate, *highPassFrequency);
-    
+
     highPassSpecs.sampleRate = sampleRate;
     highPassSpecs.maximumBlockSize = samplesPerBlock;
     
-    highPassFilters.prepare(highPassSpecs);
-    highPassFilters.reset();
+    updateHighPassCoefficients(sampleRate, *highPassFrequency);
+    updateLowPassCoefficients(sampleRate, *lowPassFrequency);
     
-    lowPassFilter->prepare(highPassSpecs);
-    lowPassFilter->reset();
+    highPass1.prepare(highPassSpecs);
+    highPass1.reset();
+    
+    highPass2.prepare(highPassSpecs);
+    highPass2.reset();
+    
+    lowPass1->prepare(highPassSpecs);
+    lowPass1->reset();
+    
+    lowPass2->prepare(highPassSpecs);
+    lowPass2->reset();
     
     decoder.setInputNormalization(*useSN3D >= 0.5f ? ReferenceCountedDecoder::Normalization::sn3d : ReferenceCountedDecoder::Normalization::n3d);
 }
+
 
 void SimpleDecoderAudioProcessor::releaseResources()
 {
@@ -273,7 +304,13 @@ void SimpleDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiB
     if (decoder.checkIfNewDecoderAvailable() && decoder.getCurrentDecoder() != nullptr)
     {
         highPassSpecs.numChannels = decoder.getCurrentDecoder()->getNumInputChannels();
-        highPassFilters.prepare(highPassSpecs);
+        highPass1.prepare(highPassSpecs);
+        highPass2.prepare(highPassSpecs);
+        if (decoder.getCurrentDecoder()->getSettings().lfeChannel != -1)
+        {
+            parameters.getParameterAsValue("lfeChannel").setValue(decoder.getCurrentDecoder()->getSettings().lfeChannel);
+            parameters.getParameterAsValue("lfeMode").setValue(1); //discrete
+        }
     }
     
     // ====== is a decoder loaded? stop processing if not ===========
@@ -294,13 +331,15 @@ void SimpleDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiB
         // low pass filtering
         AudioBlock<float> lowPassAudioBlock = AudioBlock<float>(lfeBuffer);
         ProcessContextReplacing<float> lowPassContext(lowPassAudioBlock);
-        lowPassFilter->process(lowPassContext);
+        lowPass1->process(lowPassContext);
+        lowPass2->process(lowPassContext);
         lfeBuffer.applyGain(0, 0, lfeBuffer.getNumSamples(), Decibels::decibelsToGain(*lowPassGain));
     }
 
     AudioBlock<float> highPassAudioBlock = AudioBlock<float>(buffer.getArrayOfWritePointers(), nChIn, buffer.getNumSamples());
     ProcessContextReplacing<float> highPassContext (highPassAudioBlock);
-    highPassFilters.process(highPassContext);
+    highPass1.process(highPassContext);
+    highPass2.process(highPassContext);
     
     AudioBlock<float> SimpleDecoderAudioBlock = AudioBlock<float>(buffer.getArrayOfWritePointers(), jmax(nChIn, nChOut), buffer.getNumSamples());
     ProcessContextReplacing<float> decoderContext (SimpleDecoderAudioBlock);
@@ -310,7 +349,6 @@ void SimpleDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiB
     // =================== lfe processing ==================================
     if (lfeProcessing == 1 && nChOut < buffer.getNumChannels())
     {
-        
         const int lfeCh = ((int)*lfeChannel) - 1;
         if (lfeCh < buffer.getNumChannels())
             buffer.copyFrom(lfeCh, 0, lfeBuffer, 0, 0, buffer.getNumSamples());
@@ -379,12 +417,12 @@ void SimpleDecoderAudioProcessor::parameterChanged (const String &parameterID, f
         userChangedIOSettings = true;
     else if (parameterID == "highPassFrequency")
     {
-        *highPassCoefficients = *IIR::Coefficients<float>::makeFirstOrderHighPass(highPassSpecs.sampleRate, *highPassFrequency);
+        updateHighPassCoefficients(highPassSpecs.sampleRate, *highPassFrequency);
         updateFv = true;
     }
     else if (parameterID == "lowPassFrequency")
     {
-        *lowPassCoefficients = *IIR::Coefficients<float>::makeFirstOrderLowPass(highPassSpecs.sampleRate, *lowPassFrequency);
+        updateLowPassCoefficients(highPassSpecs.sampleRate, *lowPassFrequency);
         updateFv = true;
     }
     else if (parameterID == "lowPassGain")
