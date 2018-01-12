@@ -57,34 +57,28 @@ public:
         
         ReferenceCountedDecoder::Ptr retainedDecoder = currentDecoder;
         AudioBlock<float> inputBlock = context.getInputBlock();
-        if (retainedDecoder->getSettings().expectedNormalization != inputNormalization)
-        {
-            const float* conversionPtr (inputNormalization == ReferenceCountedDecoder::Normalization::sn3d ? sn3d2n3d : n3d2sn3d);
-            for (int ch = 0; ch < inputBlock.getNumChannels(); ++ch)
-                FloatVectorOperations::multiply(inputBlock.getChannelPointer(ch), conversionPtr[ch], (int) inputBlock.getNumSamples());
-        }
+
         
         const int order = isqrt((int) inputBlock.getNumChannels()) - 1;
         const int chAmbi = square(order+1);
         
         float weights[64];
+        const float correction = (static_cast<float>(retainedDecoder->getOrder()) + 1) / (static_cast<float>(order) + 1);
+        FloatVectorOperations::fill(weights, correction, chAmbi);
+
         if (retainedDecoder->getSettings().weights == ReferenceCountedDecoder::Weights::maxrE)
-            copyMaxRE(order, weights);
+            multiplyMaxRE(order, weights);
         else if (retainedDecoder->getSettings().weights == ReferenceCountedDecoder::Weights::inPhase)
-            copyInPhase(order, weights);
-        else
-            for (int ch = 0; ch < chAmbi; ++ch)
-                weights[ch] = 1.0f;
+            multiplyInPhase(order, weights);
             
-        
         if (retainedDecoder->getSettings().expectedNormalization != inputNormalization)
         {
             const float* conversionPtr (inputNormalization == ReferenceCountedDecoder::Normalization::sn3d ? sn3d2n3d : n3d2sn3d);
             FloatVectorOperations::multiply(weights, conversionPtr, chAmbi);
         }
+        
         for (int ch = 0; ch < chAmbi; ++ch)
             FloatVectorOperations::multiply(inputBlock.getChannelPointer(ch), weights[ch], (int) inputBlock.getNumSamples());
-        
         
         matMult.process(context);
     }
