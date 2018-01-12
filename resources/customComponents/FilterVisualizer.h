@@ -23,6 +23,7 @@
 
 #pragma once
 #include <complex>
+template <typename coefficientsType>
 class  FilterVisualizer :  public Component
 {
     struct Settings {
@@ -34,8 +35,10 @@ class  FilterVisualizer :  public Component
         bool gainHandleLin = false; // are the filter gain sliders linear?
     };
     
+    template <typename T>
     struct FilterWithSlidersAndColour {
-        dsp::IIR::Coefficients<float>::Ptr* coefficients;
+        typedef typename dsp::IIR::Coefficients<T>::Ptr IIRCoefficients;
+        IIRCoefficients* coefficients;
         Colour colour;
         Slider* frequencySlider = nullptr;
         Slider* gainSlider = nullptr;
@@ -140,8 +143,8 @@ public:
             bool isActive = activeElem == b;
             magnitude.clear();
             
-            FilterWithSlidersAndColour& handle(elements.getReference(b));
-            dsp::IIR::Coefficients<float>::Ptr coeffs = *handle.coefficients;
+            FilterWithSlidersAndColour<coefficientsType>& handle(elements.getReference(b));
+            typename dsp::IIR::Coefficients<coefficientsType>::Ptr coeffs = *handle.coefficients;
             //calculate magnitude response
             if (coeffs != nullptr)
                 coeffs->getMagnitudeForFrequencyArray(frequencies.getRawDataPointer(), magnitudes.getRawDataPointer(), numPixels, sampleRate);
@@ -154,7 +157,7 @@ public:
             if (filtersAreParallel && coeffs != nullptr)
                 coeffs->getPhaseForFrequencyArray(frequencies.getRawDataPointer(), phases.getRawDataPointer(), numPixels, sampleRate);
             
-            float db = Decibels::gainToDecibels(magnitudes[0]);
+            float db = Decibels::gainToDecibels(magnitudes[0]) + additiveDB;
             magnitude.startNewSubPath(xMin, jlimit((float) yMin, (float) yMax + OH + 1, dbToYFloat(db)));
             
             for (int i = 1; i < numPixels; ++i)
@@ -221,7 +224,7 @@ public:
         
         int size = elements.size();
         for (int i = 0; i < size; ++i) {
-            FilterWithSlidersAndColour& handle(elements.getReference(i));
+            FilterWithSlidersAndColour<coefficientsType>& handle(elements.getReference(i));
             float circX = handle.frequencySlider == nullptr ? hzToX(s.fMin) : hzToX(handle.frequencySlider->getValue());
             float circY;
             if (!s.gainHandleLin)
@@ -313,7 +316,7 @@ public:
         
         if (activeElem != -1)
         {
-            FilterWithSlidersAndColour& handle(elements.getReference(activeElem));
+            FilterWithSlidersAndColour<coefficientsType>& handle(elements.getReference(activeElem));
             if (handle.frequencySlider != nullptr)
                 handle.frequencySlider->setValue(frequency);
             if (handle.gainSlider != nullptr)
@@ -328,7 +331,7 @@ public:
         activeElem = -1;
         for (int i = elements.size(); --i >= 0;)
         {
-            FilterWithSlidersAndColour& handle(elements.getReference(i));
+            FilterWithSlidersAndColour<coefficientsType>& handle(elements.getReference(i));
             
             float gain;
             if (handle.gainSlider == nullptr)
@@ -403,7 +406,7 @@ public:
         }
     }
     
-    void addCoefficients(dsp::IIR::Coefficients<float>::Ptr* newCoeffs, Colour newColourForCoeffs, Slider* frequencySlider = nullptr, Slider* gainSlider = nullptr, Slider* qSlider = nullptr, float* overrideLinearGain = nullptr)
+    void addCoefficients(typename dsp::IIR::Coefficients<coefficientsType>::Ptr* newCoeffs, Colour newColourForCoeffs, Slider* frequencySlider = nullptr, Slider* gainSlider = nullptr, Slider* qSlider = nullptr, float* overrideLinearGain = nullptr)
     {
         elements.add({newCoeffs, newColourForCoeffs, frequencySlider, gainSlider, qSlider, overrideLinearGain});
     }
@@ -434,7 +437,7 @@ private:
     int numPixels;
     
     Array<std::complex<double>> complexMagnitudes;
-    Array<FilterWithSlidersAndColour> elements;
+    Array<FilterWithSlidersAndColour<coefficientsType>> elements;
     Array<float> allMagnitudesInDb;
 };
 
