@@ -159,54 +159,66 @@ public:
         g.setColour(Colours::white);
         g.strokePath(magnitude, PathStrokeType(1.5f));
 
-        magnitude.clear();
-        float tolerance;
-        tolerance = getToleranceT60 (xToHz (xMin), std::string ("upper"));
-        magnitude.startNewSubPath(xMin, jlimit((float) yMin, (float) yMax + OH + 1, t60ToYFloat (tolerance)))
-        ;
-        for (int x = xMin + 1; x<=xMax; ++x)
-        {   
-            tolerance = getToleranceT60 (xToHz (x), std::string ("upper"));
-            magnitude.lineTo (x, t60ToYFloat (tolerance));
-        }
-
-        for (int x = xMax; x>=xMin; --x)
-        {   
-            tolerance = getToleranceT60 (xToHz (x), std::string ("lower"));
-            magnitude.lineTo (x, t60ToYFloat (tolerance));
-        }
-        magnitude.closeSubPath();
+        
         g.setColour(Colours::white.withMultipliedAlpha(0.3f));
-        g.fillPath(magnitude);
+        g.fillPath(tolerancePath, AffineTransform::translation(0.0f, t60ToY(gainToT60Float(overallGainInDb)) - t60ToY(10.0f)));
     };
-
-    float getToleranceT60 (float frequency, std::string which)
-    {   
-        float tempT60 = gainToT60Float (overallGainInDb);
+    
+    void mouseWheelMove(const MouseEvent &e, const MouseWheelDetails &wheel) override {
+        const double delta = 100*(std::abs (wheel.deltaX) > std::abs (wheel.deltaY) ? -wheel.deltaX : wheel.deltaY);
+        //bool positiveDelta = delta >= 0.0;
+        
+        float value = s.yMax + roundToInt(delta);
+        value = jmin(value, 80.0f);
+        value = jmax(value, 5.0f);
+        
+        s.yMax = value;
+        resized();
+        repaint();
+    }
+    
+    void createTolerancePath ()
+    {
+        const float tRef = 10; //10 is our reference, can be anything
+        tolerancePath.clear();
+        
+        tolerancePath.startNewSubPath(hzToX(s.fMin), t60ToYFloat(getToleranceT60(s.fMin, tRef, true)));
+        tolerancePath.lineTo(hzToX(250.0f), t60ToYFloat(1.2f*tRef));
+        tolerancePath.lineTo(hzToX(s.fMax), t60ToYFloat(1.2f*tRef));
+        tolerancePath.lineTo(hzToX(s.fMax), t60ToYFloat(getToleranceT60(s.fMax, tRef, false)));
+        tolerancePath.lineTo(hzToX(2000.0f), t60ToYFloat(0.8*tRef));
+        tolerancePath.lineTo(hzToX(250.0f), t60ToYFloat(0.8*tRef));
+        tolerancePath.lineTo(hzToX(s.fMin), t60ToYFloat(getToleranceT60(s.fMin, tRef, false)));
+        tolerancePath.closeSubPath();
+    }
+    
+    float getToleranceT60 (float frequency, float tRef, bool upper)
+    {
         if (frequency < 250)
             {
-                if (which == std::string ("upper"))
+                if (upper)
                 {
-                    return tempT60 * (frequency * -0.002673797f + 1.868449198f);
+                    return tRef * (frequency * -0.002673797f + 1.868449198f);
                 }
                 else
                 {
-                    return tempT60 * (frequency * -0.002139037f + 1.334759358f);
+                    return tRef * (frequency * -0.002139037f + 1.334759358f);
+                    return tRef * (frequency * -0.002139037f + 1.334759358f);
                 }
             }
         else if (frequency < 2000)
         {
-            if (which == std::string ("upper"))
-                return tempT60 * 1.2f;
+            if (upper)
+                return tRef * 1.2f;
             else
-                return tempT60 * 0.8f;
+                return tRef * 0.8f;
         }
         else
         {
-            if (which == std::string ("upper"))
-                return tempT60 * 1.2f;
+            if (upper)
+                return tRef * 1.2f;
             else
-                return tempT60 * jlimit(0.1f, 1.f,
+                return tRef * jlimit(0.1f, 1.f,
                     frequency * -0.00005f + 0.9f);
         }
     }
@@ -348,6 +360,8 @@ public:
                 hzGridPath.lineTo(xpos, t60ToY(s.yMin)+OH);
             }
         }
+        
+        createTolerancePath();
     }
     
     void addCoefficients(dsp::IIR::Coefficients<float>::Ptr newCoeffs, Colour newColourForCoeffs, Slider* frequencySlider = nullptr, Slider* gainSlider = nullptr)
@@ -371,6 +385,7 @@ private:
     Path dbGridPathBold;
     Path hzGridPath;
     Path hzGridPathBold;
+    Path tolerancePath;
     
     Array<float> allMagnitudesInDb;
     Array<dsp::IIR::Coefficients<float>::Ptr> arrayOfCoefficients;
