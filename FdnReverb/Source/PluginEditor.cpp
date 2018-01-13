@@ -27,7 +27,7 @@
 FdnReverbAudioProcessorEditor::FdnReverbAudioProcessorEditor (FdnReverbAudioProcessor& p, AudioProcessorValueTreeState& vts)
     : AudioProcessorEditor (&p), processor (p), valueTreeState (vts),
     tv (20.f, 20000.f, 0.1f, 25.f, 5.f),
-    fv (20.f, 20000.f, -60.f, 5.f, 5.f, false)
+    fv (20.f, 20000.f, -80.f, 5.f, 5.f, false)
 {
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
@@ -150,7 +150,7 @@ FdnReverbAudioProcessorEditor::FdnReverbAudioProcessorEditor (FdnReverbAudioProc
     addAndMakeVisible (&freezeMode);
     freezeMode.setButtonText ("Freeze");
 
-    startTimer(50);
+    //startTimer(50);
 
     addAndMakeVisible(&lbDelay);
     lbDelay.setText("Room Size");
@@ -324,9 +324,9 @@ void FdnReverbAudioProcessorEditor::resized()
     
     area.removeFromRight(10); //spacing
 
-    
+    const int height = (area.getHeight() - 10 - labelHeight - rotSliderHeight + 10) / 2;
     { //====================== T60 GROUP ==================================
-        Rectangle<int> t60Area (area.removeFromTop(150));
+        Rectangle<int> t60Area (area.removeFromTop(height));
         t60Group.setBounds (t60Area);
         t60Area.removeFromTop (25);
         tv.setBounds(t60Area);

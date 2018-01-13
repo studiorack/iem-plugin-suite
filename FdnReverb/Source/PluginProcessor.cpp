@@ -45,7 +45,7 @@ FdnReverbAudioProcessor::FdnReverbAudioProcessor()
                                       [](float value) {return String (value, 0);},
                                       nullptr);
     parameters.createAndAddParameter ("revTime", "Reverberation Time", "s",
-                                      NormalisableRange<float> (0.1f, 10.0f, 0.1f), 5.f,
+                                      NormalisableRange<float> (0.1f, 9.0f, 0.1f), 5.f,
                                       [](float value) {return String (value,1);},
                                       nullptr);
     
@@ -59,7 +59,7 @@ FdnReverbAudioProcessor::FdnReverbAudioProcessor()
                                       nullptr);
     parameters.createAndAddParameter ("lowGain",
                                       "Lows Gain", "dB/s",
-                                      NormalisableRange<float> (-60.0f, 4.0, 0.1f), 1.f,
+                                      NormalisableRange<float> (-80.0f, 6.0, 0.1f), 1.f,
                                       [](float value) {return String (value, 1);},
                                       nullptr);
     
@@ -73,7 +73,7 @@ FdnReverbAudioProcessor::FdnReverbAudioProcessor()
                                       nullptr);
     parameters.createAndAddParameter ("highGain",
                                       "Highs Gain", "dB/s",
-                                      NormalisableRange<float> (-60.0f, 4.0f, 0.1f), -10.f,
+                                      NormalisableRange<float> (-80.0f, 4.0f, 0.1f), -10.f,
                                       [](float value) {return String (value, 1);},
                                       nullptr);
 
@@ -243,6 +243,12 @@ void FdnReverbAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuff
 {   
     dsp::AudioBlock<float> block (buffer);
     fdn.process (dsp::ProcessContextReplacing<float> (block));
+    double freq = 30.0;
+    double t60;
+    fdn.getT60ForFrequencyArray(&freq, &t60, 1);
+    
+    DBG(t60);
+    
 }
 
 //------------------------------------------------------------------------------
