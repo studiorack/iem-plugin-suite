@@ -71,7 +71,7 @@ parameters(*this, nullptr)
                                       [](float value) {return String (value, 0);},
                                       nullptr);
     parameters.createAndAddParameter ("lowPassGain", "LowPass Gain", "dB",
-                                      NormalisableRange<float> (-20.0f, 10.0, 0.1f), 1.f,
+                                      NormalisableRange<float> (-20.0f, 10.0, 0.1f), 0.0f,
                                       [](float value) {return String (value, 1);},
                                       nullptr);
     
