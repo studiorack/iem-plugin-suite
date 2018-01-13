@@ -197,14 +197,9 @@ public:
         if (frequency < 250)
             {
                 if (upper)
-                {
                     return tRef * (frequency * -0.002673797f + 1.868449198f);
-                }
                 else
-                {
                     return tRef * (frequency * -0.002139037f + 1.334759358f);
-                    return tRef * (frequency * -0.002139037f + 1.334759358f);
-                }
             }
         else if (frequency < 2000)
         {

@@ -243,12 +243,6 @@ void FdnReverbAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuff
 {   
     dsp::AudioBlock<float> block (buffer);
     fdn.process (dsp::ProcessContextReplacing<float> (block));
-    double freq = 30.0;
-    double t60;
-    fdn.getT60ForFrequencyArray(&freq, &t60, 1);
-    
-    DBG(t60);
-    
 }
 
 //------------------------------------------------------------------------------
