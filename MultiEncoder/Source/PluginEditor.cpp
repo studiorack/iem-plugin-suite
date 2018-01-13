@@ -33,6 +33,14 @@ MultiEncoderAudioProcessorEditor::MultiEncoderAudioProcessorEditor (MultiEncoder
 {
     setLookAndFeel (&globalLaF);
     
+    for (int i = 0; i < maxNumberOfInputs; ++i)
+    {
+        valueTreeState.addParameterListener("yaw"+String(i), this);
+        valueTreeState.addParameterListener("pitch"+String(i), this);
+    }
+    valueTreeState.addParameterListener("masterYaw", this);
+    valueTreeState.addParameterListener("masterPitch", this);
+    
     // ==== SPHERE AND ELEMENTS ===============
     addAndMakeVisible(&sphere);
     sphere.addListener(this);
@@ -136,6 +144,13 @@ MultiEncoderAudioProcessorEditor::MultiEncoderAudioProcessorEditor (MultiEncoder
 MultiEncoderAudioProcessorEditor::~MultiEncoderAudioProcessorEditor()
 {
     setLookAndFeel(nullptr);
+    for (int i = 0; i < maxNumberOfInputs; ++i)
+    {
+        valueTreeState.removeParameterListener("yaw"+String(i), this);
+        valueTreeState.removeParameterListener("pitch"+String(i), this);
+    }
+    valueTreeState.removeParameterListener("masterYaw", this);
+    valueTreeState.removeParameterListener("masterPitch", this);
 }
 
 //==============================================================================
@@ -159,6 +174,7 @@ void MultiEncoderAudioProcessorEditor::timerCallback()
     {
         encoderList.setNumberOfChannels(nChIn);
         lastSetNumChIn = nChIn;
+        sphere.repaint();
     }
     
     if (processor.soloMuteChanged)
@@ -184,9 +200,6 @@ void MultiEncoderAudioProcessorEditor::timerCallback()
         processor.updateColours = false;
         encoderList.updateColours();
     }
-    
-    //masterElement.setPosition(Vector3D<float>(processor.xyzGrab[0], processor.xyzGrab[1], processor.xyzGrab[2]));
-    sphere.repaint();
 }
 
 void MultiEncoderAudioProcessorEditor::mouseWheelOnSpherePannerMoved (SpherePanner* sphere, const MouseEvent &event, const MouseWheelDetails &wheel)
@@ -198,6 +211,11 @@ void MultiEncoderAudioProcessorEditor::mouseWheelOnSpherePannerMoved (SpherePann
     else if (event.mods.isCommandDown())
         slMasterYaw.mouseWheelMove(event, wheel);
 }
+void MultiEncoderAudioProcessorEditor::parameterChanged (const String &parameterID, float newValue)
+{
+    sphere.repaint();
+}
+
 
 void MultiEncoderAudioProcessorEditor::resized()
 {

@@ -44,7 +44,8 @@ typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 */
 class MultiEncoderAudioProcessorEditor  : public AudioProcessorEditor,
 private Timer,
-private SpherePanner::Listener
+private SpherePanner::Listener,
+private AudioProcessorValueTreeState::Listener
 {
 public:
     MultiEncoderAudioProcessorEditor (MultiEncoderAudioProcessor&, AudioProcessorValueTreeState&);
@@ -53,7 +54,7 @@ public:
     //==============================================================================
     void paint (Graphics&) override;
     void resized() override;
-
+    void parameterChanged (const String &parameterID, float newValue) override;
 private:
     LaF globalLaF;
     TitleBar<AudioChannelsIOWidget<maxNumberOfInputs>, AmbisonicIOWidget<>> title;

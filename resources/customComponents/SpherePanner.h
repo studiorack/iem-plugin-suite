@@ -20,133 +20,32 @@
  ==============================================================================
  */
 
-
+#include "../JuceLibraryCode/JuceHeader.h"
 #pragma once
 
-#define rcirc15 0.258819045102521
-#define rcirc30 0.5
-#define rcirc45 0.707106781186547
-#define rcirc60 0.866025403784439
-#define rcirc75 0.965925826289068
 
-class  SpherePanner :  public Component
+class  SpherePannerBackground :  public Component
 {
+    constexpr static const double rcirc15 = 0.258819045102521;
+    constexpr static const double rcirc30 = 0.5;
+    constexpr static const double rcirc45 = 0.707106781186547;
+    constexpr static const double rcirc60 = 0.866025403784439;
+    constexpr static const double rcirc75 = 0.965925826289068;
 public:
-    SpherePanner() : Component() {
-       // setBufferedToImage(true);
+    SpherePannerBackground() : Component() {
+        setBufferedToImage(true);
     };
-    ~SpherePanner() {};
+    ~SpherePannerBackground() {};
     
-    inline Vector3D<float> yawPitchToCartesian(float yawInRad, float pitchInRad) {
-        float cosPitch = cos(pitchInRad);
-        return Vector3D<float>(cosPitch * cos(yawInRad), cosPitch * sin(yawInRad), sin(-1.0f * pitchInRad));
-    }
-    
-    inline Point<float> cartesianToYawPitch(Vector3D<float> pos) {
-        float hypxy = sqrt(pos.x*pos.x+pos.y*pos.y);
-        return Point<float>(atan2(pos.y,pos.x), atan2(hypxy,pos.z)-M_PI/2);
-    }
-    
-    class Listener
-    {
-    public:
-        virtual ~Listener() {}
-        virtual void mouseWheelOnSpherePannerMoved (SpherePanner* sphere, const MouseEvent &event, const MouseWheelDetails &wheel) {};
-    };
-    
-    
-    class Element
-    {
-    public:
-        Element() {}
-        Element(String newID) {ID = newID;}
-        ~Element () {}
-        
-        void setSliders(Slider* newYawSlider, Slider* newPitchSlider)
-        {
-            yawSlider = newYawSlider;
-            pitchSlider = newPitchSlider;
-        }
-        
-        void moveElement (const MouseEvent &event, Point<int> centre, float radius, bool upBeforeDrag) {
-            //bool leftClick = event.mods.isLeftButtonDown();
-
-            Point<int> pos = event.getPosition();
-            float yaw = -1.0f * centre.getAngleToPoint(pos);
-            float r = centre.getDistanceFrom(pos)/radius;
-            if (r > 1.0f) {
-                r = 1.0f/r;
-                upBeforeDrag = !upBeforeDrag;
-            }
-            
-            float pitch = acos(r);
-            if (upBeforeDrag) pitch *= -1.0f;
-  
-            if (yawSlider != nullptr)
-                yawSlider->setValue(yaw * 180.0f / M_PI);
-            if (pitchSlider != nullptr)
-                pitchSlider->setValue(pitch * 180.0f / M_PI);
-        }
-        
-        void setActive ( bool shouldBeActive) {
-            active = shouldBeActive;
-        }
-        bool isActive() { return active; }
-        
-        void setColour( Colour newColour) { colour = newColour; }
-        void setTextColour( Colour newColour) { textColour = newColour; }
-        Colour getColour() { return colour; }
-        Colour getTextColour() { return textColour; }
-        
-        bool setPosition(Vector3D<float> newPosition) // is true when position is updated (use it for repainting)
-        {
-            if (position.x != newPosition.x || position.y != newPosition.y || position.z != newPosition.z)
-            {
-                position = newPosition;
-                return true;
-            }
-            return false;
-        }
-
-        void setLabel(String newLabel) {label = newLabel;}
-        void setID(String newID) {ID = newID;}
-        
-        void setGrabPriority(int newPriority) {grabPriority = newPriority;}
-        int getGrabPriority() {return grabPriority;}
-        void setGrabRadius(float newRadius) {grabRadius = newRadius;}
-        float getGrabRadius() {return grabRadius;}
-        
-        Vector3D<float> getPosition() {return position;}
-        String getLabel() {return label;};
-        String getID() {return ID;};
-        
-        Slider *yawSlider = nullptr;
-        Slider *pitchSlider = nullptr;
-    private:
-        
-        Vector3D<float> position;
-        bool active = true;
-        
-        float grabRadius = 0.015f;
-        int grabPriority = 0;
-        
-        Colour colour = Colours::white;
-        Colour textColour = Colours::black;
-        String ID = "";
-        String label = "";
-    };
-    
-
-
-    void resized () override
+    void resized() override
     {
         const Rectangle<float> sphere(getLocalBounds().reduced(10, 10).toFloat());
-
+        
         radius = 0.5f * jmin(sphere.getWidth(), sphere.getHeight());
         centre = getLocalBounds().getCentre();
         sphereArea.setBounds(0, 0, 2*radius, 2*radius);
         sphereArea.setCentre(centre.toFloat());
-    }
+    };
     
     void paint (Graphics& g) override
     {
@@ -155,7 +54,6 @@ public:
         const float centreY = bounds.getCentreY();
         const Rectangle<float> sphere(bounds.reduced(10, 10));
         
-        
         g.setColour(Colours::white);
         g.drawEllipse(centreX-radius, centreY - radius, 2.0f * radius, 2.0f * radius, 1.0f);
         
@@ -163,10 +61,8 @@ public:
         g.setFont(12.0f);
         g.drawText("FRONT", centreX-15, centreY-radius-12, 30, 12, Justification::centred);
         g.drawText("BACK", centreX-15, centreY+radius, 30, 12, Justification::centred);
-        //g.drawMultiLineText("LEFT", 0, centreY-12, 10);
         g.drawFittedText("L\nE\nF\nT", sphereArea.getX()-10, centreY-40, 10, 80, Justification::centred, 4);
         g.drawFittedText("R\nI\nG\nH\nT", sphereArea.getRight(), centreY-40, 10, 80, Justification::centred, 5);
-        //g.drawMultiLineText("RIGHT", bounds.getWidth()-8, centreY-12, 10);
         
         g.setColour(Colours::steelblue.withMultipliedAlpha(0.3f));
         Path circles;
@@ -194,26 +90,167 @@ public:
         g.setColour(Colours::Colours::steelblue.withMultipliedAlpha(0.7f));
         g.strokePath(circles, PathStrokeType(.5f));
         
-        
         ColourGradient gradient(Colours::black.withMultipliedAlpha(0.7f), centreX, centreY, Colours::black.withMultipliedAlpha(0.1f), 0, 0, true);
         g.setGradientFill(gradient);
-
+        
         Path line;
         line.startNewSubPath(centreX, centreY-radius);
         line.lineTo(centreX, centreY+radius);
-
+        
         Path path;
         path.addPath(line);
         path.addPath(line, AffineTransform().rotation(0.25f*M_PI, centreX, centreY));
         path.addPath(line, AffineTransform().rotation(0.5f*M_PI, centreX, centreY));
         path.addPath(line, AffineTransform().rotation(0.75f*M_PI, centreX, centreY));
-
+        
         g.strokePath(path, PathStrokeType(0.5f));
+    }
+private:
+    float radius = 1.0f;
+    Rectangle<float> sphereArea;
+    Point<int> centre;
+};
+
+
+
+class  SpherePanner :  public Component
+{
+public:
+    SpherePanner() : Component() {
+        setBufferedToImage(true);
+        addAndMakeVisible(background);
+        
+        background.addMouseListener(this, false); // could this be risky?
+    };
+    ~SpherePanner() {};
+    
+    inline Vector3D<float> yawPitchToCartesian(float yawInRad, float pitchInRad) {
+        float cosPitch = cos(pitchInRad);
+        return Vector3D<float>(cosPitch * cos(yawInRad), cosPitch * sin(yawInRad), sin(-1.0f * pitchInRad));
+    }
+    
+    inline Point<float> cartesianToYawPitch(Vector3D<float> pos) {
+        float hypxy = sqrt(pos.x*pos.x+pos.y*pos.y);
+        return Point<float>(atan2(pos.y,pos.x), atan2(hypxy,pos.z)-M_PI/2);
+    }
+    
+    class Listener
+    {
+    public:
+        virtual ~Listener() {}
+        virtual void mouseWheelOnSpherePannerMoved (SpherePanner* sphere, const MouseEvent &event, const MouseWheelDetails &wheel) {};
+    };
+    
+    class Element
+    {
+    public:
+        Element() {}
+        Element(String newID) {ID = newID;}
+        ~Element () {}
+        
+        void setSliders(Slider* newYawSlider, Slider* newPitchSlider)
+        {
+            yawSlider = newYawSlider;
+            pitchSlider = newPitchSlider;
+        }
+        
+        void startMovement()
+        {
+            
+        }
+        
+        void moveElement (const MouseEvent &event, Point<int> centre, float radius, bool upBeforeDrag) {
+            Point<int> pos = event.getPosition();
+            float yaw = -1.0f * centre.getAngleToPoint(pos);
+            float r = centre.getDistanceFrom(pos)/radius;
+            if (r > 1.0f) {
+                r = 1.0f/r;
+                upBeforeDrag = !upBeforeDrag;
+            }
+            
+            float pitch = acos(r);
+            if (upBeforeDrag) pitch *= -1.0f;
+            
+            if (yawSlider != nullptr)
+                yawSlider->setValue(yaw * 180.0f / M_PI);
+            if (pitchSlider != nullptr)
+                pitchSlider->setValue(pitch * 180.0f / M_PI);
+        }
+        
+        void stopMovement()
+        {
+
+        }
+        
+        void setActive ( bool shouldBeActive) {
+            active = shouldBeActive;
+        }
+        bool isActive() { return active; }
+        
+        void setColour( Colour newColour) { colour = newColour; }
+        void setTextColour( Colour newColour) { textColour = newColour; }
+        Colour getColour() { return colour; }
+        Colour getTextColour() { return textColour; }
+        
+        bool setPosition(Vector3D<float> newPosition) // is true when position is updated (use it for repainting)
+        {
+            if (position.x != newPosition.x || position.y != newPosition.y || position.z != newPosition.z)
+            {
+                position = newPosition;
+                return true;
+            }
+            return false;
+        }
+        
+        void setLabel(String newLabel) {label = newLabel;}
+        void setID(String newID) {ID = newID;}
+        
+        void setGrabPriority(int newPriority) {grabPriority = newPriority;}
+        int getGrabPriority() {return grabPriority;}
+        void setGrabRadius(float newRadius) {grabRadius = newRadius;}
+        float getGrabRadius() {return grabRadius;}
+        
+        Vector3D<float> getPosition() {return position;}
+        String getLabel() {return label;};
+        String getID() {return ID;};
+        
+        Slider *yawSlider = nullptr;
+        Slider *pitchSlider = nullptr;
+        
+    private:
+        Vector3D<float> position;
+        bool active = true;
+        
+        float grabRadius = 0.015f;
+        int grabPriority = 0;
+        
+        Colour colour = Colours::white;
+        Colour textColour = Colours::black;
+        String ID = "";
+        String label = "";
+    };
+    
+    void resized () override {
+        background.setBounds(getLocalBounds());
+        const Rectangle<float> sphere(getLocalBounds().reduced(10, 10).toFloat());
+        
+        radius = 0.5f * jmin(sphere.getWidth(), sphere.getHeight());
+        centre = getLocalBounds().getCentre();
+        sphereArea.setBounds(0, 0, 2*radius, 2*radius);
+        sphereArea.setCentre(centre.toFloat());
+    }
+    
+    void paintOverChildren (Graphics& g) override
+    {
+        const Rectangle<float> bounds = getLocalBounds().toFloat();
+        const float centreX = bounds.getCentreX();
+        const float centreY = bounds.getCentreY();
+        const Rectangle<float> sphere(bounds.reduced(10, 10));
         
         Path panPos;
-        int size = elements.size();
+        const int size = elements.size();
         for (int i = 0; i < size; ++i) {
-            Element* handle = (Element*) elements.getUnchecked (i);
+            SpherePanner::Element* handle = elements.getUnchecked (i);
             
             float yaw;
             float pitch;
@@ -221,7 +258,7 @@ public:
             if (handle->yawSlider != nullptr)
                 yaw = handle->yawSlider->getValue() * M_PI / 180;
             else yaw = 0.0f;
-
+            
             if (handle->pitchSlider != nullptr)
                 pitch = handle->pitchSlider->getValue() * M_PI / 180;
             else pitch = 0.0f;
@@ -231,7 +268,7 @@ public:
             
             float diam = 15.0f + 4.0f * pos.z;
             g.setColour(handle->isActive() ? handle->getColour() : Colours::grey);
-            Rectangle<float> temp(centreX-pos.y*radius-diam/2,centreY-pos.x*radius-diam/2,diam,diam);
+            Rectangle<float> temp(centreX-pos.y * radius - diam / 2, centreY - pos.x * radius - diam / 2, diam, diam);
             panPos.addEllipse(temp);
             g.strokePath(panPos,PathStrokeType(1.0f));
             g.setColour((handle->isActive() ? handle->getColour() : Colours::grey).withMultipliedAlpha(pos.z>=-0.0f ? 1.0f : 0.4f));
@@ -243,31 +280,33 @@ public:
     };
     
     
-    void mouseWheelMove(const MouseEvent &event, const MouseWheelDetails &wheel) override {
+    void mouseWheelMove(const MouseEvent &event, const MouseWheelDetails &wheel) override
+    {
         for (int i = listeners.size(); --i >= 0;)
             listeners.getUnchecked(i)->mouseWheelOnSpherePannerMoved (this, event, wheel);
     }
     
-    void mouseMove (const MouseEvent &event) override {
+    void mouseMove (const MouseEvent &event) override
+    {
         int oldActiveElem = activeElem;
         activeElem = -1;
         
         const float centreX = 0.5* (float)getBounds().getWidth();
         const float centreY = 0.5* (float)getBounds().getHeight();
-
+        
         int nElem = elements.size();
-
+        
         if (nElem > 0) {
             Point<int> pos = event.getPosition();
-
+            
             float mouseX = (centreY-pos.getY())/radius;
             float mouseY = (centreX-pos.getX())/radius;
-
+            
             float *dist = (float*) malloc(nElem*sizeof(float));
-
+            
             //int nGrabed = 0;
             int highestPriority = -1;
-
+            
             float tx,ty;
             for (int i = elements.size(); --i >= 0;) {
                 Element* handle(elements.getUnchecked (i));
@@ -275,7 +314,7 @@ public:
                 tx = (mouseX - pos.x);
                 ty = (mouseY - pos.y);
                 dist[i] = tx*tx + ty*ty;
-
+                
                 if (dist[i] <= handle->getGrabRadius()) {
                     if (handle->getGrabPriority() > highestPriority) {
                         activeElem = i;
@@ -291,11 +330,26 @@ public:
         if (oldActiveElem != activeElem)
             repaint();
     }
-    void mouseDrag (const MouseEvent &event) override {
+    void mouseDrag (const MouseEvent &event) override
+    {
         if (activeElem != -1) {
             elements.getUnchecked(activeElem)->moveElement(event, centre, radius, activeElemWasUpBeforeDrag);
-//            sendChanges(((Element*) elements.getUnchecked (activeElem)));
+            //            sendChanges(((Element*) elements.getUnchecked (activeElem)));
             repaint();
+        }
+    }
+    
+    void mouseDown (const MouseEvent &event) override
+    {
+        if (activeElem != -1) {
+            elements.getUnchecked(activeElem)->startMovement();
+        }
+    }
+    
+    void mouseUp (const MouseEvent &event) override
+    {
+        if (activeElem != -1) {
+            elements.getUnchecked(activeElem)->stopMovement();
         }
     }
     
@@ -309,7 +363,7 @@ public:
     void removeListener (Listener* const listener) {
         listeners.removeFirstMatchingValue(listener);
     };
-
+    
     void addElement (Element* const element) {
         jassert (element != nullptr);
         if (element !=0)
@@ -331,6 +385,7 @@ public:
         
         return index;
     }
+
     
 private:
     float radius = 1.0f;
@@ -340,7 +395,6 @@ private:
     bool activeElemWasUpBeforeDrag;
     Array<Listener*> listeners;
     Array<Element*> elements;
+    
+    SpherePannerBackground background;
 };
-
-
-
