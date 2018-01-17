@@ -93,7 +93,7 @@ private:
     ReverseSlider slLowPassFrequency, slHighPassFrequency, slLowPassGain;
     ScopedPointer<SliderAttachment> slLowPassFrequencyAttachment, slLowPassGainAttachment, slHighPassFrequencyAttachment;
     SimpleLabel lbLowPassFrequency, lbLowPassGain, lbHighPassFrequency;
-    
+
     // Lfe mode
     ComboBox cbLfeMode;
     ScopedPointer<ComboBoxAttachment> cbLfeModeAttachment;
@@ -107,5 +107,6 @@ private:
     ReferenceCountedDecoder::Ptr lastDecoder = nullptr;
     
     FilterVisualizer<double> fv;
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SimpleDecoderAudioProcessorEditor)
 };

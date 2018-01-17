@@ -84,6 +84,7 @@ SimpleDecoderAudioProcessorEditor::SimpleDecoderAudioProcessorEditor (SimpleDeco
     
     // ================= BEGIN: LFE mode =====================
     addAndMakeVisible(cbLfeMode);
+    cbLfeMode.setName("LFE");
     cbLfeMode.setJustificationType(Justification::centred);
     cbLfeMode.addItem("none", 1);
     cbLfeMode.addItem("discrete", 2);
@@ -125,6 +126,7 @@ SimpleDecoderAudioProcessorEditor::SimpleDecoderAudioProcessorEditor (SimpleDeco
 
 SimpleDecoderAudioProcessorEditor::~SimpleDecoderAudioProcessorEditor()
 {
+    ModalComponentManager::getInstance()->cancelAllModalComponents();
     setLookAndFeel(nullptr);
 }
 
