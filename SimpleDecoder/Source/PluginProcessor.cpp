@@ -80,14 +80,14 @@ parameters(*this, nullptr)
                                       [](float value) {return String (value, 0);},
                                       nullptr);
 
-    parameters.createAndAddParameter ("lfeMode", "Low-Frequency-Effect Mode", "",
+    parameters.createAndAddParameter ("swMode", "Subwoofer Mode", "",
                                      NormalisableRange<float> (0.0f, 2.0f, 1.0f), 0.0f,
                                      [](float value) {
                                          if (value < 0.5f) return "none";
-                                         else if (value >= 0.5f && value < 1.5f) return "Discrete LFE";
-                                         else return "Virtual LFE";}, nullptr);
+                                         else if (value >= 0.5f && value < 1.5f) return "Discrete SW";
+                                         else return "Virtual SW";}, nullptr);
     
-    parameters.createAndAddParameter ("lfeChannel", "LFE Channel Number", "",
+    parameters.createAndAddParameter ("swChannel", "SW Channel Number", "",
                                       NormalisableRange<float> (1.0f, 64.0f, 1.0f), 1.0f,
                                       [](float value) { return String (value, 0);}, nullptr);
     
@@ -104,8 +104,8 @@ parameters(*this, nullptr)
     lowPassGain = parameters.getRawParameterValue ("lowPassGain");
     highPassFrequency = parameters.getRawParameterValue ("highPassFrequency");
     
-    lfeMode = parameters.getRawParameterValue ("lfeMode");
-    lfeChannel = parameters.getRawParameterValue("lfeChannel");
+    swMode = parameters.getRawParameterValue ("swMode");
+    swChannel = parameters.getRawParameterValue("swChannel");
     
     // add listeners to parameter changes
     
@@ -118,7 +118,7 @@ parameters(*this, nullptr)
     parameters.addParameterListener ("highPassFrequency", this);
     parameters.addParameterListener ("highPassQ", this);
     
-    parameters.addParameterListener ("lfeMode", this);
+    parameters.addParameterListener ("swMode", this);
     
     
     
@@ -246,8 +246,8 @@ void SimpleDecoderAudioProcessor::prepareToPlay (double sampleRate, int samplesP
 {
     checkInputAndOutput(this, *inputOrderSetting, 0, true);
     
-    lfeBuffer.setSize(1, samplesPerBlock);
-    lfeBuffer.clear();
+    swBuffer.setSize(1, samplesPerBlock);
+    swBuffer.clear();
     
     ProcessSpec specs;
     specs.sampleRate = sampleRate;
@@ -306,10 +306,10 @@ void SimpleDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiB
         highPassSpecs.numChannels = decoder.getCurrentDecoder()->getNumInputChannels();
         highPass1.prepare(highPassSpecs);
         highPass2.prepare(highPassSpecs);
-        if (decoder.getCurrentDecoder()->getSettings().lfeChannel != -1)
+        if (decoder.getCurrentDecoder()->getSettings().subwooferChannel != -1)
         {
-            parameters.getParameterAsValue("lfeChannel").setValue(decoder.getCurrentDecoder()->getSettings().lfeChannel);
-            parameters.getParameterAsValue("lfeMode").setValue(1); //discrete
+            parameters.getParameterAsValue("swChannel").setValue(decoder.getCurrentDecoder()->getSettings().subwooferChannel);
+            parameters.getParameterAsValue("swMode").setValue(1); //discrete
         }
     }
     
@@ -323,17 +323,17 @@ void SimpleDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiB
     
     const int nChIn = jmin(decoder.getCurrentDecoder()->getNumInputChannels(), buffer.getNumChannels(), input.getNumberOfChannels());
     const int nChOut = jmin(decoder.getCurrentDecoder()->getNumOutputChannels(), buffer.getNumChannels());
-    const int lfeProcessing = *lfeMode;
+    const int lfeProcessing = *swMode;
     
     if (lfeProcessing > 0)
     {
-        lfeBuffer.copyFrom(0, 0, buffer, 0, 0, buffer.getNumSamples());
+        swBuffer.copyFrom(0, 0, buffer, 0, 0, buffer.getNumSamples());
         // low pass filtering
-        AudioBlock<float> lowPassAudioBlock = AudioBlock<float>(lfeBuffer);
+        AudioBlock<float> lowPassAudioBlock = AudioBlock<float>(swBuffer);
         ProcessContextReplacing<float> lowPassContext(lowPassAudioBlock);
         lowPass1->process(lowPassContext);
         lowPass2->process(lowPassContext);
-        lfeBuffer.applyGain(0, 0, lfeBuffer.getNumSamples(), Decibels::decibelsToGain(*lowPassGain));
+        swBuffer.applyGain(0, 0, swBuffer.getNumSamples(), Decibels::decibelsToGain(*lowPassGain));
     }
 
     AudioBlock<float> highPassAudioBlock = AudioBlock<float>(buffer.getArrayOfWritePointers(), nChIn, buffer.getNumSamples());
@@ -349,9 +349,9 @@ void SimpleDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiB
     // =================== lfe processing ==================================
     if (lfeProcessing == 1 && nChOut < buffer.getNumChannels())
     {
-        const int lfeCh = ((int)*lfeChannel) - 1;
-        if (lfeCh < buffer.getNumChannels())
-            buffer.copyFrom(lfeCh, 0, lfeBuffer, 0, 0, buffer.getNumSamples());
+        const int swCh = ((int)*swChannel) - 1;
+        if (swCh < buffer.getNumChannels())
+            buffer.copyFrom(swCh, 0, swBuffer, 0, 0, buffer.getNumSamples());
     }
     
     else if (lfeProcessing == 2) // virtual LFE
@@ -361,7 +361,7 @@ void SimpleDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiB
         {
             const int destCh = rArray.getUnchecked(ch);
             if (destCh < buffer.getNumChannels())
-                buffer.addFrom(destCh, 0, lfeBuffer, 0, 0, buffer.getNumSamples());
+                buffer.addFrom(destCh, 0, swBuffer, 0, 0, buffer.getNumSamples());
         }
     }
     // ======================================================================

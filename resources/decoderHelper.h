@@ -138,18 +138,18 @@ public:
             else
                 return Result::fail("Could not parse 'weightsAlreadyApplied' attribute. Expected bool but got '" + weightsAlreadyApplied.toString() + "'.");
         }
-        if (decoderObject.hasProperty("lfeChannel"))
+        if (decoderObject.hasProperty("subwooferChannel"))
         {
-            var lfeChannel (decoderObject.getProperty("lfeChannel", var()));
-            if (lfeChannel.isInt())
+            var subwooferChannel (decoderObject.getProperty("subwooferChannel", var()));
+            if (subwooferChannel.isInt())
             {
-                if (static_cast<int>(lfeChannel) < 1 || static_cast<int>(lfeChannel) > 64)
-                    return Result::fail("'lfeChannel' attribute is not a valid channel number (1<=lfeChannel>=64).");
+                if (static_cast<int>(subwooferChannel) < 1 || static_cast<int>(subwooferChannel) > 64)
+                    return Result::fail("'subwooferChannel' attribute is not a valid channel number (1<=subwooferChannel>=64).");
                 
-                settings.lfeChannel = lfeChannel;
+                settings.subwooferChannel = subwooferChannel;
             }
             else
-                return Result::fail("Could not parse 'lfeChannel' attribute. Expected channel number (int) but got '" + lfeChannel.toString() + "'.");
+                return Result::fail("Could not parse 'subwooferChannel' attribute. Expected channel number (int) but got '" + subwooferChannel.toString() + "'.");
         }
         
         newDecoder->setSettings(settings);

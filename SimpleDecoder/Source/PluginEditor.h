@@ -87,19 +87,19 @@ private:
     ScopedPointer<ComboBoxAttachment> cbNormalizationSettingAttachment;
     //ScopedPointer<ComboBoxAttachment> cbOutputChannelsSettingAttachment;
       
-    GroupComponent gcFilter, gcLfe, gcConfiguration;
+    GroupComponent gcFilter, gcSw, gcConfiguration;
     
     // Filter slider
     ReverseSlider slLowPassFrequency, slHighPassFrequency, slLowPassGain;
     ScopedPointer<SliderAttachment> slLowPassFrequencyAttachment, slLowPassGainAttachment, slHighPassFrequencyAttachment;
     SimpleLabel lbLowPassFrequency, lbLowPassGain, lbHighPassFrequency;
 
-    // Lfe mode
-    ComboBox cbLfeMode;
-    ScopedPointer<ComboBoxAttachment> cbLfeModeAttachment;
-    SimpleLabel lbLfeMode, lbLfeChannel;
-    ReverseSlider slLfeChannel;
-    ScopedPointer<SliderAttachment> slLfeChannelAttachment;
+    // Subwoofer mode
+    ComboBox cbSwMode;
+    ScopedPointer<ComboBoxAttachment> cbSwModeAttachment;
+    SimpleLabel lbSwMode, lbSwChannel;
+    ReverseSlider slSwChannel;
+    ScopedPointer<SliderAttachment> slSwChannelAttachment;
     //
     TextButton btLoadFile;
     DecoderInfoBox dcInfoBox;

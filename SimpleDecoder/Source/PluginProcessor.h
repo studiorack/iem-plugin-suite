@@ -111,8 +111,8 @@ private:
     float *lowPassFrequency, *lowPassGain;
     float *highPassFrequency;
     
-    float *lfeMode;
-    float *lfeChannel;
+    float *swMode;
+    float *swChannel;
     
     // =========================================
     
@@ -120,7 +120,7 @@ private:
     File lastFile;
     ScopedPointer<PropertiesFile> properties;
     
-    AudioBuffer<float> lfeBuffer;
+    AudioBuffer<float> swBuffer;
     
 
     // processors

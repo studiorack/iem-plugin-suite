@@ -48,7 +48,7 @@ public:
         Normalization expectedNormalization = sn3d;
         Weights weights = none;
         bool weightsAlreadyApplied = false;
-        int lfeChannel = -1;
+        int subwooferChannel = -1;
     };
     
     

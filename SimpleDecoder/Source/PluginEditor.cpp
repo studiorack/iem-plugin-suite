@@ -49,8 +49,8 @@ SimpleDecoderAudioProcessorEditor::SimpleDecoderAudioProcessorEditor (SimpleDeco
     addAndMakeVisible(gcFilter);
     gcFilter.setText("Frequency Bands");
     
-    addAndMakeVisible(gcLfe);
-    gcLfe.setText("LFE");
+    addAndMakeVisible(gcSw);
+    gcSw.setText("Subwoofer");
     
     addAndMakeVisible(gcConfiguration);
     gcConfiguration.setText("Decoder Configuration");
@@ -82,27 +82,27 @@ SimpleDecoderAudioProcessorEditor::SimpleDecoderAudioProcessorEditor (SimpleDeco
     lbHighPassFrequency.setText("Frequency");
     // ================= END: filter slider ==================
     
-    // ================= BEGIN: LFE mode =====================
-    addAndMakeVisible(cbLfeMode);
-    cbLfeMode.setName("LFE");
-    cbLfeMode.setJustificationType(Justification::centred);
-    cbLfeMode.addItem("none", 1);
-    cbLfeMode.addItem("discrete", 2);
-    cbLfeMode.addItem("virtual", 3);
-    cbLfeModeAttachment = new ComboBoxAttachment(valueTreeState, "lfeMode", cbLfeMode);
+    // ================= BEGIN: Subwoofer mode =====================
+    addAndMakeVisible(cbSwMode);
+    cbSwMode.setName("Subwoofer");
+    cbSwMode.setJustificationType(Justification::centred);
+    cbSwMode.addItem("none", 1);
+    cbSwMode.addItem("discrete", 2);
+    cbSwMode.addItem("virtual", 3);
+    cbSwModeAttachment = new ComboBoxAttachment(valueTreeState, "swMode", cbSwMode);
     
-    addAndMakeVisible(lbLfeMode);
-    lbLfeMode.setText("LFE mode");
+    addAndMakeVisible(lbSwMode);
+    lbSwMode.setText("Subwoofer mode");
     
-    addAndMakeVisible(lbLfeChannel);
-    lbLfeChannel.setText("LFE Channel");
+    addAndMakeVisible(lbSwChannel);
+    lbSwChannel.setText("Subwoofer Channel");
     
-    addAndMakeVisible(slLfeChannel);
-    slLfeChannelAttachment = new SliderAttachment(valueTreeState, "lfeChannel", slLfeChannel);
-    slLfeChannel.setSliderStyle(Slider::IncDecButtons);
-    slLfeChannel.setTextBoxStyle (Slider::TextBoxLeft, false, 200, 20);
+    addAndMakeVisible(slSwChannel);
+    slSwChannelAttachment = new SliderAttachment(valueTreeState, "swChannel", slSwChannel);
+    slSwChannel.setSliderStyle(Slider::IncDecButtons);
+    slSwChannel.setTextBoxStyle (Slider::TextBoxLeft, false, 200, 20);
     
-    // ================= END: LFE mode =======================
+    // ================= END: Subwoofer mode =======================
     
     addAndMakeVisible(btLoadFile);
     btLoadFile.setButtonText("Load configuration");
@@ -161,11 +161,11 @@ void SimpleDecoderAudioProcessorEditor::resized()
     const int rotSliderHeight = 55;
     const int rotSliderSpacing = 10;
     //const int sliderSpacing = 3;
-    const int rotSliderWidth = 40;
+    //const int rotSliderWidth = 40;
     const int labelHeight = 20;
     const int extraMargin = 6;
     
-    const int width = 0.5f * (area.getWidth() - 10);
+    //const int width = 0.5f * (area.getWidth() - 10);
     
     
     Rectangle<int> leftSide (area.removeFromLeft(280));
@@ -189,18 +189,18 @@ void SimpleDecoderAudioProcessorEditor::resized()
     }
     
 
-    { //====================== LFE GROUP ==================================
-        Rectangle<int> lfeArea(rightSide);
-        gcLfe.setBounds(lfeArea);
-        lfeArea.removeFromTop(25);
+    { //====================== Subwoofer GROUP ==================================
+        Rectangle<int> swArea(rightSide);
+        gcSw.setBounds(swArea);
+        swArea.removeFromTop(25);
         
-        cbLfeMode.setBounds(lfeArea.removeFromTop(20));
-        lbLfeMode.setBounds(lfeArea.removeFromTop(labelHeight));
+        cbSwMode.setBounds(swArea.removeFromTop(20));
+        lbSwMode.setBounds(swArea.removeFromTop(labelHeight));
 
-        lfeArea.removeFromTop(10);
+        swArea.removeFromTop(10);
 
-        slLfeChannel.setBounds(lfeArea.removeFromTop(20));
-        lbLfeChannel.setBounds(lfeArea.removeFromTop(labelHeight));
+        slSwChannel.setBounds(swArea.removeFromTop(20));
+        lbSwChannel.setBounds(swArea.removeFromTop(labelHeight));
     }
     
     { //====================== FILTER GROUP ==================================
@@ -251,10 +251,10 @@ void SimpleDecoderAudioProcessorEditor::timerCallback()
         lastDecoder = currentDecoder;
         if (lastDecoder != nullptr)
         {
-            const int lfeMode = *valueTreeState.getRawParameterValue("lfeMode");
+            const int swMode = *valueTreeState.getRawParameterValue("swMode");
             int neededChannels = 0;
-            if (lfeMode == 1)
-                neededChannels = jmax(currentDecoder->getNumOutputChannels(), (int) *valueTreeState.getRawParameterValue("lfeChannel"));
+            if (swMode == 1)
+                neededChannels = jmax(currentDecoder->getNumOutputChannels(), (int) *valueTreeState.getRawParameterValue("swChannel"));
             else
                 neededChannels = currentDecoder->getNumOutputChannels();
             
