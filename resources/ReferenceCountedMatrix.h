@@ -21,8 +21,8 @@
  */
 
 #pragma once
-#include "Eigen/Dense"
-
+//#include "Eigen/Dense"
+using namespace dsp;
 class ReferenceCountedMatrix : public ReferenceCountedObject
 {
 public:
@@ -45,7 +45,7 @@ public:
     
     virtual String getConstructorMessage()
     {
-        return "Matrix named '" + name + "' constructed. Size: " + String(matrix.rows()) + "x" + String(matrix.cols());
+        return "Matrix named '" + name + "' constructed. Size: " + String(matrix.getNumRows()) + "x" + String(matrix.getNumColumns());
     }
     
     virtual String getDeconstructorMessage()
@@ -53,9 +53,9 @@ public:
         return "Matrix named '" + name + "' destroyed.";
     }
     
-    Eigen::MatrixXf* getMatrix()
+    Matrix<float>& getMatrix()
     {
-        return &matrix;
+        return matrix;
     }
     const String getName()
     {
@@ -81,7 +81,7 @@ public:
     
     const int getNumInputChannels()
     {
-        return (int) matrix.cols();
+        return (int) matrix.getNumColumns();
     }
     
     Array<int>& getRoutingArrayReference()
@@ -89,12 +89,12 @@ public:
         return routingArray;
     }
 
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    
 protected:
     String name;
     String description;
-    Eigen::MatrixXf matrix;
+    //Eigen::MatrixXf matrix;
+    Matrix<float> matrix;
     Array<int> routingArray;
-    
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ReferenceCountedMatrix)
 };

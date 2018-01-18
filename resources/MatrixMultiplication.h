@@ -1,4 +1,4 @@
- /*
+/*
  ==============================================================================
  This file is part of the IEM plug-in suite.
  Author: Daniel Rudrich
@@ -38,10 +38,9 @@ public:
     void prepare (const ProcessSpec& newSpec) override {
         spec = newSpec;
         
-        bufferMatrix.resize(Eigen::NoChange, spec.maximumBlockSize);
-        bufferMatrix.setZero();
+        buffer.setSize(buffer.getNumChannels(), spec.maximumBlockSize);
         
-        inputMatrix.resize(Eigen::NoChange, spec.maximumBlockSize);
+        //inputMatrix.resize(Eigen::NoChange, spec.maximumBlockSize);
         checkIfNewMatrixAvailable();
     }
     
@@ -57,33 +56,46 @@ public:
         }
         
         auto& inputBlock = context.getInputBlock();
-        auto& T = *retainedCurrentMatrix->getMatrix();
+        auto& T = retainedCurrentMatrix->getMatrix();
         
-        const int nInputChannels = jmin( (int) inputBlock.getNumChannels(), (int) T.cols());
+        const int nInputChannels = jmin( (int) inputBlock.getNumChannels(), (int) T.getNumColumns());
+        const int nChIn = square(isqrt(nInputChannels));
+        const int nSamples = (int) inputBlock.getNumSamples();
         
-        // make contiguous-memory copy of input data
-        for (int ch = 0; ch < nInputChannels; ++ch)
-            inputMatrix.row(ch) = Eigen::VectorXf::Map(inputBlock.getChannelPointer(ch), inputBlock.getNumSamples());
+        // copy input data to buffer
+        for (int ch = 0; ch < nChIn; ++ch)
+            buffer.copyFrom(ch, 0, inputBlock.getChannelPointer(ch), nSamples);
         
-        bufferMatrix.noalias() = T.block(0, 0, T.rows(), nInputChannels) * inputMatrix.block(0, 0, nInputChannels, inputBlock.getNumSamples()); // maybe get subBlock from bufferMatrix for blocksize different from specs
-
         auto& outputBlock = context.getOutputBlock();
-        const int nChOut = jmin((int) outputBlock.getNumChannels(), (int) bufferMatrix.rows());
+        const int nChOut = jmin((int) outputBlock.getNumChannels(), buffer.getNumChannels());
         
         int lastDest = -1;
-        for (int ch = 0; ch < nChOut; ++ch)
+        int highestDest = -1;
+        for (int row = 0; row < T.getNumRows(); ++row)
         {
-            const int destCh = retainedCurrentMatrix->getRoutingArrayReference().getUnchecked(ch);
+            const int destCh = retainedCurrentMatrix->getRoutingArrayReference().getUnchecked(row);
             if (destCh < outputBlock.getNumChannels())
-                FloatVectorOperations::copy(outputBlock.getChannelPointer(destCh), bufferMatrix.data() + ch*spec.maximumBlockSize, spec.maximumBlockSize);
-        
+            {
+                float* dest = outputBlock.getChannelPointer(destCh);
+                FloatVectorOperations::multiply(dest, buffer.getReadPointer(0), T(row, 0), nSamples); // ch 0
+                for (int i = 1; i < nChIn; ++i) // input channels
+                    FloatVectorOperations::addWithMultiply(dest, buffer.getReadPointer(i), T(row, i), nSamples); // ch 0
+                
+            }
+            
+            
             for (; ++lastDest < destCh;)
             {
                 if (lastDest < outputBlock.getNumChannels())
                     FloatVectorOperations::clear(outputBlock.getChannelPointer(lastDest), (int) outputBlock.getNumSamples());
             }
+            
             lastDest = destCh;
+            if (destCh > highestDest)
+                highestDest = destCh;
         }
+        
+        
         
         for (int ch = ++lastDest; ch < outputBlock.getNumChannels(); ++ch)
             FloatVectorOperations::clear(outputBlock.getChannelPointer(ch), (int) outputBlock.getNumSamples());
@@ -101,12 +113,10 @@ public:
             else
             {
                 DBG("MatrixTransformer: New matrix with name '" << newMatrix->getName() << "' set.");
-                const int rows = (int) newMatrix->getMatrix()->rows();
-                const int cols = (int) newMatrix->getMatrix()->cols();
-                bufferMatrix.resize(rows, Eigen::NoChange);
-                bufferMatrix.setZero();
-                inputMatrix.resize(cols, Eigen::NoChange);
-                DBG("MatrixTransformer: buffer resized to " << bufferMatrix.rows() << "x" << bufferMatrix.cols());
+                const int rows = (int) newMatrix->getMatrix().getNumRows();
+                const int cols = (int) newMatrix->getMatrix().getNumColumns();
+                buffer.setSize(cols, buffer.getNumSamples());
+                DBG("MatrixTransformer: buffer resized to " << buffer.getNumChannels() << "x" << buffer.getNumSamples());
             }
             
             currentMatrix = newMatrix;
@@ -128,14 +138,13 @@ public:
     {
         return currentMatrix;
     }
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    
 private:
     //==============================================================================
     ProcessSpec spec = {-1, 0, 0};
     ReferenceCountedMatrix::Ptr currentMatrix {nullptr};
     ReferenceCountedMatrix::Ptr newMatrix {nullptr};
-    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> bufferMatrix;
-    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> inputMatrix;
+    AudioBuffer<float> buffer;
     bool newMatrixAvailable {false};
     
 };

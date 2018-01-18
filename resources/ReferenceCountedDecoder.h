@@ -61,7 +61,7 @@ public:
     
     virtual String getConstructorMessage() override
     {
-        return "Decoder named '" + name + "' constructed. Size: " + String(matrix.rows()) + "x" + String(matrix.cols());
+        return "Decoder named '" + name + "' constructed. Size: " + String(matrix.getNumRows()) + "x" + String(matrix.getNumColumns());
     }
     
     virtual String getDeconstructorMessage() override
@@ -69,10 +69,10 @@ public:
         return "Decoder named '" + name + "' destroyed.";
     }
     
-    Eigen::MatrixXf* getMatrix()
-    {
-        return &matrix;
-    }
+//    Eigen::MatrixXf* getMatrix()
+//    {
+//        return &matrix;
+//    }
     const String getName()
     {
         return name;
@@ -112,11 +112,13 @@ public:
         if (settings.weightsAlreadyApplied && settings.weights != Weights::none)
         {
             if (settings.weights == Weights::maxrE)
-                for (int i = 0; i < matrix.cols(); ++i)
-                    matrix.col(i) /= getMaxRELUT(order)[i];
+                for (int i = 0; i < matrix.getNumColumns(); ++i)
+                    for (int j = 0; j < matrix.getNumRows(); ++j)
+                        matrix(j,i) = matrix(j,i) / getMaxRELUT(order)[i];
             else if (settings.weights == Weights::inPhase)
-                for (int i = 0; i < matrix.cols(); ++i)
-                    matrix.col(i) /= getInPhaseLUT(order)[i];
+                for (int i = 0; i < matrix.getNumColumns(); ++i)
+                    for (int j = 0; j < matrix.getNumRows(); ++j)
+                        matrix(j,i) = matrix(j,i) / getInPhaseLUT(order)[i];
             settings.weightsAlreadyApplied = false;
         }
     }

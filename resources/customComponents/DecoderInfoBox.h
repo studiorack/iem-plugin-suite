@@ -92,7 +92,7 @@ public:
             font.setHeight(fontHeight);
             g.setFont(font);
             g.drawText(getOrderString(decoder->getOrder()), resStart, descEnd + 1, resWidth, fontHeight, Justification::bottomLeft);
-            g.drawText(String(decoder->getMatrix()->rows()), resStart, descEnd + fontHeight + 1, resWidth, fontHeight, Justification::bottomLeft);
+            g.drawText(String(decoder->getMatrix().getNumRows()), resStart, descEnd + fontHeight + 1, resWidth, fontHeight, Justification::bottomLeft);
             g.drawText(decoder->getWeightsString(), resStart, descEnd + 2 * fontHeight + 1, resWidth, fontHeight, Justification::bottomLeft);
         }
         else

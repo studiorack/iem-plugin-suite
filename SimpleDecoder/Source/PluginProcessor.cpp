@@ -323,9 +323,12 @@ void SimpleDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiB
     
     const int nChIn = jmin(decoder.getCurrentDecoder()->getNumInputChannels(), buffer.getNumChannels(), input.getNumberOfChannels());
     const int nChOut = jmin(decoder.getCurrentDecoder()->getNumOutputChannels(), buffer.getNumChannels());
-    const int lfeProcessing = *swMode;
+    const int swProcessing = *swMode;
     
-    if (lfeProcessing > 0)
+    for (int ch = nChIn; ch < buffer.getNumChannels(); ++ch)
+        buffer.clear(ch, 0, buffer.getNumSamples());
+    
+    if (swProcessing > 0)
     {
         swBuffer.copyFrom(0, 0, buffer, 0, 0, buffer.getNumSamples());
         // low pass filtering
@@ -346,15 +349,15 @@ void SimpleDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiB
     decoder.process(SimpleDecoderAudioBlock);
 
     
-    // =================== lfe processing ==================================
-    if (lfeProcessing == 1 && nChOut < buffer.getNumChannels())
+    // =================== subwoofer processing ==================================
+    if (swProcessing == 1 && nChOut < buffer.getNumChannels())
     {
         const int swCh = ((int)*swChannel) - 1;
         if (swCh < buffer.getNumChannels())
             buffer.copyFrom(swCh, 0, swBuffer, 0, 0, buffer.getNumSamples());
     }
     
-    else if (lfeProcessing == 2) // virtual LFE
+    else if (swProcessing == 2) // virtual subwoofer
     {
         Array<int>& rArray = decoder.getCurrentDecoder()->getRoutingArrayReference();
         for (int ch = rArray.size(); --ch >= 0;)

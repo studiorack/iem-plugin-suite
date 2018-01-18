@@ -23,7 +23,6 @@
 #pragma once
 #include "ReferenceCountedMatrix.h"
 #include "ReferenceCountedDecoder.h"
-#include "Eigen/Eigen"
 #include "ambisonicTools.h"
 
 class DecoderHelper {
@@ -167,7 +166,7 @@ public:
     }
     
     // call getMatrixDataSize() before and create the 'dest' matrix with the resulting size
-    static Result getMatrix (var&  matrixData, const int rows, const int cols, Eigen::MatrixXf* dest)
+    static Result getMatrix (var&  matrixData, const int rows, const int cols, Matrix<float>& dest)
     {
         for (int r = 0; r < rows; ++r)
         {
@@ -180,7 +179,7 @@ public:
                 var colVar = rowVar.getArray()->getUnchecked(c);
                 if (colVar.isDouble() || colVar.isInt())
                 {
-                    dest->coeffRef(r, c) = colVar;
+                    dest(r, c) = colVar;
                 }
                 else
                     return Result::fail("Datatype of matrix element (" + String(r+1) + "," + String(c+1) + ") could not be parsed.");
