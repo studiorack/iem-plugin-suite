@@ -21,7 +21,6 @@
  */
 
 #pragma once
-//#include "Eigen/Dense"
 using namespace dsp;
 class ReferenceCountedMatrix : public ReferenceCountedObject
 {
@@ -93,7 +92,6 @@ public:
 protected:
     String name;
     String description;
-    //Eigen::MatrixXf matrix;
     Matrix<float> matrix;
     Array<int> routingArray;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ReferenceCountedMatrix)

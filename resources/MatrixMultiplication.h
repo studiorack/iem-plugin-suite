@@ -67,7 +67,7 @@ public:
             buffer.copyFrom(ch, 0, inputBlock.getChannelPointer(ch), nSamples);
         
         auto& outputBlock = context.getOutputBlock();
-        const int nChOut = jmin((int) outputBlock.getNumChannels(), buffer.getNumChannels());
+        //const int nChOut = jmin((int) outputBlock.getNumChannels(), buffer.getNumChannels());
         
         int lastDest = -1;
         int highestDest = -1;
@@ -113,7 +113,7 @@ public:
             else
             {
                 DBG("MatrixTransformer: New matrix with name '" << newMatrix->getName() << "' set.");
-                const int rows = (int) newMatrix->getMatrix().getNumRows();
+                //const int rows = (int) newMatrix->getMatrix().getNumRows();
                 const int cols = (int) newMatrix->getMatrix().getNumColumns();
                 buffer.setSize(cols, buffer.getNumSamples());
                 DBG("MatrixTransformer: buffer resized to " << buffer.getNumChannels() << "x" << buffer.getNumSamples());
