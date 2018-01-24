@@ -41,7 +41,7 @@ class  T60Visualizer :  public Component
     
 public:
     T60Visualizer() : Component(), overallGainInDb(0.0f), sampleRate(48000) {};
-    T60Visualizer(float fMin, float fMax, float yMin, float yMax, float gridDiv) : Component(), sampleRate(48000), s{fMin, fMax, yMin, yMax, gridDiv} {};
+    T60Visualizer(float fMin, float fMax, float yMin, float yMax, float gridDiv) : Component(), overallGainInDb(0.0f), sampleRate(48000), s{fMin, fMax, yMin, yMax, gridDiv} {};
     ~T60Visualizer() {};
     
 
