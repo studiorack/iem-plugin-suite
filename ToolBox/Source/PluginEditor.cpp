@@ -31,7 +31,7 @@ ToolBoxAudioProcessorEditor::ToolBoxAudioProcessorEditor (ToolBoxAudioProcessor&
     // ============== BEGIN: essentials ======================
     // set GUI size and lookAndFeel
     //setSize(500, 300); // use this to create a fixed-size GUI
-    setResizeLimits(400, 300, 800, 500); // use this to create a resizeable GUI
+    setResizeLimits(400, 200, 800, 500); // use this to create a resizeable GUI
     setLookAndFeel (&globalLaF);
     
     // make title and footer visible, and set the PluginName
