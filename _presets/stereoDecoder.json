@@ -1,6 +1,6 @@
 {
-    "name" : "Stereo Preset",
-    "description" : "This is a stereo decoder preset.",
+    "name" : "Stereo Decoder",
+    "description" : "This is a stereo decoder configuration.",
     "Decoder" : {
                 "name" : "Stereo Decoder o7",
                 "description" : "This is a 7th Order Ambisonics AllRAD decoder for a stereo setup. Created by Matthias Frank (IEM).",

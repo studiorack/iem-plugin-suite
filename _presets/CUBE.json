@@ -1,6 +1,6 @@
 {
-    "name" : "CUBE decoder",
-    "description" : "This is a generic decoder preset. The .json file shows you all available preferences.",
+    "name" : "IEM CUBE",
+    "description" : "Configuration file for the IEM CUBE.",
     "Decoder" : {
                 "name" : "CUBE decoder o5",
                 "description" : "This is a decoder for the IEM Cube.",
