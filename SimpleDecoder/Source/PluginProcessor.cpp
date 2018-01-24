@@ -67,7 +67,7 @@ parameters(*this, nullptr)
                                      }, nullptr);
     
     parameters.createAndAddParameter ("lowPassFrequency", "LowPass Cutoff Frequency", "Hz",
-                                      NormalisableRange<float> (20.f, 20000.f, 1.0f), 80.f,
+                                      NormalisableRange<float> (20.f, 300.f, 1.0f), 80.f,
                                       [](float value) {return String (value, 0);},
                                       nullptr);
     parameters.createAndAddParameter ("lowPassGain", "LowPass Gain", "dB",
@@ -76,7 +76,7 @@ parameters(*this, nullptr)
                                       nullptr);
     
     parameters.createAndAddParameter ("highPassFrequency", "HighPass Cutoff Frequency", "Hz",
-                                      NormalisableRange<float> (20.f, 20000.f, 1.f), 80.f,
+                                      NormalisableRange<float> (20.f, 300.f, 1.f), 80.f,
                                       [](float value) {return String (value, 0);},
                                       nullptr);
 
@@ -337,12 +337,12 @@ void SimpleDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiB
         lowPass1->process(lowPassContext);
         lowPass2->process(lowPassContext);
         swBuffer.applyGain(0, 0, swBuffer.getNumSamples(), Decibels::decibelsToGain(*lowPassGain));
+        
+        AudioBlock<float> highPassAudioBlock = AudioBlock<float>(buffer.getArrayOfWritePointers(), nChIn, buffer.getNumSamples());
+        ProcessContextReplacing<float> highPassContext (highPassAudioBlock);
+        highPass1.process(highPassContext);
+        highPass2.process(highPassContext);
     }
-
-    AudioBlock<float> highPassAudioBlock = AudioBlock<float>(buffer.getArrayOfWritePointers(), nChIn, buffer.getNumSamples());
-    ProcessContextReplacing<float> highPassContext (highPassAudioBlock);
-    highPass1.process(highPassContext);
-    highPass2.process(highPassContext);
     
     AudioBlock<float> SimpleDecoderAudioBlock = AudioBlock<float>(buffer.getArrayOfWritePointers(), jmax(nChIn, nChOut), buffer.getNumSamples());
     ProcessContextReplacing<float> decoderContext (SimpleDecoderAudioBlock);
