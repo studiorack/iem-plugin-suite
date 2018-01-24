@@ -3,7 +3,7 @@
  This file is part of the IEM plug-in suite.
  Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
- http://www.iem.at
+ https://iem.at
  
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  GNU General Public License for more details.
  
  You should have received a copy of the GNU General Public License
- along with this software.  If not, see <http://www.gnu.org/licenses/>.
+ along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
  */
 
@@ -284,6 +284,19 @@ inline void copyMaxRE(const int N, float *data) {
         case 5: FloatVectorOperations::copy (data, maxre5, 36); break;
         case 6: FloatVectorOperations::copy (data, maxre6, 47); break;
         case 7: FloatVectorOperations::copy (data, maxre7, 64); break;
+    }
+};
+
+inline const float* getMaxRELUT(const int N) {
+    switch (N) {
+        case 1: return &maxre1[0];
+        case 2: return &maxre2[0];
+        case 3: return &maxre3[0];
+        case 4: return &maxre4[0];
+        case 5: return &maxre5[0];
+        case 6: return &maxre6[0];
+        case 7: return &maxre7[0];
+        default: return &maxre0;
     }
 };
 

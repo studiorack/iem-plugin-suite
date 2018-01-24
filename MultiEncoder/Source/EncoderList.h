@@ -3,7 +3,7 @@
  This file is part of the IEM plug-in suite.
  Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
- http://www.iem.at
+ https://iem.at
  
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  GNU General Public License for more details.
  
  You should have received a copy of the GNU General Public License
- along with this software.  If not, see <http://www.gnu.org/licenses/>.
+ along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
  */
 
@@ -187,19 +187,6 @@ public:
     
     void paint (Graphics& g) override {
     };
-    
-    //    void IEMSphereElementChanged (IEMSphere* sphere, IEMSphere::IEMSphereElement* element) {
-    //        if (element->getID() != "grabber") {
-    //            Vector3D<float> pos = element->getPosition();
-    //            float hypxy = sqrt(pos.x*pos.x+pos.y*pos.y);
-    //
-    //            float yaw = atan2f(pos.y,pos.x);
-    //            float pitch = atan2f(hypxy,pos.z)-M_PI/2;
-    //
-    //            pVts->getParameter("yaw" + element->getID())->setValue(pVts->getParameterRange("yaw" + element->getID()).convertTo0to1(yaw/M_PI*180.0f));
-    //            pVts->getParameter("pitch" + element->getID())->setValue(pVts->getParameterRange("pitch" + element->getID()).convertTo0to1(pitch/M_PI*180.0f));
-    //        }
-    //    }
     
     void resized() override {
         

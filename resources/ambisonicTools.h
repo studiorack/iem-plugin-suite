@@ -3,7 +3,7 @@
  This file is part of the IEM plug-in suite.
  Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
- https://www.iem.at
+ https://iem.at
  
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -109,6 +109,17 @@ inline void ACNtoLM(int acn, int &l, int &m)
 {
     l = isqrt(acn);
     m = acn - l*(l+1);
+}
+
+inline const String getOrderString(int order)
+{
+    switch(order)
+    {
+        case 1: return String(order) + String("st");
+        case 2: return String(order) + String("nd");
+        case 3: return String(order) + String("rd");
+    }
+    return String(order) + String("th");
 }
 
 const float sn3d2n3d[64]= {

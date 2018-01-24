@@ -3,7 +3,7 @@
  This file is part of the IEM plug-in suite.
  Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
- https://www.iem.at
+ https://iem.at
  
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -68,10 +68,10 @@ private:
      title component can hold different widgets for in- and output:
         - NoIOWidget (if there's no need for an input or output widget)
         - AudioChannelsIOWidget<maxNumberOfChannels, isChoosable>
-        - AmbisonicIOWidget
+        - AmbisonicIOWidget<maxOrder>
         - DirectivitiyIOWidget
      */
-    TitleBar<AudioChannelsIOWidget<10,true>, AmbisonicIOWidget> title;
+    TitleBar<AudioChannelsIOWidget<10,true>, AmbisonicIOWidget<>> title;
     Footer footer;
     // =============== end essentials ============
     

@@ -3,7 +3,7 @@
  This file is part of the IEM plug-in suite.
  Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
- http://www.iem.at
+ https://iem.at
  
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  GNU General Public License for more details.
  
  You should have received a copy of the GNU General Public License
- along with this software.  If not, see <http://www.gnu.org/licenses/>.
+ along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
  */
 
@@ -44,7 +44,8 @@ typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 */
 class MultiEncoderAudioProcessorEditor  : public AudioProcessorEditor,
 private Timer,
-private SpherePanner::Listener
+private SpherePanner::Listener,
+private AudioProcessorValueTreeState::Listener
 {
 public:
     MultiEncoderAudioProcessorEditor (MultiEncoderAudioProcessor&, AudioProcessorValueTreeState&);
@@ -53,10 +54,10 @@ public:
     //==============================================================================
     void paint (Graphics&) override;
     void resized() override;
-
+    void parameterChanged (const String &parameterID, float newValue) override;
 private:
     LaF globalLaF;
-    TitleBar<AudioChannelsIOWidget<maxNumberOfInputs>, AmbisonicIOWidget> title;
+    TitleBar<AudioChannelsIOWidget<maxNumberOfInputs>, AmbisonicIOWidget<>> title;
     Footer footer;
     
     void timerCallback() override;

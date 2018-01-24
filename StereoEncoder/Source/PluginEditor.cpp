@@ -3,7 +3,7 @@
  This file is part of the IEM plug-in suite.
  Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
- http://www.iem.at
+ https://iem.at
  
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  GNU General Public License for more details.
  
  You should have received a copy of the GNU General Public License
- along with this software.  If not, see <http://www.gnu.org/licenses/>.
+ along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
  */
 
@@ -202,8 +202,8 @@ void StereoEncoderAudioProcessorEditor::IEMSphereElementChanged (IEMSphere* sphe
     Vector3D<float> pos = element->getPosition();
     float hypxy = sqrt(pos.x*pos.x+pos.y*pos.y);
     
-    float yaw = atan2f(pos.y,pos.x);
-    float pitch = atan2f(hypxy,pos.z)-M_PI/2;
+    float yaw = atan2(pos.y,pos.x);
+    float pitch = atan2(hypxy,pos.z)-M_PI/2;
     //DBG("yaw: " << yaw/M_PI*180 << " pitch: " << pitch/M_PI*180);
     
     if (element->getID() == "center") {
@@ -233,8 +233,8 @@ void StereoEncoderAudioProcessorEditor::IEMSphereElementChanged (IEMSphere* sphe
         quat.rotateVector(xyz, xyz);
         
         
-        float roll = atan2f(xyz[2], xyz[1]);
-        if (element->getID() == "right") roll = atan2f(-xyz[2], -xyz[1]);
+        float roll = atan2(xyz[2], xyz[1]);
+        if (element->getID() == "right") roll = atan2(-xyz[2], -xyz[1]);
         
         valueTreeState.getParameter("width")->setValue(valueTreeState.getParameterRange("width").convertTo0to1(alpha/M_PI*180.0f));
         valueTreeState.getParameter("roll")->setValue(valueTreeState.getParameterRange("roll").convertTo0to1(roll/M_PI*180.0f));

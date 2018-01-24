@@ -5,7 +5,8 @@ default: all
 BUILDSYSTEM=LinuxMakefile
 
 # list of projects
-PROJECTS=$(patsubst %/, %, $(dir $(wildcard */*.jucer)))
+ALL_PROJECTS=$(patsubst %/, %, $(dir $(wildcard */*.jucer)))
+PROJECTS=$(filter-out _PluginTemplate, $(ALL_PROJECTS))
 
 # helper applications
 PROJUCER=Projucer
@@ -15,16 +16,16 @@ PROJUCER=Projucer
 
 noop=
 space=$(noop) $(noop)
-vpath %.jucer $(subst $(space),:,$(PROJECTS))
+vpath %.jucer $(subst $(space),:,$(ALL_PROJECTS))
 
 all: $(PROJECTS:%=%-$(BUILDSYSTEM)-build)
 clean: $(PROJECTS:%=%-$(BUILDSYSTEM)-clean)
 distclean:
 	rm -rf */Builds
 # aliases
-$(PROJECTS:%=%-build):
+$(ALL_PROJECTS:%=%-build):
 	make $(@:%-build=%)-$(BUILDSYSTEM)-build
-$(PROJECTS:%=%-clean):
+$(ALL_PROJECTS:%=%-clean):
 	make $(@:%-clean=%)-$(BUILDSYSTEM)-clean
 
 # LinuxMakefile based rules

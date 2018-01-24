@@ -3,7 +3,7 @@
  This file is part of the IEM plug-in suite.
  Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
- http://www.iem.at
+ https://iem.at
  
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  GNU General Public License for more details.
  
  You should have received a copy of the GNU General Public License
- along with this software.  If not, see <http://www.gnu.org/licenses/>.
+ along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
  */
 #include "PluginProcessor.h"
@@ -383,7 +383,6 @@ void RoomEncoderAudioProcessor::updateFilterCoefficients(int sampleRate) {
 void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
     ScopedNoDenormals noDenormals;
-    _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON); // alternative?: fesetenv(FE_DFL_DISABLE_SSE_DENORMS_ENV);
     
     checkInputAndOutput(this, *directivityOrderSetting, *orderSetting);
     
@@ -856,7 +855,7 @@ void RoomEncoderAudioProcessor::updateBuffers() {
     delayBufferWritePtrArray = delayBuffer.getArrayOfWritePointers();
 }
 
-void RoomEncoderAudioProcessor::setFilterVisualizer(FilterVisualizer* newFv)
+void RoomEncoderAudioProcessor::setFilterVisualizer(FilterVisualizer<float>* newFv)
 {
     editorFv = newFv;
 }

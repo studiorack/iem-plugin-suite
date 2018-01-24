@@ -3,7 +3,7 @@
  This file is part of the IEM plug-in suite.
  Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
- http://www.iem.at
+ https://iem.at
  
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  GNU General Public License for more details.
  
  You should have received a copy of the GNU General Public License
- along with this software.  If not, see <http://www.gnu.org/licenses/>.
+ along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
  */
 
@@ -268,9 +268,7 @@ bool DirectivityShaperAudioProcessor::isBusesLayoutSupported (const BusesLayout&
 void DirectivityShaperAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
     checkInputAndOutput(this, 1, *orderSetting);
-    ScopedNoDenormals noDenormals;
-    _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON); // alternative?: fesetenv(FE_DFL_DISABLE_SSE_DENORMS_ENV);
-    
+    ScopedNoDenormals noDenormals;    
     
     int nChToWorkWith = jmin(buffer.getNumChannels(), output.getNumberOfChannels());
     const int orderToWorkWith = isqrt(nChToWorkWith) - 1;
@@ -501,11 +499,11 @@ AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 }
 
 inline Vector3D<float> DirectivityShaperAudioProcessor::yawPitchToCartesian(float yawInRad, float pitchInRad) {
-    float cosPitch = cosf(pitchInRad);
-    return Vector3D<float>(cosPitch * cosf(yawInRad), cosPitch * sinf(yawInRad), sinf(-1.0f * pitchInRad));
+    float cosPitch = cos(pitchInRad);
+    return Vector3D<float>(cosPitch * cos(yawInRad), cosPitch * sin(yawInRad), sin(-1.0f * pitchInRad));
 }
 
 inline Point<float> DirectivityShaperAudioProcessor::cartesianToYawPitch(Vector3D<float> pos) {
     float hypxy = sqrt(pos.x*pos.x+pos.y*pos.y);
-    return Point<float>(atan2f(pos.y,pos.x), atan2f(hypxy,pos.z)-M_PI/2);
+    return Point<float>(atan2(pos.y,pos.x), atan2(hypxy,pos.z)-M_PI/2);
 }

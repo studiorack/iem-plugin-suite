@@ -3,7 +3,7 @@
  This file is part of the IEM plug-in suite.
  Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
- http://www.iem.at
+ https://iem.at
  
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  GNU General Public License for more details.
  
  You should have received a copy of the GNU General Public License
- along with this software.  If not, see <http://www.gnu.org/licenses/>.
+ along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
  */
 
@@ -276,7 +276,7 @@ void MultiEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBu
         float cosPitch = std::cos(*pitch[i] * deg2rad);
         float yawInRad = *yaw[i] * deg2rad;
         float pitchInRad = *pitch[i] * deg2rad;
-        Vector3D<float> pos (cosPitch * std::cos(yawInRad), cosPitch * sinf(yawInRad), sinf(-1.0f * pitchInRad));
+        Vector3D<float> pos (cosPitch * cos(yawInRad), cosPitch * sin(yawInRad), sin(-1.0f * pitchInRad));
         
         SHEval(ambisonicOrder, pos.x, pos.y, pos.z, SH[i]);
         
@@ -314,13 +314,15 @@ void MultiEncoderAudioProcessor::parameterChanged (const String &parameterID, fl
     }
     else if (parameterID.startsWith("solo"))
     {
-        int id = parameterID.substring(4).getIntValue();
+        const int id = parameterID.substring(4).getIntValue();
         soloMask.setBit(id,newValue >= 0.5f);
+        soloMuteChanged = true;
     }
     else if (parameterID.startsWith("mute"))
     {
-        int id = parameterID.substring(4).getIntValue();
+        const int id = parameterID.substring(4).getIntValue();
         muteMask.setBit(id,newValue >= 0.5f);
+        soloMuteChanged = true;
     }
     else if (parameterID == "lockedToMaster")
     {

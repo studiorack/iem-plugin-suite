@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<JUCERPROJECT id="cBXtXS" name="MultiEncoder" projectType="audioplug" version="0.3.4"
+<JUCERPROJECT id="cBXtXS" name="MultiEncoder" projectType="audioplug" version="0.3.5"
               bundleIdentifier="at.iem.MultiEncoder" includeBinaryInAppConfig="1"
               buildVST="1" buildVST3="0" buildAU="0" buildAUv3="0" buildRTAS="0"
               buildAAX="0" pluginName="MultiEncoder" pluginDesc="MultiEncoder"
@@ -35,6 +35,7 @@
     <FILE id="i5HVTM" name="efficientSHvanilla.cpp" compile="1" resource="0"
           file="../resources/efficientSHvanilla.cpp"/>
     <FILE id="wTVWDf" name="EncoderList.h" compile="0" resource="0" file="Source/EncoderList.h"/>
+    <FILE id="GHvC1u" name="SpherePanner.h" compile="0" resource="0" file="../resources/customComponents/SpherePanner.h"/>
   </MAINGROUP>
   <EXPORTFORMATS>
     <XCODE_MAC targetFolder="Builds/MacOSX">

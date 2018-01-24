@@ -3,7 +3,7 @@
  This file is part of the IEM plug-in suite.
  Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
- http://www.iem.at
+ https://iem.at
  
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  GNU General Public License for more details.
  
  You should have received a copy of the GNU General Public License
- along with this software.  If not, see <http://www.gnu.org/licenses/>.
+ along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
  */
 
@@ -32,6 +32,14 @@ MultiEncoderAudioProcessorEditor::MultiEncoderAudioProcessorEditor (MultiEncoder
 : AudioProcessorEditor (&p), processor (p), valueTreeState(vts), encoderList(p, sphere, &vts)//, sphere_opengl(nullptr)
 {
     setLookAndFeel (&globalLaF);
+    
+    for (int i = 0; i < maxNumberOfInputs; ++i)
+    {
+        valueTreeState.addParameterListener("yaw"+String(i), this);
+        valueTreeState.addParameterListener("pitch"+String(i), this);
+    }
+    valueTreeState.addParameterListener("masterYaw", this);
+    valueTreeState.addParameterListener("masterPitch", this);
     
     // ==== SPHERE AND ELEMENTS ===============
     addAndMakeVisible(&sphere);
@@ -56,7 +64,7 @@ MultiEncoderAudioProcessorEditor::MultiEncoderAudioProcessorEditor (MultiEncoder
     
     addAndMakeVisible(&viewport);
     viewport.setViewedComponent(&encoderList);
-
+    
     cbNumInputChannelsAttachment = new ComboBoxAttachment(valueTreeState,"inputSetting",*title.getInputWidgetPtr()->getChannelsCbPointer());
     cbNormalizationAtachment = new ComboBoxAttachment(valueTreeState,"useSN3D",*title.getOutputWidgetPtr()->getNormCbPointer());
     cbOrderAtachment = new ComboBoxAttachment(valueTreeState,"orderSetting",*title.getOutputWidgetPtr()->getOrderCbPointer());
@@ -123,19 +131,26 @@ MultiEncoderAudioProcessorEditor::MultiEncoderAudioProcessorEditor (MultiEncoder
     
     addAndMakeVisible(&lbPitch);
     lbPitch.setText("Pitch");
-
+    
     addAndMakeVisible(&lbGain);
     lbGain.setText("Gain");
     
     
     setResizeLimits(590, 455, 800, 1200);
-    startTimer(10);
+    startTimer(40);
 }
 
 
 MultiEncoderAudioProcessorEditor::~MultiEncoderAudioProcessorEditor()
 {
     setLookAndFeel(nullptr);
+    for (int i = 0; i < maxNumberOfInputs; ++i)
+    {
+        valueTreeState.removeParameterListener("yaw"+String(i), this);
+        valueTreeState.removeParameterListener("pitch"+String(i), this);
+    }
+    valueTreeState.removeParameterListener("masterYaw", this);
+    valueTreeState.removeParameterListener("masterPitch", this);
 }
 
 //==============================================================================
@@ -159,21 +174,25 @@ void MultiEncoderAudioProcessorEditor::timerCallback()
     {
         encoderList.setNumberOfChannels(nChIn);
         lastSetNumChIn = nChIn;
+        sphere.repaint();
     }
-
     
-    if (!processor.soloMask.isZero()) {
-        for (int i = 0; i<lastSetNumChIn; ++i)
-        {
-            encoderList.sphereElementArray[i]->setActive(processor.soloMask[i]);
-        }
-    }
-    else
+    if (processor.soloMuteChanged)
     {
-        for (int i = 0; i<lastSetNumChIn; ++i)
-        {
-            encoderList.sphereElementArray[i]->setActive(!processor.muteMask[i]);
+        if (! processor.soloMask.isZero()) {
+            for (int i = 0; i<lastSetNumChIn; ++i)
+            {
+                encoderList.sphereElementArray[i]->setActive(processor.soloMask[i]);
+            }
         }
+        else
+        {
+            for (int i = 0; i<lastSetNumChIn; ++i)
+            {
+                encoderList.sphereElementArray[i]->setActive(!processor.muteMask[i]);
+            }
+        }
+        processor.soloMuteChanged = false;
     }
     
     if (processor.updateColours)
@@ -181,9 +200,6 @@ void MultiEncoderAudioProcessorEditor::timerCallback()
         processor.updateColours = false;
         encoderList.updateColours();
     }
-    
-    //masterElement.setPosition(Vector3D<float>(processor.xyzGrab[0], processor.xyzGrab[1], processor.xyzGrab[2]));
-    sphere.repaint();
 }
 
 void MultiEncoderAudioProcessorEditor::mouseWheelOnSpherePannerMoved (SpherePanner* sphere, const MouseEvent &event, const MouseWheelDetails &wheel)
@@ -195,6 +211,11 @@ void MultiEncoderAudioProcessorEditor::mouseWheelOnSpherePannerMoved (SpherePann
     else if (event.mods.isCommandDown())
         slMasterYaw.mouseWheelMove(event, wheel);
 }
+void MultiEncoderAudioProcessorEditor::parameterChanged (const String &parameterID, float newValue)
+{
+    sphere.repaint();
+}
+
 
 void MultiEncoderAudioProcessorEditor::resized()
 {
@@ -225,14 +246,14 @@ void MultiEncoderAudioProcessorEditor::resized()
     const int rotSliderWidth = 40;
     //const int labelHeight = 15;
     //const int labelWidth = 20;
-
-
+    
+    
     // -------------- Yaw Pitch Roll Labels ------------------
     Rectangle<int> yprArea (sideBarArea);
     ypGroup.setBounds (yprArea);
     yprArea.removeFromTop(25); //for box headline
-
-
+    
+    
     sliderRow = (yprArea.removeFromTop(15));
     lbNum.setBounds(sliderRow.removeFromLeft(22));
     sliderRow.removeFromLeft(5);
@@ -241,13 +262,13 @@ void MultiEncoderAudioProcessorEditor::resized()
     lbPitch.setBounds(sliderRow.removeFromLeft(rotSliderWidth));
     sliderRow.removeFromLeft(rotSliderSpacing);
     lbGain.setBounds(sliderRow.removeFromLeft(rotSliderWidth));
-
-    viewport.setBounds(yprArea);
-
     
-
+    viewport.setBounds(yprArea);
+    
+    
+    
     // ============== SIDEBAR LEFT ====================
-
+    
     const int grapperAreaHeight = 70;
     area.removeFromRight(10); // spacing
     

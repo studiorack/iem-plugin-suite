@@ -3,7 +3,7 @@
  This file is part of the IEM plug-in suite.
  Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
- http://www.iem.at
+ https://iem.at
  
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -16,13 +16,14 @@
  GNU General Public License for more details.
  
  You should have received a copy of the GNU General Public License
- along with this software.  If not, see <http://www.gnu.org/licenses/>.
+ along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
  */
 
 
 #pragma once
 #include <complex>
+template <typename coefficientsType>
 class  FilterVisualizer :  public Component
 {
     struct Settings {
@@ -34,8 +35,10 @@ class  FilterVisualizer :  public Component
         bool gainHandleLin = false; // are the filter gain sliders linear?
     };
     
+    template <typename T>
     struct FilterWithSlidersAndColour {
-        dsp::IIR::Coefficients<float>::Ptr* coefficients;
+        typedef typename dsp::IIR::Coefficients<T>::Ptr IIRCoefficients;
+        IIRCoefficients* coefficients;
         Colour colour;
         Slider* frequencySlider = nullptr;
         Slider* gainSlider = nullptr;
@@ -43,7 +46,7 @@ class  FilterVisualizer :  public Component
         float* overrideGain = nullptr;
     };
     
-
+    
     const float mL = 23.0f;
     const float mR = 10.0f;
     const float mT = 7.0f;
@@ -69,7 +72,7 @@ public:
     }
     ~FilterVisualizer() {};
     
-
+    
     void paint (Graphics& g) override
     {
         g.setColour(Colours::steelblue.withMultipliedAlpha(0.01f));
@@ -93,8 +96,8 @@ public:
 
             lastTextDrawPos = drawLevelMark (g, 0, 20, db_val, String ((int) db_val), lastTextDrawPos);
         }
-
-
+        
+        
         // frequncy labels
         for (float f=s.fMin; f <= s.fMax; f += powf(10, floorf(log10(f)))) {
             int xpos = hzToX(f);
@@ -119,27 +122,28 @@ public:
                 g.drawText (axislabel, xpos - 10, dbToY(s.dbMin) + OH + 0.0f, 20, 12, Justification::centred, false);
             }
         }
-
-
+        
+        
         g.setColour (Colours::steelblue.withMultipliedAlpha(0.8f));
         g.strokePath (dbGridPath, PathStrokeType (0.5f));
-
+        
         g.setColour(Colours::steelblue.withMultipliedAlpha(0.9f));
         g.strokePath (hzGridPathBold, PathStrokeType (1.0f));
-
+        
         g.setColour(Colours::steelblue.withMultipliedAlpha(0.8f));
         g.strokePath (hzGridPath, PathStrokeType (0.5f));
-               
+        
         
         // draw filter magnitude responses
         Path magnitude;
         allMagnitudesInDb.fill(overallGainInDb);
         
-        int xMin = hzToX(s.fMin);
-        int xMax = hzToX(s.fMax);
-        int yMax = dbToY(s.dbMin);
-        int yMin = dbToY(s.dbMax);
-        int yZero = filtersAreParallel ? yMax + 10 : dbToY(0.0f);
+        const int xMin = hzToX(s.fMin);
+        const int xMax = hzToX(s.fMax);
+        const int yMin = jmax(dbToY(s.dbMax), 0);
+        const int yMax = jmax(dbToY(s.dbMin), yMin);
+        
+        const int yZero = filtersAreParallel ? yMax + 10 : dbToY(0.0f);
         
         g.excludeClipRegion(Rectangle<int>(0.0f, yMax+OH, getWidth(), getHeight()-yMax-OH));
         
@@ -151,23 +155,22 @@ public:
             bool isActive = activeElem == b;
             magnitude.clear();
             
-            FilterWithSlidersAndColour& handle(elements.getReference(b));
-            dsp::IIR::Coefficients<float>::Ptr coeffs = *handle.coefficients;
+            FilterWithSlidersAndColour<coefficientsType>& handle(elements.getReference(b));
+            typename dsp::IIR::Coefficients<coefficientsType>::Ptr coeffs = *handle.coefficients;
             //calculate magnitude response
             if (coeffs != nullptr)
                 coeffs->getMagnitudeForFrequencyArray(frequencies.getRawDataPointer(), magnitudes.getRawDataPointer(), numPixels, sampleRate);
             float additiveDB = 0.0f;
             if (filtersAreParallel && handle.gainSlider != nullptr)
                 additiveDB = handle.gainSlider->getValue();
-                    //FloatVectorOperations::multiply(magnitudes.getRawDataPointer(), Decibels::decibelsToGain(handle.gainSlider->getValue()), numPixels);
+            //FloatVectorOperations::multiply(magnitudes.getRawDataPointer(), Decibels::decibelsToGain(handle.gainSlider->getValue()), numPixels);
             
             //calculate phase response if needed
             if (filtersAreParallel && coeffs != nullptr)
                 coeffs->getPhaseForFrequencyArray(frequencies.getRawDataPointer(), phases.getRawDataPointer(), numPixels, sampleRate);
             
-            float db = Decibels::gainToDecibels(magnitudes[0]);
-            float y = dbToYFloat(db);
-            magnitude.startNewSubPath(xMin, jlimit((float) yMin, (float) yMax + OH + 1, y));
+            float db = Decibels::gainToDecibels(magnitudes[0]) + additiveDB;
+            magnitude.startNewSubPath(xMin, jlimit((float) yMin, (float) yMax + OH + 1, dbToYFloat(db)));
             
             for (int i = 1; i < numPixels; ++i)
             {
@@ -176,7 +179,7 @@ public:
                 float x = xMin + i;
                 magnitude.lineTo(x, y);
             }
-
+            
             g.setColour(handle.colour.withMultipliedAlpha(0.5f));
             g.strokePath(magnitude, PathStrokeType(isActive ? 2.5f : 0.9f));
             
@@ -211,7 +214,7 @@ public:
                 float dB = Decibels::gainToDecibels(std::abs(complexMagnitudes[i]));
                 allMagnitudesInDb.setUnchecked(i, allMagnitudesInDb[i] + dB);
             }
-
+        
         
         //all magnitudes combined
         magnitude.clear();
@@ -233,7 +236,7 @@ public:
         
         int size = elements.size();
         for (int i = 0; i < size; ++i) {
-            FilterWithSlidersAndColour& handle(elements.getReference(i));
+            FilterWithSlidersAndColour<coefficientsType>& handle(elements.getReference(i));
             float circX = handle.frequencySlider == nullptr ? hzToX(s.fMin) : hzToX(handle.frequencySlider->getValue());
             float circY;
             if (!s.gainHandleLin)
@@ -308,7 +311,7 @@ public:
         float width = (float) getWidth() - mL - mR;
         return s.fMin * powf ((s.fMax / s.fMin), ((x - mL) / width));
     }
-
+    
     void setSampleRate(int newSampleRate) {
         sampleRate = newSampleRate;
     }
@@ -349,7 +352,7 @@ public:
         
         if (activeElem != -1)
         {
-            FilterWithSlidersAndColour& handle(elements.getReference(activeElem));
+            FilterWithSlidersAndColour<coefficientsType>& handle(elements.getReference(activeElem));
             if (handle.frequencySlider != nullptr)
                 handle.frequencySlider->setValue(frequency);
             if (handle.gainSlider != nullptr)
@@ -363,16 +366,21 @@ public:
         int oldActiveElem = activeElem;
         activeElem = -1;
         for (int i = elements.size(); --i >= 0;)
-        {   
-            FilterWithSlidersAndColour& handle(elements.getReference(i));
-
+        {
+            FilterWithSlidersAndColour<coefficientsType>& handle(elements.getReference(i));
+            
             float gain;
-            if (!s.gainHandleLin)
-                gain = handle.gainSlider->getValue();
+            if (handle.gainSlider == nullptr)
+                gain = 0.0f;
             else
-                gain = Decibels::gainToDecibels (
-                    handle.gainSlider->getValue());
-
+            {
+                if (!s.gainHandleLin)
+                    gain = handle.gainSlider->getValue();
+                else
+                    gain = Decibels::gainToDecibels (
+                                                     handle.gainSlider->getValue());
+            }
+            
             Point<int> filterPos (handle.frequencySlider == nullptr ? hzToX(0.0f) : hzToX(handle.frequencySlider->getValue()), handle.gainSlider == nullptr ? dbToY(0.0f) : dbToY(gain));
             if (pos.getDistanceSquaredFrom(filterPos) < 45) {
                 activeElem = i;
@@ -382,7 +390,7 @@ public:
         
         if (oldActiveElem != activeElem)
             repaint();
-
+        
     }
     
     void resized() override {
@@ -393,7 +401,7 @@ public:
         frequencies.resize(numPixels);
         for (int i = 0; i < numPixels; ++i)
             frequencies.set(i, xToHz(xMin + i));
-
+        
         allMagnitudesInDb.resize(numPixels);
         magnitudes.resize(numPixels);
         phases.resize(numPixels);
@@ -410,7 +418,7 @@ public:
             float db_val = s.dbMax - i * s.gridDiv;
             
             int ypos = dbToY(db_val);
-
+            
             dbGridPath.startNewSubPath(mL-OH, ypos);
             dbGridPath.lineTo(mL + width+OH, ypos);
         }
@@ -434,7 +442,7 @@ public:
         }
     }
     
-    void addCoefficients(dsp::IIR::Coefficients<float>::Ptr* newCoeffs, Colour newColourForCoeffs, Slider* frequencySlider = nullptr, Slider* gainSlider = nullptr, Slider* qSlider = nullptr, float* overrideLinearGain = nullptr)
+    void addCoefficients(typename dsp::IIR::Coefficients<coefficientsType>::Ptr* newCoeffs, Colour newColourForCoeffs, Slider* frequencySlider = nullptr, Slider* gainSlider = nullptr, Slider* qSlider = nullptr, float* overrideLinearGain = nullptr)
     {
         elements.add({newCoeffs, newColourForCoeffs, frequencySlider, gainSlider, qSlider, overrideLinearGain});
     }
@@ -455,6 +463,7 @@ private:
 
     float dyn, zero, scale;
     
+    
     Settings s;
     Path dbGridPath;
     Path hzGridPath;
@@ -466,7 +475,7 @@ private:
     int numPixels;
     
     Array<std::complex<double>> complexMagnitudes;
-    Array<FilterWithSlidersAndColour> elements;
+    Array<FilterWithSlidersAndColour<coefficientsType>> elements;
     Array<float> allMagnitudesInDb;
 };
 
