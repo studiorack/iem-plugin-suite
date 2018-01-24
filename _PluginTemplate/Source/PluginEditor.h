@@ -55,7 +55,7 @@ public:
     void timerCallback() override;
     
 private:
-    // ====================== beging essentials ==================
+    // ====================== begin essentials ==================
     // lookAndFeel class with the IEM plug-in suite design
     LaF globalLaF;
     
