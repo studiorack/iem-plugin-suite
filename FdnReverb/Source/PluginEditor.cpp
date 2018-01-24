@@ -336,6 +336,7 @@ void FdnReverbAudioProcessorEditor::resized()
     
     
     { //====================== FILTER GROUP ==================================
+        const int rotSliderWidth = 40;
         Rectangle<int> filterArea(area);
         filterGroup.setBounds(filterArea);
         filterArea.removeFromTop(25);
@@ -345,10 +346,10 @@ void FdnReverbAudioProcessorEditor::resized()
         sliderRow.removeFromLeft (rotSliderSpacing);
         lbLowQ.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
         sliderRow.removeFromLeft (rotSliderSpacing);
-        lbLowGain.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
+        lbLowGain.setBounds (sliderRow.removeFromLeft(rotSliderWidth + 5));
         
         
-        lbHighGain.setBounds (sliderRow.removeFromRight(rotSliderWidth));
+        lbHighGain.setBounds (sliderRow.removeFromRight(rotSliderWidth + 5));
         sliderRow.removeFromRight (rotSliderSpacing);
         lbHighQ.setBounds (sliderRow.removeFromRight(rotSliderWidth));
         sliderRow.removeFromRight (rotSliderSpacing);
@@ -360,9 +361,9 @@ void FdnReverbAudioProcessorEditor::resized()
         sliderRow.removeFromLeft(rotSliderSpacing);
         lowQSlider.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
         sliderRow.removeFromLeft(rotSliderSpacing);
-        lowGainSlider.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
+        lowGainSlider.setBounds (sliderRow.removeFromLeft(rotSliderWidth + 5));
         
-        highGainSlider.setBounds (sliderRow.removeFromRight(rotSliderWidth));
+        highGainSlider.setBounds (sliderRow.removeFromRight(rotSliderWidth + 5));
         sliderRow.removeFromRight(rotSliderSpacing);
         highQSlider.setBounds (sliderRow.removeFromRight(rotSliderWidth));
         sliderRow.removeFromRight(rotSliderSpacing);
