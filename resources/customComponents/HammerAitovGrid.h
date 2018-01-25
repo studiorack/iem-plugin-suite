@@ -226,8 +226,8 @@ public:
         Rectangle<int> area = getLocalBounds();
         
         toArea = AffineTransform::fromTargetPoints(area.getCentreX(), area.getCentreY(),
-                                                   area.getRight()-10, area.getCentreY(),
-                                                   area.getCentreX(), area.getBottom()-20);
+                                                   area.getRight()-10.0f, area.getCentreY(),
+                                                   area.getCentreX(), area.getBottom()-20.0f);
 
     }
     
