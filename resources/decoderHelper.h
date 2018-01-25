@@ -42,14 +42,14 @@ public:
     
     static Result transformationMatrixVarToMatrix (var& tmVar, ReferenceCountedMatrix::Ptr* matrix, var nameFallback = var(""), var descriptionFallback = var(""))
     {
-        String name = tmVar.getProperty(Identifier("name"), nameFallback);
-        String description = tmVar.getProperty(Identifier("description"), descriptionFallback);
+        String name = tmVar.getProperty(Identifier("Name"), nameFallback);
+        String description = tmVar.getProperty(Identifier("Description"), descriptionFallback);
         
-        if (! tmVar.hasProperty("matrix"))
-            return Result::fail("There is no 'matrix' array.");
+        if (! tmVar.hasProperty("Matrix"))
+            return Result::fail("There is no 'Matrix' array.");
         
         int rows, cols;
-        var matrixData = tmVar.getProperty("matrix", var());
+        var matrixData = tmVar.getProperty("Matrix", var());
         Result result = getMatrixDataSize (matrixData, rows, cols);
         
         if (! result.wasOk())
@@ -68,15 +68,15 @@ public:
     
     static Result decoderObjectToDecoder (var& decoderObject, ReferenceCountedDecoder::Ptr* decoder, var nameFallback = var(""), var descriptionFallback = var(""))
     {
-        String name = decoderObject.getProperty(Identifier("name"), nameFallback);
-        String description = decoderObject.getProperty(Identifier("description"), descriptionFallback);
+        String name = decoderObject.getProperty(Identifier("Name"), nameFallback);
+        String description = decoderObject.getProperty(Identifier("Description"), descriptionFallback);
         
-        if (! decoderObject.hasProperty("matrix"))
-            return Result::fail("There is no 'matrix' array within the 'Decoder' object.");
+        if (! decoderObject.hasProperty("Matrix"))
+            return Result::fail("There is no 'Matrix' array within the 'Decoder' object.");
         
         // get matrix size
         int rows, cols;
-        var matrixData = decoderObject.getProperty("matrix", var());
+        var matrixData = decoderObject.getProperty("Matrix", var());
         Result result = getMatrixDataSize (matrixData, rows, cols);
         if (! result.wasOk())
             return Result::fail(result.getErrorMessage());
@@ -92,9 +92,9 @@ public:
         if (! result.wasOk())
             return Result::fail(result.getErrorMessage());
         
-        if (decoderObject.hasProperty("routing"))
+        if (decoderObject.hasProperty("Routing"))
         {
-            var routingData = decoderObject.getProperty("routing", var());
+            var routingData = decoderObject.getProperty("Routing", var());
             result = getRoutingArray(routingData, rows, newDecoder);
             if (! result.wasOk())
                 return Result::fail(result.getErrorMessage());
@@ -104,51 +104,51 @@ public:
         // ============ SETTINGS =====================
         ReferenceCountedDecoder::Settings settings;
         // normalization
-        if ( !decoderObject.hasProperty("expectedInputNormalization"))
-            Result::fail("Could not find 'expectedInputNormalization' attribute.");
+        if ( !decoderObject.hasProperty("ExpectedInputNormalization"))
+            Result::fail("Could not find 'ExpectedInputNormalization' attribute.");
         
         
-        var expectedNormalization (decoderObject.getProperty("expectedInputNormalization", var()));
+        var expectedNormalization (decoderObject.getProperty("ExpectedInputNormalization", var()));
         if (expectedNormalization.toString().equalsIgnoreCase("sn3d"))
             settings.expectedNormalization = ReferenceCountedDecoder::Normalization::sn3d;
         else if (expectedNormalization.toString().equalsIgnoreCase("n3d"))
             settings.expectedNormalization = ReferenceCountedDecoder::Normalization::n3d;
         else
-            return Result::fail("Could not parse 'expectedInputNormalization' attribute. Expected 'sn3d' or 'n3d' but got '" + expectedNormalization.toString() + "'.");
+            return Result::fail("Could not parse 'ExpectedInputNormalization' attribute. Expected 'sn3d' or 'n3d' but got '" + expectedNormalization.toString() + "'.");
         
         
         // weights
-        if (decoderObject.hasProperty("weights"))
+        if (decoderObject.hasProperty("Weights"))
         {
-            var weights (decoderObject.getProperty("weights", var()));
+            var weights (decoderObject.getProperty("Weights", var()));
             if (weights.toString().equalsIgnoreCase("maxrE"))
                 settings.weights = ReferenceCountedDecoder::Weights::maxrE;
             else if (weights.toString().equalsIgnoreCase("none"))
                 settings.weights = ReferenceCountedDecoder::Weights::none;
             else
-                return Result::fail("Could not parse 'weights' attribute. Expected 'maxrE', 'inPhase' or 'none' but got '" + weights.toString() + "'.");
+                return Result::fail("Could not parse 'Weights' attribute. Expected 'maxrE', 'inPhase' or 'none' but got '" + weights.toString() + "'.");
         }
         // weights already applied
-        if (decoderObject.hasProperty("weightsAlreadyApplied"))
+        if (decoderObject.hasProperty("WeightsAlreadyApplied"))
         {
-            var weightsAlreadyApplied (decoderObject.getProperty("weightsAlreadyApplied", var()));
+            var weightsAlreadyApplied (decoderObject.getProperty("WeightsAlreadyApplied", var()));
             if (weightsAlreadyApplied.isBool())
                 settings.weightsAlreadyApplied = weightsAlreadyApplied;
             else
-                return Result::fail("Could not parse 'weightsAlreadyApplied' attribute. Expected bool but got '" + weightsAlreadyApplied.toString() + "'.");
+                return Result::fail("Could not parse 'WeightsAlreadyApplied' attribute. Expected bool but got '" + weightsAlreadyApplied.toString() + "'.");
         }
-        if (decoderObject.hasProperty("subwooferChannel"))
+        if (decoderObject.hasProperty("SubwooferChannel"))
         {
-            var subwooferChannel (decoderObject.getProperty("subwooferChannel", var()));
+            var subwooferChannel (decoderObject.getProperty("SubwooferChannel", var()));
             if (subwooferChannel.isInt())
             {
                 if (static_cast<int>(subwooferChannel) < 1 || static_cast<int>(subwooferChannel) > 64)
-                    return Result::fail("'subwooferChannel' attribute is not a valid channel number (1<=subwooferChannel>=64).");
+                    return Result::fail("'SubwooferChannel' attribute is not a valid channel number (1<=subwooferChannel>=64).");
                 
                 settings.subwooferChannel = subwooferChannel;
             }
             else
-                return Result::fail("Could not parse 'subwooferChannel' attribute. Expected channel number (int) but got '" + subwooferChannel.toString() + "'.");
+                return Result::fail("Could not parse 'SubwooferChannel' attribute. Expected channel number (int) but got '" + subwooferChannel.toString() + "'.");
         }
         
         newDecoder->setSettings(settings);
@@ -193,7 +193,7 @@ public:
     static Result getRoutingArray (var& routingData, const int rows, ReferenceCountedMatrix::Ptr dest)
     {
         if (routingData.size() != rows)
-            return Result::fail("Length of 'routing' attribute does not match number of matrix outputs (rows).");
+            return Result::fail("Length of 'Routing' attribute does not match number of matrix outputs (rows).");
         
         Array<int>& routingArray = dest->getRoutingArrayReference();
         for (int r = 0; r < rows; ++r)
@@ -205,7 +205,7 @@ public:
                 routingArray.set(r, (int) element - 1);
             }
             else
-                return Result::fail("Datatype of 'routing' element at position " + String(r+1) + " could not be interpreted (expected integer).");
+                return Result::fail("Datatype of 'Routing' element at position " + String(r+1) + " could not be interpreted (expected integer).");
         }
         return Result::ok();
     }
@@ -226,7 +226,7 @@ public:
         
         var decoderObject = parsedJson.getProperty("Decoder", parsedJson);
         result = decoderObjectToDecoder (decoderObject, decoder,
-                                         parsedJson.getProperty("name", var("")), parsedJson.getProperty("description", var("")));
+                                         parsedJson.getProperty("Name", var("")), parsedJson.getProperty("Description", var("")));
         
         if (! result.wasOk())
             return Result::fail(result.getErrorMessage());
@@ -247,7 +247,7 @@ public:
         // looks for 'TransformationMatrix' object; if missing, it uses the 'root' to look for a 'matrix' object
         var tmVar = parsedJson.getProperty("TransformationMatrix", parsedJson);
         Result result = transformationMatrixVarToMatrix (tmVar, matrix,
-                                                         parsedJson.getProperty("name", var("")), parsedJson.getProperty("description", var("")));
+                                                         parsedJson.getProperty("Name", var("")), parsedJson.getProperty("Description", var("")));
         
         if (! result.wasOk())
             return Result::fail(result.getErrorMessage());
