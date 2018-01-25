@@ -486,8 +486,8 @@ void AmbisonicCompressorAudioProcessorEditor::resized()
         
         sliderRow = temp.removeFromTop(15);
         lbC1Threshold.setBounds(sliderRow.removeFromLeft(50));
-        sliderRow.removeFromLeft(sliderSpacing);
-        lbC1Knee.setBounds(sliderRow.removeFromLeft(50));
+        sliderRow.removeFromLeft(sliderSpacing-5);
+        lbC1Knee.setBounds(sliderRow.removeFromLeft(45));
         sliderRow.removeFromLeft(sliderSpacing);
         lbC1Makeup.setBounds(sliderRow.removeFromLeft(45));
         
@@ -541,8 +541,8 @@ void AmbisonicCompressorAudioProcessorEditor::resized()
         
         sliderRow = temp.removeFromTop(15);
         lbC2Threshold.setBounds(sliderRow.removeFromLeft(50));
-        sliderRow.removeFromLeft(sliderSpacing);
-        lbC2Knee.setBounds(sliderRow.removeFromLeft(50));
+        sliderRow.removeFromLeft(sliderSpacing-5);
+        lbC2Knee.setBounds(sliderRow.removeFromLeft(45));
         sliderRow.removeFromLeft(sliderSpacing);
         lbC2Makeup.setBounds(sliderRow.removeFromLeft(45));
         

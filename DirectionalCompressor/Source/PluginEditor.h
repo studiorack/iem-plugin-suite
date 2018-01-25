@@ -40,7 +40,7 @@ typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 /**
 */
 class AmbisonicCompressorAudioProcessorEditor  : public AudioProcessorEditor,
-private Timer, public IEMSphere::IEMSphereListener, public IEMSphere::IEMSphereElement, private ButtonListener
+private Timer, public IEMSphere::IEMSphereListener, public IEMSphere::IEMSphereElement, private Button::Listener
 {
 public:
     AmbisonicCompressorAudioProcessorEditor (AmbisonicCompressorAudioProcessor&, AudioProcessorValueTreeState&);
