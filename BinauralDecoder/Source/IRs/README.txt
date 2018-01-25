@@ -6,5 +6,4 @@ They were created using KU100 HRIR measurements by Benjamin Bernschuetz [1] and 
 
 [1] Bernschuetz, B. (2013. A Spherical Far Field HRIR/HRTF Compilation of the Neumann KU 100. AIA-DAGA 2013 Merano. http://audiogroup.web.th-koeln.de/ku100hrir.html
 
-[2] Zaunschirm, M., Schoerkhuber, C., Hoeldrich, R. (to be published). 
-	Binaural rendering of Ambisonic signals by HRIR time alignment and a diffuseness constraint. (JASA)
+[2] Zaunschirm, M., Schoerkhuber, C., Hoeldrich, R. (to be published). Binaural rendering of Ambisonic signals by HRIR time alignment and a diffuseness constraint. (JASA)
