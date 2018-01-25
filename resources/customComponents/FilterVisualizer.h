@@ -296,7 +296,7 @@ public:
             dB =  std::atanh(temp) * dyn * -0.5f;
         else
             dB = - 0.5f * temp * dyn;
-        return isnan(dB) ? s.dbMin : dB;
+        return std::isnan(dB) ? s.dbMin : dB;
     }
     
     int hzToX(float hz)
