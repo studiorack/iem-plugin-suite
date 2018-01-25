@@ -8,7 +8,7 @@ Repository: https://git.iem.at/audioplugins/IEMPluginSuite/
 
 
 ## Compilation Guide
-All you need for compiling the IEM Plug-in Suite is the latest version of JUCE and an IDE (eg. Xcode, Microsoft Visual Studio).
+All you need for compiling the IEM Plug-in Suite is the latest version of JUCE (develop branch!) and an IDE (eg. Xcode, Microsoft Visual Studio).
 
 - Clone/download the IEMPluginSuite repository
 - Open all the .jucer-files with the Projucer (part of JUCE)
@@ -19,7 +19,7 @@ All you need for compiling the IEM Plug-in Suite is the latest version of JUCE a
 - Build
 - Enjoy ;-)
 
-Instead of building each plug-in seperately, you can also use the provided shell-scripts to start a batch processing. However, the .jucer projects have to opened and saved first, to create the exporters. For Windows: the 'Developer Command Prompt' has to execute the win_compileAll.bat script.
+Instead of building each plug-in seperately, you can also use the provided shell-scripts to start a batch processing. For Windows: the 'Developer Command Prompt' has to execute the win_compileAll.bat script.
 
 ## Known issues
 - On Linux: RoomEncoder might only build successfully if using JUCE 5.2.0 with [13d18e40](https://github.com/WeAreROLI/JUCE/commit/13d18e406c33724a9f8870c4602458fc6d94b750) applied.

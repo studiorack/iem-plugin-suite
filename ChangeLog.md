@@ -6,8 +6,10 @@ For a list of all changes and bugfixes see the git log.
     - **Matrix**Multiplicator
     - **Simple**Decoder
     - **Tool**Box
+    - **Binaural**Decoder
 
 - general changes
+    - switched to JUCE develop branch !!
     - added presets (decoders,...)  
     - some GUIs now resizable  
     - smaller GUI layout changes (e.g. ComboBox PopupMenu)
