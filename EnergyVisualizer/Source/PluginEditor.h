@@ -55,8 +55,8 @@ public:
     void resized() override;
 
 private:
-    // This reference is provided as a quick way for your editor to
-    // access the processor object that created it.
+    LaF globalLaF;
+    
     EnergyVisualizerAudioProcessor& processor;
     AudioProcessorValueTreeState& valueTreeState;
 
@@ -65,11 +65,9 @@ private:
     
     void sliderValueChanged (Slider *slider) override;
     void timerCallback() override;
-    LaF globalLaF;
-    TitleBar<AmbisonicIOWidget, NoIOWidget> title;
+    
+    TitleBar<AmbisonicIOWidget<>, NoIOWidget> title;
     Footer footer;
-
-    int maxPossibleOrder = -1;
     
     ReverseSlider slPeakLevel;
     SimpleLabel lbPeakLevel;

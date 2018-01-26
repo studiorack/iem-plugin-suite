@@ -23,6 +23,7 @@
 #pragma once
 
 #include "TitleBarPaths.h"
+#include "../ambisonicTools.h"
 
 
 class  NoIOWidget :  public Component
@@ -31,7 +32,8 @@ public:
     NoIOWidget() : Component() {
     };
     ~NoIOWidget() {};
-    
+    const int getComponentSize() { return 0; }
+    void setMaxSize (int maxSize) {};
     void paint (Graphics& g) override {};
 };
 
@@ -51,29 +53,53 @@ public:
             cbChannels->addItem("Auto", 1);
             for (int i=1; i<=maxChannels; ++i)
                 cbChannels->addItem(String(i), i+1);
-            cbChannels->setBounds(40, 8, 70, 15);
+            cbChannels->setBounds(35, 8, 70, 15);
         }
         
     };
     ~AudioChannelsIOWidget() {};
     
-    void updateMxPossibleChannelNumber (int maxPossibleChannelNumber)
+    const int getComponentSize() { return selectable ? 110 : 75; }
+    
+    void setMaxSize (int maxPossibleNumberOfChannels)
     {
-        if (maxPossibleChannelNumber > -1) cbChannels->changeItemText(1, "Auto (" + String(maxPossibleChannelNumber) + ")");
-        else cbChannels->changeItemText(1, "(Auto)");
-        int currId = cbChannels->getSelectedId();
-        if (currId == 0) currId = 1; //bad work around
-        int i;
-        for (i = 1; i <= maxPossibleChannelNumber; ++i)
+        if (selectable)
         {
-            cbChannels->changeItemText(i+1, String(i));
+            if (maxPossibleNumberOfChannels > 0) cbChannels->changeItemText(1, "Auto (" + String(maxPossibleNumberOfChannels) + ")");
+            else cbChannels->changeItemText(1, "(Auto)");
+            int currId = cbChannels->getSelectedId();
+            if (currId == 0) currId = 1; //bad work around
+            int i;
+            for (i = 1; i <= maxPossibleNumberOfChannels; ++i)
+            {
+                cbChannels->changeItemText(i+1, String(i));
+            }
+            for (i = maxPossibleNumberOfChannels+1; i<=maxChannels; ++i)
+            {
+                cbChannels->changeItemText(i+1, String(i) + " (bus too small)");
+            }
+            
+            cbChannels->setText(cbChannels->getItemText(cbChannels->indexOfItemId((currId))));
         }
-        for (i = maxPossibleChannelNumber+1; i<=maxChannels; ++i)
+        else
         {
-            cbChannels->changeItemText(i+1, String(i) + " (bus too small)");
+            if (maxPossibleNumberOfChannels < channelSizeIfNotSelectable)
+                displayTextIfNotSelectable = String(channelSizeIfNotSelectable) + " (bus too small)";
+            else
+                displayTextIfNotSelectable = String(channelSizeIfNotSelectable);
+            repaint();
         }
-        
-        cbChannels->setText(cbChannels->getItemText(cbChannels->indexOfItemId((currId))));
+        availableChannels = maxPossibleNumberOfChannels;
+    }
+    
+    void setSizeIfUnselectable (int newSize)
+    {
+        if (! selectable)
+        {
+            channelSizeIfNotSelectable = newSize;
+            setMaxSize(availableChannels);
+            repaint();
+        }
     }
     
     ComboBox* getChannelsCbPointer()
@@ -84,10 +110,7 @@ public:
     
     void paint (Graphics& g) override
     {
-        Rectangle<int> bounds = getLocalBounds();
-        const int h = bounds.getHeight();
-        
-        WaveformPath.applyTransform(WaveformPath.getTransformToScaleToFit(0,0,h, h, true,Justification::centred));
+        WaveformPath.applyTransform(WaveformPath.getTransformToScaleToFit(0, 0, 30, 30, true,Justification::centred));
         g.setColour((Colours::white).withMultipliedAlpha(0.5));
         g.fillPath(WaveformPath);
         
@@ -96,67 +119,76 @@ public:
             g.setColour((Colours::white).withMultipliedAlpha(0.5));
             g.setFont(getLookAndFeel().getTypefaceForFont (Font(12.0f, 1)));
             g.setFont(15.0f);
-            g.drawText(String(maxChannels), 40, 8, 70, 15, Justification::left);
+            g.drawFittedText(displayTextIfNotSelectable, 35, 0, 40, 30, Justification::centredLeft, 2);
+
         }
     };
     
 private:
     ScopedPointer<ComboBox> cbChannels;
     Path WaveformPath;
+    int availableChannels {64};
+    int channelSizeIfNotSelectable = maxChannels;
+    String displayTextIfNotSelectable = String(maxChannels);
 };
-
+template <int order = 7>
 class  AmbisonicIOWidget :  public Component
 {
 public:
     AmbisonicIOWidget() : Component() {
         AmbiLogoPath.loadPathFromData (AmbiLogoPathData, sizeof (AmbiLogoPathData));
         setBufferedToImage(true);
-        orderStrings[0] = String("0th");
-        orderStrings[1] = String("1st");
-        orderStrings[2] = String("2nd");
-        orderStrings[3] = String("3rd");
-        orderStrings[4] = String("4th");
-        orderStrings[5] = String("5th");
-        orderStrings[6] = String("6th");
-        orderStrings[7] = String("7th");
         
         addAndMakeVisible(&cbOrder);
         cbOrder.setJustificationType(Justification::centred);
-        cbOrder.addSectionHeading("Ambisonic Order");
-        cbOrder.addItem("Auto", 1);
-        cbOrder.addItem("0th", 2);
-        cbOrder.addItem("1st", 3);
-        cbOrder.addItem("2nd", 4);
-        cbOrder.addItem("3rd", 5);
-        cbOrder.addItem("4th", 6);
-        cbOrder.addItem("5th", 7);
-        cbOrder.addItem("6th", 8);
-        cbOrder.addItem("7th", 9);
-        cbOrder.setBounds(40, 15, 70, 15);
+        cbOrder.setBounds(35, 15, 70, 15);
+        updateMaxOrder();
         
         addAndMakeVisible(&cbNormalization);
         cbNormalization.setJustificationType(Justification::centred);
         cbNormalization.addSectionHeading("Normalization");
         cbNormalization.addItem("N3D", 1);
         cbNormalization.addItem("SN3D", 2);
-        cbNormalization.setBounds(40, 0, 70, 15);
+        cbNormalization.setBounds(35, 0, 70, 15);
     };
     ~AmbisonicIOWidget() {};
     
-    void updateOrderCb (int maxPossibleOrder)
+    void updateMaxOrder()
     {
-        if (maxPossibleOrder > -1) cbOrder.changeItemText(1, "Auto (" + orderStrings[maxPossibleOrder] + ")");
+        const int previousIndex = cbOrder.getSelectedItemIndex();
+        cbOrder.clear();
+        cbOrder.addSectionHeading("Ambisonic Order");
+        cbOrder.addItem("Auto", 1);
+        for (int o = 0; o <= maxOrder; ++o)
+            cbOrder.addItem(getOrderString(o), o + 2);
+        
+        cbOrder.setSelectedItemIndex(previousIndex);
+    }
+    
+    void setMaxOrder (int newMaxOrder)
+    {
+        maxOrder = newMaxOrder;
+        updateMaxOrder();
+        setMaxSize (maxPossibleOrder);
+    }
+    
+    const int getComponentSize() { return 110; }
+    
+    void setMaxSize (int newMaxPossibleOrder)
+    {
+        maxPossibleOrder = jmin(newMaxPossibleOrder, maxOrder);
+        if (maxPossibleOrder > -1) cbOrder.changeItemText(1, "Auto (" + getOrderString(maxPossibleOrder) + ")");
         else cbOrder.changeItemText(1, "(Auto)");
         int currId = cbOrder.getSelectedId();
         if (currId == 0) currId = 1; //bad work around
         int i;
         for (i = 1; i <= maxPossibleOrder; ++i)
         {
-            cbOrder.changeItemText(i+2, orderStrings[i]);
+            cbOrder.changeItemText(i+2, getOrderString(i));
         }
-        for (i = maxPossibleOrder+1; i<=7; ++i)
+        for (i = maxPossibleOrder+1; i<=maxOrder; ++i)
         {
-            cbOrder.changeItemText(i+2, orderStrings[i] + " (bus too small)");
+            cbOrder.changeItemText(i+2, getOrderString(i) + " (bus too small)");
         }
         
         cbOrder.setText(cbOrder.getItemText(cbOrder.indexOfItemId((currId))));
@@ -167,18 +199,16 @@ public:
     
     void paint (Graphics& g) override
     {
-        Rectangle<int> bounds = getLocalBounds();
-        const int h = bounds.getHeight();
-        
-        AmbiLogoPath.applyTransform(AmbiLogoPath.getTransformToScaleToFit(0,0,h, h, true,Justification::centred));
+        AmbiLogoPath.applyTransform(AmbiLogoPath.getTransformToScaleToFit(0, 0, 30, 30, true,Justification::centred));
         g.setColour((Colours::white).withMultipliedAlpha(0.5));
         g.fillPath(AmbiLogoPath);
     };
     
 private:
-    String orderStrings[8];
     ComboBox cbNormalization, cbOrder;
     Path AmbiLogoPath;
+    int maxOrder = order;
+    int maxPossibleOrder = 7;
 };
 
 class  DirectivityIOWidget :  public Component
@@ -208,11 +238,13 @@ public:
         cbOrder.addItem("5th", 7);
         cbOrder.addItem("6th", 8);
         cbOrder.addItem("7th", 9);
-        cbOrder.setBounds(40, 8, 70, 15);
+        cbOrder.setBounds(35, 8, 70, 15);
     };
     ~DirectivityIOWidget() {};
     
-    void updateOrderCb (int maxPossibleOrder)
+    const int getComponentSize() { return 110; }
+    
+    void setMaxSize (int maxPossibleOrder)
     {
         if (maxPossibleOrder > -1) cbOrder.changeItemText(1, "Auto (" + orderStrings[maxPossibleOrder] + ")");
         else cbOrder.changeItemText(1, "(Auto)");
@@ -234,10 +266,7 @@ public:
     
     void paint (Graphics& g) override
     {
-        Rectangle<int> bounds = getLocalBounds();
-        const int h = bounds.getHeight();
-        
-        DirectivityPath.applyTransform(DirectivityPath.getTransformToScaleToFit(0,0,h, h, true,Justification::centred));
+        DirectivityPath.applyTransform(DirectivityPath.getTransformToScaleToFit(0, 0, 30, 30, true,Justification::centred));
         g.setColour((Colours::white).withMultipliedAlpha(0.5));
         g.fillPath(DirectivityPath);
     };
@@ -275,18 +304,27 @@ public:
     
     void resized () override
     {
-        inputWidget.setBounds(getLocalBounds().removeFromLeft(110).reduced(0,15));
-        outputWidget.setBounds(getLocalBounds().removeFromRight(110).reduced(0,15));
+        const int leftWidth = inputWidget.getComponentSize();
+        const int rightWidth = outputWidget.getComponentSize();
         
+        inputWidget.setBounds(getLocalBounds().removeFromLeft(leftWidth).reduced(0,15));
+        outputWidget.setBounds(getLocalBounds().removeFromRight(rightWidth).reduced(0,15));
+    }
+    void setMaxSize (int inputSize, int outputSize)
+    {
+        inputWidget.setMaxSize(inputSize);
+        outputWidget.setMaxSize(outputSize);
     }
     
     void paint (Graphics& g) override
     {
         Rectangle<int> bounds = getLocalBounds();
-        const float centreX = bounds.getX() + bounds.getWidth()*0.5;
-        const float centreY = bounds.getY() + bounds.getHeight()*0.5;
+        const float centreX = bounds.getX() + bounds.getWidth() * 0.5f;
+        const float centreY = bounds.getY() + bounds.getHeight() * 0.5f;
         const float boldHeight = 25.f;
         const float regularHeight = 25.f;
+        const int leftWidth = inputWidget.getComponentSize();
+        const int rightWidth = outputWidget.getComponentSize();
         
         boldFont.setHeight(boldHeight);
         regularFont.setHeight(regularHeight);
@@ -294,8 +332,12 @@ public:
         const float boldWidth = boldFont.getStringWidth(boldText);
         const float regularWidth = regularFont.getStringWidth(regularText);
         
-        Rectangle<float> textArea (0, 0, boldWidth+regularWidth,jmax(boldHeight,regularHeight));
+        Rectangle<float> textArea (0, 0, boldWidth + regularWidth, jmax(boldHeight, regularHeight));
         textArea.setCentre(centreX,centreY);
+        
+        if (textArea.getX() < leftWidth) textArea.setX(leftWidth);
+        if (textArea.getRight() > bounds.getRight() - rightWidth) textArea.setRight(bounds.getRight() - rightWidth);
+  
         
         g.setColour(Colours::white);
         g.setFont(boldFont);
@@ -328,8 +370,6 @@ public:
     
     void paint (Graphics& g) override
     {
-        
-
         Rectangle<int> bounds = getLocalBounds();
         IEMPath.applyTransform(IEMPath.getTransformToScaleToFit(bounds.reduced(2, 2).toFloat(), true, Justification::bottomLeft));
         
@@ -383,7 +423,7 @@ public:
         char versionString[10];
         strcpy(versionString, "v");
         strcat(versionString, JucePlugin_VersionString);
-        g.drawText(versionString, 0, 0, bounds.getWidth()-3,bounds.getHeight()-2, Justification::bottomRight);
+        g.drawText(versionString, 0, 0, bounds.getWidth()-8,bounds.getHeight()-2, Justification::bottomRight);
     };
     
     void resized () override

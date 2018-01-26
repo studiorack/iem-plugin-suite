@@ -388,25 +388,23 @@ void DirectivityShaperAudioProcessorEditor::resized()
             }
         }
     }
-    
-    
-    
 }
 
 void DirectivityShaperAudioProcessorEditor::timerCallback()
 {
+    // === update titleBar widgets according to available input/output channel counts
+    int maxInSize, maxOutSize;
+    processor.getMaxSize(maxInSize, maxOutSize);
+    title.setMaxSize(maxInSize, maxOutSize);
+    // ==========================================
     
-    if (processor.maxPossibleOrder != maxPossibleOrder)
+    const int processorAmbisonicOrder = processor.output.getOrder();
+    if (processorAmbisonicOrder != ambisonicOrder)
     {
-        maxPossibleOrder = processor.maxPossibleOrder;
-        title.getOutputWidgetPtr()->updateOrderCb(maxPossibleOrder);
-    }
-    
-    if (processor.ambisonicOrder != ambisonicOrder)
-    {
-        ambisonicOrder = processor.ambisonicOrder;
+        ambisonicOrder = processorAmbisonicOrder;
         xyPad.setMaxOrder(ambisonicOrder);
     }
+    
     for (int b = 0; b <numberOfBands; ++b)
     {
         for (int i = 0; i < 8; ++i)

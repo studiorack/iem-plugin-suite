@@ -287,3 +287,16 @@ inline void copyMaxRE(const int N, float *data) {
     }
 };
 
+inline const float* getMaxRELUT(const int N) {
+    switch (N) {
+        case 1: return &maxre1[0];
+        case 2: return &maxre2[0];
+        case 3: return &maxre3[0];
+        case 4: return &maxre4[0];
+        case 5: return &maxre5[0];
+        case 6: return &maxre6[0];
+        case 7: return &maxre7[0];
+        default: return &maxre0;
+    }
+};
+

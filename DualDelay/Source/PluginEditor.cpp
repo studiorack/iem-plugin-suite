@@ -445,9 +445,10 @@ void DualDelayAudioProcessorEditor::resized()
 
 }
 void DualDelayAudioProcessorEditor::timerCallback() {
-    if (processor.maxPossibleOrder != maxPossibleOrder)
-    {
-        maxPossibleOrder = processor.maxPossibleOrder;
-        title.getInputWidgetPtr()->updateOrderCb(maxPossibleOrder);
-    }
+    // === update titleBar widgets according to available input/output channel counts
+    int maxInSize, maxOutSize;
+    processor.getMaxSize(maxInSize, maxOutSize);
+    maxInSize = jmin(maxInSize, maxOutSize);
+    title.setMaxSize(maxInSize, maxInSize);
+    // ==========================================
 }

@@ -30,7 +30,9 @@
 #include "../../resources/efficientSHvanilla.h"
 #include "reflections.h"
 #include "../../resources/ambisonicTools.h"
+#include "../../resources/IOHelper.h"
 #include "../../resources/customComponents/FilterVisualizer.h"
+
 
 #ifdef JUCE_MAC
 #define VIMAGE_H // avoid namespace clashes
@@ -65,7 +67,8 @@ struct SharedParams {
 */
 class RoomEncoderAudioProcessor  : public AudioProcessor,
                                     public AudioProcessorValueTreeState::Listener,
-                                    private Timer
+                                    private Timer,
+        public IOHelper<IOTypes::Ambisonics<>, IOTypes::Ambisonics<>>
 {
 public:
     //==============================================================================
@@ -113,42 +116,24 @@ public:
     float allGains[nImgSrc];
     //float* oldDelayPtr;
     
-    //int interpCoeffIdx;
-    //int delayInt;
-    
-    // -- variable order --
-    int maxPossibleInputOrder = -1;
-    int maxPossibleOutputOrder = -1;
-    int directivityOrder = -1;
-    int _directivityOrder = -1;
-    int nChInput = 0;
-    int _nChInput = 0;
-    
-    int ambisonicOrder = -1;
-    int _ambisonicOrder = -1;
-    int nChOutput = 0;
-    int _nChOutput = 0;
     
     //filter coefficients
     IIR::Coefficients<float>::Ptr lowShelfCoefficients;
     IIR::Coefficients<float>::Ptr highShelfCoefficients;
     
-    void setFilterVisualizer(FilterVisualizer* newFv);
-    bool userChangedOrderSettings = false;
+    void setFilterVisualizer(FilterVisualizer<float>* newFv);
     bool userChangedFilterSettings = true;
     bool updateFv = false;
     
     void timerCallback() override;
     
-    void checkOrderUpdateBuffers(int userSetDirectivityOrder, int userSetOutputOrder);
-    // --------------------
-    void updateFilterCoefficients(int sampleRate);
 
-//    void oscMessageReceived(const OSCMessage &message) override;
-    
+    void updateFilterCoefficients(double sampleRate);
+
     float* numRefl;
     float mRadius[nImgSrc];
     
+    void updateBuffers() override;
     
 private:
     //==============================================================================
@@ -159,7 +144,7 @@ private:
     double phi;
     double theta;
     
-    FilterVisualizer* editorFv = nullptr;
+    FilterVisualizer<float>* editorFv = nullptr;
     
     // Parameters
     float *directivityOrderSetting;

@@ -79,6 +79,8 @@ public:
     int maxPossibleChannels = 64;
 
     void setFreezeMode (bool freezeState);
+    void updateFilterParameters ();
+	void getT60ForFrequencyArray(double* frequencies, double* t60Data, size_t numSamples);
 
 private:
 //==============================================================================

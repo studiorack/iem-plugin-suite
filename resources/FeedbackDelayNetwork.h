@@ -30,6 +30,11 @@ class FeedbackDelayNetwork : private ProcessorBase
 public:
     enum FdnSize {
         uninitialized = 0,
+        ato = 1,
+        femto = 2,
+        pico = 4,
+        nano = 8,
+        tiny = 16,
         small = 32,
         big = 64
     };
@@ -465,9 +470,9 @@ private:
 
     void updateFdnSize(FdnSize newSize) {
         if (fdnSize != newSize) {
+            const int diff = newSize - delayBufferVector.size();
             if (fdnSize < newSize)
             {
-                const int diff = newSize - delayBufferVector.size();
                 for (int i = 0; i < diff; i++)
                 {
                     delayBufferVector.add (new AudioBuffer<float>());
@@ -478,9 +483,9 @@ private:
             else
             {
                 //TODO: what happens if newSize == 0?;
-                delayBufferVector.removeLast(32);
-                highShelfFilters.removeLast(32);
-                lowShelfFilters.removeLast(32);
+                delayBufferVector.removeLast(diff);
+                highShelfFilters.removeLast(diff);
+                lowShelfFilters.removeLast(diff);
             }
         }
         delayPositionVector.resize(newSize);

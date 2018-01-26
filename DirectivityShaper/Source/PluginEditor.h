@@ -56,8 +56,8 @@ public:
     void resized() override;
 
 private:
-    // This reference is provided as a quick way for your editor to
-    // access the processor object that created it.
+    LaF globalLaF;
+    
     DirectivityShaperAudioProcessor& processor;
     AudioProcessorValueTreeState& valueTreeState;
 
@@ -67,7 +67,7 @@ private:
     
     bool addedCoefficients = false;
     void timerCallback() override;
-    LaF globalLaF;
+
     TitleBar<AudioChannelsIOWidget<1,false>, DirectivityIOWidget> title;
     Footer footer;
 
@@ -112,7 +112,7 @@ private:
     ScopedPointer<SliderAttachment> slMasterRollAttachment;
     ScopedPointer<ButtonAttachment> tbMasterToggleAttachment;
     DirectivityVisualizer dv;
-    FilterVisualizer fv;
+    FilterVisualizer<float> fv;
     
     ScopedPointer<SliderAttachment> slParam1Attachment, slParam2Attachment, slParam3Attachment;
     ScopedPointer<ComboBoxAttachment> cbOrderSettingAttachment;

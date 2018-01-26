@@ -26,7 +26,7 @@
 //==============================================================================
 /*
 */
-class DoubleSlider    : public Component, public SliderListener
+class DoubleSlider    : public Component, public Slider::Listener
 {
 public:
     DoubleSlider()

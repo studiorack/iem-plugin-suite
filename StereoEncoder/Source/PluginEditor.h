@@ -57,12 +57,13 @@ public:
     void IEMSphereElementChanged (IEMSphere* sphere, IEMSphereElement* element) override;
     void IEMSphereMouseWheelMoved(IEMSphere* sphere, const juce::MouseEvent &event, const MouseWheelDetails &wheel) override;
 private:
-    TitleBar<AudioChannelsIOWidget<2,false>, AmbisonicIOWidget> title;
-    Footer footer;
     LaF globalLaF;
+    
+    TitleBar<AudioChannelsIOWidget<2,false>, AmbisonicIOWidget<>> title;
+    Footer footer;
+    
     void timerCallback() override;
     
-
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     StereoEncoderAudioProcessor& processor;
@@ -90,8 +91,6 @@ private:
     ScopedPointer<ComboBoxAttachment> cbOrderAtachement;
 
     TooltipWindow toolTipWin;
-
-    int maxPossibleOrder = -1;
     
     // labels
     SimpleLabel lbYaw, lbPitch, lbRoll, lblWidth, lbW, lbX, lbY, lbZ;

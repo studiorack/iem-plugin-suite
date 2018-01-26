@@ -41,7 +41,7 @@ class  T60Visualizer :  public Component
     
 public:
     T60Visualizer() : Component(), overallGainInDb(0.0f), sampleRate(48000) {};
-    T60Visualizer(float fMin, float fMax, float yMin, float yMax, float gridDiv) : Component(), sampleRate(48000), s{fMin, fMax, yMin, yMax, gridDiv} {};
+    T60Visualizer(float fMin, float fMax, float yMin, float yMax, float gridDiv) : Component(), overallGainInDb(0.0f), sampleRate(48000), s{fMin, fMax, yMin, yMax, gridDiv} {};
     ~T60Visualizer() {};
     
 
@@ -128,7 +128,6 @@ public:
         int xMax = hzToX(s.fMax);
         int yMax = t60ToY(s.yMin);
         int yMin = t60ToY(s.yMax);
-        //int yZero = t60ToY(60.f);
         
         g.excludeClipRegion(Rectangle<int>(0.0f, yMax+OH, getWidth(), getHeight()-yMax-OH));
         
@@ -140,25 +139,12 @@ public:
 
             float db = Decibels::gainToDecibels(handle->getMagnitudeForFrequency(xToHz(xMin), sampleRate));
             allMagnitudesInDb.setUnchecked(0, allMagnitudesInDb[0] + db);
-            //magnitude.startNewSubPath(xMin, jlimit((float) yMin, (float) yMax + OH + 1, t60ToYFloat (gainToT60Float (db))));
 
             for (int x = xMin+1; x<=xMax; ++x)
             {
                 float db = Decibels::gainToDecibels(handle->getMagnitudeForFrequency(xToHz(x), sampleRate));
                 allMagnitudesInDb.setUnchecked(x-xMin, allMagnitudesInDb[x-xMin] + db);
-                //DBG (gainToT60Float (db));
-                //float y = jlimit((float) yMin, (float) yMax + OH + 1, t60ToYFloat (gainToT60Float (db)));
-                //magnitude.lineTo(x, y);
             }
-
-            // g.setColour(arrayOfColours[i].withMultipliedAlpha(0.5f));
-            // g.strokePath(magnitude, PathStrokeType(isActive ? 2.5f : 0.9f));
-
-            // magnitude.lineTo(xMax, yZero);
-            // magnitude.lineTo(xMin, yZero);
-            // magnitude.closeSubPath();
-            // g.setColour(arrayOfColours[i].withMultipliedAlpha(0.3f));
-            // g.fillPath(magnitude);
         }
         
         //all magnitudes combined
@@ -172,26 +158,65 @@ public:
         }
         g.setColour(Colours::white);
         g.strokePath(magnitude, PathStrokeType(1.5f));
+
         
-        // magnitude.lineTo(xMax, yZero);
-        // magnitude.lineTo(xMin, yZero);
-        // magnitude.closeSubPath();
-        // g.setColour(Colours::white.withMultipliedAlpha(0.3f));
-        // g.fillPath(magnitude);
-        
-        // for (int i = arrayOfCoefficients.size (); --i >= 0;) {
-        //     float circX = arrayOfFrequencySliders[i] == nullptr ? hzToX(0.0f) : hzToX(arrayOfFrequencySliders[i]->getValue());
-        //     float circY = arrayOfGainSliders[i] == nullptr ? t60ToY(0.0f) : t60ToY (arrayOfGainSliders[i]->getValue());
-            
-        //     g.setColour(Colour(0xFF191919));
-        //     g.drawEllipse(circX - 5.0f, circY - 5.0f , 10.0f, 10.0f, 3.0f);
-            
-        //     g.setColour(arrayOfColours[i]);
-        //     g.drawEllipse(circX - 5.0f, circY - 5.0f , 10.0f, 10.0f, 1.0f);
-        //     g.setColour(activeElem == i ? arrayOfColours[i] : arrayOfColours[i].withSaturation(0.2));
-        //     g.fillEllipse(circX - 5.0f, circY - 5.0f , 10.0f, 10.0f);
-        // }
+        g.setColour(Colours::white.withMultipliedAlpha(0.3f));
+        g.fillPath(tolerancePath, AffineTransform::translation(0.0f, t60ToY(gainToT60Float(overallGainInDb)) - t60ToY(10.0f)));
     };
+    
+    void mouseWheelMove(const MouseEvent &e, const MouseWheelDetails &wheel) override {
+        const double delta = 100*(std::abs (wheel.deltaX) > std::abs (wheel.deltaY) ? -wheel.deltaX : wheel.deltaY);
+        //bool positiveDelta = delta >= 0.0;
+        
+        float value = s.yMax + roundToInt(delta);
+        value = jmin(value, 80.0f);
+        value = jmax(value, 5.0f);
+        
+        s.yMax = value;
+        resized();
+        repaint();
+    }
+    
+    void createTolerancePath ()
+    {
+        const float tRef = 10; //10 is our reference, can be anything
+        tolerancePath.clear();
+        
+        tolerancePath.startNewSubPath(hzToX(s.fMin), t60ToYFloat(getToleranceT60(s.fMin, tRef, true)));
+        tolerancePath.lineTo(hzToX(250.0f), t60ToYFloat(1.2f*tRef));
+        tolerancePath.lineTo(hzToX(s.fMax), t60ToYFloat(1.2f*tRef));
+        tolerancePath.lineTo(hzToX(s.fMax), t60ToYFloat(getToleranceT60(s.fMax, tRef, false)));
+        tolerancePath.lineTo(hzToX(2000.0f), t60ToYFloat(0.8*tRef));
+        tolerancePath.lineTo(hzToX(250.0f), t60ToYFloat(0.8*tRef));
+        tolerancePath.lineTo(hzToX(s.fMin), t60ToYFloat(getToleranceT60(s.fMin, tRef, false)));
+        tolerancePath.closeSubPath();
+    }
+    
+    float getToleranceT60 (float frequency, float tRef, bool upper)
+    {
+        if (frequency < 250)
+            {
+                if (upper)
+                    return tRef * (frequency * -0.002673797f + 1.868449198f);
+                else
+                    return tRef * (frequency * -0.002139037f + 1.334759358f);
+            }
+        else if (frequency < 2000)
+        {
+            if (upper)
+                return tRef * 1.2f;
+            else
+                return tRef * 0.8f;
+        }
+        else
+        {
+            if (upper)
+                return tRef * 1.2f;
+            else
+                return tRef * jlimit(0.1f, 1.f,
+                    frequency * -0.00005f + 0.9f);
+        }
+    }
     
     float gainToT60Float (float db)
     {
@@ -241,7 +266,7 @@ public:
     }
     
     void setOverallGain(float newGain) {
-        overallGainInDb = Decibels::gainToDecibels(newGain);
+        overallGainInDb = Decibels::gainToDecibels(newGain, -500.0f);
     }
     
     void mouseDrag(const MouseEvent &event) override
@@ -330,6 +355,8 @@ public:
                 hzGridPath.lineTo(xpos, t60ToY(s.yMin)+OH);
             }
         }
+        
+        createTolerancePath();
     }
     
     void addCoefficients(dsp::IIR::Coefficients<float>::Ptr newCoeffs, Colour newColourForCoeffs, Slider* frequencySlider = nullptr, Slider* gainSlider = nullptr)
@@ -353,6 +380,7 @@ private:
     Path dbGridPathBold;
     Path hzGridPath;
     Path hzGridPathBold;
+    Path tolerancePath;
     
     Array<float> allMagnitudesInDb;
     Array<dsp::IIR::Coefficients<float>::Ptr> arrayOfCoefficients;

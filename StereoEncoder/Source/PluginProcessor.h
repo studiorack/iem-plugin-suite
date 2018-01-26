@@ -27,15 +27,15 @@
 #include "../../resources/Quaternion.h"
 #include "../../resources/efficientSHvanilla.h"
 #include "../../resources/ambisonicTools.h"
-
-
+#include "../../resources/IOHelper.h"
 
 
 //==============================================================================
 /**
 */
 class StereoEncoderAudioProcessor  : public AudioProcessor,
-                                                public AudioProcessorValueTreeState::Listener
+                                                public AudioProcessorValueTreeState::Listener,
+public IOHelper<IOTypes::AudioChannels<2>, IOTypes::Ambisonics<>>
 {
 public:
     //==============================================================================
@@ -91,20 +91,10 @@ public:
     float *pitch;
     float *roll;
     float *width;
+    float *highQuality;
     
-    
-    // -- variable order --
-    int maxPossibleOrder = -1;
-    int ambisonicOrder = -1;
-    int _ambisonicOrder = -1;
-    int nChannels = 0;
-    int _nChannels = 0;
-    
-    bool userChangedOrderSettings = false;
-    void checkOrderUpdateBuffers(int userSetOutputOrder);
     // --------------------
     
-    int  useInput = 1; //0: quaternion, 1: ypr, 2: cartesian
     bool yprInput;
     iem::Quaternion<float> quat,quatL, quatR, quatLRot;
 double phi, theta;
@@ -125,7 +115,11 @@ private:
     float _SHL[64];
     float _SHR[64];
     
-    //float gains[4];
+    AudioBuffer<float> bufferCopy;
+    
+    LinearSmoothedValue<float> smoothYawL, smoothPitchL;
+    LinearSmoothedValue<float> smoothYawR, smoothPitchR;
+    
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (StereoEncoderAudioProcessor)
 };
 

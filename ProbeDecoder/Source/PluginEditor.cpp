@@ -127,12 +127,12 @@ void ProbeDecoderAudioProcessorEditor::paint (Graphics& g)
 
 void ProbeDecoderAudioProcessorEditor::timerCallback()
 {
-    // check max possible order and update combobox in title
-    if (processor.maxPossibleOrder != maxPossibleOrder)
-    {
-        maxPossibleOrder = processor.maxPossibleOrder;
-        title.getInputWidgetPtr()->updateOrderCb(maxPossibleOrder);
-    }
+    // === update titleBar widgets according to available input/output channel counts
+    int maxInSize, maxOutSize;
+    processor.getMaxSize(maxInSize, maxOutSize);
+    title.setMaxSize(maxInSize, maxOutSize);
+    // ==========================================
+    
     sphere.repaint();
 }
 

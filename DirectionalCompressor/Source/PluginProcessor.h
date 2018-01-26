@@ -31,12 +31,15 @@
 #include "../../resources/tDesignN7.h"
 #include "../../resources/Eigen/Dense"
 #include "../../resources/ambisonicTools.h"
+#include "../../resources/IOHelper.h"
+#include "../../resources/Compressor.h"
 
 //==============================================================================
 /**
 */
 class AmbisonicCompressorAudioProcessor  : public AudioProcessor,
-                                            public AudioProcessorValueTreeState::Listener
+                                            public AudioProcessorValueTreeState::Listener,
+public IOHelper<IOTypes::Ambisonics<>, IOTypes::Ambisonics<>>
 {
 public:
     //==============================================================================
@@ -88,22 +91,12 @@ public:
     AudioProcessorValueTreeState parameters;
     void calcParams();
     
-    // -- variable order --
-    int maxPossibleOrder = -1;
-    int ambisonicOrder = -1;
-    int _ambisonicOrder = -1;
-    int nChannels = 0;
-    int _nChannels = 0;
-    
-    bool userChangedOrderSettings = false;
-    void checkOrderUpdateBuffers(int userSetOutputOrder, int samplesPerBlock);
-    // -------------------- //
     
 private:
     //==============================================================================
+    void updateBuffers() override;
+    
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AmbisonicCompressorAudioProcessor)
-    IIRFilter c1MeanSqrFilter;
-    IIRFilter c2MeanSqrFilter;
     
     AudioBuffer<float> omniW;
     AudioBuffer<float> maskBuffer;
@@ -119,13 +112,8 @@ private:
     
     const float *drivingPointers[3];
     
-    Array<float> c1RMS;
     Array<float> c1Gains;
-    Array<float> c1GRarray;
-    
-    Array<float> c2RMS;
     Array<float> c2Gains;
-    Array<float> c2GRarray;
     
     float c1GR;
     float c2GR;
@@ -134,6 +122,7 @@ private:
     
     bool paramChanged = true;
     
+    Compressor compressor1, compressor2;
     // == PARAMETERS ==
     // settings and mask
     float *orderSetting;
@@ -148,6 +137,7 @@ private:
     float *c1DrivingSignal;
     float *c1Apply;
     float *c1Threshold;
+    float *c1Knee;
     float *c1Attack;
     float *c1Release;
     float *c1Ratio;
@@ -157,6 +147,7 @@ private:
     float *c2DrivingSignal;
     float *c2Apply;
     float *c2Threshold;
+    float *c2Knee;
     float *c2Attack;
     float *c2Release;
     float *c2Ratio;

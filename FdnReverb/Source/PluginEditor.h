@@ -33,7 +33,7 @@
 
 using namespace juce::dsp;
 
-typedef AudioProcessorValueTreeState::SliderAttachment SliderAttachment;
+typedef ReverseSlider::SliderAttachment SliderAttachment;
 typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 
 //==============================================================================
@@ -52,22 +52,22 @@ public:
     void sliderValueChanged (Slider* slider) override;
 
 private:
-    // This reference is provided as a quick way for your editor to
-    // access the processor object that created it.
+    LaF globalLaF;
+    
     FdnReverbAudioProcessor& processor;
     AudioProcessorValueTreeState& valueTreeState;
 
     // Layout stuff (footers, headers, logos, etc.)
     TitleBar<NoIOWidget, NoIOWidget> title;
     Footer footer;
-    LaF globalLaF;
+    
     void timerCallback() override;
 
     SimpleLabel lbDelay, lbTime, lbDryWet, lbHighCutoff, lbHighQ, lbHighGain, lbLowCutoff, lbLowQ, lbLowGain;
 
     // Functional stuff (sliders, Indicators, OpenGL Voodoo magic, etc.)
     // Groups
-    GroupComponent delayGroup, highsGroup, lowsGroup, t60Group, gainGroup;
+    GroupComponent delayGroup, filterGroup, t60Group;
 
     // Sliders
     ReverseSlider delayLengthSlider, revTimeSlider, dryWetSlider, highCutoffSlider, highQSlider, highGainSlider, lowCutoffSlider, lowQSlider, lowGainSlider;
@@ -81,7 +81,7 @@ private:
     
     // filter visualization
     T60Visualizer tv;
-    FilterVisualizer fv;
+    FilterVisualizer<float> fv;
 
     IIR::Coefficients<float>::Ptr highpassCoeffs;
     IIR::Coefficients<float>::Ptr lowpassCoeffs;

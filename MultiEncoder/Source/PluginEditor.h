@@ -20,8 +20,7 @@
  ==============================================================================
  */
 
-#ifndef PLUGINEDITOR_H_INCLUDED
-#define PLUGINEDITOR_H_INCLUDED
+#pragma once
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "PluginProcessor.h"
@@ -29,7 +28,6 @@
 #include "../../resources/customComponents/ReverseSlider.h"
 #include "../../resources/lookAndFeel/IEM_LaF.h"
 #include "../../resources/customComponents/TitleBar.h"
-#include "../../resources/customComponents/IEMSphere.h"
 #include "../../resources/customComponents/SimpleLabel.h"
 #include "../../resources/customComponents/MuteSoloButton.h"
 #include "../../resources/customComponents/SpherePanner.h"
@@ -46,29 +44,25 @@ typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 */
 class MultiEncoderAudioProcessorEditor  : public AudioProcessorEditor,
 private Timer,
-public IEMSphere::IEMSphereListener,
-public IEMSphere::IEMSphereElement
+private SpherePanner::Listener,
+private AudioProcessorValueTreeState::Listener
 {
 public:
-
     MultiEncoderAudioProcessorEditor (MultiEncoderAudioProcessor&, AudioProcessorValueTreeState&);
     ~MultiEncoderAudioProcessorEditor();
 
     //==============================================================================
     void paint (Graphics&) override;
     void resized() override;
-
-    void IEMSphereElementChanged (IEMSphere* sphere, IEMSphereElement* element) override;
-
-    
+    void parameterChanged (const String &parameterID, float newValue) override;
 private:
-    TitleBar<AudioChannelsIOWidget<maxNumberOfInputs>, AmbisonicIOWidget> title;
-    Footer footer;
     LaF globalLaF;
+    TitleBar<AudioChannelsIOWidget<maxNumberOfInputs>, AmbisonicIOWidget<>> title;
+    Footer footer;
+    
     void timerCallback() override;
+    void mouseWheelOnSpherePannerMoved (SpherePanner* sphere, const MouseEvent &event, const MouseWheelDetails &wheel) override;
 
-    // This reference is provided as a quick way for your editor to
-    // access the processor object that created it.
     MultiEncoderAudioProcessor& processor;
 
     GroupComponent quatGroup,ypGroup,settingsGroup;
@@ -77,11 +71,7 @@ private:
     ToggleButton tbLockedToMaster;
     ComboBox inputChooser;
 
-    //IEMSphere sphere;
-    //IEMSphereElement grabElement;
-    
     SpherePanner sphere;
-    //SpherePanner::Element sphereElements[maxNumberOfInputs];
     SpherePanner::Element masterElement;
     
     AudioProcessorValueTreeState& valueTreeState;
@@ -97,7 +87,6 @@ private:
     Viewport viewport;
     EncoderList encoderList;
     
-    
     TooltipWindow toolTipWin;
 
     int maxPossibleOrder = -1;
@@ -110,5 +99,3 @@ private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MultiEncoderAudioProcessorEditor)
 };
 
-
-#endif  // PLUGINEDITOR_H_INCLUDED

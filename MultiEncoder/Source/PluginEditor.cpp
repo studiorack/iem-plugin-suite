@@ -31,15 +31,19 @@
 MultiEncoderAudioProcessorEditor::MultiEncoderAudioProcessorEditor (MultiEncoderAudioProcessor& p, AudioProcessorValueTreeState& vts)
 : AudioProcessorEditor (&p), processor (p), valueTreeState(vts), encoderList(p, sphere, &vts)//, sphere_opengl(nullptr)
 {
-    // Make sure that before the constructor has finished, you've set the
-    // editor's size to whatever you need it to be.
-    setSize (600,450);
     setLookAndFeel (&globalLaF);
+    
+    for (int i = 0; i < maxNumberOfInputs; ++i)
+    {
+        valueTreeState.addParameterListener("yaw"+String(i), this);
+        valueTreeState.addParameterListener("pitch"+String(i), this);
+    }
+    valueTreeState.addParameterListener("masterYaw", this);
+    valueTreeState.addParameterListener("masterPitch", this);
     
     // ==== SPHERE AND ELEMENTS ===============
     addAndMakeVisible(&sphere);
-    //sphere.addListener(this);
-    
+    sphere.addListener(this);
     
     sphere.addElement(&masterElement);
     masterElement.setColour(Colours::black);
@@ -60,7 +64,7 @@ MultiEncoderAudioProcessorEditor::MultiEncoderAudioProcessorEditor (MultiEncoder
     
     addAndMakeVisible(&viewport);
     viewport.setViewedComponent(&encoderList);
-
+    
     cbNumInputChannelsAttachment = new ComboBoxAttachment(valueTreeState,"inputSetting",*title.getInputWidgetPtr()->getChannelsCbPointer());
     cbNormalizationAtachment = new ComboBoxAttachment(valueTreeState,"useSN3D",*title.getOutputWidgetPtr()->getNormCbPointer());
     cbOrderAtachment = new ComboBoxAttachment(valueTreeState,"orderSetting",*title.getOutputWidgetPtr()->getOrderCbPointer());
@@ -127,30 +131,26 @@ MultiEncoderAudioProcessorEditor::MultiEncoderAudioProcessorEditor (MultiEncoder
     
     addAndMakeVisible(&lbPitch);
     lbPitch.setText("Pitch");
-
+    
     addAndMakeVisible(&lbGain);
     lbGain.setText("Gain");
     
-    startTimer(10);
+    
+    setResizeLimits(590, 455, 800, 1200);
+    startTimer(40);
 }
 
-void MultiEncoderAudioProcessorEditor::IEMSphereElementChanged (IEMSphere* sphere, IEMSphereElement* element) {
-    
-    Vector3D<float> pos = element->getPosition();
-    float hypxy = sqrt(pos.x*pos.x+pos.y*pos.y);
-    
-    float yaw = atan2f(pos.y,pos.x);
-    float pitch = atan2f(hypxy,pos.z)-M_PI/2;
-    
-    if (element->getID() == "grabber") {
-        valueTreeState.getParameter("masterYaw")->setValue(valueTreeState.getParameterRange("masterYaw").convertTo0to1(yaw/M_PI*180.0f));
-        valueTreeState.getParameter("masterPitch")->setValue(valueTreeState.getParameterRange("masterPitch").convertTo0to1(pitch/M_PI*180.0f));
-    }
-}
 
 MultiEncoderAudioProcessorEditor::~MultiEncoderAudioProcessorEditor()
 {
     setLookAndFeel(nullptr);
+    for (int i = 0; i < maxNumberOfInputs; ++i)
+    {
+        valueTreeState.removeParameterListener("yaw"+String(i), this);
+        valueTreeState.removeParameterListener("pitch"+String(i), this);
+    }
+    valueTreeState.removeParameterListener("masterYaw", this);
+    valueTreeState.removeParameterListener("masterPitch", this);
 }
 
 //==============================================================================
@@ -161,39 +161,38 @@ void MultiEncoderAudioProcessorEditor::paint (Graphics& g)
 
 void MultiEncoderAudioProcessorEditor::timerCallback()
 {
-    // check max possible order and update combobox in title
-    if (processor.maxPossibleOrder != maxPossibleOrder)
+    // === update titleBar widgets according to available input/output channel counts
+    int maxInSize, maxOutSize;
+    processor.getMaxSize(maxInSize, maxOutSize);
+    title.setMaxSize(maxInSize, maxOutSize);
+    // ==========================================
+    
+    
+    
+    const int nChIn = processor.input.getSize();
+    if (nChIn != lastSetNumChIn)
     {
-        maxPossibleOrder = processor.maxPossibleOrder;
-        title.getOutputWidgetPtr()->updateOrderCb(maxPossibleOrder);
+        encoderList.setNumberOfChannels(nChIn);
+        lastSetNumChIn = nChIn;
+        sphere.repaint();
     }
     
-    if (processor.maxNumInputs != maxNumInputs)
+    if (processor.soloMuteChanged)
     {
-        maxNumInputs = processor.maxNumInputs;
-        title.getInputWidgetPtr()->updateMxPossibleChannelNumber(maxNumInputs); //TODO
-    }
-    
-    if (processor.nChIn != lastSetNumChIn)
-    {
-        encoderList.setNumberOfChannels(processor.nChIn);
-        lastSetNumChIn = processor.nChIn;
-        processor.editorNChIn = lastSetNumChIn;
-    }
-
-    
-    if (!processor.soloMask.isZero()) {
-        for (int i = 0; i<lastSetNumChIn; ++i)
-        {
-            encoderList.sphereElementArray[i]->setActive(processor.soloMask[i]);
+        if (! processor.soloMask.isZero()) {
+            for (int i = 0; i<lastSetNumChIn; ++i)
+            {
+                encoderList.sphereElementArray[i]->setActive(processor.soloMask[i]);
+            }
         }
-    }
-    else
-    {
-        for (int i = 0; i<lastSetNumChIn; ++i)
+        else
         {
-            encoderList.sphereElementArray[i]->setActive(!processor.muteMask[i]);
+            for (int i = 0; i<lastSetNumChIn; ++i)
+            {
+                encoderList.sphereElementArray[i]->setActive(!processor.muteMask[i]);
+            }
         }
+        processor.soloMuteChanged = false;
     }
     
     if (processor.updateColours)
@@ -201,10 +200,22 @@ void MultiEncoderAudioProcessorEditor::timerCallback()
         processor.updateColours = false;
         encoderList.updateColours();
     }
-    
-    //masterElement.setPosition(Vector3D<float>(processor.xyzGrab[0], processor.xyzGrab[1], processor.xyzGrab[2]));
+}
+
+void MultiEncoderAudioProcessorEditor::mouseWheelOnSpherePannerMoved (SpherePanner* sphere, const MouseEvent &event, const MouseWheelDetails &wheel)
+{
+    if (event.mods.isCommandDown() && event.mods.isAltDown())
+        slMasterRoll.mouseWheelMove(event, wheel);
+    else if (event.mods.isAltDown())
+        slMasterPitch.mouseWheelMove(event, wheel);
+    else if (event.mods.isCommandDown())
+        slMasterYaw.mouseWheelMove(event, wheel);
+}
+void MultiEncoderAudioProcessorEditor::parameterChanged (const String &parameterID, float newValue)
+{
     sphere.repaint();
 }
+
 
 void MultiEncoderAudioProcessorEditor::resized()
 {
@@ -221,6 +232,7 @@ void MultiEncoderAudioProcessorEditor::resized()
     Rectangle<int> headerArea = area.removeFromTop    (headerHeight);
     title.setBounds (headerArea);
     area.removeFromTop(10);
+    area.removeFromBottom(5);
     
     Rectangle<int> sliderRow;
     
@@ -234,14 +246,14 @@ void MultiEncoderAudioProcessorEditor::resized()
     const int rotSliderWidth = 40;
     //const int labelHeight = 15;
     //const int labelWidth = 20;
-
-
+    
+    
     // -------------- Yaw Pitch Roll Labels ------------------
     Rectangle<int> yprArea (sideBarArea);
     ypGroup.setBounds (yprArea);
     yprArea.removeFromTop(25); //for box headline
-
-
+    
+    
     sliderRow = (yprArea.removeFromTop(15));
     lbNum.setBounds(sliderRow.removeFromLeft(22));
     sliderRow.removeFromLeft(5);
@@ -250,17 +262,29 @@ void MultiEncoderAudioProcessorEditor::resized()
     lbPitch.setBounds(sliderRow.removeFromLeft(rotSliderWidth));
     sliderRow.removeFromLeft(rotSliderSpacing);
     lbGain.setBounds(sliderRow.removeFromLeft(rotSliderWidth));
-
-    viewport.setBounds(yprArea);
-
     
-
+    viewport.setBounds(yprArea);
+    
+    
+    
     // ============== SIDEBAR LEFT ====================
-
+    
+    const int grapperAreaHeight = 70;
     area.removeFromRight(10); // spacing
     
+    Rectangle<int> sphereArea (area);
+    sphereArea.removeFromBottom(grapperAreaHeight);
+    
+    if ((float)sphereArea.getWidth()/sphereArea.getHeight() > 1)
+        sphereArea.setWidth(sphereArea.getHeight());
+    else
+        sphereArea.setHeight(sphereArea.getWidth());
+    sphere.setBounds(sphereArea);
+    
+    area.removeFromTop(sphereArea.getHeight());
+    
     // ------------- Grabber ------------------------
-    Rectangle<int> grabberArea (area.removeFromBottom(70));
+    Rectangle<int> grabberArea (area.removeFromTop(grapperAreaHeight));
     quatGroup.setBounds (grabberArea);
     grabberArea.removeFromTop(25); //for box headline
     
@@ -272,15 +296,5 @@ void MultiEncoderAudioProcessorEditor::resized()
     slMasterRoll.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
     sliderRow.removeFromLeft(rotSliderSpacing);
     tbLockedToMaster.setBounds (sliderRow.removeFromLeft(100));
-    
-    
-    Rectangle<int> sphereArea (area);
-    
-    if ((float)sphereArea.getWidth()/sphereArea.getHeight() > 1)
-        sphereArea.setWidth(sphereArea.getHeight());
-    else
-        sphereArea.setHeight(sphereArea.getWidth());
-    sphere.setBounds(sphereArea);
-    
 }
 

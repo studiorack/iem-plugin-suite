@@ -51,21 +51,21 @@ public:
     //float sliderThumbDiameter = 14.0f;
     float sliderBarSize = 8.0f;
     
-    //    Colour ClBackground = Colour(0xFF2D2D2D);
-    //    Colour ClBackground = Colour(0xFF2D2D2D);
     LaF()
     {
         robotoLight = Typeface::createSystemTypefaceFor(BinaryData::RobotoLight_ttf, BinaryData::RobotoLight_ttfSize); //TODO: free this data
         robotoMedium = Typeface::createSystemTypefaceFor(BinaryData::RobotoMedium_ttf, BinaryData::RobotoMedium_ttfSize);
         robotoBold = Typeface::createSystemTypefaceFor(BinaryData::RobotoBold_ttf, BinaryData::RobotoBold_ttfSize);
         robotoRegular = Typeface::createSystemTypefaceFor(BinaryData::RobotoRegular_ttf, BinaryData::RobotoRegular_ttfSize); //
-
+        
         setColour (Slider::rotarySliderFillColourId, Colours::black);
         setColour (Slider::thumbColourId, Colour (0xCCFFFFFF));
         setColour (TextButton::buttonColourId, Colours::black);
         setColour (TextButton::textColourOnId, Colours::white);
         setColour (ResizableWindow::backgroundColourId, Colour(0xFF2D2D2D));
         setColour (ScrollBar::thumbColourId, Colours::steelblue);
+        setColour (ScrollBar::thumbColourId, Colours::steelblue);
+        setColour (PopupMenu::backgroundColourId, Colours::steelblue.withMultipliedAlpha(0.9f));
     }
     
     ~LaF() {}
@@ -84,10 +84,14 @@ public:
         //return label.getFont();
         return Font(robotoMedium);
     }
+    
     Font getPopupMenuFont() override
     {
-        return Font (14.0f);
+        Font font(robotoRegular);
+        font.setHeight(14.0f);
+        return font;
     }
+    
     Slider::SliderLayout getSliderLayout (Slider& slider) override
     {
         
@@ -127,13 +131,13 @@ public:
                 layout.textBoxBounds.setHeight (textBoxHeight);
                 
                 if (textBoxPos == Slider::TextBoxLeft)           layout.textBoxBounds.setX (0);
-                    else if (textBoxPos == Slider::TextBoxRight)     layout.textBoxBounds.setX (localBounds.getWidth() - textBoxWidth);
-                        else /* above or below -> centre horizontally */ layout.textBoxBounds.setX ((localBounds.getWidth() - textBoxWidth) / 2);
-                            
-                            if (textBoxPos == Slider::TextBoxAbove)          layout.textBoxBounds.setY (0);
-                                else if (textBoxPos == Slider::TextBoxBelow)     layout.textBoxBounds.setY (localBounds.getHeight() - textBoxHeight);
-                                    else /* left or right -> centre vertically */    layout.textBoxBounds.setY ((localBounds.getHeight() - textBoxHeight) / 2);
-                                        }
+                else if (textBoxPos == Slider::TextBoxRight)     layout.textBoxBounds.setX (localBounds.getWidth() - textBoxWidth);
+                else /* above or below -> centre horizontally */ layout.textBoxBounds.setX ((localBounds.getWidth() - textBoxWidth) / 2);
+                
+                if (textBoxPos == Slider::TextBoxAbove)          layout.textBoxBounds.setY (0);
+                else if (textBoxPos == Slider::TextBoxBelow)     layout.textBoxBounds.setY (localBounds.getHeight() - textBoxHeight);
+                else /* left or right -> centre vertically */    layout.textBoxBounds.setY ((localBounds.getHeight() - textBoxHeight) / 2);
+            }
         }
         
         // 3. set the slider bounds
@@ -147,15 +151,15 @@ public:
         else
         {
             if (textBoxPos == Slider::TextBoxLeft)       layout.sliderBounds.removeFromLeft (textBoxWidth);
-                else if (textBoxPos == Slider::TextBoxRight) layout.sliderBounds.removeFromRight (textBoxWidth);
-                    else if (textBoxPos == Slider::TextBoxAbove) layout.sliderBounds.removeFromTop (textBoxHeight);
-                        else if (textBoxPos == Slider::TextBoxBelow) layout.sliderBounds.removeFromBottom (textBoxHeight);
-                            
-                            const int thumbIndent = getSliderThumbRadius (slider);
-                            
-                            if (slider.isHorizontal())    layout.sliderBounds.reduce (thumbIndent, 0);
-                                else if (slider.isVertical()) layout.sliderBounds.reduce (0, thumbIndent);
-                                    }
+            else if (textBoxPos == Slider::TextBoxRight) layout.sliderBounds.removeFromRight (textBoxWidth);
+            else if (textBoxPos == Slider::TextBoxAbove) layout.sliderBounds.removeFromTop (textBoxHeight);
+            else if (textBoxPos == Slider::TextBoxBelow) layout.sliderBounds.removeFromBottom (textBoxHeight);
+            
+            const int thumbIndent = getSliderThumbRadius (slider);
+            
+            if (slider.isHorizontal())    layout.sliderBounds.reduce (thumbIndent, 0);
+            else if (slider.isVertical()) layout.sliderBounds.reduce (0, thumbIndent);
+        }
         
         return layout;
         
@@ -203,23 +207,39 @@ public:
         
     }
     
+    void drawCornerResizer (Graphics& g,
+                            int w, int h,
+                            bool /*isMouseOver*/,
+                            bool /*isMouseDragging*/) override
+    {
+        g.setColour (Colours::white.withMultipliedAlpha(0.5f));
+        
+        Path triangle;
+        triangle.startNewSubPath(w, h);
+        triangle.lineTo(0.5 * w, h);
+        triangle.lineTo(w, 0.5 * h);
+        triangle.closeSubPath();
+        
+        g.fillPath(triangle);
+    }
+    
     void fillTextEditorBackground (Graphics& g, int width, int height, TextEditor& textEditor) override
     {
-                if (dynamic_cast<AlertWindow*> (textEditor.getParentComponent()) != nullptr)
-                {
-                    g.setColour (textEditor.findColour (TextEditor::backgroundColourId));
-                    g.fillRect (0, 0, width, height);
-        
-                    g.setColour (textEditor.findColour (TextEditor::outlineColourId));
-                    g.drawHorizontalLine (height - 1, 0.0f, static_cast<float> (width));
-                }
-                else
-                {
-                    Path p;
-                    p.addRoundedRectangle(0, 0, width, height, height/2.0f);
-                    g.setColour (ClTextTextboxbg);
-                    g.fillPath (p);
-                }
+        if (dynamic_cast<AlertWindow*> (textEditor.getParentComponent()) != nullptr)
+        {
+            g.setColour (textEditor.findColour (TextEditor::backgroundColourId));
+            g.fillRect (0, 0, width, height);
+            
+            g.setColour (textEditor.findColour (TextEditor::outlineColourId));
+            g.drawHorizontalLine (height - 1, 0.0f, static_cast<float> (width));
+        }
+        else
+        {
+            Path p;
+            p.addRoundedRectangle(0, 0, width, height, 12.0f);
+            g.setColour (ClTextTextboxbg);
+            g.fillPath (p);
+        }
     }
     
     
@@ -262,18 +282,18 @@ public:
             
             if (style == Slider::LinearBarVertical)
                 p.addRectangle (fx, sliderPos, fw, 1.0f + fh - sliderPos);
-                else
-                    p.addRectangle (fx, fy, sliderPos - fx, fh);
-                    
-                    
-                    Colour baseColour (slider.findColour (Slider::rotarySliderFillColourId)
-                                       .withMultipliedSaturation (slider.isEnabled() ? 1.0f : 0.5f)
-                                       .withMultipliedAlpha (1.0f));
-                    
-                    g.setColour (baseColour);
-                    g.fillPath (p);
-                    
-                    const float lineThickness = jmin (15.0f, jmin (width, height) * 0.45f) * 0.1f;
+            else
+                p.addRectangle (fx, fy, sliderPos - fx, fh);
+            
+            
+            Colour baseColour (slider.findColour (Slider::rotarySliderFillColourId)
+                               .withMultipliedSaturation (slider.isEnabled() ? 1.0f : 0.5f)
+                               .withMultipliedAlpha (1.0f));
+            
+            g.setColour (baseColour);
+            g.fillPath (p);
+            
+            const float lineThickness = jmin (15.0f, jmin (width, height) * 0.45f) * 0.1f;
             g.drawRect (slider.getLocalBounds().toFloat(), lineThickness);
         }
         else
@@ -313,7 +333,7 @@ public:
             }
             else
             {
-            clbar.addRoundedRectangle(Rectangle<float>(Point<float>(x+width*zeroPos, iy), Point<float>(sliderPos, iy+sliderRadius)),sliderRadius/2.0,sliderRadius/2.0);
+                clbar.addRoundedRectangle(Rectangle<float>(Point<float>(x+width*zeroPos, iy), Point<float>(sliderPos, iy+sliderRadius)),sliderRadius/2.0,sliderRadius/2.0);
             }
         }
         else
@@ -331,8 +351,8 @@ public:
         g.fillPath(clbar);
         g.setColour(ClFaceShadowOutline);
         
-        g.strokePath(slbg, PathStrokeType(1.f));
-
+        g.strokePath(slbg, PathStrokeType(1.0f));
+        
         
     }
     
@@ -426,7 +446,7 @@ public:
         
         //bool isDownOrDragging = slider.isEnabled() && (slider.isMouseOverOrDragging() || slider.isMouseButtonDown());
         //Colour knobColour (slider.findColour (Slider::thumbColourId).withMultipliedSaturation ((slider.hasKeyboardFocus (false) || isDownOrDragging) ? 1.3f : 0.9f)
-                          // .withMultipliedAlpha (slider.isEnabled() ? 1.0f : 0.7f));
+        // .withMultipliedAlpha (slider.isEnabled() ? 1.0f : 0.7f));
         Colour knobColour = slider.findColour(Slider::rotarySliderOutlineColourId).withMultipliedAlpha (slider.isEnabled() ? 1.0f : 0.7f);
         const float outlineThickness = slider.isEnabled() ? 1.9f : 0.3f;
         
@@ -445,7 +465,7 @@ public:
                 ky = y + height * 0.5f;
             }
             
-
+            
             
             drawRoundThumb (g,
                             kx,
@@ -466,7 +486,7 @@ public:
                             maxSliderPos,
                             sliderRadius * 2.0f,
                             knobColour, outlineThickness);
-            }
+        }
         else if (style == Slider::TwoValueHorizontal )
         {
             drawRoundThumb (g,
@@ -480,8 +500,8 @@ public:
                             jmax (sliderRadius, y + height * 0.5f),
                             sliderRadius * 2.0f,
                             knobColour, outlineThickness);
-
-            }
+            
+        }
         else
         {
             // Just call the base class for the demo
@@ -506,7 +526,7 @@ public:
         g.strokePath (p, PathStrokeType (outlineThickness));
         
         g.setColour (ClRotSliderArrowShadow);
-        g.drawEllipse (centreX + 1.0f - halfThickness, centreY + 1.0f - halfThickness, diameter - outlineThickness-1.0f, diameter - outlineThickness-1.0f, 1.4f);       
+        g.drawEllipse (centreX + 1.0f - halfThickness, centreY + 1.0f - halfThickness, diameter - outlineThickness-1.0f, diameter - outlineThickness-1.0f, 1.4f);
     }
     
     
@@ -515,7 +535,7 @@ public:
         return new TextButton (isIncrement ? "+" : "-", String());
         //return new ArrowButton (String(),isIncrement ? 0.75 : 0.25f,Colours::white);
     }
-
+    
     
     
     void drawButtonBackground (Graphics& g, Button& button, const Colour& backgroundColour,
@@ -523,35 +543,36 @@ public:
     {
         Colour baseColour (backgroundColour.withMultipliedSaturation (button.hasKeyboardFocus (true) ? 1.3f : 0.9f)
                            .withMultipliedAlpha (button.isEnabled() ? 1.0f : 0.5f));
+        //Colour outlineColour (backgroundColour);
         
         if (isButtonDown || isMouseOverButton) baseColour = baseColour.contrasting (isButtonDown ? 0.3f : 0.1f);
-            
+        //if (isButtonDown || isMouseOverButton) baseColour = baseColour.overlaidWith (backgroundColour.withAlpha(isButtonDown ? 0.8f : 0.4f));
+        
         const bool flatOnLeft   = button.isConnectedOnLeft();
         const bool flatOnRight  = button.isConnectedOnRight();
         const bool flatOnTop    = button.isConnectedOnTop();
         const bool flatOnBottom = button.isConnectedOnBottom();
-            
-        const float width  = button.getWidth();
-        const float height = button.getHeight() ;
+        
+        const float width  = button.getWidth()-2;
+        const float height = button.getHeight()-2;
         
         if (width > 0 && height > 0)
         {
             const float cornerSize = jmin (15.0f, jmin (width, height) * 0.45f);
-
+            
             
             Path outline;
-            outline.addRoundedRectangle (0.0f, 0.0f, width, height,
+            outline.addRoundedRectangle (1.0f, 1.0f, width, height,
                                          cornerSize, cornerSize,
                                          ! (flatOnLeft  || flatOnTop),
                                          ! (flatOnRight || flatOnTop),
                                          ! (flatOnLeft  || flatOnBottom),
                                          ! (flatOnRight || flatOnBottom));
             
-            
             g.setColour (baseColour);
             g.fillPath (outline);
-            
-
+//            g.setColour (backgroundColour);
+//            g.strokePath (outline, PathStrokeType(1.3f));
         }
     }
     void drawButtonText (Graphics& g, TextButton& button, bool /*isMouseOverButton*/, bool /*isButtonDown*/) override
@@ -577,25 +598,25 @@ public:
     }
     
     void drawToggleButton (Graphics& g, ToggleButton& button,
-                                           bool isMouseOverButton, bool isButtonDown) override
+                           bool isMouseOverButton, bool isButtonDown) override
     {
         if (button.getButtonText() == "ON/OFF")
         {
             Colour baseColour (Colours::black.withMultipliedSaturation (button.hasKeyboardFocus (true) ? 1.3f : 0.9f)
                                .withMultipliedAlpha (button.isEnabled() ? 1.0f : 0.5f));
-
-                
+            
+            
             const float width  = button.getWidth();
             const float height = button.getHeight() ;
             bool isOn = button.getToggleState();
             const float cornerSize = jmin (15.0f, jmin (width, height) * 0.45f);
-                    
-                    
+            
+            
             Path outline;
             outline.addRoundedRectangle (0.5f, 0.5f, width-1, height-1,
-                                                 cornerSize, cornerSize);
-                    
-                    
+                                         cornerSize, cornerSize);
+            
+            
             g.setColour (baseColour);
             g.fillPath (outline);
             if (isMouseOverButton)
@@ -648,13 +669,13 @@ public:
                       bool isButtonDown) override
     {
         const float boxSize = w * 0.8f;
-
+        
         Rectangle<float> buttonArea(x + (w - boxSize) * 0.5f, y + (h - boxSize) * 0.5f, boxSize, boxSize);
         
-
+        
         g.setColour(component.findColour(ToggleButton::tickColourId).withMultipliedAlpha(ticked ? 1.0f : isMouseOverButton ? 0.7f : 0.5f) );
         
-
+        
         if (isMouseOverButton)
             buttonArea.reduce(0.4f, 0.4f);
         g.drawRoundedRectangle(buttonArea, 2.0f, 1.0f);
@@ -664,8 +685,8 @@ public:
         g.setColour(component.findColour(ToggleButton::tickColourId).withMultipliedAlpha(ticked ? 1.0f : 0.3f));
         
         g.fillRoundedRectangle(buttonArea, 2.0f);
-            
-    
+        
+        
     }
     
     Path getTickShape (const float height) override
@@ -702,17 +723,17 @@ public:
     }
     
     void drawComboBox (Graphics& g, int width, int height, bool isButtonDown,
-                            int buttonX, int buttonY, int buttonW, int buttonH,
-                            ComboBox& box) override
+                       int buttonX, int buttonY, int buttonW, int buttonH,
+                       ComboBox& box) override
     {
         //const auto cornerSize = box.findParentComponentOfClass<ChoicePropertyComponent>() != nullptr ? 0.0f : 3.0f;
-//        const Rectangle<int> boxBounds (0, 0, width, height);
-//        
-//        g.setColour (box.findColour (ComboBox::backgroundColourId));
-//        g.fillRoundedRectangle (boxBounds.toFloat(), cornerSize);
-//        
-//        g.setColour (box.findColour (ComboBox::outlineColourId));
-//        g.drawRoundedRectangle (boxBounds.toFloat().reduced (0.5f, 0.5f), cornerSize, 1.0f);
+        //        const Rectangle<int> boxBounds (0, 0, width, height);
+        //
+        //        g.setColour (box.findColour (ComboBox::backgroundColourId));
+        //        g.fillRoundedRectangle (boxBounds.toFloat(), cornerSize);
+        //
+        //        g.setColour (box.findColour (ComboBox::outlineColourId));
+        //        g.drawRoundedRectangle (boxBounds.toFloat().reduced (0.5f, 0.5f), cornerSize, 1.0f);
         
         Rectangle<int> buttonArea (buttonX, buttonY, buttonW, buttonH);
         Path path;
@@ -723,6 +744,113 @@ public:
         g.setColour (Colours::white.withAlpha ((box.isEnabled() ? 0.9f : 0.2f)));
         g.strokePath (path, PathStrokeType (2.0f));
     }
+    
+   
+    void drawPopupMenuSectionHeader (Graphics& g, const Rectangle<int>& area, const String& sectionName) override
+    {
+        g.setFont (robotoBold);
+        g.setFont(18.0f);
+        g.setColour (findColour (PopupMenu::headerTextColourId));
+        
+        g.drawFittedText (sectionName,
+                          area.getX() + 12, area.getY(), area.getWidth() - 16, (int) (area.getHeight() * 0.8f),
+                          Justification::bottomLeft, 1);
+    }
+    
+    void drawPopupMenuItem (Graphics& g, const Rectangle<int>& area,
+                                            const bool isSeparator, const bool isActive,
+                                            const bool isHighlighted, const bool isTicked,
+                                            const bool hasSubMenu, const String& text,
+                                            const String& shortcutKeyText,
+                                            const Drawable* icon, const Colour* const textColourToUse) override
+    {
+        if (isSeparator)
+        {
+            Rectangle<int> r (area.reduced (5, 0));
+            r.removeFromTop (r.getHeight() / 2 - 1);
+            
+            g.setColour (Colour (0x33000000));
+            g.fillRect (r.removeFromTop (1));
+            
+            g.setColour (Colour (0x66ffffff));
+            g.fillRect (r.removeFromTop (1));
+        }
+        else
+        {
+            Colour textColour (findColour (PopupMenu::textColourId));
+            
+            if (textColourToUse != nullptr)
+                textColour = *textColourToUse;
+            
+            Rectangle<int> r (area.reduced (1));
+            
+            if (isHighlighted)
+            {
+                g.setColour (findColour (PopupMenu::highlightedBackgroundColourId));
+                g.fillRect (r);
+                
+                g.setColour (findColour (PopupMenu::highlightedTextColourId));
+            }
+            else
+            {
+                g.setColour (textColour);
+            }
+            
+            if (! isActive)
+                g.setOpacity (0.3f);
+            
+            Font font (getPopupMenuFont());
+            
+            const float maxFontHeight = area.getHeight() / 1.3f;
+            
+            if (font.getHeight() > maxFontHeight)
+                font.setHeight (maxFontHeight);
+            
+            g.setFont (font);
+            
+            Rectangle<float> iconArea (r.removeFromLeft ((r.getHeight() * 5) / 4).reduced (3).toFloat());
+            
+            if (icon != nullptr)
+            {
+                icon->drawWithin (g, iconArea, RectanglePlacement::centred | RectanglePlacement::onlyReduceInSize, 1.0f);
+            }
+            else if (isTicked)
+            {
+                const Path tick (getTickShape (1.0f));
+                g.fillPath (tick, tick.getTransformToScaleToFit (iconArea, true));
+            }
+            
+            if (hasSubMenu)
+            {
+                const float arrowH = 0.6f * getPopupMenuFont().getAscent();
+                
+                const float x = (float) r.removeFromRight ((int) arrowH).getX();
+                const float halfH = (float) r.getCentreY();
+                
+                Path p;
+                p.addTriangle (x, halfH - arrowH * 0.5f,
+                               x, halfH + arrowH * 0.5f,
+                               x + arrowH * 0.6f, halfH);
+                
+                g.fillPath (p);
+            }
+            
+            r.removeFromRight (3);
+            g.drawFittedText (text, r, Justification::centredLeft, 1);
+            
+            if (shortcutKeyText.isNotEmpty())
+            {
+                Font f2 (font);
+                f2.setHeight (f2.getHeight() * 0.75f);
+                f2.setHorizontalScale (0.95f);
+                g.setFont (f2);
+                
+                g.drawText (shortcutKeyText, r, Justification::centredRight, true);
+            }
+        }
+    }
+    
+    
 };
 
 

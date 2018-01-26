@@ -202,8 +202,8 @@ void StereoEncoderAudioProcessorEditor::IEMSphereElementChanged (IEMSphere* sphe
     Vector3D<float> pos = element->getPosition();
     float hypxy = sqrt(pos.x*pos.x+pos.y*pos.y);
     
-    float yaw = atan2f(pos.y,pos.x);
-    float pitch = atan2f(hypxy,pos.z)-M_PI/2;
+    float yaw = atan2(pos.y,pos.x);
+    float pitch = atan2(hypxy,pos.z)-M_PI/2;
     //DBG("yaw: " << yaw/M_PI*180 << " pitch: " << pitch/M_PI*180);
     
     if (element->getID() == "center") {
@@ -233,8 +233,8 @@ void StereoEncoderAudioProcessorEditor::IEMSphereElementChanged (IEMSphere* sphe
         quat.rotateVector(xyz, xyz);
         
         
-        float roll = atan2f(xyz[2], xyz[1]);
-        if (element->getID() == "right") roll = atan2f(-xyz[2], -xyz[1]);
+        float roll = atan2(xyz[2], xyz[1]);
+        if (element->getID() == "right") roll = atan2(-xyz[2], -xyz[1]);
         
         valueTreeState.getParameter("width")->setValue(valueTreeState.getParameterRange("width").convertTo0to1(alpha/M_PI*180.0f));
         valueTreeState.getParameter("roll")->setValue(valueTreeState.getParameterRange("roll").convertTo0to1(roll/M_PI*180.0f));
@@ -267,12 +267,11 @@ void StereoEncoderAudioProcessorEditor::paint (Graphics& g)
 
 void StereoEncoderAudioProcessorEditor::timerCallback()
 {
-    // check max possible order and update combobox in title
-    if (processor.maxPossibleOrder != maxPossibleOrder)
-    {
-        maxPossibleOrder = processor.maxPossibleOrder;
-        title.getOutputWidgetPtr()->updateOrderCb(maxPossibleOrder);
-    }
+    // === update titleBar widgets according to available input/output channel counts
+    int maxInSize, maxOutSize;
+    processor.getMaxSize(maxInSize, maxOutSize);
+    title.setMaxSize(maxInSize, maxOutSize);
+    // ==========================================
     
     // update positions, if at least one of them was updated (new data): repaint the sphere
     if (processor.updatedPositionData.get())

@@ -20,6 +20,8 @@
  ==============================================================================
  */
 
+#pragma once
+
 const int squares[] = {
     0, 1, 4, 9,
     16, 25, 36, 49,
@@ -107,6 +109,17 @@ inline void ACNtoLM(int acn, int &l, int &m)
 {
     l = isqrt(acn);
     m = acn - l*(l+1);
+}
+
+inline const String getOrderString(int order)
+{
+    switch(order)
+    {
+        case 1: return String(order) + String("st");
+        case 2: return String(order) + String("nd");
+        case 3: return String(order) + String("rd");
+    }
+    return String(order) + String("th");
 }
 
 const float sn3d2n3d[64]= {

@@ -30,12 +30,16 @@
 
 //==============================================================================
 ProbeDecoderAudioProcessor::ProbeDecoderAudioProcessor()
-
-
-: AudioProcessor(BusesProperties()
-                 .withInput("Input", AudioChannelSet::discreteChannels(64), true)
-                 .withOutput("Output", AudioChannelSet::mono(), true)
-                 ),
+#ifndef JucePlugin_PreferredChannelConfigurations
+: AudioProcessor (BusesProperties()
+#if ! JucePlugin_IsMidiEffect
+#if ! JucePlugin_IsSynth
+                  .withInput  ("Input",  AudioChannelSet::discreteChannels(64), true)
+#endif
+                  .withOutput ("Output", AudioChannelSet::mono(), true)
+#endif
+                  ),
+#endif
 parameters(*this, nullptr) {
     parameters.createAndAddParameter("orderSetting", "Ambisonics Order", "",
                                      NormalisableRange<float>(0.0f, 8.0f, 1.0f), 0.0f,
@@ -128,7 +132,7 @@ void ProbeDecoderAudioProcessor::changeProgramName(int index, const String &newN
 
 //==============================================================================
 void ProbeDecoderAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) {
-    checkOrderUpdateBuffers(roundFloatToInt(*orderSetting - 1));
+    checkInputAndOutput(this, *orderSetting, 1, true);
 }
 
 void ProbeDecoderAudioProcessor::releaseResources() {
@@ -145,12 +149,14 @@ bool ProbeDecoderAudioProcessor::isBusesLayoutSupported(const BusesLayout &layou
 #endif
 
 void ProbeDecoderAudioProcessor::processBlock(AudioSampleBuffer &buffer, MidiBuffer &midiMessages) {
-    if (userChangedOrderSettings) checkOrderUpdateBuffers(roundFloatToInt(*orderSetting - 1));
+    checkInputAndOutput(this, *orderSetting, 1);
+    const int ambisonicOrder = input.getOrder();
+    const int nChannels = jmin(buffer.getNumChannels(), input.getNumberOfChannels());
     
     float yawInRad = degreesToRadians(*yaw);
     float pitchInRad = degreesToRadians(*pitch);
-    float cosPitch = cosf(pitchInRad);
-    Vector3D<float> xyz(cosPitch * cosf(yawInRad), cosPitch * sinf(yawInRad), sinf(-1.0f * pitchInRad));
+    float cosPitch = cos(pitchInRad);
+    Vector3D<float> xyz(cosPitch * cos(yawInRad), cosPitch * sin(yawInRad), sin(-1.0f * pitchInRad));
     
     float sh[64];
     
@@ -166,7 +172,9 @@ void ProbeDecoderAudioProcessor::processBlock(AudioSampleBuffer &buffer, MidiBuf
     
     for (int i = 1; i < nCh; i++) {
         buffer.addFromWithRamp(0, 0, buffer.getReadPointer(i), numSamples, previousSH[i], sh[i]);
+        buffer.clear(i, 0, numSamples);
     }
+    
     
     FloatVectorOperations::copy(previousSH, sh, nChannels);
 }
@@ -181,7 +189,7 @@ AudioProcessorEditor *ProbeDecoderAudioProcessor::createEditor() {
 }
 
 void ProbeDecoderAudioProcessor::parameterChanged(const String &parameterID, float newValue) {
-    if (parameterID == "orderSetting") userChangedOrderSettings = true;
+    if (parameterID == "orderSetting") userChangedIOSettings = true;
 }
 
 
@@ -205,20 +213,4 @@ AudioProcessor *JUCE_CALLTYPE createPluginFilter() {
     return new ProbeDecoderAudioProcessor();
 }
 
-void ProbeDecoderAudioProcessor::checkOrderUpdateBuffers(int userSetInputOrder) {
-    userChangedOrderSettings = false;
-    //old values;
-    _nChannels = nChannels;
-    _ambisonicOrder = ambisonicOrder;
-    maxPossibleOrder = isqrt(getTotalNumInputChannels()) - 1;
-    if (userSetInputOrder == -1 || userSetInputOrder > maxPossibleOrder)
-        ambisonicOrder = maxPossibleOrder; // Auto setting or requested order exceeds highest possible order
-    else ambisonicOrder = userSetInputOrder;
-    
-    if (ambisonicOrder != _ambisonicOrder) {
-        nChannels = squares[ambisonicOrder + 1];
-        DBG("Used order has changed! Order: " << ambisonicOrder << ", numCH: " << nChannels);
-        DBG("Now updating filters and buffers.");
-    }
-}
 

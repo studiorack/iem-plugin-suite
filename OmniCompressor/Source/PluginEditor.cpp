@@ -25,27 +25,23 @@
 
 
 //==============================================================================
-AmbisonicCompressorAudioProcessorEditor::AmbisonicCompressorAudioProcessorEditor (AmbisonicCompressorAudioProcessor& p,AudioProcessorValueTreeState& vts)
+OmniCompressorAudioProcessorEditor::OmniCompressorAudioProcessorEditor (OmniCompressorAudioProcessor& p,AudioProcessorValueTreeState& vts)
     : AudioProcessorEditor (&p), processor (p), valueTreeState(vts)
 {
-    // Make sure that before the constructor has finished, you've set the
-    // editor's size to whatever you need it to be.
-    setSize (450, 280);
-    setLookAndFeel (&globalLaF);
+    setSize (330, 280);
+    setLookAndFeel(&globalLaF);
     
     addAndMakeVisible(&title);
     title.setTitle(String("Omni"),String("Compressor"));
     title.setFont(globalLaF.robotoBold,globalLaF.robotoLight);
     addAndMakeVisible(&footer);
     
-
-    
-    addAndMakeVisible(&sliderInpGain);
-    IGAttachment = new SliderAttachment(valueTreeState,"inGain", sliderInpGain);
-    sliderInpGain.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    sliderInpGain.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    sliderInpGain.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
-    sliderInpGain.setTextValueSuffix(" dB");
+    addAndMakeVisible(&sliderKnee);
+    KnAttachment = new SliderAttachment(valueTreeState,"knee", sliderKnee);
+    sliderKnee.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
+    sliderKnee.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
+    sliderKnee.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
+    sliderKnee.setTextValueSuffix(" dB");
     
     cbNormalizationAtachement = new ComboBoxAttachment(valueTreeState,"useSN3D", *title.getInputWidgetPtr()->getNormCbPointer());
     cbOrderAtachement = new ComboBoxAttachment(valueTreeState,"orderSetting", *title.getInputWidgetPtr()->getOrderCbPointer());
@@ -62,7 +58,7 @@ AmbisonicCompressorAudioProcessorEditor::AmbisonicCompressorAudioProcessorEditor
     sliderRatio.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     sliderRatio.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     sliderRatio.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[3]);
-    sliderRatio.setTextValueSuffix(" : 1");
+//    sliderRatio.setTextValueSuffix("");
     
     addAndMakeVisible(&sliderAttackTime);
     ATAttachment = new SliderAttachment(valueTreeState,"attack", sliderAttackTime);
@@ -100,8 +96,8 @@ AmbisonicCompressorAudioProcessorEditor::AmbisonicCompressorAudioProcessorEditor
     
     
     // ===== LABELS =====
-    addAndMakeVisible(&lbInpGain);
-    lbInpGain.setText("Input Gain");
+    addAndMakeVisible(&lbKnee);
+    lbKnee.setText("Knee");
     
     addAndMakeVisible(&lbThreshold);
     lbThreshold.setText("Threshold");
@@ -117,20 +113,18 @@ AmbisonicCompressorAudioProcessorEditor::AmbisonicCompressorAudioProcessorEditor
     
     addAndMakeVisible(&lbRelease);
     lbRelease.setText("Release");
-    
-    
 
     
     startTimer(50);
 }
 
-AmbisonicCompressorAudioProcessorEditor::~AmbisonicCompressorAudioProcessorEditor()
+OmniCompressorAudioProcessorEditor::~OmniCompressorAudioProcessorEditor()
 {
     setLookAndFeel(nullptr);
 }
 
 //==============================================================================
-void AmbisonicCompressorAudioProcessorEditor::paint (Graphics& g)
+void OmniCompressorAudioProcessorEditor::paint (Graphics& g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
     g.fillAll (globalLaF.ClBackground);
@@ -138,23 +132,21 @@ void AmbisonicCompressorAudioProcessorEditor::paint (Graphics& g)
 
 }
 
-void AmbisonicCompressorAudioProcessorEditor::timerCallback()
+void OmniCompressorAudioProcessorEditor::timerCallback()
 {
     inpMeter.setLevel(processor.maxRMS);
     dbGRmeter.setLevel(processor.maxGR);
     
-    if (processor.maxPossibleOrder != maxPossibleOrder)
-    {
-        maxPossibleOrder = processor.maxPossibleOrder;
-        title.getInputWidgetPtr()->updateOrderCb(maxPossibleOrder);
-    }
+    // === update titleBar widgets according to available input/output channel counts
+    int maxInSize, maxOutSize;
+    processor.getMaxSize(maxInSize, maxOutSize);
+    title.setMaxSize(maxInSize, maxOutSize);
+    // ==========================================
 }
 
 
-void AmbisonicCompressorAudioProcessorEditor::resized()
+void OmniCompressorAudioProcessorEditor::resized()
 {
-    // This is generally where you'll want to lay out the positions of any
-    // subcomponents in your editor..
     const int leftRightMargin = 30;
     const int headerHeight = 60;
     const int footerHeight = 25;
@@ -164,22 +156,21 @@ void AmbisonicCompressorAudioProcessorEditor::resized()
     const int sliderWidth = 55;
     Rectangle<int> area (getLocalBounds());
     
-    Rectangle<int> footerArea (area.removeFromBottom (footerHeight));
+    Rectangle<int> footerArea (area.removeFromBottom(footerHeight));
     footer.setBounds(footerArea);
     
     area.removeFromLeft(leftRightMargin);
     area.removeFromRight(leftRightMargin);
-    Rectangle<int> headerArea = area.removeFromTop    (headerHeight);
+    Rectangle<int> headerArea = area.removeFromTop(headerHeight);
     title.setBounds (headerArea);
     area.removeFromTop(10);
+    area.removeFromBottom(5);
     
     
-    area.removeFromLeft(60);
-    area.removeFromRight(60);
     
-    Rectangle<int> ctrlPlane;
-
-    ctrlPlane = area.removeFromTop(180);
+    Rectangle<int> ctrlPlane = area.removeFromTop(180);
+    ctrlPlane.setWidth(270);
+    ctrlPlane.setCentre(area.getCentreX(), ctrlPlane.getCentreY());
     
     inpMeter.setBounds(ctrlPlane.removeFromLeft(20));
     ctrlPlane.removeFromLeft(10);
@@ -190,16 +181,16 @@ void AmbisonicCompressorAudioProcessorEditor::resized()
     
     sliderRow = ctrlPlane.removeFromTop(sliderHeight);
     
-    sliderInpGain.setBounds(sliderRow.removeFromLeft(sliderWidth));
-    sliderRow.removeFromLeft(sliderSpacing);
     sliderThreshold.setBounds(sliderRow.removeFromLeft(sliderWidth));
+    sliderRow.removeFromLeft(sliderSpacing);
+    sliderKnee.setBounds(sliderRow.removeFromLeft(sliderWidth));
     sliderRow.removeFromLeft(sliderSpacing);
     sliderMakeupGain.setBounds(sliderRow.removeFromLeft(sliderWidth));
     
     sliderRow = ctrlPlane.removeFromTop(labelHeight);
-    lbInpGain.setBounds(sliderRow.removeFromLeft(sliderWidth));
-    sliderRow.removeFromLeft(sliderSpacing);
     lbThreshold.setBounds(sliderRow.removeFromLeft(sliderWidth));
+    sliderRow.removeFromLeft(sliderSpacing);
+    lbKnee.setBounds(sliderRow.removeFromLeft(sliderWidth));
     sliderRow.removeFromLeft(sliderSpacing);
     lbOutGain.setBounds(sliderRow.removeFromLeft(sliderWidth));
     

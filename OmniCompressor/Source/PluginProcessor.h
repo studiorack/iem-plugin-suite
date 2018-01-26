@@ -25,17 +25,21 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "../../resources/MaxRE.h"
 #include "../../resources/ambisonicTools.h"
+#include "../../resources/IOHelper.h"
+#include "../../resources/Compressor.h"
 
 //==============================================================================
 /**
 */
-class AmbisonicCompressorAudioProcessor  : public AudioProcessor,
-                                            public AudioProcessorValueTreeState::Listener
+class OmniCompressorAudioProcessor  : public AudioProcessor,
+                                            public AudioProcessorValueTreeState::Listener,
+public IOHelper<IOTypes::Ambisonics<>, IOTypes:: Ambisonics<>>
+
 {
 public:
     //==============================================================================
-    AmbisonicCompressorAudioProcessor();
-    ~AmbisonicCompressorAudioProcessor();
+    OmniCompressorAudioProcessor();
+    ~OmniCompressorAudioProcessor();
 
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
@@ -75,35 +79,21 @@ public:
     float maxRMS;
     float maxGR;
     
-    // -- variable order --
-    int maxPossibleOrder = -1;
-    int ambisonicOrder = -1;
-    int _ambisonicOrder = -1;
-    int nChannels = 0;
-    int _nChannels = 0;
-    
-    bool userChangedOrderSettings = false;
-    void checkOrderUpdateBuffers(int userSetOutputOrder);
-    // -------------------- //
-    
 private:
     //==============================================================================
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AmbisonicCompressorAudioProcessor)
-    IIRFilter meanSqrFilter;
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OmniCompressorAudioProcessor)
     
+    Compressor compressor;
     AudioProcessorValueTreeState parameters;
     
     Array<float> RMS, gains, allGR;
-    //float *RMS;
-    //float *gains;
-    //float *allGR;
     
     float GR;
     float *orderSetting;
-    float *inGain;
     float *threshold;
     float *outGain;
     float *ratio;
     float *attack;
     float *release;
+    float *knee;
 };

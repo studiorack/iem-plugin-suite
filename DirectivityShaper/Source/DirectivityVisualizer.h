@@ -175,14 +175,14 @@ public:
         
         bounds.reduce(10,10);
         
-        
         if (bounds.getWidth() > bounds.getHeight())
             bounds.setWidth(bounds.getHeight());
         else
             bounds.setHeight(bounds.getWidth());
         bounds.setCentre(centre);
         
-        transform = AffineTransform::fromTargetPoints(centre.x, centre.y, centre.x, bounds.getY(), bounds.getX(), centre.y);
+        transform = AffineTransform::fromTargetPoints((float) centre.x, (float) centre.y, (float)  centre.x, bounds.getY(), bounds.getX(), centre.y);
+        
         
         plotArea = bounds;
     }
