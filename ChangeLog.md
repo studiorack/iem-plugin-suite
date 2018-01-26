@@ -10,27 +10,27 @@ For a list of all changes and bugfixes see the git log.
 
 - general changes
     - switched to JUCE develop branch !!
-    - added presets (decoders,...)  
+    - added configurations (decoders,...)  
     - some GUIs now resizable  
     - smaller GUI layout changes (e.g. ComboBox PopupMenu)
 
 - plugin specific changes
-    - MultiEncoder
+    - **Multi**Encoder
         - maximum input channel size increased to 64 
         - parameters and colours are stored correctly now
         - MasterPanner is now controllable with mouse wheel (and modifiers)
         - GUI resizable
-    - OmniCompressor and DirectionalCompressor
+    - **Omni**Compressor and DirectionalCompressor
         -  new compressor engine
         -  added 'knee' parameter
         -  can be used as limiters now
-    - FdnReverb
+    - **Fdn**Reverb
         -  added a visual T60 recommendation
         -  maximum reverberation time reduced
         -  filters can now have positive gain
         -  layout restructured, resizable
-    -  RoomEncoder
+    -  **Room**Encoder
         -  added floor reflections (now up to 236 reflections possible)
         -  default number of reflections set to 19 (chosen arbitrarily)
-    -  StereoEncoder
+    -  **Stereo**Encoder
         -  added hidden high-quality mode  
