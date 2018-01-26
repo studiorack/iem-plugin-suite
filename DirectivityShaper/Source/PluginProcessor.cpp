@@ -153,6 +153,11 @@ parameters(*this, nullptr)
     FloatVectorOperations::clear(weights[0], 8 * numberOfBands);
     
     
+    for (int i = 0; i < numberOfBands; ++i)
+    {
+        filter[i].coefficients = createFilterCoefficients(roundToInt(*filterType[i]), 44100, *filterFrequency[i], *filterQ[i]);
+    }
+    
 }
 
 inline dsp::IIR::Coefficients<float>::Ptr DirectivityShaperAudioProcessor::createFilterCoefficients(int type, double sampleRate, double frequency, double Q)
@@ -245,7 +250,7 @@ void DirectivityShaperAudioProcessor::prepareToPlay (double sampleRate, int samp
     
     for (int i = 0; i < numberOfBands; ++i)
     {
-        filter[i].coefficients = createFilterCoefficients(roundToInt(*filterType[i]), sampleRate, *filterFrequency[i], *filterQ[i]);
+        *filter[i].coefficients = *createFilterCoefficients(roundToInt(*filterType[i]), sampleRate, *filterFrequency[i], *filterQ[i]);
         filter[i].reset();
     }
     
@@ -487,7 +492,7 @@ void DirectivityShaperAudioProcessor::parameterChanged (const String &parameterI
     else if (parameterID.startsWith("filter"))
     {
         int i = parameterID.getLastCharacters(1).getIntValue();
-        filter[i].coefficients = createFilterCoefficients(roundToInt(*filterType[i]), getSampleRate(), *filterFrequency[i], *filterQ[i]);
+        *filter[i].coefficients = *createFilterCoefficients(roundToInt(*filterType[i]), getSampleRate(), *filterFrequency[i], *filterQ[i]);
     }
 }
 
