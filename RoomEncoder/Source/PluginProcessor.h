@@ -128,7 +128,7 @@ public:
     void timerCallback() override;
     
 
-    void updateFilterCoefficients(int sampleRate);
+    void updateFilterCoefficients(double sampleRate);
 
     float* numRefl;
     float mRadius[nImgSrc];

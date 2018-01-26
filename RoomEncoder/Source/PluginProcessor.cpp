@@ -216,6 +216,20 @@ parameters (*this, nullptr)
     lowShelfCoefficients = IIR::Coefficients<float>::makeLowShelf(48000, *lowShelfFreq, 0.707f, Decibels::decibelsToGain(*lowShelfGain));
     highShelfCoefficients = IIR::Coefficients<float>::makeHighShelf(48000, *highShelfFreq, 0.707f, Decibels::decibelsToGain(*highShelfGain));
     
+    
+    lowShelfArray.clear();
+    highShelfArray.clear();
+    lowShelfArray2.clear();
+    highShelfArray2.clear();
+    for (int i = 0; i<16; ++i)
+    {
+        lowShelfArray.add(new IIR::Filter<juce::dsp::SIMDRegister<float>>(lowShelfCoefficients));
+        highShelfArray.add(new IIR::Filter<juce::dsp::SIMDRegister<float>>(highShelfCoefficients));
+        lowShelfArray2.add(new IIR::Filter<juce::dsp::SIMDRegister<float>>(lowShelfCoefficients));
+        highShelfArray2.add(new IIR::Filter<juce::dsp::SIMDRegister<float>>(highShelfCoefficients));
+    }
+    
+    
     startTimer(50);
 }
 
@@ -286,23 +300,20 @@ void RoomEncoderAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     readOffset = 0;
     bufferReadIdx = 0;
     
-    lowShelfArray.clear();
-    highShelfArray.clear();
+    
     interleavedData.clear();
     
     for (int i = 0; i<16; ++i)
     {
-        lowShelfArray.add(new IIR::Filter<juce::dsp::SIMDRegister<float>>(lowShelfCoefficients));
-        lowShelfArray.getLast()->reset();
-        highShelfArray.add(new IIR::Filter<juce::dsp::SIMDRegister<float>>(highShelfCoefficients));
-        highShelfArray.getLast()->reset();
-        lowShelfArray2.add(new IIR::Filter<juce::dsp::SIMDRegister<float>>(lowShelfCoefficients));
-        lowShelfArray2.getLast()->reset();
-        highShelfArray2.add(new IIR::Filter<juce::dsp::SIMDRegister<float>>(highShelfCoefficients));
-        highShelfArray2.getLast()->reset();
+        lowShelfArray[i]->reset();
+        highShelfArray[i]->reset();
+        lowShelfArray2[i]->reset();
+        highShelfArray2[i]->reset();
+        
         interleavedData.add(new AudioBlock<SIMDRegister<float>> (interleavedBlockData[i], 1, samplesPerBlock));
         interleavedData.getLast()->clear();
     }
+    
     zero = AudioBlock<float> (zeroData, SIMDRegister<float>::size(), samplesPerBlock);
     zero.clear();
     
@@ -372,7 +383,7 @@ void RoomEncoderAudioProcessor::parameterChanged (const String &parameterID, flo
     }
 }
 
-void RoomEncoderAudioProcessor::updateFilterCoefficients(int sampleRate) {
+void RoomEncoderAudioProcessor::updateFilterCoefficients(double sampleRate) {
     *lowShelfCoefficients = *IIR::Coefficients<float>::makeLowShelf(sampleRate, *lowShelfFreq, 0.707f, Decibels::decibelsToGain(*lowShelfGain));
     *highShelfCoefficients = *IIR::Coefficients<float>::makeHighShelf(sampleRate, *highShelfFreq, 0.707f, Decibels::decibelsToGain(*highShelfGain));
     userChangedFilterSettings = false;
@@ -537,6 +548,7 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
                 highShelfArray2[i]->process(ProcessContextReplacing<SIMDRegister<float>> (*interleavedData[i]));
             }
         }
+
         
         // ========================================   CALCULATE SAMPLED MONO SIGNALS
         SIMDRegister<float> SHsample[16]; //TODO: can be smaller: (N+1)^2/SIMDRegister.size()
@@ -544,12 +556,9 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
         FloatVectorOperations::clear((float *) &SHsample->value, 64);
         SHEval(directivityOrder, smx[q], smy[q], smz[q],(float *) &SHsample->value);
         
-        interleavedData.getRawDataPointer();
-        
         Array<SIMDRegister<float>*> interleavedDataPtr;
         interleavedDataPtr.resize(nSIMDFilters);
         SIMDRegister<float>** intrlvdDataArrayPtr = interleavedDataPtr.getRawDataPointer();
-        //SIMDRegister<float>* interleavedDataPtr[nSIMDFilters];
         
         for (int i = 0; i<nSIMDFilters; ++i)
         {
@@ -836,7 +845,6 @@ void RoomEncoderAudioProcessor::timerCallback()
 }
 
 
-
 void RoomEncoderAudioProcessor::updateBuffers() {
     DBG("IOHelper:  input size: " << input.getSize());
     DBG("IOHelper: output size: " << output.getSize());
@@ -853,6 +861,14 @@ void RoomEncoderAudioProcessor::updateBuffers() {
     delayBuffer.setSize(nChOut, bufferSize);
     delayBuffer.clear();
     delayBufferWritePtrArray = delayBuffer.getArrayOfWritePointers();
+    
+    if (input.getSize() != input.getPreviousSize())
+    {
+        for (int i = 0; i<interleavedData.size(); ++i)
+        {
+            interleavedData[i]->clear();
+        }
+    }
 }
 
 void RoomEncoderAudioProcessor::setFilterVisualizer(FilterVisualizer<float>* newFv)
