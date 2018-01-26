@@ -20,7 +20,7 @@ For a list of all changes and bugfixes see the git log.
         - parameters and colours are stored correctly now
         - MasterPanner is now controllable with mouse wheel (and modifiers)
         - GUI resizable
-    - **Omni**Compressor and DirectionalCompressor
+    - **Omni**Compressor and **Directional**Compressor
         -  new compressor engine
         -  added 'knee' parameter
         -  can be used as limiters now
