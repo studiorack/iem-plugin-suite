@@ -30,8 +30,8 @@ class ColourChangeButton  : public TextButton,
 public ChangeListener
 {
 public:
-    ColourChangeButton(MultiEncoderAudioProcessor& p, SpherePanner::Element* elem, int i)
-    : TextButton (String(i)), processor(p), id(i), element(elem)
+    ColourChangeButton(MultiEncoderAudioProcessor& p, SpherePanner &sphere, SpherePanner::Element* elem, int i)
+    : TextButton (String(i)), processor(p), id(i), spherePanner(sphere), element(elem)
     {
         setSize (10, 24);
         changeWidthToFitText();
@@ -57,11 +57,13 @@ public:
             element->setColour (cs->getCurrentColour());
             setColour(TextButton::textColourOffId, Colours::white.overlaidWith (cs->getCurrentColour()).contrasting());
             element->setTextColour(Colours::white.overlaidWith (cs->getCurrentColour()).contrasting());
+            spherePanner.repaint();
         }
     }
 private:
     MultiEncoderAudioProcessor& processor;
     int id;
+    SpherePanner& spherePanner;
     SpherePanner::Element* element;
 };
 
@@ -101,7 +103,7 @@ public:
             for (int i = nElements; i < nCh; ++i)
             {
                 sphereElementArray.add(new SpherePanner::Element());
-                colourChooserArray.add(new ColourChangeButton(processor, sphereElementArray.getLast(), i+1));
+                colourChooserArray.add(new ColourChangeButton(processor, spherePanner, sphereElementArray.getLast(), i+1));
                 slYawArray.add(new ReverseSlider());
                 slPitchArray.add(new ReverseSlider());
                 slGainArray.add(new ReverseSlider());
