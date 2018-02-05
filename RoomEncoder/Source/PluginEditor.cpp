@@ -270,8 +270,6 @@ processor (p)
     addAndMakeVisible(&fv);
     fv.addCoefficients(&processor.lowShelfCoefficients, Colours::cyan, &slLowShelfFreq, &slLowShelfGain);
     fv.addCoefficients(&processor.highShelfCoefficients, Colours::orangered, &slHighShelfFreq, &slHighShelfGain);
-    processor.setFilterVisualizer(&fv);
-    processor.parameterChanged("reflCoeff", 0.0f); //dummy value
     
     addAndMakeVisible(&rv);
     rv.setDataPointers(p.allGains, p.mRadius, p.numRefl);
@@ -315,7 +313,6 @@ processor (p)
 RoomEncoderAudioProcessorEditor::~RoomEncoderAudioProcessorEditor()
 {
     setLookAndFeel(nullptr);
-    processor.setFilterVisualizer(nullptr);
 }
 
 //==============================================================================
@@ -533,6 +530,7 @@ void RoomEncoderAudioProcessorEditor::timerCallback()
     
     if (processor.updateFv)
     {
+        fv.setOverallGainInDecibels(*valueTreeState.getRawParameterValue("reflCoeff"));
         processor.updateFv = false;
         fv.repaint();
     }

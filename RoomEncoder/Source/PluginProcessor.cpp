@@ -317,8 +317,7 @@ void RoomEncoderAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     zero = AudioBlock<float> (zeroData, SIMDRegister<float>::size(), samplesPerBlock);
     zero.clear();
     
-    if (editorFv != nullptr)
-        editorFv->setSampleRate(sampleRate);
+    updateFv = true;
 }
 
 void RoomEncoderAudioProcessor::releaseResources()
@@ -337,7 +336,6 @@ void RoomEncoderAudioProcessor::parameterChanged (const String &parameterID, flo
 {
     if (parameterID == "orderSetting" || parameterID == "directivityOrderSetting") userChangedIOSettings = true;
     else if (parameterID == "reflCoeff") {
-        if (editorFv != nullptr) editorFv->setOverallGainInDecibels(*reflCoeff);
         updateFv = true;
     }
     else if (parameterID == "lowShelfFreq" || parameterID == "lowShelfGain" ||
@@ -387,8 +385,8 @@ void RoomEncoderAudioProcessor::updateFilterCoefficients(double sampleRate) {
     *lowShelfCoefficients = *IIR::Coefficients<float>::makeLowShelf(sampleRate, *lowShelfFreq, 0.707f, Decibels::decibelsToGain(*lowShelfGain));
     *highShelfCoefficients = *IIR::Coefficients<float>::makeHighShelf(sampleRate, *highShelfFreq, 0.707f, Decibels::decibelsToGain(*highShelfGain));
     userChangedFilterSettings = false;
-    if (editorFv != nullptr)
-        updateFv = true;
+    
+    updateFv = true;
 }
 
 void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
@@ -871,10 +869,6 @@ void RoomEncoderAudioProcessor::updateBuffers() {
     }
 }
 
-void RoomEncoderAudioProcessor::setFilterVisualizer(FilterVisualizer<float>* newFv)
-{
-    editorFv = newFv;
-}
 
 //==============================================================================
 // This creates new instances of the plugin..
