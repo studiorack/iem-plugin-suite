@@ -1,6 +1,12 @@
 This file only contains the major changes of the IEM Plug-in Suite.
 For a list of all changes and bugfixes see the git log.
 
+## untagged changes
+- plugin specific changes
+    - **Multi**Encoder
+        - changed element colours are now displayed at once
+
+
 ## v1.1.0
 - new plug-ins:
     - **Matrix**Multiplicator
