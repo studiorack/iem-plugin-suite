@@ -61,9 +61,9 @@ parameters(*this, nullptr)
     
     parameters.createAndAddParameter("applyHeadphoneEq", "Headphone Equalization", "",
                                      NormalisableRange<float>(0.0f, float(headphoneEQs.size()), 1.0f), 0.0f,
-                                     [](float value) {
-                                         if (value >= 0.5f) return "SN3D";
-                                         else return "OFF";
+                                     [this](float value) {
+                                         if (value < 0.5f) return String("OFF");
+                                         else return String(this->headphoneEQs[roundToInt(value)-1]);
                                      }, nullptr);
     
     // this must be initialised after all calls to createAndAddParameter().
