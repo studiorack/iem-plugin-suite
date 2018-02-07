@@ -37,6 +37,30 @@ public:
     void paint (Graphics& g) override {};
 };
 
+class  BinauralIOWidget :  public Component
+{
+public:
+    BinauralIOWidget() : Component() {
+        BinauralPath.loadPathFromData (BinauralPathData, sizeof (BinauralPathData));
+        setBufferedToImage(true);
+    };
+    
+    ~BinauralIOWidget() {};
+    const int getComponentSize() { return 30; }
+    void setMaxSize (int maxSize) {};
+    void paint (Graphics& g) override
+    {
+        BinauralPath.applyTransform(BinauralPath.getTransformToScaleToFit(0, 0, 30, 30, true,Justification::centred));
+        g.setColour((Colours::white).withMultipliedAlpha(0.5));
+        g.fillPath(BinauralPath);
+
+    };
+    
+private:
+    Path BinauralPath;
+};
+
+
 template <int maxChannels, bool selectable = true>
 class  AudioChannelsIOWidget :  public Component
 {

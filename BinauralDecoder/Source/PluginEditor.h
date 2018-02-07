@@ -71,7 +71,7 @@ private:
         - AmbisonicIOWidget<maxOrder>
         - DirectivitiyIOWidget
      */
-    TitleBar<AmbisonicIOWidget<>, AudioChannelsIOWidget<2, false>> title;
+    TitleBar<AmbisonicIOWidget<>, BinauralIOWidget> title;
     Footer footer;
     // =============== end essentials ============
     
