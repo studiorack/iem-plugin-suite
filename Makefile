@@ -50,6 +50,13 @@ $(ALL_PROJECTS:%=%-clean):
 		-target "$(firstword $(subst /, ,$<)) - All" \
 		-configuration "$(CONFIG)" \
 		build
+%-XCode-clean: $$(subst @,%,@/Builds/MacOSX/@.xcodeproj/project.pbxproj)
+	xcodebuild \
+		-project $(<D) \
+		-target "$(firstword $(subst /, ,$<)) - All" \
+		-configuration "$(CONFIG)" \
+		clean
+
 
 # this does not declare a proper dependency,
 # so Projucer will be called for each %-build
