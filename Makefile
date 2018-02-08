@@ -3,6 +3,7 @@ default: all
 # the buildsystem we are using
 # possible values: LinuxMakefile
 BUILDSYSTEM=LinuxMakefile
+CONFIG = Release
 
 # list of projects
 ALL_PROJECTS=$(patsubst %/, %, $(dir $(wildcard */*.jucer)))
@@ -30,9 +31,13 @@ $(ALL_PROJECTS:%=%-clean):
 
 # LinuxMakefile based rules
 %-LinuxMakefile-build: %/Builds/LinuxMakefile/Makefile
-	make -C $(<D)
+	make -C $(<D) \
+		CONFIG="$(CONFIG)" \
+		all
 %-LinuxMakefile-clean: %/Builds/LinuxMakefile/Makefile
-	make -C $(<D) clean
+	make -C $(<D) \
+		CONFIG="$(CONFIG)" \
+		clean
 
 %/Builds/LinuxMakefile/Makefile: %.jucer
 	$(PROJUCER) -resave "$^"
@@ -43,7 +48,7 @@ $(ALL_PROJECTS:%=%-clean):
 	xcodebuild \
 		-project $(<D) \
 		-target "$(firstword $(subst /, ,$<)) - All" \
-		-configuration "Release" \
+		-configuration "$(CONFIG)" \
 		build
 
 # this does not declare a proper dependency,
