@@ -36,3 +36,17 @@ $(ALL_PROJECTS:%=%-clean):
 
 %/Builds/LinuxMakefile/Makefile: %.jucer
 	$(PROJUCER) -resave "$^"
+
+# XCode based rules
+.SECONDEXPANSION:
+%-XCode-build: $$(subst @,%,@/Builds/MacOSX/@.xcodeproj/project.pbxproj)
+	xcodebuild \
+		-project $(<D) \
+		-target "$(firstword $(subst /, ,$<)) - All" \
+		-configuration "Release" \
+		build
+
+# this does not declare a proper dependency,
+# so Projucer will be called for each %-build
+%.pbxproj:
+	$(PROJUCER) -resave $(subst @,$(firstword $(subst /, ,$@)),@/@.jucer)
