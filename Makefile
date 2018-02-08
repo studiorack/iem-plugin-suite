@@ -1,9 +1,23 @@
 default: all
 
 # the buildsystem we are using
-# possible values: LinuxMakefile
-BUILDSYSTEM=LinuxMakefile
+# possible values: LinuxMakefile XCode
+uname := $(shell uname)
+
+ifeq ($(findstring $(uname), Linux GNU GNU/kFreeBSD), $(uname))
+  BUILDSYSTEM = LinuxMakefile
+endif
+
+ifeq ($(uname), Darwin)
+  BUILDSYSTEM = XCode
+endif
+
 CONFIG = Release
+
+system:
+	@echo "uname : $(uname)"
+	@echo "system: $(BUILDSYSTEM)"
+	@echo "config: $(CONFIG)"
 
 # list of projects
 ALL_PROJECTS=$(patsubst %/, %, $(dir $(wildcard */*.jucer)))
