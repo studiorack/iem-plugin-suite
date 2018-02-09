@@ -8,7 +8,7 @@
               pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
               pluginAUExportPrefix="MultiEncoderAU" pluginRTASCategory="" aaxIdentifier="at.iem.MultiEncoder"
-              pluginAAXCategory="AAX_ePlugInCategory_Dynamics" jucerVersion="5.2.0"
+              pluginAAXCategory="AAX_ePlugInCategory_Dynamics" jucerVersion="5.2.1"
               companyName="IEM" companyWebsite="iem.at" displaySplashScreen="0"
               reportAppUsage="0" splashScreenColour="Dark" buildStandalone="1"
               enableIAA="0" cppLanguageStandard="11" companyCopyright="IEM - Daniel Rudrich">
@@ -131,5 +131,5 @@
     <MODULE id="juce_gui_extra" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_opengl" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
   </MODULES>
-  <JUCEOPTIONS JUCE_QUICKTIME="disabled" JUCE_WEB_BROWSER="disabled"/>
+  <JUCEOPTIONS JUCE_QUICKTIME="disabled" JUCE_WEB_BROWSER="0"/>
 </JUCERPROJECT>

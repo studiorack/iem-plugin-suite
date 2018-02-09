@@ -9,7 +9,7 @@
               pluginCode="RoEn" pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
               pluginAUExportPrefix="RoomEncoderAU" pluginRTASCategory="" aaxIdentifier="at.iem.RoomEncoder"
-              pluginAAXCategory="AAX_ePlugInCategory_Dynamics" jucerVersion="5.2.0"
+              pluginAAXCategory="AAX_ePlugInCategory_Dynamics" jucerVersion="5.2.1"
               companyName="IEM" companyWebsite="iem.at" cppLanguageStandard="latest"
               companyCopyright="IEM - Daniel Rudrich">
   <MAINGROUP id="ONcHIf" name="RoomEncoder">

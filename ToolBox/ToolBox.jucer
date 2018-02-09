@@ -10,7 +10,7 @@
               pluginIsSynth="0" pluginWantsMidiIn="0" pluginProducesMidiOut="0"
               pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0" pluginAUExportPrefix="ToolBoxAU"
               pluginRTASCategory="" aaxIdentifier="at.iem.ToolBox" pluginAAXCategory="AAX_ePlugInCategory_Dynamics"
-              jucerVersion="5.2.0" companyCopyright="IEM - Daniel Rudrich"
+              jucerVersion="5.2.1" companyCopyright="IEM - Daniel Rudrich"
               companyName="IEM" companyWebsite="iem.at">
   <MAINGROUP id="LpzrV9" name="ToolBox">
     <GROUP id="{1B6BB8E4-E576-FBC7-B6B6-8603D2CEBF9D}" name="lookAndFeel">

@@ -11,7 +11,7 @@
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
               pluginAUExportPrefix="MatrixMultiplicatorAU" pluginRTASCategory=""
               aaxIdentifier="at.iem.MatrixMultiplicator" pluginAAXCategory=""
-              jucerVersion="5.2.0" companyCopyright="IEM - Daniel Rudrich"
+              jucerVersion="5.2.1" companyCopyright="IEM - Daniel Rudrich"
               companyName="IEM" companyWebsite="iem.at">
   <MAINGROUP id="LpzrV9" name="MatrixMultiplicator">
     <GROUP id="{1B6BB8E4-E576-FBC7-B6B6-8603D2CEBF9D}" name="lookAndFeel">

@@ -10,7 +10,7 @@
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
               pluginAUExportPrefix="OmniCompressorAU" pluginRTASCategory=""
               aaxIdentifier="at.iem.OmniCompressor" pluginAAXCategory="AAX_ePlugInCategory_Dynamics"
-              jucerVersion="5.2.0" cppLanguageStandard="14" companyName="IEM"
+              jucerVersion="5.2.1" cppLanguageStandard="14" companyName="IEM"
               companyWebsite="IEM.at" companyCopyright="IEM - Daniel Rudrich">
   <MAINGROUP id="Ld9vSw" name="OmniCompressor">
     <GROUP id="{C32F7877-3111-BA83-FFEC-FCA65904B997}" name="customComponents"/>
