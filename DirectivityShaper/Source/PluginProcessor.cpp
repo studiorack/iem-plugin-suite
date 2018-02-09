@@ -142,13 +142,16 @@ parameters(*this, nullptr)
         parameters.addParameterListener("filterGain" + String(i), this);
         parameters.addParameterListener("yaw" + String(i), this);
         parameters.addParameterListener("pitch" + String(i), this);
+        parameters.addParameterListener("order" + String(i), this);
+        parameters.addParameterListener("shape" + String(i), this);
+        parameters.addParameterListener("normalization", this);
         
         probeGains[i] = 0.0f;
     }
     
     parameters.state = ValueTree (Identifier ("DirectivityShaper"));
     
-
+    
     FloatVectorOperations::clear(shOld[0], 64 * numberOfBands);
     FloatVectorOperations::clear(weights[0], 8 * numberOfBands);
     
@@ -273,14 +276,14 @@ bool DirectivityShaperAudioProcessor::isBusesLayoutSupported (const BusesLayout&
 void DirectivityShaperAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
     checkInputAndOutput(this, 1, *orderSetting);
-    ScopedNoDenormals noDenormals;    
+    ScopedNoDenormals noDenormals;
     
     int nChToWorkWith = jmin(buffer.getNumChannels(), output.getNumberOfChannels());
     const int orderToWorkWith = isqrt(nChToWorkWith) - 1;
     nChToWorkWith = squares[orderToWorkWith+1];
     
     const int numSamples = buffer.getNumSamples();
-
+    
     AudioBlock<float> inBlock = AudioBlock<float>(buffer.getArrayOfWritePointers(), 1, numSamples);
     for (int i = 0; i < numberOfBands; ++i)
     {
@@ -299,7 +302,6 @@ void DirectivityShaperAudioProcessor::processBlock (AudioSampleBuffer& buffer, M
         SHEval(orderToWorkWith, pos.x, pos.y, pos.z, masterSH);
     }
     
-    updateFv = true;
     
     for (int b = 0; b < numberOfBands; ++b)
     {
@@ -347,7 +349,7 @@ void DirectivityShaperAudioProcessor::processBlock (AudioSampleBuffer& buffer, M
                 cor3 = (squares[orderToWorkWith+1]);
             else
                 cor3 = (squares[higherOrder] + (2 * higherOrder + 1)*orderBlend);
-
+            
             cor2 = cor3/cor2;
             cor *= cor2;
         }
@@ -365,8 +367,8 @@ void DirectivityShaperAudioProcessor::processBlock (AudioSampleBuffer& buffer, M
         else
             for (int i = 0; i < 8; ++i )
                 tempWeights[i] = tempWeights[i] * cor;
-
-            
+        
+        
         Vector3D<float> pos = yawPitchToCartesian(degreesToRadians(*yaw[b]), degreesToRadians(*pitch[b]));
         SHEval(orderToWorkWith, pos.x, pos.y, pos.z, sh);
         
@@ -381,6 +383,12 @@ void DirectivityShaperAudioProcessor::processBlock (AudioSampleBuffer& buffer, M
         }
         probeGains[b] = std::abs(temp);
         
+        if (probeChanged)
+        {
+            probeChanged = false;
+            repaintFV = true;
+        }
+        
         cor = correction(orderToWorkWith)/correction(7);
         cor *= cor;
         FloatVectorOperations::copy(shOld[b], shTemp, 64);
@@ -389,6 +397,13 @@ void DirectivityShaperAudioProcessor::processBlock (AudioSampleBuffer& buffer, M
         for (int i = orderToWorkWith + 1; i < 8; ++i)
             weights[b][i] = 0.0f;
     }
+    
+    if (changeWeights) {
+        changeWeights = false;
+        repaintDV = true;
+        repaintFV = true;
+    }
+    
 }
 
 //==============================================================================
@@ -422,78 +437,98 @@ void DirectivityShaperAudioProcessor::parameterChanged (const String &parameterI
     if (parameterID == "orderSetting") userChangedIOSettings = true;
     else if (parameterID == "masterToggle")
     {
-       if (newValue >= 0.5f && !toggled)
-       {
-        DBG("toggled");
-        
-        float ypr[3];
-        ypr[2] = 0.0f;
-        for (int i = 0; i < numberOfBands; ++i)
+        if (newValue >= 0.5f && !toggled)
         {
-            iem::Quaternion<float> masterQuat;
-            float masterypr[3];
-            masterypr[0] = degreesToRadians(*masterYaw);
-            masterypr[1] = degreesToRadians(*masterPitch);
-            masterypr[2] = degreesToRadians(*masterRoll);
-            masterQuat.fromYPR(masterypr);
-            masterQuat.conjugate();
+            DBG("toggled");
             
-            ypr[0] = degreesToRadians(*yaw[i]);
-            ypr[1] = degreesToRadians(*pitch[i]);
-            quats[i].fromYPR(ypr);
-            quats[i] = masterQuat*quats[i];
+            float ypr[3];
+            ypr[2] = 0.0f;
+            for (int i = 0; i < numberOfBands; ++i)
+            {
+                iem::Quaternion<float> masterQuat;
+                float masterypr[3];
+                masterypr[0] = degreesToRadians(*masterYaw);
+                masterypr[1] = degreesToRadians(*masterPitch);
+                masterypr[2] = degreesToRadians(*masterRoll);
+                masterQuat.fromYPR(masterypr);
+                masterQuat.conjugate();
+                
+                ypr[0] = degreesToRadians(*yaw[i]);
+                ypr[1] = degreesToRadians(*pitch[i]);
+                quats[i].fromYPR(ypr);
+                quats[i] = masterQuat*quats[i];
+            }
+            toggled = true;
         }
-        toggled = true;
-       }
         else if (newValue < 0.5f)
             toggled = false;
     }
-    else if (toggled && ((parameterID == "masterYaw") ||  (parameterID == "masterPitch") ||  (parameterID == "masterRoll")))
+    else if ((parameterID == "masterYaw") ||  (parameterID == "masterPitch") ||  (parameterID == "masterRoll"))
     {
-        DBG("moving");
-        moving = true;
-        iem::Quaternion<float> masterQuat;
-        float ypr[3];
-        ypr[0] = degreesToRadians(*masterYaw);
-        ypr[1] = degreesToRadians(*masterPitch);
-        ypr[2] = degreesToRadians(*masterRoll);
-        masterQuat.fromYPR(ypr);
         
-        for (int i = 0; i < numberOfBands; ++i)
+        if (toggled)
         {
-            iem::Quaternion<float> temp = masterQuat*quats[i];
-            temp.toYPR(ypr);
-            parameters.getParameterAsValue("yaw" + String(i)).setValue(radiansToDegrees(ypr[0]));
-            parameters.getParameterAsValue("pitch" + String(i)).setValue(radiansToDegrees(ypr[1]));
-        }
-        moving = false;
-    }
-    else if (toggled && !moving &&  (parameterID.startsWith("yaw") || parameterID.startsWith("pitch")))
-    {
-        DBG("yawPitch");
-        float ypr[3];
-        ypr[2] = 0.0f;
-        for (int i = 0; i < numberOfBands; ++i)
-        {
+            DBG("moving");
+            moving = true;
             iem::Quaternion<float> masterQuat;
-            float masterypr[3];
-            masterypr[0] = degreesToRadians(*masterYaw);
-            masterypr[1] = degreesToRadians(*masterPitch);
-            masterypr[2] = degreesToRadians(*masterRoll);
-            masterQuat.fromYPR(masterypr);
-            masterQuat.conjugate();
+            float ypr[3];
+            ypr[0] = degreesToRadians(*masterYaw);
+            ypr[1] = degreesToRadians(*masterPitch);
+            ypr[2] = degreesToRadians(*masterRoll);
+            masterQuat.fromYPR(ypr);
             
-            ypr[0] = degreesToRadians(*yaw[i]);
-            ypr[1] = degreesToRadians(*pitch[i]);
-            quats[i].fromYPR(ypr);
-            quats[i] = masterQuat*quats[i];
+            for (int i = 0; i < numberOfBands; ++i)
+            {
+                iem::Quaternion<float> temp = masterQuat*quats[i];
+                temp.toYPR(ypr);
+                parameters.getParameterAsValue("yaw" + String(i)).setValue(radiansToDegrees(ypr[0]));
+                parameters.getParameterAsValue("pitch" + String(i)).setValue(radiansToDegrees(ypr[1]));
+            }
+            moving = false;
+            repaintSphere = true;
         }
+        else
+            probeChanged = true;
+        
+    }
+    else if (  (parameterID.startsWith("yaw") || parameterID.startsWith("pitch")))
+    {
+        if (toggled && !moving)
+        {
+            DBG("yawPitch");
+            float ypr[3];
+            ypr[2] = 0.0f;
+            for (int i = 0; i < numberOfBands; ++i)
+            {
+                iem::Quaternion<float> masterQuat;
+                float masterypr[3];
+                masterypr[0] = degreesToRadians(*masterYaw);
+                masterypr[1] = degreesToRadians(*masterPitch);
+                masterypr[2] = degreesToRadians(*masterRoll);
+                masterQuat.fromYPR(masterypr);
+                masterQuat.conjugate();
+                
+                ypr[0] = degreesToRadians(*yaw[i]);
+                ypr[1] = degreesToRadians(*pitch[i]);
+                quats[i].fromYPR(ypr);
+                quats[i] = masterQuat*quats[i];
+            }
+        }
+        repaintSphere = true;
+        probeChanged = true;
     }
     else if (parameterID.startsWith("filter"))
     {
         int i = parameterID.getLastCharacters(1).getIntValue();
         *filter[i].coefficients = *createFilterCoefficients(roundToInt(*filterType[i]), getSampleRate(), *filterFrequency[i], *filterQ[i]);
+        repaintFV = true;
     }
+    else if (parameterID.startsWith("order") || parameterID.startsWith("shape"))
+    {
+        changeWeights = true;
+    }
+    else if (parameterID == "normalization")
+        changeWeights = true;
 }
 
 //==============================================================================

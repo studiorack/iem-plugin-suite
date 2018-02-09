@@ -9,6 +9,8 @@ For a list of all changes and bugfixes see the git log.
         - changed element colours are now displayed at once
     - **Binaural**Decoder
         - making use of new binaural IO widget
+    - **Directivity**Shaper
+        - better GUI performance
 
 
 ## v1.1.0

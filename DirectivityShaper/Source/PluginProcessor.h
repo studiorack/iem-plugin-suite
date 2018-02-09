@@ -89,8 +89,13 @@ public:
     IIR::Filter<float> filter[numberOfBands];
     
     float probeGains[numberOfBands];
-    bool updateFv = true;
     
+    Atomic<bool> repaintDV = true;
+    Atomic<bool> repaintXY = true;
+    Atomic<bool> repaintFV = true;
+    Atomic<bool> repaintSphere = true;
+    
+    void updateBuffers() override { repaintXY = true; };
     
 private:
     const float maxRe[8][8] =
@@ -133,6 +138,9 @@ private:
     AudioSampleBuffer filteredBuffer;
     
     iem::Quaternion<float> quats[numberOfBands];
+
+    bool changeWeights = true;
+    bool probeChanged = true;
     
     bool toggled = false;
     bool moving = false;
