@@ -262,7 +262,7 @@ public:
         cbOrder.addItem("5th", 7);
         cbOrder.addItem("6th", 8);
         cbOrder.addItem("7th", 9);
-        cbOrder.setBounds(35, 8, 70, 15);
+        cbOrder.setBounds(35, 15, 70, 15);
     };
     ~DirectivityIOWidget() {};
     
@@ -293,6 +293,11 @@ public:
         DirectivityPath.applyTransform(DirectivityPath.getTransformToScaleToFit(0, 0, 30, 30, true,Justification::centred));
         g.setColour((Colours::white).withMultipliedAlpha(0.5));
         g.fillPath(DirectivityPath);
+        
+        g.setColour((Colours::white).withMultipliedAlpha(0.5));
+        g.setFont(getLookAndFeel().getTypefaceForFont (Font(12.0f, 1)));
+        g.setFont(13.0f);
+        g.drawFittedText("N3D", 40, 0, 40, 13, Justification::centred, 1);
     };
     
 private:
