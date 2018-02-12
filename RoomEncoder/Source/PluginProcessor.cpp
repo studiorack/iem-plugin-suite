@@ -229,7 +229,8 @@ parameters (*this, nullptr)
         highShelfArray2.add(new IIR::Filter<juce::dsp::SIMDRegister<float>>(highShelfCoefficients));
     }
     
-    
+    float flo = float {};
+    SIMDRegister<float> simflo {};
     startTimer(50);
 }
 
@@ -305,10 +306,10 @@ void RoomEncoderAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     
     for (int i = 0; i<16; ++i)
     {
-        lowShelfArray[i]->reset();
-        highShelfArray[i]->reset();
-        lowShelfArray2[i]->reset();
-        highShelfArray2[i]->reset();
+        lowShelfArray[i]->reset(SIMDRegister<float>(0.0f));
+        highShelfArray[i]->reset(SIMDRegister<float>(0.0f));
+        lowShelfArray2[i]->reset(SIMDRegister<float>(0.0f));
+        highShelfArray2[i]->reset(SIMDRegister<float>(0.0f));
         
         interleavedData.add(new AudioBlock<SIMDRegister<float>> (interleavedBlockData[i], 1, samplesPerBlock));
         interleavedData.getLast()->clear();
@@ -405,6 +406,7 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
     const int L = buffer.getNumSamples();
     const float oneOverL = 1.0/((double) L);
     
+    
     float* pBufferWrite = buffer.getWritePointer(0);
     const float* pBufferRead = buffer.getReadPointer(0);
     
@@ -449,7 +451,6 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
                                                reinterpret_cast<float*> (interleavedData[i]->getChannelPointer (0)), L,
                                                static_cast<int> (SIMDRegister<float>::size()));
     }
-    
     
     
     
@@ -533,11 +534,14 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
     
     for (int q=0; q<workingNumRefl+1; ++q) {
         if (q == 1) {
+            DBG(nSIMDFilters << " " << FloatVectorOperations::findMaximum(reinterpret_cast<float*> (interleavedData[0]->getChannelPointer(0)), 4*L));
             for (int i = 0; i<nSIMDFilters; ++i)
             {
-                lowShelfArray[i]->process(ProcessContextReplacing<SIMDRegister<float>> (*interleavedData[i]));
-                highShelfArray[i]->process(ProcessContextReplacing<SIMDRegister<float>> (*interleavedData[i]));
+                ProcessContextReplacing<SIMDRegister<float>> context (*interleavedData[i]);
+                lowShelfArray[i]->process(context);
+                highShelfArray[i]->process(context);
             }
+            DBG(nSIMDFilters << " " << FloatVectorOperations::findMaximum(reinterpret_cast<float*> (interleavedData[0]->getChannelPointer(0)), 4*L));
         }
         if (q == 7) {
             for (int i = 0; i<nSIMDFilters; ++i)
@@ -743,6 +747,8 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
     
     readOffset += L;
     if (readOffset >= bufferSize) readOffset = 0;
+    
+
 }
 
 //==============================================================================
