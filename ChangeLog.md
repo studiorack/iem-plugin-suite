@@ -5,6 +5,8 @@ For a list of all changes and bugfixes see the git log.
 - general changes
     - added binaural IO widget
     - directivity IO widget now shows the normalization (which is N3D)
+    - added warning sign to titlebar widgets when bus is too small
+    
 - plugin specific changes
     - **Multi**Encoder
         - changed element colours are now displayed at once
@@ -16,6 +18,8 @@ For a list of all changes and bugfixes see the git log.
         - more linear default values for filters
     - **Room**Encoder
         - fixed bug which lead to filter output values way beyond of 1
+    - **Tool**Box
+        - added adaptor tool for lower order Ambisonic (LOA) signals to be compatible with HOA decoder weights
 
 
 ## v1.1.0
