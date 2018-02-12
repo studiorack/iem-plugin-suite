@@ -11,6 +11,10 @@ For a list of all changes and bugfixes see the git log.
         - making use of new binaural IO widget
     - **Directivity**Shaper
         - better GUI performance
+        - 5dB subgrid for directivity shaper
+        - more linear default values for filters
+    - **Room**Encoder
+        - fixed bug which lead to filter output values way beyond of 1
 
 
 ## v1.1.0
