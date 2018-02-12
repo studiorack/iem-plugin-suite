@@ -95,6 +95,14 @@ parameters(*this, nullptr), flipXMask(int64(0)), flipYMask(int64(0)), flipZMask(
                                      [](float value) {if (value >= 0.5f) return "ON";
                                          else return "OFF";}, nullptr);
     
+    parameters.createAndAddParameter ("loaWeights", "Lower Order Ambisonic Weighting", "",
+                                      NormalisableRange<float> (0.0f, 2.0f, 1.0f), 0.0f,
+                                      [](float value) {
+                                          if (value >= 0.5f && value < 1.5f) return "maxrE";
+                                          else if (value >= 1.5f) return "inPhase";
+                                          else return "none";},
+                                      nullptr);
+    
     
     // this must be initialised after all calls to createAndAddParameter().
     parameters.state = ValueTree (Identifier ("ToolBox"));
@@ -109,6 +117,7 @@ parameters(*this, nullptr), flipXMask(int64(0)), flipYMask(int64(0)), flipZMask(
     flipX = parameters.getRawParameterValue ("flipX");
     flipY = parameters.getRawParameterValue ("flipY");
     flipZ = parameters.getRawParameterValue ("flipZ");
+    loaWeights = parameters.getRawParameterValue("loaWeights");
 
     
     // add listeners to parameter changes
@@ -266,6 +275,27 @@ void ToolBoxAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
         for (int ch = 0; ch < nCh; ++ch)
             if (mask[ch])
                 weights[ch] *= -1.0f;
+    }
+    
+    
+    // lower order ambisonics weighting
+    if (orderIn < orderOut)
+    {
+        const int weightType = roundToInt(*loaWeights);
+        if (weightType == 1) // maxrE
+        {
+            FloatVectorOperations::multiply(weights, getMaxRELUT(orderIn), nChIn);
+            const float* deWeights = getMaxRELUT(orderOut);
+            for (int i = 0; i < nChIn; ++i)
+                weights[i] /= deWeights[i];
+        }
+        else if (weightType == 2) // inPhase
+        {
+            FloatVectorOperations::multiply(weights, getInPhaseLUT(orderIn), nChIn);
+            const float* deWeights = getInPhaseLUT(orderOut);
+            for (int i = 0; i < nChIn; ++i)
+                weights[i] /= deWeights[i];
+        }
     }
     
     

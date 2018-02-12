@@ -25,6 +25,8 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "../../resources/IOHelper.h"
 #include "../../resources/ambisonicTools.h"
+#include "../../resources/inPhase.h"
+#include "../../resources/MaxRE.h"
 
 
 //==============================================================================
@@ -94,6 +96,7 @@ private:
     float* flipX;
     float* flipY;
     float* flipZ;
+    float* loaWeights;
     
     bool doFlipX, doFlipY, doFlipZ;
     // flips
