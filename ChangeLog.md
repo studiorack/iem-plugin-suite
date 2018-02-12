@@ -4,6 +4,7 @@ For a list of all changes and bugfixes see the git log.
 ## untagged changes
 - general changes
     - added binaural IO widget
+    - directivity IO widget now shows the normalization (which is N3D)
 - plugin specific changes
     - **Multi**Encoder
         - changed element colours are now displayed at once
