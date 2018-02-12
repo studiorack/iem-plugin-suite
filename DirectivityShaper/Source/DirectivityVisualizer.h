@@ -84,8 +84,8 @@ public:
             grid.addPath(circle, AffineTransform().scaled(dBToRadius(-dB)));
         
         subGrid.clear();
-//        for (int dB = dBstep/2; dB < maxdB; dB += dBstep)
-//            subGrid.addPath(circle, AffineTransform().scaled(dBToRadius(-dB)));
+        for (int dB = dBstep/2; dB < maxdB; dB += dBstep)
+            subGrid.addPath(circle, AffineTransform().scaled(dBToRadius(-dB)));
         
         subGrid.addPath(line);
         subGrid.addPath(line, AffineTransform().rotation(0.25f*M_PI));
@@ -127,7 +127,7 @@ public:
         
         path = subGrid;
         path.applyTransform(transform);
-        g.setColour (Colours::white.withMultipliedAlpha(0.5f));
+        g.setColour (Colours::skyblue.withMultipliedAlpha(0.3f));
         g.strokePath(path, PathStrokeType(0.5f));
         
         g.setColour (Colours::white);

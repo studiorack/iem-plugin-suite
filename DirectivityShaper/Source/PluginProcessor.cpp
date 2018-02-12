@@ -25,7 +25,7 @@
 #include "PluginEditor.h"
 
 static constexpr float filterTypePresets[] = {1.0f, 2.0f, 2.0f, 3.0f};
-static constexpr float filterFrequencyPresets[] = {100.0f, 500.0f, 2000.0f, 4000.0f};
+static constexpr float filterFrequencyPresets[] = {200.0f, 300.0f, 1600.0f, 2200.0f};
 
 //==============================================================================
 DirectivityShaperAudioProcessor::DirectivityShaperAudioProcessor()
@@ -88,27 +88,27 @@ parameters(*this, nullptr)
         
         parameters.createAndAddParameter("filterFrequency" + String(i), "Filter Frequency " + String(i+1), "Hz",
                                          NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.4f), filterFrequencyPresets[i],
-                                         [](float value) {return String(value);}, nullptr);
+                                         [](float value) {return String(value, 1);}, nullptr);
         parameters.createAndAddParameter("filterQ" + String(i), "Filter Q " + String(i+1), "",
-                                         NormalisableRange<float> (0.05f, 10.0f, 0.05f), 0.707f,
-                                         [](float value) {return (value >= -59.9f) ? String(value) : "-inf";},
+                                         NormalisableRange<float> (0.05f, 10.0f, 0.05f), 0.5f,
+                                         [](float value) {return String(value, 2);},
                                          nullptr);
         parameters.createAndAddParameter("filterGain" + String(i), "Filter Gain " + String(i+1), "dB",
                                          NormalisableRange<float> (-60.0f, 10.0f, 0.1f), 0.0f,
-                                         [](float value) {return (value >= -59.9f) ? String(value) : "-inf";},
+                                         [](float value) {return (value >= -59.9f) ? String(value, 1) : "-inf";},
                                          nullptr);
         parameters.createAndAddParameter("order" + String(i), "Order Band " + String(i+1), "",
                                          NormalisableRange<float> (0.0f, 7.0f, 0.01f), 0.0,
-                                         [](float value) {return String(value);}, nullptr);
+                                         [](float value) {return String(value, 2);}, nullptr);
         parameters.createAndAddParameter("shape" + String(i), "Shape Band " + String(i+1), "",
                                          NormalisableRange<float> (0.0f, 1.0f, 0.01f), 0.0,
-                                         [](float value) {return String(value);}, nullptr);
+                                         [](float value) {return String(value, 2);}, nullptr);
         parameters.createAndAddParameter("yaw" + String(i), "Yaw Band " + String(i+1), "",
                                          NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
-                                         [](float value) {return String(value);}, nullptr);
+                                         [](float value) {return String(value, 2);}, nullptr);
         parameters.createAndAddParameter("pitch" + String(i), "Pitch Band " + String(i+1), "",
                                          NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
-                                         [](float value) {return String(value);}, nullptr);
+                                         [](float value) {return String(value, 2);}, nullptr);
     }
     
     
