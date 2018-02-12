@@ -229,8 +229,6 @@ parameters (*this, nullptr)
         highShelfArray2.add(new IIR::Filter<juce::dsp::SIMDRegister<float>>(highShelfCoefficients));
     }
     
-    float flo = float {};
-    SIMDRegister<float> simflo {};
     startTimer(50);
 }
 
@@ -534,14 +532,12 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
     
     for (int q=0; q<workingNumRefl+1; ++q) {
         if (q == 1) {
-            DBG(nSIMDFilters << " " << FloatVectorOperations::findMaximum(reinterpret_cast<float*> (interleavedData[0]->getChannelPointer(0)), 4*L));
             for (int i = 0; i<nSIMDFilters; ++i)
             {
                 ProcessContextReplacing<SIMDRegister<float>> context (*interleavedData[i]);
                 lowShelfArray[i]->process(context);
                 highShelfArray[i]->process(context);
             }
-            DBG(nSIMDFilters << " " << FloatVectorOperations::findMaximum(reinterpret_cast<float*> (interleavedData[0]->getChannelPointer(0)), 4*L));
         }
         if (q == 7) {
             for (int i = 0; i<nSIMDFilters; ++i)
