@@ -9,6 +9,9 @@ debian_buster:
   image: debian:buster
   tags:
     - docker
+  only:
+    - master
+    - develop
   script:
     - sed -e 's|^deb|deb-src|' /etc/apt/sources.list > /etc/apt/sources.list.d/deb-src.list
     - apt update -y
@@ -19,6 +22,9 @@ debian_buster:
 osx:
   tags:
     - osx
+  only:
+    - master
+    - develop
   script:
     - curl -o juce.zip https://d30pueezughrda.cloudfront.net/juce/juce-huckleberry-osx.zip
     - unzip -q juce.zip -d ~
