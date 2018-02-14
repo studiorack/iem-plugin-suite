@@ -58,7 +58,7 @@ PluginTemplateAudioProcessorEditor::PluginTemplateAudioProcessorEditor (PluginTe
     addAndMakeVisible(lv);
     
     // start timer after everything is set up properly
-    startTimer(20);
+    startTimer(50);
 }
 
 PluginTemplateAudioProcessorEditor::~PluginTemplateAudioProcessorEditor()

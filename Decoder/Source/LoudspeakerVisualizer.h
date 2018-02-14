@@ -53,20 +53,20 @@ public:
     void initialise()
     {
         PixelARGB colormapData[8];
-        colormapData[0] = Colours::cornflowerblue.withMultipliedAlpha(1.0f).getPixelARGB();
-        colormapData[1] = Colours::orange.withMultipliedAlpha(1.0f).getPixelARGB();
-        colormapData[2] = Colours::red.withMultipliedAlpha(1.0f).getPixelARGB();
-        colormapData[3] = Colours::greenyellow.withMultipliedAlpha(1.0f).getPixelARGB();
-        colormapData[4] = Colours::lemonchiffon.withMultipliedAlpha(1.0f).getPixelARGB();
-        colormapData[5] = Colours::cornflowerblue.withMultipliedAlpha(1.0f).getPixelARGB();
-        colormapData[6] = Colours::orange.withMultipliedAlpha(1.0f).getPixelARGB();
-        colormapData[7] = Colours::red.withMultipliedAlpha(1.0f).getPixelARGB();
+        colormapData[0] = Colours::cornflowerblue.withMultipliedAlpha(0.8f).getPixelARGB();
+        colormapData[1] = Colours::orange.withMultipliedAlpha(0.8f).getPixelARGB();
+        colormapData[2] = Colours::red.withMultipliedAlpha(0.8f).getPixelARGB();
+        colormapData[3] = Colours::greenyellow.withMultipliedAlpha(0.8f).getPixelARGB();
+        colormapData[4] = Colours::lemonchiffon.withMultipliedAlpha(0.8f).getPixelARGB();
+        colormapData[5] = Colours::cornflowerblue.withMultipliedAlpha(0.8f).getPixelARGB();
+        colormapData[6] = Colours::orange.withMultipliedAlpha(0.8f).getPixelARGB();
+        colormapData[7] = Colours::red.withMultipliedAlpha(0.8f).getPixelARGB();
         
         texture.loadARGB(colormapData, 8, 1);
     }
     
     void timerCallback() override {
-        openGLContext.triggerRepaint();
+        //openGLContext.triggerRepaint();
     }
     
     void setRmsDataPtr(Array<float>* newRms) {
@@ -102,6 +102,8 @@ public:
         openGLContext.extensions.glGenBuffers(1, &normalsBuffer);
         openGLContext.extensions.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, normalsBuffer);
         openGLContext.extensions.glBufferData(GL_ELEMENT_ARRAY_BUFFER, normals.size() * sizeof(float), &normals[0], GL_STATIC_DRAW);
+        
+        openGLContext.triggerRepaint();
     }
     
     void renderOpenGL() override
@@ -142,10 +144,14 @@ public:
         GLint programID = shader->getProgramID();
 
         
-        if (projectionMatrix != nullptr)
-            projectionMatrix->setMatrix4 (getProjectionMatrix().mat, 1, false);
-        if (viewMatrix != nullptr)
-            viewMatrix->setMatrix4 (getViewMatrix().mat, 1, false);
+        if (viewHasChanged)
+        {
+            viewHasChanged = false;
+            if (projectionMatrix != nullptr)
+                projectionMatrix->setMatrix4 (getProjectionMatrix().mat, 1, false);
+            if (viewMatrix != nullptr)
+                viewMatrix->setMatrix4 (getViewMatrix().mat, 1, false);
+        }
         
         
         std::vector<GLfloat> colorMap_data; // every vertex gets a colour
@@ -275,6 +281,8 @@ public:
         zoom += delta;
         zoom = jmin(zoom, 5.0f);
         zoom = jmax(zoom, 0.01f);
+        viewHasChanged = true;
+        openGLContext.triggerRepaint();
     }
     
     void mouseDown (const MouseEvent& e) override
@@ -294,6 +302,8 @@ public:
         
         float deltaX = (float) e.getDistanceFromDragStartX() / 100;
         yaw = yawBeforeDrag + deltaX;
+        viewHasChanged = true;
+        openGLContext.triggerRepaint();
     }
     
     void paint (Graphics& g) override
@@ -448,6 +458,7 @@ private:
     std::vector<int> indices;
     std::vector<float> normals;
     
+    bool viewHasChanged = true;
     int nVertices;
     int nTriangleIndices;
     
