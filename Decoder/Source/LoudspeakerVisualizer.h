@@ -30,6 +30,11 @@
 */
 class LoudspeakerVisualizer    : public Component, public OpenGLRenderer, private Timer
 {
+    struct positionAndColour {
+        float position[3];
+        float colourId;
+    };
+    
 public:
     LoudspeakerVisualizer(std::vector<float>& pts, std::vector<int>& tris, std::vector<float>& norms) : extPoints(pts), extTriangles(tris), extNormals(norms)
     {
@@ -63,6 +68,17 @@ public:
         colormapData[7] = Colours::red.withMultipliedAlpha(0.8f).getPixelARGB();
         
         texture.loadARGB(colormapData, 8, 1);
+        
+        
+        openGLContext.extensions.glActiveTexture (GL_TEXTURE0);
+        glEnable (GL_TEXTURE_2D);
+        
+        
+        texture.bind();
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // linear interpolation when too small
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // linear interpolation when too bi
+        
+        
     }
     
     void timerCallback() override {
@@ -82,18 +98,45 @@ public:
     
     void updateVerticesAndIndices()
     {
-        vertices = extPoints;
-        indices = extTriangles;
+        vertices.clear();
+        indices.clear();
+        
+        //vertices = extPoints;
+        //indices = extTriangles;
         normals = extNormals;
         
-        nVertices = (int) vertices.size();
-        nTriangleIndices = (int) indices.size();
-        for (int i = 0; i < nVertices; ++i)
+        nVertices = (int) extPoints.size();
+        nPoints = nVertices / 3;
+        
+
+        for (int i = 0; i < nPoints; ++i)
+        {
+            const int idx = i * 3;
+            float col = (float) rand() / RAND_MAX;
+            vertices.push_back({extPoints[idx], extPoints[idx+1], extPoints[idx+2], col});
             indices.push_back(i);
+        }
+        
+        nTriangleIndices = (int) extTriangles.size();
+        const int nTriangles = nTriangleIndices / 3;
+        for (int i = 0; i < nTriangles;  ++i)
+        {
+            float col = (float) rand() / RAND_MAX;
+            const int idx = i * 3;
+            vertices.push_back({extPoints[extTriangles[idx]*3], extPoints[extTriangles[idx]*3+1], extPoints[extTriangles[idx]*3+2], col});
+            vertices.push_back({extPoints[extTriangles[idx+1]*3], extPoints[extTriangles[idx+1]*3+1], extPoints[extTriangles[idx+1]*3+2], col});
+            vertices.push_back({extPoints[extTriangles[idx+2]*3], extPoints[extTriangles[idx+2]*3+1], extPoints[extTriangles[idx+2]*3+2], col});
+            indices.push_back(nPoints + idx);
+            indices.push_back(nPoints + idx + 1);
+            indices.push_back(nPoints + idx + 2);
+        }
+        
+        
+        
         
         openGLContext.extensions.glGenBuffers(1, &vertexBuffer);
         openGLContext.extensions.glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-        openGLContext.extensions.glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), &vertices[0], GL_STATIC_DRAW);
+        openGLContext.extensions.glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(positionAndColour), &vertices[0], GL_STATIC_DRAW);
         
         openGLContext.extensions.glGenBuffers(1, &indexBuffer);
         openGLContext.extensions.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
@@ -124,25 +167,17 @@ public:
         glEnable(GL_BLEND);
         glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
         glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
-        
-//        glEnable(GL_POLYGON_SMOOTH);
-//        glHint(GL_POLYGON_SMOOTH_HINT, GL_DONT_CARE);
+
         
         
         openGLContext.extensions.glActiveTexture (GL_TEXTURE0);
         glEnable (GL_TEXTURE_2D);
-        
-        
         texture.bind();
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // linear interpolation when too small
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // linear interpolation when too bi
         
-        
+
         
         shader->use();
-        
         GLint programID = shader->getProgramID();
-
         
         if (viewHasChanged)
         {
@@ -154,25 +189,24 @@ public:
         }
         
         
-        std::vector<GLfloat> colorMap_data; // every vertex gets a colour
-        std::vector<GLfloat> colorMap_inverse; // every vertex gets a colour
-        for (int i = 0; i < nVertices; ++i){
-            colorMap_data.push_back(((float) i) / nVertices * 1);
-            colorMap_inverse.push_back((float) (nVertices - i - 1) / nVertices);
-        }
-        
-        GLuint colorBuffer;
-        openGLContext.extensions.glGenBuffers(1, &colorBuffer);
-        openGLContext.extensions.glBindBuffer(GL_ARRAY_BUFFER, colorBuffer);
-        openGLContext.extensions.glBufferData(GL_ARRAY_BUFFER, colorMap_data.size() * sizeof(GLfloat), &colorMap_data[0], GL_STATIC_DRAW);
-        
-        GLuint colorBufferInverse;
-        openGLContext.extensions.glGenBuffers(1, &colorBufferInverse);
-        openGLContext.extensions.glBindBuffer(GL_ARRAY_BUFFER, colorBufferInverse);
-        openGLContext.extensions.glBufferData(GL_ARRAY_BUFFER, colorMap_inverse.size() * sizeof(GLfloat), &colorMap_inverse[0], GL_STATIC_DRAW);
+//        std::vector<GLfloat> colorMap_data; // every vertex gets a colour
+//        std::vector<GLfloat> colorMap_inverse; // every vertex gets a colour
+//        for (int i = 0; i < nVertices; ++i){
+//            colorMap_data.push_back(((float) i) / nVertices * 1);
+//            colorMap_inverse.push_back((float) (nVertices - i - 1) / nVertices);
+//        }
+//
+//        GLuint colorBuffer;
+//        openGLContext.extensions.glGenBuffers(1, &colorBuffer);
+//        openGLContext.extensions.glBindBuffer(GL_ARRAY_BUFFER, colorBuffer);
+//        openGLContext.extensions.glBufferData(GL_ARRAY_BUFFER, colorMap_data.size() * sizeof(GLfloat), &colorMap_data[0], GL_STATIC_DRAW);
+//
+//        GLuint colorBufferInverse;
+//        openGLContext.extensions.glGenBuffers(1, &colorBufferInverse);
+//        openGLContext.extensions.glBindBuffer(GL_ARRAY_BUFFER, colorBufferInverse);
+//        openGLContext.extensions.glBufferData(GL_ARRAY_BUFFER, colorMap_inverse.size() * sizeof(GLfloat), &colorMap_inverse[0], GL_STATIC_DRAW);
         
         GLint attributeID;
-        
         
         // 1st attribute buffer : vertices
         attributeID = openGLContext.extensions.glGetAttribLocation(programID, "position");
@@ -186,7 +220,7 @@ public:
                                                        3,                  // size
                                                        GL_FLOAT,           // type
                                                        GL_FALSE,           // normalized?
-                                                       0,                  // stride
+                                                       sizeof(positionAndColour),                  // stride
                                                        (void*)0            // array buffer offset
                                                        );
         // 1st attribute buffer : normals
@@ -208,45 +242,45 @@ public:
         attributeID = openGLContext.extensions.glGetAttribLocation(programID, "colormapDepthIn");
         
         openGLContext.extensions.glEnableVertexAttribArray(attributeID);
-        openGLContext.extensions.glBindBuffer(GL_ARRAY_BUFFER, colorBuffer);
+        openGLContext.extensions.glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
         
         openGLContext.extensions.glVertexAttribPointer(
                                                        attributeID,            // attribute
                                                        1,                      // size
                                                        GL_FLOAT,               // type
-                                                       GL_FALSE,               // normalized?
-                                                       0,                      // stride
-                                                       (void*)0                // array buffer offset
+                                                       GL_TRUE,               // normalized?
+                                                       sizeof(positionAndColour),                      // stride
+                                                       (void*) offsetof(positionAndColour, colourId)                // array buffer offset
                                                        );
         
         glPointSize(20.0);
-        glDrawElements (GL_POINTS, nVertices / 3, GL_UNSIGNED_INT,  (void*)(nTriangleIndices * sizeof(GLuint)));  // Draw points!
+        glDrawElements (GL_POINTS, nPoints, GL_UNSIGNED_INT,  (void*) 0);  // Draw points!
         
         
         glLineWidth(5.0);
 
-        
-        attributeID = openGLContext.extensions.glGetAttribLocation(programID, "colormapDepthIn");
-        
-        openGLContext.extensions.glEnableVertexAttribArray(attributeID);
-        openGLContext.extensions.glBindBuffer(GL_ARRAY_BUFFER, colorBufferInverse);
-        
-        openGLContext.extensions.glVertexAttribPointer(
-                                                       attributeID,            // attribute
-                                                       1,                      // size
-                                                       GL_FLOAT,               // type
-                                                       GL_FALSE,               // normalized?
-                                                       0,                      // stride
-                                                       (void*)0                // array buffer offset
-                                                       );
-        
+//
+//        attributeID = openGLContext.extensions.glGetAttribLocation(programID, "colormapDepthIn");
+//
+//        openGLContext.extensions.glEnableVertexAttribArray(attributeID);
+//        openGLContext.extensions.glBindBuffer(GL_ARRAY_BUFFER, colorBufferInverse);
+//
+//        openGLContext.extensions.glVertexAttribPointer(
+//                                                       attributeID,            // attribute
+//                                                       1,                      // size
+//                                                       GL_FLOAT,               // type
+//                                                       GL_FALSE,               // normalized?
+//                                                       0,                      // stride
+//                                                       (void*)0                // array buffer offset
+//                                                       );
+//
         
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         glDrawElements(
                        GL_TRIANGLES,      // mode
                        nTriangleIndices,    // count
                        GL_UNSIGNED_INT,   // type
-                       (void*)0           // element array buffer offset
+                       (void*) (nPoints * sizeof(int))           // element array buffer offset
                        );
 
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -254,7 +288,7 @@ public:
                        GL_TRIANGLES,      // mode
                        nTriangleIndices,    // count
                        GL_UNSIGNED_INT,   // type
-                       (void*)0           // element array buffer offset
+                       (void*) (nPoints * sizeof(int))           // element array buffer offset
                        );
 
         openGLContext.extensions.glDisableVertexAttribArray(0);
@@ -264,7 +298,7 @@ public:
         openGLContext.extensions.glBindBuffer (GL_ARRAY_BUFFER, 0);
         openGLContext.extensions.glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, 0);
         
-        openGLContext.extensions.glDeleteBuffers (1, &colorBuffer);
+        //openGLContext.extensions.glDeleteBuffers (1, &colorBuffer);
         //openGLContext.extensions.glDeleteBuffers (1, &colorBufferInverse);
     }
     
@@ -454,12 +488,13 @@ private:
     std::vector<int>& extTriangles;
     std::vector<float>& extNormals;
     
-    std::vector<float> vertices;
+    std::vector<positionAndColour> vertices;
     std::vector<int> indices;
     std::vector<float> normals;
     
     bool viewHasChanged = true;
     int nVertices;
+    int nPoints;
     int nTriangleIndices;
     
     float zoom = 2.0f;
