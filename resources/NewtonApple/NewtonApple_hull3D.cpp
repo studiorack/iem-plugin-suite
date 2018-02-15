@@ -313,7 +313,7 @@ int NewtonApple_hull_3D( std::vector<R3> &pts, std::vector<Tri> &hulk)
     int nump = (int) pts.size();
     
     
-    if( nump <= 4 ){
+    if( nump < 4 ){
         cerr << "less than 4 points, aborting " << endl;
         return(-1);
     }

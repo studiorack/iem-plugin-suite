@@ -223,6 +223,11 @@ public:
         data.getChild(rowNumber).setProperty(getAttributeNameForColumnId(columnId), newValue, nullptr);
     }
     
+//    void getBool (const int columnId, const int rowNumber, const bool newValue)
+//    {
+//        return data.getChild(rowNumber).getProperty(getAttributeNameForColumnId(columnId));
+//    }
+    
 private:
     TableListBox table;     // the table component itself
     Typeface::Ptr typeFace;
@@ -354,6 +359,8 @@ private:
         {
             row = newRow;
             columnId = newColumn;
+           // setToggleState(owner.getBool(newRow, newColumn), dontSendNotification);
+            
         }
         
     private:

@@ -87,7 +87,7 @@ parameters(*this, nullptr)
 
     
     loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (50.0f, 0.0f, 0.0f), 1), nullptr);
-    loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (50.0f, -45.0f, 0.0f), 2), nullptr);
+    loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (50.0f, -45.0f, 0.0f), 2, true), nullptr);
     loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (50.0f, 45.0f, 0.0f), 3), nullptr);
     loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (50.0f, 45.0f, -90.0f), 5), nullptr);
     loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (50.0f, 0.0f, 90.0f), 5), nullptr);
@@ -344,8 +344,10 @@ Result PluginTemplateAudioProcessor::calculateTris()
     chCoords.clear();
     tris.clear();
     
+    DBG("loop");
     for (ValueTree::Iterator it = loudspeakers.begin() ; it != loudspeakers.end(); ++it)
     {
+        
         Vector3D<float> spherical;
         spherical.x = (*it).getProperty("Radius");
         spherical.y = (*it).getProperty("Azimuth");
@@ -451,9 +453,10 @@ void PluginTemplateAudioProcessor::runTris()
             Vector3D<float> uN;
             uN = ((b-a)^(c-a)).normalised();
             
-            //float dist = n*a;
+            float dist = n*a;
             float uDist = uN*a;
             
+            DBG("dist: " << dist);
             if (uDist < 0)
             {
                 triangles.push_back(tri.a);
@@ -471,6 +474,7 @@ void PluginTemplateAudioProcessor::runTris()
                 normals.push_back(uN.x);
                 normals.push_back(uN.y);
                 normals.push_back(uN.z);
+                
             }
             normals.push_back(1.0f);
             
