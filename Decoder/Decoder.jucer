@@ -32,6 +32,8 @@
             file="Source/PluginEditor.cpp"/>
       <FILE id="Ur0OCo" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
     </GROUP>
+    <FILE id="WLzbS2" name="LoudspeakerTableComponent.h" compile="0" resource="0"
+          file="Source/LoudspeakerTableComponent.h"/>
     <FILE id="F9NLCT" name="LoudspeakerVisualizer.h" compile="0" resource="0"
           file="Source/LoudspeakerVisualizer.h"/>
     <FILE id="F0oPvT" name="NewtonApple_hull3D.cpp" compile="1" resource="0"

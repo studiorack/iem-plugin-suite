@@ -26,12 +26,12 @@
 
 //==============================================================================
 PluginTemplateAudioProcessorEditor::PluginTemplateAudioProcessorEditor (PluginTemplateAudioProcessor& p, AudioProcessorValueTreeState& vts)
-    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts), lv(processor.points, processor.triangles, processor.normals)
+    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts), lv(processor.points, processor.triangles, processor.normals), lspList(processor.getLoudspeakersValueTree())
 {
     // ============== BEGIN: essentials ======================
     // set GUI size and lookAndFeel
     //setSize(500, 300); // use this to create a fixed-size GUI
-    setResizeLimits(600, 400, 1200, 900); // use this to create a resizeable GUI
+    setResizeLimits(1200, 600, 1200, 900); // use this to create a resizeable GUI
     setLookAndFeel (&globalLaF);
     
     // make title and footer visible, and set the PluginName
@@ -56,6 +56,8 @@ PluginTemplateAudioProcessorEditor::PluginTemplateAudioProcessorEditor (PluginTe
     tbAddSpeakers.addListener(this);
     
     addAndMakeVisible(lv);
+    
+    addAndMakeVisible(lspList);
     
     // start timer after everything is set up properly
     startTimer(50);
@@ -101,7 +103,9 @@ void PluginTemplateAudioProcessorEditor::resized()
     tbAddSpeakers.setBounds(20, 80, 100, 20);
     tbPrintJSON.setBounds(150, 80, 100, 20);
     
-    lv.setBounds(area);
+    Rectangle<int> leftArea = area.removeFromLeft(area.getWidth() / 2);
+    lv.setBounds(leftArea);
+    lspList.setBounds(area);
 }
 
 void PluginTemplateAudioProcessorEditor::timerCallback()
@@ -118,7 +122,13 @@ void PluginTemplateAudioProcessorEditor::timerCallback()
         processor.updateLoudspeakerVisualization = false;
         lv.updateVerticesAndIndices();
     }
-    // insert stuff you want to do be done at every timer callback
+    
+    if (processor.updateTable.get())
+    {
+        processor.updateTable = false;
+        lspList.updateContent();
+    }
+
 }
 
 

@@ -90,8 +90,11 @@ public:
     
     void addRandomPoint();
     
+    ValueTree& getLoudspeakersValueTree() { return loudspeakers; }
+    
     var lsps;
     Atomic<bool> updateLoudspeakerVisualization = false;
+    Atomic<bool> updateTable = true;
     
     std::vector<R3> chCoords;
     std::vector<float> points;
@@ -107,7 +110,7 @@ private:
     float* inputOrderSetting;
     float* useSN3D;
     
-    
+    ValueTree loudspeakers {"Loudspeakers"};
     
     
     
@@ -116,10 +119,10 @@ private:
     void runTris();
     Result calculateTris();
     
-    var newSpeakerVarFromCarthesian(Vector3D<float> carthesianCoordinates, int channel, bool isVirtual = false, float gain = 1.0f);
-    var newSpeakerVarFromSpherical(Vector3D<float> sphericalCoordinates, int channel, bool isVirtual = false, float gain = 1.0f);
-    Vector3D<float> carthesianToSpherical(Vector3D<float> carthvect);
-    Vector3D<float> sphericalToCarthesian(Vector3D<float> sphervect);
+    ValueTree createLoudspeakerFromCarthesian (Vector3D<float> carthesianCoordinates, int channel, bool isVirtual = false, float gain = 1.0f);
+    ValueTree createLoudspeakerFromSpherical (Vector3D<float> sphericalCoordinates, int channel, bool isVirtual = false, float gain = 1.0f);
+    Vector3D<float> carthesianToSpherical (Vector3D<float> carthvect);
+    Vector3D<float> sphericalToCarthesian (Vector3D<float> sphervect);
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginTemplateAudioProcessor)
 };

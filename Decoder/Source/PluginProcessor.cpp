@@ -83,17 +83,17 @@ parameters(*this, nullptr)
 //    if (testVec.x != backAndForth.x || testVec.y != backAndForth.y || testVec.z != backAndForth.z)
 //        DBG("Conversion failed!");
     
+    parameters.state.appendChild(loudspeakers, nullptr);
 
-    var Lsps;
-    Lsps.append(newSpeakerVarFromSpherical(Vector3D<float> (50.0f, 0.0f, 0.0f), 1));
-    Lsps.append(newSpeakerVarFromSpherical(Vector3D<float> (50.0f, -45.0f, 0.0f), 2));
-    Lsps.append(newSpeakerVarFromSpherical(Vector3D<float> (50.0f, 45.0f, 0.0f), 3));
-    Lsps.append(newSpeakerVarFromSpherical(Vector3D<float> (50.0f, 45.0f, -90.0f), 5));
-    Lsps.append(newSpeakerVarFromSpherical(Vector3D<float> (50.0f, 0.0f, 90.0f), 5));
-    Lsps.append(newSpeakerVarFromSpherical(Vector3D<float> (50.0f, 180.0f, 0.0f), 6));
     
-    lsps = Lsps;
+    loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (50.0f, 0.0f, 0.0f), 1), nullptr);
+    loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (50.0f, -45.0f, 0.0f), 2), nullptr);
+    loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (50.0f, 45.0f, 0.0f), 3), nullptr);
+    loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (50.0f, 45.0f, -90.0f), 5), nullptr);
+    loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (50.0f, 0.0f, 90.0f), 5), nullptr);
+    loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (50.0f, 180.0f, 0.0f), 6), nullptr);
     
+    loudspeakers.addListener(this);
     runTris();
 }
 
@@ -337,33 +337,27 @@ Result PluginTemplateAudioProcessor::verifyLoudspeakerVar(var& loudspeakerVar)
 
 Result PluginTemplateAudioProcessor::calculateTris()
 {
-    Result res = verifyLoudspeakerVar(lsps);
-    if (res.failed())
-        DBG(res.getErrorMessage());
-    
-    if (! lsps.isArray() || lsps.size() < 3)
-        return Result::fail("Not enough loudspeakers available!");
+//    Result res = verifyLoudspeakerVar(lsps);
+//    if (res.failed())
+//        DBG(res.getErrorMessage());
     
     chCoords.clear();
     tris.clear();
-    const Array<var>* lspArray = lsps.getArray();
-    const int nLsp = lspArray->size();
     
-    for (int i = 0; i < nLsp; ++i)
+    for (ValueTree::Iterator it = loudspeakers.begin() ; it != loudspeakers.end(); ++it)
     {
-        var tmpLsp = lspArray->getUnchecked(i);
         Vector3D<float> spherical;
-        spherical.x = tmpLsp.getProperty("Radius", var(0.0f));
-        spherical.y = tmpLsp.getProperty("Azimuth", var(0.0f));
-        spherical.z = tmpLsp.getProperty("Elevation", var(0.0f));
+        spherical.x = (*it).getProperty("Radius");
+        spherical.y = (*it).getProperty("Azimuth");
+        spherical.z = (*it).getProperty("Elevation");
         
         Vector3D<float> carth = sphericalToCarthesian(spherical);
-
+        
         chCoords.push_back(R3(carth.x, carth.y, carth.z));
         DBG(carth.x << " " << carth.y << " " << carth.z);
     }
-    
-    
+
+
     std::vector<int> outx;
     std::vector<R3> noDuplicates;
     const int nx = de_duplicateR3(chCoords, outx, noDuplicates);
@@ -377,24 +371,24 @@ Result PluginTemplateAudioProcessor::calculateTris()
     return Result::ok();
 }
 
-var PluginTemplateAudioProcessor::newSpeakerVarFromCarthesian(Vector3D<float> carthCoordinates, int channel, bool isVirtual, float gain)
+ValueTree PluginTemplateAudioProcessor::createLoudspeakerFromCarthesian (Vector3D<float> carthCoordinates, int channel, bool isVirtual, float gain)
 {
     Vector3D<float> sphericalCoordinates = carthesianToSpherical(carthCoordinates);
-    return newSpeakerVarFromSpherical(sphericalCoordinates, channel, isVirtual, gain);
+    return createLoudspeakerFromSpherical(sphericalCoordinates, channel, isVirtual, gain);
 }
 
-var PluginTemplateAudioProcessor::newSpeakerVarFromSpherical(Vector3D<float> sphericalCoordinates, int channel, bool isVirtual, float gain)
+ValueTree PluginTemplateAudioProcessor::createLoudspeakerFromSpherical (Vector3D<float> sphericalCoordinates, int channel, bool isVirtual, float gain)
 {
-    DynamicObject* lspObj = new DynamicObject();
-    lspObj->setProperty("Azimuth", sphericalCoordinates.y);
-    lspObj->setProperty("Elevation", sphericalCoordinates.z);
-    lspObj->setProperty("Radius", sphericalCoordinates.x);
-    lspObj->setProperty("Channel", channel);
-    lspObj->setProperty("isVirtual", isVirtual);
-    lspObj->setProperty("Gain", gain);
+    ValueTree newLoudspeaker ("Loudspeaker");
+
+    newLoudspeaker.setProperty("Azimuth", sphericalCoordinates.y, nullptr);
+    newLoudspeaker.setProperty("Elevation", sphericalCoordinates.z, nullptr);
+    newLoudspeaker.setProperty("Radius", sphericalCoordinates.x, nullptr);
+    newLoudspeaker.setProperty("Channel", channel, nullptr);
+    newLoudspeaker.setProperty("Imaginary", isVirtual, nullptr);
+    newLoudspeaker.setProperty("Gain", gain, nullptr);
     
-    var newLsp (lspObj);
-    return newLsp;
+    return newLoudspeaker;
 }
 
 Vector3D<float> PluginTemplateAudioProcessor::carthesianToSpherical(Vector3D<float> carthvect)
@@ -420,9 +414,9 @@ Vector3D<float> PluginTemplateAudioProcessor::sphericalToCarthesian(Vector3D<flo
 
 void PluginTemplateAudioProcessor::addRandomPoint()
 {
-    lsps.append(newSpeakerVarFromSpherical(Vector3D<float> (50.0f, (rand() * 360.0f) / RAND_MAX, (rand() * 180.0f) / RAND_MAX - 90.0f), -1));
-    runTris();
+    loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (50.0f, (rand() * 360.0f) / RAND_MAX, (rand() * 180.0f) / RAND_MAX - 90.0f), -1), nullptr);
 }
+
 void PluginTemplateAudioProcessor::runTris()
 {
     Result res = calculateTris();
@@ -492,16 +486,21 @@ void PluginTemplateAudioProcessor::runTris()
 void PluginTemplateAudioProcessor::valueTreePropertyChanged (ValueTree &treeWhosePropertyHasChanged, const Identifier &property)
 {
     DBG("valueTreePropertyChanged");
+    runTris();
 }
 
 void PluginTemplateAudioProcessor::valueTreeChildAdded (ValueTree &parentTree, ValueTree &childWhichHasBeenAdded)
 {
     DBG("valueTreeChildAdded");
+    runTris();
+    updateTable = true;
 }
 
 void PluginTemplateAudioProcessor::valueTreeChildRemoved (ValueTree &parentTree, ValueTree &childWhichHasBeenRemoved, int indexFromWhichChildWasRemoved)
 {
     DBG("valueTreeChildRemoved");
+    runTris();
+    updateTable = true;
 }
 
 void PluginTemplateAudioProcessor::valueTreeChildOrderChanged (ValueTree &parentTreeWhoseChildrenHaveMoved, int oldIndex, int newIndex)

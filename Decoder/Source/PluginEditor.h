@@ -33,6 +33,7 @@
 #include "../../resources/customComponents/ReverseSlider.h"
 #include "../../resources/customComponents/SimpleLabel.h"
 #include "LoudspeakerVisualizer.h"
+#include "LoudspeakerTableComponent.h"
 
 
 typedef ReverseSlider::SliderAttachment SliderAttachment; // all ReverseSliders will make use of the parameters' valueToText() function
@@ -89,6 +90,7 @@ private:
     TextButton tbAddSpeakers;
     LoudspeakerVisualizer lv;
     
+    LoudspeakerTableComponent lspList;
 
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginTemplateAudioProcessorEditor)

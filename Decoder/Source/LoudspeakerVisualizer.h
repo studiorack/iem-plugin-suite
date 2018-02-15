@@ -283,6 +283,8 @@ public:
                        (void*) (nPoints * sizeof(int))           // element array buffer offset
                        );
 
+        
+        
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         glDrawElements(
                        GL_TRIANGLES,      // mode
