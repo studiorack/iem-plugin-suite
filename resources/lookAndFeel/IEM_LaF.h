@@ -683,7 +683,7 @@ public:
         g.drawRoundedRectangle(buttonArea, 2.0f, 1.0f);
         
         buttonArea.reduce(1.5f, 1.5f);
-        g.setColour(component.findColour(ToggleButton::tickColourId).withMultipliedAlpha(isButtonDown ? 1.0f : isMouseOverButton ? 0.5f : 0.2f));
+        g.setColour(component.findColour(ToggleButton::tickColourId).withMultipliedAlpha(ticked ? 1.0f : isMouseOverButton ? 0.5f : 0.2f));
         
         g.fillRoundedRectangle(buttonArea, 2.0f);
         
