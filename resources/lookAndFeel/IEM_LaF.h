@@ -66,6 +66,12 @@ public:
         setColour (ScrollBar::thumbColourId, Colours::steelblue);
         setColour (ScrollBar::thumbColourId, Colours::steelblue);
         setColour (PopupMenu::backgroundColourId, Colours::steelblue.withMultipliedAlpha(0.9f));
+        setColour (ListBox::backgroundColourId, Colours::steelblue.withMultipliedAlpha(0.1f));
+        setColour (ListBox::outlineColourId, Colours::steelblue.withMultipliedAlpha(0.3f));
+        
+        setColour (TableHeaderComponent::backgroundColourId, Colours::lightgrey.withMultipliedAlpha(0.8f));
+        setColour (TableHeaderComponent::highlightColourId, Colours::steelblue.withMultipliedAlpha(0.3f));
+        
     }
     
     ~LaF() {}
@@ -264,6 +270,54 @@ public:
         }
     }
     
+    void drawTableHeaderBackground (Graphics& g, TableHeaderComponent& header) override
+    {
+        Rectangle<int> r (header.getLocalBounds());
+        auto outlineColour = header.findColour (TableHeaderComponent::outlineColourId);
+        
+        g.setColour (outlineColour);
+        g.fillRect (r.removeFromBottom (1));
+        
+        g.setColour (header.findColour (TableHeaderComponent::backgroundColourId));
+        g.fillRect (r);
+        
+        g.setColour (outlineColour);
+        
+        for (int i = header.getNumColumns (true); --i >= 0;)
+            g.fillRect (header.getColumnPosition (i).removeFromRight (1));
+    }
+    
+    void drawTableHeaderColumn (Graphics& g, TableHeaderComponent& header,
+                                                const String& columnName, int /*columnId*/,
+                                                int width, int height, bool isMouseOver, bool isMouseDown,
+                                                int columnFlags) override
+    {
+        auto highlightColour = header.findColour (TableHeaderComponent::highlightColourId);
+        
+        if (isMouseDown)
+            g.fillAll (highlightColour);
+        else if (isMouseOver)
+            g.fillAll (highlightColour.withMultipliedAlpha (0.625f));
+        
+        Rectangle<int> area (width, height);
+        area.reduce (4, 0);
+        
+        if ((columnFlags & (TableHeaderComponent::sortedForwards | TableHeaderComponent::sortedBackwards)) != 0)
+        {
+            Path sortArrow;
+            sortArrow.addTriangle (0.0f, 0.0f,
+                                   0.5f, (columnFlags & TableHeaderComponent::sortedForwards) != 0 ? -0.8f : 0.8f,
+                                   1.0f, 0.0f);
+            
+            g.setColour (Colour (0x99000000));
+            g.fillPath (sortArrow, sortArrow.getTransformToScaleToFit (area.removeFromRight (height / 2).reduced (2).toFloat(), true));
+        }
+        
+        g.setColour (header.findColour (TableHeaderComponent::textColourId));
+        g.setFont (robotoRegular);
+        g.setFont (height * 0.6f);
+        g.drawFittedText (columnName, area, Justification::centred, 1);
+    }
     
     void drawLinearSlider (Graphics& g, int x, int y, int width, int height,
                            float sliderPos, float minSliderPos, float maxSliderPos,
