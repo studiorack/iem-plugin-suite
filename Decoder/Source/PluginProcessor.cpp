@@ -74,20 +74,11 @@ parameters(*this, nullptr)
     // add listeners to parameter changes
     parameters.addParameterListener ("inputOrderSetting", this);
     parameters.addParameterListener ("useSN3D", this);
-
-    
-    //Tests
-//    Vector3D<float> testVec ((float) rand(), (float) rand(), (float) rand());
-//    testVec /= (float) rand();
-//    Vector3D<float> backAndForth = sphericalToCarthesian(carthesianToSpherical(testVec));
-//    if (testVec.x != backAndForth.x || testVec.y != backAndForth.y || testVec.z != backAndForth.z)
-//        DBG("Conversion failed!");
     
     parameters.state.appendChild(loudspeakers, nullptr);
 
-    
     loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (50.0f, 0.0f, 0.0f), 1), nullptr);
-    loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (50.0f, -45.0f, 0.0f), 2, true), nullptr);
+    loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (1.0f, -45.0f, 0.0f), 2, true), nullptr);
     loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (50.0f, 45.0f, 0.0f), 3), nullptr);
     loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (50.0f, 45.0f, -90.0f), 5), nullptr);
     loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (50.0f, 0.0f, 90.0f), 5), nullptr);
@@ -349,7 +340,7 @@ Result PluginTemplateAudioProcessor::calculateTris()
     {
         
         Vector3D<float> spherical;
-        spherical.x = (*it).getProperty("Radius");
+        spherical.x = ((bool) (*it).getProperty("Imaginary")) ? (float) (*it).getProperty("Radius") : 1.0f;
         spherical.y = (*it).getProperty("Azimuth");
         spherical.z = (*it).getProperty("Elevation");
         

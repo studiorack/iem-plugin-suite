@@ -53,18 +53,23 @@ public:
         openGLContext.detach();
         openGLContext.setRenderer(nullptr);
     }
-
+    void setActiveSpeakerIndex (int newIdx)
+    {
+        activePoint = newIdx;
+        updateVerticesAndIndices();
+    }
+    
     void initialise()
     {
         PixelARGB colormapData[8];
-        colormapData[0] = Colours::cornflowerblue.withMultipliedAlpha(0.8f).getPixelARGB();
-        colormapData[1] = Colours::orange.withMultipliedAlpha(0.8f).getPixelARGB();
-        colormapData[2] = Colours::red.withMultipliedAlpha(0.8f).getPixelARGB();
+        colormapData[0] = Colours::limegreen.getPixelARGB();
+        colormapData[1] = Colours::cornflowerblue.getPixelARGB();
+        colormapData[2] = Colours::blue.withMultipliedAlpha(0.8f).getPixelARGB();
         colormapData[3] = Colours::greenyellow.withMultipliedAlpha(0.8f).getPixelARGB();
         colormapData[4] = Colours::lemonchiffon.withMultipliedAlpha(0.8f).getPixelARGB();
         colormapData[5] = Colours::cornflowerblue.withMultipliedAlpha(0.8f).getPixelARGB();
         colormapData[6] = Colours::orange.withMultipliedAlpha(0.8f).getPixelARGB();
-        colormapData[7] = Colours::red.withMultipliedAlpha(0.8f).getPixelARGB();
+        colormapData[7] = Colours::red.getPixelARGB();
         
         texture.loadARGB(colormapData, 8, 1);
         
@@ -76,8 +81,6 @@ public:
         texture.bind();
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // linear interpolation when too small
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // linear interpolation when too bi
-        
-        
     }
     
     void timerCallback() override {
@@ -100,18 +103,15 @@ public:
         vertices.clear();
         indices.clear();
         
-        //vertices = extPoints;
-        //indices = extTriangles;
         normals = extNormals;
         
         nVertices = (int) extPoints.size();
         nPoints = nVertices / 3;
         
-
         for (int i = 0; i < nPoints; ++i)
         {
             const int idx = i * 3;
-            float col = (float) rand() / RAND_MAX;
+            float col = i == activePoint ? 0.0f : 0.2f;
             vertices.push_back({extPoints[idx], extPoints[idx+1], extPoints[idx+2], col});
             indices.push_back(i);
         }
@@ -129,9 +129,6 @@ public:
             indices.push_back(nPoints + idx + 1);
             indices.push_back(nPoints + idx + 2);
         }
-        
-        
-        
         
         openGLContext.extensions.glGenBuffers(1, &vertexBuffer);
         openGLContext.extensions.glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
@@ -153,8 +150,7 @@ public:
         jassert (OpenGLHelpers::isContextActive());
         
         OpenGLHelpers::clear (Colour(0xFF2D2D2D));
-        //OpenGLHelpers::clear (Colours::white);
-        
+
         const float desktopScale = (float) openGLContext.getRenderingScale();
         glViewport (0, 0, roundToInt (desktopScale * getWidth()), roundToInt (desktopScale * getHeight()));
         
@@ -168,11 +164,9 @@ public:
         glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
 
         
-        
         openGLContext.extensions.glActiveTexture (GL_TEXTURE0);
         glEnable (GL_TEXTURE_2D);
         texture.bind();
-        
 
         
         shader->use();
@@ -187,23 +181,6 @@ public:
                 viewMatrix->setMatrix4 (getViewMatrix().mat, 1, false);
         }
         
-        
-//        std::vector<GLfloat> colorMap_data; // every vertex gets a colour
-//        std::vector<GLfloat> colorMap_inverse; // every vertex gets a colour
-//        for (int i = 0; i < nVertices; ++i){
-//            colorMap_data.push_back(((float) i) / nVertices * 1);
-//            colorMap_inverse.push_back((float) (nVertices - i - 1) / nVertices);
-//        }
-//
-//        GLuint colorBuffer;
-//        openGLContext.extensions.glGenBuffers(1, &colorBuffer);
-//        openGLContext.extensions.glBindBuffer(GL_ARRAY_BUFFER, colorBuffer);
-//        openGLContext.extensions.glBufferData(GL_ARRAY_BUFFER, colorMap_data.size() * sizeof(GLfloat), &colorMap_data[0], GL_STATIC_DRAW);
-//
-//        GLuint colorBufferInverse;
-//        openGLContext.extensions.glGenBuffers(1, &colorBufferInverse);
-//        openGLContext.extensions.glBindBuffer(GL_ARRAY_BUFFER, colorBufferInverse);
-//        openGLContext.extensions.glBufferData(GL_ARRAY_BUFFER, colorMap_inverse.size() * sizeof(GLfloat), &colorMap_inverse[0], GL_STATIC_DRAW);
         
         GLint attributeID;
         
@@ -258,21 +235,6 @@ public:
         
         glLineWidth(5.0);
 
-//
-//        attributeID = openGLContext.extensions.glGetAttribLocation(programID, "colormapDepthIn");
-//
-//        openGLContext.extensions.glEnableVertexAttribArray(attributeID);
-//        openGLContext.extensions.glBindBuffer(GL_ARRAY_BUFFER, colorBufferInverse);
-//
-//        openGLContext.extensions.glVertexAttribPointer(
-//                                                       attributeID,            // attribute
-//                                                       1,                      // size
-//                                                       GL_FLOAT,               // type
-//                                                       GL_FALSE,               // normalized?
-//                                                       0,                      // stride
-//                                                       (void*)0                // array buffer offset
-//                                                       );
-//
         
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         glDrawElements(
@@ -282,7 +244,6 @@ public:
                        (void*) (nPoints * sizeof(int))           // element array buffer offset
                        );
 
-        
         
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         glDrawElements(
@@ -299,8 +260,6 @@ public:
         openGLContext.extensions.glBindBuffer (GL_ARRAY_BUFFER, 0);
         openGLContext.extensions.glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, 0);
         
-        //openGLContext.extensions.glDeleteBuffers (1, &colorBuffer);
-        //openGLContext.extensions.glDeleteBuffers (1, &colorBufferInverse);
     }
     
     void openGLContextClosing() override {
@@ -366,7 +325,7 @@ public:
         "varying float lightIntensity;\n"
         "void main()\n"
         "{\n"
-        "   gl_Position.xyz = position;\n"
+        "   gl_Position.xyz = 50.0 * position;\n"
         "   gl_Position.w = 1.0;\n"
         "   gl_Position = projectionMatrix * viewMatrix * gl_Position;\n"
         "   vec4 light = vec4(1, 1, 1, 1);\n"
@@ -411,8 +370,9 @@ public:
     
     Matrix3D<float> getProjectionMatrix() const
     {
-        float w = 1.0f / (0.5f + 0.1f);
-        float h = w * getLocalBounds().toFloat().getAspectRatio (false);
+        const float near = 1.0f;
+        const float w = 1.0f / (0.5f + 0.1f);
+        const float h = w * getLocalBounds().toFloat().getAspectRatio (false);
         // All objects coordinates in the pre-final view will be modified by multiplying
         // their position vectors by this matrix (see getViewMatrix() below).
         // The first 4 parameters define the view size, the 5th one is a factor that
@@ -421,7 +381,7 @@ public:
         // Obiviously this 6th param should be greater than the 5th one.
         // All the values used in this method are somewhat empirical and depend on
         // what you want to show and how close (big) the displayed objects will be.
-        return Matrix3D<float>::fromFrustum (-w, w, -h, h, 1.0f, 400.0f);
+        return Matrix3D<float>::fromFrustum (-w, w, -h, h, near, 10000.0f);
     }
     
     //==============================================================================
@@ -495,7 +455,8 @@ private:
     
     bool viewHasChanged = true;
     int nVertices;
-    int nPoints;
+    int nPoints = 0;
+    int activePoint = -1;
     int nTriangleIndices;
     
     float zoom = 2.0f;

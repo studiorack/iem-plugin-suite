@@ -32,7 +32,7 @@ class LoudspeakerTableComponent : public Component, public TableListBoxModel
 {
     
 public:
-    LoudspeakerTableComponent(ValueTree& loudspeakers) : data(loudspeakers)
+    LoudspeakerTableComponent(ValueTree& loudspeakers, LoudspeakerVisualizer& visualizer) : data(loudspeakers), lspVisualizer(visualizer)
     {
         typeFace = getLookAndFeel().getTypefaceForFont(12);
         
@@ -41,32 +41,36 @@ public:
         table.setColour (ListBox::outlineColourId, Colours::grey);
         table.setOutlineThickness (1);
         
-        table.getHeader().addColumn(getAttributeNameForColumnId(1), 1, 60);
+        table.getHeader().addColumn(getAttributeNameForColumnId(1), 1, 23, 20, 25, TableHeaderComponent::notSortable);
         table.getHeader().addColumn(getAttributeNameForColumnId(2), 2, 60);
         table.getHeader().addColumn(getAttributeNameForColumnId(3), 3, 60);
         table.getHeader().addColumn(getAttributeNameForColumnId(4), 4, 60);
         table.getHeader().addColumn(getAttributeNameForColumnId(5), 5, 60);
         table.getHeader().addColumn(getAttributeNameForColumnId(6), 6, 60);
         table.getHeader().addColumn(getAttributeNameForColumnId(7), 7, 60);
-        table.getHeader().addColumn(getAttributeNameForColumnId(8), 8, 60);
-        table.setMultipleSelectionEnabled (true);
-        
-        table.setColour (ListBox::outlineColourId, Colours::grey);
-        table.setOutlineThickness (1);
+        table.getHeader().addColumn(getAttributeNameForColumnId(8), 8, 60, 60, 60, TableHeaderComponent::notSortable);
 
-        table.getHeader().setSortColumnId (1, true); // sort forwards by the ID column
+        table.setHeaderHeight(23);
+        table.setMultipleSelectionEnabled (false);
+        table.setColour (ListBox::outlineColourId, Colours::steelblue);
+        table.setOutlineThickness (0);
     }
 
     ~LoudspeakerTableComponent()
     {
     }
-
+    
+    void selectedRowsChanged (int lastRowSelected) override
+    {
+        lspVisualizer.setActiveSpeakerIndex(lastRowSelected);
+    }
+    
     void paintRowBackground (Graphics& g, int rowNumber, int /*width*/, int /*height*/, bool rowIsSelected) override
     {
         const Colour alternateColour (getLookAndFeel().findColour (ListBox::backgroundColourId)
                                       .interpolatedWith (getLookAndFeel().findColour (ListBox::textColourId), 0.03f));
         if (rowIsSelected)
-            g.fillAll (Colours::lightblue.withMultipliedAlpha(0.1f));
+            g.fillAll (Colours::limegreen.withMultipliedAlpha(0.3f));
         else if (rowNumber % 2)
             g.fillAll (alternateColour);
     }
@@ -95,12 +99,13 @@ public:
     {
         table.updateContent();
     }
+    
     void sortOrderChanged (int newSortColumnId, bool isForwards) override
     {
         if (newSortColumnId != 0)
         {
-//            DemoDataSorter sorter (getAttributeNameForColumnId (newSortColumnId), isForwards);
-//            dataList->sortChildElements (sorter);
+            DataSorter sorter (getAttributeNameForColumnId (newSortColumnId), isForwards);
+            data.sort(sorter, nullptr, true);
             
             table.updateContent();
         }
@@ -180,22 +185,17 @@ public:
     {
         int widest = 32;
         
-        // find the widest bit of text in this column..
         for (int i = getNumRows(); --i >= 0;)
         {
+            //TODO
         }
         
         return widest + 8;
     }
-    
-    void paint (Graphics& g) override
-    {
-        g.fillAll(Colours::cornflowerblue);
-    }
-    
+
     void resized() override
     {
-        table.setBoundsInset (BorderSize<int> (8));
+        table.setBounds(getLocalBounds());
     }
     
     String getText (const int columnId, const int rowNumber) const
@@ -208,7 +208,7 @@ public:
         else if (data.getChild(rowNumber).getProperty(getAttributeNameForColumnId(columnId)).isDouble())
         {
             const float value = data.getChild(rowNumber).getProperty(getAttributeNameForColumnId(columnId));
-            return String(value, 2);
+            return String(value, 0);
         }
         else return("NaN");
     }
@@ -223,15 +223,17 @@ public:
         data.getChild(rowNumber).setProperty(getAttributeNameForColumnId(columnId), newValue, nullptr);
     }
     
-//    void getBool (const int columnId, const int rowNumber, const bool newValue)
-//    {
-//        return data.getChild(rowNumber).getProperty(getAttributeNameForColumnId(columnId));
-//    }
+    bool getBool (const int columnId, const int rowNumber)
+    {
+        return data.getChild(rowNumber).getProperty(getAttributeNameForColumnId(columnId));
+    }
     
 private:
     TableListBox table;     // the table component itself
     Typeface::Ptr typeFace;
     ValueTree& data;
+    
+    LoudspeakerVisualizer& lspVisualizer;
     
     class EditableTextCustomComponent  : public Label
     {
@@ -253,7 +255,6 @@ private:
             owner.setFloat (columnId, row, getText().getFloatValue());
         }
         
-        // Our demo code will call this when we may need to update our contents
         void setRowAndColumn (const int newRow, const int newColumn)
         {
             row = newRow;
@@ -263,18 +264,6 @@ private:
         
         void paint (Graphics& g) override
         {
-//            float alpha = isEnabled() ? 1.0f : 0.4f;
-//            g.fillAll (findColour (Label::backgroundColourId));
-//            Rectangle<int> bounds = getLocalBounds();
-//            float x = (float) bounds.getX();
-//            float y = (float) bounds.getY();
-//            float w = (float) bounds.getWidth();
-//            float h = (float) bounds.getHeight();
-//            Path p;
-//            p.addRoundedRectangle(x, y, w, h, h/2.0f);
-//            g.setColour (ClTextTextboxbg.withMultipliedAlpha(alpha));
-//            g.fillPath (p);
-            
             if (! isBeingEdited())
             {
                 const float alpha = isEnabled() ? 1.0f : 0.5f;
@@ -291,7 +280,6 @@ private:
                 
                 g.setColour (findColour (Label::outlineColourId).withMultipliedAlpha (alpha));
             }
-
         }
         
     private:
@@ -323,8 +311,7 @@ private:
             Rectangle<float> buttonArea(0.0f, 0.0f, getWidth(), getHeight());
             buttonArea.reduce(2.0f, 2.0f);
             
-            g.setColour(findColour(TextButton::buttonOnColourId).withMultipliedAlpha(isButtonDown ? 1.0f : isMouseOverButton ? 0.7f : 0.5f) );
-            
+            g.setColour(findColour(TextButton::buttonOnColourId).withMultipliedAlpha(isButtonDown ? 1.0f : isMouseOverButton ? 0.7f : 0.5f));
             if (isButtonDown)
                 buttonArea.reduce(0.8f, 0.8f);
             else if (isMouseOverButton)
@@ -345,27 +332,61 @@ private:
         int row, columnId;
     };
     
-    class ImaginaryButton  : public ToggleButton
+    class ImaginaryButton  : public Component
     {
     public:
         ImaginaryButton (LoudspeakerTableComponent& td)  : owner (td)
         {
-            setButtonText("");
-            setColour(ToggleButton::tickColourId, Colours::limegreen);
-            //onClick = [this](){ owner.data.removeChild(owner.data.getChild(row), nullptr);};
+            addAndMakeVisible(button);
+            button.setButtonText("");
+            button.setColour(ToggleButton::tickColourId, Colours::orange);
+            button.onClick = [this](){ owner.setBool(columnId, row, button.getToggleState()); };
+        }
+        
+        void mouseDown (const MouseEvent& event) override
+        {
+            owner.table.selectRowsBasedOnModifierKeys (row, event.mods, false);
         }
         
         void setRowAndColumn (const int newRow, const int newColumn)
         {
             row = newRow;
             columnId = newColumn;
-           // setToggleState(owner.getBool(newRow, newColumn), dontSendNotification);
-            
+            button.setToggleState(owner.getBool(columnId, row), dontSendNotification);
         }
         
+        void resized() override
+        {
+            Rectangle<int> bounds = getLocalBounds();
+            const int height = bounds.getHeight();
+            button.setBounds(bounds.reduced((bounds.getWidth() - height)/2, 0));
+        }
+
     private:
         LoudspeakerTableComponent& owner;
         int row, columnId;
+        ToggleButton button;
+    };
+    
+    class DataSorter
+    {
+    public:
+        DataSorter (const String& attributeToSortBy, bool forwards)
+        : attributeToSort (attributeToSortBy),
+        direction (forwards ? 1 : -1)
+        {
+        }
+        
+        int compareElements (const ValueTree& first, const ValueTree& second) const
+        {
+            int result = first.getProperty(attributeToSort).toString()
+            .compareNatural (second.getProperty(attributeToSort).toString());
+            return direction * result;
+        }
+        
+    private:
+        String attributeToSort;
+        int direction;
     };
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (LoudspeakerTableComponent)
