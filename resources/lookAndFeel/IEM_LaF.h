@@ -675,19 +675,22 @@ public:
         
         g.setColour(component.findColour(ToggleButton::tickColourId).withMultipliedAlpha(ticked ? 1.0f : isMouseOverButton ? 0.7f : 0.5f) );
         
-        
-        if (isMouseOverButton)
+        if (isButtonDown)
+            buttonArea.reduce(0.8f, 0.8f);
+        else if (isMouseOverButton)
             buttonArea.reduce(0.4f, 0.4f);
+        
         g.drawRoundedRectangle(buttonArea, 2.0f, 1.0f);
         
-        
         buttonArea.reduce(1.5f, 1.5f);
-        g.setColour(component.findColour(ToggleButton::tickColourId).withMultipliedAlpha(ticked ? 1.0f : 0.3f));
+        g.setColour(component.findColour(ToggleButton::tickColourId).withMultipliedAlpha(isButtonDown ? 1.0f : isMouseOverButton ? 0.5f : 0.2f));
         
         g.fillRoundedRectangle(buttonArea, 2.0f);
         
         
     }
+    
+    
     
     Path getTickShape (const float height) override
     {
