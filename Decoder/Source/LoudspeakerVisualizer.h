@@ -35,7 +35,7 @@ class LoudspeakerVisualizer    : public Component, public OpenGLRenderer, privat
     };
     
 public:
-    LoudspeakerVisualizer(std::vector<R3>& pts, std::vector<Tri>& tris, std::vector<float>& norms) : extPoints(pts), extTriangles(tris), extNormals(norms)
+    LoudspeakerVisualizer(std::vector<R3>& pts, std::vector<Tri>& tris, std::vector<Vector3D<float>>& norms) : extPoints(pts), extTriangles(tris), extNormals(norms)
     {
         // In your constructor, you should add any child components, and
         // initialise any special settings that your component needs.
@@ -459,7 +459,7 @@ private:
     
     std::vector<R3>& extPoints;
     std::vector<Tri>& extTriangles;
-    std::vector<float>& extNormals;
+    std::vector<Vector3D<float>>& extNormals;
     
     std::vector<positionAndColour> vertices;
     std::vector<int> indices;

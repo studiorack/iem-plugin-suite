@@ -101,7 +101,7 @@ public:
     
     std::vector<R3> points;
     std::vector<Tri> triangles;
-    std::vector<float> normals;
+    std::vector<Vector3D<float>> normals;
     
     UndoManager undoManager;
     
@@ -121,7 +121,8 @@ private:
     
     
     // ========== METHODS
-    void checkLayout();
+    void prepareLayout();
+    Result checkLayout();
     Result verifyLoudspeakers();
     Result calculateTris();
     void convertLoudspeakersToArray();
