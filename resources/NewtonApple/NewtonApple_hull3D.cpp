@@ -81,8 +81,8 @@ int read_R3(std::vector<R3> &pts, char * fname){
                     if( v == 3 ){
                         pt.id = nump;
                         nump++;
-                        pt.r = p1;
-                        pt.c = p2;
+                        pt.x = p1;
+                        pt.y = p2;
                         pt.z = p3;
                         
                         pts.push_back(pt);
@@ -93,8 +93,8 @@ int read_R3(std::vector<R3> &pts, char * fname){
                         if( v == 2 ){
                             pt.id = nump;
                             nump++;
-                            pt.r = p1;
-                            pt.c = p2;
+                            pt.x = p1;
+                            pt.y = p2;
                             pt.z = p1*p1 + p2*p2;
                             
                             pts.push_back(pt);
@@ -111,8 +111,8 @@ int read_R3(std::vector<R3> &pts, char * fname){
                 if( v == 3 ){
                     pt.id = nump;
                     nump++;
-                    pt.r = p1;
-                    pt.c = p2;
+                    pt.x = p1;
+                    pt.y = p2;
                     pt.z = p3;
                     
                     pts.push_back(pt);
@@ -123,8 +123,8 @@ int read_R3(std::vector<R3> &pts, char * fname){
                     if( v == 2 ){
                         pt.id = nump;
                         nump++;
-                        pt.r = p1;
-                        pt.c = p2;
+                        pt.x = p1;
+                        pt.y = p2;
                         pt.z = p1*p1 + p2*p2;
                         
                         pts.push_back(pt);
@@ -143,8 +143,8 @@ int read_R3(std::vector<R3> &pts, char * fname){
                     if( v == 3 ){
                         pt.id = nump;
                         nump++;
-                        pt.r = p1;
-                        pt.c = p2;
+                        pt.x = p1;
+                        pt.y = p2;
                         pt.z = p3;
                         
                         pts.push_back(pt);
@@ -155,8 +155,8 @@ int read_R3(std::vector<R3> &pts, char * fname){
                         if( v == 2 ){
                             pt.id = nump;
                             nump++;
-                            pt.r = p1;
-                            pt.c = p2;
+                            pt.x = p1;
+                            pt.y = p2;
                             pt.z = p1*p1 + p2*p2;
                             
                             pts.push_back(pt);
@@ -186,7 +186,7 @@ void write_R3(std::vector<R3> &pts, char * fname){
     out << nr << " 3 points" << endl;
     
     for (int r = 0; r < nr; r++){
-        out << pts[r].r << ' ' << pts[r].c <<  ' ' << pts[r].z << endl;
+        out << pts[r].x << ' ' << pts[r].y <<  ' ' << pts[r].z << endl;
     }
     out.close();
     
@@ -385,8 +385,8 @@ int de_duplicateR3( std::vector<R3> &pts, std::vector<int> &outx,std::vector<R3>
     std::vector<R3> dpx;
     R3 d;
     for( int k=0; k<nump; k++){
-        d.r = pts[k].r;
-        d.c = pts[k].c;
+        d.x = pts[k].x;
+        d.y = pts[k].y;
         d.z = pts[k].z;
         d.id = k;
         dpx.push_back(d);
@@ -394,14 +394,14 @@ int de_duplicateR3( std::vector<R3> &pts, std::vector<int> &outx,std::vector<R3>
     
     sort(dpx.begin(), dpx.end());
     
-    cerr << "de-duplicating ";
+    //cerr << "de-duplicating ";
     pts2.clear();
     pts2.push_back(pts[dpx[0].id]);
     pts2[0].id = 0;
     int cnt = 1;
     
     for( int k=0; k<nump-1; k++){
-        if( dpx[k].r == dpx[k+1].r && dpx[k].c == dpx[k+1].c && dpx[k].z == dpx[k+1].z ){
+        if( dpx[k].x == dpx[k+1].x && dpx[k].y == dpx[k+1].y && dpx[k].z == dpx[k+1].z ){
             outx.push_back( dpx[k+1].id);
         }
         else{
@@ -411,7 +411,7 @@ int de_duplicateR3( std::vector<R3> &pts, std::vector<int> &outx,std::vector<R3>
         }
     }
     
-    cerr << "removed  " << outx.size() << " points " << endl;
+    //cerr << "removed  " << outx.size() << " points " << endl;
     
     return((int) outx.size());
 }
@@ -431,9 +431,9 @@ int init_hull3D( std::vector<R3> &pts, std::vector<Tri> &hull)
     float Mr=0, Mc = 0, Mz = 0;
     
     Tri T1(0,1,2);
-    float r0 = pts[0].r, c0 = pts[0].c, z0 = pts[0].z;
-    float r1 = pts[1].r, c1 = pts[1].c, z1 = pts[1].z;
-    float r2 = pts[2].r, c2 = pts[2].c, z2 = pts[2].z;
+    float r0 = pts[0].x, c0 = pts[0].y, z0 = pts[0].z;
+    float r1 = pts[1].x, c1 = pts[1].y, z1 = pts[1].z;
+    float r2 = pts[2].x, c2 = pts[2].y, z2 = pts[2].z;
     
     Mr = r0+r1+r2;
     Mc = c0+c1+c2;
@@ -480,22 +480,22 @@ int init_hull3D( std::vector<R3> &pts, std::vector<Tri> &hull)
     for( int p=3; p<nump; p++){ // add points until a non coplanar set of points is achieved.
         R3 &pt = pts[p];
         
-        Mr += pt.r; mr = Mr/(p+1);
-        Mc += pt.c; mc = Mc/(p+1);
+        Mr += pt.x; mr = Mr/(p+1);
+        Mc += pt.y; mc = Mc/(p+1);
         Mz += pt.z; mz = Mz/(p+1);
         
         // find the first visible plane.
         int numh = (int) hull.size();
         int hvis = -1;
-        float r = pt.r;
-        float c = pt.c;
+        float r = pt.x;
+        float c = pt.y;
         float z = pt.z;
         xlist.clear();
         
         for( int h=numh-1; h>=0; h--){
             Tri &t= hull[h];
-            float R1 = pts[t.a].r;
-            float C1 = pts[t.a].c;
+            float R1 = pts[t.a].x;
+            float C1 = pts[t.a].y;
             float Z1 = pts[t.a].z;
             
             float dr = r-R1;
@@ -524,8 +524,8 @@ int init_hull3D( std::vector<R3> &pts, std::vector<Tri> &hull)
                 Tri &tAB= hull[ab];
                 
                 
-                float R1 = pts[tAB.a].r;  // point on next triangle
-                float C1 = pts[tAB.a].c;
+                float R1 = pts[tAB.a].x;  // point on next triangle
+                float C1 = pts[tAB.a].y;
                 float Z1 = pts[tAB.a].z;
                 
                 float dr = r-R1;
@@ -553,8 +553,8 @@ int init_hull3D( std::vector<R3> &pts, std::vector<Tri> &hull)
                     Tnew.bc = ab;
                     
                     // make normal vector.
-                    float dr1 = pts[Tnew.a].r- pts[Tnew.b].r, dr2 = pts[Tnew.a].r- pts[Tnew.c].r;
-                    float dc1 = pts[Tnew.a].c- pts[Tnew.b].c, dc2 = pts[Tnew.a].c- pts[Tnew.c].c;
+                    float dr1 = pts[Tnew.a].x- pts[Tnew.b].x, dr2 = pts[Tnew.a].x- pts[Tnew.c].x;
+                    float dc1 = pts[Tnew.a].y- pts[Tnew.b].y, dc2 = pts[Tnew.a].y- pts[Tnew.c].y;
                     float dz1 = pts[Tnew.a].z- pts[Tnew.b].z, dz2 = pts[Tnew.a].z- pts[Tnew.c].z;
                     
                     float er = (dc1*dz2-dc2*dz1);
@@ -605,8 +605,8 @@ int init_hull3D( std::vector<R3> &pts, std::vector<Tri> &hull)
                 int ac = hull[xid].ac;     // facet adjacent to line ac
                 Tri &tAC = hull[ac];
                 
-                R1 = pts[tAC.a].r;  // point on next triangle
-                C1 = pts[tAC.a].c;
+                R1 = pts[tAC.a].x;  // point on next triangle
+                C1 = pts[tAC.a].y;
                 Z1 = pts[tAC.a].z;
                 
                 dr = r-R1;
@@ -634,8 +634,8 @@ int init_hull3D( std::vector<R3> &pts, std::vector<Tri> &hull)
                     Tnew.bc = ac;
                     
                     // make normal vector.
-                    float dr1 = pts[Tnew.a].r- pts[Tnew.b].r, dr2 = pts[Tnew.a].r- pts[Tnew.c].r;
-                    float dc1 = pts[Tnew.a].c- pts[Tnew.b].c, dc2 = pts[Tnew.a].c- pts[Tnew.c].c;
+                    float dr1 = pts[Tnew.a].x- pts[Tnew.b].x, dr2 = pts[Tnew.a].x- pts[Tnew.c].x;
+                    float dc1 = pts[Tnew.a].y- pts[Tnew.b].y, dc2 = pts[Tnew.a].y- pts[Tnew.c].y;
                     float dz1 = pts[Tnew.a].z- pts[Tnew.b].z, dz2 = pts[Tnew.a].z- pts[Tnew.c].z;
                     
                     float er = (dc1*dz2-dc2*dz1);
@@ -686,8 +686,8 @@ int init_hull3D( std::vector<R3> &pts, std::vector<Tri> &hull)
                 Tri &tBC = hull[bc];
                 
                 
-                R1 = pts[tBC.a].r;  // point on next triangle
-                C1 = pts[tBC.a].c;
+                R1 = pts[tBC.a].x;  // point on next triangle
+                C1 = pts[tBC.a].y;
                 Z1 = pts[tBC.a].z;
                 
                 dr = r-R1;
@@ -715,8 +715,8 @@ int init_hull3D( std::vector<R3> &pts, std::vector<Tri> &hull)
                     Tnew.bc = bc;
                     
                     // make normal vector.
-                    float dr1 = pts[Tnew.a].r- pts[Tnew.b].r, dr2 = pts[Tnew.a].r- pts[Tnew.c].r;
-                    float dc1 = pts[Tnew.a].c- pts[Tnew.b].c, dc2 = pts[Tnew.a].c- pts[Tnew.c].c;
+                    float dr1 = pts[Tnew.a].x- pts[Tnew.b].x, dr2 = pts[Tnew.a].x- pts[Tnew.c].x;
+                    float dc1 = pts[Tnew.a].y- pts[Tnew.b].y, dc2 = pts[Tnew.a].y- pts[Tnew.c].y;
                     float dz1 = pts[Tnew.a].z- pts[Tnew.b].z, dz2 = pts[Tnew.a].z- pts[Tnew.c].z;
                     
                     float er = (dc1*dz2-dc2*dz1);
@@ -1140,20 +1140,20 @@ int cross_test( std::vector<R3> &pts, int A, int B, int C, int X,
                float &er, float &ec, float &ez)
 { 
     
-    float Ar = pts[A].r;
-    float Ac = pts[A].c;
+    float Ar = pts[A].x;
+    float Ac = pts[A].y;
     float Az = pts[A].z;
     
-    float Br = pts[B].r;
-    float Bc = pts[B].c;
+    float Br = pts[B].x;
+    float Bc = pts[B].y;
     float Bz = pts[B].z;
     
-    float Cr = pts[C].r;
-    float Cc = pts[C].c;
+    float Cr = pts[C].x;
+    float Cc = pts[C].y;
     float Cz = pts[C].z;
     
-    float Xr = pts[X].r;
-    float Xc = pts[X].c;
+    float Xr = pts[X].x;
+    float Xc = pts[X].y;
     float Xz = pts[X].z;
     
     float ABr = Br-Ar;
@@ -1231,9 +1231,9 @@ int init_hull3D_compact( std::vector<R3> &pts, std::vector<Tri> &hull)
     float Mr=0, Mc = 0, Mz = 0;
     
     Tri T1(0,1,2);
-    float r0 = pts[0].r, c0 = pts[0].c, z0 = pts[0].z;
-    float r1 = pts[1].r, c1 = pts[1].c, z1 = pts[1].z;
-    float r2 = pts[2].r, c2 = pts[2].c, z2 = pts[2].z;
+    float r0 = pts[0].x, c0 = pts[0].y, z0 = pts[0].z;
+    float r1 = pts[1].x, c1 = pts[1].y, z1 = pts[1].z;
+    float r2 = pts[2].x, c2 = pts[2].y, z2 = pts[2].z;
     
     Mr = r0+r1+r2;
     Mc = c0+c1+c2;
@@ -1280,15 +1280,15 @@ int init_hull3D_compact( std::vector<R3> &pts, std::vector<Tri> &hull)
     for( int p=3; p<nump; p++){ // add points until a non coplanar set of points is achieved.
         R3 &pt = pts[p];
         
-        Mr += pt.r; mr = Mr/(p+1);
-        Mc += pt.c; mc = Mc/(p+1);
+        Mr += pt.x; mr = Mr/(p+1);
+        Mc += pt.y; mc = Mc/(p+1);
         Mz += pt.z; mz = Mz/(p+1);
         
         // find the first visible plane.
         int numh = (int) hull.size();
         int hvis = -1;
-        float r = pt.r;
-        float c = pt.c;
+        float r = pt.x;
+        float c = pt.y;
         float z = pt.z;
         xlist.clear();
 
@@ -1297,8 +1297,8 @@ int init_hull3D_compact( std::vector<R3> &pts, std::vector<Tri> &hull)
             int h = Tlast[L];
 	    
 	    Tri &t= hull[h];
-            float R1 = pts[t.a].r;
-            float C1 = pts[t.a].c;
+            float R1 = pts[t.a].x;
+            float C1 = pts[t.a].y;
             float Z1 = pts[t.a].z;
             
             float dr = r-R1;
@@ -1323,8 +1323,8 @@ int init_hull3D_compact( std::vector<R3> &pts, std::vector<Tri> &hull)
 	if(hvis <= 0 ){
 	  for( int h=numh-1; h>=0; h--){
             Tri &t= hull[h];
-            float R1 = pts[t.a].r;
-            float C1 = pts[t.a].c;
+            float R1 = pts[t.a].x;
+            float C1 = pts[t.a].y;
             float Z1 = pts[t.a].z;
             
             float dr = r-R1;
@@ -1365,8 +1365,8 @@ int init_hull3D_compact( std::vector<R3> &pts, std::vector<Tri> &hull)
 	    Tri &tAB= hull[ab];
                 
                 
-	    float R1 = pts[tAB.a].r;  // point on next triangle
-	    float C1 = pts[tAB.a].c;
+	    float R1 = pts[tAB.a].x;  // point on next triangle
+	    float C1 = pts[tAB.a].y;
 	    float Z1 = pts[tAB.a].z;
             
 	    float dr = r-R1;
@@ -1396,8 +1396,8 @@ int init_hull3D_compact( std::vector<R3> &pts, std::vector<Tri> &hull)
 	      Tnew.bc = ab;
               
 	      // make normal vector.
-	      float dr1 = pts[Tnew.a].r- pts[Tnew.b].r, dr2 = pts[Tnew.a].r- pts[Tnew.c].r;
-	      float dc1 = pts[Tnew.a].c- pts[Tnew.b].c, dc2 = pts[Tnew.a].c- pts[Tnew.c].c;
+	      float dr1 = pts[Tnew.a].x- pts[Tnew.b].x, dr2 = pts[Tnew.a].x- pts[Tnew.c].x;
+	      float dc1 = pts[Tnew.a].y- pts[Tnew.b].y, dc2 = pts[Tnew.a].y- pts[Tnew.c].y;
 	      float dz1 = pts[Tnew.a].z- pts[Tnew.b].z, dz2 = pts[Tnew.a].z- pts[Tnew.c].z;
               
 	      float er = (dc1*dz2-dc2*dz1);
@@ -1472,8 +1472,8 @@ int init_hull3D_compact( std::vector<R3> &pts, std::vector<Tri> &hull)
 	    int ac = hull[xid].ac;     // facet adjacent to line ac
 	    Tri &tAC = hull[ac];
             
-	    R1 = pts[tAC.a].r;  // point on next triangle
-	    C1 = pts[tAC.a].c;
+	    R1 = pts[tAC.a].x;  // point on next triangle
+	    C1 = pts[tAC.a].y;
 	    Z1 = pts[tAC.a].z;
             
 	    dr = r-R1;
@@ -1503,8 +1503,8 @@ int init_hull3D_compact( std::vector<R3> &pts, std::vector<Tri> &hull)
 	      Tnew.bc = ac;
               
 	      // make normal vector.
-	      float dr1 = pts[Tnew.a].r- pts[Tnew.b].r, dr2 = pts[Tnew.a].r- pts[Tnew.c].r;
-	      float dc1 = pts[Tnew.a].c- pts[Tnew.b].c, dc2 = pts[Tnew.a].c- pts[Tnew.c].c;
+	      float dr1 = pts[Tnew.a].x- pts[Tnew.b].x, dr2 = pts[Tnew.a].x- pts[Tnew.c].x;
+	      float dc1 = pts[Tnew.a].y- pts[Tnew.b].y, dc2 = pts[Tnew.a].y- pts[Tnew.c].y;
 	      float dz1 = pts[Tnew.a].z- pts[Tnew.b].z, dz2 = pts[Tnew.a].z- pts[Tnew.c].z;
               
 	      float er = (dc1*dz2-dc2*dz1);
@@ -1583,8 +1583,8 @@ int init_hull3D_compact( std::vector<R3> &pts, std::vector<Tri> &hull)
 	    Tri &tBC = hull[bc];
             
             
-	    R1 = pts[tBC.a].r;  // point on next triangle
-	    C1 = pts[tBC.a].c;
+	    R1 = pts[tBC.a].x;  // point on next triangle
+	    C1 = pts[tBC.a].y;
 	    Z1 = pts[tBC.a].z;
             
 	    dr = r-R1;
@@ -1614,8 +1614,8 @@ int init_hull3D_compact( std::vector<R3> &pts, std::vector<Tri> &hull)
 	      Tnew.bc = bc;
               
 	      // make normal vector.
-	      float dr1 = pts[Tnew.a].r- pts[Tnew.b].r, dr2 = pts[Tnew.a].r- pts[Tnew.c].r;
-	      float dc1 = pts[Tnew.a].c- pts[Tnew.b].c, dc2 = pts[Tnew.a].c- pts[Tnew.c].c;
+	      float dr1 = pts[Tnew.a].x- pts[Tnew.b].x, dr2 = pts[Tnew.a].x- pts[Tnew.c].x;
+	      float dc1 = pts[Tnew.a].y- pts[Tnew.b].y, dc2 = pts[Tnew.a].y- pts[Tnew.c].y;
 	      float dz1 = pts[Tnew.a].z- pts[Tnew.b].z, dz2 = pts[Tnew.a].z- pts[Tnew.c].z;
               
 	      float er = (dc1*dz2-dc2*dz1);

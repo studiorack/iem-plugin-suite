@@ -35,7 +35,7 @@ class LoudspeakerVisualizer    : public Component, public OpenGLRenderer, privat
     };
     
 public:
-    LoudspeakerVisualizer(std::vector<float>& pts, std::vector<int>& tris, std::vector<float>& norms) : extPoints(pts), extTriangles(tris), extNormals(norms)
+    LoudspeakerVisualizer(std::vector<R3>& pts, std::vector<Tri>& tris, std::vector<float>& norms) : extPoints(pts), extTriangles(tris), extNormals(norms)
     {
         // In your constructor, you should add any child components, and
         // initialise any special settings that your component needs.
@@ -69,7 +69,7 @@ public:
         colormapData[4] = Colours::lemonchiffon.withMultipliedAlpha(0.8f).getPixelARGB();
         colormapData[5] = Colours::cornflowerblue.withMultipliedAlpha(0.8f).getPixelARGB();
         colormapData[6] = Colours::orange.withMultipliedAlpha(0.8f).getPixelARGB();
-        colormapData[7] = Colours::red.getPixelARGB();
+        colormapData[7] = Colours::red.withMultipliedAlpha(0.8f).getPixelARGB();
         
         texture.loadARGB(colormapData, 8, 1);
         
@@ -102,32 +102,43 @@ public:
     {
         vertices.clear();
         indices.clear();
+        normals.clear();
         
-        normals = extNormals;
-        
-        nVertices = (int) extPoints.size();
-        nPoints = nVertices / 3;
+        nPoints = (int) extPoints.size();
         
         for (int i = 0; i < nPoints; ++i)
         {
-            const int idx = i * 3;
-            float col = i == activePoint ? 0.0f : 0.2f;
-            vertices.push_back({extPoints[idx], extPoints[idx+1], extPoints[idx+2], col});
+            float col = extPoints[i].lspNum == activePoint ? 0.0f : 0.2f;
+            vertices.push_back({extPoints[i].x, extPoints[i].z, extPoints[i].y, col});
             indices.push_back(i);
+            normals.push_back(1.0f);
+            normals.push_back(1.0f);
+            normals.push_back(1.0f);
         }
         
-        nTriangleIndices = (int) extTriangles.size();
-        const int nTriangles = nTriangleIndices / 3;
+        //normals.insert(normals.end(), extNormals.begin(), extNormals.end());
+        
+        nTriangles = (int) extTriangles.size();
         for (int i = 0; i < nTriangles;  ++i)
         {
-            float col = (float) rand() / RAND_MAX;
-            const int idx = i * 3;
-            vertices.push_back({extPoints[extTriangles[idx]*3], extPoints[extTriangles[idx]*3+1], extPoints[extTriangles[idx]*3+2], col});
-            vertices.push_back({extPoints[extTriangles[idx+1]*3], extPoints[extTriangles[idx+1]*3+1], extPoints[extTriangles[idx+1]*3+2], col});
-            vertices.push_back({extPoints[extTriangles[idx+2]*3], extPoints[extTriangles[idx+2]*3+1], extPoints[extTriangles[idx+2]*3+2], col});
-            indices.push_back(nPoints + idx);
-            indices.push_back(nPoints + idx + 1);
-            indices.push_back(nPoints + idx + 2);
+            Tri tr = extTriangles[i];
+            const float col = 0.3f + 0.7f * ((float) i / nTriangles);
+            vertices.push_back({extPoints[tr.a].x, extPoints[tr.a].z, extPoints[tr.a].y, col});
+            vertices.push_back({extPoints[tr.b].x, extPoints[tr.b].z, extPoints[tr.b].y, col});
+            vertices.push_back({extPoints[tr.c].x, extPoints[tr.c].z, extPoints[tr.c].y, col});
+            indices.push_back(nPoints + i*3);
+            indices.push_back(nPoints + i*3 + 1);
+            indices.push_back(nPoints + i*3 + 2);
+            
+            normals.push_back(tr.er);
+            normals.push_back(tr.ez);
+            normals.push_back(tr.ec);
+            normals.push_back(tr.er);
+            normals.push_back(tr.ez);
+            normals.push_back(tr.ec);
+            normals.push_back(tr.er);
+            normals.push_back(tr.ez);
+            normals.push_back(tr.ec);
         }
         
         openGLContext.extensions.glGenBuffers(1, &vertexBuffer);
@@ -207,7 +218,7 @@ public:
         
         openGLContext.extensions.glVertexAttribPointer(
                                                        attributeID,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
-                                                       4,                  // size
+                                                       3,                  // size
                                                        GL_FLOAT,           // type
                                                        GL_FALSE,           // normalized?
                                                        0,                  // stride
@@ -228,7 +239,7 @@ public:
                                                        sizeof(positionAndColour),                      // stride
                                                        (void*) offsetof(positionAndColour, colourId)                // array buffer offset
                                                        );
-        
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         glPointSize(20.0);
         glDrawElements (GL_POINTS, nPoints, GL_UNSIGNED_INT,  (void*) 0);  // Draw points!
         
@@ -239,7 +250,7 @@ public:
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         glDrawElements(
                        GL_TRIANGLES,      // mode
-                       nTriangleIndices,    // count
+                       nTriangles * 3,    // count
                        GL_UNSIGNED_INT,   // type
                        (void*) (nPoints * sizeof(int))           // element array buffer offset
                        );
@@ -248,7 +259,7 @@ public:
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         glDrawElements(
                        GL_TRIANGLES,      // mode
-                       nTriangleIndices,    // count
+                       nTriangles * 3,    // count
                        GL_UNSIGNED_INT,   // type
                        (void*) (nPoints * sizeof(int))           // element array buffer offset
                        );
@@ -328,10 +339,12 @@ public:
         "   gl_Position.xyz = 50.0 * position;\n"
         "   gl_Position.w = 1.0;\n"
         "   gl_Position = projectionMatrix * viewMatrix * gl_Position;\n"
-        "   vec4 light = vec4(1, 1, 1, 1);\n"
-        "   lightIntensity = abs( dot (light, normals));\n"
-        "   light = vec4(1, -8, 1, 1);\n"
-        "   lightIntensity = lightIntensity + 0.5 * abs( dot (light, normals));\n"
+        "   vec4 light = vec4(10, 0, 0, 1);\n"
+        "   light.w = 1.0;\n"
+        "   lightIntensity = abs( dot (light, viewMatrix * normals));\n"
+//        "   light = 50.0 * vec4(10, 10, -10, 1);\n"
+//        "   light.w = 1.0;\n"
+//        "   lightIntensity = lightIntensity +  abs( dot (light, viewMatrix * normals));\n"
         "   colormapDepthOut = colormapDepthIn;\n"
         "}";
         
@@ -341,9 +354,8 @@ public:
         "uniform sampler2D tex0;\n"
         "void main()\n"
         "{\n"
-        //"      gl_FragColor = vec4(1, 1, 1, 1);\n"
         "      gl_FragColor = texture2D(tex0, vec2(colormapDepthOut, 0));\n"
-        //"      gl_FragColor.xyz = gl_FragColor.xyz * lightIntensity * 0.25;\n"
+        //"      gl_FragColor.xyz = gl_FragColor.xyz * lightIntensity * 0.025;\n"
         //"      gl_FragColor.w = 1.0;\n"
         "}";
         
@@ -445,8 +457,8 @@ private:
         return new OpenGLShaderProgram::Uniform (shaderProgram, uniformName);
     }
     
-    std::vector<float>& extPoints;
-    std::vector<int>& extTriangles;
+    std::vector<R3>& extPoints;
+    std::vector<Tri>& extTriangles;
     std::vector<float>& extNormals;
     
     std::vector<positionAndColour> vertices;
@@ -457,7 +469,7 @@ private:
     int nVertices;
     int nPoints = 0;
     int activePoint = -1;
-    int nTriangleIndices;
+    int nTriangles;
     
     float zoom = 2.0f;
     float tilt = 0.0f;

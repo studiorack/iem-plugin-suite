@@ -40,7 +40,7 @@
 struct Tri
 {
   int id, keep;
-  int a,b, c;
+  int a, b, c;
   int ab, bc, ac;  // adjacent edges index to neighbouring triangle.
   float er, ec, ez; // visible normal to triangular facet.
 
@@ -80,18 +80,18 @@ struct Tri
 
 struct R3
 {
-  int id;
-  float r,c, z ;
+  int id, lspNum;
+  float x, y, z ;
   R3() {};
-  R3(float a, float b, float x) : r(a), c(b), z(x), id(-1) {};
-  R3(const R3 &p) : id(p.id),
-		    r(p.r), c(p.c), z(p.z){};
+  R3(float xc, float yc, float zc) : id(-1), x(xc), y(yc), z(zc)  {};
+  R3(const R3 &p) : id(p.id), lspNum(p.lspNum), x(p.x), y(p.y), z(p.z) {};
 
   R3 &operator=(const R3 &p)
   {
+    lspNum = p.lspNum;
     id = p.id;
-    r = p.r;
-    c = p.c;
+    x = p.x;
+    y = p.y;
     z = p.z;
     return *this;
   };
@@ -103,10 +103,10 @@ struct R3
 inline bool operator<(const R3 &a, const R3 &b) 
 { 
   if( a.z == b.z){
-    if( a.r == b.r ){
-      return a.c < b.c;
+    if( a.x == b.x ){
+      return a.y < b.y;
     }
-    return a.r < b.r;
+    return a.x < b.x;
   }
   return a.z <  b.z;
 };

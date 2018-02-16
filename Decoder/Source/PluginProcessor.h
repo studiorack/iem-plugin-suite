@@ -99,10 +99,8 @@ public:
     Atomic<bool> updateLoudspeakerVisualization = false;
     Atomic<bool> updateTable = true;
     
-    std::vector<R3> chCoords;
-    std::vector<float> points;
-    std::vector<int> triangles;
-    std::vector<Tri> tris;
+    std::vector<R3> points;
+    std::vector<Tri> triangles;
     std::vector<float> normals;
     
     UndoManager undoManager;
@@ -116,14 +114,17 @@ private:
     float* inputOrderSetting;
     float* useSN3D;
     
+    BigInteger imaginaryFlags;
+    
     ValueTree loudspeakers {"Loudspeakers"};
     
     
     
     // ========== METHODS
-    Result verifyLoudspeakerVar(var& loudspeakerVar);
-    void runTris();
+    void checkLayout();
+    Result verifyLoudspeakers();
     Result calculateTris();
+    void convertLoudspeakersToArray();
     
     ValueTree createLoudspeakerFromCarthesian (Vector3D<float> carthesianCoordinates, int channel, bool isVirtual = false, float gain = 1.0f);
     ValueTree createLoudspeakerFromSpherical (Vector3D<float> sphericalCoordinates, int channel, bool isVirtual = false, float gain = 1.0f);

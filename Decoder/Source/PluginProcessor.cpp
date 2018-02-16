@@ -91,7 +91,7 @@ parameters(*this, nullptr)
     loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (50.0f, 180.0f, 0.0f), 6), &undoManager);
     
     loudspeakers.addListener(this);
-    runTris();
+    checkLayout();
 }
 
 PluginTemplateAudioProcessor::~PluginTemplateAudioProcessor()
@@ -266,17 +266,15 @@ AudioProcessor* JUCE_CALLTYPE createPluginFilter()
     return new PluginTemplateAudioProcessor();
 }
 
-Result PluginTemplateAudioProcessor::verifyLoudspeakerVar(var& loudspeakerVar)
+Result PluginTemplateAudioProcessor::verifyLoudspeakers()
 {
-    if (! loudspeakerVar.isArray())
-        return Result::fail("There is no loudspeaker array!");
-    
-    const Array<var>* lspArray = loudspeakerVar.getArray();
-    const int nLsp = lspArray->size();
-    
-    for (int i = 0; i < nLsp; ++i)
+    const int nLsps = loudspeakers.getNumChildren();
+    for (int i = 0; i < nLsps; ++i)
     {
-        var lsp = lspArray->getUnchecked(i);
+        ValueTree lsp = loudspeakers.getChild(i);
+        if (! lsp.isValid())
+            return Result::fail("Something went wrong. Try again!");
+        
         
         if (lsp.hasProperty("Azimuth"))
         {
@@ -303,6 +301,8 @@ Result PluginTemplateAudioProcessor::verifyLoudspeakerVar(var& loudspeakerVar)
             const var radius = lsp.getProperty("Radius", var());
             if (! radius.isDouble() && ! radius.isInt())
                 return Result::fail("Loudspeaker #" + String(i+1) + ": 'Radius' value is neither a double nor an integer.");
+            if ((float) radius < FLT_EPSILON)
+                return Result::fail("Loudspeaker #" + String(i+1) + ": Radius has to be greater than zero.");
         }
         
         bool isVirt = false;
@@ -334,40 +334,7 @@ Result PluginTemplateAudioProcessor::verifyLoudspeakerVar(var& loudspeakerVar)
 
 Result PluginTemplateAudioProcessor::calculateTris()
 {
-//    Result res = verifyLoudspeakerVar(lsps);
-//    if (res.failed())
-//        DBG(res.getErrorMessage());
-    
-    chCoords.clear();
-    tris.clear();
-    
-    DBG("loop");
-    for (ValueTree::Iterator it = loudspeakers.begin() ; it != loudspeakers.end(); ++it)
-    {
-        
-        Vector3D<float> spherical;
-        spherical.x = ((bool) (*it).getProperty("Imaginary")) ? (float) (*it).getProperty("Radius") : 1.0f;
-        spherical.y = (*it).getProperty("Azimuth");
-        spherical.z = (*it).getProperty("Elevation");
-        
-        Vector3D<float> carth = sphericalToCarthesian(spherical);
-        
-        chCoords.push_back(R3(carth.x, carth.y, carth.z));
-        DBG(carth.x << " " << carth.y << " " << carth.z);
-    }
 
-
-    std::vector<int> outx;
-    std::vector<R3> noDuplicates;
-    const int nx = de_duplicateR3(chCoords, outx, noDuplicates);
-    
-    if (nx > 0)
-        return Result::fail("There was at least one duplicated loudspeaker.");
-    
-    chCoords = noDuplicates;
-    DBG("outx size: " << outx.size());
-    const int ts = NewtonApple_hull_3D(noDuplicates, tris);
-    return Result::ok();
 }
 
 ValueTree PluginTemplateAudioProcessor::createLoudspeakerFromCarthesian (Vector3D<float> carthCoordinates, int channel, bool isVirtual, float gain)
@@ -417,98 +384,170 @@ void PluginTemplateAudioProcessor::addRandomPoint()
     loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (50.0f, (rand() * 360.0f) / RAND_MAX, (rand() * 180.0f) / RAND_MAX - 90.0f), -1), &undoManager);
 }
 
-void PluginTemplateAudioProcessor::runTris()
+void PluginTemplateAudioProcessor::convertLoudspeakersToArray()
 {
-    Result res = calculateTris();
-    if (res.wasOk())
+    imaginaryFlags.clear();
+    int i = 0;
+    for (ValueTree::Iterator it = loudspeakers.begin() ; it != loudspeakers.end(); ++it)
     {
-        points.clear();
-        triangles.clear();
-        normals.clear();
-        DBG("num: " << chCoords.size());
-        for (int i = 0; i < chCoords.size(); ++i)
-        {
-            R3 foo = chCoords[i];
-            points.push_back(foo.c);
-            points.push_back(foo.z);
-            points.push_back(foo.r);
-            DBG(foo.r << " " << foo.c << " " << foo.z);
-        }
+        Vector3D<float> spherical;
+        spherical.x = ((bool) (*it).getProperty("Imaginary")) ? (float) (*it).getProperty("Radius") : 1.0f;
+        spherical.y = (*it).getProperty("Azimuth");
+        spherical.z = (*it).getProperty("Elevation");
         
-        for (int i = 0; i < tris.size(); ++i)
-        {
-            Tri tri = tris[i];
-            
-            Vector3D<float> a {chCoords[tri.a].r, chCoords[tri.a].c, chCoords[tri.a].z};
-            Vector3D<float> b {chCoords[tri.b].r, chCoords[tri.b].c, chCoords[tri.b].z};
-            Vector3D<float> c {chCoords[tri.c].r, chCoords[tri.c].c, chCoords[tri.c].z};
-            Vector3D<float> n {tri.er, tri.ec, tri.ez};
-            a = a.normalised();
-            b = b.normalised();
-            c = c.normalised();
-            n = n.normalised();
-            
-            Vector3D<float> uN;
-            uN = ((b-a)^(c-a)).normalised();
-            
-            float dist = n*a;
-            float uDist = uN*a;
-            
-            DBG("dist: " << dist);
-            if (uDist < 0)
-            {
-                triangles.push_back(tri.a);
-                triangles.push_back(tri.c);
-                triangles.push_back(tri.b);
-                normals.push_back(-uN.x);
-                normals.push_back(-uN.y);
-                normals.push_back(-uN.z);
-            }
-            else
-            {
-                triangles.push_back(tri.a);
-                triangles.push_back(tri.b);
-                triangles.push_back(tri.c);
-                normals.push_back(uN.x);
-                normals.push_back(uN.y);
-                normals.push_back(uN.z);
-                
-            }
-            normals.push_back(1.0f);
-            
-            DBG(tri.a << " " << tri.b << " " << tri.c);
-        }
+        const bool isImaginary = (*it).getProperty("Imaginary");
+        if (isImaginary) imaginaryFlags.setBit(i);
         
+        Vector3D<float> carth = sphericalToCarthesian(spherical);
         
-        DBG(points.size());
+        R3 newPoint {carth.x, carth.y, carth.z};
+        newPoint.lspNum = i;
+        
+        points.push_back(newPoint);
+        ++i;
+    }
+}
+
+
+void PluginTemplateAudioProcessor::checkLayout()
+{
+    points.clear();
+    triangles.clear();
+    normals.clear();
+    
+    // Check if loudspeakers are stored properly
+    Result res = verifyLoudspeakers();
+    if (res.failed())
+    {
+        DBG(res.getErrorMessage());
         updateLoudspeakerVisualization = true;
+        return;
+    }
+    
+    
+    convertLoudspeakersToArray();
+    
+    // Check for duplicates
+    std::vector<int> outx;
+    std::vector<R3> noDuplicates;
+    const int nDuplicates = de_duplicateR3(points, outx, noDuplicates);
+    
+    if (nDuplicates > 0)
+    {
+        DBG("ERROR 1: There are duplicate loudspeakers.");
+        updateLoudspeakerVisualization = true;
+        return;
+    }
+    
+    const int nLsps = loudspeakers.getNumChildren();
+    if (nLsps < 4)
+    {
+        DBG("ERROR 2: There are less than 4 loudspeakers! Add some more!");
+        updateLoudspeakerVisualization = true;
+        return;
+    }
+    
+    const int ts = NewtonApple_hull_3D(points, triangles);
+    updateLoudspeakerVisualization = true;
+    
+    //check if
+        
+//
+//    if (res.wasOk())
+//    {
+//        points.clear();
+//        triangles.clear();
+//        normals.clear();
+//        DBG("num: " << points.size());
+//        for (int i = 0; i < points.size(); ++i)
+//        {
+//            R3 foo = points[i];
+//            DBG(foo.x << " " << foo.y << " " << foo.z);
+//        }
+//
+//        for (int i = 0; i < triangles.size(); ++i)
+//        {
+//            Tri tri = triangles[i];
+//
+//            Vector3D<float> a {points[tri.a].x, points[tri.a].y, points[tri.a].z};
+//            Vector3D<float> b {points[tri.b].x, points[tri.b].y, points[tri.b].z};
+//            Vector3D<float> c {points[tri.c].x, points[tri.c].y, points[tri.c].z};
+//            Vector3D<float> n {tri.er, tri.ec, tri.ez};
+//            a = a.normalised();
+//            b = b.normalised();
+//            c = c.normalised();
+//            n = n.normalised();
+//
+//            Vector3D<float> uN;
+//            uN = ((b-a)^(c-a)).normalised();
+//
+//            float dist = n*a;
+//            float uDist = uN*a;
+//
+//            DBG("dist: " << dist);
+//            if (uDist < 0)
+//            {
+////                triangles.push_back(tri.a);
+////                triangles.push_back(tri.c);
+////                triangles.push_back(tri.b);
+//                normals.push_back(-uN.x);
+//                normals.push_back(-uN.y);
+//                normals.push_back(-uN.z);
+//            }
+//            else
+//            {
+////                triangles.push_back(tri.a);
+////                triangles.push_back(tri.b);
+////                triangles.push_back(tri.c);
+//                normals.push_back(uN.x);
+//                normals.push_back(uN.y);
+//                normals.push_back(uN.z);
+//
+//            }
+//            normals.push_back(1.0f);
+//
+//            DBG(tri.a << " " << tri.b << " " << tri.c);
+//        }
+//
+//
+//        DBG(points.size());
+//        updateLoudspeakerVisualization = true;
+//    }
+    
+
+    if (imaginaryFlags.countNumberOfSetBits() == nLsps)
+    {
+        DBG("ERROR 5: There are only imaginary loudspeakers.");
+        updateLoudspeakerVisualization = true;
+        return;
     }
 }
 
 void PluginTemplateAudioProcessor::valueTreePropertyChanged (ValueTree &treeWhosePropertyHasChanged, const Identifier &property)
 {
     DBG("valueTreePropertyChanged");
-    runTris();
+    checkLayout();
     updateTable = true;
 }
 
 void PluginTemplateAudioProcessor::valueTreeChildAdded (ValueTree &parentTree, ValueTree &childWhichHasBeenAdded)
 {
     DBG("valueTreeChildAdded");
-    runTris();
+    checkLayout();
     updateTable = true;
 }
 
 void PluginTemplateAudioProcessor::valueTreeChildRemoved (ValueTree &parentTree, ValueTree &childWhichHasBeenRemoved, int indexFromWhichChildWasRemoved)
 {
     DBG("valueTreeChildRemoved");
-    runTris();
+    checkLayout();
     updateTable = true;
 }
 
 void PluginTemplateAudioProcessor::valueTreeChildOrderChanged (ValueTree &parentTreeWhoseChildrenHaveMoved, int oldIndex, int newIndex)
 {
     DBG("valueTreeChildOrderChanged");
+    checkLayout();
 }
 
 void PluginTemplateAudioProcessor::valueTreeParentChanged (ValueTree &treeWhoseParentHasChanged)
