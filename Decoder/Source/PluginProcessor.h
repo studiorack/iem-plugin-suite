@@ -90,6 +90,9 @@ public:
     
     void addRandomPoint();
     
+    void undo() { undoManager.undo(); }
+    void redo() { undoManager.redo(); }
+    
     ValueTree& getLoudspeakersValueTree() { return loudspeakers; }
     
     var lsps;
@@ -102,9 +105,12 @@ public:
     std::vector<Tri> tris;
     std::vector<float> normals;
     
+    UndoManager undoManager;
+    
 private:
     // ====== parameters
     AudioProcessorValueTreeState parameters;
+    
     
     // list of used audio parameters
     float* inputOrderSetting;

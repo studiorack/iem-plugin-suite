@@ -77,12 +77,18 @@ parameters(*this, nullptr)
     
     parameters.state.appendChild(loudspeakers, nullptr);
 
-    loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (50.0f, 0.0f, 0.0f), 1), nullptr);
-    loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (1.0f, -45.0f, 0.0f), 2, true), nullptr);
-    loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (50.0f, 45.0f, 0.0f), 3), nullptr);
-    loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (50.0f, 45.0f, -90.0f), 5), nullptr);
-    loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (50.0f, 0.0f, 90.0f), 5), nullptr);
-    loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (50.0f, 180.0f, 0.0f), 6), nullptr);
+    undoManager.beginNewTransaction();
+    loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (50.0f, 0.0f, 0.0f), 1), &undoManager);
+    undoManager.beginNewTransaction();
+    loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (1.0f, -45.0f, 0.0f), 2, true), &undoManager);
+    undoManager.beginNewTransaction();
+    loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (50.0f, 45.0f, 0.0f), 3), &undoManager);
+    undoManager.beginNewTransaction();
+    loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (50.0f, 45.0f, -90.0f), 5), &undoManager);
+    undoManager.beginNewTransaction();
+    loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (50.0f, 0.0f, 90.0f), 5), &undoManager);
+    undoManager.beginNewTransaction();
+    loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (50.0f, 180.0f, 0.0f), 6), &undoManager);
     
     loudspeakers.addListener(this);
     runTris();
@@ -407,7 +413,8 @@ Vector3D<float> PluginTemplateAudioProcessor::sphericalToCarthesian(Vector3D<flo
 
 void PluginTemplateAudioProcessor::addRandomPoint()
 {
-    loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (50.0f, (rand() * 360.0f) / RAND_MAX, (rand() * 180.0f) / RAND_MAX - 90.0f), -1), nullptr);
+    undoManager.beginNewTransaction();
+    loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (50.0f, (rand() * 360.0f) / RAND_MAX, (rand() * 180.0f) / RAND_MAX - 90.0f), -1), &undoManager);
 }
 
 void PluginTemplateAudioProcessor::runTris()
@@ -482,6 +489,7 @@ void PluginTemplateAudioProcessor::valueTreePropertyChanged (ValueTree &treeWhos
 {
     DBG("valueTreePropertyChanged");
     runTris();
+    updateTable = true;
 }
 
 void PluginTemplateAudioProcessor::valueTreeChildAdded (ValueTree &parentTree, ValueTree &childWhichHasBeenAdded)

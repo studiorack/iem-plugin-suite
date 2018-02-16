@@ -32,7 +32,7 @@ class LoudspeakerTableComponent : public Component, public TableListBoxModel
 {
     
 public:
-    LoudspeakerTableComponent(ValueTree& loudspeakers, LoudspeakerVisualizer& visualizer) : data(loudspeakers), lspVisualizer(visualizer)
+    LoudspeakerTableComponent(ValueTree& loudspeakers, LoudspeakerVisualizer& visualizer, UndoManager& undoM) : data(loudspeakers), lspVisualizer(visualizer), undoManager(undoM)
     {
         typeFace = getLookAndFeel().getTypefaceForFont(12);
         
@@ -215,12 +215,14 @@ public:
     
     void setFloat (const int columnId, const int rowNumber, const float newValue)
     {
-        data.getChild(rowNumber).setProperty(getAttributeNameForColumnId(columnId), newValue, nullptr);
+        undoManager.beginNewTransaction();
+        data.getChild(rowNumber).setProperty(getAttributeNameForColumnId(columnId), newValue, &undoManager);
     }
     
     void setBool (const int columnId, const int rowNumber, const bool newValue)
     {
-        data.getChild(rowNumber).setProperty(getAttributeNameForColumnId(columnId), newValue, nullptr);
+        undoManager.beginNewTransaction();
+        data.getChild(rowNumber).setProperty(getAttributeNameForColumnId(columnId), newValue, &undoManager);
     }
     
     bool getBool (const int columnId, const int rowNumber)
@@ -232,6 +234,7 @@ private:
     TableListBox table;     // the table component itself
     Typeface::Ptr typeFace;
     ValueTree& data;
+    UndoManager& undoManager;
     
     LoudspeakerVisualizer& lspVisualizer;
     
@@ -295,7 +298,7 @@ private:
         {
             setButtonText("Remove");
             setColour(TextButton::buttonOnColourId, Colours::orangered);
-            onClick = [this](){ owner.data.removeChild(owner.data.getChild(row), nullptr);};
+            onClick = [this](){ owner.undoManager.beginNewTransaction(); owner.data.removeChild(owner.data.getChild(row), &owner.undoManager);};
         }
         
         void setRowAndColumn (const int newRow, const int newColumn)

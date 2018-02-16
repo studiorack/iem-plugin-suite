@@ -88,6 +88,8 @@ private:
     
     TextButton tbPrintJSON;
     TextButton tbAddSpeakers;
+    TextButton tbUndo;
+    TextButton tbRedo;
     LoudspeakerVisualizer lv;
     
     LoudspeakerTableComponent lspList;

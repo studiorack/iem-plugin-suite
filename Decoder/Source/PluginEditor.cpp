@@ -26,7 +26,7 @@
 
 //==============================================================================
 PluginTemplateAudioProcessorEditor::PluginTemplateAudioProcessorEditor (PluginTemplateAudioProcessor& p, AudioProcessorValueTreeState& vts)
-    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts), lv(processor.points, processor.triangles, processor.normals), lspList(processor.getLoudspeakersValueTree(), lv)
+    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts), lv(processor.points, processor.triangles, processor.normals), lspList(processor.getLoudspeakersValueTree(), lv, processor.undoManager)
 {
     // ============== BEGIN: essentials ======================
     // set GUI size and lookAndFeel
@@ -54,6 +54,14 @@ PluginTemplateAudioProcessorEditor::PluginTemplateAudioProcessorEditor (PluginTe
     addAndMakeVisible(tbAddSpeakers);
     tbAddSpeakers.setButtonText("add speakers");
     tbAddSpeakers.addListener(this);
+    
+    addAndMakeVisible(tbUndo);
+    tbUndo.setButtonText("undo");
+    tbUndo.onClick = [this] () { processor.undo(); };
+    
+    addAndMakeVisible(tbRedo);
+    tbRedo.setButtonText("redo");
+    tbRedo.onClick = [this] () { processor.redo(); };
     
     addAndMakeVisible(lv);
     
@@ -102,6 +110,8 @@ void PluginTemplateAudioProcessorEditor::resized()
 
     tbAddSpeakers.setBounds(20, 80, 100, 20);
     tbPrintJSON.setBounds(150, 80, 100, 20);
+    tbUndo.setBounds(280, 80, 100, 20);
+    tbRedo.setBounds(410, 80, 100, 20);
     
     Rectangle<int> leftArea = area.removeFromLeft(area.getWidth() / 2);
     lv.setBounds(leftArea);
@@ -143,6 +153,7 @@ void PluginTemplateAudioProcessorEditor::buttonClicked (Button* button)
     {
         DBG(JSON::toString(processor.lsps));
     }
+
 }
 
 void PluginTemplateAudioProcessorEditor::buttonStateChanged (Button* button) {};
