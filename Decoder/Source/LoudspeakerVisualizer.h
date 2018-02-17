@@ -61,15 +61,16 @@ public:
     
     void initialise()
     {
+        const float alpha = 0.6f;
         PixelARGB colormapData[8];
         colormapData[0] = Colours::limegreen.getPixelARGB();
         colormapData[1] = Colours::cornflowerblue.getPixelARGB();
-        colormapData[2] = Colours::blue.withMultipliedAlpha(0.8f).getPixelARGB();
-        colormapData[3] = Colours::greenyellow.withMultipliedAlpha(0.8f).getPixelARGB();
-        colormapData[4] = Colours::lemonchiffon.withMultipliedAlpha(0.8f).getPixelARGB();
-        colormapData[5] = Colours::cornflowerblue.withMultipliedAlpha(0.8f).getPixelARGB();
-        colormapData[6] = Colours::orange.withMultipliedAlpha(0.8f).getPixelARGB();
-        colormapData[7] = Colours::red.withMultipliedAlpha(0.8f).getPixelARGB();
+        colormapData[2] = Colours::cornflowerblue.withMultipliedAlpha(alpha).getPixelARGB();
+        colormapData[3] = Colours::greenyellow.withMultipliedAlpha(alpha).getPixelARGB();
+        colormapData[4] = Colours::limegreen.withMultipliedAlpha(alpha).getPixelARGB();
+        colormapData[5] = Colours::cornflowerblue.withMultipliedAlpha(alpha).getPixelARGB();
+        colormapData[6] = Colours::orange.withMultipliedAlpha(alpha).getPixelARGB();
+        colormapData[7] = Colours::red.withMultipliedAlpha(alpha).getPixelARGB();
         
         texture.loadARGB(colormapData, 8, 1);
         
@@ -122,7 +123,7 @@ public:
         for (int i = 0; i < nTriangles;  ++i)
         {
             Tri tr = extTriangles[i];
-            const float col = 0.3f + 0.7f * ((float) i / nTriangles);
+            const float col = 0.4f + 0.6f * ((float) i / nTriangles);
             vertices.push_back({extPoints[tr.a].x, extPoints[tr.a].z, extPoints[tr.a].y, col});
             vertices.push_back({extPoints[tr.b].x, extPoints[tr.b].z, extPoints[tr.b].y, col});
             vertices.push_back({extPoints[tr.c].x, extPoints[tr.c].z, extPoints[tr.c].y, col});
@@ -130,15 +131,16 @@ public:
             indices.push_back(nPoints + i*3 + 1);
             indices.push_back(nPoints + i*3 + 2);
             
-            normals.push_back(tr.er);
-            normals.push_back(tr.ez);
-            normals.push_back(tr.ec);
-            normals.push_back(tr.er);
-            normals.push_back(tr.ez);
-            normals.push_back(tr.ec);
-            normals.push_back(tr.er);
-            normals.push_back(tr.ez);
-            normals.push_back(tr.ec);
+            Vector3D<float> normal = extNormals[i];
+            normals.push_back(normal.x);
+            normals.push_back(normal.z);
+            normals.push_back(normal.y);
+            normals.push_back(normal.x);
+            normals.push_back(normal.z);
+            normals.push_back(normal.y);
+            normals.push_back(normal.x);
+            normals.push_back(normal.z);
+            normals.push_back(normal.y);
         }
         
         openGLContext.extensions.glGenBuffers(1, &vertexBuffer);
@@ -211,6 +213,7 @@ public:
                                                        sizeof(positionAndColour),                  // stride
                                                        (void*)0            // array buffer offset
                                                        );
+        
         // 1st attribute buffer : normals
         attributeID = openGLContext.extensions.glGetAttribLocation(programID, "normals");
         openGLContext.extensions.glEnableVertexAttribArray(attributeID);
@@ -325,9 +328,11 @@ public:
     
     void createShaders()
     {
+        // NOTE: the two lights below are single light sources which produce diffuse light on the body
+        // adding speculars would be great
         vertexShader =
         "attribute vec3 position;\n"
-        "attribute vec4 normals;\n"
+        "attribute vec3 normals;\n"
         "attribute float colormapDepthIn;\n"
         "\n"
         "uniform mat4 projectionMatrix;\n"
@@ -337,15 +342,16 @@ public:
         "varying float lightIntensity;\n"
         "void main()\n"
         "{\n"
-        "   gl_Position.xyz = 50.0 * position;\n"
+        "   gl_Position.xyz = 50.0 * position;\n" // scaling leads to a better result
         "   gl_Position.w = 1.0;\n"
         "   gl_Position = projectionMatrix * viewMatrix * gl_Position;\n"
-        "   vec4 light = vec4(10, 0, 0, 1);\n"
-        "   light.w = 1.0;\n"
-        "   lightIntensity = abs( dot (light, viewMatrix * normals));\n"
-//        "   light = 50.0 * vec4(10, 10, -10, 1);\n"
-//        "   light.w = 1.0;\n"
-//        "   lightIntensity = lightIntensity +  abs( dot (light, viewMatrix * normals));\n"
+        "   vec4 normal;\n"
+        "   normal.xyz = normals;\n"
+        "   normal.w = 0.0;\n"
+        "   vec4 light = vec4(0.0, 2.0, 0.0, 1.0);\n"
+        "   lightIntensity = abs( dot (light - vec4 (position, 1.0), viewMatrix * normal));\n"
+        "   vec4 light2 = vec4(3.0, 0.0, 0.0, 1.0);\n"
+        "   lightIntensity = lightIntensity + 0.3 * abs( dot (light2 - vec4 (position, 1.0), viewMatrix * normal));\n"
         "   colormapDepthOut = colormapDepthIn;\n"
         "}";
         
@@ -356,7 +362,7 @@ public:
         "void main()\n"
         "{\n"
         "      gl_FragColor = texture2D(tex0, vec2(colormapDepthOut, 0));\n"
-        //"      gl_FragColor.xyz = gl_FragColor.xyz * lightIntensity * 0.025;\n"
+        "      gl_FragColor.xyz = gl_FragColor.xyz * (0.5 + lightIntensity * 0.5);\n"
         //"      gl_FragColor.w = 1.0;\n"
         "}";
         
@@ -433,7 +439,6 @@ public:
         Matrix3D<float> tiltMatrix
         = createRotationMatrix (Vector3D<float> (tilt, 0.0f, 0.0f));
         
-
         Matrix3D<float> rotationMatrix
         = createRotationMatrix (Vector3D<float> (0.0f, yaw, 0.0f));
         
