@@ -170,10 +170,11 @@ public:
         glEnable (GL_DEPTH_TEST);
         glDepthFunc (GL_LESS);
         
-        glEnable(GL_BLEND);
-        glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-        glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
-
+#ifdef JUCE_OPENGL3
+//        glEnable(GL_BLEND);
+//        glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+//        glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+#endif
         
         openGLContext.extensions.glActiveTexture (GL_TEXTURE0);
         glEnable (GL_TEXTURE_2D);
