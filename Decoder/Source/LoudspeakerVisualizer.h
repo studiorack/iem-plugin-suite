@@ -61,20 +61,22 @@ public:
     
     void initialise()
     {
-        const float alpha = 0.9f;
-        PixelARGB colormapData[1];
-		//colormapData[0] = Colours::limegreen.getPixelARGB(); // selected point colour
-        //colormapData[1] = Colours::cornflowerblue.getPixelARGB(); // regular point colour
-		colormapData[0] = Colours::white.withMultipliedAlpha(alpha).getPixelARGB();
-		//colormapData[2] = Colours::cornflowerblue.withMultipliedAlpha(alpha).getPixelARGB();
-        //colormapData[3] = Colours::greenyellow.withMultipliedAlpha(alpha).getPixelARGB();
-        //colormapData[4] = Colours::limegreen.withMultipliedAlpha(alpha).getPixelARGB();
-        //colormapData[5] = Colours::cornflowerblue.withMultipliedAlpha(alpha).getPixelARGB();
-        //colormapData[6] = Colours::orange.withMultipliedAlpha(alpha).getPixelARGB();
-        //colormapData[7] = Colours::red.withMultipliedAlpha(alpha).getPixelARGB();
+        const float alpha = 0.5;
+        PixelARGB colormapData[8];
+//        colormapData[0] = Colours::white.withMultipliedAlpha(alpha).getPixelARGB();
+//        texture.loadARGB(colormapData, 1, 1);
         
-        //texture.loadARGB(colormapData, 8, 1);
-		texture.loadARGB(colormapData, 1, 1);
+        colormapData[0] = Colours::limegreen.getPixelARGB(); // selected point colour
+        colormapData[1] = Colours::cornflowerblue.getPixelARGB(); // regular point colour
+        colormapData[2] = Colours::cornflowerblue.withMultipliedAlpha(alpha).getPixelARGB();
+        colormapData[3] = Colours::greenyellow.withMultipliedAlpha(alpha).getPixelARGB();
+        colormapData[4] = Colours::limegreen.withMultipliedAlpha(alpha).getPixelARGB();
+        colormapData[5] = Colours::cornflowerblue.withMultipliedAlpha(alpha).getPixelARGB();
+        colormapData[6] = Colours::orange.withMultipliedAlpha(alpha).getPixelARGB();
+        colormapData[7] = Colours::red.withMultipliedAlpha(alpha).getPixelARGB();
+        
+        texture.loadARGB(colormapData, 8, 1);
+		
 
         
         openGLContext.extensions.glActiveTexture (GL_TEXTURE0);
@@ -249,13 +251,26 @@ public:
                                                        sizeof(positionAndColour),                      // stride
                                                        (void*) offsetof(positionAndColour, colourId)                // array buffer offset
                                                        );
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
+        // render black lines
 		glLineWidth(5.0);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        if (blackFlag != nullptr)
+            blackFlag->set(1.0f);
+        
+
+        glDrawElements(
+                       GL_TRIANGLES,      // mode
+                       nTriangles * 3,    // count
+                       GL_UNSIGNED_INT,   // type
+                       (void*) (nPoints * sizeof(int))           // element array buffer offset
+                       );
+
         
         if (blackFlag != nullptr)
             blackFlag->set(0.0f);
         
+
+        
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         glDrawElements(
                        GL_TRIANGLES,      // mode
@@ -265,17 +280,32 @@ public:
                        );
 
         
-        if (blackFlag != nullptr)
-            blackFlag->set(1.0f);
+
         
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        // render with alpha = 0, to prime the depth buffer
+        if (alpha != nullptr)
+            alpha->set(0.0f);
+        
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         glDrawElements(
                        GL_TRIANGLES,      // mode
                        nTriangles * 3,    // count
                        GL_UNSIGNED_INT,   // type
                        (void*) (nPoints * sizeof(int))           // element array buffer offset
                        );
-
+        
+        if (alpha != nullptr)
+            alpha->set(1.0f);
+        
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        glDrawElements(
+                       GL_TRIANGLES,      // mode
+                       nTriangles * 3,    // count
+                       GL_UNSIGNED_INT,   // type
+                       (void*) (nPoints * sizeof(int))           // element array buffer offset
+                       );
+        
+        
 		openGLContext.extensions.glDisableVertexAttribArray(2);
 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -353,10 +383,12 @@ public:
         "uniform mat4 projectionMatrix;\n"
         "uniform mat4 viewMatrix;\n"
         "uniform float blackFlag;\n"
+        "uniform float alpha;\n"
         "\n"
         "varying float colormapDepthOut;\n"
         "varying float lightIntensity;\n"
         "varying float blackFlagOut;\n"
+        "varying float alphaOut;\n"
         "void main()\n"
         "{\n"
         "   gl_Position.xyz = 50.0 * position;\n" // scaling leads to a better result
@@ -368,22 +400,24 @@ public:
         "   vec4 light = normalize(vec4(-0.8, 0.4, 0.8, 0.0));\n"
 	    "   float value;\n"
         "   value = dot (light , viewMatrix * normal);\n"
-	    "   lightIntensity = (value>0.0)?value:0.0;\n"
+	    "   lightIntensity = (value > 0.0) ? value : 0.0;\n"
 		"   colormapDepthOut = colormapDepthIn;\n"
         "   blackFlagOut = blackFlag;\n"
+        "   alphaOut = alpha;\n"
         "}";
         
         fragmentShader =
         "varying float colormapDepthOut;\n"
         "varying float lightIntensity;\n"
         "varying float blackFlagOut;\n"
+        "varying float alphaOut;\n"
         "uniform sampler2D tex0;\n"
         "void main()\n"
         "{\n"
         "      gl_FragColor = texture2D(tex0, vec2(colormapDepthOut, 0));\n"
         "      gl_FragColor.xyz = gl_FragColor.xyz * (0.2/0.9 + lightIntensity * 0.8/0.9);\n"
         "      if (blackFlagOut == 1.0) gl_FragColor = vec4(0, 0, 0, 1);"
-        //"      gl_FragColor.w = 1.0;\n"
+        "      gl_FragColor.w = alphaOut * gl_FragColor.w;\n"
         "}";
         
         ScopedPointer<OpenGLShaderProgram> newShader (new OpenGLShaderProgram (openGLContext));
