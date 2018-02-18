@@ -61,7 +61,7 @@ public:
     
     void initialise()
     {
-        const float alpha = 0.5;
+        const float alpha = 0.8;
         PixelARGB colormapData[8];
 //        colormapData[0] = Colours::white.withMultipliedAlpha(alpha).getPixelARGB();
 //        texture.loadARGB(colormapData, 1, 1);
@@ -126,16 +126,30 @@ public:
         nTriangles = (int) extTriangles.size();
         for (int i = 0; i < nTriangles;  ++i)
         {
+            const float col = 0.4f + 0.6f * ((float) i / nTriangles); // defining a colour
+            Vector3D<float> normal = extNormals[i];
             Tri tr = extTriangles[i];
-            const float col = 0.4f + 0.6f * ((float) i / nTriangles);
-            vertices.push_back({extPoints[tr.a].x, extPoints[tr.a].z, extPoints[tr.a].y, col});
-            vertices.push_back({extPoints[tr.b].x, extPoints[tr.b].z, extPoints[tr.b].y, col});
-            vertices.push_back({extPoints[tr.c].x, extPoints[tr.c].z, extPoints[tr.c].y, col});
+            Vector3D<float> a {extPoints[tr.a].x, extPoints[tr.a].y, extPoints[tr.a].z};
+            Vector3D<float> b {extPoints[tr.b].x, extPoints[tr.b].y, extPoints[tr.b].z};
+            Vector3D<float> c {extPoints[tr.c].x, extPoints[tr.c].y, extPoints[tr.c].z};
+            
+            // making sure that triangles are facing outward
+            if (normal * ((b-a)^(c-a)) > 0.0f) // correct
+            {
+                vertices.push_back({a.x, a.z, a.y, col});
+                vertices.push_back({b.x, b.z, b.y, col});
+            }
+            else // incorrect -> swap
+            {
+                vertices.push_back({b.x, b.z, b.y, col});
+                vertices.push_back({a.x, a.z, a.y, col});
+            }
+            vertices.push_back({c.x, c.z, c.y, col});
+            
             indices.push_back(nPoints + i*3);
             indices.push_back(nPoints + i*3 + 1);
             indices.push_back(nPoints + i*3 + 2);
             
-            Vector3D<float> normal = extNormals[i];
             normals.push_back(normal.x);
             normals.push_back(normal.z);
             normals.push_back(normal.y);
@@ -251,41 +265,32 @@ public:
                                                        sizeof(positionAndColour),                      // stride
                                                        (void*) offsetof(positionAndColour, colourId)                // array buffer offset
                                                        );
-        // render black lines
-		glLineWidth(5.0);
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        if (blackFlag != nullptr)
-            blackFlag->set(1.0f);
-        
-
-        glDrawElements(
-                       GL_TRIANGLES,      // mode
-                       nTriangles * 3,    // count
-                       GL_UNSIGNED_INT,   // type
-                       (void*) (nPoints * sizeof(int))           // element array buffer offset
-                       );
-
+ 
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         
         if (blackFlag != nullptr)
             blackFlag->set(0.0f);
-        
+        if (drawPointsFlag != nullptr)
+            drawPointsFlag->set(0.0f);
 
-        
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        glDrawElements(
-                       GL_TRIANGLES,      // mode
-                       nTriangles * 3,    // count
-                       GL_UNSIGNED_INT,   // type
-                       (void*) (nPoints * sizeof(int))           // element array buffer offset
-                       );
+//
+//        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+//        glDrawElements(
+//                       GL_TRIANGLES,      // mode
+//                       nTriangles * 3,    // count
+//                       GL_UNSIGNED_INT,   // type
+//                       (void*) (nPoints * sizeof(int))           // element array buffer offset
+//                       );
 
         
 
         
         // render with alpha = 0, to prime the depth buffer
+        
         if (alpha != nullptr)
             alpha->set(0.0f);
-        
+        glDisable(GL_CULL_FACE);
+        glDepthFunc(GL_ALWAYS); // priming depth buffer
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         glDrawElements(
                        GL_TRIANGLES,      // mode
@@ -294,10 +299,35 @@ public:
                        (void*) (nPoints * sizeof(int))           // element array buffer offset
                        );
         
+        // setting alpha factor to 1 to actually draw something
         if (alpha != nullptr)
             alpha->set(1.0f);
         
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        // draw points
+        if (drawPointsFlag != nullptr)
+            drawPointsFlag->set(1.0f);
+        glPointSize(15.0);
+        glDepthFunc(GL_ALWAYS);
+        glDrawElements(GL_POINTS, nPoints, GL_UNSIGNED_INT, (void*)0);  // Draw points!
+        if (drawPointsFlag != nullptr)
+            drawPointsFlag->set(0.0f);
+        // draw background first (inward facing triangles in the background -> looking towards us)
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_BACK);
+        glDepthFunc(GL_ALWAYS);
+        glDrawElements(
+                       GL_TRIANGLES,      // mode
+                       nTriangles * 3,    // count
+                       GL_UNSIGNED_INT,   // type
+                       (void*) (nPoints * sizeof(int))           // element array buffer offset
+                       );
+        
+        // render black lines (all)
+        glLineWidth(5.0);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        if (blackFlag != nullptr)
+            blackFlag->set(1.0f);
+        
         glDrawElements(
                        GL_TRIANGLES,      // mode
                        nTriangles * 3,    // count
@@ -306,15 +336,58 @@ public:
                        );
         
         
-		openGLContext.extensions.glDisableVertexAttribArray(2);
+        if (blackFlag != nullptr)
+            blackFlag->set(0.0f);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL
+                      );
+        
+        // draw foreground triangles
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_FRONT);
+        glDepthFunc(GL_ALWAYS);
+        glDrawElements(
+                       GL_TRIANGLES,      // mode
+                       nTriangles * 3,    // count
+                       GL_UNSIGNED_INT,   // type
+                       (void*) (nPoints * sizeof(int))           // element array buffer offset
+                       );
+        
+        // render black lines (foreground)
+        glLineWidth(5.0);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glDepthFunc(GL_LEQUAL);
+        if (blackFlag != nullptr)
+            blackFlag->set(1.0f);
+        
+        glDrawElements(
+                       GL_TRIANGLES,      // mode
+                       nTriangles * 3,    // count
+                       GL_UNSIGNED_INT,   // type
+                       (void*) (nPoints * sizeof(int))           // element array buffer offset
+                       );
+        
+        // draw foreground points
+        if (drawPointsFlag != nullptr)
+            drawPointsFlag->set(1.0f);
+        if (blackFlag != nullptr)
+            blackFlag->set(0.0f);
+        glPointSize(15.0);
+        glDepthFunc(GL_LEQUAL);
+        glDrawElements(GL_POINTS, nPoints, GL_UNSIGNED_INT, (void*)0);  // Draw points!
+        if (drawPointsFlag != nullptr)
+            drawPointsFlag->set(0.0f);
+        
+        
+        
 
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		glPointSize(15.0);
-		glDrawElements(GL_POINTS, nPoints, GL_UNSIGNED_INT, (void*)0);  // Draw points!
+        
+
+        
 
 
         openGLContext.extensions.glDisableVertexAttribArray(0);
         openGLContext.extensions.glDisableVertexAttribArray(1);
+        openGLContext.extensions.glDisableVertexAttribArray(2);
         
         openGLContext.extensions.glBindBuffer (GL_ARRAY_BUFFER, 0);
         openGLContext.extensions.glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -384,11 +457,13 @@ public:
         "uniform mat4 viewMatrix;\n"
         "uniform float blackFlag;\n"
         "uniform float alpha;\n"
+        "uniform float drawPointsFlag;\n"
         "\n"
         "varying float colormapDepthOut;\n"
         "varying float lightIntensity;\n"
         "varying float blackFlagOut;\n"
         "varying float alphaOut;\n"
+        "varying float drawPointsFlagOut;\n"
         "void main()\n"
         "{\n"
         "   gl_Position.xyz = 50.0 * position;\n" // scaling leads to a better result
@@ -404,6 +479,7 @@ public:
 		"   colormapDepthOut = colormapDepthIn;\n"
         "   blackFlagOut = blackFlag;\n"
         "   alphaOut = alpha;\n"
+        "   drawPointsFlagOut = drawPointsFlag;\n"
         "}";
         
         fragmentShader =
@@ -411,11 +487,12 @@ public:
         "varying float lightIntensity;\n"
         "varying float blackFlagOut;\n"
         "varying float alphaOut;\n"
+        "varying float drawPointsFlagOut;\n"
         "uniform sampler2D tex0;\n"
         "void main()\n"
         "{\n"
         "      gl_FragColor = texture2D(tex0, vec2(colormapDepthOut, 0));\n"
-        "      gl_FragColor.xyz = gl_FragColor.xyz * (0.2/0.9 + lightIntensity * 0.8/0.9);\n"
+        "      if (drawPointsFlagOut != 1.0) gl_FragColor.xyz = gl_FragColor.xyz * (0.2/0.9 + lightIntensity * 0.8/0.9);\n"
         "      if (blackFlagOut == 1.0) gl_FragColor = vec4(0, 0, 0, 1);"
         "      gl_FragColor.w = alphaOut * gl_FragColor.w;\n"
         "}";
@@ -435,6 +512,7 @@ public:
             viewMatrix       = createUniform (openGLContext, *shader, "viewMatrix");
             alpha = createUniform (openGLContext, *shader, "alpha");
             blackFlag       = createUniform (openGLContext, *shader, "blackFlag");
+            drawPointsFlag       = createUniform (openGLContext, *shader, "drawPointsFlag");
         }
         else
         {
@@ -506,7 +584,7 @@ private:
     const char* vertexShader;
     const char* fragmentShader;
     ScopedPointer<OpenGLShaderProgram> shader;
-    ScopedPointer<OpenGLShaderProgram::Uniform> projectionMatrix, viewMatrix, alpha, blackFlag;
+    ScopedPointer<OpenGLShaderProgram::Uniform> projectionMatrix, viewMatrix, alpha, blackFlag, drawPointsFlag;
     
     static OpenGLShaderProgram::Uniform* createUniform (OpenGLContext& openGLContext,
                                                         OpenGLShaderProgram& shaderProgram,
