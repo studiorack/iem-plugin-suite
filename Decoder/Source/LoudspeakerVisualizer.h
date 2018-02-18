@@ -61,19 +61,21 @@ public:
     
     void initialise()
     {
-        const float alpha = 0.6f;
-        PixelARGB colormapData[8];
-        colormapData[0] = Colours::limegreen.getPixelARGB();
-        colormapData[1] = Colours::cornflowerblue.getPixelARGB();
-        colormapData[2] = Colours::cornflowerblue.withMultipliedAlpha(alpha).getPixelARGB();
-        colormapData[3] = Colours::greenyellow.withMultipliedAlpha(alpha).getPixelARGB();
-        colormapData[4] = Colours::limegreen.withMultipliedAlpha(alpha).getPixelARGB();
-        colormapData[5] = Colours::cornflowerblue.withMultipliedAlpha(alpha).getPixelARGB();
-        colormapData[6] = Colours::orange.withMultipliedAlpha(alpha).getPixelARGB();
-        colormapData[7] = Colours::red.withMultipliedAlpha(alpha).getPixelARGB();
+        const float alpha = 0.9f;
+        PixelARGB colormapData[1];
+		//colormapData[0] = Colours::limegreen.getPixelARGB();
+        //colormapData[1] = Colours::cornflowerblue.getPixelARGB();
+		colormapData[0] = Colours::white.withMultipliedAlpha(alpha).getPixelARGB();
+		//colormapData[2] = Colours::cornflowerblue.withMultipliedAlpha(alpha).getPixelARGB();
+        //colormapData[3] = Colours::greenyellow.withMultipliedAlpha(alpha).getPixelARGB();
+        //colormapData[4] = Colours::limegreen.withMultipliedAlpha(alpha).getPixelARGB();
+        //colormapData[5] = Colours::cornflowerblue.withMultipliedAlpha(alpha).getPixelARGB();
+        //colormapData[6] = Colours::orange.withMultipliedAlpha(alpha).getPixelARGB();
+        //colormapData[7] = Colours::red.withMultipliedAlpha(alpha).getPixelARGB();
         
-        texture.loadARGB(colormapData, 8, 1);
-        
+        //texture.loadARGB(colormapData, 8, 1);
+		texture.loadARGB(colormapData, 1, 1);
+
         
         openGLContext.extensions.glActiveTexture (GL_TEXTURE0);
         glEnable (GL_TEXTURE_2D);
@@ -244,12 +246,8 @@ public:
                                                        (void*) offsetof(positionAndColour, colourId)                // array buffer offset
                                                        );
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        glPointSize(20.0);
-        glDrawElements (GL_POINTS, nPoints, GL_UNSIGNED_INT,  (void*) 0);  // Draw points!
-        
-        
-        glLineWidth(5.0);
 
+		glLineWidth(5.0);
         
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         glDrawElements(
@@ -268,9 +266,15 @@ public:
                        (void*) (nPoints * sizeof(int))           // element array buffer offset
                        );
 
+		openGLContext.extensions.glDisableVertexAttribArray(2);
+
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		glPointSize(15.0);
+		glDrawElements(GL_POINTS, nPoints, GL_UNSIGNED_INT, (void*)0);  // Draw points!
+
+
         openGLContext.extensions.glDisableVertexAttribArray(0);
         openGLContext.extensions.glDisableVertexAttribArray(1);
-        openGLContext.extensions.glDisableVertexAttribArray(2);
         
         openGLContext.extensions.glBindBuffer (GL_ARRAY_BUFFER, 0);
         openGLContext.extensions.glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -280,7 +284,8 @@ public:
     void openGLContextClosing() override {
         openGLContext.extensions.glDeleteBuffers (1, &vertexBuffer);
         openGLContext.extensions.glDeleteBuffers (1, &indexBuffer);
-        texture.release();
+		openGLContext.extensions.glDeleteBuffers(1, &normalsBuffer);
+		texture.release();
     }
     
     void mouseWheelMove (const MouseEvent &e, const MouseWheelDetails &wheel) override
@@ -348,11 +353,11 @@ public:
         "   vec4 normal;\n"
         "   normal.xyz = normals;\n"
         "   normal.w = 0.0;\n"
-        "   vec4 light = vec4(0.0, 2.0, 0.0, 1.0);\n"
-        "   lightIntensity = abs( dot (light - vec4 (position, 1.0), viewMatrix * normal));\n"
-        "   vec4 light2 = vec4(3.0, 0.0, 0.0, 1.0);\n"
-        "   lightIntensity = lightIntensity + 0.3 * abs( dot (light2 - vec4 (position, 1.0), viewMatrix * normal));\n"
-        "   colormapDepthOut = colormapDepthIn;\n"
+        "   vec4 light = normalize(vec4(-0.8, 0.4, 0.8, 0.0));\n"
+	    "   float value;\n"
+        "   value = dot (light , viewMatrix * normal);\n"
+	    "   lightIntensity = (value>0.0)?value:0.0;\n"
+		"   colormapDepthOut = colormapDepthIn;\n"
         "}";
         
         fragmentShader =
@@ -362,7 +367,7 @@ public:
         "void main()\n"
         "{\n"
         "      gl_FragColor = texture2D(tex0, vec2(colormapDepthOut, 0));\n"
-        "      gl_FragColor.xyz = gl_FragColor.xyz * (0.5 + lightIntensity * 0.5);\n"
+        "      gl_FragColor.xyz = gl_FragColor.xyz * (0.2/0.9 + lightIntensity * 0.8/0.9);\n"
         //"      gl_FragColor.w = 1.0;\n"
         "}";
         

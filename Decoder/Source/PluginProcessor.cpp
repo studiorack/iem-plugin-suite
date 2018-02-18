@@ -80,16 +80,29 @@ parameters(*this, nullptr)
     undoManager.beginNewTransaction();
     loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (1.0f, 0.0f, 0.0f), 1), &undoManager);
     undoManager.beginNewTransaction();
-    loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (1.0f, -45.0f, 0.0f), 2, true), &undoManager);
+    loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (1.0f, 45.0f, 0.0f), 2, true), &undoManager);
     undoManager.beginNewTransaction();
-    loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (1.0f, 45.0f, 0.0f), 3), &undoManager);
+    loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (1.0f, 90.0f, 0.0f), 3), &undoManager);
+	undoManager.beginNewTransaction();
+	loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(1.0f, 135.0f, 0.0f), 4), &undoManager);
+	undoManager.beginNewTransaction();
+	loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(1.0f, 180.0f, 0.0f), 5), &undoManager);
+	undoManager.beginNewTransaction();
+	loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(1.0f, -135.0f, 0.0f), 6), &undoManager);
+	undoManager.beginNewTransaction();
+    loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (1.0f, -90.0f, 0.0f), 7), &undoManager);
     undoManager.beginNewTransaction();
-    loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (1.0f, 45.0f, -90.0f), 5), &undoManager);
-    undoManager.beginNewTransaction();
-    loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (1.0f, 0.0f, 90.0f), 5), &undoManager);
-    undoManager.beginNewTransaction();
-    loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (1.0f, 180.0f, 0.0f), 6), &undoManager);
-    
+    loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (1.0f, -45.0f, 0.0f), 8), &undoManager);
+	undoManager.beginNewTransaction();
+	loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(1.0f, 22.5f, 40.0f), 9), &undoManager);
+	undoManager.beginNewTransaction();
+	loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(1.0f, 142.5f, 40.0f), 10), &undoManager);
+	undoManager.beginNewTransaction();
+	loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(1.0f, -97.5f, 40.0f), 11), &undoManager);
+
+	undoManager.beginNewTransaction();
+	loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(1.0f, 0.0f, -90.0f), 12), &undoManager);
+
     loudspeakers.addListener(this);
     prepareLayout();
 }
