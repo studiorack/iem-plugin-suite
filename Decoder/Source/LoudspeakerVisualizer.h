@@ -145,6 +145,10 @@ public:
             normals.push_back(normal.y);
         }
         
+        openGLContext.extensions.glDeleteBuffers (1, &vertexBuffer); // does this help on windows?
+        openGLContext.extensions.glDeleteBuffers (1, &indexBuffer);
+        openGLContext.extensions.glDeleteBuffers(1, &normalsBuffer);
+        
         openGLContext.extensions.glGenBuffers(1, &vertexBuffer);
         openGLContext.extensions.glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
         openGLContext.extensions.glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(positionAndColour), &vertices[0], GL_STATIC_DRAW);
