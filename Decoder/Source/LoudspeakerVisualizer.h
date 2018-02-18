@@ -27,7 +27,7 @@
 //==============================================================================
 /*
 */
-class LoudspeakerVisualizer    : public Component, public OpenGLRenderer, private Timer
+class LoudspeakerVisualizer    : public Component, public OpenGLRenderer
 {
     struct positionAndColour {
         float position[3];
@@ -44,8 +44,6 @@ public:
         openGLContext.setContinuousRepainting(false);
         openGLContext.setRenderer(this);
         openGLContext.attachTo(*this);
-        
-        startTimer(100);
     }
 
     ~LoudspeakerVisualizer()
@@ -86,14 +84,6 @@ public:
         texture.bind();
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // linear interpolation when too small
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // linear interpolation when too bi
-    }
-    
-    void timerCallback() override {
-        //openGLContext.triggerRepaint();
-    }
-    
-    void setRmsDataPtr(Array<float>* newRms) {
-        pRMS = newRms;
     }
     
     void newOpenGLContextCreated() override
@@ -174,8 +164,8 @@ public:
         openGLContext.extensions.glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(int), &indices[0], GL_STATIC_DRAW);
         
         openGLContext.extensions.glGenBuffers(1, &normalsBuffer);
-        openGLContext.extensions.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, normalsBuffer);
-        openGLContext.extensions.glBufferData(GL_ELEMENT_ARRAY_BUFFER, normals.size() * sizeof(float), &normals[0], GL_STATIC_DRAW);
+        openGLContext.extensions.glBindBuffer(GL_ARRAY_BUFFER, normalsBuffer);
+        openGLContext.extensions.glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(float), &normals[0], GL_STATIC_DRAW);
         
         openGLContext.triggerRepaint();
     }
@@ -192,7 +182,6 @@ public:
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
         glEnable (GL_DEPTH_TEST);
-        glDepthFunc (GL_LESS);
         
 #ifdef JUCE_OPENGL3
         glEnable(GL_BLEND);
@@ -226,7 +215,6 @@ public:
         openGLContext.extensions.glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
         openGLContext.extensions.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
         
-        
         openGLContext.extensions.glVertexAttribPointer(
                                                        attributeID,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
                                                        3,                  // size
@@ -236,11 +224,10 @@ public:
                                                        (void*)0            // array buffer offset
                                                        );
         
-        // 1st attribute buffer : normals
+        // 2nd attribute buffer : normals
         attributeID = openGLContext.extensions.glGetAttribLocation(programID, "normals");
         openGLContext.extensions.glEnableVertexAttribArray(attributeID);
         openGLContext.extensions.glBindBuffer(GL_ARRAY_BUFFER, normalsBuffer);
-        
         
         openGLContext.extensions.glVertexAttribPointer(
                                                        attributeID,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
@@ -251,9 +238,8 @@ public:
                                                        (void*)0            // array buffer offset
                                                        );
         
-        // 2nd attribute buffer : colors
+        // 3rd attribute buffer : colors
         attributeID = openGLContext.extensions.glGetAttribLocation(programID, "colormapDepthIn");
-        
         openGLContext.extensions.glEnableVertexAttribArray(attributeID);
         openGLContext.extensions.glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
         
@@ -365,9 +351,9 @@ public:
         if (drawPointsFlag != nullptr)
             drawPointsFlag->set(0.0f);
         
-        openGLContext.extensions.glDisableVertexAttribArray(0);
-        openGLContext.extensions.glDisableVertexAttribArray(1);
-        openGLContext.extensions.glDisableVertexAttribArray(2);
+        openGLContext.extensions.glDisableVertexAttribArray(openGLContext.extensions.glGetAttribLocation(programID, "position"));
+        openGLContext.extensions.glDisableVertexAttribArray(openGLContext.extensions.glGetAttribLocation(programID, "normals"));
+        openGLContext.extensions.glDisableVertexAttribArray(openGLContext.extensions.glGetAttribLocation(programID, "colormapDepthIn"));
         
         openGLContext.extensions.glBindBuffer (GL_ARRAY_BUFFER, 0);
         openGLContext.extensions.glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -398,9 +384,6 @@ public:
         yawBeforeDrag = yaw;
     }
     
-    void mouseUp (const MouseEvent& e) override
-    {}
-    
     void mouseDrag (const MouseEvent& e) override {
         float deltaY = (float) e.getDistanceFromDragStartY() / 100;
         tilt = tiltBeforeDrag + deltaY;
@@ -411,17 +394,6 @@ public:
         yaw = yawBeforeDrag + deltaX;
         viewHasChanged = true;
         openGLContext.triggerRepaint();
-    }
-    
-    void paint (Graphics& g) override
-    {
-        
-    }
-    
-    void resized() override
-    {
-        // This method is where you should set the bounds of any child
-        // components that your component contains..
     }
     
     void createShaders()
