@@ -63,8 +63,8 @@ public:
     {
         const float alpha = 0.9f;
         PixelARGB colormapData[1];
-		//colormapData[0] = Colours::limegreen.getPixelARGB();
-        //colormapData[1] = Colours::cornflowerblue.getPixelARGB();
+		//colormapData[0] = Colours::limegreen.getPixelARGB(); // selected point colour
+        //colormapData[1] = Colours::cornflowerblue.getPixelARGB(); // regular point colour
 		colormapData[0] = Colours::white.withMultipliedAlpha(alpha).getPixelARGB();
 		//colormapData[2] = Colours::cornflowerblue.withMultipliedAlpha(alpha).getPixelARGB();
         //colormapData[3] = Colours::greenyellow.withMultipliedAlpha(alpha).getPixelARGB();
@@ -249,6 +249,9 @@ public:
 
 		glLineWidth(5.0);
         
+        if (blackFlag != nullptr)
+            blackFlag->set(0.0f);
+        
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         glDrawElements(
                        GL_TRIANGLES,      // mode
@@ -257,6 +260,9 @@ public:
                        (void*) (nPoints * sizeof(int))           // element array buffer offset
                        );
 
+        
+        if (blackFlag != nullptr)
+            blackFlag->set(1.0f);
         
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         glDrawElements(
@@ -342,9 +348,11 @@ public:
         "\n"
         "uniform mat4 projectionMatrix;\n"
         "uniform mat4 viewMatrix;\n"
+        "uniform float blackFlag;\n"
         "\n"
         "varying float colormapDepthOut;\n"
         "varying float lightIntensity;\n"
+        "varying float blackFlagOut;\n"
         "void main()\n"
         "{\n"
         "   gl_Position.xyz = 50.0 * position;\n" // scaling leads to a better result
@@ -358,16 +366,19 @@ public:
         "   value = dot (light , viewMatrix * normal);\n"
 	    "   lightIntensity = (value>0.0)?value:0.0;\n"
 		"   colormapDepthOut = colormapDepthIn;\n"
+        "   blackFlagOut = blackFlag;\n"
         "}";
         
         fragmentShader =
         "varying float colormapDepthOut;\n"
         "varying float lightIntensity;\n"
+        "varying float blackFlagOut;\n"
         "uniform sampler2D tex0;\n"
         "void main()\n"
         "{\n"
         "      gl_FragColor = texture2D(tex0, vec2(colormapDepthOut, 0));\n"
         "      gl_FragColor.xyz = gl_FragColor.xyz * (0.2/0.9 + lightIntensity * 0.8/0.9);\n"
+        "      if (blackFlagOut == 1.0) gl_FragColor = vec4(0, 0, 0, 1);"
         //"      gl_FragColor.w = 1.0;\n"
         "}";
         
@@ -384,6 +395,8 @@ public:
             
             projectionMatrix = createUniform (openGLContext, *shader, "projectionMatrix");
             viewMatrix       = createUniform (openGLContext, *shader, "viewMatrix");
+            alpha = createUniform (openGLContext, *shader, "alpha");
+            blackFlag       = createUniform (openGLContext, *shader, "blackFlag");
         }
         else
         {
@@ -455,7 +468,7 @@ private:
     const char* vertexShader;
     const char* fragmentShader;
     ScopedPointer<OpenGLShaderProgram> shader;
-    ScopedPointer<OpenGLShaderProgram::Uniform> projectionMatrix, viewMatrix;
+    ScopedPointer<OpenGLShaderProgram::Uniform> projectionMatrix, viewMatrix, alpha, blackFlag;
     
     static OpenGLShaderProgram::Uniform* createUniform (OpenGLContext& openGLContext,
                                                         OpenGLShaderProgram& shaderProgram,
