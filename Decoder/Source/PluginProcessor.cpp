@@ -334,7 +334,7 @@ Result PluginTemplateAudioProcessor::verifyLoudspeakers()
 
 Result PluginTemplateAudioProcessor::calculateTris()
 {
-
+	return Result::ok();
 }
 
 ValueTree PluginTemplateAudioProcessor::createLoudspeakerFromCarthesian (Vector3D<float> carthCoordinates, int channel, bool isVirtual, float gain)
