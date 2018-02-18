@@ -446,7 +446,7 @@ public:
     }
     
 private:
-    GLuint vertexBuffer, indexBuffer, normalsBuffer;
+    GLuint vertexBuffer=0, indexBuffer=0, normalsBuffer=0;
     const char* vertexShader;
     const char* fragmentShader;
     ScopedPointer<OpenGLShaderProgram> shader;
