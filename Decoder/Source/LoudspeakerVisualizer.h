@@ -273,18 +273,6 @@ public:
         if (drawPointsFlag != nullptr)
             drawPointsFlag->set(0.0f);
 
-//
-//        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-//        glDrawElements(
-//                       GL_TRIANGLES,      // mode
-//                       nTriangles * 3,    // count
-//                       GL_UNSIGNED_INT,   // type
-//                       (void*) (nPoints * sizeof(int))           // element array buffer offset
-//                       );
-
-        
-
-        
         // render with alpha = 0, to prime the depth buffer
         
         if (alpha != nullptr)
@@ -377,14 +365,6 @@ public:
         if (drawPointsFlag != nullptr)
             drawPointsFlag->set(0.0f);
         
-        
-        
-
-        
-
-        
-
-
         openGLContext.extensions.glDisableVertexAttribArray(0);
         openGLContext.extensions.glDisableVertexAttribArray(1);
         openGLContext.extensions.glDisableVertexAttribArray(2);
@@ -407,7 +387,7 @@ public:
         
         zoom += delta;
         zoom = jmin(zoom, 5.0f);
-        zoom = jmax(zoom, 0.01f);
+        zoom = jmax(zoom, 2.5f);
         viewHasChanged = true;
         openGLContext.triggerRepaint();
     }
@@ -524,7 +504,8 @@ public:
     Matrix3D<float> getProjectionMatrix() const
     {
         const float near = 1.0f;
-        const float w = 1.0f / (0.5f + 0.1f);
+        const float ratio = 1.0f / 3.0f; // similar to focal length (maybe reciprocal)
+        const float w = near * ratio;
         const float h = w * getLocalBounds().toFloat().getAspectRatio (false);
         // All objects coordinates in the pre-final view will be modified by multiplying
         // their position vectors by this matrix (see getViewMatrix() below).
@@ -611,7 +592,7 @@ private:
     int activePoint = -1;
     int nTriangles;
     
-    float zoom = 2.0f;
+    float zoom = 5.0f;
     float tilt = 0.0f;
     float tiltBeforeDrag;
     
