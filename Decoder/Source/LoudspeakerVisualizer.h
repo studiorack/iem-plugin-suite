@@ -37,9 +37,6 @@ class LoudspeakerVisualizer    : public Component, public OpenGLRenderer
 public:
     LoudspeakerVisualizer(std::vector<R3>& pts, std::vector<Tri>& tris, std::vector<Vector3D<float>>& norms) : extPoints(pts), extTriangles(tris), extNormals(norms)
     {
-        // In your constructor, you should add any child components, and
-        // initialise any special settings that your component needs.
-        
         openGLContext.setComponentPaintingEnabled(true);
         openGLContext.setContinuousRepainting(false);
         openGLContext.setRenderer(this);
@@ -367,7 +364,6 @@ public:
         
         openGLContext.extensions.glBindBuffer (GL_ARRAY_BUFFER, 0);
         openGLContext.extensions.glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, 0);
-        
     }
     
     void openGLContextClosing() override {
@@ -480,7 +476,6 @@ public:
         {
             statusText = newShader->getLastError();
         }
-        
     }
     
     Matrix3D<float> getProjectionMatrix() const
@@ -489,23 +484,8 @@ public:
         const float ratio = 1.0f / 3.0f; // similar to focal length (maybe reciprocal)
         const float w = near * ratio;
         const float h = w * getLocalBounds().toFloat().getAspectRatio (false);
-        // All objects coordinates in the pre-final view will be modified by multiplying
-        // their position vectors by this matrix (see getViewMatrix() below).
-        // The first 4 parameters define the view size, the 5th one is a factor that
-        // defines from how far the near side will be seen.
-        // The 6th one is a factor that defines from how far the far side will be seen.
-        // Obiviously this 6th param should be greater than the 5th one.
-        // All the values used in this method are somewhat empirical and depend on
-        // what you want to show and how close (big) the displayed objects will be.
         return Matrix3D<float>::fromFrustum (-w, w, -h, h, near, 10000.0f);
     }
-    
-    //==============================================================================
-    // This creates a rotation matrix that can be used to rotate an object.
-    // A 3-dimension vector is given as an argmument to define the rotations around
-    // each axis (x,y,z), using the well-known Euler formulas.
-    // As always in our graphics world, a 4th dimension is added to get a homogeneous
-    // matrix.
     
     Matrix3D<float> createRotationMatrix (Vector3D<float> eulerAngleRadians) const noexcept
     {
@@ -518,28 +498,13 @@ public:
                                 cx * sy, -sx, cx * cy, 0.0f,
                                 0.0f, 0.0f, 0.0f, 1.0f);
     }
+    
     Matrix3D<float> getViewMatrix()
     {
-        // The viewMatrix will be used to modify the vertex coordinates in order
-        // to transform object coordinates as viewed-by-camera (or eye) coordinates.
-        // Standard x,y,z values are used. Obviously the z value used here will have
-        // to be in the range near side < z < far side as defined by the frustum used
-        // in the projection matrix (see getProjectionMatrix() above).
-        Matrix3D<float> viewMatrix (Vector3D<float> (0.0f, 0.0f, -50.0f * zoom)); // shifts
-        
-        // The rotation matrix will be applied on each frame.
-        // The vector passed here contains the Euler angle values for each axis
-        // The empiric values used as params will create a slight but constant tilting
-        // on the x-axis, a periodic rotation on the y-axis and no rotation on the
-        // z-axis.
-        
-        Matrix3D<float> tiltMatrix
-        = createRotationMatrix (Vector3D<float> (tilt, 0.0f, 0.0f));
-        
-        Matrix3D<float> rotationMatrix
-        = createRotationMatrix (Vector3D<float> (0.0f, yaw, 0.0f));
-        
-        return rotationMatrix * tiltMatrix  * viewMatrix;
+        Matrix3D<float> translationMatrix (Vector3D<float> (0.0f, 0.0f, -50.0f * zoom)); // move object further away
+        Matrix3D<float> tiltMatrix = createRotationMatrix (Vector3D<float> (tilt, 0.0f, 0.0f));
+        Matrix3D<float> rotationMatrix = createRotationMatrix (Vector3D<float> (0.0f, yaw, 0.0f));
+        return rotationMatrix * tiltMatrix  * translationMatrix;
     }
     
 private:
@@ -549,14 +514,10 @@ private:
     ScopedPointer<OpenGLShaderProgram> shader;
     ScopedPointer<OpenGLShaderProgram::Uniform> projectionMatrix, viewMatrix, alpha, blackFlag, drawPointsFlag;
     
-    static OpenGLShaderProgram::Uniform* createUniform (OpenGLContext& openGLContext,
-                                                        OpenGLShaderProgram& shaderProgram,
-                                                        const char* uniformName)
+    static OpenGLShaderProgram::Uniform* createUniform (OpenGLContext& openGLContext, OpenGLShaderProgram& shaderProgram, const char* uniformName)
     {
-        // Get the ID
         if (openGLContext.extensions.glGetUniformLocation (shaderProgram.getProgramID(), uniformName) < 0)
             return nullptr; // Return if error
-        // Create the uniform variable
         return new OpenGLShaderProgram::Uniform (shaderProgram, uniformName);
     }
     
@@ -583,10 +544,6 @@ private:
     float yawBeforeDrag;
     
     OpenGLTexture texture;
-    
-    bool firstRun = true;
-    
-    Array<float>* pRMS;
     
     OpenGLContext openGLContext;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (LoudspeakerVisualizer)
