@@ -219,6 +219,12 @@ public:
         data.getChild(rowNumber).setProperty(getAttributeNameForColumnId(columnId), newValue, &undoManager);
     }
     
+    void setInt (const int columnId, const int rowNumber, const int newValue)
+    {
+        undoManager.beginNewTransaction();
+        data.getChild(rowNumber).setProperty(getAttributeNameForColumnId(columnId), newValue, &undoManager);
+    }
+    
     void setBool (const int columnId, const int rowNumber, const bool newValue)
     {
         undoManager.beginNewTransaction();
@@ -255,7 +261,10 @@ private:
         
         void textWasEdited() override
         {
-            owner.setFloat (columnId, row, getText().getFloatValue());
+            if (columnId == 5)
+                owner.setInt (columnId, row, getText().getIntValue());
+            else
+                owner.setFloat (columnId, row, getText().getFloatValue());
         }
         
         void setRowAndColumn (const int newRow, const int newColumn)
