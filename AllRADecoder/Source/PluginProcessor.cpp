@@ -1,7 +1,7 @@
 /*
  ==============================================================================
  This file is part of the IEM plug-in suite.
- Author: Daniel Rudrich
+ Authors: Daniel Rudrich, Franz Zotter
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
  
@@ -24,7 +24,7 @@
 #include "PluginEditor.h"
 
 //==============================================================================
-PluginTemplateAudioProcessor::PluginTemplateAudioProcessor()
+AllRADecoderAudioProcessor::AllRADecoderAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
      : AudioProcessor (BusesProperties()
                      #if ! JucePlugin_IsMidiEffect
@@ -61,7 +61,7 @@ parameters(*this, nullptr)
 
     
     // this must be initialised after all calls to createAndAddParameter().
-    parameters.state = ValueTree (Identifier ("PluginTemplate"));
+    parameters.state = ValueTree (Identifier ("AllRADecoder"));
     // tip: you can also add other values to parameters.state, which are also saved and restored when the session is closed/reopened
     
     
@@ -106,17 +106,17 @@ parameters(*this, nullptr)
     prepareLayout();
 }
 
-PluginTemplateAudioProcessor::~PluginTemplateAudioProcessor()
+AllRADecoderAudioProcessor::~AllRADecoderAudioProcessor()
 {
 }
 
 //==============================================================================
-const String PluginTemplateAudioProcessor::getName() const
+const String AllRADecoderAudioProcessor::getName() const
 {
     return JucePlugin_Name;
 }
 
-bool PluginTemplateAudioProcessor::acceptsMidi() const
+bool AllRADecoderAudioProcessor::acceptsMidi() const
 {
    #if JucePlugin_WantsMidiInput
     return true;
@@ -125,7 +125,7 @@ bool PluginTemplateAudioProcessor::acceptsMidi() const
    #endif
 }
 
-bool PluginTemplateAudioProcessor::producesMidi() const
+bool AllRADecoderAudioProcessor::producesMidi() const
 {
    #if JucePlugin_ProducesMidiOutput
     return true;
@@ -134,7 +134,7 @@ bool PluginTemplateAudioProcessor::producesMidi() const
    #endif
 }
 
-bool PluginTemplateAudioProcessor::isMidiEffect() const
+bool AllRADecoderAudioProcessor::isMidiEffect() const
 {
    #if JucePlugin_IsMidiEffect
     return true;
@@ -143,37 +143,37 @@ bool PluginTemplateAudioProcessor::isMidiEffect() const
    #endif
 }
 
-double PluginTemplateAudioProcessor::getTailLengthSeconds() const
+double AllRADecoderAudioProcessor::getTailLengthSeconds() const
 {
     return 0.0;
 }
 
-int PluginTemplateAudioProcessor::getNumPrograms()
+int AllRADecoderAudioProcessor::getNumPrograms()
 {
     return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
                 // so this should be at least 1, even if you're not really implementing programs.
 }
 
-int PluginTemplateAudioProcessor::getCurrentProgram()
+int AllRADecoderAudioProcessor::getCurrentProgram()
 {
     return 0;
 }
 
-void PluginTemplateAudioProcessor::setCurrentProgram (int index)
+void AllRADecoderAudioProcessor::setCurrentProgram (int index)
 {
 }
 
-const String PluginTemplateAudioProcessor::getProgramName (int index)
+const String AllRADecoderAudioProcessor::getProgramName (int index)
 {
     return {};
 }
 
-void PluginTemplateAudioProcessor::changeProgramName (int index, const String& newName)
+void AllRADecoderAudioProcessor::changeProgramName (int index, const String& newName)
 {
 }
 
 //==============================================================================
-void PluginTemplateAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
+void AllRADecoderAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     checkInputAndOutput(this, *inputOrderSetting, 64, true);
     
@@ -187,20 +187,20 @@ void PluginTemplateAudioProcessor::prepareToPlay (double sampleRate, int samples
     
 }
 
-void PluginTemplateAudioProcessor::releaseResources()
+void AllRADecoderAudioProcessor::releaseResources()
 {
     // When playback stops, you can use this as an opportunity to free up any
     // spare memory, etc.
 }
 
 #ifndef JucePlugin_PreferredChannelConfigurations
-bool PluginTemplateAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
+bool AllRADecoderAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
 {
     return true;
 }
 #endif
 
-void PluginTemplateAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
+void AllRADecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
     checkInputAndOutput(this, *inputOrderSetting, 64, false);
     ScopedNoDenormals noDenormals;
@@ -218,18 +218,18 @@ void PluginTemplateAudioProcessor::processBlock (AudioSampleBuffer& buffer, Midi
 }
 
 //==============================================================================
-bool PluginTemplateAudioProcessor::hasEditor() const
+bool AllRADecoderAudioProcessor::hasEditor() const
 {
     return true; // (change this to false if you choose to not supply an editor)
 }
 
-AudioProcessorEditor* PluginTemplateAudioProcessor::createEditor()
+AudioProcessorEditor* AllRADecoderAudioProcessor::createEditor()
 {
-    return new PluginTemplateAudioProcessorEditor (*this, parameters);
+    return new AllRADecoderAudioProcessorEditor (*this, parameters);
 }
 
 //==============================================================================
-void PluginTemplateAudioProcessor::getStateInformation (MemoryBlock& destData)
+void AllRADecoderAudioProcessor::getStateInformation (MemoryBlock& destData)
 {
     // You should use this method to store your parameters in the memory block.
     // You could do that either as raw data, or use the XML or ValueTree classes
@@ -240,7 +240,7 @@ void PluginTemplateAudioProcessor::getStateInformation (MemoryBlock& destData)
 
 
 
-void PluginTemplateAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
+void AllRADecoderAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
@@ -251,7 +251,7 @@ void PluginTemplateAudioProcessor::setStateInformation (const void* data, int si
 }
 
 //==============================================================================
-void PluginTemplateAudioProcessor::parameterChanged (const String &parameterID, float newValue)
+void AllRADecoderAudioProcessor::parameterChanged (const String &parameterID, float newValue)
 {
     DBG("Parameter with ID " << parameterID << " has changed. New value: " << newValue);
     
@@ -263,7 +263,7 @@ void PluginTemplateAudioProcessor::parameterChanged (const String &parameterID, 
     }
 }
 
-void PluginTemplateAudioProcessor::updateBuffers()
+void AllRADecoderAudioProcessor::updateBuffers()
 {
     DBG("IOHelper:  input size: " << input.getSize());
     DBG("IOHelper: output size: " << output.getSize());
@@ -272,10 +272,10 @@ void PluginTemplateAudioProcessor::updateBuffers()
 // This creates new instances of the plugin..
 AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
-    return new PluginTemplateAudioProcessor();
+    return new AllRADecoderAudioProcessor();
 }
 
-Result PluginTemplateAudioProcessor::verifyLoudspeakers()
+Result AllRADecoderAudioProcessor::verifyLoudspeakers()
 {
     const int nLsps = loudspeakers.getNumChildren();
     for (int i = 0; i < nLsps; ++i)
@@ -341,18 +341,18 @@ Result PluginTemplateAudioProcessor::verifyLoudspeakers()
 
 
 
-Result PluginTemplateAudioProcessor::calculateTris()
+Result AllRADecoderAudioProcessor::calculateTris()
 {
 	return Result::ok();
 }
 
-ValueTree PluginTemplateAudioProcessor::createLoudspeakerFromCartesian (Vector3D<float> cartCoordinates, int channel, bool isVirtual, float gain)
+ValueTree AllRADecoderAudioProcessor::createLoudspeakerFromCartesian (Vector3D<float> cartCoordinates, int channel, bool isVirtual, float gain)
 {
     Vector3D<float> sphericalCoordinates = cartesianToSpherical(cartCoordinates);
     return createLoudspeakerFromSpherical(sphericalCoordinates, channel, isVirtual, gain);
 }
 
-ValueTree PluginTemplateAudioProcessor::createLoudspeakerFromSpherical (Vector3D<float> sphericalCoordinates, int channel, bool isVirtual, float gain)
+ValueTree AllRADecoderAudioProcessor::createLoudspeakerFromSpherical (Vector3D<float> sphericalCoordinates, int channel, bool isVirtual, float gain)
 {
     ValueTree newLoudspeaker ("Loudspeaker");
 
@@ -366,7 +366,7 @@ ValueTree PluginTemplateAudioProcessor::createLoudspeakerFromSpherical (Vector3D
     return newLoudspeaker;
 }
 
-Vector3D<float> PluginTemplateAudioProcessor::cartesianToSpherical(Vector3D<float> cartvect)
+Vector3D<float> AllRADecoderAudioProcessor::cartesianToSpherical(Vector3D<float> cartvect)
 {
     const float r = cartvect.length();
     return Vector3D<float>(
@@ -378,7 +378,7 @@ Vector3D<float> PluginTemplateAudioProcessor::cartesianToSpherical(Vector3D<floa
 
 
 
-Vector3D<float> PluginTemplateAudioProcessor::sphericalToCartesian(Vector3D<float> sphervect)
+Vector3D<float> AllRADecoderAudioProcessor::sphericalToCartesian(Vector3D<float> sphervect)
 {
     return Vector3D<float>(
                            sphervect.x * cos(degreesToRadians(sphervect.z)) * cos(degreesToRadians(sphervect.y)),
@@ -387,13 +387,13 @@ Vector3D<float> PluginTemplateAudioProcessor::sphericalToCartesian(Vector3D<floa
                            );
 }
 
-void PluginTemplateAudioProcessor::addRandomPoint()
+void AllRADecoderAudioProcessor::addRandomPoint()
 {
     undoManager.beginNewTransaction();
     loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (1.0f, (rand() * 360.0f) / RAND_MAX, (rand() * 180.0f) / RAND_MAX - 90.0f), -1), &undoManager);
 }
 
-void PluginTemplateAudioProcessor::convertLoudspeakersToArray()
+void AllRADecoderAudioProcessor::convertLoudspeakersToArray()
 {
     imaginaryFlags.clear();
     int i = 0;
@@ -428,7 +428,7 @@ void PluginTemplateAudioProcessor::convertLoudspeakersToArray()
     }
 }
 
-void PluginTemplateAudioProcessor::prepareLayout()
+void AllRADecoderAudioProcessor::prepareLayout()
 {
     isLayoutReady = false;
     Result res = checkLayout();
@@ -441,7 +441,7 @@ void PluginTemplateAudioProcessor::prepareLayout()
     }
 }
 
-Result PluginTemplateAudioProcessor::checkLayout()
+Result AllRADecoderAudioProcessor::checkLayout()
 {
     points.clear();
     triangles.clear();
@@ -527,7 +527,7 @@ Result PluginTemplateAudioProcessor::checkLayout()
 }
 
 
-Result PluginTemplateAudioProcessor::calculateDecoder()
+Result AllRADecoderAudioProcessor::calculateDecoder()
 {
     if (! isLayoutReady)
         return Result::fail("Layout not ready!");
@@ -651,14 +651,14 @@ Result PluginTemplateAudioProcessor::calculateDecoder()
     return Result::ok();
 }
 
-float PluginTemplateAudioProcessor::getKappa(float gIm, float gRe1, float gRe2, int N)
+float AllRADecoderAudioProcessor::getKappa(float gIm, float gRe1, float gRe2, int N)
 {
     const float p = gIm * (gRe1 + gRe2) / (N * square(gIm));
     const float q = (square(gRe1) + square(gRe2) - 1.0f) / (N * square(gIm));
     return - p + sqrt(jmax(square(p) - q, 0.0f));
 }
 
-Matrix<float> PluginTemplateAudioProcessor::getInverse(Matrix<float> A)
+Matrix<float> AllRADecoderAudioProcessor::getInverse(Matrix<float> A)
 {
     const float det = A (0, 0) * (A (1, 1) * A (2, 2) - A (1, 2) * A (2, 1))
     + A (0, 1) * (A (1, 2) * A (2, 0) - A (1, 0) * A (2, 2))
@@ -685,34 +685,34 @@ Matrix<float> PluginTemplateAudioProcessor::getInverse(Matrix<float> A)
 }
 
 
-void PluginTemplateAudioProcessor::valueTreePropertyChanged (ValueTree &treeWhosePropertyHasChanged, const Identifier &property)
+void AllRADecoderAudioProcessor::valueTreePropertyChanged (ValueTree &treeWhosePropertyHasChanged, const Identifier &property)
 {
     DBG("valueTreePropertyChanged");
     prepareLayout();
     updateTable = true;
 }
 
-void PluginTemplateAudioProcessor::valueTreeChildAdded (ValueTree &parentTree, ValueTree &childWhichHasBeenAdded)
+void AllRADecoderAudioProcessor::valueTreeChildAdded (ValueTree &parentTree, ValueTree &childWhichHasBeenAdded)
 {
     DBG("valueTreeChildAdded");
     prepareLayout();
     updateTable = true;
 }
 
-void PluginTemplateAudioProcessor::valueTreeChildRemoved (ValueTree &parentTree, ValueTree &childWhichHasBeenRemoved, int indexFromWhichChildWasRemoved)
+void AllRADecoderAudioProcessor::valueTreeChildRemoved (ValueTree &parentTree, ValueTree &childWhichHasBeenRemoved, int indexFromWhichChildWasRemoved)
 {
     DBG("valueTreeChildRemoved");
     prepareLayout();
     updateTable = true;
 }
 
-void PluginTemplateAudioProcessor::valueTreeChildOrderChanged (ValueTree &parentTreeWhoseChildrenHaveMoved, int oldIndex, int newIndex)
+void AllRADecoderAudioProcessor::valueTreeChildOrderChanged (ValueTree &parentTreeWhoseChildrenHaveMoved, int oldIndex, int newIndex)
 {
     DBG("valueTreeChildOrderChanged");
     prepareLayout();
 }
 
-void PluginTemplateAudioProcessor::valueTreeParentChanged (ValueTree &treeWhoseParentHasChanged)
+void AllRADecoderAudioProcessor::valueTreeParentChanged (ValueTree &treeWhoseParentHasChanged)
 {
     DBG("valueTreeParentChanged");
 }

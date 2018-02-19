@@ -1,7 +1,7 @@
 /*
  ==============================================================================
  This file is part of the IEM plug-in suite.
- Author: Daniel Rudrich
+ Authors: Daniel Rudrich, Franz Zotter
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
  
@@ -40,15 +40,15 @@
 */
 
 using namespace dsp;
-class PluginTemplateAudioProcessor  : public AudioProcessor,
+class AllRADecoderAudioProcessor  : public AudioProcessor,
                                         public AudioProcessorValueTreeState::Listener,
                                         public IOHelper<IOTypes::Ambisonics<7>, IOTypes::AudioChannels<64>>,
                                         public ValueTree::Listener
 {
 public:
     //==============================================================================
-    PluginTemplateAudioProcessor();
-    ~PluginTemplateAudioProcessor();
+    AllRADecoderAudioProcessor();
+    ~AllRADecoderAudioProcessor();
 
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
@@ -143,5 +143,5 @@ private:
     Vector3D<float> cartesianToSpherical (Vector3D<float> cartvect);
     Vector3D<float> sphericalToCartesian (Vector3D<float> sphervect);
     //==============================================================================
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginTemplateAudioProcessor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AllRADecoderAudioProcessor)
 };

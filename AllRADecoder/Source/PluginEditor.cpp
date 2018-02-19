@@ -1,7 +1,7 @@
 /*
  ==============================================================================
  This file is part of the IEM plug-in suite.
- Author: Daniel Rudrich
+ Authors: Daniel Rudrich, Franz Zotter
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
  
@@ -25,7 +25,7 @@
 
 
 //==============================================================================
-PluginTemplateAudioProcessorEditor::PluginTemplateAudioProcessorEditor (PluginTemplateAudioProcessor& p, AudioProcessorValueTreeState& vts)
+AllRADecoderAudioProcessorEditor::AllRADecoderAudioProcessorEditor (AllRADecoderAudioProcessor& p, AudioProcessorValueTreeState& vts)
     : AudioProcessorEditor (&p), processor (p), valueTreeState(vts), lv(processor.points, processor.triangles, processor.normals, processor.imaginaryFlags), lspList(processor.getLoudspeakersValueTree(), lv, processor.undoManager)
 {
     // ============== BEGIN: essentials ======================
@@ -36,7 +36,7 @@ PluginTemplateAudioProcessorEditor::PluginTemplateAudioProcessorEditor (PluginTe
     
     // make title and footer visible, and set the PluginName
     addAndMakeVisible(&title);
-    title.setTitle(String("Deco"),String("Ding"));
+    title.setTitle(String("AllRA"),String("Decoder"));
     title.setFont(globalLaF.robotoBold, globalLaF.robotoLight);
     addAndMakeVisible (&footer);
     // ============= END: essentials ========================
@@ -71,18 +71,18 @@ PluginTemplateAudioProcessorEditor::PluginTemplateAudioProcessorEditor (PluginTe
     startTimer(50);
 }
 
-PluginTemplateAudioProcessorEditor::~PluginTemplateAudioProcessorEditor()
+AllRADecoderAudioProcessorEditor::~AllRADecoderAudioProcessorEditor()
 {
     setLookAndFeel(nullptr);
 }
 
 //==============================================================================
-void PluginTemplateAudioProcessorEditor::paint (Graphics& g)
+void AllRADecoderAudioProcessorEditor::paint (Graphics& g)
 {
     g.fillAll (globalLaF.ClBackground);
 }
 
-void PluginTemplateAudioProcessorEditor::resized()
+void AllRADecoderAudioProcessorEditor::resized()
 {
     // ============ BEGIN: header and footer ============
     const int leftRightMargin = 30;
@@ -118,7 +118,7 @@ void PluginTemplateAudioProcessorEditor::resized()
     lspList.setBounds(area);
 }
 
-void PluginTemplateAudioProcessorEditor::timerCallback()
+void AllRADecoderAudioProcessorEditor::timerCallback()
 {
     // === update titleBar widgets according to available input/output channel counts
     int maxInSize, maxOutSize;
@@ -143,7 +143,7 @@ void PluginTemplateAudioProcessorEditor::timerCallback()
 
 
 
-void PluginTemplateAudioProcessorEditor::buttonClicked (Button* button)
+void AllRADecoderAudioProcessorEditor::buttonClicked (Button* button)
 {
     if (button == &tbAddSpeakers)
     {
@@ -156,4 +156,4 @@ void PluginTemplateAudioProcessorEditor::buttonClicked (Button* button)
 
 }
 
-void PluginTemplateAudioProcessorEditor::buttonStateChanged (Button* button) {};
+void AllRADecoderAudioProcessorEditor::buttonStateChanged (Button* button) {};

@@ -1,7 +1,7 @@
 /*
  ==============================================================================
  This file is part of the IEM plug-in suite.
- Author: Daniel Rudrich
+ Authors: Daniel Rudrich, Franz Zotter
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
  
@@ -43,11 +43,11 @@ typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 //==============================================================================
 /**
 */
-class PluginTemplateAudioProcessorEditor  : public AudioProcessorEditor, private Timer, public Button::Listener
+class AllRADecoderAudioProcessorEditor  : public AudioProcessorEditor, private Timer, public Button::Listener
 {
 public:
-    PluginTemplateAudioProcessorEditor (PluginTemplateAudioProcessor&, AudioProcessorValueTreeState&);
-    ~PluginTemplateAudioProcessorEditor();
+    AllRADecoderAudioProcessorEditor (AllRADecoderAudioProcessor&, AudioProcessorValueTreeState&);
+    ~AllRADecoderAudioProcessorEditor();
 
     //==============================================================================
     void paint (Graphics&) override;
@@ -66,7 +66,7 @@ private:
     LaF globalLaF;
     
     // stored references to the AudioProcessor and ValueTreeState holding all the parameters
-    PluginTemplateAudioProcessor& processor;
+    AllRADecoderAudioProcessor& processor;
     AudioProcessorValueTreeState& valueTreeState;
 
     
@@ -95,5 +95,5 @@ private:
     LoudspeakerTableComponent lspList;
 
     
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginTemplateAudioProcessorEditor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AllRADecoderAudioProcessorEditor)
 };

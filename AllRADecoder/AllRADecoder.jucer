@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<JUCERPROJECT id="mbpAgi" name="Decoder" displaySplashScreen="0" reportAppUsage="0"
+<JUCERPROJECT id="mbpAgi" name="AllRADecoder" displaySplashScreen="0" reportAppUsage="0"
               splashScreenColour="Dark" projectType="audioplug" version="0.1.0"
-              bundleIdentifier="at.iem.Decoder" includeBinaryInAppConfig="1"
+              bundleIdentifier="at.iem.AllRADecoder" includeBinaryInAppConfig="1"
               cppLanguageStandard="14" buildVST="1" buildVST3="0" buildAU="0"
               buildAUv3="0" buildRTAS="0" buildAAX="0" buildStandalone="1"
               enableIAA="0" pluginName="Decoder" pluginDesc="Decoder" pluginManufacturer="IEM"
-              pluginManufacturerCode="IEMA" pluginCode="DeCo" pluginChannelConfigs=""
+              pluginManufacturerCode="IEMA" pluginCode="AlDe" pluginChannelConfigs=""
               pluginIsSynth="0" pluginWantsMidiIn="0" pluginProducesMidiOut="0"
-              pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0" pluginAUExportPrefix="DecoderAU"
-              pluginRTASCategory="" aaxIdentifier="at.iem.Decoder" pluginAAXCategory="AAX_ePlugInCategory_Dynamics"
-              jucerVersion="5.2.1" companyCopyright="IEM - Daniel Rudrich"
+              pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0" pluginAUExportPrefix="AllRADecoderAU"
+              pluginRTASCategory="" aaxIdentifier="at.iem.AllRADecoder" pluginAAXCategory="AAX_ePlugInCategory_Dynamics"
+              jucerVersion="5.2.1" companyCopyright="IEM - Daniel Rudrich, Franz Zotter"
               companyName="IEM" companyWebsite="iem.at">
-  <MAINGROUP id="LpzrV9" name="Decoder">
+  <MAINGROUP id="LpzrV9" name="AllRADecoder">
     <GROUP id="{1B6BB8E4-E576-FBC7-B6B6-8603D2CEBF9D}" name="lookAndFeel">
       <FILE id="AVFaGo" name="IEM_LaF.h" compile="0" resource="0" file="../resources/lookAndFeel/IEM_LaF.h"/>
       <FILE id="zmzhlf" name="Roboto-Bold.ttf" compile="0" resource="1" file="../resources/lookAndFeel/Roboto-Bold.ttf"/>
@@ -44,9 +44,9 @@
   <EXPORTFORMATS>
     <XCODE_MAC targetFolder="Builds/MacOSX">
       <CONFIGURATIONS>
-        <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="Decoder"
+        <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="AllRADecoder"
                        enablePluginBinaryCopyStep="1" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"/>
-        <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="Decoder"
+        <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="AllRADecoder"
                        enablePluginBinaryCopyStep="1" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
@@ -69,14 +69,14 @@
     <VS2017 targetFolder="Builds/VisualStudio2017">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" winWarningLevel="4" generateManifest="1" winArchitecture="x64"
-                       isDebug="1" optimisation="1" targetName="Decoder" debugInformationFormat="ProgramDatabase"
+                       isDebug="1" optimisation="1" targetName="AllRADecoder" debugInformationFormat="ProgramDatabase"
                        enablePluginBinaryCopyStep="0"/>
         <CONFIGURATION name="Release 64bit" winWarningLevel="4" generateManifest="1"
-                       winArchitecture="x64" isDebug="0" optimisation="3" targetName="Decoder_x64"
+                       winArchitecture="x64" isDebug="0" optimisation="3" targetName="AllRADecoder_x64"
                        debugInformationFormat="ProgramDatabase" enablePluginBinaryCopyStep="0"
                        linkTimeOptimisation="1"/>
         <CONFIGURATION name="Release 32bit" winWarningLevel="4" generateManifest="1"
-                       winArchitecture="Win32" isDebug="0" optimisation="3" targetName="Decoder_win32"
+                       winArchitecture="Win32" isDebug="0" optimisation="3" targetName="AllRADecoder_win32"
                        debugInformationFormat="ProgramDatabase" enablePluginBinaryCopyStep="0"
                        linkTimeOptimisation="1"/>
       </CONFIGURATIONS>
@@ -99,8 +99,8 @@
     </VS2017>
     <LINUX_MAKE targetFolder="Builds/LinuxMakefile">
       <CONFIGURATIONS>
-        <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="Decoder"/>
-        <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="Decoder"/>
+        <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="AllRADecoder"/>
+        <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="AllRADecoder"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_core" path="../../../../../Applications/JUCE/modules"/>

@@ -1,7 +1,7 @@
 /*
  ==============================================================================
  This file is part of the IEM plug-in suite.
- Author: Daniel Rudrich
+ Authors: Daniel Rudrich, Franz Zotter
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
  
