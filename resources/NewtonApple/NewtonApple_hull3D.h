@@ -84,16 +84,19 @@ struct R3
   float x, y, z;
     bool isImaginary;
     float gain;
+    int channel = -1;
     
   R3() {};
   R3(float xc, float yc, float zc) : id(-1), x(xc), y(yc), z(zc)  {};
-  R3(const R3 &p) : id(p.id), lspNum(p.lspNum), realLspNum(p.realLspNum), x(p.x), y(p.y), z(p.z), isImaginary(p.isImaginary) {};
+  R3(const R3 &p) : id(p.id), lspNum(p.lspNum), realLspNum(p.realLspNum), x(p.x), y(p.y), z(p.z), isImaginary(p.isImaginary), gain(p.gain), channel(p.channel) {};
 
   R3 &operator=(const R3 &p)
   {
     lspNum = p.lspNum;
       realLspNum = p.realLspNum;
       isImaginary = p.isImaginary;
+      channel = p.channel;
+      gain = p.gain;
     id = p.id;
     x = p.x;
     y = p.y;

@@ -128,6 +128,8 @@ private:
     
     bool isLayoutReady = false;
     
+    int highestChannelNumber;
+    
     // ========== METHODS
     void prepareLayout();
     Result checkLayout();

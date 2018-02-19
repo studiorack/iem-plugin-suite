@@ -268,6 +268,7 @@ void AllRADecoderAudioProcessor::updateBuffers()
     DBG("IOHelper:  input size: " << input.getSize());
     DBG("IOHelper: output size: " << output.getSize());
 }
+
 //==============================================================================
 // This creates new instances of the plugin..
 AudioProcessor* JUCE_CALLTYPE createPluginFilter()
@@ -390,12 +391,13 @@ Vector3D<float> AllRADecoderAudioProcessor::sphericalToCartesian(Vector3D<float>
 void AllRADecoderAudioProcessor::addRandomPoint()
 {
     undoManager.beginNewTransaction();
-    loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (1.0f, (rand() * 360.0f) / RAND_MAX, (rand() * 180.0f) / RAND_MAX - 90.0f), -1), &undoManager);
+    loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (1.0f, (rand() * 360.0f) / RAND_MAX, (rand() * 180.0f) / RAND_MAX - 90.0f), highestChannelNumber + 1), &undoManager);
 }
 
 void AllRADecoderAudioProcessor::convertLoudspeakersToArray()
 {
     imaginaryFlags.clear();
+    highestChannelNumber = 0;
     int i = 0;
     int imaginaryCount = 0;
     for (ValueTree::Iterator it = loudspeakers.begin() ; it != loudspeakers.end(); ++it)
@@ -421,6 +423,10 @@ void AllRADecoderAudioProcessor::convertLoudspeakersToArray()
         
         newPoint.isImaginary = isImaginary;
         newPoint.gain = (*it).getProperty("Gain");
+        newPoint.channel = (*it).getProperty("Channel");
+        
+        if (newPoint.channel > highestChannelNumber)
+            highestChannelNumber = newPoint.channel;
         
         DBG(newPoint.lspNum << " \t " << newPoint.realLspNum << " \t " << newPoint.gain << " \t " << newPoint.x << " \t " << newPoint.y << " \t " << newPoint.z);
         points.push_back(newPoint);
@@ -487,12 +493,14 @@ Result AllRADecoderAudioProcessor::checkLayout()
     
     updateLoudspeakerVisualization = true;
     
+    Array<int> usedIndices;
     // calculate centroid
     Vector3D<float> centroid {0.0f, 0.0f, 0.0f};
     for (int i = 0; i < nLsps; ++i)
     {
         R3 lsp = points[i];
         centroid += Vector3D<float>(lsp.x, lsp.y, lsp.z);
+        usedIndices.add(i);
     }
     centroid /= nLsps;
     
@@ -502,6 +510,10 @@ Result AllRADecoderAudioProcessor::checkLayout()
         Tri tri = triangles[i];
         Vector3D<float> a {points[tri.a].x, points[tri.a].y, points[tri.a].z};
         
+        usedIndices.removeFirstMatchingValue(tri.a);
+        usedIndices.removeFirstMatchingValue(tri.b);
+        usedIndices.removeFirstMatchingValue(tri.c);
+        
         const float dist = normals[i] * (a - centroid);
         if (dist < 0.001f) // too flat!
         {
@@ -510,7 +522,7 @@ Result AllRADecoderAudioProcessor::checkLayout()
         
         if (normals[i] * a < 0.001f) // origin is not within hull
         {
-            return Result::fail("ERROR 4: Point of origin is not within the convex hull. Try adding imaginary loudspeakers. ");
+            return Result::fail("ERROR 4: Point of origin is not within the convex hull. Try adding imaginary loudspeakers.");
         }
         
         const int numberOfImaginaryLspsInTriangle = (int) imaginaryFlags[points[tri.a].lspNum] + (int) imaginaryFlags[points[tri.b].lspNum] + (int) imaginaryFlags[points[tri.c].lspNum];
@@ -520,9 +532,29 @@ Result AllRADecoderAudioProcessor::checkLayout()
         }
     }
 
+    if (usedIndices.size() > 0)
+        return Result::fail("ERROR 6: There is at least one loudspeaker which is not part of the convex hull.");
+    
+    
     if (imaginaryFlags.countNumberOfSetBits() == nLsps)
-        return Result::fail("ERROR 6: There are only imaginary loudspeakers.");
+        return Result::fail("ERROR 7: There are only imaginary loudspeakers.");
 
+    Array<int> routing;
+    for (int i = 0; i < nLsps; ++i)
+    {
+        if (! points[i].isImaginary)
+        {
+            const int channel = points[i].channel;
+            if (channel < 1 || channel > 64)
+                return Result::fail("ERROR 8: A channel number is smaller than 1 or greater than 64.");
+            
+            if (routing.contains(channel))
+                return Result::fail("ERROR 9: Channel number duplicates: a channel number may occur only once.");
+            else
+                routing.add(channel);
+        }
+    }
+    
     return Result::ok();
 }
 
@@ -631,7 +663,6 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
             }
         }
         jassert(t < triangles.size());
-
     }
 
     

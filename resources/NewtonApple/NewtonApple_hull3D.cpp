@@ -240,7 +240,7 @@ int NewtonApple_Delaunay( std::vector<R3> &pts, std::vector<Tri> &hulk)
     
     std::vector<Tri> hull;
     
-    int num = init_hull3D_compact(pts, hull);
+    init_hull3D_compact(pts, hull);
     //int num = init_hull3D(pts, hull);
     
     //   return(0); // exit here is you do not need to write the triangles to disk.
@@ -323,7 +323,7 @@ int NewtonApple_hull_3D( std::vector<R3> &pts, std::vector<Tri> &hulk)
     
     std::vector<Tri> hull;
     
-    int num = init_hull3D_compact(pts, hull);
+    init_hull3D_compact(pts, hull);
     
     //   return(0); // exit here is you do not need to write the triangles to disk.
     
@@ -1221,8 +1221,8 @@ int init_hull3D_compact( std::vector<R3> &pts, std::vector<Tri> &hull)
     for( int d=0; d<64; d++){
       Xout.push_back(-1);
     }
-    int numX = 64; // number of dead triangle slots.
-    int X_idx = -1; // index to next dead triangle slot to be retuned to use.
+    //int numX = 64; // number of dead triangle slots.
+    //int X_idx = -1; // index to next dead triangle slot to be retuned to use.
 
 
 
@@ -1357,7 +1357,7 @@ int init_hull3D_compact( std::vector<R3> &pts, std::vector<Tri> &hull)
 
 
 	  // new triangular facets are formed from neighbouring invisible planes.
-	  int numh = (int) hull.size();
+	  //int numh = (int) hull.size();
 	  int numx = (int) xlist.size();
 	  for( int x=0; x<numx; x++){
 	    int xid = xlist[x];
@@ -1687,8 +1687,8 @@ int init_hull3D_compact( std::vector<R3> &pts, std::vector<Tri> &hull)
             
 	  }
 
-	  numx = xlist.size();
-	  for( int x=0; x<numx; x++){
+	  numx = (int) xlist.size();
+	  for (int x=0; x<numx; x++) {
 	    // cerr << xlist[x] << " ";
 
 	    D_idx++;            // keep track of all dead triangles.
@@ -1705,7 +1705,7 @@ int init_hull3D_compact( std::vector<R3> &pts, std::vector<Tri> &hull)
 
 	  // patch up the new triangles in hull.
           
-	  int numN = (int) hull.size();
+	  //int numN = (int) hull.size();
 	  //std::vector<Snork> norts;
 	  int numS = (int) norts.size();
 	  int nums = 0;
