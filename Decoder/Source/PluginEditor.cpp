@@ -26,7 +26,7 @@
 
 //==============================================================================
 PluginTemplateAudioProcessorEditor::PluginTemplateAudioProcessorEditor (PluginTemplateAudioProcessor& p, AudioProcessorValueTreeState& vts)
-    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts), lv(processor.points, processor.triangles, processor.normals), lspList(processor.getLoudspeakersValueTree(), lv, processor.undoManager)
+    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts), lv(processor.points, processor.triangles, processor.normals, processor.imaginaryFlags), lspList(processor.getLoudspeakersValueTree(), lv, processor.undoManager)
 {
     // ============== BEGIN: essentials ======================
     // set GUI size and lookAndFeel

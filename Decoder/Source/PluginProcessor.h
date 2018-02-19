@@ -34,6 +34,8 @@
     - Ambisonics<maxOrder> (can also be used for directivity signals)
  You can leave `maxChannelCount` and `maxOrder` empty for default values (64 channels and 7th order)
 */
+
+using namespace dsp;
 class PluginTemplateAudioProcessor  : public AudioProcessor,
                                         public AudioProcessorValueTreeState::Listener,
                                         public IOHelper<IOTypes::Ambisonics<7>, IOTypes::AudioChannels<64>>,
@@ -103,22 +105,20 @@ public:
     std::vector<Tri> triangles;
     std::vector<Vector3D<float>> normals;
     
+    BigInteger imaginaryFlags;
     UndoManager undoManager;
     
 private:
     // ====== parameters
     AudioProcessorValueTreeState parameters;
-    
-    
     // list of used audio parameters
     float* inputOrderSetting;
     float* useSN3D;
     
-    BigInteger imaginaryFlags;
-    
     ValueTree loudspeakers {"Loudspeakers"};
     
     
+    bool isLayoutReady = false;
     
     // ========== METHODS
     void prepareLayout();
@@ -126,6 +126,8 @@ private:
     Result verifyLoudspeakers();
     Result calculateTris();
     void convertLoudspeakersToArray();
+    
+    void calculateDecoder();
     
     ValueTree createLoudspeakerFromCarthesian (Vector3D<float> carthesianCoordinates, int channel, bool isVirtual = false, float gain = 1.0f);
     ValueTree createLoudspeakerFromSpherical (Vector3D<float> sphericalCoordinates, int channel, bool isVirtual = false, float gain = 1.0f);

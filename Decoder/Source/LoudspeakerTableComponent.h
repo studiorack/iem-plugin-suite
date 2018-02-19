@@ -32,7 +32,7 @@ class LoudspeakerTableComponent : public Component, public TableListBoxModel
 {
     
 public:
-    LoudspeakerTableComponent(ValueTree& loudspeakers, LoudspeakerVisualizer& visualizer, UndoManager& undoM) : data(loudspeakers), lspVisualizer(visualizer), undoManager(undoM)
+    LoudspeakerTableComponent(ValueTree& loudspeakers, LoudspeakerVisualizer& visualizer, UndoManager& undoM) : data(loudspeakers), undoManager(undoM), lspVisualizer(visualizer)
     {
         typeFace = getLookAndFeel().getTypefaceForFont(12);
         
@@ -396,5 +396,3 @@ private:
 };
 
 
-
- 

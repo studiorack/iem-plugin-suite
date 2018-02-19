@@ -423,11 +423,15 @@ void PluginTemplateAudioProcessor::convertLoudspeakersToArray()
 
 void PluginTemplateAudioProcessor::prepareLayout()
 {
+    isLayoutReady = false;
     Result res = checkLayout();
     if (res.failed())
         DBG(res.getErrorMessage());
     else
+    {
         DBG("Layout is ready for creating a decoder!");
+        isLayoutReady = true;
+    }
 }
 
 Result PluginTemplateAudioProcessor::checkLayout()
@@ -489,25 +493,38 @@ Result PluginTemplateAudioProcessor::checkLayout()
     for (int i = 0; i < triangles.size(); ++i)
     {
         Tri tri = triangles[i];
-        Vector3D<float> pointOfTriangle {points[tri.a].x, points[tri.a].y, points[tri.a].z};
-        const float dist = normals[i] * (pointOfTriangle - centroid);
+        Vector3D<float> a {points[tri.a].x, points[tri.a].y, points[tri.a].z};
+        
+        const float dist = normals[i] * (a - centroid);
         if (dist < 0.001f) // too flat!
         {
             return Result::fail("ERROR 3: Convex hull is too flat. Check coordinates and/or try adding imaginary loudspeakers.");
         }
         
-        
-        if (normals[i] * (pointOfTriangle) < 0.001f) // origin is not within hull
+        if (normals[i] * a < 0.001f) // origin is not within hull
         {
             return Result::fail("ERROR 4: Point of origin is not within the convex hull. Try adding imaginary loudspeakers. ");
+        }
+        
+        const int numberOfImaginaryLspsInTriangle = (int) imaginaryFlags[points[tri.a].lspNum] + (int) imaginaryFlags[points[tri.b].lspNum] + (int) imaginaryFlags[points[tri.c].lspNum];
+        if (numberOfImaginaryLspsInTriangle > 1)
+        {
+            return Result::fail("ERROR 5: There is a triangle with more than one imaginary loudspeaker.");
         }
     }
 
     if (imaginaryFlags.countNumberOfSetBits() == nLsps)
-        return Result::fail("ERROR 5: There are only imaginary loudspeakers.");
+        return Result::fail("ERROR 6: There are only imaginary loudspeakers.");
 
     return Result::ok();
 }
+
+void PluginTemplateAudioProcessor::calculateDecoder()
+{
+    
+}
+
+
 
 void PluginTemplateAudioProcessor::valueTreePropertyChanged (ValueTree &treeWhosePropertyHasChanged, const Identifier &property)
 {

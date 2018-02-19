@@ -35,7 +35,7 @@ class LoudspeakerVisualizer    : public Component, public OpenGLRenderer
     };
     
 public:
-    LoudspeakerVisualizer(std::vector<R3>& pts, std::vector<Tri>& tris, std::vector<Vector3D<float>>& norms) : extPoints(pts), extTriangles(tris), extNormals(norms)
+    LoudspeakerVisualizer(std::vector<R3>& pts, std::vector<Tri>& tris, std::vector<Vector3D<float>>& norms, BigInteger& imagFlags) : extPoints(pts), extTriangles(tris), extNormals(norms), imaginaryFlags(imagFlags)
     {
         openGLContext.setComponentPaintingEnabled(true);
         openGLContext.setContinuousRepainting(false);
@@ -61,10 +61,10 @@ public:
 //        colormapData[0] = Colours::white.withMultipliedAlpha(alpha).getPixelARGB();
 //        texture.loadARGB(colormapData, 1, 1);
         
-        colormapData[0] = Colours::limegreen.getPixelARGB(); // selected point colour
-        colormapData[1] = Colours::cornflowerblue.getPixelARGB(); // regular point colour
-        colormapData[2] = Colours::cornflowerblue.withMultipliedAlpha(alpha).getPixelARGB();
-        colormapData[3] = Colours::greenyellow.withMultipliedAlpha(alpha).getPixelARGB();
+        colormapData[0] = Colours::limegreen.getPixelARGB(); // selected colour
+        colormapData[1] = Colours::orange.getPixelARGB(); // imaginary colour
+        colormapData[2] = Colours::cornflowerblue.getPixelARGB(); // regular colour
+        colormapData[3] = Colours::cornflowerblue.withMultipliedAlpha(alpha).getPixelARGB();
         colormapData[4] = Colours::limegreen.withMultipliedAlpha(alpha).getPixelARGB();
         colormapData[5] = Colours::cornflowerblue.withMultipliedAlpha(alpha).getPixelARGB();
         colormapData[6] = Colours::orange.withMultipliedAlpha(alpha).getPixelARGB();
@@ -100,7 +100,7 @@ public:
         
         for (int i = 0; i < nPoints; ++i)
         {
-            float col = extPoints[i].lspNum == activePoint ? 0.0f : 0.2f;
+            float col = extPoints[i].lspNum == activePoint ? 0.0f : imaginaryFlags[extPoints[i].lspNum] ? 0.2f : 0.4f;
             vertices.push_back({extPoints[i].x, extPoints[i].z, extPoints[i].y, col});
             indices.push_back(i);
             normals.push_back(1.0f);
@@ -525,6 +525,7 @@ private:
     std::vector<R3>& extPoints;
     std::vector<Tri>& extTriangles;
     std::vector<Vector3D<float>>& extNormals;
+    BigInteger& imaginaryFlags;
     
     std::vector<positionAndColour> vertices;
     std::vector<int> indices;
