@@ -23,7 +23,6 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
-
 //==============================================================================
 PluginTemplateAudioProcessor::PluginTemplateAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
@@ -178,10 +177,13 @@ void PluginTemplateAudioProcessor::prepareToPlay (double sampleRate, int samples
 {
     checkInputAndOutput(this, *inputOrderSetting, 64, true);
     
-    // Use this method as the place to do any pre-playback
-    // initialisation that you need..
+    ProcessSpec specs;
+    specs.sampleRate = sampleRate;
+    specs.maximumBlockSize = samplesPerBlock;
+    specs.numChannels = 64;
     
-    
+    decoder.prepare(specs);
+    decoder.setInputNormalization(*useSN3D >= 0.5f ? ReferenceCountedDecoder::Normalization::sn3d : ReferenceCountedDecoder::Normalization::n3d);
     
 }
 
@@ -202,27 +204,17 @@ void PluginTemplateAudioProcessor::processBlock (AudioSampleBuffer& buffer, Midi
 {
     checkInputAndOutput(this, *inputOrderSetting, 64, false);
     ScopedNoDenormals noDenormals;
-    
-    const int totalNumInputChannels  = getTotalNumInputChannels();
-    const int totalNumOutputChannels = getTotalNumOutputChannels();
 
-    // In case we have more outputs than inputs, this code clears any output
-    // channels that didn't contain input data, (because these aren't
-    // guaranteed to be empty - they may contain garbage).
-    // This is here to avoid people getting screaming feedback
-    // when they first compile a plugin, but obviously you don't need to keep
-    // this code if your algorithm always overwrites all the output channels.
-    for (int i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-        buffer.clear (i, 0, buffer.getNumSamples());
-
-    // This is the place where you'd normally do the guts of your plugin's
-    // audio processing...
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
+    if (decoder.getCurrentDecoder() == nullptr)
     {
-        float* channelData = buffer.getWritePointer (channel);
-
-        // ..do something to the data...
+        buffer.clear();
+        return;
     }
+    
+    AudioBlock<float> ab = AudioBlock<float>(buffer);
+    ProcessContextReplacing<float> context (ab);
+    decoder.process(context);
+    
 }
 
 //==============================================================================
@@ -265,6 +257,10 @@ void PluginTemplateAudioProcessor::parameterChanged (const String &parameterID, 
     
     if (parameterID == "inputChannelsSetting" || parameterID == "outputOrderSetting" )
         userChangedIOSettings = true;
+    else if (parameterID == "useSN3D")
+    {
+        decoder.setInputNormalization(*useSN3D >= 0.5f ? ReferenceCountedDecoder::Normalization::sn3d : ReferenceCountedDecoder::Normalization::n3d);
+    }
 }
 
 void PluginTemplateAudioProcessor::updateBuffers()
@@ -350,9 +346,9 @@ Result PluginTemplateAudioProcessor::calculateTris()
 	return Result::ok();
 }
 
-ValueTree PluginTemplateAudioProcessor::createLoudspeakerFromCarthesian (Vector3D<float> carthCoordinates, int channel, bool isVirtual, float gain)
+ValueTree PluginTemplateAudioProcessor::createLoudspeakerFromCartesian (Vector3D<float> cartCoordinates, int channel, bool isVirtual, float gain)
 {
-    Vector3D<float> sphericalCoordinates = carthesianToSpherical(carthCoordinates);
+    Vector3D<float> sphericalCoordinates = cartesianToSpherical(cartCoordinates);
     return createLoudspeakerFromSpherical(sphericalCoordinates, channel, isVirtual, gain);
 }
 
@@ -370,19 +366,19 @@ ValueTree PluginTemplateAudioProcessor::createLoudspeakerFromSpherical (Vector3D
     return newLoudspeaker;
 }
 
-Vector3D<float> PluginTemplateAudioProcessor::carthesianToSpherical(Vector3D<float> carthvect)
+Vector3D<float> PluginTemplateAudioProcessor::cartesianToSpherical(Vector3D<float> cartvect)
 {
-    const float r = carthvect.length();
+    const float r = cartvect.length();
     return Vector3D<float>(
                            r, // radius
-                           radiansToDegrees(atan2(carthvect.y, carthvect.x)), // azimuth
-                           radiansToDegrees(atan2(carthvect.z, sqrt(carthvect.x * carthvect.x + carthvect.y * carthvect.y))) // elevation
+                           radiansToDegrees(atan2(cartvect.y, cartvect.x)), // azimuth
+                           radiansToDegrees(atan2(cartvect.z, sqrt(cartvect.x * cartvect.x + cartvect.y * cartvect.y))) // elevation
                            );
 }
 
 
 
-Vector3D<float> PluginTemplateAudioProcessor::sphericalToCarthesian(Vector3D<float> sphervect)
+Vector3D<float> PluginTemplateAudioProcessor::sphericalToCartesian(Vector3D<float> sphervect)
 {
     return Vector3D<float>(
                            sphervect.x * cos(degreesToRadians(sphervect.z)) * cos(degreesToRadians(sphervect.y)),
@@ -401,21 +397,32 @@ void PluginTemplateAudioProcessor::convertLoudspeakersToArray()
 {
     imaginaryFlags.clear();
     int i = 0;
+    int imaginaryCount = 0;
     for (ValueTree::Iterator it = loudspeakers.begin() ; it != loudspeakers.end(); ++it)
     {
+        const bool isImaginary = (*it).getProperty("Imaginary");
         Vector3D<float> spherical;
-        spherical.x = ((bool) (*it).getProperty("Imaginary")) ? (float) (*it).getProperty("Radius") : 1.0f;
+        spherical.x = isImaginary ? (float) (*it).getProperty("Radius") : 1.0f;
         spherical.y = (*it).getProperty("Azimuth");
         spherical.z = (*it).getProperty("Elevation");
         
-        const bool isImaginary = (*it).getProperty("Imaginary");
-        if (isImaginary) imaginaryFlags.setBit(i);
+        Vector3D<float> cart = sphericalToCartesian(spherical);
         
-        Vector3D<float> carth = sphericalToCarthesian(spherical);
-        
-        R3 newPoint {carth.x, carth.y, carth.z};
+        R3 newPoint {cart.x, cart.y, cart.z};
         newPoint.lspNum = i;
         
+        if (isImaginary) {
+            imaginaryFlags.setBit(i);
+            ++imaginaryCount;
+            newPoint.realLspNum = -1;
+        }
+        else
+            newPoint.realLspNum = i - imaginaryCount;
+        
+        newPoint.isImaginary = isImaginary;
+        newPoint.gain = (*it).getProperty("Gain");
+        
+        DBG(newPoint.lspNum << " \t " << newPoint.realLspNum << " \t " << newPoint.gain << " \t " << newPoint.x << " \t " << newPoint.y << " \t " << newPoint.z);
         points.push_back(newPoint);
         ++i;
     }
@@ -519,11 +526,163 @@ Result PluginTemplateAudioProcessor::checkLayout()
     return Result::ok();
 }
 
-void PluginTemplateAudioProcessor::calculateDecoder()
+
+Result PluginTemplateAudioProcessor::calculateDecoder()
 {
+    if (! isLayoutReady)
+        return Result::fail("Layout not ready!");
     
+    const int N = 5;
+    const int nCoeffs = square(N+1);
+    const int nLsps = (int) points.size();
+    const int nRealLsps = nLsps - imaginaryFlags.countNumberOfSetBits();
+    DBG("Number of loudspeakers: " << nLsps << ". Number of real loudspeakers: " << nRealLsps);
+    Matrix<float> decoderMatrix(nRealLsps, nCoeffs);
+    
+    Array<Matrix<float>> inverseArray;
+    
+    for (int t = 0; t < triangles.size(); ++t) //iterate over each triangle
+    {
+        Tri tri = triangles[t];
+        Matrix<float> L (3, 3);
+        L(0, 0) = points[tri.a].x; L(0, 1) = points[tri.b].x; L(0, 2) = points[tri.c].x;
+        L(1, 0) = points[tri.a].y; L(1, 1) = points[tri.b].y; L(1, 2) = points[tri.c].y;
+        L(2, 0) = points[tri.a].z; L(2, 1) = points[tri.b].z; L(2, 2) = points[tri.c].z;
+        
+        inverseArray.add(getInverse(L));
+    }
+    
+    
+    std::vector<float> sh;
+    sh.resize(nCoeffs);
+    
+    for (int i = 0; i < 5200; ++i) //iterate over each tDesign point
+    {
+        const Matrix<float> source (3, 1, tDesign5200[i]);
+        SHEval(N, source(0,0), source(1,0), source(2,0), &sh[0]);
+        
+        const Matrix<float> gains (3, 1);
+        
+        int t = 0;
+        for (; t < triangles.size(); ++t) //iterate over each triangle
+        {
+            Tri tri = triangles[t];
+            Array<int> triangleIndices (tri.a, tri.b, tri.c);
+            Array<bool> imagFlags (points[tri.a].isImaginary, points[tri.b].isImaginary, points[tri.c].isImaginary);
+            Matrix<float> gains (3, 1);
+            gains = inverseArray.getUnchecked(t) * source;
+
+            if (gains(0,0) > -FLT_EPSILON && gains(1,0) > -FLT_EPSILON && gains(2,0) > -FLT_EPSILON)
+            {
+                // we found the corresponding triangle!
+                Vector3D<float> g {gains(0,0), gains(1,0), gains(2,0)};
+                const float foo = 1.0f / sqrt(square(gains(0,0)) + square(gains(1,0)) + square(gains(2,0)));
+                gains = gains * foo;
+
+                if (imagFlags.contains(true))
+                {
+                    const int imagGainIdx = imagFlags.indexOf(true); // which of the three corresponds to the imaginary loudspeaker
+                    const int imaginaryLspIdx = triangleIndices[imagGainIdx];
+                    
+                    Array<int> realGainIndex (0, 1, 2);
+                    realGainIndex.remove(imagGainIdx);
+                    
+                    Array<int> connectedLsps;
+                    connectedLsps.add(imaginaryLspIdx);
+                    for (int k = 0; k < triangles.size(); ++k) //iterate over each triangle
+                    {
+                        Tri probe = triangles[k];
+                        Array<int> probeTriangleIndices (probe.a, probe.b, probe.c);
+                        if (probeTriangleIndices.contains(imaginaryLspIdx))
+                        {  // found searched imaginaryLspIdx in that triangle
+                            for (int j = 0; j < 3; ++j)
+                            {
+                                if (! connectedLsps.contains(probeTriangleIndices[j]))
+                                    connectedLsps.add(probeTriangleIndices[j]);
+                            }
+                        }
+                    }
+                    
+                    connectedLsps.remove(0); // remove imaginary loudspeaker again
+                    Array<float> gainVector;
+                    gainVector.resize(connectedLsps.size());
+                    
+                    const float kappa = getKappa(gains(imagGainIdx, 0), gains(realGainIndex[0], 0), gains(realGainIndex[1], 0), connectedLsps.size());
+                    
+                    gainVector.fill(gains(imagGainIdx, 0) * (points[imaginaryLspIdx].gain) * kappa);
+                    
+                    for (int j = 0; j < 2; ++j)
+                    {
+                        const int idx = connectedLsps.indexOf(triangleIndices[realGainIndex[j]]);
+                        gainVector.set(idx, gainVector[idx] + gains(realGainIndex[j], 0));
+                    }
+
+                    for (int n = 0; n < connectedLsps.size(); ++n)
+                        FloatVectorOperations::addWithMultiply(&decoderMatrix(points[connectedLsps[n]].realLspNum, 0), &sh[0], gainVector[n], nCoeffs);
+                    
+                }
+                else
+                {
+                    FloatVectorOperations::addWithMultiply(&decoderMatrix(points[tri.a].realLspNum, 0), &sh[0], gains(0, 0), nCoeffs);
+                    FloatVectorOperations::addWithMultiply(&decoderMatrix(points[tri.b].realLspNum, 0), &sh[0], gains(1, 0), nCoeffs);
+                    FloatVectorOperations::addWithMultiply(&decoderMatrix(points[tri.c].realLspNum, 0), &sh[0], gains(2, 0), nCoeffs);
+                }
+                break;
+            }
+        }
+        jassert(t < triangles.size());
+
+    }
+
+    
+    ReferenceCountedDecoder::Ptr newDecoder = new ReferenceCountedDecoder("Decoder", "bla", (int) decoderMatrix.getSize()[0], (int) decoderMatrix.getSize()[1]);
+    newDecoder->getMatrix() = decoderMatrix;
+    ReferenceCountedDecoder::Settings newSettings;
+    newSettings.expectedNormalization = ReferenceCountedDecoder::Normalization::n3d;
+    newSettings.weights = ReferenceCountedDecoder::Weights::maxrE;
+    newSettings.weightsAlreadyApplied = false;
+
+    newDecoder->setSettings(newSettings);
+    
+    
+    decoder.setDecoder(newDecoder);
+    decoderConfig = newDecoder;
+    DBG("fertig");
+    return Result::ok();
 }
 
+float PluginTemplateAudioProcessor::getKappa(float gIm, float gRe1, float gRe2, int N)
+{
+    const float p = gIm * (gRe1 + gRe2) / (N * square(gIm));
+    const float q = (square(gRe1) + square(gRe2) - 1.0f) / (N * square(gIm));
+    return - p + sqrt(jmax(square(p) - q, 0.0f));
+}
+
+Matrix<float> PluginTemplateAudioProcessor::getInverse(Matrix<float> A)
+{
+    const float det = A (0, 0) * (A (1, 1) * A (2, 2) - A (1, 2) * A (2, 1))
+    + A (0, 1) * (A (1, 2) * A (2, 0) - A (1, 0) * A (2, 2))
+    + A (0, 2) * (A (1, 0) * A (2, 1) - A (1, 1) * A (2, 0));
+    
+    const float factor = 1.0 / det;
+    
+    Matrix<float> inverse(3, 3);
+    
+    inverse(0, 0) = (A (1, 1) * A (2, 2) - A (1, 2) * A (2, 1)) * factor;
+    inverse(0, 1) = (-A (0, 1) * A (2, 2) + A (0, 2) * A (2, 1)) * factor;
+    inverse(0, 2) = (A (0, 1) * A (1, 2) - A (0, 2) * A (1, 1)) * factor;
+    
+    inverse(1, 0) = (-A (1, 0) * A (2, 2) + A (1, 2) * A (2, 0)) * factor;
+    inverse(1, 1) = (A (0, 0) * A (2, 2) - A (0, 2) * A (2, 0)) * factor;
+    inverse(1, 2) = (-A (0, 0) * A (1, 2) + A (0, 2) * A (1, 0)) * factor;
+    
+    inverse(2, 0) = ( A (1, 0) * A (2, 1) - A (1, 1) * A (2, 0)) * factor;
+    inverse(2, 1) = (-A (0, 0) * A (2, 1) + A (0, 1) * A (2, 0)) * factor;
+    inverse(2, 2) = ( A (0, 0) * A (1, 1) - A (0, 1) * A (1, 0)) * factor;
+
+
+    return inverse;
+}
 
 
 void PluginTemplateAudioProcessor::valueTreePropertyChanged (ValueTree &treeWhosePropertyHasChanged, const Identifier &property)

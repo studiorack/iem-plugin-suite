@@ -36,7 +36,7 @@ PluginTemplateAudioProcessorEditor::PluginTemplateAudioProcessorEditor (PluginTe
     
     // make title and footer visible, and set the PluginName
     addAndMakeVisible(&title);
-    title.setTitle(String("Decoder"),String("Ding"));
+    title.setTitle(String("Deco"),String("Ding"));
     title.setFont(globalLaF.robotoBold, globalLaF.robotoLight);
     addAndMakeVisible (&footer);
     // ============= END: essentials ========================
@@ -48,7 +48,7 @@ PluginTemplateAudioProcessorEditor::PluginTemplateAudioProcessorEditor (PluginTe
     
     
     addAndMakeVisible(tbPrintJSON);
-    tbPrintJSON.setButtonText("print JSON");
+    tbPrintJSON.setButtonText("calculate Decoder");
     tbPrintJSON.addListener(this);
     
     addAndMakeVisible(tbAddSpeakers);
@@ -151,7 +151,7 @@ void PluginTemplateAudioProcessorEditor::buttonClicked (Button* button)
     }
     else if (button == &tbPrintJSON)
     {
-        DBG(JSON::toString(processor.lsps));
+        processor.calculateDecoder();
     }
 
 }

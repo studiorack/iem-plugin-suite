@@ -80,15 +80,20 @@ struct Tri
 
 struct R3
 {
-  int id, lspNum;
-  float x, y, z ;
+  int id, lspNum, realLspNum = -1;
+  float x, y, z;
+    bool isImaginary;
+    float gain;
+    
   R3() {};
   R3(float xc, float yc, float zc) : id(-1), x(xc), y(yc), z(zc)  {};
-  R3(const R3 &p) : id(p.id), lspNum(p.lspNum), x(p.x), y(p.y), z(p.z) {};
+  R3(const R3 &p) : id(p.id), lspNum(p.lspNum), realLspNum(p.realLspNum), x(p.x), y(p.y), z(p.z), isImaginary(p.isImaginary) {};
 
   R3 &operator=(const R3 &p)
   {
     lspNum = p.lspNum;
+      realLspNum = p.realLspNum;
+      isImaginary = p.isImaginary;
     id = p.id;
     x = p.x;
     y = p.y;

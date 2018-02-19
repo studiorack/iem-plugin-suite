@@ -25,6 +25,10 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "../../resources/IOHelper.h"
 #include "../../resources/NewtonApple/NewtonApple_hull3D.h"
+#include "tDesign5200.h"
+#include "../../resources/efficientSHvanilla.h"
+#include "../../resources/ReferenceCountedDecoder.h"
+#include "../../resources/AmbisonicDecoder.h"
 
 //==============================================================================
 /**
@@ -108,6 +112,8 @@ public:
     BigInteger imaginaryFlags;
     UndoManager undoManager;
     
+    Result calculateDecoder();
+    
 private:
     // ====== parameters
     AudioProcessorValueTreeState parameters;
@@ -117,6 +123,8 @@ private:
     
     ValueTree loudspeakers {"Loudspeakers"};
     
+    AmbisonicDecoder decoder;
+    ReferenceCountedDecoder::Ptr decoderConfig {nullptr};
     
     bool isLayoutReady = false;
     
@@ -127,12 +135,13 @@ private:
     Result calculateTris();
     void convertLoudspeakersToArray();
     
-    void calculateDecoder();
+    float getKappa(float gIm, float gRe1, float gRe2, int N);
+    Matrix<float> getInverse(Matrix<float> A);
     
-    ValueTree createLoudspeakerFromCarthesian (Vector3D<float> carthesianCoordinates, int channel, bool isVirtual = false, float gain = 1.0f);
+    ValueTree createLoudspeakerFromCartesian (Vector3D<float> cartesianCoordinates, int channel, bool isVirtual = false, float gain = 1.0f);
     ValueTree createLoudspeakerFromSpherical (Vector3D<float> sphericalCoordinates, int channel, bool isVirtual = false, float gain = 1.0f);
-    Vector3D<float> carthesianToSpherical (Vector3D<float> carthvect);
-    Vector3D<float> sphericalToCarthesian (Vector3D<float> sphervect);
+    Vector3D<float> cartesianToSpherical (Vector3D<float> cartvect);
+    Vector3D<float> sphericalToCartesian (Vector3D<float> sphervect);
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginTemplateAudioProcessor)
 };
