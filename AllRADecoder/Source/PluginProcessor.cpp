@@ -85,7 +85,7 @@ parameters(*this, nullptr)
     lastDir = File(properties->getValue("presetFolder"));
     
     
-    parameters.state.appendChild(loudspeakers, nullptr);
+    //parameters.state.appendChild(loudspeakers, nullptr);
 
     undoManager.beginNewTransaction();
     loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (1.0f, 0.0f, 0.0f), 1), &undoManager);
@@ -163,7 +163,7 @@ double AllRADecoderAudioProcessor::getTailLengthSeconds() const
 
 int AllRADecoderAudioProcessor::getNumPrograms()
 {
-    return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
+    return 2;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
                 // so this should be at least 1, even if you're not really implementing programs.
 }
 
@@ -174,11 +174,50 @@ int AllRADecoderAudioProcessor::getCurrentProgram()
 
 void AllRADecoderAudioProcessor::setCurrentProgram (int index)
 {
+    if (index == 1)
+    {
+        loudspeakers.removeListener(this);
+        
+        undoManager.beginNewTransaction();
+        loudspeakers.removeAllChildren(&undoManager);
+        
+        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(4.635f, 0.0f, 1.341f), 1), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(4.600f, 2.023f, 1.381f), 2), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(4.113f, 4.596f, 1.401f), 3), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(1.574f, 5.028, 1.405), 4), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(-1.289, 5.553f, 1.406), 5), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(-4.376f, 3.873f, 1.358f), 6), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(-4.636f, 0.016f, 1.371f), 7), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(-4.331f, -3.860f, 1.353), 8), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(-1.068f, -5.533f, 1.400f), 9), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(1.821f, -4.943f, 1.376), 10), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(4.481f, -4.456f, 1.387f), 11), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(4.711f, -1.850f, 1.385f), 12), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(4.230f, 1.766f, 3.828f), 13), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(1.806f, 4.441f, 3.938f), 14), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(-2.189f, 4.873f, 4.173f), 15), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(-3.624f, 1.476f, 3.478f), 16), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(-3.602f, -1.577f, 3.493f), 17), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(-2.055f, -4.782f, 4.160f), 18), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(1.925f, -4.210f, 3.854f), 19), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(4.223f, -1.767f, 3.771f), 20), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(1.368f, 1.456f, 4.423f), 21), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(-1.252f, 1.324f, 4.153f), 22), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(-1.267f, -1.342f, 4.142f), 23), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(1.399f, -1.325f, 4.392f), 24), &undoManager);
+        
+        loudspeakers.addListener(this);
+        prepareLayout();
+        updateTable = true;
+    }
 }
 
 const String AllRADecoderAudioProcessor::getProgramName (int index)
 {
-    return {};
+    if (index == 1)
+        return "IEM CUBE";
+    else
+        return "default";
 }
 
 void AllRADecoderAudioProcessor::changeProgramName (int index, const String& newName)
@@ -244,9 +283,12 @@ AudioProcessorEditor* AllRADecoderAudioProcessor::createEditor()
 //==============================================================================
 void AllRADecoderAudioProcessor::getStateInformation (MemoryBlock& destData)
 {
-    // You should use this method to store your parameters in the memory block.
-    // You could do that either as raw data, or use the XML or ValueTree classes
-    // as intermediaries to make it easy to save and load complex data.
+    if (parameters.state.getChildWithName("Loudspeakers").isValid() && parameters.state.getChildWithName("Loudspeakers") != loudspeakers)
+    {
+        parameters.state.removeChild(parameters.state.getChildWithName("Loudspeakers"), nullptr);
+    }
+    parameters.state.appendChild(loudspeakers, nullptr);
+    
     ScopedPointer<XmlElement> xml (parameters.state.createXml());
     copyXmlToBinary (*xml, destData);
 }
@@ -255,12 +297,36 @@ void AllRADecoderAudioProcessor::getStateInformation (MemoryBlock& destData)
 
 void AllRADecoderAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
-    // You should use this method to restore your parameters from this memory block,
-    // whose contents will have been created by the getStateInformation() call.
     ScopedPointer<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
     if (xmlState != nullptr)
+    {
         if (xmlState->hasTagName (parameters.state.getType()))
             parameters.state = ValueTree::fromXml (*xmlState);
+        
+        XmlElement* lsps (xmlState->getChildByName("Loudspeakers"));
+        if (lsps != nullptr)
+        {
+            loudspeakers.removeListener(this);
+            loudspeakers.removeAllChildren(nullptr);
+            const int nChilds = lsps->getNumChildElements();
+            for (int i = 0; i < nChilds; ++i)
+            {
+                XmlElement* lsp (lsps->getChildElement(i));
+                if (lsp->getTagName() == "Loudspeaker")
+                    loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (lsp->getDoubleAttribute("Radius", 1.0),
+                                                                                             lsp->getDoubleAttribute("Azimuth"),
+                                                                                             lsp->getDoubleAttribute("Elevation")),
+                                                                            lsp->getIntAttribute("Channel", -1),
+                                                                            lsp->getBoolAttribute("Imaginary", false),
+                                                                            lsp->getDoubleAttribute("Gain", 1.0)
+                                                                            ), &undoManager);
+            }
+            undoManager.clearUndoHistory();
+            loudspeakers.addListener(this);
+            prepareLayout();
+        }
+    }
+    
 }
 
 //==============================================================================
@@ -292,6 +358,9 @@ AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 Result AllRADecoderAudioProcessor::verifyLoudspeakers()
 {
     const int nLsps = loudspeakers.getNumChildren();
+    if (nLsps == 0)
+        return Result::fail("There are no loudspeakers.");
+    
     for (int i = 0; i < nLsps; ++i)
     {
         ValueTree lsp = loudspeakers.getChild(i);
