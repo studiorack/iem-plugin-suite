@@ -86,10 +86,11 @@ private:
     ScopedPointer<ComboBoxAttachment> cbOrderSettingAttachment;
     ScopedPointer<ComboBoxAttachment> cbNormalizationSettingAttachment;
     
-    TextButton tbPrintJSON;
+    TextButton tbCalculateDecoder;
     TextButton tbAddSpeakers;
     TextButton tbUndo;
     TextButton tbRedo;
+    TextButton tbJson;
     LoudspeakerVisualizer lv;
     
     LoudspeakerTableComponent lspList;

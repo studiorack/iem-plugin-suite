@@ -29,6 +29,7 @@
 #include "../../resources/efficientSHvanilla.h"
 #include "../../resources/ReferenceCountedDecoder.h"
 #include "../../resources/AmbisonicDecoder.h"
+#include "../../resources/decoderHelper.h"
 
 //==============================================================================
 /**
@@ -99,6 +100,8 @@ public:
     void undo() { undoManager.undo(); }
     void redo() { undoManager.redo(); }
     
+    void saveConfigurationToFile(File destination);
+    
     ValueTree& getLoudspeakersValueTree() { return loudspeakers; }
     
     var lsps;
@@ -113,6 +116,11 @@ public:
     UndoManager undoManager;
     
     Result calculateDecoder();
+    
+    void setLastDir(File newLastDir);
+    File getLastDir() {return lastDir;};
+
+    
     
 private:
     // ====== parameters
@@ -129,6 +137,9 @@ private:
     bool isLayoutReady = false;
     
     int highestChannelNumber;
+    
+    File lastDir;
+    ScopedPointer<PropertiesFile> properties;
     
     // ========== METHODS
     void prepareLayout();

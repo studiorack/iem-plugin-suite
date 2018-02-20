@@ -47,13 +47,17 @@ AllRADecoderAudioProcessorEditor::AllRADecoderAudioProcessorEditor (AllRADecoder
     cbOrderSettingAttachment = new ComboBoxAttachment(valueTreeState, "inputOrderSetting", *title.getInputWidgetPtr()->getOrderCbPointer());
     
     
-    addAndMakeVisible(tbPrintJSON);
-    tbPrintJSON.setButtonText("calculate Decoder");
-    tbPrintJSON.addListener(this);
+    addAndMakeVisible(tbCalculateDecoder);
+    tbCalculateDecoder.setButtonText("calculate Decoder");
+    tbCalculateDecoder.addListener(this);
     
     addAndMakeVisible(tbAddSpeakers);
-    tbAddSpeakers.setButtonText("add speakers");
+    tbAddSpeakers.setButtonText("add loudspeaker");
     tbAddSpeakers.addListener(this);
+    
+    addAndMakeVisible(tbJson);
+    tbJson.setButtonText("print JSON");
+    tbJson.addListener(this);
     
     addAndMakeVisible(tbUndo);
     tbUndo.setButtonText("undo");
@@ -109,9 +113,10 @@ void AllRADecoderAudioProcessorEditor::resized()
     Rectangle<int> sliderRow = area.removeFromTop(50);
 
     tbAddSpeakers.setBounds(20, 80, 100, 20);
-    tbPrintJSON.setBounds(150, 80, 100, 20);
+    tbCalculateDecoder.setBounds(150, 80, 100, 20);
     tbUndo.setBounds(280, 80, 100, 20);
     tbRedo.setBounds(410, 80, 100, 20);
+    tbJson.setBounds(540, 80, 100, 20);
     
     Rectangle<int> leftArea = area.removeFromLeft(area.getWidth() / 2);
     lv.setBounds(leftArea);
@@ -149,9 +154,22 @@ void AllRADecoderAudioProcessorEditor::buttonClicked (Button* button)
     {
         processor.addRandomPoint();
     }
-    else if (button == &tbPrintJSON)
+    else if (button == &tbCalculateDecoder)
     {
         processor.calculateDecoder();
+    }
+    else if (button == &tbJson)
+    {
+        FileChooser myChooser ("Please select the preset you want to load...",
+                               processor.getLastDir().exists() ? processor.getLastDir() : File::getSpecialLocation (File::userHomeDirectory),
+                               "*.json");
+        if (myChooser.browseForFileToSave (true))
+        {
+            File presetFile (myChooser.getResult());
+            processor.setLastDir(presetFile.getParentDirectory());
+            processor.saveConfigurationToFile (presetFile);
+        }
+        
     }
 
 }

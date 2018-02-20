@@ -74,6 +74,17 @@ parameters(*this, nullptr)
     parameters.addParameterListener ("inputOrderSetting", this);
     parameters.addParameterListener ("useSN3D", this);
     
+    // global properties
+    PropertiesFile::Options options;
+    options.applicationName     = "AllRADecoder";
+    options.filenameSuffix      = "settings";
+    options.folderName          = "IEM";
+    options.osxLibrarySubFolder = "Preferences";
+    
+    properties = new PropertiesFile(options);
+    lastDir = File(properties->getValue("presetFolder"));
+    
+    
     parameters.state.appendChild(loudspeakers, nullptr);
 
     undoManager.beginNewTransaction();
@@ -104,6 +115,8 @@ parameters(*this, nullptr)
 
     loudspeakers.addListener(this);
     prepareLayout();
+    
+    
 }
 
 AllRADecoderAudioProcessor::~AllRADecoderAudioProcessor()
@@ -571,8 +584,9 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
     DBG("Number of loudspeakers: " << nLsps << ". Number of real loudspeakers: " << nRealLsps);
     Matrix<float> decoderMatrix(nRealLsps, nCoeffs);
     
-    Array<Matrix<float>> inverseArray;
+    const float overallGainFactor = triangles.size() / 5200.0f;
     
+    Array<Matrix<float>> inverseArray;
     for (int t = 0; t < triangles.size(); ++t) //iterate over each triangle
     {
         Tri tri = triangles[t];
@@ -661,14 +675,14 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
                     }
 
                     for (int n = 0; n < connectedLsps.size(); ++n)
-                        FloatVectorOperations::addWithMultiply(&decoderMatrix(points[connectedLsps[n]].realLspNum, 0), &sh[0], gainVector[n], nCoeffs);
+                        FloatVectorOperations::addWithMultiply(&decoderMatrix(points[connectedLsps[n]].realLspNum, 0), &sh[0], gainVector[n] * overallGainFactor, nCoeffs);
                     
                 }
                 else
                 {
-                    FloatVectorOperations::addWithMultiply(&decoderMatrix(points[tri.a].realLspNum, 0), &sh[0], gains(0, 0), nCoeffs);
-                    FloatVectorOperations::addWithMultiply(&decoderMatrix(points[tri.b].realLspNum, 0), &sh[0], gains(1, 0), nCoeffs);
-                    FloatVectorOperations::addWithMultiply(&decoderMatrix(points[tri.c].realLspNum, 0), &sh[0], gains(2, 0), nCoeffs);
+                    FloatVectorOperations::addWithMultiply(&decoderMatrix(points[tri.a].realLspNum, 0), &sh[0], gains(0, 0) * overallGainFactor, nCoeffs);
+                    FloatVectorOperations::addWithMultiply(&decoderMatrix(points[tri.b].realLspNum, 0), &sh[0], gains(1, 0) * overallGainFactor, nCoeffs);
+                    FloatVectorOperations::addWithMultiply(&decoderMatrix(points[tri.c].realLspNum, 0), &sh[0], gains(2, 0) * overallGainFactor, nCoeffs);
                 }
                 break;
             }
@@ -733,6 +747,27 @@ Matrix<float> AllRADecoderAudioProcessor::getInverse(Matrix<float> A)
     return inverse;
 }
 
+void AllRADecoderAudioProcessor::saveConfigurationToFile(File destination)
+{
+    DynamicObject* jsonObj = new DynamicObject();
+    jsonObj->setProperty("Name", var("TestDecoder"));
+    jsonObj->setProperty("Description", var("Description of the Decoder"));
+
+    jsonObj->setProperty("Decoder", DecoderHelper::convertDecoderToVar(decoderConfig));
+    String jsonString = JSON::toString(var(jsonObj));
+    DBG(jsonString);
+    if (destination.replaceWithText(jsonString))
+        DBG("Configuration successfully written to file.");
+    else
+        DBG("Could not write configuration file.");
+}
+
+void AllRADecoderAudioProcessor::setLastDir(File newLastDir)
+{
+    lastDir = newLastDir;
+    const var v (lastDir.getFullPathName());
+    properties->setValue("presetFolder", v);
+}
 
 void AllRADecoderAudioProcessor::valueTreePropertyChanged (ValueTree &treeWhosePropertyHasChanged, const Identifier &property)
 {
