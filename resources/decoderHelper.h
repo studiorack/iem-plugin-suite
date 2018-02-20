@@ -254,4 +254,48 @@ public:
         
         return Result::ok();
     }
+    
+    static var convertDecoderToVar (ReferenceCountedDecoder::Ptr& decoder)
+    {
+        if (decoder == nullptr)
+            return var();
+        
+        DynamicObject* obj = new DynamicObject();
+        obj->setProperty("Name", decoder->getName());
+        obj->setProperty("Description", decoder->getDescription());
+        
+        ReferenceCountedDecoder::Settings settings = decoder->getSettings();
+        
+        obj->setProperty("ExpectedInputNormalization", settings.expectedNormalization == ReferenceCountedDecoder::n3d ? "n3d" : "sn3d");
+        
+        obj->setProperty("Weights", settings.weights == ReferenceCountedDecoder::maxrE ? "maxrE" : settings.weights == ReferenceCountedDecoder::inPhase ? "inPhase" : "none");
+        obj->setProperty("WeightsAlreadyApplied", var(settings.weightsAlreadyApplied));
+
+        const int subwooferChannel = settings.subwooferChannel;
+        if (subwooferChannel > 0)
+          obj->setProperty("SubwooferCHannel", subwooferChannel);
+        
+        // decoder matrix
+        var decoderMatrix;
+        Matrix<float>& mat = decoder->getMatrix();
+        for (int m = 0; m < mat.getSize()[0]; ++m)
+        {
+            var row;
+            for (int n = 0; n < mat.getSize()[1]; ++n)
+            {
+                row.append(mat(m,n));
+            }
+            decoderMatrix.append(row);
+        }
+        
+        obj->setProperty("Matrix", decoderMatrix);
+        
+        var routing;
+        Array<int>& routingArray = decoder->getRoutingArrayReference();
+        for (int i = 0; i < routingArray.size(); ++i)
+            routing.append(routingArray[i]);
+        obj->setProperty("Routing", routing);
+        
+        return var(obj);
+    }
 };
