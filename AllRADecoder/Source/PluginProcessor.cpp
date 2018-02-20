@@ -576,10 +576,21 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
     for (int t = 0; t < triangles.size(); ++t) //iterate over each triangle
     {
         Tri tri = triangles[t];
+        Array<int> triangleIndices (tri.a, tri.b, tri.c);
         Matrix<float> L (3, 3);
-        L(0, 0) = points[tri.a].x; L(0, 1) = points[tri.b].x; L(0, 2) = points[tri.c].x;
-        L(1, 0) = points[tri.a].y; L(1, 1) = points[tri.b].y; L(1, 2) = points[tri.c].y;
-        L(2, 0) = points[tri.a].z; L(2, 1) = points[tri.b].z; L(2, 2) = points[tri.c].z;
+        for (int i = 0; i < 3; ++i)
+        {
+            L(0, i) = points[triangleIndices[i]].x;
+            L(1, i) = points[triangleIndices[i]].y;
+            L(2, i) = points[triangleIndices[i]].z;
+            if (points[triangleIndices[i]].isImaginary)
+            {
+                const float factor = 1.0f / sqrt(square(points[triangleIndices[i]].x) + square(points[triangleIndices[i]].y) + square(points[triangleIndices[i]].z));
+                L(0, i) *= factor;
+                L(1, i) *= factor;
+                L(2, i) *= factor;
+            }
+        }
         
         inverseArray.add(getInverse(L));
     }
@@ -675,6 +686,13 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
 
     newDecoder->setSettings(newSettings);
     
+    Array<int>& routing = newDecoder->getRoutingArrayReference();
+    routing.clear();
+    for (int i = 0; i < nLsps; ++i)
+    {
+        if (! points[i].isImaginary)
+            routing.add(points[i].channel);
+    }
     
     decoder.setDecoder(newDecoder);
     decoderConfig = newDecoder;
