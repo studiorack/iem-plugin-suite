@@ -5,13 +5,14 @@
               bundleIdentifier="at.iem.AllRADecoder" includeBinaryInAppConfig="1"
               cppLanguageStandard="14" buildVST="1" buildVST3="0" buildAU="0"
               buildAUv3="0" buildRTAS="0" buildAAX="0" buildStandalone="1"
-              enableIAA="0" pluginName="Decoder" pluginDesc="Decoder" pluginManufacturer="IEM"
-              pluginManufacturerCode="IEMA" pluginCode="AlDe" pluginChannelConfigs=""
-              pluginIsSynth="0" pluginWantsMidiIn="0" pluginProducesMidiOut="0"
-              pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0" pluginAUExportPrefix="AllRADecoderAU"
-              pluginRTASCategory="" aaxIdentifier="at.iem.AllRADecoder" pluginAAXCategory="AAX_ePlugInCategory_Dynamics"
-              jucerVersion="5.2.1" companyCopyright="IEM - Daniel Rudrich, Franz Zotter"
-              companyName="IEM" companyWebsite="iem.at">
+              enableIAA="0" pluginName="AllRADecoder" pluginDesc="AllRADecoder"
+              pluginManufacturer="IEM" pluginManufacturerCode="IEMA" pluginCode="AlDe"
+              pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
+              pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
+              pluginAUExportPrefix="AllRADecoderAU" pluginRTASCategory="" aaxIdentifier="at.iem.AllRADecoder"
+              pluginAAXCategory="AAX_ePlugInCategory_Dynamics" jucerVersion="5.2.1"
+              companyCopyright="IEM - Daniel Rudrich, Franz Zotter" companyName="IEM"
+              companyWebsite="iem.at">
   <MAINGROUP id="LpzrV9" name="AllRADecoder">
     <GROUP id="{1B6BB8E4-E576-FBC7-B6B6-8603D2CEBF9D}" name="lookAndFeel">
       <FILE id="AVFaGo" name="IEM_LaF.h" compile="0" resource="0" file="../resources/lookAndFeel/IEM_LaF.h"/>
