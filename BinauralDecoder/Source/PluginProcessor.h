@@ -24,7 +24,7 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "../../resources/IOHelper.h"
-
+#include <fftw3.h>
 using namespace dsp;
 //==============================================================================
 /**
