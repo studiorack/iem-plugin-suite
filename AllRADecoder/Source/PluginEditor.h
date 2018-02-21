@@ -86,6 +86,9 @@ private:
     ScopedPointer<ComboBoxAttachment> cbOrderSettingAttachment;
     ScopedPointer<ComboBoxAttachment> cbNormalizationSettingAttachment;
     
+    ComboBox cbDecoderOrder;
+    ScopedPointer<ComboBoxAttachment> cbDecoderOrderAttachment;
+    
     TextButton tbCalculateDecoder;
     TextButton tbAddSpeakers;
     TextButton tbUndo;

@@ -30,6 +30,7 @@
 #include "../../resources/ReferenceCountedDecoder.h"
 #include "../../resources/AmbisonicDecoder.h"
 #include "../../resources/decoderHelper.h"
+#include "../../resources/ambisonicTools.h"
 
 //==============================================================================
 /**
@@ -128,6 +129,7 @@ private:
     // list of used audio parameters
     float* inputOrderSetting;
     float* useSN3D;
+    float* decoderOrder;
     
     ValueTree loudspeakers {"Loudspeakers"};
     

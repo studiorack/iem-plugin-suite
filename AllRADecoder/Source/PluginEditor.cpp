@@ -46,6 +46,13 @@ AllRADecoderAudioProcessorEditor::AllRADecoderAudioProcessorEditor (AllRADecoder
     cbNormalizationSettingAttachment = new ComboBoxAttachment(valueTreeState, "useSN3D", *title.getInputWidgetPtr()->getNormCbPointer());
     cbOrderSettingAttachment = new ComboBoxAttachment(valueTreeState, "inputOrderSetting", *title.getInputWidgetPtr()->getOrderCbPointer());
     
+    addAndMakeVisible(cbDecoderOrder);
+    cbDecoderOrder.addSectionHeading("Decoder order");
+    for (int n = 1; n <= 7; ++n)
+        cbDecoderOrder.addItem(getOrderString(n), n);
+    cbDecoderOrderAttachment = new ComboBoxAttachment(valueTreeState, "decoderOrder", cbDecoderOrder);
+    
+    
     
     addAndMakeVisible(tbCalculateDecoder);
     tbCalculateDecoder.setButtonText("calculate Decoder");
@@ -117,6 +124,7 @@ void AllRADecoderAudioProcessorEditor::resized()
     tbUndo.setBounds(280, 80, 100, 20);
     tbRedo.setBounds(410, 80, 100, 20);
     tbJson.setBounds(540, 80, 100, 20);
+    cbDecoderOrder.setBounds(670, 80, 100, 20);
     
     Rectangle<int> leftArea = area.removeFromLeft(area.getWidth() / 2);
     lv.setBounds(leftArea);

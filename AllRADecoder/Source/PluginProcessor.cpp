@@ -51,12 +51,25 @@ parameters(*this, nullptr)
                                           else if (value >= 7.5f) return "7th";
                                           else return "Auto";},
                                       nullptr);
+    
     parameters.createAndAddParameter("useSN3D", "Normalization", "",
                                      NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value) {
                                          if (value >= 0.5f) return "SN3D";
                                          else return "N3D";
                                      }, nullptr);
+    
+    parameters.createAndAddParameter ("decoderOrder", "Decoder Order", "",
+                                      NormalisableRange<float> (0.0f, 6.0f, 1.0f), 0.0f,
+                                      [](float value) {
+                                          if (value >= 0.5f && value < 1.5f) return "2nd";
+                                          else if (value >= 1.5f && value < 2.5f) return "3rd";
+                                          else if (value >= 2.5f && value < 3.5f) return "4th";
+                                          else if (value >= 3.5f && value < 4.5f) return "5th";
+                                          else if (value >= 4.5f && value < 5.5f) return "6th";
+                                          else if (value >= 5.5f ) return "7th";
+                                          else return "1st";},
+                                      nullptr);
     
 
     
@@ -68,7 +81,7 @@ parameters(*this, nullptr)
     // get pointers to the parameters
     inputOrderSetting = parameters.getRawParameterValue ("inputOrderSetting");
     useSN3D = parameters.getRawParameterValue ("useSN3D");
-
+    decoderOrder = parameters.getRawParameterValue ("decoderOrder");
     
     // add listeners to parameter changes
     parameters.addParameterListener ("inputOrderSetting", this);
@@ -115,7 +128,6 @@ parameters(*this, nullptr)
 
     loudspeakers.addListener(this);
     prepareLayout();
-    
     
 }
 
@@ -646,7 +658,7 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
     if (! isLayoutReady)
         return Result::fail("Layout not ready!");
     
-    const int N = 5;
+    const int N = roundToInt(*decoderOrder) + 1;
     const int nCoeffs = square(N+1);
     const int nLsps = (int) points.size();
     const int nRealLsps = nLsps - imaginaryFlags.countNumberOfSetBits();
@@ -698,10 +710,9 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
             Matrix<float> gains (3, 1);
             gains = inverseArray.getUnchecked(t) * source;
 
-            if (gains(0,0) > -FLT_EPSILON && gains(1,0) > -FLT_EPSILON && gains(2,0) > -FLT_EPSILON)
+            if (gains(0,0) >= -FLT_EPSILON && gains(1,0) >= -FLT_EPSILON && gains(2,0) >= -FLT_EPSILON)
             {
                 // we found the corresponding triangle!
-                Vector3D<float> g {gains(0,0), gains(1,0), gains(2,0)};
                 const float foo = 1.0f / sqrt(square(gains(0,0)) + square(gains(1,0)) + square(gains(2,0)));
                 gains = gains * foo;
 
@@ -760,7 +771,7 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
     }
 
     
-    ReferenceCountedDecoder::Ptr newDecoder = new ReferenceCountedDecoder("Decoder", "bla", (int) decoderMatrix.getSize()[0], (int) decoderMatrix.getSize()[1]);
+    ReferenceCountedDecoder::Ptr newDecoder = new ReferenceCountedDecoder("Decoder", "A " + getOrderString(N) + " order Ambisonics decoder using the AllRAD approach.", (int) decoderMatrix.getSize()[0], (int) decoderMatrix.getSize()[1]);
     newDecoder->getMatrix() = decoderMatrix;
     ReferenceCountedDecoder::Settings newSettings;
     newSettings.expectedNormalization = ReferenceCountedDecoder::Normalization::n3d;
@@ -774,7 +785,7 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
     for (int i = 0; i < nLsps; ++i)
     {
         if (! points[i].isImaginary)
-            routing.set(points[i].realLspNum, points[i].channel);
+            routing.set(points[i].realLspNum, points[i].channel - 1); // zero count
     }
     
     decoder.setDecoder(newDecoder);
@@ -819,8 +830,11 @@ Matrix<float> AllRADecoderAudioProcessor::getInverse(Matrix<float> A)
 void AllRADecoderAudioProcessor::saveConfigurationToFile(File destination)
 {
     DynamicObject* jsonObj = new DynamicObject();
-    jsonObj->setProperty("Name", var("TestDecoder"));
-    jsonObj->setProperty("Description", var("Description of the Decoder"));
+    jsonObj->setProperty("Name", var("All-Round Ambisonic decoder (AllRAD) and loudspeaker layout"));
+    char versionString[10];
+    strcpy(versionString, "v");
+    strcat(versionString, JucePlugin_VersionString);
+    jsonObj->setProperty("Description", var("This configuration file was created with the IEM AllRADecoder " + String(versionString) + " plug-in. " + Time::getCurrentTime().toString(true, true)));
 
     jsonObj->setProperty("Decoder", DecoderHelper::convertDecoderToVar(decoderConfig));
     String jsonString = JSON::toString(var(jsonObj));

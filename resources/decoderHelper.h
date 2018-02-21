@@ -293,7 +293,7 @@ public:
         var routing;
         Array<int>& routingArray = decoder->getRoutingArrayReference();
         for (int i = 0; i < routingArray.size(); ++i)
-            routing.append(routingArray[i]);
+            routing.append(routingArray[i] + 1); // one count
         obj->setProperty("Routing", routing);
         
         return var(obj);
