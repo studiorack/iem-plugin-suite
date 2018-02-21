@@ -129,6 +129,73 @@ parameters(*this, nullptr)
     loudspeakers.addListener(this);
     prepareLayout();
     
+    float x, y, azi, ele;
+    
+    azi = 0.0f; ele = 0.0f;
+    HammerAitov::sphericalToXY(azi, ele, x, y);
+    DBG("Azi: " << azi << " Ele: " << ele << " x: " << x << " y: " << y);
+    HammerAitov::XYToSpherical(x, y, azi, ele);
+    DBG(" x: " << x << " y: " << y << "Azi: " << azi << " Ele: " << ele);
+    
+    azi = 1.1f; ele = 0.4f;
+    HammerAitov::sphericalToXY(azi, ele, x, y);
+    DBG("Azi: " << azi << " Ele: " << ele << " x: " << x << " y: " << y);
+    HammerAitov::XYToSpherical(x, y, azi, ele);
+    DBG(" x: " << x << " y: " << y << "Azi: " << azi << " Ele: " << ele);
+    
+    azi = -1.1f; ele = 0.4f;
+    HammerAitov::sphericalToXY(azi, ele, x, y);
+    DBG("Azi: " << azi << " Ele: " << ele << " x: " << x << " y: " << y);
+    HammerAitov::XYToSpherical(x, y, azi, ele);
+    DBG(" x: " << x << " y: " << y << "Azi: " << azi << " Ele: " << ele);
+    
+    azi = 1.1f; ele = -0.4f;
+    HammerAitov::sphericalToXY(azi, ele, x, y);
+    DBG("Azi: " << azi << " Ele: " << ele << " x: " << x << " y: " << y);
+    HammerAitov::XYToSpherical(x, y, azi, ele);
+    DBG(" x: " << x << " y: " << y << "Azi: " << azi << " Ele: " << ele);
+    
+    azi = -M_PI; ele = 0.0f;
+    HammerAitov::sphericalToXY(azi, ele, x, y);
+    DBG("Azi: " << azi << " Ele: " << ele << " x: " << x << " y: " << y);
+    HammerAitov::XYToSpherical(x, y, azi, ele);
+    DBG(" x: " << x << " y: " << y << "Azi: " << azi << " Ele: " << ele);
+    
+    azi = M_PI; ele = 0.0f;
+    HammerAitov::sphericalToXY(azi, ele, x, y);
+    DBG("Azi: " << azi << " Ele: " << ele << " x: " << x << " y: " << y);
+    HammerAitov::XYToSpherical(x, y, azi, ele);
+    DBG(" x: " << x << " y: " << y << "Azi: " << azi << " Ele: " << ele);
+    
+    
+    azi = M_PI; ele = M_PI * 0.5f;
+    HammerAitov::sphericalToXY(azi, ele, x, y);
+    DBG("Azi: " << azi << " Ele: " << ele << " x: " << x << " y: " << y);
+    HammerAitov::XYToSpherical(x, y, azi, ele);
+    DBG(" x: " << x << " y: " << y << "Azi: " << azi << " Ele: " << ele);
+    
+    
+    
+    x = 0.0f; y = 0.0f;
+    HammerAitov::XYToSpherical(x, y, azi, ele);
+    DBG(" x: " << x << " y: " << y << "Azi: " << azi << " Ele: " << ele);
+    HammerAitov::sphericalToXY(azi, ele, x, y);
+    DBG("Azi: " << azi << " Ele: " << ele << " x: " << x << " y: " << y);
+    
+    x = 1.0f; y = 1.0f;
+    HammerAitov::XYToSpherical(x, y, azi, ele);
+    DBG(" x: " << x << " y: " << y << "Azi: " << azi << " Ele: " << ele);
+    HammerAitov::sphericalToXY(azi, ele, x, y);
+    DBG("Azi: " << azi << " Ele: " << ele << " x: " << x << " y: " << y);
+    
+    x = 0.5f; y = 0.5f;
+    HammerAitov::XYToSpherical(x, y, azi, ele);
+    DBG(" x: " << x << " y: " << y << "Azi: " << azi << " Ele: " << ele);
+    HammerAitov::sphericalToXY(azi, ele, x, y);
+    DBG("Azi: " << azi << " Ele: " << ele << " x: " << x << " y: " << y);
+    
+    
+    DBG("break");
 }
 
 AllRADecoderAudioProcessor::~AllRADecoderAudioProcessor()
@@ -514,6 +581,9 @@ void AllRADecoderAudioProcessor::convertLoudspeakersToArray()
         }
         else
             newPoint.realLspNum = i - imaginaryCount;
+        
+        newPoint.azimuth = (*it).getProperty("Azimuth");
+        newPoint.elevation = (*it).getProperty("Elevation");
         
         newPoint.isImaginary = isImaginary;
         newPoint.gain = (*it).getProperty("Gain");

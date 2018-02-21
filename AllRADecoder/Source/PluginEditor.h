@@ -33,7 +33,9 @@
 #include "../../resources/customComponents/ReverseSlider.h"
 #include "../../resources/customComponents/SimpleLabel.h"
 #include "LoudspeakerVisualizer.h"
+#include "EnergyDistributionVisualizer.h"
 #include "LoudspeakerTableComponent.h"
+
 
 
 typedef ReverseSlider::SliderAttachment SliderAttachment; // all ReverseSliders will make use of the parameters' valueToText() function
@@ -89,6 +91,7 @@ private:
     ComboBox cbDecoderOrder;
     ScopedPointer<ComboBoxAttachment> cbDecoderOrderAttachment;
     
+    
     TextButton tbCalculateDecoder;
     TextButton tbAddSpeakers;
     TextButton tbUndo;
@@ -97,7 +100,7 @@ private:
     LoudspeakerVisualizer lv;
     
     LoudspeakerTableComponent lspList;
-
+    EnergyDistributionVisualizer grid;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AllRADecoderAudioProcessorEditor)
 };

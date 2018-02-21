@@ -26,7 +26,7 @@
 
 //==============================================================================
 AllRADecoderAudioProcessorEditor::AllRADecoderAudioProcessorEditor (AllRADecoderAudioProcessor& p, AudioProcessorValueTreeState& vts)
-    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts), lv(processor.points, processor.triangles, processor.normals, processor.imaginaryFlags), lspList(processor.getLoudspeakersValueTree(), lv, processor.undoManager)
+    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts), lv(processor.points, processor.triangles, processor.normals, processor.imaginaryFlags), lspList(processor.getLoudspeakersValueTree(), lv, grid, processor.undoManager), grid(processor.points, processor.imaginaryFlags)
 {
     // ============== BEGIN: essentials ======================
     // set GUI size and lookAndFeel
@@ -53,6 +53,7 @@ AllRADecoderAudioProcessorEditor::AllRADecoderAudioProcessorEditor (AllRADecoder
     cbDecoderOrderAttachment = new ComboBoxAttachment(valueTreeState, "decoderOrder", cbDecoderOrder);
     
     
+    addAndMakeVisible(grid);
     
     addAndMakeVisible(tbCalculateDecoder);
     tbCalculateDecoder.setButtonText("calculate Decoder");
@@ -128,7 +129,10 @@ void AllRADecoderAudioProcessorEditor::resized()
     
     Rectangle<int> leftArea = area.removeFromLeft(area.getWidth() / 2);
     lv.setBounds(leftArea);
-    lspList.setBounds(area);
+    Rectangle<int> rightTopArea = area.removeFromTop(200);
+    
+    lspList.setBounds(rightTopArea);
+    grid.setBounds(area);
 }
 
 void AllRADecoderAudioProcessorEditor::timerCallback()
@@ -144,6 +148,7 @@ void AllRADecoderAudioProcessorEditor::timerCallback()
     {
         processor.updateLoudspeakerVisualization = false;
         lv.updateVerticesAndIndices();
+        grid.repaint();
     }
     
     if (processor.updateTable.get())

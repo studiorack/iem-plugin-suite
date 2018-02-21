@@ -32,7 +32,7 @@ class LoudspeakerTableComponent : public Component, public TableListBoxModel
 {
     
 public:
-    LoudspeakerTableComponent(ValueTree& loudspeakers, LoudspeakerVisualizer& visualizer, UndoManager& undoM) : data(loudspeakers), undoManager(undoM), lspVisualizer(visualizer)
+    LoudspeakerTableComponent(ValueTree& loudspeakers, LoudspeakerVisualizer& visualizer, EnergyDistributionVisualizer& energyVis, UndoManager& undoM) : data(loudspeakers), undoManager(undoM), lspVisualizer(visualizer), engVisualizer(energyVis)
     {
         typeFace = getLookAndFeel().getTypefaceForFont(12);
         
@@ -63,6 +63,7 @@ public:
     void selectedRowsChanged (int lastRowSelected) override
     {
         lspVisualizer.setActiveSpeakerIndex(lastRowSelected);
+        engVisualizer.setActiveSpeakerIndex(lastRowSelected);
     }
     
     void paintRowBackground (Graphics& g, int rowNumber, int /*width*/, int /*height*/, bool rowIsSelected) override
@@ -243,6 +244,7 @@ private:
     UndoManager& undoManager;
     
     LoudspeakerVisualizer& lspVisualizer;
+    EnergyDistributionVisualizer& engVisualizer;
     
     class EditableTextCustomComponent  : public Label
     {

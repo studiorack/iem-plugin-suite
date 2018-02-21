@@ -31,6 +31,7 @@
 #include "../../resources/AmbisonicDecoder.h"
 #include "../../resources/decoderHelper.h"
 #include "../../resources/ambisonicTools.h"
+#include "../../resources/HammerAitov.h"
 
 //==============================================================================
 /**
