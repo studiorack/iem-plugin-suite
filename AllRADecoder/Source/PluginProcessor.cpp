@@ -770,11 +770,11 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
     newDecoder->setSettings(newSettings);
     
     Array<int>& routing = newDecoder->getRoutingArrayReference();
-    routing.clear();
+    routing.resize(nRealLsps);
     for (int i = 0; i < nLsps; ++i)
     {
         if (! points[i].isImaginary)
-            routing.add(points[i].channel);
+            routing.set(points[i].realLspNum, points[i].channel);
     }
     
     decoder.setDecoder(newDecoder);
