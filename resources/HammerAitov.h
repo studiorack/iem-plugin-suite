@@ -24,12 +24,17 @@
 
 class HammerAitov {
 public:
-    static void sphericalToXY (const float azimuthInRadians, const float elevationInRadians, float& x, float& y)
+    static void sphericalToXY (float azimuthInRadians, float elevationInRadians, float& x, float& y)
     {
-        const cosEle = cos(elevationInRadians);
+        while (azimuthInRadians > M_PI + FLT_EPSILON)
+            azimuthInRadians -= 2.0f * M_PI;
+        while (azimuthInRadians < -M_PI - FLT_EPSILON)
+            azimuthInRadians += 2.0f * M_PI;
+        
+        const float cosEle = cos(elevationInRadians);
         const float factor = 1.0f / sqrt(1.0f + cosEle * cos(0.5f * azimuthInRadians));
-        x = factor * - cosEle * sin(azi/2);
-        y = factor * sin(ele);
+        x = factor * - cosEle * sin(0.5f * azimuthInRadians);
+        y = factor * sin(elevationInRadians);
     }
     
     static void XYToSpherical (const float x, const float y, float& azimuthInRadians, float& elevationInRadians)
