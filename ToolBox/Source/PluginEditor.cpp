@@ -49,7 +49,7 @@ ToolBoxAudioProcessorEditor::ToolBoxAudioProcessorEditor (ToolBoxAudioProcessor&
     cbOutputOrderSettingAttachment = new ComboBoxAttachment(valueTreeState, "outputOrderSetting", *title.getOutputWidgetPtr()->getOrderCbPointer());
     cbOutputNormalizationSettingAttachment = new ComboBoxAttachment(valueTreeState, "useSn3dOutput", *title.getOutputWidgetPtr()->getNormCbPointer());
     
-    
+    // ================= FLIPs ==================
     addAndMakeVisible(gcFlip);
     gcFlip.setText("Flip");
     
@@ -67,6 +67,21 @@ ToolBoxAudioProcessorEditor::ToolBoxAudioProcessorEditor (ToolBoxAudioProcessor&
     tbFlipZAttachment = new ButtonAttachment(valueTreeState, "flipZ", tbFlipZ);
     tbFlipZ.setButtonText("Flip Z (bottom/top)");
     tbFlipZ.setColour(ToggleButton::tickColourId, globalLaF.ClWidgetColours[0]);
+    
+    // ================= LOA WEIGHTS ==================
+    addAndMakeVisible(gcLOAWeighting);
+    gcLOAWeighting.setText("LOA Weighting");
+
+    addAndMakeVisible(cbLoaWeights);
+    cbLoaWeights.setJustificationType(Justification::centred);
+    cbLoaWeights.addSectionHeading("Target Decoder Weights");
+    cbLoaWeights.addItem("none", 1);
+    cbLoaWeights.addItem("maxrE", 2);
+    cbLoaWeights.addItem("inPhase", 3);
+    cbLoaWeightsAttachment = new ComboBoxAttachment(valueTreeState, "loaWeights", cbLoaWeights);
+    
+    addAndMakeVisible(lbLoaWeights);
+    lbLoaWeights.setText("Weights");
     
     // start timer after everything is set up properly
     startTimer(20);
@@ -102,19 +117,26 @@ void ToolBoxAudioProcessorEditor::resized()
     area.removeFromBottom(5);
     // =========== END: header and footer =================
     
-    
 
-    Rectangle<int> sliderRow = area.removeFromTop(85);
-    
+    Rectangle<int> leftColumn = area.removeFromLeft(150);
     {
-        Rectangle<int> flipArea = sliderRow.removeFromLeft(150);
+        Rectangle<int> flipArea = leftColumn.removeFromTop(85);
         gcFlip.setBounds(flipArea);
         flipArea.removeFromTop(25);
         tbFlipX.setBounds(flipArea.removeFromTop(20));
         tbFlipY.setBounds(flipArea.removeFromTop(20));
         tbFlipZ.setBounds(flipArea.removeFromTop(20));
     }
-
+    
+    Rectangle<int> rightColumn = area.removeFromRight(150);
+    {
+        Rectangle<int> loaArea = rightColumn.removeFromTop(85);
+        gcLOAWeighting.setBounds(loaArea);
+        loaArea.removeFromTop(25);
+        Rectangle<int> row = loaArea.removeFromTop(20);
+        lbLoaWeights.setBounds(row.removeFromLeft(60));
+        cbLoaWeights.setBounds(row);
+    }
     
     
     

@@ -229,7 +229,6 @@ parameters (*this, nullptr)
         highShelfArray2.add(new IIR::Filter<juce::dsp::SIMDRegister<float>>(highShelfCoefficients));
     }
     
-    
     startTimer(50);
 }
 
@@ -305,10 +304,10 @@ void RoomEncoderAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     
     for (int i = 0; i<16; ++i)
     {
-        lowShelfArray[i]->reset();
-        highShelfArray[i]->reset();
-        lowShelfArray2[i]->reset();
-        highShelfArray2[i]->reset();
+        lowShelfArray[i]->reset(SIMDRegister<float>(0.0f));
+        highShelfArray[i]->reset(SIMDRegister<float>(0.0f));
+        lowShelfArray2[i]->reset(SIMDRegister<float>(0.0f));
+        highShelfArray2[i]->reset(SIMDRegister<float>(0.0f));
         
         interleavedData.add(new AudioBlock<SIMDRegister<float>> (interleavedBlockData[i], 1, samplesPerBlock));
         interleavedData.getLast()->clear();
@@ -317,8 +316,7 @@ void RoomEncoderAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     zero = AudioBlock<float> (zeroData, SIMDRegister<float>::size(), samplesPerBlock);
     zero.clear();
     
-    if (editorFv != nullptr)
-        editorFv->setSampleRate(sampleRate);
+    updateFv = true;
 }
 
 void RoomEncoderAudioProcessor::releaseResources()
@@ -337,7 +335,6 @@ void RoomEncoderAudioProcessor::parameterChanged (const String &parameterID, flo
 {
     if (parameterID == "orderSetting" || parameterID == "directivityOrderSetting") userChangedIOSettings = true;
     else if (parameterID == "reflCoeff") {
-        if (editorFv != nullptr) editorFv->setOverallGainInDecibels(*reflCoeff);
         updateFv = true;
     }
     else if (parameterID == "lowShelfFreq" || parameterID == "lowShelfGain" ||
@@ -387,8 +384,8 @@ void RoomEncoderAudioProcessor::updateFilterCoefficients(double sampleRate) {
     *lowShelfCoefficients = *IIR::Coefficients<float>::makeLowShelf(sampleRate, *lowShelfFreq, 0.707f, Decibels::decibelsToGain(*lowShelfGain));
     *highShelfCoefficients = *IIR::Coefficients<float>::makeHighShelf(sampleRate, *highShelfFreq, 0.707f, Decibels::decibelsToGain(*highShelfGain));
     userChangedFilterSettings = false;
-    if (editorFv != nullptr)
-        updateFv = true;
+    
+    updateFv = true;
 }
 
 void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
@@ -406,6 +403,7 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
     const int sampleRate = getSampleRate();
     const int L = buffer.getNumSamples();
     const float oneOverL = 1.0/((double) L);
+    
     
     float* pBufferWrite = buffer.getWritePointer(0);
     const float* pBufferRead = buffer.getReadPointer(0);
@@ -451,7 +449,6 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
                                                reinterpret_cast<float*> (interleavedData[i]->getChannelPointer (0)), L,
                                                static_cast<int> (SIMDRegister<float>::size()));
     }
-    
     
     
     
@@ -537,8 +534,9 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
         if (q == 1) {
             for (int i = 0; i<nSIMDFilters; ++i)
             {
-                lowShelfArray[i]->process(ProcessContextReplacing<SIMDRegister<float>> (*interleavedData[i]));
-                highShelfArray[i]->process(ProcessContextReplacing<SIMDRegister<float>> (*interleavedData[i]));
+                ProcessContextReplacing<SIMDRegister<float>> context (*interleavedData[i]);
+                lowShelfArray[i]->process(context);
+                highShelfArray[i]->process(context);
             }
         }
         if (q == 7) {
@@ -745,6 +743,8 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
     
     readOffset += L;
     if (readOffset >= bufferSize) readOffset = 0;
+    
+
 }
 
 //==============================================================================
@@ -871,10 +871,6 @@ void RoomEncoderAudioProcessor::updateBuffers() {
     }
 }
 
-void RoomEncoderAudioProcessor::setFilterVisualizer(FilterVisualizer<float>* newFv)
-{
-    editorFv = newFv;
-}
 
 //==============================================================================
 // This creates new instances of the plugin..

@@ -11,7 +11,7 @@
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
               pluginAUExportPrefix="PluginTemplateAU" pluginRTASCategory=""
               aaxIdentifier="at.iem.PluginTemplate" pluginAAXCategory="AAX_ePlugInCategory_Dynamics"
-              jucerVersion="5.2.0" companyCopyright="IEM - FirstName FamilyName"
+              jucerVersion="5.2.1" companyCopyright="IEM - FirstName FamilyName"
               companyName="IEM" companyWebsite="iem.at">
   <MAINGROUP id="LpzrV9" name="PluginTemplate">
     <GROUP id="{1B6BB8E4-E576-FBC7-B6B6-8603D2CEBF9D}" name="lookAndFeel">

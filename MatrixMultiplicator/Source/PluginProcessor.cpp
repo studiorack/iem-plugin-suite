@@ -268,7 +268,7 @@ void MatrixMultiplicatorAudioProcessor::loadPreset(const File& presetFile)
     if (tempMatrix != nullptr)
     {
         matTrans.setMatrix(tempMatrix);
-        output += "Preset loaded succesfully!\n";
+        output += "Preset loaded successfully!\n";
         output += "    Name: \t" + tempMatrix->getName() + "\n";
         output += "    Size: " + String(tempMatrix->getMatrix().getNumRows()) + "x" + String(tempMatrix->getMatrix().getNumColumns()) + " (output x input)\n";
         output += "    Description: \t" + tempMatrix->getDescription() + "\n";

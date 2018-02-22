@@ -1,8 +1,23 @@
 default: all
 
 # the buildsystem we are using
-# possible values: LinuxMakefile
-BUILDSYSTEM=LinuxMakefile
+# possible values: LinuxMakefile XCode
+uname := $(shell uname)
+
+ifeq ($(findstring $(uname), Linux GNU GNU/kFreeBSD), $(uname))
+  BUILDSYSTEM = LinuxMakefile
+endif
+
+ifeq ($(uname), Darwin)
+  BUILDSYSTEM = XCode
+endif
+
+CONFIG = Release
+
+system:
+	@echo "uname : $(uname)"
+	@echo "system: $(BUILDSYSTEM)"
+	@echo "config: $(CONFIG)"
 
 # list of projects
 ALL_PROJECTS=$(patsubst %/, %, $(dir $(wildcard */*.jucer)))
@@ -30,9 +45,34 @@ $(ALL_PROJECTS:%=%-clean):
 
 # LinuxMakefile based rules
 %-LinuxMakefile-build: %/Builds/LinuxMakefile/Makefile
-	make -C $(<D)
+	make -C $(<D) \
+		CONFIG="$(CONFIG)" \
+		all
 %-LinuxMakefile-clean: %/Builds/LinuxMakefile/Makefile
-	make -C $(<D) clean
+	make -C $(<D) \
+		CONFIG="$(CONFIG)" \
+		clean
 
 %/Builds/LinuxMakefile/Makefile: %.jucer
 	$(PROJUCER) -resave "$^"
+
+# XCode based rules
+.SECONDEXPANSION:
+%-XCode-build: $$(subst @,%,@/Builds/MacOSX/@.xcodeproj/project.pbxproj)
+	xcodebuild \
+		-project $(<D) \
+		-target "$(firstword $(subst /, ,$<)) - All" \
+		-configuration "$(CONFIG)" \
+		build
+%-XCode-clean: $$(subst @,%,@/Builds/MacOSX/@.xcodeproj/project.pbxproj)
+	xcodebuild \
+		-project $(<D) \
+		-target "$(firstword $(subst /, ,$<)) - All" \
+		-configuration "$(CONFIG)" \
+		clean
+
+
+# this does not declare a proper dependency,
+# so Projucer will be called for each %-build
+%.pbxproj:
+	$(PROJUCER) -resave $(subst @,$(firstword $(subst /, ,$@)),@/@.jucer)

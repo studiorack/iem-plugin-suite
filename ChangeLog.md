@@ -1,6 +1,28 @@
 This file only contains the major changes of the IEM Plug-in Suite.
 For a list of all changes and bugfixes see the git log.
 
+## v1.1.1
+- general changes
+    - added binaural IO widget
+    - directivity IO widget now shows the normalization (which is N3D)
+    - added warning sign to titlebar widgets when bus is too small
+    
+- plugin specific changes
+    - **Multi**Encoder
+        - changed element colours are now displayed at once
+    - **Binaural**Decoder
+        - making use of new binaural IO widget
+        - performance improvements on windows and linux
+    - **Directivity**Shaper
+        - better GUI performance
+        - 5dB subgrid for directivity shaper
+        - more linear default values for filters
+    - **Room**Encoder
+        - fixed bug which lead to filter output values way beyond of 1
+    - **Tool**Box
+        - added adaptor tool for lower order Ambisonic (LOA) signals to be compatible with HOA decoder weights
+
+
 ## v1.1.0
 - new plug-ins:
     - **Matrix**Multiplicator

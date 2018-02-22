@@ -86,8 +86,10 @@ private:
     ToggleButton tbFlipX, tbFlipY, tbFlipZ;
     ScopedPointer<ButtonAttachment> tbFlipXAttachment, tbFlipYAttachment, tbFlipZAttachment;
     
-    
-
+    GroupComponent gcLOAWeighting;
+    ComboBox cbLoaWeights;
+    ScopedPointer<ComboBoxAttachment> cbLoaWeightsAttachment;
+    SimpleLabel lbLoaWeights;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ToolBoxAudioProcessorEditor)
 };

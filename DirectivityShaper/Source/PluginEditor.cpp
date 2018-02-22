@@ -233,7 +233,7 @@ DirectivityShaperAudioProcessorEditor::DirectivityShaperAudioProcessorEditor (Di
     masterElement.setSliders(&slMasterYaw,&slMasterPitch);
     sphere.addElement(&masterElement);
     
-    startTimer(10);
+    startTimer(30);
 }
 
 DirectivityShaperAudioProcessorEditor::~DirectivityShaperAudioProcessorEditor()
@@ -411,13 +411,29 @@ void DirectivityShaperAudioProcessorEditor::timerCallback()
             weights[b][i] = processor.weights[b][i];
     }
     
-    if (processor.updateFv)
+    if (processor.repaintFV.get())
     {
-        processor.updateFv = false;
+        processor.repaintFV = false;
         fv.repaint();
     }
     
-    sphere.repaint();
-    xyPad.repaint();
-    dv.repaint();
+    
+    if (processor.repaintSphere.get())
+    {
+        processor.repaintSphere = false;
+        sphere.repaint();
+    }
+    
+    if (processor.repaintXY.get())
+    {
+        processor.repaintXY = false;
+        xyPad.repaint();
+    }
+    
+    if (processor.repaintDV.get())
+    {
+        processor.repaintDV = false;
+        dv.repaint();
+    }
+    
 }
