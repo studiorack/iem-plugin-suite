@@ -35,7 +35,7 @@ AllRADecoderAudioProcessor::AllRADecoderAudioProcessor()
                      #endif
                        ),
 #endif
-parameters(*this, nullptr)
+parameters(*this, nullptr), energyDistribution(Image::PixelFormat::ARGB, 200, 100, true)
 {
      
     parameters.createAndAddParameter ("inputOrderSetting", "Ambisonic Order", "",
@@ -128,74 +128,6 @@ parameters(*this, nullptr)
 
     loudspeakers.addListener(this);
     prepareLayout();
-    
-    float x, y, azi, ele;
-    
-    azi = 0.0f; ele = 0.0f;
-    HammerAitov::sphericalToXY(azi, ele, x, y);
-    DBG("Azi: " << azi << " Ele: " << ele << " x: " << x << " y: " << y);
-    HammerAitov::XYToSpherical(x, y, azi, ele);
-    DBG(" x: " << x << " y: " << y << "Azi: " << azi << " Ele: " << ele);
-    
-    azi = 1.1f; ele = 0.4f;
-    HammerAitov::sphericalToXY(azi, ele, x, y);
-    DBG("Azi: " << azi << " Ele: " << ele << " x: " << x << " y: " << y);
-    HammerAitov::XYToSpherical(x, y, azi, ele);
-    DBG(" x: " << x << " y: " << y << "Azi: " << azi << " Ele: " << ele);
-    
-    azi = -1.1f; ele = 0.4f;
-    HammerAitov::sphericalToXY(azi, ele, x, y);
-    DBG("Azi: " << azi << " Ele: " << ele << " x: " << x << " y: " << y);
-    HammerAitov::XYToSpherical(x, y, azi, ele);
-    DBG(" x: " << x << " y: " << y << "Azi: " << azi << " Ele: " << ele);
-    
-    azi = 1.1f; ele = -0.4f;
-    HammerAitov::sphericalToXY(azi, ele, x, y);
-    DBG("Azi: " << azi << " Ele: " << ele << " x: " << x << " y: " << y);
-    HammerAitov::XYToSpherical(x, y, azi, ele);
-    DBG(" x: " << x << " y: " << y << "Azi: " << azi << " Ele: " << ele);
-    
-    azi = -M_PI; ele = 0.0f;
-    HammerAitov::sphericalToXY(azi, ele, x, y);
-    DBG("Azi: " << azi << " Ele: " << ele << " x: " << x << " y: " << y);
-    HammerAitov::XYToSpherical(x, y, azi, ele);
-    DBG(" x: " << x << " y: " << y << "Azi: " << azi << " Ele: " << ele);
-    
-    azi = M_PI; ele = 0.0f;
-    HammerAitov::sphericalToXY(azi, ele, x, y);
-    DBG("Azi: " << azi << " Ele: " << ele << " x: " << x << " y: " << y);
-    HammerAitov::XYToSpherical(x, y, azi, ele);
-    DBG(" x: " << x << " y: " << y << "Azi: " << azi << " Ele: " << ele);
-    
-    
-    azi = M_PI; ele = M_PI * 0.5f;
-    HammerAitov::sphericalToXY(azi, ele, x, y);
-    DBG("Azi: " << azi << " Ele: " << ele << " x: " << x << " y: " << y);
-    HammerAitov::XYToSpherical(x, y, azi, ele);
-    DBG(" x: " << x << " y: " << y << "Azi: " << azi << " Ele: " << ele);
-    
-    
-    
-    x = 0.0f; y = 0.0f;
-    HammerAitov::XYToSpherical(x, y, azi, ele);
-    DBG(" x: " << x << " y: " << y << "Azi: " << azi << " Ele: " << ele);
-    HammerAitov::sphericalToXY(azi, ele, x, y);
-    DBG("Azi: " << azi << " Ele: " << ele << " x: " << x << " y: " << y);
-    
-    x = 1.0f; y = 1.0f;
-    HammerAitov::XYToSpherical(x, y, azi, ele);
-    DBG(" x: " << x << " y: " << y << "Azi: " << azi << " Ele: " << ele);
-    HammerAitov::sphericalToXY(azi, ele, x, y);
-    DBG("Azi: " << azi << " Ele: " << ele << " x: " << x << " y: " << y);
-    
-    x = 0.5f; y = 0.5f;
-    HammerAitov::XYToSpherical(x, y, azi, ele);
-    DBG(" x: " << x << " y: " << y << "Azi: " << azi << " Ele: " << ele);
-    HammerAitov::sphericalToXY(azi, ele, x, y);
-    DBG("Azi: " << azi << " Ele: " << ele << " x: " << x << " y: " << y);
-    
-    
-    DBG("break");
 }
 
 AllRADecoderAudioProcessor::~AllRADecoderAudioProcessor()
@@ -549,6 +481,15 @@ Vector3D<float> AllRADecoderAudioProcessor::sphericalToCartesian(Vector3D<float>
                            );
 }
 
+Vector3D<float> AllRADecoderAudioProcessor::sphericalInRadiansToCartesian(Vector3D<float> sphervect)
+{
+    return Vector3D<float>(
+                           sphervect.x * cos(sphervect.z) * cos(sphervect.y),
+                           sphervect.x * cos(sphervect.z) * sin(sphervect.y),
+                           sphervect.x * sin(sphervect.z)
+                           );
+}
+
 void AllRADecoderAudioProcessor::addRandomPoint()
 {
     undoManager.beginNewTransaction();
@@ -735,8 +676,6 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
     DBG("Number of loudspeakers: " << nLsps << ". Number of real loudspeakers: " << nRealLsps);
     Matrix<float> decoderMatrix(nRealLsps, nCoeffs);
     
-    const float overallGainFactor = triangles.size() / 5200.0f;
-    
     Array<Matrix<float>> inverseArray;
     for (int t = 0; t < triangles.size(); ++t) //iterate over each triangle
     {
@@ -825,14 +764,14 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
                     }
 
                     for (int n = 0; n < connectedLsps.size(); ++n)
-                        FloatVectorOperations::addWithMultiply(&decoderMatrix(points[connectedLsps[n]].realLspNum, 0), &sh[0], gainVector[n] * overallGainFactor, nCoeffs);
+                        FloatVectorOperations::addWithMultiply(&decoderMatrix(points[connectedLsps[n]].realLspNum, 0), &sh[0], gainVector[n], nCoeffs);
                     
                 }
                 else
                 {
-                    FloatVectorOperations::addWithMultiply(&decoderMatrix(points[tri.a].realLspNum, 0), &sh[0], gains(0, 0) * overallGainFactor, nCoeffs);
-                    FloatVectorOperations::addWithMultiply(&decoderMatrix(points[tri.b].realLspNum, 0), &sh[0], gains(1, 0) * overallGainFactor, nCoeffs);
-                    FloatVectorOperations::addWithMultiply(&decoderMatrix(points[tri.c].realLspNum, 0), &sh[0], gains(2, 0) * overallGainFactor, nCoeffs);
+                    FloatVectorOperations::addWithMultiply(&decoderMatrix(points[tri.a].realLspNum, 0), &sh[0], gains(0, 0), nCoeffs);
+                    FloatVectorOperations::addWithMultiply(&decoderMatrix(points[tri.b].realLspNum, 0), &sh[0], gains(1, 0), nCoeffs);
+                    FloatVectorOperations::addWithMultiply(&decoderMatrix(points[tri.c].realLspNum, 0), &sh[0], gains(2, 0), nCoeffs);
                 }
                 break;
             }
@@ -840,6 +779,75 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
         jassert(t < triangles.size());
     }
 
+    // calculate max lsp gain
+    float maxGain = 0.0f;
+    for (int i = 0; i < nLsps; ++i)
+    {
+        const R3 point = points[i];
+        if (! point.isImaginary)
+        {
+            SHEval(N, point.x, point.y, point.z, &sh[0]);
+            float sumOfSquares = 0.0f;
+            for (int m = 0; m < nRealLsps; ++m)
+            {
+                float sum = 0.0f;
+                for (int n = 0; n < nCoeffs; ++n)
+                    sum += sh[n] * decoderMatrix(m, n);
+                sumOfSquares += square(sum);
+            }
+            sumOfSquares = sqrt(sumOfSquares);
+            if (sumOfSquares > maxGain)
+                maxGain = sumOfSquares;
+        }
+    }
+    
+    decoderMatrix = decoderMatrix * (1.0f / maxGain);
+   
+    // calculate energy
+    const int w = energyDistribution.getWidth();
+    const float wHalf = w / 2;
+    const int h = energyDistribution.getHeight();
+    const float hHalf = h / 2;
+    float maxSumOfSuares = 0.0f;
+    float minLvl = 0.0f;
+    float maxLvl = 0.0f;
+    for (int y = 0; y < h; ++y)
+        for (int x = 0; x < w; ++x)
+        {
+            Vector3D<float> spher (1.0f, 0.0f, 0.0f);
+            HammerAitov::XYToSpherical((x - wHalf) / wHalf, (y - hHalf) / hHalf, spher.y, spher.z);
+            Vector3D<float> cart = sphericalInRadiansToCartesian(spher);
+            SHEval(N, cart.x, cart.y, cart.z, &sh[0]);
+            
+            float sumOfSquares = 0.0f;
+            for (int m = 0; m < nRealLsps; ++m)
+            {
+                float sum = 0.0f;
+                for (int n = 0; n < nCoeffs; ++n)
+                    sum += (sh[n] * decoderMatrix(m, n));
+                sumOfSquares += square(sum);
+            }
+            const float lvl = 0.5f * Decibels::gainToDecibels(sumOfSquares);
+            if (lvl > maxLvl)
+                maxLvl = lvl;
+            if (lvl < minLvl)
+                minLvl = lvl;
+            const float map = jlimit(-0.5f, 0.5f, 0.083333f * Decibels::gainToDecibels(sumOfSquares)) + 0.5f;
+            
+            energyDistribution.setPixelAt(x, y, Colours::red.withMultipliedAlpha(map));
+
+            if (sumOfSquares > maxSumOfSuares)
+                maxSumOfSuares = sumOfSquares;
+        }
+    DBG("min: " << minLvl << " max: " << maxLvl);
+            
+    updateLoudspeakerVisualization = true;
+    
+    
+    
+    
+    
+    //
     
     ReferenceCountedDecoder::Ptr newDecoder = new ReferenceCountedDecoder("Decoder", "A " + getOrderString(N) + " order Ambisonics decoder using the AllRAD approach.", (int) decoderMatrix.getSize()[0], (int) decoderMatrix.getSize()[1]);
     newDecoder->getMatrix() = decoderMatrix;

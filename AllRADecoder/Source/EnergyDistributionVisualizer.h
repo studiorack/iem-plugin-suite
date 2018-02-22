@@ -28,8 +28,12 @@
 class  EnergyDistributionVisualizer :  public Component
 {
 public:
-    EnergyDistributionVisualizer(std::vector<R3>& pts, BigInteger& imagFlags) : Component(), extPoints(pts), imaginaryFlags(imagFlags) {
+    EnergyDistributionVisualizer(std::vector<R3>& pts, BigInteger& imagFlags, Image& imageFromProcessor) : Component(), extPoints(pts), imaginaryFlags(imagFlags), image(imageFromProcessor) {
         setBufferedToImage(true);
+        
+        addAndMakeVisible(imgComp);
+        imgComp.setImage(image);
+        imgComp.setImagePlacement(RectanglePlacement::stretchToFit);
         
         addAndMakeVisible(background);
         background.addMouseListener(this, false); // could this be risky?
@@ -38,6 +42,7 @@ public:
     
     
     void resized () override {
+        imgComp.setBounds(getLocalBounds());
         background.setBounds(getLocalBounds());
     }
     
@@ -73,6 +78,9 @@ private:
     std::vector<R3>& extPoints;
     BigInteger& imaginaryFlags;
     int activePoint = -1;
+    ImageComponent imgComp;
+    Image& image;
+    
     HammerAitovGrid background;
     
 };

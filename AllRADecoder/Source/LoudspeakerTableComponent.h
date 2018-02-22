@@ -44,10 +44,10 @@ public:
         table.getHeader().addColumn(getAttributeNameForColumnId(1), 1, 23, 20, 25, TableHeaderComponent::notSortable);
         table.getHeader().addColumn(getAttributeNameForColumnId(2), 2, 60);
         table.getHeader().addColumn(getAttributeNameForColumnId(3), 3, 60);
-        table.getHeader().addColumn(getAttributeNameForColumnId(4), 4, 60);
-        table.getHeader().addColumn(getAttributeNameForColumnId(5), 5, 60);
+        table.getHeader().addColumn(getAttributeNameForColumnId(4), 4, 50);
+        table.getHeader().addColumn(getAttributeNameForColumnId(5), 5, 55);
         table.getHeader().addColumn(getAttributeNameForColumnId(6), 6, 60);
-        table.getHeader().addColumn(getAttributeNameForColumnId(7), 7, 60);
+        table.getHeader().addColumn(getAttributeNameForColumnId(7), 7, 45);
         table.getHeader().addColumn(getAttributeNameForColumnId(8), 8, 60, 60, 60, TableHeaderComponent::notSortable);
 
         table.setHeaderHeight(23);

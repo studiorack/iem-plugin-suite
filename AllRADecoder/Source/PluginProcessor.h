@@ -122,6 +122,7 @@ public:
     void setLastDir(File newLastDir);
     File getLastDir() {return lastDir;};
 
+    Image energyDistribution;
     
     
 private:
@@ -158,6 +159,8 @@ private:
     ValueTree createLoudspeakerFromSpherical (Vector3D<float> sphericalCoordinates, int channel, bool isVirtual = false, float gain = 1.0f);
     Vector3D<float> cartesianToSpherical (Vector3D<float> cartvect);
     Vector3D<float> sphericalToCartesian (Vector3D<float> sphervect);
+    Vector3D<float> sphericalInRadiansToCartesian (Vector3D<float> sphervect);
+    
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AllRADecoderAudioProcessor)
 };

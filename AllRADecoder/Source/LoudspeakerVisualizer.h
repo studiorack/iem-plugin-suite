@@ -90,6 +90,12 @@ public:
         updateVerticesAndIndices();
     }
     
+    void resized() override
+    {
+        viewHasChanged = true;
+        openGLContext.triggerRepaint();
+    }
+    
     void updateVerticesAndIndices()
     {
         vertices.clear();
