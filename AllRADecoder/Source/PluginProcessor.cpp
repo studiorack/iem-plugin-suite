@@ -35,7 +35,7 @@ AllRADecoderAudioProcessor::AllRADecoderAudioProcessor()
                      #endif
                        ),
 #endif
-parameters(*this, nullptr), energyDistribution(Image::PixelFormat::ARGB, 200, 100, true)
+energyDistribution(Image::PixelFormat::ARGB, 200, 100, true), parameters(*this, nullptr) 
 {
      
     parameters.createAndAddParameter ("inputOrderSetting", "Ambisonic Order", "",
@@ -97,9 +97,6 @@ parameters(*this, nullptr), energyDistribution(Image::PixelFormat::ARGB, 200, 10
     properties = new PropertiesFile(options);
     lastDir = File(properties->getValue("presetFolder"));
     
-    
-    //parameters.state.appendChild(loudspeakers, nullptr);
-
     undoManager.beginNewTransaction();
     loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (1.0f, 0.0f, 0.0f), 1), &undoManager);
     undoManager.beginNewTransaction();

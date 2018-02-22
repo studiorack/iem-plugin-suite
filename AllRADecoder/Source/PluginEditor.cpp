@@ -59,23 +59,28 @@ AllRADecoderAudioProcessorEditor::AllRADecoderAudioProcessorEditor (AllRADecoder
     addAndMakeVisible(grid);
     
     addAndMakeVisible(tbCalculateDecoder);
-    tbCalculateDecoder.setButtonText("calculate Decoder");
+    tbCalculateDecoder.setButtonText("CALCULATE DECODER");
+    tbCalculateDecoder.setColour(TextButton::buttonColourId, Colours::cornflowerblue);
     tbCalculateDecoder.addListener(this);
     
     addAndMakeVisible(tbAddSpeakers);
-    tbAddSpeakers.setButtonText("add loudspeaker");
+    tbAddSpeakers.setButtonText("ADD");
+    tbAddSpeakers.setColour(TextButton::buttonColourId, Colours::limegreen);
     tbAddSpeakers.addListener(this);
     
     addAndMakeVisible(tbJson);
-    tbJson.setButtonText("print JSON");
+    tbJson.setButtonText("EXPORT");
+    tbJson.setColour(TextButton::buttonColourId, Colours::orange);
     tbJson.addListener(this);
     
     addAndMakeVisible(tbUndo);
-    tbUndo.setButtonText("undo");
+    tbUndo.setButtonText("UNDO");
+    tbUndo.setColour(TextButton::buttonColourId, Colours::orangered);
     tbUndo.onClick = [this] () { processor.undo(); };
     
     addAndMakeVisible(tbRedo);
-    tbRedo.setButtonText("redo");
+    tbRedo.setButtonText("REDO");
+    tbRedo.setColour(TextButton::buttonColourId, Colours::orangered);
     tbRedo.onClick = [this] () { processor.redo(); };
     
     addAndMakeVisible(lv);
@@ -124,11 +129,11 @@ void AllRADecoderAudioProcessorEditor::resized()
     
     Rectangle<int> sliderRow = area.removeFromTop(50);
 
-    tbAddSpeakers.setBounds(20, 80, 100, 20);
-    tbCalculateDecoder.setBounds(150, 80, 100, 20);
-    tbUndo.setBounds(280, 80, 100, 20);
-    tbRedo.setBounds(410, 80, 100, 20);
-    tbJson.setBounds(540, 80, 100, 20);
+    tbAddSpeakers.setBounds(20, 80, 35, 20);
+    tbCalculateDecoder.setBounds(150, 80, 120, 20);
+    tbUndo.setBounds(280, 80, 70, 20);
+    tbRedo.setBounds(380, 80, 70, 20);
+    tbJson.setBounds(480, 80, 100, 20);
     cbDecoderOrder.setBounds(670, 80, 100, 20);
     
     
@@ -200,7 +205,6 @@ void AllRADecoderAudioProcessorEditor::buttonClicked (Button* button)
         }
         
     }
-
 }
 
 void AllRADecoderAudioProcessorEditor::buttonStateChanged (Button* button) {};

@@ -308,7 +308,7 @@ private:
         RemoveButton (LoudspeakerTableComponent& td)  : owner (td)
         {
             setButtonText("Remove");
-            setColour(TextButton::buttonOnColourId, Colours::orangered);
+            setColour(TextButton::buttonColourId, Colours::orangered);
             onClick = [this](){ owner.undoManager.beginNewTransaction(); owner.data.removeChild(owner.data.getChild(row), &owner.undoManager);};
         }
         
@@ -321,23 +321,23 @@ private:
         void paintButton (Graphics& g, bool isMouseOverButton, bool isButtonDown) override
         {
             LookAndFeel& lf = getLookAndFeel();
-            
+
             Rectangle<float> buttonArea(0.0f, 0.0f, getWidth(), getHeight());
             buttonArea.reduce(2.0f, 2.0f);
-            
-            g.setColour(findColour(TextButton::buttonOnColourId).withMultipliedAlpha(isButtonDown ? 1.0f : isMouseOverButton ? 0.7f : 0.5f));
+
+            g.setColour(findColour(TextButton::buttonColourId).withMultipliedAlpha(isButtonDown ? 1.0f : isMouseOverButton ? 0.7f : 0.5f));
             if (isButtonDown)
                 buttonArea.reduce(0.8f, 0.8f);
             else if (isMouseOverButton)
                 buttonArea.reduce(0.4f, 0.4f);
-            
+
             g.drawRoundedRectangle(buttonArea, 2.0f, 1.0f);
-            
+
             buttonArea.reduce(1.5f, 1.5f);
-            g.setColour(findColour(TextButton::buttonOnColourId).withMultipliedAlpha(isButtonDown ? 1.0f : isMouseOverButton ? 0.5f : 0.2f));
-            
+            g.setColour(findColour(TextButton::buttonColourId).withMultipliedAlpha(isButtonDown ? 1.0f : isMouseOverButton ? 0.5f : 0.2f));
+
             g.fillRoundedRectangle(buttonArea, 2.0f);
-            
+
             lf.drawButtonText (g, *this, isMouseOverButton, isButtonDown);
         }
         
