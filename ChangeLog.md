@@ -1,7 +1,7 @@
 This file only contains the major changes of the IEM Plug-in Suite.
 For a list of all changes and bugfixes see the git log.
 
-## untagged changes
+## v1.1.1
 - general changes
     - added binaural IO widget
     - directivity IO widget now shows the normalization (which is N3D)
@@ -12,6 +12,7 @@ For a list of all changes and bugfixes see the git log.
         - changed element colours are now displayed at once
     - **Binaural**Decoder
         - making use of new binaural IO widget
+        - performance improvements on windows and linux
     - **Directivity**Shaper
         - better GUI performance
         - 5dB subgrid for directivity shaper
