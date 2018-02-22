@@ -32,6 +32,7 @@
 //Custom Components
 #include "../../resources/customComponents/ReverseSlider.h"
 #include "../../resources/customComponents/SimpleLabel.h"
+#include "../../resources/customComponents/MailBox.h"
 #include "LoudspeakerVisualizer.h"
 #include "EnergyDistributionVisualizer.h"
 #include "LoudspeakerTableComponent.h"
@@ -91,6 +92,7 @@ private:
     ComboBox cbDecoderOrder;
     ScopedPointer<ComboBoxAttachment> cbDecoderOrderAttachment;
     
+    MailBox::Display messageDisplay;
     
     TextButton tbCalculateDecoder;
     TextButton tbAddSpeakers;

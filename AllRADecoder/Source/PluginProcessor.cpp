@@ -544,10 +544,25 @@ void AllRADecoderAudioProcessor::prepareLayout()
     isLayoutReady = false;
     Result res = checkLayout();
     if (res.failed())
+    {
         DBG(res.getErrorMessage());
+        MailBox::Message newMessage;
+        newMessage.messageColour = Colours::red;
+        newMessage.headline = "Improper layout";
+        newMessage.text = res.getErrorMessage();
+        messageToEditor = newMessage;
+        updateMessage = true;
+    }
     else
     {
         DBG("Layout is ready for creating a decoder!");
+        MailBox::Message newMessage;
+        newMessage.messageColour = Colours::cornflowerblue;
+        newMessage.headline = "Suitable layout";
+        newMessage.text = "The layout is ready to calculate a decoder.";
+        messageToEditor = newMessage;
+        updateMessage = true;
+        
         isLayoutReady = true;
     }
 }
@@ -815,7 +830,7 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
         for (int x = 0; x < w; ++x)
         {
             Vector3D<float> spher (1.0f, 0.0f, 0.0f);
-            HammerAitov::XYToSpherical((x - wHalf) / wHalf, (y - hHalf) / hHalf, spher.y, spher.z);
+            HammerAitov::XYToSpherical((x - wHalf) / wHalf, (hHalf - y) / hHalf, spher.y, spher.z);
             Vector3D<float> cart = sphericalInRadiansToCartesian(spher);
             SHEval(N, cart.x, cart.y, cart.z, &sh[0]);
             
@@ -832,9 +847,9 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
                 maxLvl = lvl;
             if (lvl < minLvl)
                 minLvl = lvl;
-            const float map = jlimit(-0.5f, 0.5f, 0.083333f * Decibels::gainToDecibels(sumOfSquares)) + 0.5f;
-            
-            energyDistribution.setPixelAt(x, y, Colours::red.withMultipliedAlpha(map));
+            const float map = jlimit(-1.0f, 1.0f, 0.16666667f * Decibels::gainToDecibels(sumOfSquares));
+            const bool positive = map > 0;
+            energyDistribution.setPixelAt(x, y, (positive ? Colours::red : Colours::blue ).withMultipliedAlpha(abs(map)));
 
             if (sumOfSquares > maxSumOfSuares)
                 maxSumOfSuares = sumOfSquares;
@@ -842,12 +857,7 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
     DBG("min: " << minLvl << " max: " << maxLvl);
             
     updateLoudspeakerVisualization = true;
-    
-    
-    
-    
-    
-    //
+
     
     ReferenceCountedDecoder::Ptr newDecoder = new ReferenceCountedDecoder("Decoder", "A " + getOrderString(N) + " order Ambisonics decoder using the AllRAD approach.", (int) decoderMatrix.getSize()[0], (int) decoderMatrix.getSize()[1]);
     newDecoder->getMatrix() = decoderMatrix;
@@ -868,7 +878,16 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
     
     decoder.setDecoder(newDecoder);
     decoderConfig = newDecoder;
-    DBG("fertig");
+    DBG("finished");
+    
+    MailBox::Message newMessage;
+    newMessage.messageColour = Colours::green;
+    newMessage.headline = "Decoder created";
+    newMessage.text = "The decoder was calculated successfully.";
+    messageToEditor = newMessage;
+    updateMessage = true;
+    
+    
     return Result::ok();
 }
 
@@ -918,7 +937,15 @@ void AllRADecoderAudioProcessor::saveConfigurationToFile(File destination)
     String jsonString = JSON::toString(var(jsonObj));
     DBG(jsonString);
     if (destination.replaceWithText(jsonString))
+    {
         DBG("Configuration successfully written to file.");
+        MailBox::Message newMessage;
+        newMessage.messageColour = Colours::red;
+        newMessage.headline = "Configuration export successfully";
+        newMessage.text = "The decoder was successfully written to " + destination.getFileName() + ".";
+        messageToEditor = newMessage;
+        updateMessage = true;
+    }
     else
         DBG("Could not write configuration file.");
 }

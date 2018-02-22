@@ -53,6 +53,9 @@ AllRADecoderAudioProcessorEditor::AllRADecoderAudioProcessorEditor (AllRADecoder
     cbDecoderOrderAttachment = new ComboBoxAttachment(valueTreeState, "decoderOrder", cbDecoderOrder);
     
     
+    addAndMakeVisible(messageDisplay);
+    messageDisplay.setMessage(processor.messageToEditor);
+    
     addAndMakeVisible(grid);
     
     addAndMakeVisible(tbCalculateDecoder);
@@ -118,6 +121,7 @@ void AllRADecoderAudioProcessorEditor::resized()
     // the removeFrom...() methods are quite handy to create scaleable areas
     // best practice would be the use of flexBoxes...
     // the following is medium level practice ;-)
+    
     Rectangle<int> sliderRow = area.removeFromTop(50);
 
     tbAddSpeakers.setBounds(20, 80, 100, 20);
@@ -127,12 +131,19 @@ void AllRADecoderAudioProcessorEditor::resized()
     tbJson.setBounds(540, 80, 100, 20);
     cbDecoderOrder.setBounds(670, 80, 100, 20);
     
-    Rectangle<int> leftArea = area.removeFromLeft(area.getWidth() / 2);
-    lv.setBounds(leftArea);
-    Rectangle<int> rightTopArea = area.removeFromTop(200);
     
-    lspList.setBounds(rightTopArea);
-    grid.setBounds(area);
+    Rectangle<int> leftArea = area.removeFromLeft(area.getWidth() / 2);
+    messageDisplay.setBounds(leftArea.removeFromBottom(100));
+    
+    lv.setBounds(leftArea);
+    
+    
+    
+    Rectangle<int> rightBottomArea = area.removeFromBottom(200);
+    grid.setBounds(rightBottomArea);
+    
+    lspList.setBounds(area);
+    
 }
 
 void AllRADecoderAudioProcessorEditor::timerCallback()
@@ -155,6 +166,12 @@ void AllRADecoderAudioProcessorEditor::timerCallback()
     {
         processor.updateTable = false;
         lspList.updateContent();
+    }
+    
+    if (processor.updateMessage.get())
+    {
+        processor.updateMessage = false;
+        messageDisplay.setMessage(processor.messageToEditor);
     }
 }
 

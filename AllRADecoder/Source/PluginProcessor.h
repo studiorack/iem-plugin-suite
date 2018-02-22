@@ -24,6 +24,7 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "../../resources/IOHelper.h"
+#include "../../resources/customComponents/MailBox.h"
 #include "../../resources/NewtonApple/NewtonApple_hull3D.h"
 #include "tDesign5200.h"
 #include "../../resources/efficientSHvanilla.h"
@@ -109,6 +110,7 @@ public:
     var lsps;
     Atomic<bool> updateLoudspeakerVisualization = false;
     Atomic<bool> updateTable = true;
+    Atomic<bool> updateMessage = true;
     
     std::vector<R3> points;
     std::vector<Tri> triangles;
@@ -124,6 +126,7 @@ public:
 
     Image energyDistribution;
     
+    MailBox::Message messageToEditor;
     
 private:
     // ====== parameters
