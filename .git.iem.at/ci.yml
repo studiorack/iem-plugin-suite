@@ -18,7 +18,7 @@ debian_buster:
     - apt dist-upgrade -y
     - apt-get build-dep -y --no-install-recommends iem-plugin-suite
     - apt-get install -y --no-install-recommends libfftw3-dev
-    - xvfb-run -a make -k V=1 CONFIG=$CONFIG CPPFLAGS=-DJUCE_JACK=1 LDFLAGS="$(pkg-config --libs jack flac vorbis vorbisenc vorbisfile ogg libjpeg libpng zlib)"
+    - xvfb-run -a make -k V=1 CONFIG=$CONFIG CPPFLAGS=-DJUCE_JACK=1 LDFLAGS="$(pkg-config --libs jack flac vorbis vorbisenc vorbisfile ogg libjpeg libpng zlib fftw3)"
 
 osx:
   tags:
