@@ -92,6 +92,9 @@ private:
     ComboBox cbDecoderOrder;
     ScopedPointer<ComboBoxAttachment> cbDecoderOrderAttachment;
     
+    GroupComponent gcLayout, gcDecoder, gcExport;
+    SimpleLabel lbDecoderOrder;
+    
     MailBox::Display messageDisplay;
     
     TextButton tbCalculateDecoder;

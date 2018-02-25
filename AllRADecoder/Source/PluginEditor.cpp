@@ -52,6 +52,17 @@ AllRADecoderAudioProcessorEditor::AllRADecoderAudioProcessorEditor (AllRADecoder
         cbDecoderOrder.addItem(getOrderString(n), n);
     cbDecoderOrderAttachment = new ComboBoxAttachment(valueTreeState, "decoderOrder", cbDecoderOrder);
     
+    addAndMakeVisible(gcLayout);
+    gcLayout.setText("Loudspeaker Layout");
+    
+    addAndMakeVisible(gcDecoder);
+    gcDecoder.setText("Calculate Decoder");
+    
+    addAndMakeVisible(gcExport);
+    gcExport.setText("Export Decoder/Layout");
+    
+    addAndMakeVisible(lbDecoderOrder);
+    lbDecoderOrder.setText("Decoder Order");
     
     addAndMakeVisible(messageDisplay);
     messageDisplay.setMessage(processor.messageToEditor);
@@ -64,7 +75,7 @@ AllRADecoderAudioProcessorEditor::AllRADecoderAudioProcessorEditor (AllRADecoder
     tbCalculateDecoder.addListener(this);
     
     addAndMakeVisible(tbAddSpeakers);
-    tbAddSpeakers.setButtonText("ADD");
+    tbAddSpeakers.setButtonText("ADD LOUDSPEAKER");
     tbAddSpeakers.setColour(TextButton::buttonColourId, Colours::limegreen);
     tbAddSpeakers.addListener(this);
     
@@ -127,28 +138,52 @@ void AllRADecoderAudioProcessorEditor::resized()
     // best practice would be the use of flexBoxes...
     // the following is medium level practice ;-)
     
-    Rectangle<int> sliderRow = area.removeFromTop(50);
+    Rectangle<int> rightArea = area.removeFromRight(400);
+    Rectangle<int> bottomRight = rightArea.removeFromBottom(100);
+    
+    rightArea.removeFromBottom(25);
+    
+    gcLayout.setBounds(rightArea);
+    rightArea.removeFromTop(25);
+    
+    Rectangle<int> ctrlsAndDisplay (rightArea.removeFromBottom(45));
+    Rectangle<int> lspCtrlArea (ctrlsAndDisplay.removeFromLeft(120));
+    ctrlsAndDisplay.removeFromLeft(10);
+    messageDisplay.setBounds(ctrlsAndDisplay);
+    
+    tbAddSpeakers.setBounds(lspCtrlArea.removeFromTop(20));
+    lspCtrlArea.removeFromTop(5);
+    tbUndo.setBounds(lspCtrlArea.removeFromLeft(55));
+    tbRedo.setBounds(lspCtrlArea.removeFromRight(55));
+    
+    rightArea.removeFromBottom(5);
+    lspList.setBounds(rightArea);
 
-    tbAddSpeakers.setBounds(20, 80, 35, 20);
-    tbCalculateDecoder.setBounds(150, 80, 120, 20);
-    tbUndo.setBounds(280, 80, 70, 20);
-    tbRedo.setBounds(380, 80, 70, 20);
-    tbJson.setBounds(480, 80, 100, 20);
-    cbDecoderOrder.setBounds(670, 80, 100, 20);
+    Rectangle<int> decoderArea = bottomRight.removeFromLeft(130);
+    bottomRight.removeFromLeft(20);
+    Rectangle<int> exportArea = bottomRight;
     
     
-    Rectangle<int> leftArea = area.removeFromLeft(area.getWidth() / 2);
-    messageDisplay.setBounds(leftArea.removeFromBottom(100));
+    gcDecoder.setBounds(decoderArea);
+    decoderArea.removeFromTop(25);
+    Rectangle<int> decoderCtrlRow = decoderArea.removeFromTop(20);
+    lbDecoderOrder.setBounds(decoderCtrlRow.removeFromLeft(80));
+    cbDecoderOrder.setBounds(decoderCtrlRow.removeFromLeft(50));;
+    decoderArea.removeFromTop(5);
+    tbCalculateDecoder.setBounds(decoderArea.removeFromTop(20));
     
+    
+    gcExport.setBounds(exportArea);
+    exportArea.removeFromTop(25);
+    tbJson.setBounds(exportArea.removeFromTop(20).removeFromLeft(80));
+
+    area.removeFromRight(20);
+    Rectangle<int> leftArea = area;
+    
+    grid.setBounds(leftArea.removeFromBottom(200));
+    leftArea.removeFromBottom(10);
     lv.setBounds(leftArea);
-    
-    
-    
-    Rectangle<int> rightBottomArea = area.removeFromBottom(200);
-    grid.setBounds(rightBottomArea);
-    
-    lspList.setBounds(area);
-    
+
 }
 
 void AllRADecoderAudioProcessorEditor::timerCallback()
