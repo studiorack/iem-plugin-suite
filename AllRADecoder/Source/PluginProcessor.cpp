@@ -844,17 +844,32 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
                 maxLvl = lvl;
             if (lvl < minLvl)
                 minLvl = lvl;
-            const float map = jlimit(-1.0f, 1.0f, 0.16666667f * Decibels::gainToDecibels(sumOfSquares));
-            const bool positive = map > 0;
-            energyDistribution.setPixelAt(x, y, (positive ? Colours::red : Colours::blue ).withMultipliedAlpha(abs(map)));
+            const float map = jlimit(-0.5f, 0.5f, 0.5f * 0.16666667f * Decibels::gainToDecibels(sumOfSquares)) + 0.5f;
+            
+            Colour pixelColour = Colours::red.withMultipliedAlpha(map);
+
+            energyDistribution.setPixelAt(x, y, pixelColour);
 
             if (sumOfSquares > maxSumOfSuares)
                 maxSumOfSuares = sumOfSquares;
         }
+
+
+
     DBG("min: " << minLvl << " max: " << maxLvl);
             
     updateLoudspeakerVisualization = true;
 
+    Colour colormapData[8];
+    colormapData[0] = Colours::skyblue.withMultipliedAlpha(0.0f);
+    colormapData[1] = Colours::skyblue.withMultipliedAlpha(0.2f);
+    colormapData[2] = Colours::skyblue.withMultipliedAlpha(0.3f);
+    colormapData[3] = Colour::fromFloatRGBA(0.167f, 0.620f, 0.077f, 6.0f);
+    colormapData[4] = Colour::fromFloatRGBA(0.167f, 0.620f, 0.077f, 7.0f);
+    colormapData[5] = Colour::fromFloatRGBA(0.8f, 0.620f, 0.077f, 0.8f);
+    colormapData[6] = Colour::fromFloatRGBA(0.8f, 0.620f, 0.077f, 1.0f);
+    colormapData[7] = Colours::red;
+    
     
     ReferenceCountedDecoder::Ptr newDecoder = new ReferenceCountedDecoder("Decoder", "A " + getOrderString(N) + " order Ambisonics decoder using the AllRAD approach.", (int) decoderMatrix.getSize()[0], (int) decoderMatrix.getSize()[1]);
     newDecoder->getMatrix() = decoderMatrix;
@@ -931,13 +946,15 @@ void AllRADecoderAudioProcessor::saveConfigurationToFile(File destination)
     jsonObj->setProperty("Description", var("This configuration file was created with the IEM AllRADecoder " + String(versionString) + " plug-in. " + Time::getCurrentTime().toString(true, true)));
 
     jsonObj->setProperty("Decoder", DecoderHelper::convertDecoderToVar(decoderConfig));
+    jsonObj->setProperty("LoudspeakerLayout", convertLoudspeakersToVar());
+    
     String jsonString = JSON::toString(var(jsonObj));
     DBG(jsonString);
     if (destination.replaceWithText(jsonString))
     {
         DBG("Configuration successfully written to file.");
         MailBox::Message newMessage;
-        newMessage.messageColour = Colours::red;
+        newMessage.messageColour = Colours::green;
         newMessage.headline = "Configuration export successfully";
         newMessage.text = "The decoder was successfully written to " + destination.getFileName() + ".";
         messageToEditor = newMessage;
@@ -984,4 +1001,32 @@ void AllRADecoderAudioProcessor::valueTreeChildOrderChanged (ValueTree &parentTr
 void AllRADecoderAudioProcessor::valueTreeParentChanged (ValueTree &treeWhoseParentHasChanged)
 {
     DBG("valueTreeParentChanged");
+}
+
+var AllRADecoderAudioProcessor::convertLoudspeakersToVar ()
+{
+    DynamicObject* obj = new DynamicObject(); // loudspeaker layout object
+    obj->setProperty("Name", "a loudspeaker layout");
+    obj->setProperty("Description", "description");
+    
+    var loudspeakerArray;
+    
+    const int nLsp = (int) points.size();
+    for (int i = 0; i < nLsp; ++i)
+    {
+        R3 lsp = points[i];
+        DynamicObject* loudspeaker = new DynamicObject(); // loudspeaker which get's added to the loudspeakerArray var
+        
+        loudspeaker->setProperty("Azimuth", lsp.azimuth);
+        loudspeaker->setProperty("Elevation", lsp.elevation);
+        loudspeaker->setProperty("Radius", sqrt(square(lsp.x) + square(lsp.y) + square(lsp.z)));
+        loudspeaker->setProperty("IsImaginary", lsp.isImaginary);
+        loudspeaker->setProperty("Channel", lsp.channel);
+        loudspeaker->setProperty("Gain", lsp.gain);
+        
+        loudspeakerArray.append(var(loudspeaker));
+    }
+
+    obj->setProperty("Loudspeakers", loudspeakerArray);
+    return var(obj);
 }

@@ -154,6 +154,7 @@ private:
     Result verifyLoudspeakers();
     Result calculateTris();
     void convertLoudspeakersToArray();
+    var convertLoudspeakersToVar();
     
     float getKappa(float gIm, float gRe1, float gRe2, int N);
     Matrix<float> getInverse(Matrix<float> A);
