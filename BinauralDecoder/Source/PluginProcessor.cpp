@@ -305,7 +305,7 @@ void BinauralDecoderAudioProcessor::updateBuffers()
     ProcessSpec convSpec;
     convSpec.sampleRate = getSampleRate();
     convSpec.maximumBlockSize = getBlockSize();
-    convSpec.numChannels = 2; // convolve two channels (which actually point two one and the same input channel)
+    convSpec.numChannels = 2; // convolve two channels (which actually point to one and the same input channel)
     
     EQ.prepare(convSpec);
     for (int i = 0; i < 64; ++i)
