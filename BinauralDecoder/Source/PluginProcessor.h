@@ -95,7 +95,7 @@ private:
     float* useSN3D;
     float* applyHeadphoneEq;
     
-    OwnedArray<Convolution> engines[7];
+    OwnedArray<Convolution> engines;
     Convolution EQ;
     
     AudioBuffer<float> stereoSum, stereoTemp;

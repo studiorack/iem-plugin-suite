@@ -101,18 +101,12 @@ parameters(*this, nullptr)
         irs[i].setSize(2 * square(i + 2), 236);
         ScopedPointer<AudioFormatReader> reader = wavFormat.createReaderFor(mis[i], true);
         reader->read(&irs[i], 0, 236, 0, true, false);
-        
-        const int nCh = square(i + 2);
-        
-        for (int ch = 0; ch < nCh; ++ch)
-        {
-            AudioBuffer<float> temp (irs[i].getArrayOfWritePointers() + 2 * ch, 2, 236);
-            Convolution* newConv = engines[i].add(new Convolution);
-            newConv->copyAndLoadImpulseResponseFromBuffer(temp, 44100.0, true, false, false, 236);
-        }
-        
     }
-    
+        
+    for (int ch = 0; ch < 64; ++ch)
+    {
+        engines.add(new Convolution);
+    }
 }
 
 BinauralDecoderAudioProcessor::~BinauralDecoderAudioProcessor()
@@ -195,10 +189,8 @@ void BinauralDecoderAudioProcessor::prepareToPlay (double sampleRate, int sample
     convSpec.numChannels = 2; // convolve two channels (which actually point two one and the same input channel)
     
     EQ.prepare(convSpec);
-    for (int e = 0; e < 7; ++e)
-        for (int i = 0; i < engines[e].size(); ++i)
-            engines[e][i]->prepare(convSpec);
-
+    for (int i = 0; i < 64; ++i)
+        engines[i]->prepare(convSpec);
 }
 
 void BinauralDecoderAudioProcessor::releaseResources()
@@ -220,7 +212,7 @@ void BinauralDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, Mid
     ScopedNoDenormals noDenormals;
     
     const int nCh = jmin(buffer.getNumChannels(), input.getNumberOfChannels());
-    const int engineSelect = jmax(input.getOrder(), 1) - 1;
+    //const int engineSelect = jmax(input.getOrder(), 1) - 1;
     
     if (*useSN3D >= 0.5f)
         for (int ch = 1; ch < nCh; ++ch)
@@ -236,7 +228,7 @@ void BinauralDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, Mid
         AudioBlock<float> inBlock (channelPtrs, 2, buffer.getNumSamples());
         ProcessContextNonReplacing<float> context (inBlock, tempBlock);
         
-        engines[engineSelect].getUnchecked(ch)->process(context);
+        engines[ch]->process(context);
         sumBlock += tempBlock;
     }
     
@@ -299,7 +291,7 @@ void BinauralDecoderAudioProcessor::parameterChanged (const String &parameterID,
             String name = headphoneEQs[sel-1].replace("-", "") + "_wav";
             auto* sourceData = BinaryData::getNamedResource(name.toUTF8(), sourceDataSize);
             if (sourceData == nullptr)
-                DBG("erorr");
+                DBG("error");
             EQ.loadImpulseResponse(sourceData, sourceDataSize, true, false, 2048, false);
         }
     }
@@ -309,6 +301,38 @@ void BinauralDecoderAudioProcessor::updateBuffers()
 {
     DBG("IOHelper:  input size: " << input.getSize());
     DBG("IOHelper: output size: " << output.getSize());
+    
+    ProcessSpec convSpec;
+    convSpec.sampleRate = getSampleRate();
+    convSpec.maximumBlockSize = getBlockSize();
+    convSpec.numChannels = 2; // convolve two channels (which actually point two one and the same input channel)
+    
+    EQ.prepare(convSpec);
+    for (int i = 0; i < 64; ++i)
+        engines[i]->prepare(convSpec);
+    
+    AudioBuffer<float> zeroBuffer (2, getBlockSize());
+    zeroBuffer.clear();
+    AudioBuffer<float> targetBuffer (2, getBlockSize());
+    AudioBlock<float> in(zeroBuffer);
+    AudioBlock<float> out(targetBuffer);
+    ProcessContextNonReplacing<float> context(in, out);
+    
+    const int nCh = input.getNumberOfChannels();
+    const int irSelect = input.getOrder() > 0 ? input.getOrder() - 1 : 0;
+    for (int ch = 0; ch < nCh; ++ch)
+    {
+        AudioBuffer<float> temp (irs[irSelect].getArrayOfWritePointers() + 2 * ch, 2, 236);
+        engines[ch]->copyAndLoadImpulseResponseFromBuffer(temp, 44100.0, true, false, false, 236);
+        engines[ch]->prepare(convSpec);
+        
+    }
+    for (int ch = 0; ch < 64; ++ch)
+        for (int i = 0; i < (getSampleRate()) / convSpec.maximumBlockSize + 1; ++i)
+        {
+            engines[ch]->process(context);
+        }
+    
 }
 
 //==============================================================================
