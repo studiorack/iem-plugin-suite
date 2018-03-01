@@ -64,7 +64,7 @@ public:
             HammerAitov::sphericalToXY(azimuth, elevation, x, y);
             
             Rectangle<float> rect (centreX + x*wh - 5.0f, centreY - y*hh - 5.0f, 10.0f, 10.0f);
-            g.fillRect(rect);
+            g.fillRoundedRectangle(rect, 5.0f);
         }
     };
     

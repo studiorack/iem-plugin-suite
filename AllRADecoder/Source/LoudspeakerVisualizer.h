@@ -37,6 +37,10 @@ class LoudspeakerVisualizer    : public Component, public OpenGLRenderer
 public:
     LoudspeakerVisualizer(std::vector<R3>& pts, std::vector<Tri>& tris, std::vector<Vector3D<float>>& norms, BigInteger& imagFlags) : extPoints(pts), extTriangles(tris), extNormals(norms), imaginaryFlags(imagFlags)
     {
+        OpenGLPixelFormat pf;
+        pf.multisamplingLevel = 4;
+        openGLContext.setPixelFormat(pf);
+        openGLContext.setMultisamplingEnabled(true);
         openGLContext.setComponentPaintingEnabled(true);
         openGLContext.setContinuousRepainting(false);
         openGLContext.setRenderer(this);
@@ -188,7 +192,6 @@ public:
         glViewport (0, 0, roundToInt (desktopScale * getWidth()), roundToInt (desktopScale * getHeight()));
         
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        
         glEnable (GL_DEPTH_TEST);
         
 #ifdef JUCE_OPENGL3
