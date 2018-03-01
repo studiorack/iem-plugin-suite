@@ -461,16 +461,7 @@ ValueTree AllRADecoderAudioProcessor::createLoudspeakerFromCartesian (Vector3D<f
 
 ValueTree AllRADecoderAudioProcessor::createLoudspeakerFromSpherical (Vector3D<float> sphericalCoordinates, int channel, bool isVirtual, float gain)
 {
-    ValueTree newLoudspeaker ("Loudspeaker");
-
-    newLoudspeaker.setProperty("Azimuth", sphericalCoordinates.y, nullptr);
-    newLoudspeaker.setProperty("Elevation", sphericalCoordinates.z, nullptr);
-    newLoudspeaker.setProperty("Radius", sphericalCoordinates.x, nullptr);
-    newLoudspeaker.setProperty("Channel", channel, nullptr);
-    newLoudspeaker.setProperty("Imaginary", isVirtual, nullptr);
-    newLoudspeaker.setProperty("Gain", gain, nullptr);
-    
-    return newLoudspeaker;
+    return DecoderHelper::createLoudspeaker(sphericalCoordinates.y, sphericalCoordinates.z, sphericalCoordinates.x, channel, isVirtual, gain);
 }
 
 Vector3D<float> AllRADecoderAudioProcessor::cartesianToSpherical(Vector3D<float> cartvect)
@@ -1081,12 +1072,12 @@ void AllRADecoderAudioProcessor::loadConfiguration (const File& configFile)
     undoManager.beginNewTransaction();
     loudspeakers.removeAllChildren(&undoManager);
     
-    Result result = DecoderHelper::parseFileForLoudspeakerLayout (configFile, loudspeakers);
+    Result result = DecoderHelper::parseFileForLoudspeakerLayout (configFile, loudspeakers, undoManager);
     if (!result.wasOk())
     {
         DBG("Configuration could not be loaded.");
         MailBox::Message newMessage;
-        newMessage.messageColour = Colours::green;
+        newMessage.messageColour = Colours::red;
         newMessage.headline = "Error loading configuration";
         newMessage.text = result.getErrorMessage() ;
         messageToEditor = newMessage;

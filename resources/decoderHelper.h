@@ -255,7 +255,7 @@ public:
         return Result::ok();
     }
     
-    static Result parseFileForLoudspeakerLayout (const File& fileToParse, ValueTree& loudspeakers)
+    static Result parseFileForLoudspeakerLayout (const File& fileToParse, ValueTree& loudspeakers, UndoManager& undoManager)
     {
         // parse configuration file
         var parsedJson;
@@ -268,8 +268,12 @@ public:
         if (! parsedJson.hasProperty("LoudspeakerLayout"))
             return Result::fail("No 'LoudspeakerLayout' object found in the configuration file.");
         
-        var loudspeakerLayout = parsedJson.getProperty("LoudspeakerLayout", parsedJson);
-        result = addLoudspeakersToValueTree (loudspeakerLayout, loudspeakers);
+        var loudspeakerLayout = parsedJson.getProperty("LoudspeakerLayout", var());
+        if (! loudspeakerLayout.hasProperty("Loudspeakers"))
+            return Result::fail("No 'Loudspeakers' object found within the 'LoudspeakerLayout' attribute.");
+        
+        var loudspeakerArray = loudspeakerLayout.getProperty("Loudspeakers", var());
+        result = addLoudspeakersToValueTree (loudspeakerArray, loudspeakers, undoManager);
         
         if (! result.wasOk())
             return Result::fail(result.getErrorMessage());
@@ -277,19 +281,87 @@ public:
         return Result::ok();
     }
     
-    static Result addLoudspeakersToValueTree (var& loudspeakerLayout, ValueTree& loudspeakers)
+    static Result addLoudspeakersToValueTree (var& loudspeakerArray, ValueTree& loudspeakers, UndoManager& undoManager)
     {
-        Array<var>* array = loudspeakerLayout.getArray();
-        const int nLsps = array->size();
+        if (! loudspeakerArray.isArray())
+            return Result::fail("'Loudspeakers' is not an array.");
+        
+        const int nLsps = loudspeakerArray.size();
         
         for (int i = 0; i < nLsps; ++i)
         {
-            // TODO
+            var& loudspeaker = loudspeakerArray[i];
+            float azimuth, elevation, radius, gain;
+            int channel;
+            bool isImaginary;
+            
+            if (! loudspeaker.hasProperty("Azimuth"))
+                return Result::fail("No 'Azimuth' attribute for loudspeaker #" + String(i+1) + ".");
+            var azi = loudspeaker.getProperty("Azimuth", var());
+            if (azi.isDouble() || azi.isInt())
+                azimuth = azi;
+            else
+                return Result::fail("Wrong datatype for attribute 'Azimuth' for loudspeaker #" + String(i+1) + ".");
+            
+            if (! loudspeaker.hasProperty("Elevation"))
+                return Result::fail("No 'Elevation' attribute for loudspeaker #" + String(i+1) + ".");
+            var ele = loudspeaker.getProperty("Elevation", var());
+            if (ele.isDouble() || ele.isInt())
+                elevation = ele;
+            else
+                return Result::fail("Wrong datatype for attribute 'Elevation' for loudspeaker #" + String(i+1) + ".");
+            
+            if (! loudspeaker.hasProperty("Radius"))
+                return Result::fail("No 'Radius' attribute for loudspeaker #" + String(i+1) + ".");
+            var rad = loudspeaker.getProperty("Radius", var());
+            if (rad.isDouble() || rad.isInt())
+                radius = rad;
+            else
+                return Result::fail("Wrong datatype for attribute 'Radius' for loudspeaker #" + String(i+1) + ".");
+            
+            if (! loudspeaker.hasProperty("Gain"))
+                return Result::fail("No 'Gain' attribute for loudspeaker #" + String(i+1) + ".");
+            var g = loudspeaker.getProperty("Gain", var());
+            if (g.isDouble() || g.isInt())
+                gain = g;
+            else
+                return Result::fail("Wrong datatype for attribute 'Gain' for loudspeaker #" + String(i+1) + ".");
+            
+            if (! loudspeaker.hasProperty("Channel"))
+                return Result::fail("No 'Channel' attribute for loudspeaker #" + String(i+1) + ".");
+            var ch = loudspeaker.getProperty("Channel", var());
+            if (ch.isInt())
+                channel = ch;
+            else
+                return Result::fail("Wrong datatype for attribute 'Channel' for loudspeaker #" + String(i+1) + ".");
+                
+            if (! loudspeaker.hasProperty("IsImaginary"))
+                return Result::fail("No 'IsImaginary' attribute for loudspeaker #" + String(i+1) + ".");
+            var im = loudspeaker.getProperty("IsImaginary", var());
+            if (im.isBool())
+                isImaginary = im;
+            else
+                return Result::fail("Wrong datatype for attribute 'IsImaginary' for loudspeaker #" + String(i+1) + ".");
+            
+            loudspeakers.appendChild(createLoudspeaker(azimuth, elevation, radius, channel, isImaginary, gain), &undoManager);
         }
         
         return Result::ok();
     }
     
+    static ValueTree createLoudspeaker (const float azimuth, const float elevation, const float radius, const int channel, const bool isImaginary, const float gain)
+    {
+        ValueTree newLoudspeaker ("Loudspeaker");
+        
+        newLoudspeaker.setProperty("Azimuth", azimuth, nullptr);
+        newLoudspeaker.setProperty("Elevation", elevation, nullptr);
+        newLoudspeaker.setProperty("Radius", radius, nullptr);
+        newLoudspeaker.setProperty("Channel", channel, nullptr);
+        newLoudspeaker.setProperty("Imaginary", isImaginary, nullptr);
+        newLoudspeaker.setProperty("Gain", gain, nullptr);
+        
+        return newLoudspeaker;
+    }
     static var convertDecoderToVar (ReferenceCountedDecoder::Ptr& decoder)
     {
         if (decoder == nullptr)
