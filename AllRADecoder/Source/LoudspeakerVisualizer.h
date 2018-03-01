@@ -107,7 +107,7 @@ public:
         for (int i = 0; i < nPoints; ++i)
         {
             float col = extPoints[i].lspNum == activePoint ? 0.0f : imaginaryFlags[extPoints[i].lspNum] ? 0.2f : 0.4f;
-            vertices.push_back({extPoints[i].x, extPoints[i].z, extPoints[i].y, col});
+            vertices.push_back({extPoints[i].x, extPoints[i].z, -extPoints[i].y, col});
             indices.push_back(i);
             normals.push_back(1.0f);
             normals.push_back(1.0f);
@@ -127,17 +127,17 @@ public:
             Vector3D<float> c {extPoints[tr.c].x, extPoints[tr.c].y, extPoints[tr.c].z};
             
             // making sure that triangles are facing outward
-            if (normal * ((b-a)^(c-a)) > 0.0f) // correct
+            if (normal * ((b-a)^(c-a)) < 0.0f) // incorrect but no swap because of inverse y axis swap
             {
-                vertices.push_back({a.x, a.z, a.y, col});
-                vertices.push_back({b.x, b.z, b.y, col});
+                vertices.push_back({a.x, a.z, -a.y, col});
+                vertices.push_back({b.x, b.z, -b.y, col});
             }
-            else // incorrect -> swap
+            else // correct -> swap (inverse y axis)
             {
-                vertices.push_back({b.x, b.z, b.y, col});
-                vertices.push_back({a.x, a.z, a.y, col});
+                vertices.push_back({b.x, b.z, -b.y, col});
+                vertices.push_back({a.x, a.z, -a.y, col});
             }
-            vertices.push_back({c.x, c.z, c.y, col});
+            vertices.push_back({c.x, c.z, -c.y, col});
             
             indices.push_back(nPoints + i*3);
             indices.push_back(nPoints + i*3 + 1);
@@ -145,13 +145,13 @@ public:
             
             normals.push_back(normal.x);
             normals.push_back(normal.z);
-            normals.push_back(normal.y);
+            normals.push_back(-normal.y);
             normals.push_back(normal.x);
             normals.push_back(normal.z);
-            normals.push_back(normal.y);
+            normals.push_back(-normal.y);
             normals.push_back(normal.x);
             normals.push_back(normal.z);
-            normals.push_back(normal.y);
+            normals.push_back(-normal.y);
         }
         
 		updatedBuffers = true;
