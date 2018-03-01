@@ -69,8 +69,6 @@ public:
         auto& outputBlock = context.getOutputBlock();
         //const int nChOut = jmin((int) outputBlock.getNumChannels(), buffer.getNumChannels());
         
-        int lastDest = -1;
-        int highestDest = -1;
         for (int row = 0; row < T.getNumRows(); ++row)
         {
             const int destCh = retainedCurrentMatrix->getRoutingArrayReference().getUnchecked(row);
@@ -80,24 +78,23 @@ public:
                 FloatVectorOperations::multiply(dest, buffer.getReadPointer(0), T(row, 0), nSamples); // ch 0
                 for (int i = 1; i < nChIn; ++i) // input channels
                     FloatVectorOperations::addWithMultiply(dest, buffer.getReadPointer(i), T(row, i), nSamples); // ch 0
-                
             }
-            
-            
-            for (; ++lastDest < destCh;)
-            {
-                if (lastDest < outputBlock.getNumChannels())
-                    FloatVectorOperations::clear(outputBlock.getChannelPointer(lastDest), (int) outputBlock.getNumSamples());
-            }
-            
-            lastDest = destCh;
-            if (destCh > highestDest)
-                highestDest = destCh;
         }
         
-        
-        
-        for (int ch = ++lastDest; ch < outputBlock.getNumChannels(); ++ch)
+        Array<int> routingCopy (retainedCurrentMatrix->getRoutingArrayReference());
+        routingCopy.sort();
+        int lastDest = -1;
+        const int nElements = routingCopy.size();
+        for (int i = 0; i < nElements; ++i)
+        {
+            const int destCh = routingCopy[i];
+            for (; ++lastDest < destCh;)
+                if (lastDest < outputBlock.getNumChannels())
+                    FloatVectorOperations::clear(outputBlock.getChannelPointer(lastDest), (int) outputBlock.getNumSamples());
+            lastDest = destCh;
+        }
+    
+        for (int ch = routingCopy.getLast() + 1; ch < outputBlock.getNumChannels(); ++ch)
             FloatVectorOperations::clear(outputBlock.getChannelPointer(ch), (int) outputBlock.getNumSamples());
     }
     
