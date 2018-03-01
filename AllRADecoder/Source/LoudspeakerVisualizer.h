@@ -384,7 +384,7 @@ public:
         const double delta = (std::abs (wheel.deltaX) > std::abs (wheel.deltaY) ? -wheel.deltaX : wheel.deltaY);
         
         zoom += delta;
-        zoom = jmin(zoom, 5.0f);
+        zoom = jmin(zoom, 8.0f);
         zoom = jmax(zoom, 2.5f);
         viewHasChanged = true;
         openGLContext.triggerRepaint();
