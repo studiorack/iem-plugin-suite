@@ -71,6 +71,20 @@ energyDistribution(Image::PixelFormat::ARGB, 200, 100, true), parameters(*this, 
                                           else return "1st";},
                                       nullptr);
     
+    parameters.createAndAddParameter ("exportDecoder", "Export Decoder", "",
+                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
+                                      [](float value) {
+                                          if (value >= 0.5f) return "Yes";
+                                          else return "No";
+                                      }, nullptr);
+    
+    parameters.createAndAddParameter ("exportLayout", "Export Layout", "",
+                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
+                                      [](float value) {
+                                          if (value >= 0.5f) return "Yes";
+                                          else return "No";
+                                      }, nullptr);
+    
 
     
     // this must be initialised after all calls to createAndAddParameter().
@@ -82,6 +96,8 @@ energyDistribution(Image::PixelFormat::ARGB, 200, 100, true), parameters(*this, 
     inputOrderSetting = parameters.getRawParameterValue ("inputOrderSetting");
     useSN3D = parameters.getRawParameterValue ("useSN3D");
     decoderOrder = parameters.getRawParameterValue ("decoderOrder");
+    exportDecoder = parameters.getRawParameterValue ("exportDecoder");
+    exportLayout = parameters.getRawParameterValue ("exportLayout");
     
     // add listeners to parameter changes
     parameters.addParameterListener ("inputOrderSetting", this);
@@ -938,6 +954,18 @@ Matrix<float> AllRADecoderAudioProcessor::getInverse(Matrix<float> A)
 
 void AllRADecoderAudioProcessor::saveConfigurationToFile(File destination)
 {
+    if (*exportDecoder < 0.5f && *exportLayout < 0.5f)
+    {
+        DBG("nothing to export");
+        MailBox::Message newMessage;
+        newMessage.messageColour = Colours::red;
+        newMessage.headline = "Nothing to export.";
+        newMessage.text = "Please select at least one of the export options.";
+        messageToEditor = newMessage;
+        updateMessage = true;
+        return;
+    }
+    
     DynamicObject* jsonObj = new DynamicObject();
     jsonObj->setProperty("Name", var("All-Round Ambisonic decoder (AllRAD) and loudspeaker layout"));
     char versionString[10];
@@ -945,8 +973,25 @@ void AllRADecoderAudioProcessor::saveConfigurationToFile(File destination)
     strcat(versionString, JucePlugin_VersionString);
     jsonObj->setProperty("Description", var("This configuration file was created with the IEM AllRADecoder " + String(versionString) + " plug-in. " + Time::getCurrentTime().toString(true, true)));
 
-    jsonObj->setProperty("Decoder", DecoderHelper::convertDecoderToVar(decoderConfig));
-    jsonObj->setProperty("LoudspeakerLayout", convertLoudspeakersToVar());
+    if (*exportDecoder >= 0.5f)
+    {
+        if (decoderConfig != nullptr)
+            jsonObj->setProperty("Decoder", DecoderHelper::convertDecoderToVar(decoderConfig));
+        else
+        {
+            DBG("No decoder available");
+            MailBox::Message newMessage;
+            newMessage.messageColour = Colours::red;
+            newMessage.headline = "No decoder available for export.";
+            newMessage.text = "Please calculate a decoder first.";
+            messageToEditor = newMessage;
+            updateMessage = true;
+            return;
+        }
+        
+    }
+    if (*exportLayout >= 0.5f)
+        jsonObj->setProperty("LoudspeakerLayout", convertLoudspeakersToVar());
     
     String jsonString = JSON::toString(var(jsonObj));
     DBG(jsonString);
@@ -1029,4 +1074,22 @@ var AllRADecoderAudioProcessor::convertLoudspeakersToVar ()
 
     obj->setProperty("Loudspeakers", loudspeakerArray);
     return var(obj);
+}
+
+void AllRADecoderAudioProcessor::loadConfiguration (const File& configFile)
+{
+    undoManager.beginNewTransaction();
+    loudspeakers.removeAllChildren(&undoManager);
+    
+    Result result = DecoderHelper::parseFileForLoudspeakerLayout (configFile, loudspeakers);
+    if (!result.wasOk())
+    {
+        DBG("Configuration could not be loaded.");
+        MailBox::Message newMessage;
+        newMessage.messageColour = Colours::green;
+        newMessage.headline = "Error loading configuration";
+        newMessage.text = result.getErrorMessage() ;
+        messageToEditor = newMessage;
+        updateMessage = true;
+    }
 }

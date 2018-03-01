@@ -255,6 +255,41 @@ public:
         return Result::ok();
     }
     
+    static Result parseFileForLoudspeakerLayout (const File& fileToParse, ValueTree& loudspeakers)
+    {
+        // parse configuration file
+        var parsedJson;
+        Result result = parseJsonFile(fileToParse, parsedJson);
+        if (! result.wasOk())
+            return Result::fail(result.getErrorMessage());
+        
+        
+        // looks for 'Decoder' object
+        if (! parsedJson.hasProperty("LoudspeakerLayout"))
+            return Result::fail("No 'LoudspeakerLayout' object found in the configuration file.");
+        
+        var loudspeakerLayout = parsedJson.getProperty("LoudspeakerLayout", parsedJson);
+        result = addLoudspeakersToValueTree (loudspeakerLayout, loudspeakers);
+        
+        if (! result.wasOk())
+            return Result::fail(result.getErrorMessage());
+        
+        return Result::ok();
+    }
+    
+    static Result addLoudspeakersToValueTree (var& loudspeakerLayout, ValueTree& loudspeakers)
+    {
+        Array<var>* array = loudspeakerLayout.getArray();
+        const int nLsps = array->size();
+        
+        for (int i = 0; i < nLsps; ++i)
+        {
+            // TODO
+        }
+        
+        return Result::ok();
+    }
+    
     static var convertDecoderToVar (ReferenceCountedDecoder::Ptr& decoder)
     {
         if (decoder == nullptr)

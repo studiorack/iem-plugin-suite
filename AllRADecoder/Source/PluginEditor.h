@@ -92,6 +92,10 @@ private:
     ComboBox cbDecoderOrder;
     ScopedPointer<ComboBoxAttachment> cbDecoderOrderAttachment;
     
+    ToggleButton tbExportDecoder, tbExportLayout;
+    ScopedPointer<ButtonAttachment> tbExportDecoderAttachment, tbExportLayoutAttachment;
+    
+    
     GroupComponent gcLayout, gcDecoder, gcExport;
     SimpleLabel lbDecoderOrder;
     
@@ -101,6 +105,7 @@ private:
     TextButton tbAddSpeakers;
     TextButton tbUndo;
     TextButton tbRedo;
+    TextButton tbImport;
     TextButton tbJson;
     LoudspeakerVisualizer lv;
     

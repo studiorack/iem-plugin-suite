@@ -22,6 +22,10 @@
 
 #pragma once
 
+#ifndef M_PI
+    #define M_PI 3.141592654
+#endif
+
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "../../resources/IOHelper.h"
 #include "../../resources/customComponents/MailBox.h"
@@ -103,7 +107,8 @@ public:
     void undo() { undoManager.undo(); }
     void redo() { undoManager.redo(); }
     
-    void saveConfigurationToFile(File destination);
+    void saveConfigurationToFile (File destination);
+    void loadConfiguration (const File& presetFile);
     
     ValueTree& getLoudspeakersValueTree() { return loudspeakers; }
     
@@ -135,6 +140,8 @@ private:
     float* inputOrderSetting;
     float* useSN3D;
     float* decoderOrder;
+    float* exportDecoder;
+    float* exportLayout;
     
     ValueTree loudspeakers {"Loudspeakers"};
     

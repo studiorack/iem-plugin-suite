@@ -64,6 +64,17 @@ AllRADecoderAudioProcessorEditor::AllRADecoderAudioProcessorEditor (AllRADecoder
     addAndMakeVisible(lbDecoderOrder);
     lbDecoderOrder.setText("Decoder Order");
     
+    addAndMakeVisible(tbExportDecoder);
+    tbExportDecoderAttachment = new ButtonAttachment(valueTreeState, "exportDecoder", tbExportDecoder);
+    tbExportDecoder.setButtonText("Export Decoder");
+    tbExportDecoder.setColour(ToggleButton::tickColourId, Colours::orange);
+    
+    addAndMakeVisible(tbExportLayout);
+    tbExportLayoutAttachment = new ButtonAttachment(valueTreeState, "exportLayout", tbExportLayout);
+    tbExportLayout.setButtonText("Export Layout");
+    tbExportLayout.setColour(ToggleButton::tickColourId, Colours::limegreen);
+    
+    
     addAndMakeVisible(messageDisplay);
     messageDisplay.setMessage(processor.messageToEditor);
     
@@ -83,6 +94,11 @@ AllRADecoderAudioProcessorEditor::AllRADecoderAudioProcessorEditor (AllRADecoder
     tbJson.setButtonText("EXPORT");
     tbJson.setColour(TextButton::buttonColourId, Colours::orange);
     tbJson.addListener(this);
+    
+    addAndMakeVisible(tbImport);
+    tbImport.setButtonText("IMPORT");
+    tbImport.setColour(TextButton::buttonColourId, Colours::orange);
+    tbImport.addListener(this);
     
     addAndMakeVisible(tbUndo);
     tbUndo.setButtonText("UNDO");
@@ -146,15 +162,19 @@ void AllRADecoderAudioProcessorEditor::resized()
     gcLayout.setBounds(rightArea);
     rightArea.removeFromTop(25);
     
-    Rectangle<int> ctrlsAndDisplay (rightArea.removeFromBottom(45));
-    Rectangle<int> lspCtrlArea (ctrlsAndDisplay.removeFromLeft(120));
-    ctrlsAndDisplay.removeFromLeft(10);
+    Rectangle<int> ctrlsAndDisplay (rightArea.removeFromBottom(80));
+    Rectangle<int> lspCtrlArea (ctrlsAndDisplay.removeFromTop(20));
+    ctrlsAndDisplay.removeFromTop(5);
+    tbAddSpeakers.setBounds(lspCtrlArea.removeFromLeft(120));
+    lspCtrlArea.removeFromLeft(5);
+    tbUndo.setBounds(lspCtrlArea.removeFromLeft(55));
+    lspCtrlArea.removeFromLeft(5);
+    tbRedo.setBounds(lspCtrlArea.removeFromLeft(55));
+    lspCtrlArea.removeFromLeft(5);
+    tbImport.setBounds(lspCtrlArea.removeFromRight(80));
     messageDisplay.setBounds(ctrlsAndDisplay);
     
-    tbAddSpeakers.setBounds(lspCtrlArea.removeFromTop(20));
-    lspCtrlArea.removeFromTop(5);
-    tbUndo.setBounds(lspCtrlArea.removeFromLeft(55));
-    tbRedo.setBounds(lspCtrlArea.removeFromRight(55));
+    
     
     rightArea.removeFromBottom(5);
     lspList.setBounds(rightArea);
@@ -175,6 +195,11 @@ void AllRADecoderAudioProcessorEditor::resized()
     
     gcExport.setBounds(exportArea);
     exportArea.removeFromTop(25);
+    Rectangle<int> toggleArea (exportArea.removeFromLeft(120));
+    tbExportDecoder.setBounds(toggleArea.removeFromTop(20));
+    tbExportLayout.setBounds(toggleArea.removeFromTop(20));
+    exportArea.removeFromLeft(20);
+    exportArea.removeFromTop(10);
     tbJson.setBounds(exportArea.removeFromTop(20).removeFromLeft(80));
 
     area.removeFromRight(20);
@@ -229,16 +254,27 @@ void AllRADecoderAudioProcessorEditor::buttonClicked (Button* button)
     }
     else if (button == &tbJson)
     {
-        FileChooser myChooser ("Please select the preset you want to load...",
+        FileChooser myChooser ("Save configuration...",
                                processor.getLastDir().exists() ? processor.getLastDir() : File::getSpecialLocation (File::userHomeDirectory),
                                "*.json");
         if (myChooser.browseForFileToSave (true))
         {
-            File presetFile (myChooser.getResult());
-            processor.setLastDir(presetFile.getParentDirectory());
-            processor.saveConfigurationToFile (presetFile);
+            File configFile (myChooser.getResult());
+            processor.setLastDir(configFile.getParentDirectory());
+            processor.saveConfigurationToFile (configFile);
         }
-        
+    }
+    else if (button == &tbImport)
+    {
+        FileChooser myChooser ("Load configuration...",
+                               processor.getLastDir().exists() ? processor.getLastDir() : File::getSpecialLocation (File::userHomeDirectory),
+                               "*.json");
+        if (myChooser.browseForFileToOpen())
+        {
+            File configFile (myChooser.getResult());
+            processor.setLastDir(configFile.getParentDirectory());
+            processor.loadConfiguration (configFile);
+        }
     }
 }
 
