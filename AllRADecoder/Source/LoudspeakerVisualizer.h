@@ -296,7 +296,7 @@ public:
         // draw points
         if (drawPointsFlag != nullptr)
             drawPointsFlag->set(1.0f);
-        glPointSize(15.0);
+        glPointSize(8 * desktopScale);
         glDepthFunc(GL_ALWAYS);
         glDrawElements(GL_POINTS, nPoints, GL_UNSIGNED_INT, (void*)0);  // Draw points!
         if (drawPointsFlag != nullptr)
@@ -313,7 +313,7 @@ public:
                        );
         
         // render black lines (all)
-        glLineWidth(5.0);
+        glLineWidth(2.5 * desktopScale);
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         if (blackFlag != nullptr)
             blackFlag->set(1.0f);
@@ -324,7 +324,6 @@ public:
                        GL_UNSIGNED_INT,   // type
                        (void*) (nPoints * sizeof(int))           // element array buffer offset
                        );
-        
         
         if (blackFlag != nullptr)
             blackFlag->set(0.0f);
@@ -343,7 +342,7 @@ public:
                        );
         
         // render black lines (foreground)
-        glLineWidth(5.0);
+        glLineWidth(2.5 * desktopScale);
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         glDepthFunc(GL_LEQUAL);
         if (blackFlag != nullptr)
@@ -361,7 +360,7 @@ public:
             drawPointsFlag->set(1.0f);
         if (blackFlag != nullptr)
             blackFlag->set(0.0f);
-        glPointSize(15.0);
+        glPointSize(8 * desktopScale);
         glDepthFunc(GL_LEQUAL);
         glDrawElements(GL_POINTS, nPoints, GL_UNSIGNED_INT, (void*)0);  // Draw points!
         if (drawPointsFlag != nullptr)
@@ -433,7 +432,7 @@ public:
         "varying float drawPointsFlagOut;\n"
         "void main()\n"
         "{\n"
-        "   gl_Position.xyz = 50.0 * position;\n" // scaling leads to a better result
+        "   gl_Position.xyz = 500.0 * position;\n" // scaling leads to a better result
         "   gl_Position.w = 1.0;\n"
         "   gl_Position = projectionMatrix * viewMatrix * gl_Position;\n"
         "   vec4 normal;\n"
@@ -510,7 +509,7 @@ public:
     
     Matrix3D<float> getViewMatrix()
     {
-        Matrix3D<float> translationMatrix (Vector3D<float> (0.0f, 0.0f, -50.0f * zoom)); // move object further away
+        Matrix3D<float> translationMatrix (Vector3D<float> (0.0f, 0.0f, -500.0f * zoom)); // move object further away
         Matrix3D<float> tiltMatrix = createRotationMatrix (Vector3D<float> (tilt, 0.0f, 0.0f));
         Matrix3D<float> rotationMatrix = createRotationMatrix (Vector3D<float> (0.0f, yaw, 0.0f));
         return rotationMatrix * tiltMatrix  * translationMatrix;
