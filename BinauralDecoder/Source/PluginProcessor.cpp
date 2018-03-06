@@ -95,7 +95,6 @@ parameters(*this, nullptr)
     mis[5] = new MemoryInputStream (BinaryData::irsOrd6_wav, BinaryData::irsOrd5_wavSize, false);
     mis[6] = new MemoryInputStream (BinaryData::irsOrd7_wav, BinaryData::irsOrd6_wavSize, false);
     
-    
     for (int i = 0; i < 7; ++i)
     {
         irs[i].setSize(2 * square(i + 2), 236);
@@ -103,14 +102,16 @@ parameters(*this, nullptr)
         reader->read(&irs[i], 0, 236, 0, true, false);
     }
         
-    for (int ch = 0; ch < 64; ++ch)
-    {
-        engines.add(new Convolution);
-    }
 }
 
 BinauralDecoderAudioProcessor::~BinauralDecoderAudioProcessor()
 {
+    if (in != nullptr)
+        fftwf_free(in);
+    if (out != nullptr)
+        fftwf_free(out);
+    if (accum != nullptr)
+        fftwf_free(accum);
 }
 
 //==============================================================================
@@ -180,7 +181,6 @@ void BinauralDecoderAudioProcessor::prepareToPlay (double sampleRate, int sample
 {
     checkInputAndOutput(this, *inputOrderSetting, 0, true);
     
-    stereoSum.setSize(2, samplesPerBlock);
     stereoTemp.setSize(2, samplesPerBlock);
     
     ProcessSpec convSpec;
@@ -188,9 +188,8 @@ void BinauralDecoderAudioProcessor::prepareToPlay (double sampleRate, int sample
     convSpec.maximumBlockSize = samplesPerBlock;
     convSpec.numChannels = 2; // convolve two channels (which actually point two one and the same input channel)
     
-    EQ.prepare(convSpec);
-    for (int i = 0; i < 64; ++i)
-        engines[i]->prepare(convSpec);
+    //EQ.prepare(convSpec);
+
 }
 
 void BinauralDecoderAudioProcessor::releaseResources()
@@ -211,31 +210,41 @@ void BinauralDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, Mid
     checkInputAndOutput(this, *inputOrderSetting, 0, false);
     ScopedNoDenormals noDenormals;
     
-    const int nCh = jmin(buffer.getNumChannels(), input.getNumberOfChannels());
-    //const int engineSelect = jmax(input.getOrder(), 1) - 1;
+    //const int nCh = jmin(buffer.getNumChannels(), input.getNumberOfChannels());
+    const int nCh = jmin(buffer.getNumChannels(), 16);
+    const int L = buffer.getNumSamples();
     
     if (*useSN3D >= 0.5f)
         for (int ch = 1; ch < nCh; ++ch)
             buffer.applyGain(ch, 0, buffer.getNumSamples(), sn3d2n3d[ch]);
     
     
+    
     AudioBlock<float> tempBlock (stereoTemp);
-    stereoSum.clear();
-    AudioBlock<float> sumBlock (stereoSum);
+    
+    FloatVectorOperations::clear((float*) accum, 2 * (fftLength / 2 + 1));
+    
     for (int ch = 0; ch < nCh; ++ch)
     {
-        float* channelPtrs[2] = {buffer.getWritePointer(ch), buffer.getWritePointer(ch)};
-        AudioBlock<float> inBlock (channelPtrs, 2, buffer.getNumSamples());
-        ProcessContextNonReplacing<float> context (inBlock, tempBlock);
-        
-        engines[ch]->process(context);
-        sumBlock += tempBlock;
+        FloatVectorOperations::copy(in, buffer.getReadPointer(0), L);
+        fftwf_execute(fftForward);
+        for (int i = 0; i < fftLength / 2 + 1; ++i)
+        {
+            fftwf_complex* ir = (fftwf_complex*) irsFrequencyDomain.getReadPointer(ch);
+            accum[i][0] += out[i][0] * ir[i][0] - out[i][1] * ir[i][1];
+            accum[i][i] += out[i][1] * ir[i][0] + out[i][0] * ir[i][1];
+        }
     }
     
+    fftwf_execute(fftBackward);
+    
+    
+    
+    AudioBlock<float> sumBlock (stereoSum);
     if (*applyHeadphoneEq >= 0.5f)
     {
         ProcessContextReplacing<float> eqContext (sumBlock);
-        EQ.process(eqContext);
+        //EQ.process(eqContext);
     }
     
     buffer.copyFrom(0, 0, stereoSum, 0, 0, buffer.getNumSamples());
@@ -292,7 +301,7 @@ void BinauralDecoderAudioProcessor::parameterChanged (const String &parameterID,
             auto* sourceData = BinaryData::getNamedResource(name.toUTF8(), sourceDataSize);
             if (sourceData == nullptr)
                 DBG("error");
-            EQ.loadImpulseResponse(sourceData, sourceDataSize, true, false, 2048, false);
+            //EQ.loadImpulseResponse(sourceData, sourceDataSize, true, false, 2048, false);
         }
     }
 }
@@ -307,32 +316,40 @@ void BinauralDecoderAudioProcessor::updateBuffers()
     convSpec.maximumBlockSize = getBlockSize();
     convSpec.numChannels = 2; // convolve two channels (which actually point to one and the same input channel)
     
-    EQ.prepare(convSpec);
-    for (int i = 0; i < 64; ++i)
-        engines[i]->prepare(convSpec);
+    const int ergL = convSpec.maximumBlockSize + 235;
+    fftLength = nextPowerOfTwo(ergL);
     
-    AudioBuffer<float> zeroBuffer (2, getBlockSize());
-    zeroBuffer.clear();
-    AudioBuffer<float> targetBuffer (2, getBlockSize());
-    AudioBlock<float> in(zeroBuffer);
-    AudioBlock<float> out(targetBuffer);
-    ProcessContextNonReplacing<float> context(in, out);
+    stereoSum.setSize(2, fftLength);
+    stereoSum.clear();
     
-    const int nCh = input.getNumberOfChannels();
-    const int irSelect = input.getOrder() > 0 ? input.getOrder() - 1 : 0;
-    for (int ch = 0; ch < nCh; ++ch)
+    if (in != nullptr)
+        fftwf_free(in);
+    if (out != nullptr)
+        fftwf_free(out);
+    if (accum != nullptr)
+        fftwf_free(accum);
+    
+    in = (float*) fftwf_malloc(sizeof(float) * fftLength);
+    out = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * (fftLength / 2 + 1));
+    accum = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * (fftLength / 2 + 1));
+    ifftOutput = (float*) fftwf_malloc(sizeof(float) * fftLength);
+    
+    fftForward = fftwf_plan_dft_r2c_1d(fftLength, in, out, FFTW_ESTIMATE);
+    fftBackward = fftwf_plan_dft_c2r_1d(fftLength, accum, ifftOutput, FFTW_ESTIMATE);
+    
+    FloatVectorOperations::clear((float*) in, fftLength); // clear (after plan creation!)
+    
+    irsFrequencyDomain.setSize(2 * 16, 2 * (fftLength / 2 + 1)); // 3rd order stereo -> 32 channels
+    irsFrequencyDomain.clear();
+    
+    for (int i = 0; i < 16; ++i) // only left channel for now
     {
-        AudioBuffer<float> temp (irs[irSelect].getArrayOfWritePointers() + 2 * ch, 2, 236);
-        engines[ch]->copyAndLoadImpulseResponseFromBuffer(temp, 44100.0, true, false, false, 236);
-        engines[ch]->prepare(convSpec);
-        
+        FloatVectorOperations::multiply((float*) in, irs[3].getReadPointer(2 * i), 1.0 / fftLength, getBlockSize());
+        fftwf_execute(fftForward);
+        FloatVectorOperations::copy(irsFrequencyDomain.getWritePointer(i), (float*) out, 2 * (fftLength / 2 + 1));
     }
-    for (int ch = 0; ch < 64; ++ch)
-        for (int i = 0; i < (getSampleRate()) / convSpec.maximumBlockSize + 1; ++i)
-        {
-            engines[ch]->process(context);
-        }
     
+    DBG("done");
 }
 
 //==============================================================================
