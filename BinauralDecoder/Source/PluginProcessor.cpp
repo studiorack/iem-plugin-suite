@@ -27,18 +27,18 @@
 //==============================================================================
 BinauralDecoderAudioProcessor::BinauralDecoderAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
-     : AudioProcessor (BusesProperties()
-                     #if ! JucePlugin_IsMidiEffect
-                      #if ! JucePlugin_IsSynth
-                       .withInput  ("Input",  AudioChannelSet::discreteChannels(64), true)
-                      #endif
-                       .withOutput ("Output", AudioChannelSet::discreteChannels(64), true)
-                     #endif
-                       ),
+: AudioProcessor (BusesProperties()
+#if ! JucePlugin_IsMidiEffect
+#if ! JucePlugin_IsSynth
+                  .withInput  ("Input",  AudioChannelSet::discreteChannels(64), true)
+#endif
+                  .withOutput ("Output", AudioChannelSet::discreteChannels(64), true)
+#endif
+                  ),
 #endif
 parameters(*this, nullptr)
 {
-   
+    
     parameters.createAndAddParameter ("inputOrderSetting", "Ambisonic Order", "",
                                       NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
                                       [](float value) {
@@ -75,7 +75,7 @@ parameters(*this, nullptr)
     inputOrderSetting = parameters.getRawParameterValue("inputOrderSetting");
     useSN3D = parameters.getRawParameterValue ("useSN3D");
     applyHeadphoneEq = parameters.getRawParameterValue("applyHeadphoneEq");
-
+    
     // add listeners to parameter changes
     parameters.addParameterListener ("inputOrderSetting", this);
     parameters.addParameterListener ("applyHeadphoneEq", this);
@@ -101,17 +101,26 @@ parameters(*this, nullptr)
         ScopedPointer<AudioFormatReader> reader = wavFormat.createReaderFor(mis[i], true);
         reader->read(&irs[i], 0, 236, 0, true, false);
     }
-        
+    
 }
 
 BinauralDecoderAudioProcessor::~BinauralDecoderAudioProcessor()
 {
+    
+    if (fftwWasPlanned)
+    {
+        fftwf_destroy_plan(fftForward);
+        fftwf_destroy_plan(fftBackward);
+    }
+    
     if (in != nullptr)
         fftwf_free(in);
     if (out != nullptr)
         fftwf_free(out);
     if (accum != nullptr)
         fftwf_free(accum);
+    if (ifftOutput != nullptr)
+        fftwf_free(ifftOutput);
 }
 
 //==============================================================================
@@ -122,29 +131,29 @@ const String BinauralDecoderAudioProcessor::getName() const
 
 bool BinauralDecoderAudioProcessor::acceptsMidi() const
 {
-   #if JucePlugin_WantsMidiInput
+#if JucePlugin_WantsMidiInput
     return true;
-   #else
+#else
     return false;
-   #endif
+#endif
 }
 
 bool BinauralDecoderAudioProcessor::producesMidi() const
 {
-   #if JucePlugin_ProducesMidiOutput
+#if JucePlugin_ProducesMidiOutput
     return true;
-   #else
+#else
     return false;
-   #endif
+#endif
 }
 
 bool BinauralDecoderAudioProcessor::isMidiEffect() const
 {
-   #if JucePlugin_IsMidiEffect
+#if JucePlugin_IsMidiEffect
     return true;
-   #else
+#else
     return false;
-   #endif
+#endif
 }
 
 double BinauralDecoderAudioProcessor::getTailLengthSeconds() const
@@ -155,7 +164,7 @@ double BinauralDecoderAudioProcessor::getTailLengthSeconds() const
 int BinauralDecoderAudioProcessor::getNumPrograms()
 {
     return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
-                // so this should be at least 1, even if you're not really implementing programs.
+    // so this should be at least 1, even if you're not really implementing programs.
 }
 
 int BinauralDecoderAudioProcessor::getCurrentProgram()
@@ -189,7 +198,7 @@ void BinauralDecoderAudioProcessor::prepareToPlay (double sampleRate, int sample
     convSpec.numChannels = 2; // convolve two channels (which actually point two one and the same input channel)
     
     //EQ.prepare(convSpec);
-
+    
 }
 
 void BinauralDecoderAudioProcessor::releaseResources()
@@ -213,6 +222,9 @@ void BinauralDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, Mid
     //const int nCh = jmin(buffer.getNumChannels(), input.getNumberOfChannels());
     const int nCh = jmin(buffer.getNumChannels(), 16);
     const int L = buffer.getNumSamples();
+    const int ergL = overlapBuffer.getNumSamples();
+    const int overlap = 235;
+    const int copyL = jmin(L, overlap); // copy max L samples of the overlap data
     
     if (*useSN3D >= 0.5f)
         for (int ch = 1; ch < nCh; ++ch)
@@ -226,18 +238,32 @@ void BinauralDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, Mid
     
     for (int ch = 0; ch < nCh; ++ch)
     {
+        FloatVectorOperations::clear(in, fftLength); // TODO: only last part
         FloatVectorOperations::copy(in, buffer.getReadPointer(0), L);
         fftwf_execute(fftForward);
+        fftwf_complex* ir = (fftwf_complex*) irsFrequencyDomain.getReadPointer(ch);
         for (int i = 0; i < fftLength / 2 + 1; ++i)
         {
-            fftwf_complex* ir = (fftwf_complex*) irsFrequencyDomain.getReadPointer(ch);
             accum[i][0] += out[i][0] * ir[i][0] - out[i][1] * ir[i][1];
-            accum[i][i] += out[i][1] * ir[i][0] + out[i][0] * ir[i][1];
+            accum[i][1] += out[i][1] * ir[i][0] + out[i][0] * ir[i][1];
         }
     }
     
     fftwf_execute(fftBackward);
     
+    
+    FloatVectorOperations::copy(buffer.getWritePointer(0), ifftOutput, L);
+    FloatVectorOperations::add (buffer.getWritePointer(0), overlapBuffer.getWritePointer(0), copyL);
+    
+    if (copyL < overlap) // there is some overlap left, want some?
+    {
+        const int howManyAreLeft = overlap - L;
+        FloatVectorOperations::copy(overlapBuffer.getWritePointer(0), overlapBuffer.getReadPointer(0, L), howManyAreLeft);
+        FloatVectorOperations::clear(overlapBuffer.getWritePointer(0, howManyAreLeft), ergL - howManyAreLeft);
+        FloatVectorOperations::add(overlapBuffer.getWritePointer(0), &ifftOutput[L], 235);
+    }
+    else
+        FloatVectorOperations::copy(overlapBuffer.getWritePointer(0), &ifftOutput[L], 235);
     
     
     AudioBlock<float> sumBlock (stereoSum);
@@ -247,8 +273,8 @@ void BinauralDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, Mid
         //EQ.process(eqContext);
     }
     
-    buffer.copyFrom(0, 0, stereoSum, 0, 0, buffer.getNumSamples());
-    buffer.copyFrom(1, 0, stereoSum, 1, 0, buffer.getNumSamples());
+//    buffer.copyFrom(0, 0, stereoSum, 0, 0, buffer.getNumSamples());
+//    buffer.copyFrom(1, 0, stereoSum, 1, 0, buffer.getNumSamples());
     for (int ch = 2; ch < buffer.getNumChannels(); ++ch)
         buffer.clear(ch, 0, buffer.getNumSamples());
 }
@@ -322,20 +348,37 @@ void BinauralDecoderAudioProcessor::updateBuffers()
     stereoSum.setSize(2, fftLength);
     stereoSum.clear();
     
-    if (in != nullptr)
-        fftwf_free(in);
-    if (out != nullptr)
-        fftwf_free(out);
-    if (accum != nullptr)
-        fftwf_free(accum);
+    overlapBuffer.setSize(2, 235);
+    overlapBuffer.clear();
     
-    in = (float*) fftwf_malloc(sizeof(float) * fftLength);
-    out = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * (fftLength / 2 + 1));
-    accum = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * (fftLength / 2 + 1));
-    ifftOutput = (float*) fftwf_malloc(sizeof(float) * fftLength);
-    
-    fftForward = fftwf_plan_dft_r2c_1d(fftLength, in, out, FFTW_ESTIMATE);
-    fftBackward = fftwf_plan_dft_c2r_1d(fftLength, accum, ifftOutput, FFTW_ESTIMATE);
+    if (fftwBlocksize != convSpec.maximumBlockSize)
+    {
+        fftwBlocksize = convSpec.maximumBlockSize;
+        
+        if (fftwWasPlanned)
+        {
+            fftwf_destroy_plan(fftForward);
+            fftwf_destroy_plan(fftBackward);
+        }
+        
+        if (in != nullptr)
+            fftwf_free(in);
+        if (out != nullptr)
+            fftwf_free(out);
+        if (accum != nullptr)
+            fftwf_free(accum);
+        if (ifftOutput != nullptr)
+            fftwf_free(ifftOutput);
+        
+        in = (float*) fftwf_malloc(sizeof(float) * fftLength);
+        out = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * (fftLength / 2 + 1));
+        accum = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * (fftLength / 2 + 1));
+        ifftOutput = (float*) fftwf_malloc(sizeof(float) * fftLength);
+        
+        fftForward = fftwf_plan_dft_r2c_1d(fftLength, in, out, FFTW_MEASURE);
+        fftBackward = fftwf_plan_dft_c2r_1d(fftLength, accum, ifftOutput, FFTW_MEASURE);
+        fftwWasPlanned = true;
+    }
     
     FloatVectorOperations::clear((float*) in, fftLength); // clear (after plan creation!)
     
@@ -344,12 +387,14 @@ void BinauralDecoderAudioProcessor::updateBuffers()
     
     for (int i = 0; i < 16; ++i) // only left channel for now
     {
-        FloatVectorOperations::multiply((float*) in, irs[3].getReadPointer(2 * i), 1.0 / fftLength, getBlockSize());
+        FloatVectorOperations::clear(in, fftLength); // clear (after plan creation!)
+        FloatVectorOperations::multiply((float*) in, irs[2].getReadPointer(2 * i), 1.0 / fftLength, 236);
         fftwf_execute(fftForward);
         FloatVectorOperations::copy(irsFrequencyDomain.getWritePointer(i), (float*) out, 2 * (fftLength / 2 + 1));
     }
     
-    DBG("done");
+
+
 }
 
 //==============================================================================

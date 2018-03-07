@@ -104,8 +104,11 @@ private:
     fftwf_complex* accum = nullptr;
     
     fftwf_plan fftForward, fftBackward;
+    bool fftwWasPlanned = false;
+    int fftwBlocksize = -1;
     
     AudioBuffer<float> stereoSum, stereoTemp;
+    AudioBuffer<float> overlapBuffer;
     AudioBuffer<float> irs[7];
     
     AudioBuffer<float> irsFrequencyDomain;
