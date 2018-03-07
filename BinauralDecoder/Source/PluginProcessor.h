@@ -97,7 +97,8 @@ private:
 
     //Convolution EQ;
     
-    int fftLength;
+    int fftLength = -1;
+    int irLengthMinusOne = 235;
     float* in = nullptr;
     float* ifftOutputLeft = nullptr;
     float* ifftOutputRight = nullptr;
@@ -107,13 +108,14 @@ private:
     
     fftwf_plan fftForward, fftBackwardLeft, fftBackwardRight;
     bool fftwWasPlanned = false;
-    int fftwBlocksize = -1;
     
     AudioBuffer<float> stereoSum, stereoTemp;
     AudioBuffer<float> overlapBuffer;
     AudioBuffer<float> irs[7];
     
     AudioBuffer<float> irsFrequencyDomain;
+    double irsSampleRate = 44100.0;
+    
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BinauralDecoderAudioProcessor)
 };

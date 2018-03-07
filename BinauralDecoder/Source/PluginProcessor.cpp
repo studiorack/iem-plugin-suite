@@ -228,7 +228,7 @@ void BinauralDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, Mid
     const int nCh = jmin(buffer.getNumChannels(), input.getNumberOfChannels());
     const int L = buffer.getNumSamples();
     const int ergL = overlapBuffer.getNumSamples();
-    const int overlap = 235;
+    const int overlap = irLengthMinusOne;
     const int copyL = jmin(L, overlap); // copy max L samples of the overlap data
     
     if (*useSN3D >= 0.5f)
@@ -278,13 +278,13 @@ void BinauralDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, Mid
         FloatVectorOperations::clear(overlapBuffer.getWritePointer(0, howManyAreLeft), ergL - howManyAreLeft);
         FloatVectorOperations::clear(overlapBuffer.getWritePointer(1, howManyAreLeft), ergL - howManyAreLeft);
         
-        FloatVectorOperations::add(overlapBuffer.getWritePointer(0), &ifftOutputLeft[L], 235);
-        FloatVectorOperations::add(overlapBuffer.getWritePointer(1), &ifftOutputRight[L], 235);
+        FloatVectorOperations::add(overlapBuffer.getWritePointer(0), &ifftOutputLeft[L], irLengthMinusOne);
+        FloatVectorOperations::add(overlapBuffer.getWritePointer(1), &ifftOutputRight[L], irLengthMinusOne);
     }
     else
     {
-        FloatVectorOperations::copy(overlapBuffer.getWritePointer(0), &ifftOutputLeft[L], 235);
-        FloatVectorOperations::copy(overlapBuffer.getWritePointer(1), &ifftOutputRight[L], 235);
+        FloatVectorOperations::copy(overlapBuffer.getWritePointer(0), &ifftOutputLeft[L], irLengthMinusOne);
+        FloatVectorOperations::copy(overlapBuffer.getWritePointer(1), &ifftOutputRight[L], irLengthMinusOne);
     }
     
     
@@ -369,19 +369,46 @@ void BinauralDecoderAudioProcessor::updateBuffers()
     
     // TODO: do resampling
     
-    const int ergL = blockSize + 235;
+    int irLength = 236;
+    AudioBuffer<float> resampledIRs;
+    bool useResampled = false;
+    
+    if (sampleRate != 44100.0) // do resampling!
+    {
+        useResampled = true;
+        double factorReading = 44100.0f / sampleRate;
+        irLength = roundToInt (236 / factorReading + 0.49);
+        
+        MemoryAudioSource memorySource (irs[order - 1], false);
+        ResamplingAudioSource resamplingSource (&memorySource, false, 2 * nCh);
+        
+        resamplingSource.setResamplingRatio (factorReading);
+        resamplingSource.prepareToPlay (irLength, sampleRate);
+        
+        resampledIRs.setSize(2 * nCh, irLength);
+        AudioSourceChannelInfo info;
+        info.startSample = 0;
+        info.numSamples = irLength;
+        info.buffer = &resampledIRs;
+        
+        resamplingSource.getNextAudioBlock (info);
+    }
+
+    irLengthMinusOne = irLength - 1;
+    
+    const int prevFftLength = fftLength;
+    
+    const int ergL = blockSize + irLength - 1;
     fftLength = nextPowerOfTwo(ergL);
     
     stereoSum.setSize(2, fftLength);
     stereoSum.clear();
     
-    overlapBuffer.setSize(2, 235);
+    overlapBuffer.setSize(2, irLengthMinusOne);
     overlapBuffer.clear();
     
-    if (fftwBlocksize != blockSize)
+    if (prevFftLength != fftLength)
     {
-        fftwBlocksize = blockSize;
-        
         if (fftwWasPlanned)
         {
             fftwf_destroy_plan(fftForward);
@@ -422,19 +449,22 @@ void BinauralDecoderAudioProcessor::updateBuffers()
     
     for (int i = 0; i < nCh; ++i)
     {
-        // left channel
-        FloatVectorOperations::clear(in, fftLength);
-        FloatVectorOperations::multiply((float*) in, irs[order - 1].getReadPointer(2 * i), 1.0 / fftLength, 236);
-        fftwf_execute(fftForward);
-        FloatVectorOperations::copy(irsFrequencyDomain.getWritePointer(i), (float*) out, 2 * (fftLength / 2 + 1));
+        {  // left channel
+            const float* src = useResampled ? resampledIRs.getReadPointer(2*i) : irs[order - 1].getReadPointer(2 * i);
+            FloatVectorOperations::multiply((float*) in, src, 1.0 / fftLength, irLength);
+            FloatVectorOperations::clear(&in[irLength], fftLength - irLength); // zero padding
+            fftwf_execute(fftForward);
+            FloatVectorOperations::copy(irsFrequencyDomain.getWritePointer(i), (float*) out, 2 * (fftLength / 2 + 1));
+        }
         
-        // right channel
-        FloatVectorOperations::clear(in, fftLength);
-        FloatVectorOperations::multiply((float*) in, irs[order - 1].getReadPointer(2 * i + 1), 1.0 / fftLength, 236);
-        fftwf_execute(fftForward);
-        FloatVectorOperations::copy(irsFrequencyDomain.getWritePointer(nCh + i), (float*) out, 2 * (fftLength / 2 + 1));
+        {  // right channel
+            const float* src = useResampled ? resampledIRs.getReadPointer(2*i + 1) : irs[order - 1].getReadPointer(2 * i + 1);
+            FloatVectorOperations::multiply((float*) in, src, 1.0 / fftLength, irLength);
+            FloatVectorOperations::clear(&in[irLength], fftLength - irLength); // zero padding
+            fftwf_execute(fftForward);
+            FloatVectorOperations::copy(irsFrequencyDomain.getWritePointer(nCh + i), (float*) out, 2 * (fftLength / 2 + 1));
+        }
     }
-
 }
 
 //==============================================================================
