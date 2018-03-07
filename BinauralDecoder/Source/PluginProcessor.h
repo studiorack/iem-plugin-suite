@@ -95,7 +95,7 @@ private:
     float* useSN3D;
     float* applyHeadphoneEq;
 
-    //Convolution EQ;
+    Convolution EQ;
     
     int fftLength = -1;
     int irLengthMinusOne = 235;

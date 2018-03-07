@@ -202,7 +202,7 @@ void BinauralDecoderAudioProcessor::prepareToPlay (double sampleRate, int sample
     convSpec.maximumBlockSize = samplesPerBlock;
     convSpec.numChannels = 2; // convolve two channels (which actually point two one and the same input channel)
     
-    //EQ.prepare(convSpec);
+    EQ.prepare(convSpec);
     
 }
 
@@ -235,16 +235,15 @@ void BinauralDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, Mid
         for (int ch = 1; ch < nCh; ++ch)
             buffer.applyGain(ch, 0, buffer.getNumSamples(), sn3d2n3d[ch]);
     
-    
-    
     AudioBlock<float> tempBlock (stereoTemp);
     
-    FloatVectorOperations::clear((float*) accumLeft, 2 * (fftLength / 2 + 1));
-    FloatVectorOperations::clear((float*) accumRight, 2 * (fftLength / 2 + 1));
+    FloatVectorOperations::clear((float*) accumLeft, fftLength + 2);
+    FloatVectorOperations::clear((float*) accumRight, fftLength + 2);
     
+    const int nZeros = fftLength - L;
     for (int ch = 0; ch < nCh; ++ch)
     {
-        FloatVectorOperations::clear(in, fftLength); // TODO: only last part
+        FloatVectorOperations::clear(&in[L], nZeros); // TODO: only last part
         FloatVectorOperations::copy(in, buffer.getReadPointer(ch), L);
         fftwf_execute(fftForward);
         
@@ -287,16 +286,14 @@ void BinauralDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, Mid
         FloatVectorOperations::copy(overlapBuffer.getWritePointer(1), &ifftOutputRight[L], irLengthMinusOne);
     }
     
-    
-    AudioBlock<float> sumBlock (stereoSum);
     if (*applyHeadphoneEq >= 0.5f)
     {
+        float* channelData[2] = {buffer.getWritePointer(0), buffer.getWritePointer(1)};
+        AudioBlock<float> sumBlock (channelData, 2, L);
         ProcessContextReplacing<float> eqContext (sumBlock);
-        //EQ.process(eqContext);
+        EQ.process(eqContext);
     }
     
-//    buffer.copyFrom(0, 0, stereoSum, 0, 0, buffer.getNumSamples());
-//    buffer.copyFrom(1, 0, stereoSum, 1, 0, buffer.getNumSamples());
     for (int ch = 2; ch < buffer.getNumChannels(); ++ch)
         buffer.clear(ch, 0, buffer.getNumSamples());
 }
@@ -349,7 +346,7 @@ void BinauralDecoderAudioProcessor::parameterChanged (const String &parameterID,
             auto* sourceData = BinaryData::getNamedResource(name.toUTF8(), sourceDataSize);
             if (sourceData == nullptr)
                 DBG("error");
-            //EQ.loadImpulseResponse(sourceData, sourceDataSize, true, false, 2048, false);
+            EQ.loadImpulseResponse(sourceData, sourceDataSize, true, false, 2048, false);
         }
     }
 }
@@ -366,8 +363,6 @@ void BinauralDecoderAudioProcessor::updateBuffers()
     const int nCh = input.getNumberOfChannels();
     DBG("order: " << order);
     DBG("nCh: " << nCh);
-    
-    // TODO: do resampling
     
     int irLength = 236;
     AudioBuffer<float> resampledIRs;
@@ -400,9 +395,6 @@ void BinauralDecoderAudioProcessor::updateBuffers()
     
     const int ergL = blockSize + irLength - 1;
     fftLength = nextPowerOfTwo(ergL);
-    
-    stereoSum.setSize(2, fftLength);
-    stereoSum.clear();
     
     overlapBuffer.setSize(2, irLengthMinusOne);
     overlapBuffer.clear();
