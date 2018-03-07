@@ -99,11 +99,13 @@ private:
     
     int fftLength;
     float* in = nullptr;
-    float* ifftOutput = nullptr;
+    float* ifftOutputLeft = nullptr;
+    float* ifftOutputRight = nullptr;
     fftwf_complex* out = nullptr;
-    fftwf_complex* accum = nullptr;
+    fftwf_complex* accumLeft = nullptr;
+    fftwf_complex* accumRight = nullptr;
     
-    fftwf_plan fftForward, fftBackward;
+    fftwf_plan fftForward, fftBackwardLeft, fftBackwardRight;
     bool fftwWasPlanned = false;
     int fftwBlocksize = -1;
     

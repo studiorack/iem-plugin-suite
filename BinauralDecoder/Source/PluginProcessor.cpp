@@ -110,17 +110,22 @@ BinauralDecoderAudioProcessor::~BinauralDecoderAudioProcessor()
     if (fftwWasPlanned)
     {
         fftwf_destroy_plan(fftForward);
-        fftwf_destroy_plan(fftBackward);
+        fftwf_destroy_plan(fftBackwardLeft);
+        fftwf_destroy_plan(fftBackwardRight);
     }
     
     if (in != nullptr)
         fftwf_free(in);
     if (out != nullptr)
         fftwf_free(out);
-    if (accum != nullptr)
-        fftwf_free(accum);
-    if (ifftOutput != nullptr)
-        fftwf_free(ifftOutput);
+    if (accumLeft != nullptr)
+        fftwf_free(accumLeft);
+    if (accumRight != nullptr)
+        fftwf_free(accumRight);
+    if (ifftOutputLeft != nullptr)
+        fftwf_free(ifftOutputLeft);
+    if (ifftOutputRight != nullptr)
+        fftwf_free(ifftOutputRight);
 }
 
 //==============================================================================
@@ -219,8 +224,8 @@ void BinauralDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, Mid
     checkInputAndOutput(this, *inputOrderSetting, 0, false);
     ScopedNoDenormals noDenormals;
     
-    //const int nCh = jmin(buffer.getNumChannels(), input.getNumberOfChannels());
-    const int nCh = jmin(buffer.getNumChannels(), 16);
+    const int nIRsPerChannel = input.getNumberOfChannels();
+    const int nCh = jmin(buffer.getNumChannels(), input.getNumberOfChannels());
     const int L = buffer.getNumSamples();
     const int ergL = overlapBuffer.getNumSamples();
     const int overlap = 235;
@@ -234,36 +239,53 @@ void BinauralDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, Mid
     
     AudioBlock<float> tempBlock (stereoTemp);
     
-    FloatVectorOperations::clear((float*) accum, 2 * (fftLength / 2 + 1));
+    FloatVectorOperations::clear((float*) accumLeft, 2 * (fftLength / 2 + 1));
+    FloatVectorOperations::clear((float*) accumRight, 2 * (fftLength / 2 + 1));
     
     for (int ch = 0; ch < nCh; ++ch)
     {
         FloatVectorOperations::clear(in, fftLength); // TODO: only last part
-        FloatVectorOperations::copy(in, buffer.getReadPointer(0), L);
+        FloatVectorOperations::copy(in, buffer.getReadPointer(ch), L);
         fftwf_execute(fftForward);
-        fftwf_complex* ir = (fftwf_complex*) irsFrequencyDomain.getReadPointer(ch);
+        
+        fftwf_complex* irLeft = (fftwf_complex*) irsFrequencyDomain.getReadPointer(ch);
+        fftwf_complex* irRight = (fftwf_complex*) irsFrequencyDomain.getReadPointer(nIRsPerChannel + ch);
+        
         for (int i = 0; i < fftLength / 2 + 1; ++i)
         {
-            accum[i][0] += out[i][0] * ir[i][0] - out[i][1] * ir[i][1];
-            accum[i][1] += out[i][1] * ir[i][0] + out[i][0] * ir[i][1];
+            accumLeft[i][0]  += out[i][0] *  irLeft[i][0] - out[i][1] *  irLeft[i][1];
+            accumLeft[i][1]  += out[i][1] *  irLeft[i][0] + out[i][0] *  irLeft[i][1];
+            accumRight[i][0] += out[i][0] * irRight[i][0] - out[i][1] * irRight[i][1];
+            accumRight[i][1] += out[i][1] * irRight[i][0] + out[i][0] * irRight[i][1];
         }
     }
     
-    fftwf_execute(fftBackward);
+    fftwf_execute(fftBackwardLeft);
+    fftwf_execute(fftBackwardRight);
     
+    FloatVectorOperations::copy(buffer.getWritePointer(0), ifftOutputLeft, L);
+    FloatVectorOperations::copy(buffer.getWritePointer(1), ifftOutputRight, L);
     
-    FloatVectorOperations::copy(buffer.getWritePointer(0), ifftOutput, L);
     FloatVectorOperations::add (buffer.getWritePointer(0), overlapBuffer.getWritePointer(0), copyL);
+    FloatVectorOperations::add (buffer.getWritePointer(1), overlapBuffer.getWritePointer(1), copyL);
     
     if (copyL < overlap) // there is some overlap left, want some?
     {
         const int howManyAreLeft = overlap - L;
         FloatVectorOperations::copy(overlapBuffer.getWritePointer(0), overlapBuffer.getReadPointer(0, L), howManyAreLeft);
+        FloatVectorOperations::copy(overlapBuffer.getWritePointer(1), overlapBuffer.getReadPointer(1, L), howManyAreLeft);
+        
         FloatVectorOperations::clear(overlapBuffer.getWritePointer(0, howManyAreLeft), ergL - howManyAreLeft);
-        FloatVectorOperations::add(overlapBuffer.getWritePointer(0), &ifftOutput[L], 235);
+        FloatVectorOperations::clear(overlapBuffer.getWritePointer(1, howManyAreLeft), ergL - howManyAreLeft);
+        
+        FloatVectorOperations::add(overlapBuffer.getWritePointer(0), &ifftOutputLeft[L], 235);
+        FloatVectorOperations::add(overlapBuffer.getWritePointer(1), &ifftOutputRight[L], 235);
     }
     else
-        FloatVectorOperations::copy(overlapBuffer.getWritePointer(0), &ifftOutput[L], 235);
+    {
+        FloatVectorOperations::copy(overlapBuffer.getWritePointer(0), &ifftOutputLeft[L], 235);
+        FloatVectorOperations::copy(overlapBuffer.getWritePointer(1), &ifftOutputRight[L], 235);
+    }
     
     
     AudioBlock<float> sumBlock (stereoSum);
@@ -337,12 +359,17 @@ void BinauralDecoderAudioProcessor::updateBuffers()
     DBG("IOHelper:  input size: " << input.getSize());
     DBG("IOHelper: output size: " << output.getSize());
     
-    ProcessSpec convSpec;
-    convSpec.sampleRate = getSampleRate();
-    convSpec.maximumBlockSize = getBlockSize();
-    convSpec.numChannels = 2; // convolve two channels (which actually point to one and the same input channel)
+    const double sampleRate = getSampleRate();
+    const int blockSize = getBlockSize();
     
-    const int ergL = convSpec.maximumBlockSize + 235;
+    const int order = input.getOrder();
+    const int nCh = input.getNumberOfChannels();
+    DBG("order: " << order);
+    DBG("nCh: " << nCh);
+    
+    // TODO: do resampling
+    
+    const int ergL = blockSize + 235;
     fftLength = nextPowerOfTwo(ergL);
     
     stereoSum.setSize(2, fftLength);
@@ -351,49 +378,62 @@ void BinauralDecoderAudioProcessor::updateBuffers()
     overlapBuffer.setSize(2, 235);
     overlapBuffer.clear();
     
-    if (fftwBlocksize != convSpec.maximumBlockSize)
+    if (fftwBlocksize != blockSize)
     {
-        fftwBlocksize = convSpec.maximumBlockSize;
+        fftwBlocksize = blockSize;
         
         if (fftwWasPlanned)
         {
             fftwf_destroy_plan(fftForward);
-            fftwf_destroy_plan(fftBackward);
+            fftwf_destroy_plan(fftBackwardLeft);
+            fftwf_destroy_plan(fftBackwardRight);
         }
         
         if (in != nullptr)
             fftwf_free(in);
         if (out != nullptr)
             fftwf_free(out);
-        if (accum != nullptr)
-            fftwf_free(accum);
-        if (ifftOutput != nullptr)
-            fftwf_free(ifftOutput);
+        if (accumLeft != nullptr)
+            fftwf_free(accumLeft);
+        if (accumRight != nullptr)
+            fftwf_free(accumRight);
+        if (ifftOutputLeft != nullptr)
+            fftwf_free(ifftOutputLeft);
+        if (ifftOutputRight != nullptr)
+            fftwf_free(ifftOutputRight);
         
         in = (float*) fftwf_malloc(sizeof(float) * fftLength);
         out = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * (fftLength / 2 + 1));
-        accum = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * (fftLength / 2 + 1));
-        ifftOutput = (float*) fftwf_malloc(sizeof(float) * fftLength);
+        accumLeft = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * (fftLength / 2 + 1));
+        accumRight = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * (fftLength / 2 + 1));
+        ifftOutputLeft = (float*) fftwf_malloc(sizeof(float) * fftLength);
+        ifftOutputRight = (float*) fftwf_malloc(sizeof(float) * fftLength);
         
         fftForward = fftwf_plan_dft_r2c_1d(fftLength, in, out, FFTW_MEASURE);
-        fftBackward = fftwf_plan_dft_c2r_1d(fftLength, accum, ifftOutput, FFTW_MEASURE);
+        fftBackwardLeft = fftwf_plan_dft_c2r_1d(fftLength, accumLeft, ifftOutputLeft, FFTW_MEASURE);
+        fftBackwardRight = fftwf_plan_dft_c2r_1d(fftLength, accumRight, ifftOutputRight, FFTW_MEASURE);
         fftwWasPlanned = true;
     }
     
     FloatVectorOperations::clear((float*) in, fftLength); // clear (after plan creation!)
     
-    irsFrequencyDomain.setSize(2 * 16, 2 * (fftLength / 2 + 1)); // 3rd order stereo -> 32 channels
+    irsFrequencyDomain.setSize(2 * nCh, 2 * (fftLength / 2 + 1));
     irsFrequencyDomain.clear();
     
-    for (int i = 0; i < 16; ++i) // only left channel for now
+    for (int i = 0; i < nCh; ++i)
     {
-        FloatVectorOperations::clear(in, fftLength); // clear (after plan creation!)
-        FloatVectorOperations::multiply((float*) in, irs[2].getReadPointer(2 * i), 1.0 / fftLength, 236);
+        // left channel
+        FloatVectorOperations::clear(in, fftLength);
+        FloatVectorOperations::multiply((float*) in, irs[order - 1].getReadPointer(2 * i), 1.0 / fftLength, 236);
         fftwf_execute(fftForward);
         FloatVectorOperations::copy(irsFrequencyDomain.getWritePointer(i), (float*) out, 2 * (fftLength / 2 + 1));
+        
+        // right channel
+        FloatVectorOperations::clear(in, fftLength);
+        FloatVectorOperations::multiply((float*) in, irs[order - 1].getReadPointer(2 * i + 1), 1.0 / fftLength, 236);
+        fftwf_execute(fftForward);
+        FloatVectorOperations::copy(irsFrequencyDomain.getWritePointer(nCh + i), (float*) out, 2 * (fftLength / 2 + 1));
     }
-    
-
 
 }
 
