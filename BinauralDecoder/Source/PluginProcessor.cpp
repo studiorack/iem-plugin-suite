@@ -362,7 +362,7 @@ void BinauralDecoderAudioProcessor::updateBuffers()
     const double sampleRate = getSampleRate();
     const int blockSize = getBlockSize();
     
-    const int order = input.getOrder();
+    const int order = jmax(input.getOrder(), 1);
     const int nCh = input.getNumberOfChannels();
     DBG("order: " << order);
     DBG("nCh: " << nCh);
