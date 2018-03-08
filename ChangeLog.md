@@ -4,6 +4,8 @@ For a list of all changes and bugfixes see the git log.
 - plugin specific changes
     - **Binaural**Decoder
         - refactored convolution -> way better performance on all platforms
+    - **Matrix**Multiplicator
+        - fixed bug that only processed input channels up to a square-number count (e.g. 16 instead of 20)
 
 ## v1.1.1
 - general changes
