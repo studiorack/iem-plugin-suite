@@ -59,11 +59,10 @@ public:
         auto& T = retainedCurrentMatrix->getMatrix();
         
         const int nInputChannels = jmin( (int) inputBlock.getNumChannels(), (int) T.getNumColumns());
-        const int nChIn = square(isqrt(nInputChannels));
         const int nSamples = (int) inputBlock.getNumSamples();
         
         // copy input data to buffer
-        for (int ch = 0; ch < nChIn; ++ch)
+        for (int ch = 0; ch < nInputChannels; ++ch)
             buffer.copyFrom(ch, 0, inputBlock.getChannelPointer(ch), nSamples);
         
         auto& outputBlock = context.getOutputBlock();
@@ -76,7 +75,7 @@ public:
             {
                 float* dest = outputBlock.getChannelPointer(destCh);
                 FloatVectorOperations::multiply(dest, buffer.getReadPointer(0), T(row, 0), nSamples); // ch 0
-                for (int i = 1; i < nChIn; ++i) // input channels
+                for (int i = 1; i < nInputChannels; ++i) // input channels
                     FloatVectorOperations::addWithMultiply(dest, buffer.getReadPointer(i), T(row, i), nSamples); // ch 0
             }
         }
