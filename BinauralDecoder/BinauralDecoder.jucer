@@ -148,7 +148,8 @@
     <LINUX_MAKE targetFolder="Builds/LinuxMakefile" externalLibraries="fftw3f">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="BinauralDecoder"/>
-        <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="BinauralDecoder"/>
+        <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="BinauralDecoder"
+                       headerPath="/usr/local/include" libraryPath="/usr/local/lib/"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_core" path="../../../../../Applications/JUCE/modules"/>
