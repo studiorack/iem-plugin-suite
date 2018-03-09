@@ -94,12 +94,28 @@ private:
     float* inputOrderSetting;
     float* useSN3D;
     float* applyHeadphoneEq;
-    
-    OwnedArray<Convolution> engines[7];
+
     Convolution EQ;
     
+    int fftLength = -1;
+    int irLengthMinusOne = 235;
+    float* in = nullptr;
+    float* ifftOutputLeft = nullptr;
+    float* ifftOutputRight = nullptr;
+    fftwf_complex* out = nullptr;
+    fftwf_complex* accumLeft = nullptr;
+    fftwf_complex* accumRight = nullptr;
+    
+    fftwf_plan fftForward, fftBackwardLeft, fftBackwardRight;
+    bool fftwWasPlanned = false;
+    
     AudioBuffer<float> stereoSum, stereoTemp;
+    AudioBuffer<float> overlapBuffer;
     AudioBuffer<float> irs[7];
+    
+    AudioBuffer<float> irsFrequencyDomain;
+    double irsSampleRate = 44100.0;
+    
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BinauralDecoderAudioProcessor)
 };

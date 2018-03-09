@@ -24,9 +24,7 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-
-#ifndef IEM_LAF_H_INCLUDED
-#define IEM_LAF_H_INCLUDED
+#pragma once
 
 class LaF : public LookAndFeel_V4
 {
@@ -66,6 +64,12 @@ public:
         setColour (ScrollBar::thumbColourId, Colours::steelblue);
         setColour (ScrollBar::thumbColourId, Colours::steelblue);
         setColour (PopupMenu::backgroundColourId, Colours::steelblue.withMultipliedAlpha(0.9f));
+        setColour (ListBox::backgroundColourId, Colours::steelblue.withMultipliedAlpha(0.1f));
+        setColour (ListBox::outlineColourId, Colours::steelblue.withMultipliedAlpha(0.3f));
+        
+        setColour (TableHeaderComponent::backgroundColourId, Colours::lightgrey.withMultipliedAlpha(0.8f));
+        setColour (TableHeaderComponent::highlightColourId, Colours::steelblue.withMultipliedAlpha(0.3f));
+        
     }
     
     ~LaF() {}
@@ -88,6 +92,13 @@ public:
     Font getPopupMenuFont() override
     {
         Font font(robotoRegular);
+        font.setHeight(14.0f);
+        return font;
+    }
+    
+    Font getTextButtonFont (TextButton& button, int height) override
+    {
+        Font font(robotoMedium);
         font.setHeight(14.0f);
         return font;
     }
@@ -264,6 +275,54 @@ public:
         }
     }
     
+    void drawTableHeaderBackground (Graphics& g, TableHeaderComponent& header) override
+    {
+        Rectangle<int> r (header.getLocalBounds());
+        auto outlineColour = header.findColour (TableHeaderComponent::outlineColourId);
+        
+        g.setColour (outlineColour);
+        g.fillRect (r.removeFromBottom (1));
+        
+        g.setColour (header.findColour (TableHeaderComponent::backgroundColourId));
+        g.fillRect (r);
+        
+        g.setColour (outlineColour);
+        
+        for (int i = header.getNumColumns (true); --i >= 0;)
+            g.fillRect (header.getColumnPosition (i).removeFromRight (1));
+    }
+    
+    void drawTableHeaderColumn (Graphics& g, TableHeaderComponent& header,
+                                                const String& columnName, int /*columnId*/,
+                                                int width, int height, bool isMouseOver, bool isMouseDown,
+                                                int columnFlags) override
+    {
+        auto highlightColour = header.findColour (TableHeaderComponent::highlightColourId);
+        
+        if (isMouseDown)
+            g.fillAll (highlightColour);
+        else if (isMouseOver)
+            g.fillAll (highlightColour.withMultipliedAlpha (0.625f));
+        
+        Rectangle<int> area (width, height);
+        area.reduce (4, 0);
+        
+        if ((columnFlags & (TableHeaderComponent::sortedForwards | TableHeaderComponent::sortedBackwards)) != 0)
+        {
+            Path sortArrow;
+            sortArrow.addTriangle (0.0f, 0.0f,
+                                   0.5f, (columnFlags & TableHeaderComponent::sortedForwards) != 0 ? -0.8f : 0.8f,
+                                   1.0f, 0.0f);
+            
+            g.setColour (Colour (0x99000000));
+            g.fillPath (sortArrow, sortArrow.getTransformToScaleToFit (area.removeFromRight (height / 2).reduced (2).toFloat(), true));
+        }
+        
+        g.setColour (header.findColour (TableHeaderComponent::textColourId));
+        g.setFont (robotoRegular);
+        g.setFont (height * 0.6f);
+        g.drawFittedText (columnName, area, Justification::centred, 1);
+    }
     
     void drawLinearSlider (Graphics& g, int x, int y, int width, int height,
                            float sliderPos, float minSliderPos, float maxSliderPos,
@@ -541,40 +600,49 @@ public:
     void drawButtonBackground (Graphics& g, Button& button, const Colour& backgroundColour,
                                bool isMouseOverButton, bool isButtonDown) override
     {
-        Colour baseColour (backgroundColour.withMultipliedSaturation (button.hasKeyboardFocus (true) ? 1.3f : 0.9f)
-                           .withMultipliedAlpha (button.isEnabled() ? 1.0f : 0.5f));
-        //Colour outlineColour (backgroundColour);
+        Rectangle<float> buttonArea(0.0f, 0.0f, button.getWidth(), button.getHeight());
+        buttonArea.reduce(1.0f, 1.0f);
         
-        if (isButtonDown || isMouseOverButton) baseColour = baseColour.contrasting (isButtonDown ? 0.3f : 0.1f);
-        //if (isButtonDown || isMouseOverButton) baseColour = baseColour.overlaidWith (backgroundColour.withAlpha(isButtonDown ? 0.8f : 0.4f));
-        
-        const bool flatOnLeft   = button.isConnectedOnLeft();
-        const bool flatOnRight  = button.isConnectedOnRight();
-        const bool flatOnTop    = button.isConnectedOnTop();
-        const bool flatOnBottom = button.isConnectedOnBottom();
-        
-        const float width  = button.getWidth()-2;
-        const float height = button.getHeight()-2;
-        
-        if (width > 0 && height > 0)
-        {
-            const float cornerSize = jmin (15.0f, jmin (width, height) * 0.45f);
-            
-            
-            Path outline;
-            outline.addRoundedRectangle (1.0f, 1.0f, width, height,
-                                         cornerSize, cornerSize,
-                                         ! (flatOnLeft  || flatOnTop),
-                                         ! (flatOnRight || flatOnTop),
-                                         ! (flatOnLeft  || flatOnBottom),
-                                         ! (flatOnRight || flatOnBottom));
-            
-            g.setColour (baseColour);
-            g.fillPath (outline);
-//            g.setColour (backgroundColour);
-//            g.strokePath (outline, PathStrokeType(1.3f));
-        }
+//        const bool flatOnLeft   = button.isConnectedOnLeft();
+//        const bool flatOnRight  = button.isConnectedOnRight();
+//        const bool flatOnTop    = button.isConnectedOnTop();
+//        const bool flatOnBottom = button.isConnectedOnBottom();
+//
+//        const float width  = button.getWidth()-2;
+//        const float height = button.getHeight()-2;
+
+//        if (width > 0 && height > 0)
+//        {
+//            const float cornerSize = jmin (15.0f, jmin (width, height) * 0.45f);
+//
+//
+//            Path outline;
+//            //outline.addRoundedRectangle(buttonArea, cornerSize, cornerSize);
+//            outline.addRoundedRectangle (buttonArea.getX(), buttonArea.getY(), buttonArea.getWidth(), buttonArea.getHeight(),
+//                                         cornerSize, cornerSize,
+//                                         ! (flatOnLeft  || flatOnTop),
+//                                         ! (flatOnRight || flatOnTop),
+//                                         ! (flatOnLeft  || flatOnBottom),
+//                                         ! (flatOnRight || flatOnBottom));
+//
+//            //g.fillPath (outline);
+////            g.setColour (backgroundColour);
+//        }
+
+        g.setColour(backgroundColour);
+        if (isButtonDown)
+            buttonArea.reduce(0.8f, 0.8f);
+        else if (isMouseOverButton)
+            buttonArea.reduce(0.4f, 0.4f);
+
+        g.drawRoundedRectangle(buttonArea, 2.0f, 1.0f);
+
+        buttonArea.reduce(1.5f, 1.5f);
+        g.setColour(backgroundColour.withMultipliedAlpha(isButtonDown ? 1.0f : isMouseOverButton ? 0.5f : 0.2f));
+
+        g.fillRoundedRectangle(buttonArea, 2.0f);
     }
+    
     void drawButtonText (Graphics& g, TextButton& button, bool /*isMouseOverButton*/, bool /*isButtonDown*/) override
     {
         Font font (getTextButtonFont (button, button.getHeight()));
@@ -675,19 +743,22 @@ public:
         
         g.setColour(component.findColour(ToggleButton::tickColourId).withMultipliedAlpha(ticked ? 1.0f : isMouseOverButton ? 0.7f : 0.5f) );
         
-        
-        if (isMouseOverButton)
+        if (isButtonDown)
+            buttonArea.reduce(0.8f, 0.8f);
+        else if (isMouseOverButton)
             buttonArea.reduce(0.4f, 0.4f);
+        
         g.drawRoundedRectangle(buttonArea, 2.0f, 1.0f);
         
-        
         buttonArea.reduce(1.5f, 1.5f);
-        g.setColour(component.findColour(ToggleButton::tickColourId).withMultipliedAlpha(ticked ? 1.0f : 0.3f));
+        g.setColour(component.findColour(ToggleButton::tickColourId).withMultipliedAlpha(ticked ? 1.0f : isMouseOverButton ? 0.5f : 0.2f));
         
         g.fillRoundedRectangle(buttonArea, 2.0f);
         
         
     }
+    
+    
     
     Path getTickShape (const float height) override
     {
@@ -852,7 +923,3 @@ public:
     
     
 };
-
-
-
-#endif  // IEM_LAF_H_INCLUDED

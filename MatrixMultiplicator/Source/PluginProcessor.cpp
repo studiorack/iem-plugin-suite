@@ -178,7 +178,6 @@ void MatrixMultiplicatorAudioProcessor::processBlock (AudioSampleBuffer& buffer,
 {
     checkInputAndOutput(this, 0, 0, false);
     ScopedNoDenormals noDenormals;
-    _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
 
     AudioBlock<float> ab (buffer);
     ProcessContextReplacing<float> context (ab);

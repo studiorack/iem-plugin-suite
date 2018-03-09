@@ -31,6 +31,8 @@ class HammerAitovGrid    : public Component
 public:
     HammerAitovGrid()
     {
+        setBufferedToImage(true);
+        
         //calculating path prototype
         outline.clear();
         boldGrid.clear();

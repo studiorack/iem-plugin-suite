@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<JUCERPROJECT id="mbpAgi" name="MatrixMultiplicator" displaySplashScreen="0"
-              reportAppUsage="0" splashScreenColour="Dark" projectType="audioplug"
-              version="0.1.2" bundleIdentifier="at.iem.MatrixMultiplicator"
-              includeBinaryInAppConfig="1" cppLanguageStandard="14" buildVST="1"
-              buildVST3="0" buildAU="0" buildAUv3="0" buildRTAS="0" buildAAX="0"
-              buildStandalone="1" enableIAA="0" pluginName="MatrixMultiplicator"
-              pluginDesc="MatrixMultiplicator" pluginManufacturer="IEM" pluginManufacturerCode="IEMA"
-              pluginCode="MaMu" pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
+<JUCERPROJECT id="mbpAgi" name="AllRADecoder" displaySplashScreen="0" reportAppUsage="0"
+              splashScreenColour="Dark" projectType="audioplug" version="0.1.0"
+              bundleIdentifier="at.iem.AllRADecoder" includeBinaryInAppConfig="1"
+              cppLanguageStandard="14" buildVST="1" buildVST3="0" buildAU="0"
+              buildAUv3="0" buildRTAS="0" buildAAX="0" buildStandalone="1"
+              enableIAA="0" pluginName="AllRADecoder" pluginDesc="AllRADecoder"
+              pluginManufacturer="IEM" pluginManufacturerCode="IEMA" pluginCode="AlDe"
+              pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
-              pluginAUExportPrefix="MatrixMultiplicatorAU" pluginRTASCategory=""
-              aaxIdentifier="at.iem.MatrixMultiplicator" pluginAAXCategory=""
-              jucerVersion="5.2.1" companyCopyright="IEM - Daniel Rudrich"
-              companyName="IEM" companyWebsite="iem.at">
-  <MAINGROUP id="LpzrV9" name="MatrixMultiplicator">
+              pluginAUExportPrefix="AllRADecoderAU" pluginRTASCategory="" aaxIdentifier="at.iem.AllRADecoder"
+              pluginAAXCategory="AAX_ePlugInCategory_Dynamics" jucerVersion="5.2.1"
+              companyCopyright="IEM - Daniel Rudrich, Franz Zotter" companyName="IEM"
+              companyWebsite="iem.at">
+  <MAINGROUP id="LpzrV9" name="AllRADecoder">
     <GROUP id="{1B6BB8E4-E576-FBC7-B6B6-8603D2CEBF9D}" name="lookAndFeel">
       <FILE id="AVFaGo" name="IEM_LaF.h" compile="0" resource="0" file="../resources/lookAndFeel/IEM_LaF.h"/>
       <FILE id="zmzhlf" name="Roboto-Bold.ttf" compile="0" resource="1" file="../resources/lookAndFeel/Roboto-Bold.ttf"/>
@@ -33,19 +33,24 @@
             file="Source/PluginEditor.cpp"/>
       <FILE id="Ur0OCo" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
     </GROUP>
-    <FILE id="CRfF6w" name="efficientSHvanilla.cpp" compile="1" resource="0"
+    <FILE id="noq7Zw" name="decoderHelper.h" compile="0" resource="0" file="../resources/decoderHelper.h"/>
+    <FILE id="yk1Otq" name="efficientSHvanilla.cpp" compile="1" resource="0"
           file="../resources/efficientSHvanilla.cpp"/>
-    <FILE id="ZI60yz" name="MatrixMultiplication.h" compile="0" resource="0"
-          file="../resources/MatrixMultiplication.h"/>
-    <FILE id="hiSESP" name="ReferenceCountedMatrix.h" compile="0" resource="0"
-          file="../resources/ReferenceCountedMatrix.h"/>
+    <FILE id="uoAzFj" name="EnergyDistributionVisualizer.h" compile="0"
+          resource="0" file="Source/EnergyDistributionVisualizer.h"/>
+    <FILE id="WLzbS2" name="LoudspeakerTableComponent.h" compile="0" resource="0"
+          file="Source/LoudspeakerTableComponent.h"/>
+    <FILE id="F9NLCT" name="LoudspeakerVisualizer.h" compile="0" resource="0"
+          file="Source/LoudspeakerVisualizer.h"/>
+    <FILE id="F0oPvT" name="NewtonApple_hull3D.cpp" compile="1" resource="0"
+          file="../resources/NewtonApple/NewtonApple_hull3D.cpp"/>
   </MAINGROUP>
   <EXPORTFORMATS>
     <XCODE_MAC targetFolder="Builds/MacOSX">
       <CONFIGURATIONS>
-        <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="MatrixMultiplicator"
+        <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="AllRADecoder"
                        enablePluginBinaryCopyStep="1" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"/>
-        <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="MatrixMultiplicator"
+        <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="AllRADecoder"
                        enablePluginBinaryCopyStep="1" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
@@ -68,14 +73,14 @@
     <VS2017 targetFolder="Builds/VisualStudio2017">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" winWarningLevel="4" generateManifest="1" winArchitecture="x64"
-                       isDebug="1" optimisation="1" targetName="MatrixMultiplicator"
-                       debugInformationFormat="ProgramDatabase" enablePluginBinaryCopyStep="0"/>
-        <CONFIGURATION name="Release 32bit" winWarningLevel="4" generateManifest="1"
-                       winArchitecture="Win32" isDebug="0" optimisation="3" targetName="MatrixMultiplicator_win32"
+                       isDebug="1" optimisation="1" targetName="AllRADecoder" debugInformationFormat="ProgramDatabase"
+                       enablePluginBinaryCopyStep="0"/>
+        <CONFIGURATION name="Release 64bit" winWarningLevel="4" generateManifest="1"
+                       winArchitecture="x64" isDebug="0" optimisation="3" targetName="AllRADecoder_x64"
                        debugInformationFormat="ProgramDatabase" enablePluginBinaryCopyStep="0"
                        linkTimeOptimisation="1"/>
-        <CONFIGURATION name="Release 64bit" winWarningLevel="4" generateManifest="1"
-                       winArchitecture="x64" isDebug="0" optimisation="3" targetName="MatrixMultiplicator_x64"
+        <CONFIGURATION name="Release 32bit" winWarningLevel="4" generateManifest="1"
+                       winArchitecture="Win32" isDebug="0" optimisation="3" targetName="AllRADecoder_win32"
                        debugInformationFormat="ProgramDatabase" enablePluginBinaryCopyStep="0"
                        linkTimeOptimisation="1"/>
       </CONFIGURATIONS>
@@ -98,8 +103,8 @@
     </VS2017>
     <LINUX_MAKE targetFolder="Builds/LinuxMakefile">
       <CONFIGURATIONS>
-        <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="MatrixMultiplicator"/>
-        <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="MatrixMultiplicator"/>
+        <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="AllRADecoder"/>
+        <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="AllRADecoder"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_core" path="../../../../../Applications/JUCE/modules"/>
