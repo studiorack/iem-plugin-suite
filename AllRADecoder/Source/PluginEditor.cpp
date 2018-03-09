@@ -114,6 +114,8 @@ AllRADecoderAudioProcessorEditor::AllRADecoderAudioProcessorEditor (AllRADecoder
     
     addAndMakeVisible(lspList);
     
+    updateChannelCount();
+    
     // start timer after everything is set up properly
     startTimer(50);
 }
@@ -238,6 +240,12 @@ void AllRADecoderAudioProcessorEditor::timerCallback()
         processor.updateMessage = false;
         messageDisplay.setMessage(processor.messageToEditor);
     }
+    
+    if (processor.updateChannelCount.get())
+    {
+        processor.updateChannelCount = false;
+        updateChannelCount();
+    }
 }
 
 
@@ -277,5 +285,24 @@ void AllRADecoderAudioProcessorEditor::buttonClicked (Button* button)
         }
     }
 }
+
+void AllRADecoderAudioProcessorEditor::updateChannelCount ()
+{
+    ReferenceCountedDecoder::Ptr currentDecoder = processor.getCurrentDecoder();
+    if (currentDecoder != nullptr)
+    {
+        const int order = currentDecoder->getOrder();
+        title.getInputWidgetPtr()->setMaxOrder(order);
+        
+        const int nCh = currentDecoder->getNumOutputChannels();
+        title.getOutputWidgetPtr()->setSizeIfUnselectable(nCh);
+    }
+    else
+    {
+        title.getInputWidgetPtr()->setMaxOrder(0);
+        title.getOutputWidgetPtr()->setSizeIfUnselectable(0);
+    }
+    
+};
 
 void AllRADecoderAudioProcessorEditor::buttonStateChanged (Button* button) {};

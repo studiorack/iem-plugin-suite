@@ -348,6 +348,7 @@ void AllRADecoderAudioProcessor::setStateInformation (const void* data, int size
             undoManager.clearUndoHistory();
             loudspeakers.addListener(this);
             prepareLayout();
+            calculateDecoder();
         }
     }
     
@@ -898,6 +899,7 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
     decoder.setDecoder(newDecoder);
     decoderConfig = newDecoder;
     DBG("finished");
+    updateChannelCount = true;
     
     MailBox::Message newMessage;
     newMessage.messageColour = Colours::green;

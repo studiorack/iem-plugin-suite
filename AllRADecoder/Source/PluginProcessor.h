@@ -116,6 +116,9 @@ public:
     Atomic<bool> updateLoudspeakerVisualization = false;
     Atomic<bool> updateTable = true;
     Atomic<bool> updateMessage = true;
+    Atomic<bool> updateChannelCount = true;
+    
+    ReferenceCountedDecoder::Ptr getCurrentDecoder() {return decoderConfig;}
     
     std::vector<R3> points;
     std::vector<Tri> triangles;

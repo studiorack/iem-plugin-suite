@@ -62,6 +62,7 @@ public:
     void buttonClicked (Button* button) override;
     void buttonStateChanged (Button* button) override;
     
+    void updateChannelCount();
     
 private:
     // ====================== begin essentials ==================
@@ -80,7 +81,7 @@ private:
         - AmbisonicIOWidget<maxOrder>
         - DirectivitiyIOWidget
      */
-    TitleBar<AmbisonicIOWidget<>, AudioChannelsIOWidget<64,true>> title;
+    TitleBar<AmbisonicIOWidget<>, AudioChannelsIOWidget<0,false>> title;
     Footer footer;
     // =============== end essentials ============
     
