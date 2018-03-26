@@ -6,7 +6,7 @@ variables:
   CONFIG: Release
   PKGLIBS: jack flac vorbis vorbisenc vorbisfile ogg libjpeg libpng zlib fftw3f
 
-.debian_buster_template: &debian_buster
+debian_buster:
   image: debian:buster
   tags:
     - docker
@@ -20,17 +20,7 @@ variables:
     - apt dist-upgrade -y
     - apt-get build-dep -y --no-install-recommends iem-plugin-suite
     - apt-get install -y --no-install-recommends libfftw3-dev
-    - xvfb-run -a make -k V=1 TARGET=$TARGET CONFIG=$CONFIG CPPFLAGS=-DJUCE_JACK=1 CFLAGS="$(pkg-config --cflags $PKGLIBS)" LDFLAGS="$(pkg-config --libs $PKGLIBS)"
-
-debian_buster_vst:
-  variables:
-    TARGET: VST
-  <<: *debian_buster
-
-debian_buster_standalone:
-  variables:
-    TARGET: Standalone
-  <<: *debian_buster
+    - xvfb-run -a make -k V=1 CONFIG=$CONFIG CPPFLAGS=-DJUCE_JACK=1 CFLAGS="$(pkg-config --cflags $PKGLIBS)" LDFLAGS="$(pkg-config --libs $PKGLIBS)"
 
 osx:
   tags:
