@@ -60,6 +60,30 @@ public:
             spherePanner.repaint();
         }
     }
+    
+    void paint (Graphics& g) override
+    {
+        LookAndFeel& lf = getLookAndFeel();
+        
+        Rectangle<float> buttonArea(0.0f, 0.0f, getWidth(), getHeight());
+        buttonArea.reduce(1.0f, 1.0f);
+        
+        const float width  = getWidth()-2;
+        const float height = getHeight()-2;
+        
+        if (width > 0 && height > 0)
+        {
+            const float cornerSize = jmin (15.0f, jmin (width, height) * 0.45f);
+            Path outline;
+            outline.addRoundedRectangle (getX(), buttonArea.getY(), buttonArea.getWidth(), buttonArea.getHeight(),
+                                                 cornerSize, cornerSize);
+            g.setColour (findColour (getToggleState() ? buttonOnColourId : buttonColourId));
+            g.fillPath (outline);
+        }
+
+        lf.drawButtonText (g, *this, isMouseOver(), isMouseButtonDown());
+    }
+    
 private:
     MultiEncoderAudioProcessor& processor;
     int id;
