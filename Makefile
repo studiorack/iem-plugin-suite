@@ -23,6 +23,11 @@ system:
 ALL_PROJECTS=$(patsubst %/, %, $(dir $(wildcard */*.jucer)))
 PROJECTS=$(filter-out _PluginTemplate, $(ALL_PROJECTS))
 
+
+# what do we want to build: Standalone, VST; all
+## currently this has only an effect on the Linux buildsystem
+TARGET=all
+
 # helper applications
 PROJUCER=Projucer
 
@@ -47,7 +52,7 @@ $(ALL_PROJECTS:%=%-clean):
 %-LinuxMakefile-build: %/Builds/LinuxMakefile/Makefile
 	make -C $(<D) \
 		CONFIG="$(CONFIG)" \
-		all
+		$(TARGET)
 %-LinuxMakefile-clean: %/Builds/LinuxMakefile/Makefile
 	make -C $(<D) \
 		CONFIG="$(CONFIG)" \
