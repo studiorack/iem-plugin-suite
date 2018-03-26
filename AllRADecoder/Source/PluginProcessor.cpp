@@ -23,6 +23,8 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
+#include <cfloat>
+
 //==============================================================================
 AllRADecoderAudioProcessor::AllRADecoderAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations

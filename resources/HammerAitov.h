@@ -21,6 +21,7 @@
  */
 
 #pragma once
+#include <cfloat>
 
 class HammerAitov {
 public:
