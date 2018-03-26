@@ -2,7 +2,7 @@
 
 variables:
 # for now we exclude 'BinauralDecoder' as it is incompatible with JUCE-5.2.0 (huckleberry)
-  PROJECTS: DirectionalCompressor DirectivityShaper DualDelay EnergyVisualizer FdnReverb MatrixMultiplicator MultiEncoder OmniCompressor ProbeDecoder RoomEncoder SimpleDecoder StereoEncoder ToolBox
+  PROJECTS: AllRADecoder DirectionalCompressor DirectivityShaper DualDelay EnergyVisualizer FdnReverb MatrixMultiplicator MultiEncoder OmniCompressor ProbeDecoder RoomEncoder SimpleDecoder StereoEncoder ToolBox
   CONFIG: Release
 
 debian_buster:
