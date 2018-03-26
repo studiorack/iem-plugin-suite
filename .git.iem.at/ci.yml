@@ -13,6 +13,7 @@ debian_buster:
     - master
     - develop
   script:
+# we need deb-src to be able to install the build-deps for 'iem-plugin-suite'
     - sed -e 's|^deb|deb-src|' /etc/apt/sources.list > /etc/apt/sources.list.d/deb-src.list
     - apt update -y
     - apt dist-upgrade -y
