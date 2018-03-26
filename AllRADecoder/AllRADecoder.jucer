@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <JUCERPROJECT id="mbpAgi" name="AllRADecoder" displaySplashScreen="0" reportAppUsage="0"
-              splashScreenColour="Dark" projectType="audioplug" version="0.1.0"
+              splashScreenColour="Dark" projectType="audioplug" version="0.1.1"
               bundleIdentifier="at.iem.AllRADecoder" includeBinaryInAppConfig="1"
               cppLanguageStandard="14" buildVST="1" buildVST3="0" buildAU="0"
               buildAUv3="0" buildRTAS="0" buildAAX="0" buildStandalone="1"
@@ -10,7 +10,7 @@
               pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
               pluginAUExportPrefix="AllRADecoderAU" pluginRTASCategory="" aaxIdentifier="at.iem.AllRADecoder"
-              pluginAAXCategory="AAX_ePlugInCategory_Dynamics" jucerVersion="5.2.1"
+              pluginAAXCategory="AAX_ePlugInCategory_Dynamics" jucerVersion="5.3.0"
               companyCopyright="IEM - Daniel Rudrich, Franz Zotter" companyName="IEM"
               companyWebsite="iem.at">
   <MAINGROUP id="LpzrV9" name="AllRADecoder">

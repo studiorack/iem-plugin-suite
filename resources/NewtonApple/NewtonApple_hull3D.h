@@ -82,14 +82,14 @@ struct R3
 {
   int id, lspNum, realLspNum = -1;
   float x, y, z;
-    float azimuth, elevation;
+    float azimuth, elevation, radius;
     bool isImaginary;
     float gain;
     int channel = -1;
     
   R3() {};
   R3(float xc, float yc, float zc) : id(-1), x(xc), y(yc), z(zc)  {};
-  R3(const R3 &p) : id(p.id), lspNum(p.lspNum), realLspNum(p.realLspNum), x(p.x), y(p.y), z(p.z), azimuth(p.azimuth), elevation(p.elevation), isImaginary(p.isImaginary), gain(p.gain), channel(p.channel) {};
+  R3(const R3 &p) : id(p.id), lspNum(p.lspNum), realLspNum(p.realLspNum), x(p.x), y(p.y), z(p.z), azimuth(p.azimuth), elevation(p.elevation), radius(p.radius), isImaginary(p.isImaginary), gain(p.gain), channel(p.channel) {};
 
   R3 &operator=(const R3 &p)
   {
@@ -100,6 +100,7 @@ struct R3
       gain = p.gain;
       azimuth = p.azimuth;
       elevation = p.elevation;
+      radius = p.radius;
     id = p.id;
     x = p.x;
     y = p.y;

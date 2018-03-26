@@ -532,6 +532,7 @@ void AllRADecoderAudioProcessor::convertLoudspeakersToArray()
         
         newPoint.azimuth = (*it).getProperty("Azimuth");
         newPoint.elevation = (*it).getProperty("Elevation");
+        newPoint.radius = (*it).getProperty("Radius");
         
         newPoint.isImaginary = isImaginary;
         newPoint.gain = (*it).getProperty("Gain");
@@ -1059,7 +1060,7 @@ var AllRADecoderAudioProcessor::convertLoudspeakersToVar ()
         
         loudspeaker->setProperty("Azimuth", lsp.azimuth);
         loudspeaker->setProperty("Elevation", lsp.elevation);
-        loudspeaker->setProperty("Radius", sqrt(square(lsp.x) + square(lsp.y) + square(lsp.z)));
+        loudspeaker->setProperty("Radius", lsp.radius);
         loudspeaker->setProperty("IsImaginary", lsp.isImaginary);
         loudspeaker->setProperty("Channel", lsp.channel);
         loudspeaker->setProperty("Gain", lsp.gain);
