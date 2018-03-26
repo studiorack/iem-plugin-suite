@@ -6,6 +6,7 @@
 #include <math.h>
 #include <string>
 #include <algorithm>
+#include <cstring>
 
 
 #include "NewtonApple_hull3D.h"
