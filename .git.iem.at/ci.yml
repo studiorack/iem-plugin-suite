@@ -4,6 +4,7 @@ variables:
 # for now we exclude 'BinauralDecoder' as it is incompatible with JUCE-5.2.0 (huckleberry)
   PROJECTS: AllRADecoder DirectionalCompressor DirectivityShaper DualDelay EnergyVisualizer FdnReverb MatrixMultiplicator MultiEncoder OmniCompressor ProbeDecoder RoomEncoder SimpleDecoder StereoEncoder ToolBox
   CONFIG: Release
+  PKGLIBS: jack flac vorbis vorbisenc vorbisfile ogg libjpeg libpng zlib fftw3f
 
 debian_buster:
   image: debian:buster
@@ -19,7 +20,7 @@ debian_buster:
     - apt dist-upgrade -y
     - apt-get build-dep -y --no-install-recommends iem-plugin-suite
     - apt-get install -y --no-install-recommends libfftw3-dev
-    - xvfb-run -a make -k V=1 CONFIG=$CONFIG CPPFLAGS=-DJUCE_JACK=1 LDFLAGS="$(pkg-config --libs jack flac vorbis vorbisenc vorbisfile ogg libjpeg libpng zlib fftw3f)"
+    - xvfb-run -a make -k V=1 CONFIG=$CONFIG CPPFLAGS=-DJUCE_JACK=1 LDFLAGS="$(pkg-config --libs $PKGLIBS)"
 
 osx:
   tags:
