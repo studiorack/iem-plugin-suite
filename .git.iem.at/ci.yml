@@ -33,4 +33,3 @@ osx:
     - curl -o juce.zip https://d30pueezughrda.cloudfront.net/juce/juce-huckleberry-osx.zip
     - unzip -q juce.zip -d ~
     - make -k CONFIG=$CONFIG PROJUCER="~/JUCE/Projucer.app/Contents/MacOS/Projucer"
-  allow_failure: true
