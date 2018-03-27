@@ -85,7 +85,6 @@ MultiEncoderAudioProcessorEditor::MultiEncoderAudioProcessorEditor (MultiEncoder
     slMasterYaw.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
     slMasterYaw.setRotaryParameters(M_PI, 3*M_PI, false);
     slMasterYaw.setTooltip("Master yaw angle");
-    slMasterYaw.setTextValueSuffix(CharPointer_UTF8 ("\xc2\xb0"));
     
     addAndMakeVisible(&slMasterPitch);
     slMasterPitchAttachment = new SliderAttachment(valueTreeState,"masterPitch", slMasterPitch);
@@ -95,22 +94,19 @@ MultiEncoderAudioProcessorEditor::MultiEncoderAudioProcessorEditor (MultiEncoder
     slMasterPitch.setReverse(true);
     slMasterPitch.setRotaryParameters(0.5*M_PI, 2.5*M_PI, false);
     slMasterPitch.setTooltip("Master pitch angle");
-    slMasterPitch.setTextValueSuffix(CharPointer_UTF8 ("\xc2\xb0"));
     
     addAndMakeVisible(&slMasterRoll);
     slMasterRollAttachment = new SliderAttachment(valueTreeState,"masterRoll", slMasterRoll);
     slMasterRoll.setSliderStyle (Slider::Rotary);
     slMasterRoll.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slMasterRoll.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
-    slMasterRoll.setRotaryParameters(0.5*M_PI, 2.5*M_PI, false);
+    slMasterRoll.setRotaryParameters(M_PI, 3*M_PI, false);
     slMasterRoll.setTooltip("Master roll angle");
-    slMasterRoll.setTextValueSuffix(CharPointer_UTF8 ("\xc2\xb0"));
     
     addAndMakeVisible(&tbLockedToMaster);
     tbLockedToMasterAttachment = new ButtonAttachment(valueTreeState,"lockedToMaster", tbLockedToMaster);
     tbLockedToMaster.setName("locking");
     tbLockedToMaster.setButtonText("Lock Directions");
-    
     
     // ====================== GRAB GROUP
     quatGroup.setText("Master");
@@ -119,7 +115,6 @@ MultiEncoderAudioProcessorEditor::MultiEncoderAudioProcessorEditor (MultiEncoder
     quatGroup.setColour (GroupComponent::textColourId, Colours::white);
     addAndMakeVisible(&quatGroup);
     quatGroup.setVisible(true);
-    
     
     
     // ================ LABELS ===================
@@ -135,6 +130,14 @@ MultiEncoderAudioProcessorEditor::MultiEncoderAudioProcessorEditor (MultiEncoder
     addAndMakeVisible(&lbGain);
     lbGain.setText("Gain");
     
+    addAndMakeVisible(&lbMasterYaw);
+    lbMasterYaw.setText("Yaw");
+    
+    addAndMakeVisible(&lbMasterPitch);
+    lbMasterPitch.setText("Pitch");
+    
+    addAndMakeVisible(&lbMasterRoll);
+    lbMasterRoll.setText("Roll");
     
     setResizeLimits(590, 455, 800, 1200);
     startTimer(40);
@@ -269,11 +272,11 @@ void MultiEncoderAudioProcessorEditor::resized()
     
     // ============== SIDEBAR LEFT ====================
     
-    const int grapperAreaHeight = 70;
+    const int masterAreaHeight = 90;
     area.removeFromRight(10); // spacing
     
     Rectangle<int> sphereArea (area);
-    sphereArea.removeFromBottom(grapperAreaHeight);
+    sphereArea.removeFromBottom(masterAreaHeight);
     
     if ((float)sphereArea.getWidth()/sphereArea.getHeight() > 1)
         sphereArea.setWidth(sphereArea.getHeight());
@@ -284,11 +287,21 @@ void MultiEncoderAudioProcessorEditor::resized()
     area.removeFromTop(sphereArea.getHeight());
     
     // ------------- Grabber ------------------------
-    Rectangle<int> grabberArea (area.removeFromTop(grapperAreaHeight));
-    quatGroup.setBounds (grabberArea);
-    grabberArea.removeFromTop(25); //for box headline
+    Rectangle<int> masterArea (area.removeFromTop(masterAreaHeight));
+    quatGroup.setBounds (masterArea);
+    masterArea.removeFromTop(25); //for box headline
     
-    sliderRow = (grabberArea.removeFromTop(rotSliderHeight));
+    
+    
+    sliderRow = (masterArea.removeFromBottom(12));
+    lbMasterYaw.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
+    sliderRow.removeFromLeft(rotSliderSpacing);
+    lbMasterPitch.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
+    sliderRow.removeFromLeft(rotSliderSpacing);
+    lbMasterRoll.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
+    sliderRow.removeFromLeft(rotSliderSpacing);
+    
+    sliderRow = masterArea;
     slMasterYaw.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
     sliderRow.removeFromLeft(rotSliderSpacing);
     slMasterPitch.setBounds (sliderRow.removeFromLeft(rotSliderWidth));

@@ -35,7 +35,7 @@
 
 
 
-typedef AudioProcessorValueTreeState::SliderAttachment SliderAttachment;
+typedef ReverseSlider::SliderAttachment SliderAttachment;
 typedef AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
 typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 
@@ -95,6 +95,7 @@ private:
     
     // labels
     SimpleLabel lbNum, lbYaw, lbPitch, lbGain;
+    SimpleLabel lbMasterYaw, lbMasterPitch, lbMasterRoll;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MultiEncoderAudioProcessorEditor)
 };

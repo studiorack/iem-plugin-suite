@@ -72,13 +72,13 @@ parameters (*this, nullptr)
                                           else return "N3D";
                                       }, nullptr);
     
-    parameters.createAndAddParameter("masterYaw", "Master yaw angle", "deg",
+    parameters.createAndAddParameter("masterYaw", "Master yaw angle", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0f,
                                      [](float value) {return String(value);}, nullptr);
-    parameters.createAndAddParameter("masterPitch", "Master pitch angle", "deg",
+    parameters.createAndAddParameter("masterPitch", "Master pitch angle", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0f,
                                      [](float value) {return String(value);}, nullptr);
-    parameters.createAndAddParameter("masterRoll", "Master roll angle", "deg",
+    parameters.createAndAddParameter("masterRoll", "Master roll angle", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0f,
                                      [](float value) {return String(value);}, nullptr);
     
@@ -88,15 +88,15 @@ parameters (*this, nullptr)
     
     for (int i = 0; i < maxNumberOfInputs; ++i)
     {
-        parameters.createAndAddParameter("yaw" + String(i), "Yaw angle " + String(i), "deg",
+        parameters.createAndAddParameter("yaw" + String(i), "Yaw angle " + String(i), CharPointer_UTF8 (R"(°)"),
                                          NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
-                                         [](float value) {return String(value);}, nullptr);
-        parameters.createAndAddParameter("pitch" + String(i), "Pitch angle " + String(i), "deg",
+                                         [](float value) {return String(value, 2);}, nullptr);
+        parameters.createAndAddParameter("pitch" + String(i), "Pitch angle " + String(i), CharPointer_UTF8 (R"(°)"),
                                          NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
-                                         [](float value) {return String(value);}, nullptr);
-        parameters.createAndAddParameter("gain" + String(i), "Gain " + String(i), "deg",
+                                         [](float value) {return String(value, 2);}, nullptr);
+        parameters.createAndAddParameter("gain" + String(i), "Gain " + String(i), CharPointer_UTF8 (R"(°)"),
                                          NormalisableRange<float> (-60.0f, 10.0f, 0.1f), 0.0f,
-                                         [](float value) {return (value >= -59.9f) ? String(value) : "-inf";},
+                                         [](float value) {return (value >= -59.9f) ? String(value, 2) : "-inf";},
                                          nullptr);
         parameters.createAndAddParameter("mute" + String(i), "Mute input " + String(i), "",
                                          NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
