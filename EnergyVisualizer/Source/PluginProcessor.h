@@ -21,15 +21,15 @@
  */
 
 #pragma once
+
 #ifndef M_PI
 #define M_PI 3.141592654
 #endif
 
 #include "../JuceLibraryCode/JuceHeader.h"
-//#include "../../utils/tDesignN10.h"
 #include "../hammerAitovSample.h"
-#include "../../resources/Eigen/Dense"
-#include "../../resources/efficientSHvanilla.h"
+#include <Eigen/Dense>
+#include <efficientSHvanilla.h>
 #include "../../resources/ambisonicTools.h"
 #include "../../resources/IOHelper.h"
 #include "../../resources/MaxRE.h"

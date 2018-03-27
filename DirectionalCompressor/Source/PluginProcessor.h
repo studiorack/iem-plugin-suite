@@ -29,7 +29,7 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "../../resources/efficientSHvanilla.h"
 #include "../../resources/tDesignN7.h"
-#include "../../resources/Eigen/Dense"
+#include <Eigen/Dense>
 #include "../../resources/ambisonicTools.h"
 #include "../../resources/IOHelper.h"
 #include "../../resources/Compressor.h"
@@ -37,14 +37,14 @@
 //==============================================================================
 /**
 */
-class AmbisonicCompressorAudioProcessor  : public AudioProcessor,
+class DirectionalCompressorAudioProcessor  : public AudioProcessor,
                                             public AudioProcessorValueTreeState::Listener,
 public IOHelper<IOTypes::Ambisonics<>, IOTypes::Ambisonics<>>
 {
 public:
     //==============================================================================
-    AmbisonicCompressorAudioProcessor();
-    ~AmbisonicCompressorAudioProcessor();
+    DirectionalCompressorAudioProcessor();
+    ~DirectionalCompressorAudioProcessor();
 
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
@@ -96,7 +96,7 @@ private:
     //==============================================================================
     void updateBuffers() override;
     
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AmbisonicCompressorAudioProcessor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DirectionalCompressorAudioProcessor)
     
     AudioBuffer<float> omniW;
     AudioBuffer<float> maskBuffer;

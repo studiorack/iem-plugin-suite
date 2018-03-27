@@ -25,7 +25,7 @@
 
 
 //==============================================================================
-AmbisonicCompressorAudioProcessorEditor::AmbisonicCompressorAudioProcessorEditor (AmbisonicCompressorAudioProcessor& p,AudioProcessorValueTreeState& vts)
+DirectionalCompressorAudioProcessorEditor::DirectionalCompressorAudioProcessorEditor (DirectionalCompressorAudioProcessor& p,AudioProcessorValueTreeState& vts)
     : AudioProcessorEditor (&p), processor (p), valueTreeState(vts)
 {
     // Make sure that before the constructor has finished, you've set the
@@ -337,12 +337,12 @@ AmbisonicCompressorAudioProcessorEditor::AmbisonicCompressorAudioProcessorEditor
     startTimer(50);
 }
 
-AmbisonicCompressorAudioProcessorEditor::~AmbisonicCompressorAudioProcessorEditor()
+DirectionalCompressorAudioProcessorEditor::~DirectionalCompressorAudioProcessorEditor()
 {
     setLookAndFeel(nullptr);
 }
 
-void AmbisonicCompressorAudioProcessorEditor::IEMSphereElementChanged (IEMSphere* sphere, IEMSphereElement* element) {
+void DirectionalCompressorAudioProcessorEditor::IEMSphereElementChanged (IEMSphere* sphere, IEMSphereElement* element) {
     
     Vector3D<float> pos = element->getPosition();
     float hypxy = sqrt(pos.x*pos.x+pos.y*pos.y);
@@ -358,7 +358,7 @@ void AmbisonicCompressorAudioProcessorEditor::IEMSphereElementChanged (IEMSphere
     
 };
 
-void AmbisonicCompressorAudioProcessorEditor::buttonStateChanged (Button* button)
+void DirectionalCompressorAudioProcessorEditor::buttonStateChanged (Button* button)
 {
     bool isOn = button->getToggleState();
     if (button->getName() == "C1")
@@ -400,7 +400,7 @@ void AmbisonicCompressorAudioProcessorEditor::buttonStateChanged (Button* button
 };
 
 //==============================================================================
-void AmbisonicCompressorAudioProcessorEditor::paint (Graphics& g)
+void DirectionalCompressorAudioProcessorEditor::paint (Graphics& g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
     g.fillAll (globalLaF.ClBackground);
@@ -408,7 +408,7 @@ void AmbisonicCompressorAudioProcessorEditor::paint (Graphics& g)
 
 }
 
-void AmbisonicCompressorAudioProcessorEditor::timerCallback()
+void DirectionalCompressorAudioProcessorEditor::timerCallback()
 {
     // === update titleBar widgets according to available input/output channel counts
     int maxInSize, maxOutSize;
@@ -428,7 +428,7 @@ void AmbisonicCompressorAudioProcessorEditor::timerCallback()
 }
 
 
-void AmbisonicCompressorAudioProcessorEditor::resized()
+void DirectionalCompressorAudioProcessorEditor::resized()
 {
     const int leftRightMargin = 30;
     const int headerHeight = 60;

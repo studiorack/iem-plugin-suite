@@ -9,9 +9,9 @@
               pluginCode="DuDe" pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
               pluginAUExportPrefix="DualDelayAU" pluginRTASCategory="" aaxIdentifier="at.iem.DualDelay"
-              pluginAAXCategory="AAX_ePlugInCategory_Dynamics" jucerVersion="5.2.1"
+              pluginAAXCategory="AAX_ePlugInCategory_Dynamics" jucerVersion="5.3.0"
               companyName="IEM" companyWebsite="iem.at" cppLanguageStandard="14"
-              companyCopyright="IEM - Daniel Rudrich">
+              companyCopyright="IEM - Daniel Rudrich" headerPath="../../../resources/">
   <MAINGROUP id="ie7lEF" name="DualDelay">
     <GROUP id="{733DAD44-69FE-47B0-7F02-2323D3DCB784}" name="lookAndFeel">
       <FILE id="V77kkS" name="IEM_LaF.h" compile="0" resource="0" file="../resources/lookAndFeel/IEM_LaF.h"/>

@@ -9,9 +9,9 @@
               pluginCode="RoEn" pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
               pluginAUExportPrefix="RoomEncoderAU" pluginRTASCategory="" aaxIdentifier="at.iem.RoomEncoder"
-              pluginAAXCategory="AAX_ePlugInCategory_Dynamics" jucerVersion="5.2.1"
+              pluginAAXCategory="AAX_ePlugInCategory_Dynamics" jucerVersion="5.3.0"
               companyName="IEM" companyWebsite="iem.at" cppLanguageStandard="latest"
-              companyCopyright="IEM - Daniel Rudrich">
+              companyCopyright="IEM - Daniel Rudrich" headerPath="../../../resources/">
   <MAINGROUP id="ONcHIf" name="RoomEncoder">
     <GROUP id="{417A8B9D-191D-95A1-7CD1-3876D83AFD09}" name="lookAndFeel">
       <FILE id="s7VnYv" name="IEM_LaF.h" compile="0" resource="0" file="../resources/lookAndFeel/IEM_LaF.h"/>

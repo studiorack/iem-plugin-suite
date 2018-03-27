@@ -39,12 +39,12 @@ typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 //==============================================================================
 /**
 */
-class AmbisonicCompressorAudioProcessorEditor  : public AudioProcessorEditor,
+class DirectionalCompressorAudioProcessorEditor  : public AudioProcessorEditor,
 private Timer, public IEMSphere::IEMSphereListener, public IEMSphere::IEMSphereElement, private Button::Listener
 {
 public:
-    AmbisonicCompressorAudioProcessorEditor (AmbisonicCompressorAudioProcessor&, AudioProcessorValueTreeState&);
-    ~AmbisonicCompressorAudioProcessorEditor();
+    DirectionalCompressorAudioProcessorEditor (DirectionalCompressorAudioProcessor&, AudioProcessorValueTreeState&);
+    ~DirectionalCompressorAudioProcessorEditor();
 
     //==============================================================================
     void paint (Graphics&) override;
@@ -56,7 +56,7 @@ public:
 private:
     LaF globalLaF;
     
-    AmbisonicCompressorAudioProcessor& processor;
+    DirectionalCompressorAudioProcessor& processor;
     AudioProcessorValueTreeState& valueTreeState;
     
     TitleBar<AmbisonicIOWidget<>,NoIOWidget> title;
@@ -108,5 +108,5 @@ private:
     SimpleLabel lbC2Threshold, lbC2Knee, lbC2Ratio, lbC2Attack, lbC2Release, lbC2Makeup;
     
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AmbisonicCompressorAudioProcessorEditor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DirectionalCompressorAudioProcessorEditor)
 };

@@ -27,7 +27,7 @@
 #define deg2rad M_PI/180.0
 #define rad2deg 180.0/M_PI
 //==============================================================================
-AmbisonicCompressorAudioProcessor::AmbisonicCompressorAudioProcessor()
+DirectionalCompressorAudioProcessor::DirectionalCompressorAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
 : AudioProcessor (BusesProperties()
 #if ! JucePlugin_IsMidiEffect
@@ -240,18 +240,18 @@ parameters (*this, nullptr)
 }
 
 
-AmbisonicCompressorAudioProcessor::~AmbisonicCompressorAudioProcessor()
+DirectionalCompressorAudioProcessor::~DirectionalCompressorAudioProcessor()
 {
     
 }
 
 //==============================================================================
-const String AmbisonicCompressorAudioProcessor::getName() const
+const String DirectionalCompressorAudioProcessor::getName() const
 {
     return JucePlugin_Name;
 }
 
-bool AmbisonicCompressorAudioProcessor::acceptsMidi() const
+bool DirectionalCompressorAudioProcessor::acceptsMidi() const
 {
 #if JucePlugin_WantsMidiInput
     return true;
@@ -260,7 +260,7 @@ bool AmbisonicCompressorAudioProcessor::acceptsMidi() const
 #endif
 }
 
-bool AmbisonicCompressorAudioProcessor::producesMidi() const
+bool DirectionalCompressorAudioProcessor::producesMidi() const
 {
 #if JucePlugin_ProducesMidiOutput
     return true;
@@ -269,43 +269,43 @@ bool AmbisonicCompressorAudioProcessor::producesMidi() const
 #endif
 }
 
-double AmbisonicCompressorAudioProcessor::getTailLengthSeconds() const
+double DirectionalCompressorAudioProcessor::getTailLengthSeconds() const
 {
     return 0.0;
 }
 
-int AmbisonicCompressorAudioProcessor::getNumPrograms()
+int DirectionalCompressorAudioProcessor::getNumPrograms()
 {
     return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
     // so this should be at least 1, even if you're not really implementing programs.
 }
 
-int AmbisonicCompressorAudioProcessor::getCurrentProgram()
+int DirectionalCompressorAudioProcessor::getCurrentProgram()
 {
     return 0;
 }
 
-void AmbisonicCompressorAudioProcessor::setCurrentProgram (int index)
+void DirectionalCompressorAudioProcessor::setCurrentProgram (int index)
 {
 }
 
-const String AmbisonicCompressorAudioProcessor::getProgramName (int index)
+const String DirectionalCompressorAudioProcessor::getProgramName (int index)
 {
     return {};
 }
 
-void AmbisonicCompressorAudioProcessor::changeProgramName (int index, const String& newName)
+void DirectionalCompressorAudioProcessor::changeProgramName (int index, const String& newName)
 {
 }
 
-void AmbisonicCompressorAudioProcessor::parameterChanged (const String &parameterID, float newValue)
+void DirectionalCompressorAudioProcessor::parameterChanged (const String &parameterID, float newValue)
 {
     if (parameterID == "yaw" || parameterID == "pitch" || parameterID == "width") paramChanged = true;
     else if (parameterID == "orderSetting") userChangedIOSettings = true;
 }
 
 //==============================================================================
-void AmbisonicCompressorAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
+void DirectionalCompressorAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     checkInputAndOutput(this, *orderSetting, *orderSetting, true);
     
@@ -324,20 +324,20 @@ void AmbisonicCompressorAudioProcessor::prepareToPlay (double sampleRate, int sa
     calcParams();
 }
 
-void AmbisonicCompressorAudioProcessor::releaseResources()
+void DirectionalCompressorAudioProcessor::releaseResources()
 {
     // When playback stops, you can use this as an opportunity to free up any
     // spare memory, etc.
 }
 
 #ifndef JucePlugin_PreferredChannelConfigurations
-bool AmbisonicCompressorAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
+bool DirectionalCompressorAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
 {
     return true;
 }
 #endif
 
-void AmbisonicCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
+void DirectionalCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
     checkInputAndOutput(this, *orderSetting, *orderSetting);
     if (paramChanged) calcParams();
@@ -524,7 +524,7 @@ void AmbisonicCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer,
             buffer.applyGain(i, 0, bufferSize, n3d2sn3d[i]);
 }
 
-void AmbisonicCompressorAudioProcessor::calcParams()
+void DirectionalCompressorAudioProcessor::calcParams()
 {
     paramChanged = false;
     
@@ -569,31 +569,31 @@ void AmbisonicCompressorAudioProcessor::calcParams()
     
 }
 //==============================================================================
-bool AmbisonicCompressorAudioProcessor::hasEditor() const
+bool DirectionalCompressorAudioProcessor::hasEditor() const
 {
     return true; // (change this to false if you choose to not supply an editor)
 }
 
-AudioProcessorEditor* AmbisonicCompressorAudioProcessor::createEditor()
+AudioProcessorEditor* DirectionalCompressorAudioProcessor::createEditor()
 {
-    return new AmbisonicCompressorAudioProcessorEditor (*this,parameters);
+    return new DirectionalCompressorAudioProcessorEditor (*this,parameters);
 }
 
 //==============================================================================
-void AmbisonicCompressorAudioProcessor::getStateInformation (MemoryBlock& destData)
+void DirectionalCompressorAudioProcessor::getStateInformation (MemoryBlock& destData)
 {
     // You should use this method to store your parameters in the memory block.
     // You could do that either as raw data, or use the XML or ValueTree classes
     // as intermediaries to make it easy to save and load complex data.
 }
 
-void AmbisonicCompressorAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
+void DirectionalCompressorAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
 }
 
-void AmbisonicCompressorAudioProcessor::updateBuffers()
+void DirectionalCompressorAudioProcessor::updateBuffers()
 {
     DBG("IOHelper:  input size: " << input.getSize());
     DBG("IOHelper: output size: " << output.getSize());
@@ -605,7 +605,7 @@ void AmbisonicCompressorAudioProcessor::updateBuffers()
 // This creates new instances of the plugin..
 AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
-    return new AmbisonicCompressorAudioProcessor();
+    return new DirectionalCompressorAudioProcessor();
 }
 
 

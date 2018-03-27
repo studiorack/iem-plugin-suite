@@ -11,8 +11,8 @@
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
               pluginAUExportPrefix="DirectivityShaperAU" pluginRTASCategory=""
               aaxIdentifier="at.iem.DirectivityShaper" pluginAAXCategory="AAX_ePlugInCategory_Dynamics"
-              jucerVersion="5.2.1" companyCopyright="IEM - Daniel Rudrich"
-              companyName="IEM" companyWebsite="IEM.at">
+              jucerVersion="5.3.0" companyCopyright="IEM - Daniel Rudrich"
+              companyName="IEM" companyWebsite="IEM.at" headerPath="../../../resources/">
   <MAINGROUP id="LpzrV9" name="DirectivityShaper">
     <GROUP id="{6C542E45-7004-DFCA-1196-6CF9DECCD286}" name="lookAndFeel">
       <FILE id="PdediU" name="IEM_LaF.h" compile="0" resource="0" file="../resources/lookAndFeel/IEM_LaF.h"/>

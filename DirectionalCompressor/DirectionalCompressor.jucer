@@ -11,8 +11,9 @@
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
               pluginAUExportPrefix="DirectionalCompressorAU" pluginRTASCategory=""
               aaxIdentifier="at.iem.DirectionalCompressor" pluginAAXCategory="AAX_ePlugInCategory_Dynamics"
-              jucerVersion="5.2.1" cppLanguageStandard="14" companyName="IEM"
-              companyWebsite="IEM.at" companyCopyright="IEM - Daniel Rudrich">
+              jucerVersion="5.3.0" cppLanguageStandard="14" companyName="IEM"
+              companyWebsite="IEM.at" companyCopyright="IEM - Daniel Rudrich"
+              headerPath="../../../resources/">
   <MAINGROUP id="Ld9vSw" name="DirectionalCompressor">
     <GROUP id="{DCBFE562-E532-8599-82E1-FE126A7BB663}" name="lookAndFeel">
       <FILE id="IYBFfk" name="IEM_LaF.h" compile="0" resource="0" file="../resources/lookAndFeel/IEM_LaF.h"/>

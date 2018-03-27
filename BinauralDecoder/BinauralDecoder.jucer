@@ -11,8 +11,8 @@
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
               pluginAUExportPrefix="BinauralDecoderAU" pluginRTASCategory=""
               aaxIdentifier="at.iem.BinauralDecoder" pluginAAXCategory="AAX_ePlugInCategory_Dynamics"
-              jucerVersion="5.2.1" companyCopyright="IEM - Daniel Rudrich"
-              companyName="IEM" companyWebsite="iem.at">
+              jucerVersion="5.3.0" companyCopyright="IEM - Daniel Rudrich"
+              companyName="IEM" companyWebsite="iem.at" headerPath="../../../resources/">
   <MAINGROUP id="LpzrV9" name="BinauralDecoder">
     <GROUP id="{1B6BB8E4-E576-FBC7-B6B6-8603D2CEBF9D}" name="lookAndFeel">
       <FILE id="AVFaGo" name="IEM_LaF.h" compile="0" resource="0" file="../resources/lookAndFeel/IEM_LaF.h"/>

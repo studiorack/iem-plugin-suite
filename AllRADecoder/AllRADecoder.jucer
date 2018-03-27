@@ -12,7 +12,7 @@
               pluginAUExportPrefix="AllRADecoderAU" pluginRTASCategory="" aaxIdentifier="at.iem.AllRADecoder"
               pluginAAXCategory="AAX_ePlugInCategory_Dynamics" jucerVersion="5.3.0"
               companyCopyright="IEM - Daniel Rudrich, Franz Zotter" companyName="IEM"
-              companyWebsite="iem.at">
+              companyWebsite="iem.at" headerPath="../../../resources/">
   <MAINGROUP id="LpzrV9" name="AllRADecoder">
     <GROUP id="{1B6BB8E4-E576-FBC7-B6B6-8603D2CEBF9D}" name="lookAndFeel">
       <FILE id="AVFaGo" name="IEM_LaF.h" compile="0" resource="0" file="../resources/lookAndFeel/IEM_LaF.h"/>
