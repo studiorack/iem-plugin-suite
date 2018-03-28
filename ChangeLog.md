@@ -1,11 +1,23 @@
 This file only contains the major changes of the IEM Plug-in Suite.
 For a list of all changes and bugfixes see the git log.
 
+Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They might lead to an unexpected behaviour and may not be compatible with your previous projects without making some adaptions.
+
+## untagged changes
+- general changes
+    - renamed **Matrix**Multiplicator to **Matrix**Multiplier (`!!BREAKING CHANGE!!`)
+
+- plug-in specific changes
+    - **Matrix**Multiplier
+        - smaller GUI changes
+    - **Multi**Encoder:
+        - colour-chooser now has the same look as the elements in the sphere panner, again
+        
 ## v1.2.0
 - new plug-ins:
     - **AllRA**Decoder
     
-- plugin specific changes
+- plug-in specific changes
     - **Binaural**Decoder
         - refactored convolution -> way better performance on all platforms
     - **Matrix**Multiplicator
@@ -17,7 +29,7 @@ For a list of all changes and bugfixes see the git log.
     - directivity IO widget now shows the normalization (which is N3D)
     - added warning sign to titlebar widgets when bus is too small
     
-- plugin specific changes
+- plug-in specific changes
     - **Multi**Encoder
         - changed element colours are now displayed at once
     - **Binaural**Decoder
@@ -46,7 +58,7 @@ For a list of all changes and bugfixes see the git log.
     - some GUIs now resizable  
     - smaller GUI layout changes (e.g. ComboBox PopupMenu)
 
-- plugin specific changes
+- plug-in specific changes
     - **Multi**Encoder
         - maximum input channel size increased to 64 
         - parameters and colours are stored correctly now
