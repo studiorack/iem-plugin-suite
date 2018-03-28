@@ -36,14 +36,14 @@
     - Ambisonics<maxOrder> (can also be used for directivity signals)
  You can leave `maxChannelCount` and `maxOrder` empty for default values (64 channels and 7th order)
 */
-class MatrixMultiplicatorAudioProcessor  : public AudioProcessor,
+class MatrixMultiplierAudioProcessor  : public AudioProcessor,
                                         public AudioProcessorValueTreeState::Listener,
                                         public IOHelper<IOTypes::AudioChannels<64>, IOTypes::AudioChannels<64>>
 {
 public:
     //==============================================================================
-    MatrixMultiplicatorAudioProcessor();
-    ~MatrixMultiplicatorAudioProcessor();
+    MatrixMultiplierAudioProcessor();
+    ~MatrixMultiplierAudioProcessor();
 
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
@@ -88,7 +88,7 @@ public:
     
     File getLastDir() {return lastDir;}
     void setLastDir(File newLastDir);
-    void loadPreset(const File& presetFile);
+    void loadConfiguration(const File& configurationFile);
     
     bool messageChanged {true};
     String getMessageForEditor() {return messageForEditor;}
@@ -109,7 +109,7 @@ private:
     File lastFile;
     ScopedPointer<PropertiesFile> properties;
     
-    String messageForEditor {"No preset loaded."};
+    String messageForEditor {"Please load a configuration."};
     //==============================================================================
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MatrixMultiplicatorAudioProcessor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MatrixMultiplierAudioProcessor)
 };

@@ -25,7 +25,7 @@
 
 
 //==============================================================================
-MatrixMultiplicatorAudioProcessor::MatrixMultiplicatorAudioProcessor()
+MatrixMultiplierAudioProcessor::MatrixMultiplierAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
      : AudioProcessor (BusesProperties()
                      #if ! JucePlugin_IsMidiEffect
@@ -38,60 +38,40 @@ MatrixMultiplicatorAudioProcessor::MatrixMultiplicatorAudioProcessor()
 #endif
 parameters(*this, nullptr)
 {
-//    parameters.createAndAddParameter("inputChannelsSetting", "Number of input channels ", "",
-//                                     NormalisableRange<float> (0.0f, 10.0f, 1.0f), 0.0f,
-//                                     [](float value) {return value < 0.5f ? "Auto" : String(value, 0);}, nullptr);
-//     
-//    parameters.createAndAddParameter("outputChannelsSetting", "Number of output channels ", "",
-//                                     NormalisableRange<float> (0.0f, 10.0f, 1.0f), 0.0f,
-//                                     [](float value) {return value < 0.5f ? "Auto" : String(value, 0);}, nullptr);
-    
     // this must be initialised after all calls to createAndAddParameter().
-    parameters.state = ValueTree (Identifier ("MatrixMultiplicator"));
+    parameters.state = ValueTree (Identifier ("MatrixMultiplier"));
     // tip: you can also add other values to parameters.state, which are also saved and restored when the session is closed/reopened
     
-    
-    // get pointers to the parameters
-//    inputChannelsSetting = parameters.getRawParameterValue("inputChannelsSetting");
-//    outputChannelsSetting = parameters.getRawParameterValue ("outputChannelsSetting");
-
-
-    
-    // add listeners to parameter changes
-//    parameters.addParameterListener ("inputChannelsSetting", this);
-//    parameters.addParameterListener ("outputOrderSetting", this);
-
-    
     PropertiesFile::Options options;
-    options.applicationName     = "MatrixMultiplicator";
+    options.applicationName     = "MatrixMultiplier";
     options.filenameSuffix      = "settings";
     options.folderName          = "IEM";
     options.osxLibrarySubFolder = "Preferences";
     
     properties = new PropertiesFile(options);
-    lastDir = File(properties->getValue("presetFolder"));
+    lastDir = File(properties->getValue("configurationFolder"));
 }
 
-MatrixMultiplicatorAudioProcessor::~MatrixMultiplicatorAudioProcessor()
+MatrixMultiplierAudioProcessor::~MatrixMultiplierAudioProcessor()
 {
     
 }
 
-void MatrixMultiplicatorAudioProcessor::setLastDir(File newLastDir)
+void MatrixMultiplierAudioProcessor::setLastDir(File newLastDir)
 {
     lastDir = newLastDir;
     const var v (lastDir.getFullPathName());
-    properties->setValue("presetFolder", v);
+    properties->setValue("configurationFolder", v);
     
 }
 
 //==============================================================================
-const String MatrixMultiplicatorAudioProcessor::getName() const
+const String MatrixMultiplierAudioProcessor::getName() const
 {
     return JucePlugin_Name;
 }
 
-bool MatrixMultiplicatorAudioProcessor::acceptsMidi() const
+bool MatrixMultiplierAudioProcessor::acceptsMidi() const
 {
    #if JucePlugin_WantsMidiInput
     return true;
@@ -100,7 +80,7 @@ bool MatrixMultiplicatorAudioProcessor::acceptsMidi() const
    #endif
 }
 
-bool MatrixMultiplicatorAudioProcessor::producesMidi() const
+bool MatrixMultiplierAudioProcessor::producesMidi() const
 {
    #if JucePlugin_ProducesMidiOutput
     return true;
@@ -109,7 +89,7 @@ bool MatrixMultiplicatorAudioProcessor::producesMidi() const
    #endif
 }
 
-bool MatrixMultiplicatorAudioProcessor::isMidiEffect() const
+bool MatrixMultiplierAudioProcessor::isMidiEffect() const
 {
    #if JucePlugin_IsMidiEffect
     return true;
@@ -118,37 +98,37 @@ bool MatrixMultiplicatorAudioProcessor::isMidiEffect() const
    #endif
 }
 
-double MatrixMultiplicatorAudioProcessor::getTailLengthSeconds() const
+double MatrixMultiplierAudioProcessor::getTailLengthSeconds() const
 {
     return 0.0;
 }
 
-int MatrixMultiplicatorAudioProcessor::getNumPrograms()
+int MatrixMultiplierAudioProcessor::getNumPrograms()
 {
     return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
                 // so this should be at least 1, even if you're not really implementing programs.
 }
 
-int MatrixMultiplicatorAudioProcessor::getCurrentProgram()
+int MatrixMultiplierAudioProcessor::getCurrentProgram()
 {
     return 0;
 }
 
-void MatrixMultiplicatorAudioProcessor::setCurrentProgram (int index)
+void MatrixMultiplierAudioProcessor::setCurrentProgram (int index)
 {
 }
 
-const String MatrixMultiplicatorAudioProcessor::getProgramName (int index)
+const String MatrixMultiplierAudioProcessor::getProgramName (int index)
 {
     return {};
 }
 
-void MatrixMultiplicatorAudioProcessor::changeProgramName (int index, const String& newName)
+void MatrixMultiplierAudioProcessor::changeProgramName (int index, const String& newName)
 {
 }
 
 //==============================================================================
-void MatrixMultiplicatorAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
+void MatrixMultiplierAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     checkInputAndOutput(this, 0, 0, true);
     
@@ -161,20 +141,20 @@ void MatrixMultiplicatorAudioProcessor::prepareToPlay (double sampleRate, int sa
     
 }
 
-void MatrixMultiplicatorAudioProcessor::releaseResources()
+void MatrixMultiplierAudioProcessor::releaseResources()
 {
     // When playback stops, you can use this as an opportunity to free up any
     // spare memory, etc.
 }
 
 #ifndef JucePlugin_PreferredChannelConfigurations
-bool MatrixMultiplicatorAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
+bool MatrixMultiplierAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
 {
     return true;
 }
 #endif
 
-void MatrixMultiplicatorAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
+void MatrixMultiplierAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
     checkInputAndOutput(this, 0, 0, false);
     ScopedNoDenormals noDenormals;
@@ -185,30 +165,30 @@ void MatrixMultiplicatorAudioProcessor::processBlock (AudioSampleBuffer& buffer,
 }
 
 //==============================================================================
-bool MatrixMultiplicatorAudioProcessor::hasEditor() const
+bool MatrixMultiplierAudioProcessor::hasEditor() const
 {
     return true; // (change this to false if you choose to not supply an editor)
 }
 
-AudioProcessorEditor* MatrixMultiplicatorAudioProcessor::createEditor()
+AudioProcessorEditor* MatrixMultiplierAudioProcessor::createEditor()
 {
-    return new MatrixMultiplicatorAudioProcessorEditor (*this, parameters);
+    return new MatrixMultiplierAudioProcessorEditor (*this, parameters);
 }
 
 //==============================================================================
-void MatrixMultiplicatorAudioProcessor::getStateInformation (MemoryBlock& destData)
+void MatrixMultiplierAudioProcessor::getStateInformation (MemoryBlock& destData)
 {
     // You should use this method to store your parameters in the memory block.
     // You could do that either as raw data, or use the XML or ValueTree classes
     // as intermediaries to make it easy to save and load complex data.
-    parameters.state.setProperty("lastOpenedPresetFile", var(lastFile.getFullPathName()), nullptr);
+    parameters.state.setProperty("lastOpenedConfigurationFile", var(lastFile.getFullPathName()), nullptr);
     ScopedPointer<XmlElement> xml (parameters.state.createXml());
     copyXmlToBinary (*xml, destData);
 }
 
 
 
-void MatrixMultiplicatorAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
+void MatrixMultiplierAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
@@ -217,13 +197,13 @@ void MatrixMultiplicatorAudioProcessor::setStateInformation (const void* data, i
         if (xmlState->hasTagName (parameters.state.getType()))
         {
             parameters.state = ValueTree::fromXml (*xmlState);
-            if (parameters.state.hasProperty("lastOpenedPresetFile"))
+            if (parameters.state.hasProperty("lastOpenedConfigurationFile"))
             {
-                Value val = parameters.state.getPropertyAsValue("lastOpenedPresetFile", nullptr);
+                Value val = parameters.state.getPropertyAsValue("lastOpenedConfigurationFile", nullptr);
                 if (val.getValue().toString() != "")
                 {
                     const File f (val.getValue().toString());
-                    loadPreset(f);
+                    loadConfiguration(f);
                 }
             }
             
@@ -232,13 +212,13 @@ void MatrixMultiplicatorAudioProcessor::setStateInformation (const void* data, i
 }
 
 //==============================================================================
-void MatrixMultiplicatorAudioProcessor::parameterChanged (const String &parameterID, float newValue)
+void MatrixMultiplierAudioProcessor::parameterChanged (const String &parameterID, float newValue)
 {    
     if (parameterID == "inputChannelsSetting" || parameterID == "outputOrderSetting" )
         userChangedIOSettings = true;
 }
 
-void MatrixMultiplicatorAudioProcessor::updateBuffers()
+void MatrixMultiplierAudioProcessor::updateBuffers()
 {
     DBG("IOHelper:  input size: " << input.getSize());
     DBG("IOHelper: output size: " << output.getSize());
@@ -247,27 +227,27 @@ void MatrixMultiplicatorAudioProcessor::updateBuffers()
 // This creates new instances of the plugin..
 AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
-    return new MatrixMultiplicatorAudioProcessor();
+    return new MatrixMultiplierAudioProcessor();
 }
 
 
-void MatrixMultiplicatorAudioProcessor::loadPreset(const File& presetFile)
+void MatrixMultiplierAudioProcessor::loadConfiguration(const File& configurationFile)
 {
     ReferenceCountedMatrix::Ptr tempMatrix = nullptr;
     
-    Result result = DecoderHelper::parseFileForTransformationMatrix(presetFile, &tempMatrix);
+    Result result = DecoderHelper::parseFileForTransformationMatrix(configurationFile, &tempMatrix);
     if (!result.wasOk()) {
         messageForEditor = result.getErrorMessage();
         return;
     }
 
-    lastFile = presetFile;
+    lastFile = configurationFile;
     
     String output;
     if (tempMatrix != nullptr)
     {
         matTrans.setMatrix(tempMatrix);
-        output += "Preset loaded successfully!\n";
+        output += "Configuration loaded successfully!\n";
         output += "    Name: \t" + tempMatrix->getName() + "\n";
         output += "    Size: " + String(tempMatrix->getMatrix().getNumRows()) + "x" + String(tempMatrix->getMatrix().getNumColumns()) + " (output x input)\n";
         output += "    Description: \t" + tempMatrix->getDescription() + "\n";

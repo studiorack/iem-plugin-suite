@@ -41,11 +41,11 @@ typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 //==============================================================================
 /**
 */
-class MatrixMultiplicatorAudioProcessorEditor  : public AudioProcessorEditor, private Timer, private Button::Listener
+class MatrixMultiplierAudioProcessorEditor  : public AudioProcessorEditor, private Timer, private Button::Listener
 {
 public:
-    MatrixMultiplicatorAudioProcessorEditor (MatrixMultiplicatorAudioProcessor&, AudioProcessorValueTreeState&);
-    ~MatrixMultiplicatorAudioProcessorEditor();
+    MatrixMultiplierAudioProcessorEditor (MatrixMultiplierAudioProcessor&, AudioProcessorValueTreeState&);
+    ~MatrixMultiplierAudioProcessorEditor();
 
     //==============================================================================
     void paint (Graphics&) override;
@@ -55,7 +55,7 @@ public:
     void timerCallback() override;
     void buttonClicked (Button* button) override;
     void buttonStateChanged (Button* button) override;
-    void loadPresetFile();
+    void loadConfigurationFile();
 
     
 private:
@@ -64,7 +64,7 @@ private:
     LaF globalLaF;
     
     // stored references to the AudioProcessor and ValueTreeState holding all the parameters
-    MatrixMultiplicatorAudioProcessor& processor;
+    MatrixMultiplierAudioProcessor& processor;
     AudioProcessorValueTreeState& valueTreeState;
 
     
@@ -87,5 +87,5 @@ private:
     TextButton btLoadFile;
     TextEditor edOutput;
     
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MatrixMultiplicatorAudioProcessorEditor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MatrixMultiplierAudioProcessorEditor)
 };
