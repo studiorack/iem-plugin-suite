@@ -248,7 +248,8 @@ public:
         {
             Path p;
             p.addRoundedRectangle(0, 0, width, height, 12.0f);
-            g.setColour (ClTextTextboxbg);
+            //g.setColour (ClTextTextboxbg);
+            g.setColour (textEditor.findColour (TextEditor::backgroundColourId));
             g.fillPath (p);
         }
     }
