@@ -7,6 +7,7 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
 - general changes
     - renamed **Matrix**Multiplicator to **Matrix**Multiplier (`!!BREAKING CHANGE!!`)
     - refactored SpherePanner, which fixes automation writing issues
+    - added linear elevation plot style to SpherePanner (triggered by double-click)
 
 - plug-in specific changes
     - **Matrix**Multiplier
