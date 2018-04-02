@@ -24,13 +24,9 @@
 #pragma once
 
 
-class  SpherePannerBackground :  public Component
+class SpherePannerBackground :  public Component
 {
-    constexpr static const double rcirc15 = 0.258819045102521;
-    constexpr static const double rcirc30 = 0.5;
-    constexpr static const double rcirc45 = 0.707106781186547;
-    constexpr static const double rcirc60 = 0.866025403784439;
-    constexpr static const double rcirc75 = 0.965925826289068;
+    
 public:
     SpherePannerBackground() : Component() {
         setBufferedToImage(true);
@@ -67,25 +63,12 @@ public:
         g.setColour(Colours::steelblue.withMultipliedAlpha(0.3f));
         Path circles;
         
-        float rCirc = radius*rcirc15;
-        circles.addEllipse(centreX - rCirc, centreY - rCirc, 2.0f * rCirc, 2.0f * rCirc);
-        g.fillPath(circles);
-        
-        rCirc = radius*rcirc30;
-        circles.addEllipse(centreX - rCirc, centreY - rCirc, 2.0f * rCirc, 2.0f * rCirc);
-        g.fillPath(circles);
-        
-        rCirc = radius*rcirc45;
-        circles.addEllipse(centreX - rCirc, centreY - rCirc, 2.0f * rCirc, 2.0f * rCirc);
-        g.fillPath(circles);
-        
-        rCirc = radius*rcirc60;
-        circles.addEllipse(centreX - rCirc, centreY - rCirc, 2.0f * rCirc, 2.0f * rCirc);
-        g.fillPath(circles);
-        
-        rCirc = radius*rcirc75;
-        circles.addEllipse(centreX - rCirc, centreY - rCirc, 2.0f * rCirc, 2.0f * rCirc);
-        g.fillPath(circles);
+        for (int deg = 75; deg >= 15; deg -= 15)
+        {
+            float rCirc = radius * cos (Conversions<float>::degreesToRadians(deg));
+            circles.addEllipse(centreX - rCirc, centreY - rCirc, 2.0f * rCirc, 2.0f * rCirc);
+            g.fillPath(circles);
+        }
         
         g.setColour(Colours::Colours::steelblue.withMultipliedAlpha(0.7f));
         g.strokePath(circles, PathStrokeType(.5f));
@@ -118,8 +101,8 @@ class  SpherePanner :  public Component
 public:
     SpherePanner() : Component() {
         setBufferedToImage(true);
-        addAndMakeVisible(background);
         
+        addAndMakeVisible(background);
         background.addMouseListener(this, false); // could this be risky?
     };
     ~SpherePanner() {};
@@ -145,46 +128,19 @@ public:
     {
     public:
         Element() {}
-        Element(String newID) {ID = newID;}
-        ~Element () {}
+        virtual ~Element() {}
         
-        void setSliders(Slider* newYawSlider, Slider* newPitchSlider)
-        {
-            yawSlider = newYawSlider;
-            pitchSlider = newPitchSlider;
-        }
+        virtual void startMovement() { };
+        virtual void moveElement (const MouseEvent &event, Point<int> centre, float radius, bool upBeforeDrag) = 0;
+        virtual void stopMovement() { };
         
-        void startMovement()
-        {
-            
-        }
+        /*
+         Get cartesian coordinates
+         */
+        virtual Vector3D<float> getCoordinates() = 0;
         
-        void moveElement (const MouseEvent &event, Point<int> centre, float radius, bool upBeforeDrag) {
-            Point<int> pos = event.getPosition();
-            float yaw = -1.0f * centre.getAngleToPoint(pos);
-            float r = centre.getDistanceFrom(pos)/radius;
-            if (r > 1.0f) {
-                r = 1.0f/r;
-                upBeforeDrag = !upBeforeDrag;
-            }
-            
-            float pitch = acos(r);
-            if (upBeforeDrag) pitch *= -1.0f;
-            
-            if (yawSlider != nullptr)
-                yawSlider->setValue(yaw * 180.0f / M_PI);
-            if (pitchSlider != nullptr)
-                pitchSlider->setValue(pitch * 180.0f / M_PI);
-        }
         
-        void stopMovement()
-        {
-
-        }
-        
-        void setActive ( bool shouldBeActive) {
-            active = shouldBeActive;
-        }
+        void setActive (bool isActive) { active = isActive; }
         bool isActive() { return active; }
         
         void setColour( Colour newColour) { colour = newColour; }
@@ -192,7 +148,66 @@ public:
         Colour getColour() { return colour; }
         Colour getTextColour() { return textColour; }
         
-        bool setPosition(Vector3D<float> newPosition) // is true when position is updated (use it for repainting)
+        //        bool setPosition(Vector3D<float> newPosition) // is true when position is updated (use it for repainting)
+        //        {
+        //            if (position.x != newPosition.x || position.y != newPosition.y || position.z != newPosition.z)
+        //            {
+        //                position = newPosition;
+        //                return true;
+        //            }
+        //            return false;
+        //        }
+        
+        void setLabel(String newLabel) {label = newLabel;}
+        
+        void setGrabPriority(int newPriority) {grabPriority = newPriority;}
+        int getGrabPriority() {return grabPriority;}
+        void setGrabRadius(float newRadius) {grabRadius = newRadius;}
+        float getGrabRadius() {return grabRadius;}
+        
+        
+        String getLabel() {return label;};
+        
+    private:
+        bool active = true;
+        
+        float grabRadius = 0.015f;
+        int grabPriority = 0;
+        
+        Colour colour = Colours::white;
+        Colour textColour = Colours::black;
+        String label = "";
+    };
+    
+    class StandardElement : public Element
+    {
+    public:
+        StandardElement() : Element() {}
+        
+        void moveElement (const MouseEvent &event, Point<int> centre, float radius, bool upBeforeDrag) override
+        {
+            Point<int> pos = event.getPosition();
+            const float azimuth = -1.0f * centre.getAngleToPoint(pos);
+            float r = centre.getDistanceFrom(pos) / radius;
+            if (r > 1.0f) {
+                r = 1.0f / r;
+                upBeforeDrag = !upBeforeDrag;
+            }
+            
+            float elevation = acos(r);
+            if (! upBeforeDrag) elevation *= -1.0f;
+            position = Conversions<float>::sphericalToCartesian(azimuth, elevation);
+        }
+        
+        /*
+         Get cartesian coordinates
+         */
+        Vector3D<float> getCoordinates() override
+        {
+            return position;
+        };
+        
+        bool setCoordinates(Vector3D<float> newPosition) // is true when position is updated (use it for repainting)
         {
             if (position.x != newPosition.x || position.y != newPosition.y || position.z != newPosition.z)
             {
@@ -202,32 +217,172 @@ public:
             return false;
         }
         
-        void setLabel(String newLabel) {label = newLabel;}
-        void setID(String newID) {ID = newID;}
-        
-        void setGrabPriority(int newPriority) {grabPriority = newPriority;}
-        int getGrabPriority() {return grabPriority;}
-        void setGrabRadius(float newRadius) {grabRadius = newRadius;}
-        float getGrabRadius() {return grabRadius;}
-        
-        Vector3D<float> getPosition() {return position;}
-        String getLabel() {return label;};
-        String getID() {return ID;};
-        
-        Slider *yawSlider = nullptr;
-        Slider *pitchSlider = nullptr;
         
     private:
         Vector3D<float> position;
-        bool active = true;
+    };
+    
+    class AziumuthElevationParameterElement : public Element
+    {
+    public:
+        AziumuthElevationParameterElement(AudioProcessorParameter& azimuthParameter, NormalisableRange<float> azimuthParameterRange, AudioProcessorParameter& elevationParameter, NormalisableRange<float> elevationParameterRange) : Element(), azimuth(azimuthParameter), azimuthRange(azimuthParameterRange), elevation(elevationParameter), elevationRange(elevationParameterRange) {}
         
-        float grabRadius = 0.015f;
-        int grabPriority = 0;
+        void startMovement() override
+        {
+            azimuth.beginChangeGesture();
+            elevation.beginChangeGesture();
+        };
         
-        Colour colour = Colours::white;
-        Colour textColour = Colours::black;
-        String ID = "";
-        String label = "";
+        void moveElement (const MouseEvent &event, Point<int> centre, float radius, bool upBeforeDrag) override
+        {
+            Point<int> pos = event.getPosition();
+            const float azi = -1.0f * centre.getAngleToPoint(pos);
+            float r = centre.getDistanceFrom(pos) / radius;
+            if (r > 1.0f) {
+                r = 1.0f / r;
+                upBeforeDrag = !upBeforeDrag;
+            }
+            
+            float ele = acos(r);
+            if (! upBeforeDrag) ele *= -1.0f;
+            
+            const float azimuthInDegrees { Conversions<float>::radiansToDegrees(azi) };
+            const float elevationInDegrees { Conversions<float>::radiansToDegrees(ele) };
+            
+            azimuth.setValueNotifyingHost(azimuthRange.convertTo0to1(azimuthInDegrees));
+            elevation.setValueNotifyingHost(elevationRange.convertTo0to1(elevationInDegrees));
+        }
+        
+        void stopMovement() override
+        {
+            azimuth.endChangeGesture();
+            elevation.endChangeGesture();
+        };
+        
+        const float getAzimuthInRadians()
+        {
+            const float azimuthInDegrees {azimuthRange.convertFrom0to1(azimuth.getValue())};
+            return Conversions<float>::degreesToRadians(azimuthInDegrees);
+        }
+        
+        const float getElevationInRadians()
+        {
+            const float elevationInDegrees {elevationRange.convertFrom0to1(elevation.getValue())};
+            return Conversions<float>::degreesToRadians(elevationInDegrees);
+        }
+        
+        /*
+         Get cartesian coordinates
+         */
+        Vector3D<float> getCoordinates() override
+        {
+            return Conversions<float>::sphericalToCartesian(getAzimuthInRadians(), getElevationInRadians());
+        };
+        
+    private:
+        AudioProcessorParameter& azimuth;
+        NormalisableRange<float> azimuthRange;
+        AudioProcessorParameter& elevation;
+        NormalisableRange<float> elevationRange;
+    };
+    
+    class RollWidthParameterElement : public Element
+    {
+    public:
+        RollWidthParameterElement(AziumuthElevationParameterElement& center, AudioProcessorParameter& rollParameter, NormalisableRange<float> rollParameterRange, AudioProcessorParameter& widthParameter, NormalisableRange<float> widthParameterRange) : Element(), centerElement(center), roll(rollParameter), rollRange(rollParameterRange), width(widthParameter), widthRange(widthParameterRange) {}
+        
+        void startMovement() override
+        {
+            roll.beginChangeGesture();
+            width.beginChangeGesture();
+        };
+        
+        void moveElement (const MouseEvent &event, Point<int> centre, float radius, bool upBeforeDrag) override
+        {
+            Point<int> pos = event.getPosition();
+            const float azi = -1.0f * centre.getAngleToPoint(pos);
+            float r = centre.getDistanceFrom(pos) / radius;
+            if (r > 1.0f) {
+                r = 1.0f / r;
+                upBeforeDrag = !upBeforeDrag;
+            }
+            
+            float ele = acos(r);
+            if (! upBeforeDrag) ele *= -1.0f;
+            
+            Vector3D<float> posXYZ {Conversions<float>::sphericalToCartesian(azi, ele)};
+            
+            // ==== calculate width
+            Vector3D<float> dPos = posXYZ - centerElement.getCoordinates();
+            const float alpha = 4.0f*asinf(dPos.length()/2.0f);
+            width.setValueNotifyingHost(widthRange.convertTo0to1(Conversions<float>::radiansToDegrees(alpha)));
+            
+            // ==== calculate roll
+            iem::Quaternion<float> quat;
+            float ypr[3];
+            ypr[0] = centerElement.getAzimuthInRadians();
+            ypr[1] = - centerElement.getElevationInRadians(); // pitch
+            ypr[2] = 0.0f;
+            
+            quat.fromYPR(ypr);
+            quat.conjugate();
+
+            float xyz[3];
+            xyz[0] = posXYZ.x;
+            xyz[1] = posXYZ.y;
+            xyz[2] = posXYZ.z;
+            
+            quat.rotateVector(xyz, xyz);
+            
+            float rollInRadians = atan2(xyz[2], xyz[1]);
+            if (isMirrored) rollInRadians = atan2(-xyz[2], -xyz[1]);
+            
+            roll.setValueNotifyingHost(rollRange.convertTo0to1(Conversions<float>::radiansToDegrees(rollInRadians)));
+        }
+        
+        void stopMovement() override
+        {
+            roll.endChangeGesture();
+            width.endChangeGesture();
+        };
+        
+        /*
+         Get cartesian coordinates
+         */
+        Vector3D<float> getCoordinates() override
+        {
+            float ypr[3];
+            ypr[0] = centerElement.getAzimuthInRadians();
+            ypr[1] = - centerElement.getElevationInRadians(); // pitch
+            ypr[2] = Conversions<float>::degreesToRadians(rollRange.convertFrom0to1(roll.getValue()));
+            
+            //updating not active params
+            iem::Quaternion<float> quat;
+            quat.fromYPR(ypr);
+            
+            const float widthInRadiansQuarter {Conversions<float>::degreesToRadians(widthRange.convertFrom0to1(width.getValue())) / 4.0f};
+            
+            iem::Quaternion<float> quatLRot {iem::Quaternion<float>(cos(widthInRadiansQuarter), 0.0f, 0.0f, sin(widthInRadiansQuarter))};
+            if (isMirrored)
+                quatLRot.conjugate();
+            
+            iem::Quaternion<float> quatL = quat * quatLRot;
+
+            float xyz[3];
+            quatL.toCartesian(xyz);
+            
+            return Vector3D<float> (xyz[0], xyz[1], xyz[2]);
+        };
+        
+        void setMirrored (bool mirrored) { isMirrored = mirrored; }
+        
+    private:
+        AziumuthElevationParameterElement& centerElement;
+        AudioProcessorParameter& roll;
+        NormalisableRange<float> rollRange;
+        AudioProcessorParameter& width;
+        NormalisableRange<float> widthRange;
+        bool isMirrored = false;
     };
     
     void resized () override {
@@ -252,26 +407,14 @@ public:
         for (int i = 0; i < size; ++i) {
             SpherePanner::Element* handle = elements.getUnchecked (i);
             
-            float yaw;
-            float pitch;
+            Vector3D<float> pos = handle->getCoordinates();
             
-            if (handle->yawSlider != nullptr)
-                yaw = handle->yawSlider->getValue() * M_PI / 180;
-            else yaw = 0.0f;
-            
-            if (handle->pitchSlider != nullptr)
-                pitch = handle->pitchSlider->getValue() * M_PI / 180;
-            else pitch = 0.0f;
-            
-            Vector3D<float> pos = yawPitchToCartesian(yaw, pitch);
-            handle->setPosition(pos);
-            
-            float diam = 15.0f + 4.0f * pos.z;
+            const float diam = 15.0f + 4.0f * pos.z;
             g.setColour(handle->isActive() ? handle->getColour() : Colours::grey);
-            Rectangle<float> temp(centreX-pos.y * radius - diam / 2, centreY - pos.x * radius - diam / 2, diam, diam);
+            Rectangle<float> temp(centreX - pos.y * radius - diam / 2, centreY - pos.x * radius - diam / 2, diam, diam);
             panPos.addEllipse(temp);
-            g.strokePath(panPos,PathStrokeType(1.0f));
-            g.setColour((handle->isActive() ? handle->getColour() : Colours::grey).withMultipliedAlpha(pos.z>=-0.0f ? 1.0f : 0.4f));
+            g.strokePath(panPos, PathStrokeType(1.0f));
+            g.setColour((handle->isActive() ? handle->getColour() : Colours::grey).withMultipliedAlpha(pos.z >= -0.0f ? 1.0f : 0.4f));
             g.fillPath(panPos);
             g.setColour(handle->getTextColour());
             g.drawFittedText(handle->getLabel(), temp.toNearestInt(), Justification::centred, 1);
@@ -310,7 +453,7 @@ public:
             float tx,ty;
             for (int i = elements.size(); --i >= 0;) {
                 Element* handle(elements.getUnchecked (i));
-                Vector3D<float> pos = handle->getPosition();
+                Vector3D<float> pos = handle->getCoordinates();
                 tx = (mouseX - pos.x);
                 ty = (mouseY - pos.y);
                 dist[i] = tx*tx + ty*ty;
@@ -326,7 +469,7 @@ public:
                 }
             }
         }
-        if (activeElem != -1)  activeElemWasUpBeforeDrag = elements.getUnchecked (activeElem)->getPosition().z >= 0.0f;
+        if (activeElem != -1)  activeElemWasUpBeforeDrag = elements.getUnchecked (activeElem)->getCoordinates().z >= 0.0f;
         if (oldActiveElem != activeElem)
             repaint();
     }
@@ -385,7 +528,7 @@ public:
         
         return index;
     }
-
+    
     
 private:
     float radius = 1.0f;
