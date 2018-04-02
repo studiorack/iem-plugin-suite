@@ -34,8 +34,7 @@
 #include "../../resources/efficientSHvanilla.h"
 #include "../../resources/ambisonicTools.h"
 #include "../../resources/IOHelper.h"
-
-
+#include "../../resources/Conversions.h"
 
 
 //==============================================================================
@@ -88,8 +87,8 @@ public:
     float xyzGrab[3];
     float xyz[maxNumberOfInputs][3];
     
-    float *yaw[maxNumberOfInputs];
-    float *pitch[maxNumberOfInputs];
+    float *azimuth[maxNumberOfInputs];
+    float *elevation[maxNumberOfInputs];
     float *gain[maxNumberOfInputs];
     float *mute[maxNumberOfInputs];
     float *solo[maxNumberOfInputs];
@@ -97,8 +96,8 @@ public:
     BigInteger muteMask;
     BigInteger soloMask;
     
-    float *masterYaw;
-    float *masterPitch;
+    float *masterAzimuth;
+    float *masterElevation;
     float *masterRoll;
     float *lockedToMaster;
     
@@ -137,8 +136,6 @@ private:
     float SH[maxNumberOfInputs][64];
     float _SH[maxNumberOfInputs][64];
     float _gain[maxNumberOfInputs];
-    
-    
     
     AudioBuffer<float> bufferCopy;
     

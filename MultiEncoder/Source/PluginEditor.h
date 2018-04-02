@@ -64,20 +64,19 @@ private:
     void mouseWheelOnSpherePannerMoved (SpherePanner* sphere, const MouseEvent &event, const MouseWheelDetails &wheel) override;
 
     MultiEncoderAudioProcessor& processor;
-
+    AudioProcessorValueTreeState& valueTreeState;
+    
     GroupComponent quatGroup,ypGroup,settingsGroup;
-    ReverseSlider slMasterYaw, slMasterPitch, slMasterRoll;
+    ReverseSlider slMasterAzimuth, slMasterElevation, slMasterRoll;
     
     ToggleButton tbLockedToMaster;
     ComboBox inputChooser;
 
     SpherePanner sphere;
-    SpherePanner::Element masterElement;
+    SpherePanner::AziumuthElevationParameterElement masterElement;
     
-    AudioProcessorValueTreeState& valueTreeState;
-    
-    ScopedPointer<SliderAttachment> slMasterYawAttachment;
-    ScopedPointer<SliderAttachment> slMasterPitchAttachment;
+    ScopedPointer<SliderAttachment> slMasterAzimuthAttachment;
+    ScopedPointer<SliderAttachment> slMasterElevationAttachment;
     ScopedPointer<SliderAttachment> slMasterRollAttachment;
     ScopedPointer<ButtonAttachment> tbLockedToMasterAttachment;
     
@@ -94,8 +93,8 @@ private:
     int lastSetNumChIn = -1;
     
     // labels
-    SimpleLabel lbNum, lbYaw, lbPitch, lbGain;
-    SimpleLabel lbMasterYaw, lbMasterPitch, lbMasterRoll;
+    SimpleLabel lbNum, lbAzimuth, lbElevation, lbGain;
+    SimpleLabel lbMasterAzimuth, lbMasterElevation, lbMasterRoll;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MultiEncoderAudioProcessorEditor)
 };

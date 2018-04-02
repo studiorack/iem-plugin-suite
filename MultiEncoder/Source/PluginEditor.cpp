@@ -29,17 +29,18 @@
 
 //==============================================================================
 MultiEncoderAudioProcessorEditor::MultiEncoderAudioProcessorEditor (MultiEncoderAudioProcessor& p, AudioProcessorValueTreeState& vts)
-: AudioProcessorEditor (&p), processor (p), valueTreeState(vts), encoderList(p, sphere, &vts)//, sphere_opengl(nullptr)
+: AudioProcessorEditor (&p), processor (p), valueTreeState(vts), encoderList(p, sphere, &vts),
+masterElement(*valueTreeState.getParameter("masterAzimuth"), valueTreeState.getParameterRange("masterAzimuth"), *valueTreeState.getParameter("masterElevation"), valueTreeState.getParameterRange("masterElevation"))
 {
     setLookAndFeel (&globalLaF);
     
     for (int i = 0; i < maxNumberOfInputs; ++i)
     {
-        valueTreeState.addParameterListener("yaw"+String(i), this);
-        valueTreeState.addParameterListener("pitch"+String(i), this);
+        valueTreeState.addParameterListener("azimuth"+String(i), this);
+        valueTreeState.addParameterListener("elevation"+String(i), this);
     }
-    valueTreeState.addParameterListener("masterYaw", this);
-    valueTreeState.addParameterListener("masterPitch", this);
+    valueTreeState.addParameterListener("masterAzimuth", this);
+    valueTreeState.addParameterListener("masterElevation", this);
     
     // ==== SPHERE AND ELEMENTS ===============
     addAndMakeVisible(&sphere);
@@ -49,8 +50,6 @@ MultiEncoderAudioProcessorEditor::MultiEncoderAudioProcessorEditor (MultiEncoder
     masterElement.setColour(Colours::black);
     masterElement.setTextColour(Colours::white);
     masterElement.setLabel("M");
-    masterElement.setID("master");
-    masterElement.setSliders(&slMasterYaw, &slMasterPitch);
     
     // ======================================
     
@@ -69,7 +68,7 @@ MultiEncoderAudioProcessorEditor::MultiEncoderAudioProcessorEditor (MultiEncoder
     cbNormalizationAtachment = new ComboBoxAttachment(valueTreeState,"useSN3D",*title.getOutputWidgetPtr()->getNormCbPointer());
     cbOrderAtachment = new ComboBoxAttachment(valueTreeState,"orderSetting",*title.getOutputWidgetPtr()->getOrderCbPointer());
     
-    // ======================== YAW PITCH ROLL GROUP
+    // ======================== AZIMUTH ELEVATION ROLL GROUP
     ypGroup.setText("Encoder settings");
     ypGroup.setTextLabelPosition (Justification::centredLeft);
     ypGroup.setColour (GroupComponent::outlineColourId, globalLaF.ClSeperator);
@@ -77,23 +76,23 @@ MultiEncoderAudioProcessorEditor::MultiEncoderAudioProcessorEditor (MultiEncoder
     addAndMakeVisible(&ypGroup);
     ypGroup.setVisible(true);
     
-    addAndMakeVisible(&slMasterYaw);
-    slMasterYawAttachment = new SliderAttachment(valueTreeState,"masterYaw", slMasterYaw);
-    slMasterYaw.setSliderStyle (Slider::Rotary);
-    slMasterYaw.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slMasterYaw.setReverse(true);
-    slMasterYaw.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
-    slMasterYaw.setRotaryParameters(M_PI, 3*M_PI, false);
-    slMasterYaw.setTooltip("Master yaw angle");
+    addAndMakeVisible(&slMasterAzimuth);
+    slMasterAzimuthAttachment = new SliderAttachment(valueTreeState,"masterAzimuth", slMasterAzimuth);
+    slMasterAzimuth.setSliderStyle (Slider::Rotary);
+    slMasterAzimuth.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
+    slMasterAzimuth.setReverse(true);
+    slMasterAzimuth.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
+    slMasterAzimuth.setRotaryParameters(M_PI, 3*M_PI, false);
+    slMasterAzimuth.setTooltip("Master azimuth angle");
     
-    addAndMakeVisible(&slMasterPitch);
-    slMasterPitchAttachment = new SliderAttachment(valueTreeState,"masterPitch", slMasterPitch);
-    slMasterPitch.setSliderStyle (Slider::Rotary);
-    slMasterPitch.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slMasterPitch.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
-    slMasterPitch.setReverse(true);
-    slMasterPitch.setRotaryParameters(0.5*M_PI, 2.5*M_PI, false);
-    slMasterPitch.setTooltip("Master pitch angle");
+    addAndMakeVisible(&slMasterElevation);
+    slMasterElevationAttachment = new SliderAttachment(valueTreeState,"masterElevation", slMasterElevation);
+    slMasterElevation.setSliderStyle (Slider::Rotary);
+    slMasterElevation.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
+    slMasterElevation.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
+    slMasterElevation.setReverse(true);
+    slMasterElevation.setRotaryParameters(0.5*M_PI, 2.5*M_PI, false);
+    slMasterElevation.setTooltip("Master elevation angle");
     
     addAndMakeVisible(&slMasterRoll);
     slMasterRollAttachment = new SliderAttachment(valueTreeState,"masterRoll", slMasterRoll);
@@ -121,20 +120,20 @@ MultiEncoderAudioProcessorEditor::MultiEncoderAudioProcessorEditor (MultiEncoder
     addAndMakeVisible(&lbNum);
     lbNum.setText("#");
     
-    addAndMakeVisible(&lbYaw);
-    lbYaw.setText("Yaw");
+    addAndMakeVisible(&lbAzimuth);
+    lbAzimuth.setText("Azimuth");
     
-    addAndMakeVisible(&lbPitch);
-    lbPitch.setText("Pitch");
+    addAndMakeVisible(&lbElevation);
+    lbElevation.setText("Elevation");
     
     addAndMakeVisible(&lbGain);
     lbGain.setText("Gain");
     
-    addAndMakeVisible(&lbMasterYaw);
-    lbMasterYaw.setText("Yaw");
+    addAndMakeVisible(&lbMasterAzimuth);
+    lbMasterAzimuth.setText("Azimuth");
     
-    addAndMakeVisible(&lbMasterPitch);
-    lbMasterPitch.setText("Pitch");
+    addAndMakeVisible(&lbMasterElevation);
+    lbMasterElevation.setText("Elevation");
     
     addAndMakeVisible(&lbMasterRoll);
     lbMasterRoll.setText("Roll");
@@ -149,11 +148,11 @@ MultiEncoderAudioProcessorEditor::~MultiEncoderAudioProcessorEditor()
     setLookAndFeel(nullptr);
     for (int i = 0; i < maxNumberOfInputs; ++i)
     {
-        valueTreeState.removeParameterListener("yaw"+String(i), this);
-        valueTreeState.removeParameterListener("pitch"+String(i), this);
+        valueTreeState.removeParameterListener("azimuth"+String(i), this);
+        valueTreeState.removeParameterListener("elevation"+String(i), this);
     }
-    valueTreeState.removeParameterListener("masterYaw", this);
-    valueTreeState.removeParameterListener("masterPitch", this);
+    valueTreeState.removeParameterListener("masterAzimuth", this);
+    valueTreeState.removeParameterListener("masterElevation", this);
 }
 
 //==============================================================================
@@ -210,9 +209,9 @@ void MultiEncoderAudioProcessorEditor::mouseWheelOnSpherePannerMoved (SpherePann
     if (event.mods.isCommandDown() && event.mods.isAltDown())
         slMasterRoll.mouseWheelMove(event, wheel);
     else if (event.mods.isAltDown())
-        slMasterPitch.mouseWheelMove(event, wheel);
+        slMasterElevation.mouseWheelMove(event, wheel);
     else if (event.mods.isCommandDown())
-        slMasterYaw.mouseWheelMove(event, wheel);
+        slMasterAzimuth.mouseWheelMove(event, wheel);
 }
 void MultiEncoderAudioProcessorEditor::parameterChanged (const String &parameterID, float newValue)
 {
@@ -251,7 +250,7 @@ void MultiEncoderAudioProcessorEditor::resized()
     //const int labelWidth = 20;
     
     
-    // -------------- Yaw Pitch Roll Labels ------------------
+    // -------------- Azimuth Elevation Roll Labels ------------------
     Rectangle<int> yprArea (sideBarArea);
     ypGroup.setBounds (yprArea);
     yprArea.removeFromTop(25); //for box headline
@@ -260,14 +259,13 @@ void MultiEncoderAudioProcessorEditor::resized()
     sliderRow = (yprArea.removeFromTop(15));
     lbNum.setBounds(sliderRow.removeFromLeft(22));
     sliderRow.removeFromLeft(5);
-    lbYaw.setBounds(sliderRow.removeFromLeft(rotSliderWidth));
+    lbAzimuth.setBounds(sliderRow.removeFromLeft(rotSliderWidth));
     sliderRow.removeFromLeft(rotSliderSpacing);
-    lbPitch.setBounds(sliderRow.removeFromLeft(rotSliderWidth));
+    lbElevation.setBounds(sliderRow.removeFromLeft(rotSliderWidth));
     sliderRow.removeFromLeft(rotSliderSpacing);
     lbGain.setBounds(sliderRow.removeFromLeft(rotSliderWidth));
     
     viewport.setBounds(yprArea);
-    
     
     
     // ============== SIDEBAR LEFT ====================
@@ -286,25 +284,24 @@ void MultiEncoderAudioProcessorEditor::resized()
     
     area.removeFromTop(sphereArea.getHeight());
     
-    // ------------- Grabber ------------------------
+    // ------------- Master Grabber ------------------------
     Rectangle<int> masterArea (area.removeFromTop(masterAreaHeight));
     quatGroup.setBounds (masterArea);
     masterArea.removeFromTop(25); //for box headline
     
     
-    
     sliderRow = (masterArea.removeFromBottom(12));
-    lbMasterYaw.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
+    lbMasterAzimuth.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
     sliderRow.removeFromLeft(rotSliderSpacing);
-    lbMasterPitch.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
+    lbMasterElevation.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
     sliderRow.removeFromLeft(rotSliderSpacing);
     lbMasterRoll.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
     sliderRow.removeFromLeft(rotSliderSpacing);
     
     sliderRow = masterArea;
-    slMasterYaw.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
+    slMasterAzimuth.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
     sliderRow.removeFromLeft(rotSliderSpacing);
-    slMasterPitch.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
+    slMasterElevation.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
     sliderRow.removeFromLeft(rotSliderSpacing);
     slMasterRoll.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
     sliderRow.removeFromLeft(rotSliderSpacing);

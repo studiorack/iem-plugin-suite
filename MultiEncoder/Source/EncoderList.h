@@ -109,15 +109,15 @@ public:
             {
                 spherePanner.removeElement(sphereElementArray[i]);
             }
-            slYawAttachmentArray.removeLast(nExcessive);
-            slPitchAttachmentArray.removeLast(nExcessive);
+            slAzimuthSliderAttachment.removeLast(nExcessive);
+            slElevationAttachmentArray.removeLast(nExcessive);
             slGainAttachmentArray.removeLast(nExcessive);
             muteButtonAttachmentArray.removeLast(nExcessive);
             soloButtonAttachmentArray.removeLast(nExcessive);
             sphereElementArray.removeLast(nExcessive);
             colourChooserArray.removeLast(nExcessive);
-            slYawArray.removeLast(nExcessive);
-            slPitchArray.removeLast(nExcessive);
+            slAzimuthArray.removeLast(nExcessive);
+            slElevationArray.removeLast(nExcessive);
             slGainArray.removeLast(nExcessive);
             muteButtonArray.removeLast(nExcessive);
             soloButtonArray.removeLast(nExcessive);
@@ -126,27 +126,29 @@ public:
         {
             for (int i = nElements; i < nCh; ++i)
             {
-                sphereElementArray.add(new SpherePanner::Element());
+                sphereElementArray.add(new SpherePanner::AziumuthElevationParameterElement(
+                                                                                           *pVts->getParameter("azimuth" + String(i)),
+                                                                                           pVts->getParameterRange("azimuth" + String(i)),
+                                                                                           *pVts->getParameter("elevation" + String(i)),
+                                                                                           pVts->getParameterRange("elevation" + String(i))));
                 colourChooserArray.add(new ColourChangeButton(processor, spherePanner, sphereElementArray.getLast(), i+1));
-                slYawArray.add(new ReverseSlider());
-                slPitchArray.add(new ReverseSlider());
+                slAzimuthArray.add(new ReverseSlider());
+                slElevationArray.add(new ReverseSlider());
                 slGainArray.add(new ReverseSlider());
                 muteButtonArray.add(new MuteSoloButton());
                 soloButtonArray.add(new MuteSoloButton());
                 
                 SpherePanner::Element* sphereElement = sphereElementArray.getLast();
                 ColourChangeButton* colourChooser = colourChooserArray.getLast();
-                ReverseSlider* yawSlider = slYawArray.getLast();
-                ReverseSlider* pitchSlider = slPitchArray.getLast();
+                ReverseSlider* azimuthSlider = slAzimuthArray.getLast();
+                ReverseSlider* elevationSlider = slElevationArray.getLast();
                 ReverseSlider* gainSlider = slGainArray.getLast();
                 MuteSoloButton* muteButton = muteButtonArray.getLast();
                 MuteSoloButton* soloButton = soloButtonArray.getLast();
                 
                 sphereElement->setLabel(String(i+1));
-                sphereElement->setID(String(i));
                 sphereElement->setColour(processor.elementColours[i]);
                 sphereElement->setTextColour(Colours::white.overlaidWith(processor.elementColours[i]).contrasting());
-                sphereElement->setSliders(yawSlider, pitchSlider);
                 
                 spherePanner.addElement(sphereElement);
                 
@@ -155,25 +157,22 @@ public:
                 colourChooser->setColour(TextButton::textColourOffId, Colours::white.overlaidWith (processor.elementColours[i]).contrasting());
                 
                 
-                addAndMakeVisible(yawSlider);
-                slYawAttachmentArray.add(new SliderAttachment(*pVts,"yaw"+String(i), *yawSlider));
-                yawSlider->setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-                yawSlider->setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-                yawSlider->setReverse(true);
-                yawSlider->setColour (Slider::rotarySliderOutlineColourId, Colour(0xFF00CAFF));
-                yawSlider->setRotaryParameters(M_PI, 3*M_PI, false);
-                yawSlider->setTooltip("Yaw angle");
-                yawSlider->setTextValueSuffix(CharPointer_UTF8 ("\xc2\xb0"));
+                addAndMakeVisible(azimuthSlider);
+                slAzimuthSliderAttachment.add(new SliderAttachment(*pVts,"azimuth" + String(i), *azimuthSlider));
+                azimuthSlider->setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
+                azimuthSlider->setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
+                azimuthSlider->setReverse(true);
+                azimuthSlider->setColour (Slider::rotarySliderOutlineColourId, Colour(0xFF00CAFF));
+                azimuthSlider->setRotaryParameters(M_PI, 3*M_PI, false);
+                azimuthSlider->setTooltip("Azimuth angle");
                 
-                addAndMakeVisible(pitchSlider);
-                slPitchAttachmentArray.add(new SliderAttachment(*pVts,"pitch" + String(i), *pitchSlider));
-                pitchSlider->setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-                pitchSlider->setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-                pitchSlider->setColour (Slider::rotarySliderOutlineColourId, Colour(0xFF4FFF00));
-                pitchSlider->setReverse(true);
-                pitchSlider->setRotaryParameters(0.5*M_PI, 2.5*M_PI, false);
-                pitchSlider->setTooltip("Pitch angle");
-                pitchSlider->setTextValueSuffix(CharPointer_UTF8 ("\xc2\xb0"));
+                addAndMakeVisible(elevationSlider);
+                slElevationAttachmentArray.add(new SliderAttachment(*pVts,"elevation" + String(i), *elevationSlider));
+                elevationSlider->setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
+                elevationSlider->setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
+                elevationSlider->setColour (Slider::rotarySliderOutlineColourId, Colour(0xFF4FFF00));
+                elevationSlider->setRotaryParameters(0.5*M_PI, 2.5*M_PI, false);
+                elevationSlider->setTooltip("Elevation angle");
                 
                 addAndMakeVisible(gainSlider);
                 slGainAttachmentArray.add(new SliderAttachment(*pVts,"gain" + String(i), *gainSlider));
@@ -228,9 +227,9 @@ public:
             sliderRow = bounds.removeFromTop(rotSliderHeight);
             colourChooserArray[i]->setBounds(sliderRow.removeFromLeft(22).reduced(0,18));
             sliderRow.removeFromLeft(5);
-            slYawArray[i]->setBounds (sliderRow.removeFromLeft(rotSliderWidth));
+            slAzimuthArray[i]->setBounds (sliderRow.removeFromLeft(rotSliderWidth));
             sliderRow.removeFromLeft(rotSliderSpacing);
-            slPitchArray[i]->setBounds (sliderRow.removeFromLeft(rotSliderWidth));
+            slElevationArray[i]->setBounds (sliderRow.removeFromLeft(rotSliderWidth));
             sliderRow.removeFromLeft(rotSliderSpacing);
             slGainArray[i]->setBounds (sliderRow.removeFromLeft(rotSliderWidth));
             sliderRow.removeFromLeft(rotSliderSpacing);
@@ -245,7 +244,7 @@ public:
         
         repaint();
     }
-    OwnedArray<SpherePanner::Element> sphereElementArray;
+    OwnedArray<SpherePanner::AziumuthElevationParameterElement> sphereElementArray;
     
 private:
     MultiEncoderAudioProcessor& processor;
@@ -255,11 +254,11 @@ private:
     
     
     
-    OwnedArray<ReverseSlider> slYawArray, slPitchArray, slGainArray;
+    OwnedArray<ReverseSlider> slAzimuthArray, slElevationArray, slGainArray;
     OwnedArray<MuteSoloButton> muteButtonArray, soloButtonArray;
     OwnedArray<ColourChangeButton> colourChooserArray;
-    OwnedArray<SliderAttachment> slYawAttachmentArray;
-    OwnedArray<SliderAttachment> slPitchAttachmentArray;
+    OwnedArray<SliderAttachment> slAzimuthSliderAttachment;
+    OwnedArray<SliderAttachment> slElevationAttachmentArray;
     OwnedArray<SliderAttachment> slGainAttachmentArray;
     OwnedArray<ButtonAttachment> muteButtonAttachmentArray;
     OwnedArray<ButtonAttachment> soloButtonAttachmentArray;

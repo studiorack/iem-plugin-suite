@@ -23,10 +23,6 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
-#define pi 3.1415926536
-#define deg2rad M_PI/180.0
-#define rad2deg 180.0/M_PI
-
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
@@ -72,15 +68,15 @@ parameters (*this, nullptr)
                                           else return "N3D";
                                       }, nullptr);
     
-    parameters.createAndAddParameter("masterYaw", "Master yaw angle", CharPointer_UTF8 (R"(°)"),
+    parameters.createAndAddParameter("masterAzimuth", "Master azimuth angle", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0f,
-                                     [](float value) {return String(value);}, nullptr);
-    parameters.createAndAddParameter("masterPitch", "Master pitch angle", CharPointer_UTF8 (R"(°)"),
+                                     [](float value) {return String(value, 2);}, nullptr);
+    parameters.createAndAddParameter("masterElevation", "Master elevation angle", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0f,
-                                     [](float value) {return String(value);}, nullptr);
+                                     [](float value) {return String(value, 2);}, nullptr);
     parameters.createAndAddParameter("masterRoll", "Master roll angle", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0f,
-                                     [](float value) {return String(value);}, nullptr);
+                                     [](float value) {return String(value, 2);}, nullptr);
     
     parameters.createAndAddParameter("lockedToMaster", "Lock Directions relative to Master", "",
                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
@@ -88,10 +84,10 @@ parameters (*this, nullptr)
     
     for (int i = 0; i < maxNumberOfInputs; ++i)
     {
-        parameters.createAndAddParameter("yaw" + String(i), "Yaw angle " + String(i), CharPointer_UTF8 (R"(°)"),
+        parameters.createAndAddParameter("azimuth" + String(i), "Azimuth angle " + String(i), CharPointer_UTF8 (R"(°)"),
                                          NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
                                          [](float value) {return String(value, 2);}, nullptr);
-        parameters.createAndAddParameter("pitch" + String(i), "Pitch angle " + String(i), CharPointer_UTF8 (R"(°)"),
+        parameters.createAndAddParameter("elevation" + String(i), "Elevation angle " + String(i), CharPointer_UTF8 (R"(°)"),
                                          NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
                                          [](float value) {return String(value, 2);}, nullptr);
         parameters.createAndAddParameter("gain" + String(i), "Gain " + String(i), CharPointer_UTF8 (R"(°)"),
@@ -112,8 +108,8 @@ parameters (*this, nullptr)
     
     parameters.state = ValueTree (Identifier ("MultiEncoder"));
     
-    parameters.addParameterListener("masterYaw", this);
-    parameters.addParameterListener("masterPitch", this);
+    parameters.addParameterListener("masterAzimuth", this);
+    parameters.addParameterListener("masterElevation", this);
     parameters.addParameterListener("masterRoll", this);
     parameters.addParameterListener("lockedToMaster", this);
     
@@ -127,8 +123,8 @@ parameters (*this, nullptr)
     
     for (int i = 0; i < maxNumberOfInputs; ++i)
     {
-        yaw[i] = parameters.getRawParameterValue ("yaw"+String(i));
-        pitch[i] = parameters.getRawParameterValue ("pitch"+String(i));
+        azimuth[i] = parameters.getRawParameterValue ("azimuth"+String(i));
+        elevation[i] = parameters.getRawParameterValue ("elevation"+String(i));
         gain[i] = parameters.getRawParameterValue ("gain"+String(i));
         mute[i] = parameters.getRawParameterValue ("mute"+String(i));
         solo[i] = parameters.getRawParameterValue ("solo"+String(i));
@@ -136,14 +132,14 @@ parameters (*this, nullptr)
         if (*mute[i] >= 0.5f) muteMask.setBit(i);
         if (*solo[i] >= 0.5f) soloMask.setBit(i);
         
-        parameters.addParameterListener("yaw"+String(i), this);
-        parameters.addParameterListener("pitch"+String(i), this);
+        parameters.addParameterListener("azimuth"+String(i), this);
+        parameters.addParameterListener("elevation"+String(i), this);
         parameters.addParameterListener("mute"+String(i), this);
         parameters.addParameterListener("solo"+String(i), this);
     }
     
-    masterYaw = parameters.getRawParameterValue("masterYaw");
-    masterPitch = parameters.getRawParameterValue("masterPitch");
+    masterAzimuth = parameters.getRawParameterValue("masterAzimuth");
+    masterElevation = parameters.getRawParameterValue("masterElevation");
     masterRoll = parameters.getRawParameterValue("masterRoll");
     lockedToMaster = parameters.getRawParameterValue("locking");
     
@@ -273,10 +269,10 @@ void MultiEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBu
             if (!muteMask[i]) currGain = Decibels::decibelsToGain(*gain[i]);
         }
         
-        float cosPitch = std::cos(*pitch[i] * deg2rad);
-        float yawInRad = *yaw[i] * deg2rad;
-        float pitchInRad = *pitch[i] * deg2rad;
-        Vector3D<float> pos (cosPitch * cos(yawInRad), cosPitch * sin(yawInRad), sin(-1.0f * pitchInRad));
+        const float azimuthInRad = degreesToRadians(*azimuth[i]);
+        const float elevationInRad = degreesToRadians(*elevation[i]);
+        
+        Vector3D<float> pos {Conversions<float>::sphericalToCartesian(azimuthInRad, elevationInRad)};
         
         SHEval(ambisonicOrder, pos.x, pos.y, pos.z, SH[i]);
         
@@ -336,14 +332,14 @@ void MultiEncoderAudioProcessor::parameterChanged (const String &parameterID, fl
             {
                 iem::Quaternion<float> masterQuat;
                 float masterypr[3];
-                masterypr[0] = degreesToRadians(*masterYaw);
-                masterypr[1] = degreesToRadians(*masterPitch);
+                masterypr[0] = degreesToRadians(*masterAzimuth);
+                masterypr[1] = degreesToRadians(*masterElevation);
                 masterypr[2] = degreesToRadians(*masterRoll);
                 masterQuat.fromYPR(masterypr);
                 masterQuat.conjugate();
                 
-                ypr[0] = degreesToRadians(*yaw[i]);
-                ypr[1] = degreesToRadians(*pitch[i]);
+                ypr[0] = degreesToRadians(*azimuth[i]);
+                ypr[1] = degreesToRadians(*elevation[i]);
                 quats[i].fromYPR(ypr);
                 quats[i] = masterQuat*quats[i];
             }
@@ -352,14 +348,14 @@ void MultiEncoderAudioProcessor::parameterChanged (const String &parameterID, fl
         else if (newValue < 0.5f)
             locked = false;
     }
-    else if (locked && ((parameterID == "masterYaw") ||  (parameterID == "masterPitch") ||  (parameterID == "masterRoll")))
+    else if (locked && ((parameterID == "masterAzimuth") ||  (parameterID == "masterElevation") ||  (parameterID == "masterRoll")))
     {
         DBG("moving");
         moving = true;
         iem::Quaternion<float> masterQuat;
         float ypr[3];
-        ypr[0] = degreesToRadians(*masterYaw);
-        ypr[1] = degreesToRadians(*masterPitch);
+        ypr[0] = degreesToRadians(*masterAzimuth);
+        ypr[1] = degreesToRadians(*masterElevation);
         ypr[2] = degreesToRadians(*masterRoll);
         masterQuat.fromYPR(ypr);
         
@@ -368,14 +364,13 @@ void MultiEncoderAudioProcessor::parameterChanged (const String &parameterID, fl
         {
             iem::Quaternion<float> temp = masterQuat*quats[i];
             temp.toYPR(ypr);
-            parameters.getParameterAsValue("yaw" + String(i)).setValue(radiansToDegrees(ypr[0]));
-            parameters.getParameterAsValue("pitch" + String(i)).setValue(radiansToDegrees(ypr[1]));
+            parameters.getParameterAsValue("azimuth" + String(i)).setValue(radiansToDegrees(ypr[0]));
+            parameters.getParameterAsValue("elevation" + String(i)).setValue(radiansToDegrees(ypr[1]));
         }
         moving = false;
     }
-    else if (locked && !moving &&  (parameterID.startsWith("yaw") || parameterID.startsWith("pitch")))
+    else if (locked && !moving &&  (parameterID.startsWith("azimuth") || parameterID.startsWith("elevation")))
     {
-        DBG("yawPitch");
         float ypr[3];
         ypr[2] = 0.0f;
         const int nChIn = input.getSize();
@@ -383,14 +378,14 @@ void MultiEncoderAudioProcessor::parameterChanged (const String &parameterID, fl
         {
             iem::Quaternion<float> masterQuat;
             float masterypr[3];
-            masterypr[0] = degreesToRadians(*masterYaw);
-            masterypr[1] = degreesToRadians(*masterPitch);
+            masterypr[0] = degreesToRadians(*masterAzimuth);
+            masterypr[1] = degreesToRadians(*masterElevation);
             masterypr[2] = degreesToRadians(*masterRoll);
             masterQuat.fromYPR(masterypr);
             masterQuat.conjugate();
             
-            ypr[0] = degreesToRadians(*yaw[i]);
-            ypr[1] = degreesToRadians(*pitch[i]);
+            ypr[0] = degreesToRadians(*azimuth[i]);
+            ypr[1] = degreesToRadians(*elevation[i]);
             quats[i].fromYPR(ypr);
             quats[i] = masterQuat*quats[i];
         }
@@ -456,16 +451,16 @@ void MultiEncoderAudioProcessor::updateQuaternions()
     
     iem::Quaternion<float> masterQuat;
     float masterypr[3];
-    masterypr[0] = degreesToRadians(*masterYaw);
-    masterypr[1] = degreesToRadians(*masterPitch);
+    masterypr[0] = degreesToRadians(*masterAzimuth);
+    masterypr[1] = degreesToRadians(*masterElevation);
     masterypr[2] = degreesToRadians(*masterRoll);
     masterQuat.fromYPR(masterypr);
     masterQuat.conjugate();
     
     for (int i = 0; i < maxNumberOfInputs; ++i)
     {
-        ypr[0] = degreesToRadians(*yaw[i]);
-        ypr[1] = degreesToRadians(*pitch[i]);
+        ypr[0] = degreesToRadians(*azimuth[i]);
+        ypr[1] = degreesToRadians(*elevation[i]);
         quats[i].fromYPR(ypr);
         quats[i] = masterQuat*quats[i];
     }
