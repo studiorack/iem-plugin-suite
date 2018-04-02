@@ -61,12 +61,16 @@ public:
         g.drawFittedText("L\nE\nF\nT", sphereArea.getX()-10, centreY-40, 10, 80, Justification::centred, 4);
         g.drawFittedText("R\nI\nG\nH\nT", sphereArea.getRight(), centreY-40, 10, 80, Justification::centred, 5);
         
-        g.setColour(Colours::steelblue.withMultipliedAlpha(0.3f));
+        g.setColour(Colours::steelblue.withMultipliedAlpha(0.2f));
         Path circles;
         
-        for (int deg = 75; deg >= 15; deg -= 15)
+        for (int deg = 75; deg >= 0; deg -= 15)
         {
-            float rCirc = radius * cos (Conversions<float>::degreesToRadians(deg));
+            float rCirc;
+            if (! linearElevation)
+                rCirc = radius * std::cos (Conversions<float>::degreesToRadians(deg));
+            else
+                rCirc = radius * (90 - deg) / 90;
             circles.addEllipse(centreX - rCirc, centreY - rCirc, 2.0f * rCirc, 2.0f * rCirc);
             g.fillPath(circles);
         }
@@ -89,10 +93,13 @@ public:
         
         g.strokePath(path, PathStrokeType(0.5f));
     }
+    void setElevationStyle (bool linear) { linearElevation = linear; };
+    
 private:
     float radius = 1.0f;
     Rectangle<float> sphereArea;
     Point<int> centre;
+    bool linearElevation = false;
 };
 
 
@@ -108,15 +115,6 @@ public:
     };
     ~SpherePanner() {};
     
-    inline Vector3D<float> yawPitchToCartesian(float yawInRad, float pitchInRad) {
-        float cosPitch = cos(pitchInRad);
-        return Vector3D<float>(cosPitch * cos(yawInRad), cosPitch * sin(yawInRad), sin(-1.0f * pitchInRad));
-    }
-    
-    inline Point<float> cartesianToYawPitch(Vector3D<float> pos) {
-        float hypxy = sqrt(pos.x*pos.x+pos.y*pos.y);
-        return Point<float>(atan2(pos.y,pos.x), atan2(hypxy,pos.z)-M_PI/2);
-    }
     
     class Listener
     {
@@ -132,7 +130,7 @@ public:
         virtual ~Element() {}
         
         virtual void startMovement() { };
-        virtual void moveElement (const MouseEvent &event, Point<int> centre, float radius, bool upBeforeDrag) = 0;
+        virtual void moveElement (const MouseEvent &event, Point<int> centre, float radius, bool upBeforeDrag,  bool linearElevation) = 0;
         virtual void stopMovement() { };
         
         /*
@@ -148,16 +146,6 @@ public:
         void setTextColour( Colour newColour) { textColour = newColour; }
         Colour getColour() { return colour; }
         Colour getTextColour() { return textColour; }
-        
-        //        bool setPosition(Vector3D<float> newPosition) // is true when position is updated (use it for repainting)
-        //        {
-        //            if (position.x != newPosition.x || position.y != newPosition.y || position.z != newPosition.z)
-        //            {
-        //                position = newPosition;
-        //                return true;
-        //            }
-        //            return false;
-        //        }
         
         void setLabel(String newLabel) {label = newLabel;}
         
@@ -185,7 +173,7 @@ public:
     public:
         StandardElement() : Element() {}
         
-        void moveElement (const MouseEvent &event, Point<int> centre, float radius, bool upBeforeDrag) override
+        void moveElement (const MouseEvent &event, Point<int> centre, float radius, bool upBeforeDrag, bool linearElevation) override
         {
             Point<int> pos = event.getPosition();
             const float azimuth = -1.0f * centre.getAngleToPoint(pos);
@@ -195,7 +183,11 @@ public:
                 upBeforeDrag = !upBeforeDrag;
             }
             
-            float elevation = acos(r);
+            if (linearElevation)
+                r = std::sin(r * 1.570796327f);
+            
+            
+            float elevation = std::acos(r);
             if (! upBeforeDrag) elevation *= -1.0f;
             position = Conversions<float>::sphericalToCartesian(azimuth, elevation);
         }
@@ -234,17 +226,21 @@ public:
             elevation.beginChangeGesture();
         };
         
-        void moveElement (const MouseEvent &event, Point<int> centre, float radius, bool upBeforeDrag) override
+        void moveElement (const MouseEvent &event, Point<int> centre, float radius, bool upBeforeDrag,  bool linearElevation) override
         {
             Point<int> pos = event.getPosition();
             const float azi = -1.0f * centre.getAngleToPoint(pos);
             float r = centre.getDistanceFrom(pos) / radius;
+
             if (r > 1.0f) {
                 r = 1.0f / r;
                 upBeforeDrag = !upBeforeDrag;
             }
             
-            float ele = acos(r);
+            if (linearElevation)
+                r = std::sin(r * 1.570796327f);
+            
+            float ele = std::acos(r);
             if (! upBeforeDrag) ele *= -1.0f;
             
             const float azimuthInDegrees { Conversions<float>::radiansToDegrees(azi) };
@@ -298,7 +294,7 @@ public:
             width.beginChangeGesture();
         };
         
-        void moveElement (const MouseEvent &event, Point<int> centre, float radius, bool upBeforeDrag) override
+        void moveElement (const MouseEvent &event, Point<int> centre, float radius, bool upBeforeDrag, bool linearElevation) override
         {
             Point<int> pos = event.getPosition();
             const float azi = -1.0f * centre.getAngleToPoint(pos);
@@ -308,7 +304,10 @@ public:
                 upBeforeDrag = !upBeforeDrag;
             }
             
-            float ele = acos(r);
+            if (linearElevation)
+                r = std::sin(r * 1.570796327f);
+            
+            float ele = std::acos(r);
             if (! upBeforeDrag) ele *= -1.0f;
             
             Vector3D<float> posXYZ {Conversions<float>::sphericalToCartesian(azi, ele)};
@@ -412,6 +411,14 @@ public:
             
             const float diam = 15.0f + 4.0f * pos.z;
             g.setColour(handle->isActive() ? handle->getColour() : Colours::grey);
+            
+            if (linearElevation)
+            {
+                const float r = sqrt(pos.y * pos.y + pos.x * pos.x);
+                const float factor = std::asin(r) / r / 1.570796327f; // pi / 2
+                pos *= factor;
+            }
+            
             Rectangle<float> temp(centreX - pos.y * radius - diam / 2, centreY - pos.x * radius - diam / 2, diam, diam);
             panPos.addEllipse(temp);
             g.strokePath(panPos, PathStrokeType(1.0f));
@@ -443,10 +450,10 @@ public:
         if (nElem > 0) {
             Point<int> pos = event.getPosition();
             
-            float mouseX = (centreY-pos.getY())/radius;
-            float mouseY = (centreX-pos.getX())/radius;
+            const float mouseX = (centreY-pos.getY()) / radius;
+            const float mouseY = (centreX-pos.getX()) / radius;
             
-            float *dist = (float*) malloc(nElem*sizeof(float));
+            float *dist = (float*) malloc(nElem * sizeof(float));
             
             //int nGrabed = 0;
             int highestPriority = -1;
@@ -455,6 +462,14 @@ public:
             for (int i = elements.size(); --i >= 0;) {
                 Element* handle(elements.getUnchecked (i));
                 Vector3D<float> pos = handle->getCoordinates();
+                
+                if (linearElevation)
+                {
+                    const float r = sqrt(pos.y * pos.y + pos.x * pos.x);
+                    const float factor = std::asin(r) / r / 1.570796327f; // pi / 2
+                    pos *= factor;
+                }
+                
                 tx = (mouseX - pos.x);
                 ty = (mouseY - pos.y);
                 dist[i] = tx*tx + ty*ty;
@@ -477,8 +492,7 @@ public:
     void mouseDrag (const MouseEvent &event) override
     {
         if (activeElem != -1) {
-            elements.getUnchecked(activeElem)->moveElement(event, centre, radius, activeElemWasUpBeforeDrag);
-            //            sendChanges(((Element*) elements.getUnchecked (activeElem)));
+            elements.getUnchecked(activeElem)->moveElement(event, centre, radius, activeElemWasUpBeforeDrag, linearElevation);
             repaint();
         }
     }
@@ -497,6 +511,12 @@ public:
         }
     }
     
+    void mouseDoubleClick (const MouseEvent &event) override
+    {
+        setElevationStyle(! linearElevation);
+        background.repaint();
+        repaint();
+    }
     
     void addListener (Listener* const listener) {
         jassert (listener != nullptr);
@@ -530,6 +550,10 @@ public:
         return index;
     }
     
+    void setElevationStyle (bool linear) {
+        linearElevation = linear;
+        background.setElevationStyle(linear);
+    };
     
 private:
     float radius = 1.0f;
@@ -539,6 +563,6 @@ private:
     bool activeElemWasUpBeforeDrag;
     Array<Listener*> listeners;
     Array<Element*> elements;
-    
+    bool linearElevation = false;
     SpherePannerBackground background;
 };
