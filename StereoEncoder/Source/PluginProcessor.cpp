@@ -68,28 +68,28 @@ parameters(*this, nullptr)
     
     parameters.createAndAddParameter("qw", "Quaternion W", "",
                                      NormalisableRange<float>(-1.0f, 1.0f, 0.001f), 1.0,
-                                     [](float value) { return String(value); }, nullptr);
+                                     [](float value) { return String(value, 2); }, nullptr);
     parameters.createAndAddParameter("qx", "Quaternion X", "",
                                      NormalisableRange<float>(-1.0f, 1.0f, 0.001f), 0.0,
-                                     [](float value) { return String(value); }, nullptr);
+                                     [](float value) { return String(value, 2); }, nullptr);
     parameters.createAndAddParameter("qy", "Quaternion Y", "",
                                      NormalisableRange<float>(-1.0f, 1.0f, 0.001f), 0.0,
-                                     [](float value) { return String(value); }, nullptr);
+                                     [](float value) { return String(value, 2); }, nullptr);
     parameters.createAndAddParameter("qz", "Quaternion Z", "",
                                      NormalisableRange<float>(-1.0f, 1.0f, 0.001f), 0.0,
-                                     [](float value) { return String(value); }, nullptr);
-    parameters.createAndAddParameter("yaw", "Yaw angle", "deg",
+                                     [](float value) { return String(value, 2); }, nullptr);
+    parameters.createAndAddParameter("azimuth", "Azimuth angle", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
-                                     [](float value) { return String(value); }, nullptr);
-    parameters.createAndAddParameter("pitch", "Pitch angle", "deg",
+                                     [](float value) { return String(value, 2); }, nullptr);
+    parameters.createAndAddParameter("elevation", "Elevation angle", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
-                                     [](float value) { return String(value); }, nullptr);
-    parameters.createAndAddParameter("roll", "Roll angle", "deg",
+                                     [](float value) { return String(value, 2); }, nullptr);
+    parameters.createAndAddParameter("roll", "Roll angle", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
-                                     [](float value) { return String(value); }, nullptr);
-    parameters.createAndAddParameter("width", "Stereo Width", "deg",
+                                     [](float value) { return String(value, 2); }, nullptr);
+    parameters.createAndAddParameter("width", "Stereo Width", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float>(-360.0f, 360.0f, 0.01f), 0.0,
-                                     [](float value) { return String(value); }, nullptr);
+                                     [](float value) { return String(value, 2); }, nullptr);
     
     parameters.createAndAddParameter("highQuality", "High-quality panning", "",
                                      NormalisableRange<float>(0.0f, 1.0f, 1.0f), 0.0f,
@@ -102,8 +102,8 @@ parameters(*this, nullptr)
     parameters.addParameterListener("qx", this);
     parameters.addParameterListener("qy", this);
     parameters.addParameterListener("qz", this);
-    parameters.addParameterListener("yaw", this);
-    parameters.addParameterListener("pitch", this);
+    parameters.addParameterListener("azimuth", this);
+    parameters.addParameterListener("elevation", this);
     parameters.addParameterListener("roll", this);
     parameters.addParameterListener("orderSetting", this);
     
@@ -113,15 +113,15 @@ parameters(*this, nullptr)
     qx = parameters.getRawParameterValue("qx");
     qy = parameters.getRawParameterValue("qy");
     qz = parameters.getRawParameterValue("qz");
-    yaw = parameters.getRawParameterValue("yaw");
-    pitch = parameters.getRawParameterValue("pitch");
+    azimuth = parameters.getRawParameterValue("azimuth");
+    elevation = parameters.getRawParameterValue("elevation");
     roll = parameters.getRawParameterValue("roll");
     width = parameters.getRawParameterValue("width");
     highQuality = parameters.getRawParameterValue("highQuality");
     
     processorUpdatingParams = false;
     
-    yprInput = true; //input from ypr
+    sphericalInput = true; //input from ypr
     
     
     FloatVectorOperations::clear(SHL, 64);
@@ -181,17 +181,17 @@ void StereoEncoderAudioProcessor::prepareToPlay(double sampleRate, int samplesPe
     
     bufferCopy.setSize(2, samplesPerBlock);
     
-    smoothYawL.setValue(*yaw / 180.0f * (float) M_PI);
-    smoothPitchL.setValue(*pitch / 180.0f * (float) M_PI);
+    smoothAzimuthL.setValue(*azimuth / 180.0f * (float) M_PI);
+    smoothElevationL.setValue(*elevation / 180.0f * (float) M_PI);
     
-    smoothYawR.setValue(*yaw / 180.0f * (float) M_PI);
-    smoothPitchR.setValue(*pitch / 180.0f * (float) M_PI);
+    smoothAzimuthR.setValue(*azimuth / 180.0f * (float) M_PI);
+    smoothElevationR.setValue(*elevation / 180.0f * (float) M_PI);
     
     
-    smoothYawL.reset(1, samplesPerBlock);
-    smoothPitchL.reset(1, samplesPerBlock);
-    smoothYawR.reset(1, samplesPerBlock);
-    smoothPitchR.reset(1, samplesPerBlock);
+    smoothAzimuthL.reset(1, samplesPerBlock);
+    smoothElevationL.reset(1, samplesPerBlock);
+    smoothAzimuthR.reset(1, samplesPerBlock);
+    smoothElevationR.reset(1, samplesPerBlock);
 }
 
 void StereoEncoderAudioProcessor::releaseResources() {
@@ -219,14 +219,17 @@ void StereoEncoderAudioProcessor::processBlock(AudioSampleBuffer &buffer, MidiBu
         bufferCopy.copyFrom(i, 0, buffer.getReadPointer(i), buffer.getNumSamples());
     buffer.clear();
     
-    
     FloatVectorOperations::copy(_SHL, SHL, nChOut);
     FloatVectorOperations::copy(_SHR, SHR, nChOut);
     
-    if (yprInput) {
-        ypr[0] = *yaw / 180 * (float) M_PI;
-        ypr[1] = *pitch / 180 * (float) M_PI;
-        ypr[2] = *roll / 180 *(float) M_PI;
+    iem::Quaternion<float> quat;
+    
+    if (sphericalInput)
+    {
+        float ypr[3];
+        ypr[0] = Conversions<float>::degreesToRadians(*azimuth);
+        ypr[1] = - Conversions<float>::degreesToRadians(*elevation); // pitch
+        ypr[2] = Conversions<float>::degreesToRadians(*roll);
         
         //updating not active params
         quat.fromYPR(ypr);
@@ -236,49 +239,47 @@ void StereoEncoderAudioProcessor::processBlock(AudioSampleBuffer &buffer, MidiBu
         parameters.getParameter("qy")->setValue(parameters.getParameterRange("qy").convertTo0to1(quat.y));
         parameters.getParameter("qz")->setValue(parameters.getParameterRange("qz").convertTo0to1(quat.z));
         processorUpdatingParams = false;
-    } else {
+    }
+    else
+    {
+        float ypr[3];
         quat = iem::Quaternion<float>(*qw, *qx, *qy, *qz);
         quat.normalize();
         quat.toYPR(ypr);
         
         //updating not active params
         processorUpdatingParams = true;
-        parameters.getParameter("yaw")->setValue(
-                                                 parameters.getParameterRange("yaw").convertTo0to1(ypr[0] / (float) M_PI * 180));
-        parameters.getParameter("pitch")->setValue(
-                                                   parameters.getParameterRange("pitch").convertTo0to1(ypr[1] / (float) M_PI * 180));
-        parameters.getParameter("roll")->setValue(
-                                                  parameters.getParameterRange("roll").convertTo0to1(ypr[2] / (float) M_PI * 180));
+        parameters.getParameter("azimuth")->setValue(parameters.getParameterRange("azimuth").convertTo0to1(Conversions<float>::radiansToDegrees(ypr[0])));
+        parameters.getParameter("elevation")->setValue(parameters.getParameterRange("azimuth").convertTo0to1(- Conversions<float>::radiansToDegrees(ypr[1])));
+        parameters.getParameter("roll")->setValue(parameters.getParameterRange("azimuth").convertTo0to1(Conversions<float>::radiansToDegrees(ypr[2])));
         processorUpdatingParams = false;
     }
     
+    float xyz[3];
+    float xyzL[3];
+    float xyzR[3];
     quat.toCartesian(xyz);
     
-    quatLRot = iem::Quaternion<float>(cos(*width / 4 / 180 * M_PI), 0.0f, 0.0f, sin(*width / 4 / 180 * M_PI));
-    quatL = quat * quatLRot;
-    quatR = quat * (quatLRot.getConjugate());
+    const float widthInRadiansQuarter {Conversions<float>::degreesToRadians(*width) / 4.0f};
+    iem::Quaternion<float> quatLRot {iem::Quaternion<float>(cos(widthInRadiansQuarter), 0.0f, 0.0f, sin(widthInRadiansQuarter))};
+    iem::Quaternion<float> quatL = quat * quatLRot;
+    iem::Quaternion<float> quatR = quat * (quatLRot.getConjugate());
     
     quatL.toCartesian(xyzL);
     quatR.toCartesian(xyzR);
     
-    //TODO: refactor into inline functions
-    float yawL, yawR, pitchL, pitchR, hypxy;
-    hypxy = sqrt(xyzL[0] * xyzL[0] + xyzL[1] * xyzL[1]);
-    yawL = atan2(xyzL[1], xyzL[0]);
-    pitchL = atan2(hypxy, xyzL[2])-M_PI/2;
-    
-    hypxy = sqrt(xyzR[0] * xyzR[0] + xyzR[1] * xyzR[1]);
-    yawR = atan2(xyzR[1], xyzR[0]);
-    pitchR = atan2(hypxy, xyzR[2])-M_PI/2;
-    
+    //conversion to spherical for high-quality mode
+    float azimuthL, azimuthR, elevationL, elevationR;
+    Conversions<float>::cartesianToSpherical(xyzL[0], xyzL[1], xyzL[2], azimuthL, elevationL);
+    Conversions<float>::cartesianToSpherical(xyzR[0], xyzR[1], xyzR[2], azimuthR, elevationR);
     
     
     if (*highQuality < 0.5f)
     {
 //        smoothYawL.setValue(yawL, true);
-//        smoothPitchL.setValue(pitchL, true);
+//        smoothelevationL.setValue(elevationL, true);
 //        smoothYawR.setValue(yawR, true);
-//        smoothPitchR.setValue(pitchR, true);
+//        smoothelevationR.setValue(elevationR, true);
         
         
         SHEval(ambisonicOrder, xyzL[0], xyzL[1], xyzL[2], SHL);
@@ -298,63 +299,63 @@ void StereoEncoderAudioProcessor::processBlock(AudioSampleBuffer &buffer, MidiBu
     }
     else // high-quality sampling
     {
-        if (smoothYawL.getTargetValue() - yawL > M_PI)
+        if (smoothAzimuthL.getTargetValue() - azimuthL > M_PI)
         {
-            smoothYawL.setValue(smoothYawL.getTargetValue() - 2.0f * M_PI);
-            smoothYawL.reset(1,L);
+            smoothAzimuthL.setValue(smoothAzimuthL.getTargetValue() - 2.0f * M_PI);
+            smoothAzimuthL.reset(1,L);
         }
-        else if (yawL - smoothYawL.getTargetValue() > M_PI)
+        else if (azimuthL - smoothAzimuthL.getTargetValue() > M_PI)
         {
-            smoothYawL.setValue(smoothYawL.getTargetValue() + 2.0f * M_PI);
-            smoothYawL.reset(1,L);
-        }
-        
-        if (smoothPitchL.getTargetValue() - pitchL > M_PI)
-        {
-            smoothPitchL.setValue(smoothPitchL.getTargetValue() - 2.0f * M_PI);
-            smoothPitchL.reset(1,L);
-        }
-        else if (pitchL - smoothPitchL.getTargetValue() > M_PI)
-        {
-            smoothPitchL.setValue(smoothPitchL.getTargetValue() + 2.0f * M_PI);
-            smoothPitchL.reset(1,L);
+            smoothAzimuthL.setValue(smoothAzimuthL.getTargetValue() + 2.0f * M_PI);
+            smoothAzimuthL.reset(1,L);
         }
         
-        if (smoothYawR.getTargetValue() - yawR > M_PI)
+        if (smoothElevationL.getTargetValue() - elevationL > M_PI)
         {
-            smoothYawR.setValue(smoothYawR.getTargetValue() - 2.0f * M_PI);
-            smoothYawR.reset(1,L);
+            smoothElevationL.setValue(smoothElevationL.getTargetValue() - 2.0f * M_PI);
+            smoothElevationL.reset(1,L);
         }
-        else if (yawR - smoothYawR.getTargetValue() > M_PI)
+        else if (elevationL - smoothElevationL.getTargetValue() > M_PI)
         {
-            smoothYawR.setValue(smoothYawR.getTargetValue() + 2.0f * M_PI);
-            smoothYawR.reset(1,L);
-        }
-        
-        if (smoothPitchR.getTargetValue() - pitchR > M_PI)
-        {
-            smoothPitchR.setValue(smoothPitchR.getTargetValue() - 2.0f * M_PI);
-            smoothPitchR.reset(1,L);
-        }
-        else if (pitchR - smoothPitchR.getTargetValue() > M_PI)
-        {
-            smoothPitchR.setValue(smoothPitchR.getTargetValue() + 2.0f * M_PI);
-            smoothPitchR.reset(1,L);
+            smoothElevationL.setValue(smoothElevationL.getTargetValue() + 2.0f * M_PI);
+            smoothElevationL.reset(1,L);
         }
         
+        if (smoothAzimuthR.getTargetValue() - azimuthR > M_PI)
+        {
+            smoothAzimuthR.setValue(smoothAzimuthR.getTargetValue() - 2.0f * M_PI);
+            smoothAzimuthR.reset(1,L);
+        }
+        else if (azimuthR - smoothAzimuthR.getTargetValue() > M_PI)
+        {
+            smoothAzimuthR.setValue(smoothAzimuthR.getTargetValue() + 2.0f * M_PI);
+            smoothAzimuthR.reset(1,L);
+        }
         
-        smoothYawL.setValue(yawL);
-        smoothPitchL.setValue(pitchL);
-        smoothYawR.setValue(yawR);
-        smoothPitchR.setValue(pitchR);
+        if (smoothElevationR.getTargetValue() - elevationR > M_PI)
+        {
+            smoothElevationR.setValue(smoothElevationR.getTargetValue() - 2.0f * M_PI);
+            smoothElevationR.reset(1,L);
+        }
+        else if (elevationR - smoothElevationR.getTargetValue() > M_PI)
+        {
+            smoothElevationR.setValue(smoothElevationR.getTargetValue() + 2.0f * M_PI);
+            smoothElevationR.reset(1,L);
+        }
+        
+        
+        smoothAzimuthL.setValue(azimuthL);
+        smoothElevationL.setValue(elevationL);
+        smoothAzimuthR.setValue(azimuthR);
+        smoothElevationR.setValue(elevationR);
         
         for (int i = 0; i < L; ++i)
         {
-            const float yaw = smoothYawL.getNextValue();
-            const float pitch = smoothPitchL.getNextValue();
-            const float cosPitch = cos(pitch);
+            const float azimuth = smoothAzimuthL.getNextValue();
+            const float elevation = smoothElevationL.getNextValue();
+            const float coselevation = cos(elevation);
             float sample = bufferCopy.getSample(0, i);
-            SHEval(ambisonicOrder, cosPitch * cos(yaw), cosPitch * sin(yaw), sin(-1.0f * pitch), SHL);
+            SHEval(ambisonicOrder, coselevation * cos(azimuth), coselevation * sin(azimuth), sin(-1.0f * elevation), SHL);
             
             for (int ch = 0; ch < nChOut; ++ch) {
                 buffer.setSample(ch, i, sample * SHL[ch]);
@@ -363,11 +364,11 @@ void StereoEncoderAudioProcessor::processBlock(AudioSampleBuffer &buffer, MidiBu
         
         for (int i = 0; i < L; ++i)
         {
-            const float yaw = smoothYawR.getNextValue();
-            const float pitch = smoothPitchR.getNextValue();
-            const float cosPitch = cos(pitch);
+            const float azimuth = smoothAzimuthR.getNextValue();
+            const float elevation = smoothElevationR.getNextValue();
+            const float coselevation = cos(elevation);
             float sample = bufferCopy.getSample(1, i);
-            SHEval(ambisonicOrder, cosPitch * std::cos(yaw), cosPitch * sin(yaw), sin(-1.0f * pitch), SHR);
+            SHEval(ambisonicOrder, coselevation * std::cos(azimuth), coselevation * sin(azimuth), sin(-1.0f * elevation), SHR);
             
             for (int ch = 0; ch < nChOut; ++ch) {
                 buffer.addSample(ch, i, sample * SHR[ch]);
@@ -384,13 +385,12 @@ void StereoEncoderAudioProcessor::processBlock(AudioSampleBuffer &buffer, MidiBu
         }
     }
 
-    
-    // update LCR position information for GUI
-    posC = Vector3D<float>(xyz[0], xyz[1], xyz[2]);
-    posL = Vector3D<float>(xyzL[0], xyzL[1], xyzL[2]);
-    posR = Vector3D<float>(xyzR[0], xyzR[1], xyzR[2]);
-    
-    updatedPositionData = true;
+//    // update LCR position information for GUI
+//    posC = Vector3D<float>(xyz[0], xyz[1], xyz[2]);
+//    posL = Vector3D<float>(xyzL[0], xyzL[1], xyzL[2]);
+//    posR = Vector3D<float>(xyzR[0], xyzR[1], xyzR[2]);
+//    
+//    updatedPositionData = true;
 }
 
 //==============================================================================
@@ -404,8 +404,16 @@ AudioProcessorEditor *StereoEncoderAudioProcessor::createEditor() {
 
 void StereoEncoderAudioProcessor::parameterChanged(const String &parameterID, float newValue) {
     if (!processorUpdatingParams) {
-        if (parameterID == "qw" || parameterID == "qx" || parameterID == "qy" || parameterID == "qz") yprInput = false;
-        else if (parameterID == "yaw" || parameterID == "pitch" || parameterID == "roll") yprInput = true;
+        if (parameterID == "qw" || parameterID == "qx" || parameterID == "qy" || parameterID == "qz")
+        {
+            sphericalInput = false;
+            updatedPositionData = true;
+        }
+        else if (parameterID == "azimuth" || parameterID == "elevation" || parameterID == "roll")
+        {
+            sphericalInput = true;
+            updatedPositionData = true;
+        }
     }
     if (parameterID == "orderSetting") userChangedIOSettings = true;
 }

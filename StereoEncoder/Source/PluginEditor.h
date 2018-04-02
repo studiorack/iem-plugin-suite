@@ -32,9 +32,10 @@
 #include "../../resources/lookAndFeel/IEM_LaF.h"
 #include "../../resources/customComponents/TitleBar.h"
 #include "../../resources/customComponents/IEMSphere.h"
+#include "../../resources/customComponents/SpherePanner.h"
 #include "../../resources/customComponents/SimpleLabel.h"
 
-typedef AudioProcessorValueTreeState::SliderAttachment SliderAttachment;
+typedef ReverseSlider::SliderAttachment SliderAttachment;
 typedef AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
 
 //==============================================================================
@@ -64,27 +65,29 @@ private:
     
     void timerCallback() override;
     
+    
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     StereoEncoderAudioProcessor& processor;
-
+    AudioProcessorValueTreeState& valueTreeState;
+    
     GroupComponent quatGroup,ypGroup,settingsGroup;
-    ReverseSlider yawSlider, pitchSlider, rollSlider, widthSlider, qwSlider, qxSlider, qySlider, qzSlider;
+    ReverseSlider azimuthSlider, elevationSlider, rollSlider, widthSlider, qwSlider, qxSlider, qySlider, qzSlider;
     ComboBox inputChooser;
 
-    IEMSphere sphere;
-    IEMSphereElement leftElement = IEMSphereElement("left");
-    IEMSphereElement rightElement = IEMSphereElement("right");
-    IEMSphereElement centerElement = IEMSphereElement("center");
+    SpherePanner sphere;
+    SpherePanner::AziumuthElevationParameterElement centerElement;
+    SpherePanner::RollWidthParameterElement leftElement;
+    SpherePanner::RollWidthParameterElement rightElement;
     
-    AudioProcessorValueTreeState& valueTreeState;
+    
 
     ScopedPointer<SliderAttachment> qwAttachment;
     ScopedPointer<SliderAttachment> qxAttachment;
     ScopedPointer<SliderAttachment> qyAttachment;
     ScopedPointer<SliderAttachment> qzAttachment;
-    ScopedPointer<SliderAttachment> yawAttachment;
-    ScopedPointer<SliderAttachment> pitchAttachment;
+    ScopedPointer<SliderAttachment> azimuthAttachment;
+    ScopedPointer<SliderAttachment> elevationAttachment;
     ScopedPointer<SliderAttachment> rollAttachment;
     ScopedPointer<SliderAttachment> widthAttachment;
     ScopedPointer<ComboBoxAttachment> cbNormalizationAtachement;
@@ -93,7 +96,7 @@ private:
     TooltipWindow toolTipWin;
     
     // labels
-    SimpleLabel lbYaw, lbPitch, lbRoll, lblWidth, lbW, lbX, lbY, lbZ;
+    SimpleLabel lbAzimuth, lbElevation, lbRoll, lblWidth, lbW, lbX, lbY, lbZ;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (StereoEncoderAudioProcessorEditor)
 };

@@ -20,15 +20,14 @@
  ==============================================================================
  */
 
-#ifndef PLUGINPROCESSOR_H_INCLUDED
-#define PLUGINPROCESSOR_H_INCLUDED
+#pragma once
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "../../resources/Quaternion.h"
 #include "../../resources/efficientSHvanilla.h"
 #include "../../resources/ambisonicTools.h"
 #include "../../resources/IOHelper.h"
-
+#include "../../resources/Conversions.h"
 
 //==============================================================================
 /**
@@ -87,28 +86,23 @@ public:
     float *qx;
     float *qy;
     float *qz;
-    float *yaw;
-    float *pitch;
+    float *azimuth;
+    float *elevation;
     float *roll;
     float *width;
     float *highQuality;
     
     // --------------------
     
-    bool yprInput;
-    iem::Quaternion<float> quat,quatL, quatR, quatLRot;
-double phi, theta;
+    bool sphericalInput;
+
+    double phi, theta;
 
 private:
     //==============================================================================
 
     bool processorUpdatingParams;
     AudioProcessorValueTreeState parameters;
-    float ypr[3];
-  
-    float xyz[3];
-    float xyzL[3];
-    float xyzR[3];
     
     float SHL[64];
     float SHR[64];
@@ -117,11 +111,8 @@ private:
     
     AudioBuffer<float> bufferCopy;
     
-    LinearSmoothedValue<float> smoothYawL, smoothPitchL;
-    LinearSmoothedValue<float> smoothYawR, smoothPitchR;
+    LinearSmoothedValue<float> smoothAzimuthL, smoothElevationL;
+    LinearSmoothedValue<float> smoothAzimuthR, smoothElevationR;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (StereoEncoderAudioProcessor)
 };
-
-
-#endif  // PLUGINPROCESSOR_H_INCLUDED
