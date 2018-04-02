@@ -6,12 +6,16 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
 ## untagged changes
 - general changes
     - renamed **Matrix**Multiplicator to **Matrix**Multiplier (`!!BREAKING CHANGE!!`)
+    - refactored SpherePanner, which fixes automation writing issues
 
 - plug-in specific changes
     - **Matrix**Multiplier
         - smaller GUI changes
-    - **Multi**Encoder:
+    - **Multi**Encoder
         - colour-chooser now has the same look as the elements in the sphere panner, again
+    - **Stereo**Encoder
+        - using azimuth and elevation instead of yaw and pitch  (`!!BREAKING CHANGE!!`)
+
         
 ## v1.2.0
 - new plug-ins:
