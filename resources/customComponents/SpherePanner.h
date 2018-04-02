@@ -20,8 +20,9 @@
  ==============================================================================
  */
 
-#include "../JuceLibraryCode/JuceHeader.h"
 #pragma once
+#include "../../resources/Conversions.h"
+#include "../JuceLibraryCode/JuceHeader.h"
 
 
 class SpherePannerBackground :  public Component
