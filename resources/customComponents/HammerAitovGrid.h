@@ -21,8 +21,9 @@
  */
 
 #pragma once
+#include "Conversions.h"
+#include "../HammerAitov.h"
 
-#define deg2rad 0.017453293
 //==============================================================================
 /*
 */
@@ -70,14 +71,14 @@ public:
         
         
         
-        outline.startNewSubPath(anglesToPoint(180,-90));
+        outline.startNewSubPath(anglesToPoint(180, -90));
         for (int ele = -85; ele <= 90; ele += 5)
         {
-            outline.lineTo(anglesToPoint(180,ele));
+            outline.lineTo(anglesToPoint(180, ele));
         }
         for (int ele = 85; ele >= -85; ele -= 5)
         {
-            outline.lineTo(anglesToPoint(-180,ele));
+            outline.lineTo(anglesToPoint(-180, ele));
         }
         outline.closeSubPath();
         
@@ -123,31 +124,31 @@ public:
         g.setFont(12.0f);
         Point<float> textPos;
         
-        textPos = anglesToPoint(0,0);
+        textPos = anglesToPoint(0, 0);
         textPos.applyTransform(toArea);
         g.drawText("FRONT", textPos.x, textPos.y-12, 30, 12, Justification::centred);
         
-        textPos = anglesToPoint(90,0);
+        textPos = anglesToPoint(90, 0);
         textPos.applyTransform(toArea);
         g.drawText("LEFT", textPos.x, textPos.y-12, 30, 12, Justification::centred);
         
-        textPos = anglesToPoint(-90,0);
+        textPos = anglesToPoint(-90, 0);
         textPos.applyTransform(toArea);
         g.drawText("RIGHT", textPos.x, textPos.y-12, 30, 12, Justification::centred);
         
-        textPos = anglesToPoint(180,0);
+        textPos = anglesToPoint(180, 0);
         textPos.applyTransform(toArea);
         g.drawText("BACK", textPos.x, textPos.y-12, 30, 12, Justification::centred);
         
-        textPos = anglesToPoint(-180,0);
+        textPos = anglesToPoint(-180, 0);
         textPos.applyTransform(toArea);
         g.drawText("BACK", textPos.x-30, textPos.y-12, 30, 12, Justification::centred);
         
-        textPos = anglesToPoint(0,-90);
+        textPos = anglesToPoint(0, -90);
         textPos.applyTransform(toArea);
         g.drawText("TOP", textPos.x-15, textPos.y-12, 30, 12, Justification::centred);
         
-        textPos = anglesToPoint(0,90);
+        textPos = anglesToPoint(0,  90);
         textPos.applyTransform(toArea);
         g.drawText("BOTTOM", textPos.x-25, textPos.y, 50, 12, Justification::centred);
         
@@ -155,68 +156,21 @@ public:
         g.setFont(getLookAndFeel().getTypefaceForFont (Font(12.0f, 2)));
         g.setFont(12.0f);
         
-        //azimuth
-        textPos = anglesToPoint(0,0);
-        textPos.applyTransform(toArea);
-        g.drawText(String("0") + String(CharPointer_UTF8 ("\xc2\xb0")), textPos.x, textPos.y, 20, 12, Justification::centred);
-        
-        textPos = anglesToPoint(30,0);
-        textPos.applyTransform(toArea);
-        g.drawText(String("30") + String(CharPointer_UTF8 ("\xc2\xb0")), textPos.x, textPos.y, 20, 12, Justification::centred);
-        
-        textPos = anglesToPoint(60,0);
-        textPos.applyTransform(toArea);
-        g.drawText(String("60") + String(CharPointer_UTF8 ("\xc2\xb0")), textPos.x, textPos.y, 20, 12, Justification::centred);
-        
-        textPos = anglesToPoint(90,0);
-        textPos.applyTransform(toArea);
-        g.drawText(String("90") + String(CharPointer_UTF8 ("\xc2\xb0")), textPos.x, textPos.y, 20, 12, Justification::centred);
-        
-        textPos = anglesToPoint(120,0);
-        textPos.applyTransform(toArea);
-        g.drawText(String("120") + String(CharPointer_UTF8 ("\xc2\xb0")), textPos.x, textPos.y, 20, 12, Justification::centred);
-        
-        textPos = anglesToPoint(150,0);
-        textPos.applyTransform(toArea);
-        g.drawText(String("150") + String(CharPointer_UTF8 ("\xc2\xb0")), textPos.x, textPos.y, 20, 12, Justification::centred);
-        
-        textPos = anglesToPoint(-30,0);
-        textPos.applyTransform(toArea);
-        g.drawText(String("-30") + String(CharPointer_UTF8 ("\xc2\xb0")), textPos.x, textPos.y, 20, 12, Justification::centred);
-        
-        textPos = anglesToPoint(-60,0);
-        textPos.applyTransform(toArea);
-        g.drawText(String("-60") + String(CharPointer_UTF8 ("\xc2\xb0")), textPos.x, textPos.y, 20, 12, Justification::centred);
-        
-        textPos = anglesToPoint(-90,0);
-        textPos.applyTransform(toArea);
-        g.drawText(String("-90") + String(CharPointer_UTF8 ("\xc2\xb0")), textPos.x, textPos.y, 20, 12, Justification::centred);
-        
-        textPos = anglesToPoint(-120,0);
-        textPos.applyTransform(toArea);
-        g.drawText(String("-120") + String(CharPointer_UTF8 ("\xc2\xb0")), textPos.x, textPos.y, 25, 12, Justification::centred);
-        
-        textPos = anglesToPoint(-150,0);
-        textPos.applyTransform(toArea);
-        g.drawText(String("-150") + String(CharPointer_UTF8 ("\xc2\xb0")), textPos.x, textPos.y, 25, 12, Justification::centred);
-        
-        //elevation
-        
-        textPos = anglesToPoint(0,30);
-        textPos.applyTransform(toArea);
-        g.drawText(String("30") + String(CharPointer_UTF8 ("\xc2\xb0")), textPos.x, textPos.y-12, 20, 12, Justification::centred);
-        
-        textPos = anglesToPoint(0,60);
-        textPos.applyTransform(toArea);
-        g.drawText(String("60") + String(CharPointer_UTF8 ("\xc2\xb0")), textPos.x, textPos.y-12, 20, 12, Justification::centred);
-        
-        textPos = anglesToPoint(0,-30);
-        textPos.applyTransform(toArea);
-        g.drawText(String("-30") + String(CharPointer_UTF8 ("\xc2\xb0")), textPos.x, textPos.y-12, 20, 12, Justification::centred);
-        
-        textPos = anglesToPoint(0,-60);
-        textPos.applyTransform(toArea);
-        g.drawText(String("-60") + String(CharPointer_UTF8 ("\xc2\xb0")), textPos.x, textPos.y-12, 20, 12, Justification::centred);
+        // azimuth labels
+        for (int azi = -150; azi <= 150; azi += 30)
+        {
+            textPos = anglesToPoint(azi, 0);
+            textPos.applyTransform(toArea);
+            g.drawText(String(azi) + String(CharPointer_UTF8 ("\xc2\xb0")), textPos.x, textPos.y, 25, 12, Justification::centred);
+        }
+    
+        // elevation labels
+        for (int ele = -60; ele <= 60; ele += 30)
+        {
+            textPos = anglesToPoint(0, -ele);
+            textPos.applyTransform(toArea);
+            g.drawText(String(ele) + String(CharPointer_UTF8 ("\xc2\xb0")), textPos.x, textPos.y - 12, 20, 12, Justification::centred);
+        }
         
     }
 
@@ -228,23 +182,14 @@ public:
         Rectangle<int> area = getLocalBounds();
         
         toArea = AffineTransform::fromTargetPoints(area.getCentreX(), area.getCentreY(),
-                                                   area.getRight()-10.0f, area.getCentreY(),
-                                                   area.getCentreX(), area.getBottom()-20.0f);
+                                                   area.getRight() - 10.0f, area.getCentreY(),
+                                                   area.getCentreX(), area.getBottom() - 20.0f);
 
     }
     
     Point<float> anglesToPoint(int azimuthInDegree, int elevationInDegree) //hammer-aitov-projection
     {
-        Point<float> ret;
-        float azi = deg2rad * -0.5f * azimuthInDegree;
-        float ele = deg2rad * elevationInDegree;
-        
-        float scale = 1+cosf(ele)*cosf(azi);
-        scale = 1.0f/sqrtf(scale);
-        
-        ret.x = scale*cos(ele)*sin(azi);
-        ret.y = scale*sin(ele);
-        return ret;
+        return HammerAitov::sphericalToXY(Conversions<float>::degreesToRadians(azimuthInDegree), Conversions<float>::degreesToRadians(elevationInDegree));
     }
 
 private:
