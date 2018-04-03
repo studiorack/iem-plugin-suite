@@ -30,14 +30,22 @@ class ReverseSlider : public Slider
 {
 public:
     ReverseSlider () :
-    Slider(),
-    lastDistanceFromDragStart(0),
-    reversed(false),
-    isDual(false),
-    scrollWheelEnabled(true)
-    {}
-
-    ~ ReverseSlider () {}
+        Slider(),
+        lastDistanceFromDragStart(0),
+        reversed(false),
+        isDual(false),
+        scrollWheelEnabled(true)
+    {};
+    
+    ReverseSlider (const String& componentName) :
+        Slider(componentName),
+        lastDistanceFromDragStart(0),
+        reversed(false),
+        isDual(false),
+        scrollWheelEnabled(true)
+    {};
+    
+    ~ReverseSlider () {}
 
 public:
     
@@ -94,7 +102,7 @@ public:
         
         // juce::AudioProcessorValueTreeState::SliderAttachment sets the slider minimum and maximum to custom values.
         // We map the range to a 0 to 1 range.
-        const NormalisableRange<double> range (getMinimum(), getMaximum());
+        const NormalisableRange<double> range (getMinimum(), getMaximum(), getInterval(), getSkewFactor());
         const float normalizedVal = (float) range.convertTo0to1 (value);
         
         String result = parameter->getText (normalizedVal, getNumDecimalPlacesToDisplay()) + " " + parameter->getLabel();
