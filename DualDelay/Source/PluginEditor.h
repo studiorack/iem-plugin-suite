@@ -31,7 +31,7 @@
 #include "../../resources/customComponents/SimpleLabel.h"
 #include "../../resources/lookAndFeel/IEM_LaF.h"
 
-typedef AudioProcessorValueTreeState::SliderAttachment SliderAttachment;
+typedef ReverseSlider::SliderAttachment SliderAttachment;
 typedef AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
 
 //==============================================================================
@@ -66,7 +66,7 @@ private:
     // elements for left side
     DoubleSlider dblSlLeftFilter;
     ReverseSlider SlLeftRot;
-    Slider SlLeftDelay, SlLeftLfoRate, SlLeftLfoDepth, SlLeftFb, SlLeftCrossFb, SlLeftGain;
+    ReverseSlider SlLeftDelay, SlLeftLfoRate, SlLeftLfoDepth, SlLeftFb, SlLeftCrossFb, SlLeftGain;
     
     ScopedPointer<SliderAttachment> dblSlLeftFilterHpAttachment,dblSlLeftFilterLpAttachment;
     ScopedPointer<SliderAttachment> SlLeftRotAttachment;
@@ -75,7 +75,7 @@ private:
     // elements for right side
     DoubleSlider dblSlRightFilter;
     ReverseSlider SlRightRot;
-    Slider SlRightDelay, SlRightLfoRate, SlRightLfoDepth, SlRightFb, SlRightCrossFb, SlRightGain;
+    ReverseSlider SlRightDelay, SlRightLfoRate, SlRightLfoDepth, SlRightFb, SlRightCrossFb, SlRightGain;
     
     ScopedPointer<SliderAttachment> dblSlRightFilterHpAttachment,dblSlRightFilterLpAttachment;
     ScopedPointer<SliderAttachment> SlRightRotAttachment;

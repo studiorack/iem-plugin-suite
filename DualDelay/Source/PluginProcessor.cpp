@@ -36,7 +36,7 @@ DualDelayAudioProcessor::DualDelayAudioProcessor()
 #endif
                   ),
 #endif
-parameters(*this,nullptr), LFOLeft([] (float phi) { return std::sin(phi);}), LFORight([] (float phi) { return std::sin(phi);})
+parameters(*this,nullptr), LFOLeft([] (float phi) { return std::sin(phi); }), LFORight([] (float phi) { return std::sin(phi); })
 {
     parameters.createAndAddParameter("orderSetting", "Ambisonics Order", "",
                                      NormalisableRange<float>(0.0f, 8.0f, 1.0f), 0.0f,
@@ -63,71 +63,71 @@ parameters(*this,nullptr), LFOLeft([] (float phi) { return std::sin(phi);}), LFO
     
     parameters.createAndAddParameter("dryGain", "Dry amount", "dB",
                                      NormalisableRange<float> (-60.0f, 0.0f, 0.1f), 0.0f,
-                                     [](float value) {return (value >= -59.9f) ? String(value) : "-inf";}, nullptr);
+                                     [](float value) { return (value >= -59.9f) ? String(value, 1) : "-inf"; }, nullptr);
     parameters.createAndAddParameter("wetGainL", "Wet amount left", "dB",
                                      NormalisableRange<float> (-60.0f, 0.0f, 0.1f), -6.0f,
-                                     [](float value) {return (value >= -59.9f) ? String(value) : "-inf";}, nullptr);
+                                     [](float value) { return (value >= -59.9f) ? String(value, 1) : "-inf"; }, nullptr);
     parameters.createAndAddParameter("wetGainR", "Wet amount right", "dB",
                                      NormalisableRange<float> (-60.0f, 0.0f, 0.1f), -6.0f,
-                                     [](float value) {return (value >= -59.9f) ? String(value) : "-inf";}, nullptr);
+                                     [](float value) { return (value >= -59.9f) ? String(value, 1) : "-inf"; }, nullptr);
     
     parameters.createAndAddParameter("delayTimeL", "delay time left", "ms",
                                      NormalisableRange<float> (10.0f, 500.0f, 0.1f), 500.0f,
-                                     [](float value) {return String(value);}, nullptr);
+                                     [](float value) { return String(value, 1); }, nullptr);
     parameters.createAndAddParameter("delayTimeR", "delay time right", "ms",
                                      NormalisableRange<float> (10.0f, 500.0f, 0.1f), 375.0f,
-                                     [](float value) {return String(value);}, nullptr);
+                                     [](float value) { return String(value, 1); }, nullptr);
     
-    parameters.createAndAddParameter("rotationL", "rotation left", "degree",
+    parameters.createAndAddParameter("rotationL", "rotation left", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float> (-180.0f, 180.0f, 0.1f), 10.0f,
-                                     [](float value) {return String(value);}, nullptr);
-    parameters.createAndAddParameter("rotationR", "rotation right", "degree",
+                                     [](float value) { return String(value, 1); }, nullptr);
+    parameters.createAndAddParameter("rotationR", "rotation right", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float> (-180.0f, 180.0f, 0.1f), -7.5f,
-                                     [](float value) {return String(value);}, nullptr);
+                                     [](float value) { return String(value, 1); }, nullptr);
     
     
     parameters.createAndAddParameter("LPcutOffL", "lowpass frequency left", "Hz",
-                                     NormalisableRange<float> (20.0f, 20000.0f, 1.0f,0.2), 100.0f,
-                                     [](float value) {return String(value);}, nullptr);
+                                     NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.2), 100.0f,
+                                     [](float value) { return String(value, 1); }, nullptr);
     parameters.createAndAddParameter("LPcutOffR", "lowpass frequency right", "Hz",
-                                     NormalisableRange<float> (20.0f, 20000.0f, 1.0f,0.2), 100.0f,
-                                     [](float value) {return String(value);}, nullptr);
+                                     NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.2), 100.0f,
+                                     [](float value) { return String(value, 1); }, nullptr);
     
     parameters.createAndAddParameter("HPcutOffL", "highpass frequency left", "Hz",
-                                     NormalisableRange<float> (20.0f, 20000.0f, 1.0f,0.2), 20000.0f,
-                                     [](float value) {return String(value);}, nullptr);
+                                     NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.2), 20000.0f,
+                                     [](float value) { return String(value, 1); }, nullptr);
     parameters.createAndAddParameter("HPcutOffR", "highpass frequency right", "Hz",
-                                     NormalisableRange<float> (20.0f, 20000.0f, 1.0f,0.2), 20000.0f,
-                                     [](float value) {return String(value);}, nullptr);
+                                     NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.2), 20000.0f,
+                                     [](float value) { return String(value, 1); }, nullptr);
     
     
     parameters.createAndAddParameter("feedbackL", "feedback left", "dB",
                                      NormalisableRange<float> (-60.0f, 0.0f, 0.1f), -8.0f,
-                                     [](float value) {return (value >= -59.9f) ? String(value) : "-inf";}, nullptr);
+                                     [](float value) { return (value >= -59.9f) ? String(value, 1) : "-inf"; }, nullptr);
     parameters.createAndAddParameter("feedbackR", "feedback right", "dB",
                                      NormalisableRange<float> (-60.0f, 0.0f, 0.1f), -8.0f,
-                                     [](float value) {return (value >= -59.9f) ? String(value) : "-inf";}, nullptr);
+                                     [](float value) { return (value >= -59.9f) ? String(value, 1) : "-inf"; }, nullptr);
     
     parameters.createAndAddParameter("xfeedbackL", "cross feedback left", "dB",
                                      NormalisableRange<float> (-60.0f, 0.0f, 0.1f), -20.0f,
-                                     [](float value) {return (value >= -59.9f) ? String(value) : "-inf";}, nullptr);
+                                     [](float value) { return (value >= -59.9f) ? String(value, 1) : "-inf"; }, nullptr);
     parameters.createAndAddParameter("xfeedbackR", "cross feedback right", "dB",
                                      NormalisableRange<float> (-60.0f, 0.0f, 0.1f), -20.0f,
-                                     [](float value) {return (value >= -59.9f) ? String(value) : "-inf";}, nullptr);
+                                     [](float value) { return (value >= -59.9f) ? String(value, 1) : "-inf"; }, nullptr);
     
     parameters.createAndAddParameter("lfoRateL", "LFO left rate", "Hz",
                                      NormalisableRange<float> (0.0f, 10.0f, 0.01f), 0.0f,
-                                     [](float value) {return String(value);}, nullptr);
+                                     [](float value) { return String(value, 2); }, nullptr);
     parameters.createAndAddParameter("lfoRateR", "LFO right rate", "Hz",
                                      NormalisableRange<float> (0.0f, 10.0f, 0.01f), 0.0f,
-                                     [](float value) {return String(value);}, nullptr);
+                                     [](float value) { return String(value, 2); }, nullptr);
     
     parameters.createAndAddParameter("lfoDepthL", "LFO left depth", "ms",
                                      NormalisableRange<float> (0.0f, 1.0f, 0.01f), 0.0f,
-                                     [](float value) {return String(value);}, nullptr);
+                                     [](float value) { return String(value, 2); }, nullptr);
     parameters.createAndAddParameter("lfoDepthR", "LFO right depth", "ms",
                                      NormalisableRange<float> (0.0f, 1.0f, 0.01f), 0.0f,
-                                     [](float value) {return String(value);}, nullptr);
+                                     [](float value) { return String(value, 2); }, nullptr);
     
     
     
@@ -167,13 +167,6 @@ parameters(*this,nullptr), LFOLeft([] (float phi) { return std::sin(phi);}), LFO
 
 DualDelayAudioProcessor::~DualDelayAudioProcessor()
 {
-//    for (int i=0; i<lowPassFiltersLeft.size(); ++i)
-//    {
-//        delete lowPassFiltersLeft[i];
-//        delete lowPassFiltersRight[i];
-//        delete highPassFiltersLeft[i];
-//        delete highPassFiltersRight[i];
-//    }
 }
 
 //==============================================================================
@@ -240,6 +233,8 @@ void DualDelayAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBl
     spec.maximumBlockSize = samplesPerBlock;
     LFOLeft.prepare(spec);
     LFORight.prepare(spec);
+    LFOLeft.setFrequency(*lfoRateL, true);
+    LFORight.setFrequency(*lfoRateR, true);
     
     for (int i = lowPassFiltersLeft.size(); --i >= 0;)
     {
@@ -308,13 +303,13 @@ void DualDelayAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffe
     LFOLeft.setFrequency(*lfoRateL);
     LFORight.setFrequency(*lfoRateR);
     
-    
+    DBG(*LPcutOffL);
     for (int i=0; i<nCh; ++i)
     {
-        lowPassFiltersLeft[i]->setCoefficients(IIRCoefficients::makeLowPass(fs,*LPcutOffL));
-        lowPassFiltersRight[i]->setCoefficients(IIRCoefficients::makeLowPass(fs,*LPcutOffR));
-        highPassFiltersLeft[i]->setCoefficients(IIRCoefficients::makeHighPass(fs,*HPcutOffL));
-        highPassFiltersRight[i]->setCoefficients(IIRCoefficients::makeHighPass(fs,*HPcutOffR));
+        lowPassFiltersLeft[i]->setCoefficients(IIRCoefficients::makeLowPass(fs, *LPcutOffL));
+        lowPassFiltersRight[i]->setCoefficients(IIRCoefficients::makeLowPass(fs, *LPcutOffR));
+        highPassFiltersLeft[i]->setCoefficients(IIRCoefficients::makeHighPass(fs, *HPcutOffL));
+        highPassFiltersRight[i]->setCoefficients(IIRCoefficients::makeHighPass(fs, *HPcutOffR));
     }
     
     // ==================== MAKE COPY OF INPUT BUFFER==============================

@@ -54,7 +54,7 @@ DualDelayAudioProcessorEditor::DualDelayAudioProcessorEditor (DualDelayAudioProc
     
     addAndMakeVisible(&SlLeftRot);
     SlLeftRotAttachment = new SliderAttachment(valueTreeState, "rotationL", SlLeftRot);
-    SlLeftRot.setSliderStyle(Slider::Rotary);
+    SlLeftRot.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
     SlLeftRot.setReverse(true);
     SlLeftRot.setTextValueSuffix(" deg");
     SlLeftRot.setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
@@ -87,10 +87,7 @@ DualDelayAudioProcessorEditor::DualDelayAudioProcessorEditor (DualDelayAudioProc
     addAndMakeVisible(&dblSlLeftFilter);
     dblSlLeftFilterHpAttachment = new SliderAttachment(valueTreeState,"HPcutOffL", *dblSlLeftFilter.getLeftSliderAddress());
     dblSlLeftFilterLpAttachment = new SliderAttachment(valueTreeState,"LPcutOffL", *dblSlLeftFilter.getRightSliderAddress());
-    
-    dblSlLeftFilter.setRangeAndPosition(valueTreeState.getParameterRange("HPcutOffL"),valueTreeState.getParameterRange("LPcutOffL"));
-    dblSlLeftFilter.getLeftSliderAddress()->setTextValueSuffix(" Hz");
-    dblSlLeftFilter.getRightSliderAddress()->setTextValueSuffix(" Hz");
+    dblSlLeftFilter.setRangeAndPosition(valueTreeState.getParameterRange("HPcutOffL"), valueTreeState.getParameterRange("LPcutOffL"));
     dblSlLeftFilter.setColour (globalLaF.ClWidgetColours[1]);
     
     
@@ -123,7 +120,7 @@ DualDelayAudioProcessorEditor::DualDelayAudioProcessorEditor (DualDelayAudioProc
     
     addAndMakeVisible(&SlRightRot);
     SlRightRotAttachment = new SliderAttachment(valueTreeState, "rotationR", SlRightRot);
-    SlRightRot.setSliderStyle(Slider::Rotary);
+    SlRightRot.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
     SlRightRot.setReverse(true);
     SlRightRot.setTextValueSuffix(" deg");
     SlRightRot.setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);

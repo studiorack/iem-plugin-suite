@@ -95,7 +95,7 @@ StereoEncoderAudioProcessorEditor::StereoEncoderAudioProcessorEditor (StereoEnco
     elevationSlider.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     elevationSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     elevationSlider.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
-    elevationSlider.setRotaryParameters(0.5*M_PI, 2.5*M_PI, false);
+    elevationSlider.setRotaryParameters(0.5 * M_PI, 2.5 * M_PI, false);
     elevationSlider.setTooltip("Elevation angle");
     elevationSlider.setTextValueSuffix(CharPointer_UTF8 (R"(°)"));
     
