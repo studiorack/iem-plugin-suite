@@ -8,6 +8,7 @@ variables:
 
 debian_buster:
   image: debian:buster
+  stage: build
   tags:
     - docker
   only:
@@ -25,6 +26,7 @@ debian_buster:
 osx:
   tags:
     - osx
+  stage: build
   only:
     - master
     - develop
