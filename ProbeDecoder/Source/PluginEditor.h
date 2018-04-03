@@ -20,8 +20,7 @@
  ==============================================================================
  */
 
-#ifndef PLUGINEDITOR_H_INCLUDED
-#define PLUGINEDITOR_H_INCLUDED
+#pragma once
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "PluginProcessor.h"
@@ -31,7 +30,7 @@
 #include "../../resources/customComponents/SpherePanner.h"
 #include "../../resources/customComponents/SimpleLabel.h"
 
-typedef AudioProcessorValueTreeState::SliderAttachment SliderAttachment;
+typedef ReverseSlider::SliderAttachment SliderAttachment;
 typedef AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
 
 //==============================================================================
@@ -57,22 +56,19 @@ private:
     
     void timerCallback() override;
     
-
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     ProbeDecoderAudioProcessor& processor;
-
+    AudioProcessorValueTreeState& valueTreeState;
+    
     GroupComponent ypGroup, settingsGroup;
-    ReverseSlider slYaw, slPitch;
+    ReverseSlider slAzimuth, slElevation;
 
     SpherePanner sphere;
-    SpherePanner::Element probe;
-    
-    AudioProcessorValueTreeState& valueTreeState;
+    SpherePanner::AziumuthElevationParameterElement probe;
 
-
-    ScopedPointer<SliderAttachment> slYawAttachment;
-    ScopedPointer<SliderAttachment> slPitchAttachment;
+    ScopedPointer<SliderAttachment> slAzimuthAttachment;
+    ScopedPointer<SliderAttachment> slElevationAttachment;
 
     ScopedPointer<ComboBoxAttachment> cbNormalizationAtachement;
     ScopedPointer<ComboBoxAttachment> cbOrderAtachement;
@@ -80,10 +76,8 @@ private:
     TooltipWindow toolTipWin;
     
     // labels
-    SimpleLabel lbYaw, lbPitch, lbRoll, lblWidth, lbW, lbX, lbY, lbZ;
+    SimpleLabel lbAzimuth, lbElevation;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ProbeDecoderAudioProcessorEditor)
 };
 
-
-#endif  // PLUGINEDITOR_H_INCLUDED

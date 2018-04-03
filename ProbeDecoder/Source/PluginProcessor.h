@@ -20,13 +20,13 @@
  ==============================================================================
  */
 
-#ifndef PLUGINPROCESSOR_H_INCLUDED
-#define PLUGINPROCESSOR_H_INCLUDED
+#pragma once
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "../../resources/efficientSHvanilla.h"
 #include "../../resources/ambisonicTools.h"
 #include "../../resources/IOHelper.h"
+#include "../../resources/Conversions.h"
 
 
 //==============================================================================
@@ -77,7 +77,8 @@ public:
     
     float *orderSetting;
     float *useSN3D;
-
+    
+    Atomic<bool> updatedPositionData {true};
 
 private:
     //==============================================================================
@@ -87,10 +88,7 @@ private:
     float *pitch;
     
     float previousSH[64];
-
-
+    
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ProbeDecoderAudioProcessor)
 };
 
-
-#endif  // PLUGINPROCESSOR_H_INCLUDED

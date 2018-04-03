@@ -223,7 +223,6 @@ void StereoEncoderAudioProcessorEditor::timerCallback()
     title.setMaxSize(maxInSize, maxOutSize);
     // ==========================================
     
-    // update positions, if at least one of them was updated (new data): repaint the sphere
     if (processor.updatedPositionData.get())
     {
         processor.updatedPositionData = false;

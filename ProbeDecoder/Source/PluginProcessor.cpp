@@ -61,25 +61,25 @@ parameters(*this, nullptr) {
                                          else return "N3D";
                                      }, nullptr);
     
-    parameters.createAndAddParameter("yaw", "Yaw angle", "deg",
+    parameters.createAndAddParameter("azimuth", "Azimuth angle", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
-                                     [](float value) { return String(value); }, nullptr);
-    parameters.createAndAddParameter("pitch", "Pitch angle", "deg",
+                                     [](float value) { return String(value, 2); }, nullptr);
+    parameters.createAndAddParameter("elevation", "Elevation angle", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
-                                     [](float value) { return String(value); }, nullptr);
-    
+                                     [](float value) { return String(value, 2); }, nullptr);
     
     
     parameters.state = ValueTree(Identifier("ProbeDecoder"));
     
     orderSetting = parameters.getRawParameterValue("orderSetting");
     useSN3D = parameters.getRawParameterValue("useSN3D");
+    yaw = parameters.getRawParameterValue("azimuth");
+    pitch = parameters.getRawParameterValue("elevation");
     
     parameters.addParameterListener("orderSetting", this);
-    
-    yaw = parameters.getRawParameterValue("yaw");
-    pitch = parameters.getRawParameterValue("pitch");
-    
+    parameters.addParameterListener("azimuth", this);
+    parameters.addParameterListener("elevation", this);
+
     FloatVectorOperations::clear(previousSH, 64);
 }
 
@@ -190,6 +190,10 @@ AudioProcessorEditor *ProbeDecoderAudioProcessor::createEditor() {
 
 void ProbeDecoderAudioProcessor::parameterChanged(const String &parameterID, float newValue) {
     if (parameterID == "orderSetting") userChangedIOSettings = true;
+    else if (parameterID == "azimuth" || parameterID == "elevation")
+    {
+        updatedPositionData = true;
+    }
 }
 
 

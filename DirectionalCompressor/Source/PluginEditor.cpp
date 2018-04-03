@@ -26,7 +26,8 @@
 
 //==============================================================================
 DirectionalCompressorAudioProcessorEditor::DirectionalCompressorAudioProcessorEditor (DirectionalCompressorAudioProcessor& p,AudioProcessorValueTreeState& vts)
-    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts)
+    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts),
+    sphereElem(*valueTreeState.getParameter("azimuth"), valueTreeState.getParameterRange("azimuth"), *valueTreeState.getParameter("elevation"), valueTreeState.getParameterRange("elevation"))
 {
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
@@ -40,7 +41,6 @@ DirectionalCompressorAudioProcessorEditor::DirectionalCompressorAudioProcessorEd
     
     addAndMakeVisible(&sphere);
     sphere.addElement(&sphereElem);
-    sphere.addListener(this);
     
     
     cbNormalizationAtachement = new ComboBoxAttachment(valueTreeState,"useSN3D", *title.getInputWidgetPtr()->getNormCbPointer());
@@ -69,35 +69,30 @@ DirectionalCompressorAudioProcessorEditor::DirectionalCompressorAudioProcessorEd
     slPreGain.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slPreGain.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
     slPreGain.setTooltip("PreGain");
-    slPreGain.setTextValueSuffix(" dB");
     
-    addAndMakeVisible(&slYaw);
-    slYawAttachment = new SliderAttachment(valueTreeState,"yaw", slYaw);
-    slYaw.setSliderStyle (Slider::Rotary);
-    slYaw.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slYaw.setReverse(true);
-    slYaw.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
-    slYaw.setRotaryParameters(M_PI, 3*M_PI, false);
-    slYaw.setTooltip("Yaw angle");
-    slYaw.setTextValueSuffix(CharPointer_UTF8 ("\xc2\xb0"));
+    addAndMakeVisible(&slAzimuth);
+    slAzimuthAttachment = new SliderAttachment(valueTreeState,"azimuth", slAzimuth);
+    slAzimuth.setSliderStyle (Slider::Rotary);
+    slAzimuth.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
+    slAzimuth.setReverse(true);
+    slAzimuth.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
+    slAzimuth.setRotaryParameters(M_PI, 3*M_PI, false);
+    slAzimuth.setTooltip("Azimuth angle of the spatial mask");
     
-    addAndMakeVisible(&slPitch);
-    slPitchAttachment = new SliderAttachment(valueTreeState,"pitch", slPitch);
-    slPitch.setSliderStyle (Slider::Rotary);
-    slPitch.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slPitch.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
-    slPitch.setReverse(true);
-    slPitch.setRotaryParameters(0.5*M_PI, 2.5*M_PI, false);
-    slPitch.setTooltip("Pitch angle");
-    slPitch.setTextValueSuffix(CharPointer_UTF8 ("\xc2\xb0"));
+    addAndMakeVisible(&slElevation);
+    slElevationAttachment = new SliderAttachment(valueTreeState,"elevation", slElevation);
+    slElevation.setSliderStyle (Slider::Rotary);
+    slElevation.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
+    slElevation.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
+    slElevation.setRotaryParameters(0.5*M_PI, 2.5*M_PI, false);
+    slElevation.setTooltip("Elevation angle of the spatial mask");
     
     addAndMakeVisible(&slWidth);
     slWidthAttachment = new SliderAttachment(valueTreeState,"width", slWidth);
     slWidth.setSliderStyle (Slider::Rotary);
     slWidth.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slWidth.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
-    slWidth.setTooltip("Mask width");
-    slWidth.setTextValueSuffix(CharPointer_UTF8 ("\xc2\xb0"));
+    slWidth.setTooltip("Width of the spatial mask");
     
     addAndMakeVisible(&cbListen);
     cbListenAttachment = new ComboBoxAttachment(valueTreeState,"listen", cbListen);
@@ -180,7 +175,6 @@ DirectionalCompressorAudioProcessorEditor::DirectionalCompressorAudioProcessorEd
     slC1Release.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slC1Release.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slC1Release.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
-    slC1Release.setTextValueSuffix(" ms");
     slC1Release.setEnabled(isOn);
     
     addAndMakeVisible(&slC1Makeup);
@@ -188,7 +182,6 @@ DirectionalCompressorAudioProcessorEditor::DirectionalCompressorAudioProcessorEd
     slC1Makeup.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slC1Makeup.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slC1Makeup.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
-    slC1Makeup.setTextValueSuffix(" dB");
     slC1Makeup.setEnabled(isOn);
     
     addAndMakeVisible(&dbC1GRmeter);
@@ -301,12 +294,12 @@ DirectionalCompressorAudioProcessorEditor::DirectionalCompressorAudioProcessorEd
     // ===== LABELS =====
     addAndMakeVisible(&lbPreGain);
     lbPreGain.setText("Pre Gain");
-    addAndMakeVisible(&lbYaw);
-    lbYaw.setText("Yaw");
-    addAndMakeVisible(&lbPitch);
-    lbPitch.setText("Pitch");
+    addAndMakeVisible(&lbAzimuth);
+    lbAzimuth.setText("Azimuth");
+    addAndMakeVisible(&lbElevation);
+    lbElevation.setText("Elevation");
     addAndMakeVisible(&lbWidth);
-    lbWidth.setText("width");
+    lbWidth.setText("Width");
     
     addAndMakeVisible(&lbC1Threshold);
     lbC1Threshold.setText("Threshold");
@@ -342,21 +335,6 @@ DirectionalCompressorAudioProcessorEditor::~DirectionalCompressorAudioProcessorE
     setLookAndFeel(nullptr);
 }
 
-void DirectionalCompressorAudioProcessorEditor::IEMSphereElementChanged (IEMSphere* sphere, IEMSphereElement* element) {
-    
-    Vector3D<float> pos = element->getPosition();
-    float hypxy = sqrt(pos.x*pos.x+pos.y*pos.y);
-    
-    
-    float yaw = atan2(pos.y,pos.x);
-    float pitch = atan2(hypxy,pos.z)-M_PI/2;
-    
-    valueTreeState.getParameter("yaw")->setValue(valueTreeState.getParameterRange("yaw").convertTo0to1(yaw/M_PI*180.0f));
-    valueTreeState.getParameter("pitch")->setValue(valueTreeState.getParameterRange("pitch").convertTo0to1(pitch/M_PI*180.0f));
-    
-    //DBG("yaw: " << yaw/M_PI*180 << " pitch: " << pitch/M_PI*180);
-    
-};
 
 void DirectionalCompressorAudioProcessorEditor::buttonStateChanged (Button* button)
 {
@@ -404,8 +382,6 @@ void DirectionalCompressorAudioProcessorEditor::paint (Graphics& g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
     g.fillAll (globalLaF.ClBackground);
-
-
 }
 
 void DirectionalCompressorAudioProcessorEditor::timerCallback()
@@ -418,8 +394,11 @@ void DirectionalCompressorAudioProcessorEditor::timerCallback()
     title.setMaxSize(maxInSize, maxOutSize);
     // ==========================================
     
-    if (sphereElem.setPosition(Vector3D<float>(processor.xyz[0], processor.xyz[1], processor.xyz[2])))
+    if (processor.updatedPositionData.get())
+    {
+        processor.updatedPositionData = false;
         sphere.repaint();
+    }
     
     dbC1RMSmeter.setLevel(processor.c1MaxRMS);
     dbC1GRmeter.setLevel(processor.c1MaxGR);
@@ -577,16 +556,16 @@ void DirectionalCompressorAudioProcessorEditor::resized()
     temp.removeFromTop(25); //spacing
     
     sliderRow = temp.removeFromTop(60);
-    slYaw.setBounds(sliderRow.removeFromLeft(sliderWidth));
+    slAzimuth.setBounds(sliderRow.removeFromLeft(sliderWidth));
     sliderRow.removeFromLeft(sliderSpacing);
-    slPitch.setBounds(sliderRow.removeFromLeft(sliderWidth));
+    slElevation.setBounds(sliderRow.removeFromLeft(sliderWidth));
     sliderRow.removeFromLeft(sliderSpacing);
     slWidth.setBounds(sliderRow.removeFromLeft(sliderWidth));
     
     sliderRow = temp.removeFromTop(15);
-    lbYaw.setBounds(sliderRow.removeFromLeft(sliderWidth));
+    lbAzimuth.setBounds(sliderRow.removeFromLeft(sliderWidth));
     sliderRow.removeFromLeft(sliderSpacing);
-    lbPitch.setBounds(sliderRow.removeFromLeft(sliderWidth));
+    lbElevation.setBounds(sliderRow.removeFromLeft(sliderWidth));
     sliderRow.removeFromLeft(sliderSpacing);
     lbWidth.setBounds(sliderRow.removeFromLeft(sliderWidth));
     

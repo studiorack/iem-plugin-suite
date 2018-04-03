@@ -23,9 +23,6 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
-
-#define deg2rad M_PI/180.0
-#define rad2deg 180.0/M_PI
 //==============================================================================
 DirectionalCompressorAudioProcessor::DirectionalCompressorAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
@@ -62,7 +59,7 @@ parameters (*this, nullptr)
     
     parameters.createAndAddParameter("preGain", "Input Gain ", "dB",
                                      NormalisableRange<float> (-10.0f, 10.0f, 0.1f), 0.0f,
-                                     [](float value) {return String(value);}, nullptr);
+                                     [](float value) {return String(value, 1);}, nullptr);
     
     // compressor 1
     parameters.createAndAddParameter("c1Enabled", "Compressor 1", "",
@@ -90,29 +87,29 @@ parameters (*this, nullptr)
                                          else return "Full";
                                      }, nullptr);
     parameters.createAndAddParameter("c1Threshold", "Threshold 1", "dB",
-                                     NormalisableRange<float> (-50.0f, 0.0f, 0.1f), -10.0,
-                                     [](float value) {return String(value);}, nullptr);
+                                     NormalisableRange<float> (-50.0f, 10.0f, 0.1f), -10.0,
+                                     [](float value) {return String(value, 1);}, nullptr);
     parameters.createAndAddParameter("c1Knee", "Knee", "dB",
                                      NormalisableRange<float> (0.0f, 10.0f, 0.1f), 0.0f,
-                                     [](float value) {return String(value);}, nullptr);
+                                     [](float value) {return String(value, 1);}, nullptr);
     
     parameters.createAndAddParameter("c1Attack", "Attack Time 1", "ms",
                                      NormalisableRange<float> (0.0f, 100.0f, 0.1f), 30.0,
-                                     [](float value) {return String(value);}, nullptr);
+                                     [](float value) {return String(value, 1);}, nullptr);
     parameters.createAndAddParameter("c1Release", "Release Time 1", "ms",
                                      NormalisableRange<float> (0.0f, 500.0f, 0.1f), 150.0,
-                                     [](float value) {return String(value);}, nullptr);
+                                     [](float value) {return String(value, 1);}, nullptr);
     parameters.createAndAddParameter("c1Ratio", "Ratio", " : 1",
                                      NormalisableRange<float> (1.0f, 16.0f, .2f), 4.0,
                                      [](float value) {
                                          if (value > 15.9f)
                                              return String("inf");
-                                         return String(value);
+                                         return String(value, 1);
                                          
                                      }, nullptr);
     parameters.createAndAddParameter("c1Makeup", "MakeUp Gain 1", "dB",
                                      NormalisableRange<float> (-10.0f, 20.0f, 0.10f), 0.0,
-                                     [](float value) {return String(value);}, nullptr);
+                                     [](float value) {return String(value, 1);}, nullptr);
     
     // compressor 2
     parameters.createAndAddParameter("c2Enabled", "Compressor 2", "",
@@ -139,41 +136,41 @@ parameters (*this, nullptr)
                                          else return "Full";
                                      }, nullptr);
     parameters.createAndAddParameter("c2Threshold", "Threshold 2", "dB",
-                                     NormalisableRange<float> (-50.0f, 0.0f, 0.1f), -10.0,
-                                     [](float value) {return String(value);}, nullptr);
+                                     NormalisableRange<float> (-50.0f, 10.0f, 0.1f), -10.0,
+                                     [](float value) {return String(value, 1);}, nullptr);
     parameters.createAndAddParameter("c2Knee", "Knee", "dB",
                                      NormalisableRange<float> (0.0f, 10.0f, 0.1f), 0.0f,
-                                     [](float value) {return String(value);}, nullptr);
+                                     [](float value) {return String(value, 1);}, nullptr);
     
     parameters.createAndAddParameter("c2Attack", "Attack Time 2", "ms",
                                      NormalisableRange<float> (0.0f, 100.0f, 0.1f), 30.0,
-                                     [](float value) {return String(value);}, nullptr);
+                                     [](float value) {return String(value, 1);}, nullptr);
     parameters.createAndAddParameter("c2Release", "Release Time 2", "ms",
                                      NormalisableRange<float> (0.0f, 500.0f, 0.1f), 150.0,
-                                     [](float value) {return String(value);}, nullptr);
+                                     [](float value) {return String(value, 1);}, nullptr);
     parameters.createAndAddParameter("c2Ratio", "Ratio", " : 1",
                                      NormalisableRange<float> (1.0f, 16.0f, .2f), 4.0,
                                      [](float value) {
                                          if (value > 15.9f)
                                              return String("inf");
-                                         return String(value);
+                                         return String(value, 1);
                                          
                                      }, nullptr);
     parameters.createAndAddParameter("c2Makeup", "MakeUp Gain 2", "dB",
                                      NormalisableRange<float> (-10.0f, 20.0f, 0.10f), 0.0,
-                                     [](float value) {return String(value);}, nullptr);
+                                     [](float value) { return String(value, 1); }, nullptr);
     
     
     
-    parameters.createAndAddParameter("yaw", "Yaw", "deg",
+    parameters.createAndAddParameter("azimuth", "Azimuth of mask", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
-                                     [](float value) {return String(value);}, nullptr);
-    parameters.createAndAddParameter("pitch", "Pitch", "deg",
+                                     [](float value) { return String(value, 2); }, nullptr);
+    parameters.createAndAddParameter("elevation", "Elevation of mask", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
-                                     [](float value) {return String(value);}, nullptr);
-    parameters.createAndAddParameter("width", "Width", "deg",
+                                     [](float value) { return String(value, 2); }, nullptr);
+    parameters.createAndAddParameter("width", "Width of mask", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float> (10.0f, 180.0f, 0.01f), 40.0f,
-                                     [](float value) {return String(value);}, nullptr);
+                                     [](float value) { return String(value, 2); }, nullptr);
     
     parameters.createAndAddParameter("listen", "Listen to", "",
                                      NormalisableRange<float> (0.0f, 2.0f, 1.0f), 0.0,
@@ -188,8 +185,8 @@ parameters (*this, nullptr)
     parameters.state = ValueTree (Identifier ("DirectionalCompressor"));
     
     
-    parameters.addParameterListener ("yaw", this);
-    parameters.addParameterListener ("pitch", this);
+    parameters.addParameterListener ("azimuth", this);
+    parameters.addParameterListener ("elevation", this);
     parameters.addParameterListener ("width", this);
     parameters.addParameterListener ("orderSetting", this);
     
@@ -217,8 +214,8 @@ parameters (*this, nullptr)
     c2Ratio = parameters.getRawParameterValue ("c2Ratio");
     c2Makeup = parameters.getRawParameterValue ("c2Makeup");
     
-    yaw = parameters.getRawParameterValue ("yaw");
-    pitch = parameters.getRawParameterValue ("pitch");
+    azimuth = parameters.getRawParameterValue ("azimuth");
+    elevation = parameters.getRawParameterValue ("elevation");
     width = parameters.getRawParameterValue ("width");
     listen = parameters.getRawParameterValue ("listen");
     
@@ -234,7 +231,7 @@ parameters (*this, nullptr)
         //FloatVectorOperations::multiply(Y.data()+point*64, Y.data()+point*64, sn3d2n3d, 64); //expecting sn3d normalization -> converting it to n3d
     }
     
-    Y *= sqrt(4*M_PI/tDesignN) / correction(7); // reverting 7th order correction
+    Y *= sqrt(4 * M_PI / tDesignN) / correction(7); // reverting 7th order correction
     //Y.transposeInPlace();
     YH = Y.transpose();
 }
@@ -300,7 +297,11 @@ void DirectionalCompressorAudioProcessor::changeProgramName (int index, const St
 
 void DirectionalCompressorAudioProcessor::parameterChanged (const String &parameterID, float newValue)
 {
-    if (parameterID == "yaw" || parameterID == "pitch" || parameterID == "width") paramChanged = true;
+    if (parameterID == "azimuth" || parameterID == "elevation" || parameterID == "width")
+    {
+        updatedPositionData = true;
+        paramChanged = true;
+    }
     else if (parameterID == "orderSetting") userChangedIOSettings = true;
 }
 
@@ -528,28 +529,20 @@ void DirectionalCompressorAudioProcessor::calcParams()
 {
     paramChanged = false;
     
-    // convert yaw and pitch to cartesian coordinates
-    float cospitch = cos(*pitch*deg2rad);
-    xyz[0] = cospitch * cos(*yaw*deg2rad);
-    xyz[1] = cospitch * sin(*yaw*deg2rad);
-    xyz[2] = - sin(*pitch*deg2rad);
-    float norm = sqrt(xyz[0]*xyz[0] + xyz[1]*xyz[1] + xyz[2]*xyz[2]);
-    xyz[0] /= norm;
-    xyz[1] /= norm;
-    xyz[2] /= norm;
-    //DBG("x: " << xyz[0] << " y: " << xyz[1] << " z: " << xyz[2]);
-    
+    // convert azimuth and elevation to cartesian coordinates
+    Vector3D<float> pos {Conversions<float>::sphericalToCartesian(Conversions<float>::degreesToRadians(*azimuth), Conversions<float>::degreesToRadians(*elevation))};
+    pos = pos.normalised();
     
     
     for (int point=0; point<tDesignN; ++point)
     {
         //dist[point] = acosf(xyz[0]*tDesignX[point] + xyz[1]*tDesignY[point] + xyz[2]*tDesignZ[point]); // could yield nans
-        dist[point] = xyz[0]*tDesignX[point] + xyz[1]*tDesignY[point] + xyz[2]*tDesignZ[point];
+        dist[point] = pos.x * tDesignX[point] + pos.y * tDesignY[point] + pos.z * tDesignZ[point];
         dist[point] /= sqrt(tDesignX[point]*tDesignX[point] + tDesignY[point]*tDesignY[point] + tDesignZ[point]*tDesignZ[point]); // optimize by normalising tDesign on startup
         dist[point] = acos(dist[point]);
     }
     
-    float widthHalf = *width*deg2rad*0.25f; // it's actually width fourth (symmetric mask)
+    float widthHalf = Conversions<float>::degreesToRadians(*width) * 0.25f; // it's actually width fourth (symmetric mask)
     widthHalf = jmax(widthHalf,FloatVectorOperations::findMinimum(dist, tDesignN));
     
     FloatVectorOperations::clip(dist, dist, widthHalf, 3*widthHalf, tDesignN);

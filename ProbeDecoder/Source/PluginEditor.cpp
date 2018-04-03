@@ -29,7 +29,9 @@
 
 //==============================================================================
 ProbeDecoderAudioProcessorEditor::ProbeDecoderAudioProcessorEditor (ProbeDecoderAudioProcessor& p, AudioProcessorValueTreeState& vts)
-: AudioProcessorEditor (&p), processor (p), valueTreeState(vts)//, sphere_opengl(nullptr)
+: AudioProcessorEditor (&p), processor (p), valueTreeState(vts),
+probe(*valueTreeState.getParameter("azimuth"), valueTreeState.getParameterRange("azimuth"),
+      *valueTreeState.getParameter("elevation"), valueTreeState.getParameterRange("elevation"))
 {
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
@@ -41,7 +43,6 @@ ProbeDecoderAudioProcessorEditor::ProbeDecoderAudioProcessorEditor (ProbeDecoder
     //sphere.addListener(this);
     
     probe.setColour(Colours::aqua);
-    probe.setSliders(&slYaw, &slPitch);
     sphere.addElement(&probe);
 
 
@@ -62,57 +63,42 @@ ProbeDecoderAudioProcessorEditor::ProbeDecoderAudioProcessorEditor (ProbeDecoder
     
     
     // ======================== YAW PITCH ROLL GROUP
-    ypGroup.setText("Yaw & Pitch");
+    ypGroup.setText("Azimuth & Elevation");
     ypGroup.setTextLabelPosition (Justification::centredLeft);
     ypGroup.setColour (GroupComponent::outlineColourId, globalLaF.ClSeperator);
     ypGroup.setColour (GroupComponent::textColourId, Colours::white);
     addAndMakeVisible(&ypGroup);
     ypGroup.setVisible(true);
     
-    addAndMakeVisible(&slYaw);
-    slYawAttachment = new SliderAttachment(valueTreeState,"yaw", slYaw);
-    slYaw.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slYaw.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slYaw.setReverse(true);
-    slYaw.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
-    slYaw.setRotaryParameters(M_PI, 3*M_PI, false);
-    slYaw.setTooltip("Yaw angle");
-    slYaw.setTextValueSuffix(CharPointer_UTF8 (R"(°)"));
+    addAndMakeVisible(&slAzimuth);
+    slAzimuthAttachment = new SliderAttachment(valueTreeState,"azimuth", slAzimuth);
+    slAzimuth.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
+    slAzimuth.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
+    slAzimuth.setReverse(true);
+    slAzimuth.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
+    slAzimuth.setRotaryParameters(M_PI, 3*M_PI, false);
+    slAzimuth.setTooltip("Azimuth angle");
+    slAzimuth.setTextValueSuffix(CharPointer_UTF8 (R"(°)"));
     
-    addAndMakeVisible(&slPitch);
-    slPitchAttachment = new SliderAttachment(valueTreeState,"pitch", slPitch);
-    slPitch.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slPitch.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slPitch.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
-    slPitch.setReverse(true);
-    slPitch.setRotaryParameters(0.5*M_PI, 2.5*M_PI, false);
-    slPitch.setTooltip("Pitch angle");
-    slPitch.setTextValueSuffix(CharPointer_UTF8 (R"(°)"));
+    addAndMakeVisible(&slElevation);
+    slElevationAttachment = new SliderAttachment(valueTreeState,"elevation", slElevation);
+    slElevation.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
+    slElevation.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
+    slElevation.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
+    slElevation.setRotaryParameters(0.5*M_PI, 2.5*M_PI, false);
+    slElevation.setTooltip("Elevation angle");
     
-
     
     // ================ LABELS ===================
-    addAndMakeVisible(&lbYaw);
-    lbYaw.setText("Yaw");
+    addAndMakeVisible(&lbAzimuth);
+    lbAzimuth.setText("Azimuth");
     
-    addAndMakeVisible(&lbPitch);
-    lbPitch.setText("Pitch");
+    addAndMakeVisible(&lbElevation);
+    lbElevation.setText("Elevation");
 
     startTimer(10);
 }
 
-
-//void ProbeDecoderAudioProcessorEditor::IEMSphereMouseWheelMoved(IEMSphere* sphere, const juce::MouseEvent &event, const MouseWheelDetails &wheel)
-//{
-//    if (event.mods.isCommandDown() && event.mods.isAltDown())
-//        rollSlider.mouseWheelMove(event, wheel);
-//    else if (event.mods.isShiftDown())
-//        widthSlider.mouseWheelMove(event, wheel);
-//    else if (event.mods.isAltDown())
-//        pitchSlider.mouseWheelMove(event, wheel);
-//    else if (event.mods.isCommandDown())
-//        yawSlider.mouseWheelMove(event, wheel);
-//}
 
 ProbeDecoderAudioProcessorEditor::~ProbeDecoderAudioProcessorEditor()
 {
@@ -133,7 +119,11 @@ void ProbeDecoderAudioProcessorEditor::timerCallback()
     title.setMaxSize(maxInSize, maxOutSize);
     // ==========================================
     
-    sphere.repaint();
+    if (processor.updatedPositionData.get())
+    {
+        processor.updatedPositionData = false;
+        sphere.repaint();
+    }
 }
 
 void ProbeDecoderAudioProcessorEditor::resized()
@@ -167,25 +157,18 @@ void ProbeDecoderAudioProcessorEditor::resized()
     
 
     // -------------- Yaw Pitch Roll ------------------
-    Rectangle<int> yprArea (sideBarArea.removeFromTop(25+rotSliderHeight+labelHeight));
+    Rectangle<int> yprArea (sideBarArea.removeFromTop(25 + rotSliderHeight + labelHeight));
     ypGroup.setBounds (yprArea);
     yprArea.removeFromTop(25); //for box headline
     
     sliderRow = (yprArea.removeFromTop(rotSliderHeight));
-    slYaw.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
+    slAzimuth.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
     sliderRow.removeFromLeft(rotSliderSpacing);
-    slPitch.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
-    sliderRow.removeFromLeft(rotSliderSpacing);
-   
+    slElevation.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
     
-    
-    lbYaw.setBounds(yprArea.removeFromLeft(rotSliderWidth));
-    yprArea.removeFromLeft(rotSliderSpacing);
-    lbPitch.setBounds(yprArea.removeFromLeft(rotSliderWidth));
-    yprArea.removeFromLeft(rotSliderSpacing);
-    lbRoll.setBounds(yprArea.removeFromLeft(rotSliderWidth));
-    yprArea.removeFromLeft(rotSliderSpacing);
-    lblWidth.setBounds(yprArea.removeFromLeft(rotSliderWidth));
+    lbAzimuth.setBounds(yprArea.removeFromLeft(rotSliderWidth));
+    yprArea.removeFromLeft(rotSliderSpacing - 5);
+    lbElevation.setBounds(yprArea.removeFromLeft(rotSliderWidth + 10));
     
     sideBarArea.removeFromTop(20);
 

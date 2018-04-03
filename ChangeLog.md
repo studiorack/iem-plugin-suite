@@ -14,7 +14,13 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
         - smaller GUI changes
     - **Multi**Encoder
         - colour-chooser now has the same look as the elements in the sphere panner, again
+        - Solo/Mute changes will repaint sphere
+        - using azimuth and elevation instead of yaw and pitch  (`!!BREAKING CHANGE!!`)
     - **Stereo**Encoder
+        - using azimuth and elevation instead of yaw and pitch  (`!!BREAKING CHANGE!!`)
+    - **Probe**Decoder
+        - using azimuth and elevation instead of yaw and pitch  (`!!BREAKING CHANGE!!`)
+    - **DirectionalCompressor**Decoder
         - using azimuth and elevation instead of yaw and pitch  (`!!BREAKING CHANGE!!`)
 
         

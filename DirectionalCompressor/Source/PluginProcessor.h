@@ -33,6 +33,7 @@
 #include "../../resources/ambisonicTools.h"
 #include "../../resources/IOHelper.h"
 #include "../../resources/Compressor.h"
+#include "../../resources/Conversions.h"
 
 //==============================================================================
 /**
@@ -86,11 +87,9 @@ public:
     float c2MaxRMS;
     float c2MaxGR;
     
-    float xyz[3];
-    
     AudioProcessorValueTreeState parameters;
     void calcParams();
-    
+    Atomic<bool> updatedPositionData;
     
 private:
     //==============================================================================
@@ -128,8 +127,8 @@ private:
     float *orderSetting;
     float *useSN3D;
     float *preGain;
-    float *yaw;
-    float *pitch;
+    float *azimuth;
+    float *elevation;
     float *width;
     float *listen;
     // compressor 1
