@@ -63,7 +63,7 @@ parameters(*this, nullptr)
     
     parameters.createAndAddParameter("peakLevel", "Peak level", "dB",
                                      NormalisableRange<float> (-50.0f, 10.0f, 0.1f), 0.0,
-                                     [](float value) {return String(value);}, nullptr);
+                                     [](float value) {return String(value, 1);}, nullptr);
 
     
     orderSetting = parameters.getRawParameterValue ("orderSetting");
