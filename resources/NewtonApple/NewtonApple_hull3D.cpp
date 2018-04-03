@@ -450,7 +450,7 @@ int init_hull3D( std::vector<R3> &pts, std::vector<Tri> &hull)
     float e2 = r01*c02 - r02*c01;
     
     if( e0==0 && e1==0 && e2==0 ){ // do not add a facet.
-        cerr << "stop fucking me arround and give me a valid opening facet, you tit. " << endl;
+        cerr << "stop fucking me around and give me a valid opening facet, you tit. " << endl;
         return(-1);
     }
     
