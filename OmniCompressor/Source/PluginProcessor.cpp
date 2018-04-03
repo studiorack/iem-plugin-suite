@@ -60,7 +60,7 @@ parameters (*this, nullptr)
                                      }, nullptr);
     
     parameters.createAndAddParameter("threshold", "Threshold", "dB",
-                                     NormalisableRange<float> (-60.0f, 0.0f, 0.1f), -10.0,
+                                     NormalisableRange<float> (-50.0f, 10.0f, 0.1f), -10.0,
                                      [](float value) {return String(value, 1);}, nullptr);
     
     parameters.createAndAddParameter("knee", "Knee", "dB",
@@ -85,7 +85,7 @@ parameters (*this, nullptr)
                                      }, nullptr);
     
     parameters.createAndAddParameter("outGain", "MakeUp Gain", "dB",
-                                     NormalisableRange<float> (-10.0f, 10.0f, 0.1f), 0.0,
+                                     NormalisableRange<float> (-10.0f, 20.0f, 0.1f), 0.0,
                                      [](float value) {return String(value, 1);}, nullptr);
     
     parameters.state = ValueTree (Identifier ("OmniCompressor"));

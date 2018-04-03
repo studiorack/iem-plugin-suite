@@ -30,7 +30,6 @@
 #include "../../resources/customComponents/SimpleLabel.h"
 #include "../../resources/customComponents/LevelMeter.h"
 
-//typedef AudioProcessorValueTreeState::SliderAttachment SliderAttachment;
 typedef ReverseSlider::SliderAttachment SliderAttachment;
 typedef AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
 
