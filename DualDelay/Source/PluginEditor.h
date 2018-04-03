@@ -60,7 +60,7 @@ private:
     ScopedPointer<ComboBoxAttachment> cbOrderAtachement;
     int maxPossibleOrder;
     
-    Slider SlDryGain;
+    ReverseSlider SlDryGain;
     ScopedPointer<SliderAttachment> SlDryGainAttachment;
     
     // elements for left side

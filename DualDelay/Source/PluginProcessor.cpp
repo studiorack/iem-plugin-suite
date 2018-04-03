@@ -299,11 +299,9 @@ void DualDelayAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffe
     for (int channel = nCh; channel<totalNumInputChannels; ++channel)
         buffer.clear(channel, 0, spb);
     
-    
     LFOLeft.setFrequency(*lfoRateL);
     LFORight.setFrequency(*lfoRateR);
     
-    DBG(*LPcutOffL);
     for (int i=0; i<nCh; ++i)
     {
         lowPassFiltersLeft[i]->setCoefficients(IIRCoefficients::makeLowPass(fs, *LPcutOffL));
