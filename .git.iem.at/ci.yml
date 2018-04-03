@@ -31,5 +31,7 @@ osx:
   script:
     - brew install fftw
     - curl -o juce.zip https://d30pueezughrda.cloudfront.net/juce/juce-huckleberry-osx.zip
-    - unzip -q juce.zip -d ~
+    - mkdir -p ~/JUCE
+    - unzip -q juce.zip -d ~/JUCE
+    - mv ~/JUCE/JUCE/* ~/JUCE/ || true
     - make -k CONFIG=$CONFIG PROJUCER="~/JUCE/Projucer.app/Contents/MacOS/Projucer"
