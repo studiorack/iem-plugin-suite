@@ -88,24 +88,24 @@ parameters(*this, nullptr)
         
         parameters.createAndAddParameter("filterFrequency" + String(i), "Filter Frequency " + String(i+1), "Hz",
                                          NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.4f), filterFrequencyPresets[i],
-                                         [](float value) {return String(value, 1);}, nullptr);
+                                         [](float value) { return String((int) value); }, nullptr);
         parameters.createAndAddParameter("filterQ" + String(i), "Filter Q " + String(i+1), "",
                                          NormalisableRange<float> (0.05f, 10.0f, 0.05f), 0.5f,
-                                         [](float value) {return String(value, 2);},
+                                         [](float value) { return String(value, 2); },
                                          nullptr);
         parameters.createAndAddParameter("filterGain" + String(i), "Filter Gain " + String(i+1), "dB",
                                          NormalisableRange<float> (-60.0f, 10.0f, 0.1f), 0.0f,
-                                         [](float value) {return (value >= -59.9f) ? String(value, 1) : "-inf";},
+                                         [](float value) { return (value >= -59.9f) ? String(value, 1) : "-inf"; },
                                          nullptr);
         parameters.createAndAddParameter("order" + String(i), "Order Band " + String(i+1), "",
                                          NormalisableRange<float> (0.0f, 7.0f, 0.01f), 0.0,
-                                         [](float value) {return String(value, 2);}, nullptr);
+                                         [](float value) { return String(value, 2); }, nullptr);
         parameters.createAndAddParameter("shape" + String(i), "Shape Band " + String(i+1), "",
                                          NormalisableRange<float> (0.0f, 1.0f, 0.01f), 0.0,
-                                         [](float value) {return String(value, 2);}, nullptr);
+                                         [](float value) { return String(value, 2); }, nullptr);
         parameters.createAndAddParameter("azimuth" + String(i), "Azimuth Band " + String(i+1), CharPointer_UTF8 (R"(°)"),
                                          NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
-                                         [](float value) {return String(value, 2);}, nullptr);
+                                         [](float value) { return String(value, 2); }, nullptr);
         parameters.createAndAddParameter("elevation" + String(i), "Elevation Band " + String(i+1), CharPointer_UTF8 (R"(°)"),
                                          NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
                                          [](float value) {return String(value, 2);}, nullptr);

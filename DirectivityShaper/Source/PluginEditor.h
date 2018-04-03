@@ -75,11 +75,11 @@ private:
     int ambisonicOrder = -1;
 
     ComboBox cbFilterType[numberOfBands];
-    Slider slFilterFrequency[numberOfBands];
-    Slider slFilterQ[numberOfBands];
-    Slider slFilterGain[numberOfBands];
-    Slider slOrder[numberOfBands];
-    Slider slShape[numberOfBands];
+    ReverseSlider slFilterFrequency[numberOfBands];
+    ReverseSlider slFilterQ[numberOfBands];
+    ReverseSlider slFilterGain[numberOfBands];
+    ReverseSlider slOrder[numberOfBands];
+    ReverseSlider slShape[numberOfBands];
     ReverseSlider slAzimuth[numberOfBands];
     ReverseSlider slElevation[numberOfBands];
     ReverseSlider slProbeAzimuth;
