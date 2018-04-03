@@ -30,7 +30,6 @@
 #include "../../resources/customComponents/ReverseSlider.h"
 #include "../../resources/lookAndFeel/IEM_LaF.h"
 #include "../../resources/customComponents/TitleBar.h"
-#include "../../resources/customComponents/IEMSphere.h"
 #include "../../resources/customComponents/SpherePanner.h"
 #include "../../resources/customComponents/SimpleLabel.h"
 
