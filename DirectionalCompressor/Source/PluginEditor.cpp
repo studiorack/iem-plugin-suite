@@ -342,6 +342,7 @@ void DirectionalCompressorAudioProcessorEditor::buttonStateChanged (Button* butt
     if (button->getName() == "C1")
     {
         slC1Threshold.setEnabled(isOn);
+        slC1Knee.setEnabled(isOn);
         slC1Ratio.setEnabled(isOn);
         slC1Attack.setEnabled(isOn);
         slC1Release.setEnabled(isOn);
@@ -360,13 +361,14 @@ void DirectionalCompressorAudioProcessorEditor::buttonStateChanged (Button* butt
     else if (button->getName() == "C2")
     {
         slC2Threshold.setEnabled(isOn);
-        lbC2Knee.setEnabled(isOn);
+        slC2Knee.setEnabled(isOn);
         slC2Ratio.setEnabled(isOn);
         slC2Attack.setEnabled(isOn);
         slC2Release.setEnabled(isOn);
         slC2Makeup.setEnabled(isOn);
         
         lbC2Threshold.setEnabled(isOn);
+        lbC2Knee.setEnabled(isOn);
         lbC2Ratio.setEnabled(isOn);
         lbC2Attack.setEnabled(isOn);
         lbC2Release.setEnabled(isOn);
