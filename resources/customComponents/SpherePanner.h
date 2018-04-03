@@ -23,6 +23,7 @@
 #pragma once
 #include "../../resources/Conversions.h"
 #include "../JuceLibraryCode/JuceHeader.h"
+#include "../../resources/Quaternion.h"
 
 
 class SpherePannerBackground :  public Component
