@@ -22,6 +22,9 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
         - using azimuth and elevation instead of yaw and pitch  (`!!BREAKING CHANGE!!`)
     - **DirectionalCompressor**Decoder
         - using azimuth and elevation instead of yaw and pitch  (`!!BREAKING CHANGE!!`)
+    - **Directivity**Shaper
+        - renamed parameters (probe instead of master)  (`!!BREAKING CHANGE!!`)
+        - using azimuth and elevation instead of yaw and pitch  (`!!BREAKING CHANGE!!`)
 
         
 ## v1.2.0
