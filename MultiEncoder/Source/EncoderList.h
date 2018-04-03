@@ -156,9 +156,8 @@ public:
                 colourChooser->setColour(TextButton::buttonColourId, processor.elementColours[i]);
                 colourChooser->setColour(TextButton::textColourOffId, Colours::white.overlaidWith (processor.elementColours[i]).contrasting());
                 
-                
                 addAndMakeVisible(azimuthSlider);
-                slAzimuthSliderAttachment.add(new SliderAttachment(*pVts,"azimuth" + String(i), *azimuthSlider));
+                slAzimuthSliderAttachment.add(new SliderAttachment(*pVts, "azimuth" + String(i), *azimuthSlider));
                 azimuthSlider->setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
                 azimuthSlider->setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
                 azimuthSlider->setReverse(true);
@@ -167,7 +166,7 @@ public:
                 azimuthSlider->setTooltip("Azimuth angle");
                 
                 addAndMakeVisible(elevationSlider);
-                slElevationAttachmentArray.add(new SliderAttachment(*pVts,"elevation" + String(i), *elevationSlider));
+                slElevationAttachmentArray.add(new SliderAttachment(*pVts, "elevation" + String(i), *elevationSlider));
                 elevationSlider->setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
                 elevationSlider->setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
                 elevationSlider->setColour (Slider::rotarySliderOutlineColourId, Colour(0xFF4FFF00));
@@ -175,7 +174,7 @@ public:
                 elevationSlider->setTooltip("Elevation angle");
                 
                 addAndMakeVisible(gainSlider);
-                slGainAttachmentArray.add(new SliderAttachment(*pVts,"gain" + String(i), *gainSlider));
+                slGainAttachmentArray.add(new SliderAttachment(*pVts, "gain" + String(i), *gainSlider));
                 gainSlider->setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
                 gainSlider->setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
                 gainSlider->setColour (Slider::rotarySliderOutlineColourId, Colour(0xFFD0011B));

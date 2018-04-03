@@ -77,7 +77,7 @@ masterElement(*valueTreeState.getParameter("masterAzimuth"), valueTreeState.getP
     ypGroup.setVisible(true);
     
     addAndMakeVisible(&slMasterAzimuth);
-    slMasterAzimuthAttachment = new SliderAttachment(valueTreeState,"masterAzimuth", slMasterAzimuth);
+    slMasterAzimuthAttachment = new SliderAttachment(valueTreeState, "masterAzimuth", slMasterAzimuth);
     slMasterAzimuth.setSliderStyle (Slider::Rotary);
     slMasterAzimuth.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slMasterAzimuth.setReverse(true);
@@ -86,16 +86,15 @@ masterElement(*valueTreeState.getParameter("masterAzimuth"), valueTreeState.getP
     slMasterAzimuth.setTooltip("Master azimuth angle");
     
     addAndMakeVisible(&slMasterElevation);
-    slMasterElevationAttachment = new SliderAttachment(valueTreeState,"masterElevation", slMasterElevation);
+    slMasterElevationAttachment = new SliderAttachment(valueTreeState, "masterElevation", slMasterElevation);
     slMasterElevation.setSliderStyle (Slider::Rotary);
     slMasterElevation.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slMasterElevation.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
-    slMasterElevation.setReverse(true);
     slMasterElevation.setRotaryParameters(0.5*M_PI, 2.5*M_PI, false);
     slMasterElevation.setTooltip("Master elevation angle");
     
     addAndMakeVisible(&slMasterRoll);
-    slMasterRollAttachment = new SliderAttachment(valueTreeState,"masterRoll", slMasterRoll);
+    slMasterRollAttachment = new SliderAttachment(valueTreeState, "masterRoll", slMasterRoll);
     slMasterRoll.setSliderStyle (Slider::Rotary);
     slMasterRoll.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slMasterRoll.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
@@ -103,7 +102,7 @@ masterElement(*valueTreeState.getParameter("masterAzimuth"), valueTreeState.getP
     slMasterRoll.setTooltip("Master roll angle");
     
     addAndMakeVisible(&tbLockedToMaster);
-    tbLockedToMasterAttachment = new ButtonAttachment(valueTreeState,"lockedToMaster", tbLockedToMaster);
+    tbLockedToMasterAttachment = new ButtonAttachment(valueTreeState, "lockedToMaster", tbLockedToMaster);
     tbLockedToMaster.setName("locking");
     tbLockedToMaster.setButtonText("Lock Directions");
     
@@ -195,12 +194,14 @@ void MultiEncoderAudioProcessorEditor::timerCallback()
             }
         }
         processor.soloMuteChanged = false;
+        sphere.repaint();
     }
     
     if (processor.updateColours)
     {
         processor.updateColours = false;
         encoderList.updateColours();
+        sphere.repaint();
     }
 }
 
@@ -260,9 +261,9 @@ void MultiEncoderAudioProcessorEditor::resized()
     lbNum.setBounds(sliderRow.removeFromLeft(22));
     sliderRow.removeFromLeft(5);
     lbAzimuth.setBounds(sliderRow.removeFromLeft(rotSliderWidth));
-    sliderRow.removeFromLeft(rotSliderSpacing);
-    lbElevation.setBounds(sliderRow.removeFromLeft(rotSliderWidth));
-    sliderRow.removeFromLeft(rotSliderSpacing);
+    sliderRow.removeFromLeft(rotSliderSpacing - 5);
+    lbElevation.setBounds(sliderRow.removeFromLeft(rotSliderWidth + 10));
+    sliderRow.removeFromLeft(rotSliderSpacing - 5);
     lbGain.setBounds(sliderRow.removeFromLeft(rotSliderWidth));
     
     viewport.setBounds(yprArea);
@@ -292,9 +293,9 @@ void MultiEncoderAudioProcessorEditor::resized()
     
     sliderRow = (masterArea.removeFromBottom(12));
     lbMasterAzimuth.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
-    sliderRow.removeFromLeft(rotSliderSpacing);
-    lbMasterElevation.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
-    sliderRow.removeFromLeft(rotSliderSpacing);
+    sliderRow.removeFromLeft(rotSliderSpacing - 5);
+    lbMasterElevation.setBounds (sliderRow.removeFromLeft(rotSliderWidth + 10));
+    sliderRow.removeFromLeft(rotSliderSpacing - 5);
     lbMasterRoll.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
     sliderRow.removeFromLeft(rotSliderSpacing);
     
