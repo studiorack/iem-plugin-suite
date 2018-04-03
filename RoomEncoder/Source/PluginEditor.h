@@ -33,7 +33,7 @@
 #include "../../resources/customComponents/FilterVisualizer.h"
 #include "ReflectionsVisualizer.h"
 
-typedef AudioProcessorValueTreeState::SliderAttachment SliderAttachment;
+typedef ReverseSlider::SliderAttachment SliderAttachment;
 typedef AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
 typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 
@@ -67,11 +67,11 @@ private:
     ReverseSlider slListenerX, slListenerY, slListenerZ;
     ReverseSlider slRoomX, slRoomY, slRoomZ;
     
-    Slider slReflCoeff;
+    ReverseSlider slReflCoeff;
     
-    Slider slLowShelfFreq, slLowShelfGain, slHighShelfFreq, slHighShelfGain;
+    ReverseSlider slLowShelfFreq, slLowShelfGain, slHighShelfFreq, slHighShelfGain;
     
-    Slider slNumReflections;
+    ReverseSlider slNumReflections;
     
     SimpleLabel lbReflCoeff, lbNumReflections;
     TripleLabel lbRoomDim;

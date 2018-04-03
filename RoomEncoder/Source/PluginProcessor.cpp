@@ -47,7 +47,7 @@ parameters (*this, nullptr)
                                           else if (value >= 5.5f && value < 6.5f) return "5th";
                                           else if (value >= 6.5f && value < 7.5f) return "6th";
                                           else if (value >= 7.5f) return "7th";
-                                          else return "Auto";},
+                                          else return "Auto"; },
                                       nullptr);
     
     parameters.createAndAddParameter ("orderSetting", "Output Ambisonics Order", "",
@@ -61,65 +61,65 @@ parameters (*this, nullptr)
                                           else if (value >= 5.5f && value < 6.5f) return "5th";
                                           else if (value >= 6.5f && value < 7.5f) return "6th";
                                           else if (value >= 7.5f) return "7th";
-                                          else return "Auto";},
+                                          else return "Auto"; },
                                       nullptr);
     parameters.createAndAddParameter ("useSN3D", "Normalization", "",
                                       NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                       [](float value) { if (value >= 0.5f ) return "SN3D";
-                                          else return "N3D";},
+                                          else return "N3D"; },
                                       nullptr);
     
     parameters.createAndAddParameter("roomX", "room size x", "m",
                                      NormalisableRange<float> (1.0f, 30.0f, 0.01f), 10.0f,
-                                     [](float value) {return String(value);}, nullptr);
+                                     [](float value) { return String(value, 2); }, nullptr);
     parameters.createAndAddParameter("roomY", "room size y", "m",
                                      NormalisableRange<float> (1.0f, 30.0f, 0.01f), 11.0f,
-                                     [](float value) {return String(value);}, nullptr);
+                                     [](float value) { return String(value, 2); }, nullptr);
     parameters.createAndAddParameter("roomZ", "room size z", "m",
                                      NormalisableRange<float> (1.0f, 20.0f, 0.01f), 7.0f,
-                                     [](float value) {return String(value);}, nullptr);
+                                     [](float value) { return String(value, 2); }, nullptr);
     
     parameters.createAndAddParameter("sourceX", "source position x", "m",
-                                     NormalisableRange<float> (-15.0f, 15.0f, 0.0001f), 1.0f,
-                                     [](float value) {return String(value);}, nullptr);
+                                     NormalisableRange<float> (-15.0f, 15.0f, 0.001f), 1.0f,
+                                     [](float value) { return String(value, 3); }, nullptr);
     parameters.createAndAddParameter("sourceY", "source position y", "m",
                                      NormalisableRange<float> (-15.0f, 15.0f, 0.001f), 1.0f,
-                                     [](float value) {return String(value);}, nullptr);
+                                     [](float value) { return String(value, 3); }, nullptr);
     parameters.createAndAddParameter("sourceZ", "source position z", "m",
                                      NormalisableRange<float> (-10.0f, 10.0f, 0.001f), 1.0f,
-                                     [](float value) {return String(value);}, nullptr);
+                                     [](float value) { return String(value, 3); }, nullptr);
     
     parameters.createAndAddParameter("listenerX", "listener position x", "m",
                                      NormalisableRange<float> (-15.0f, 15.0f, 0.001f), 0.0f,
-                                     [](float value) {return String(value);}, nullptr);
+                                     [](float value) { return String(value, 3); }, nullptr);
     parameters.createAndAddParameter("listenerY", "listener position y", "m",
                                      NormalisableRange<float> (-15.0f, 15.0f, 0.001f), 0.0f,
-                                     [](float value) {return String(value);}, nullptr);
+                                     [](float value) { return String(value, 3); }, nullptr);
     parameters.createAndAddParameter("listenerZ", "listener position z", "m",
                                      NormalisableRange<float> (-10.0f, 10.0f, 0.001f), 0.0f,
-                                     [](float value) {return String(value);}, nullptr);
+                                     [](float value) { return String(value, 3); }, nullptr);
     
     parameters.createAndAddParameter("numRefl", "number of reflections", "",
                                      NormalisableRange<float> (0.0f, nImgSrc-1, 1.0f), 19.0f,
-                                     [](float value) {return String(value);}, nullptr);
+                                     [](float value) { return String((int) value); }, nullptr);
     
     parameters.createAndAddParameter("lowShelfFreq", "LowShelf Frequency", "Hz",
                                      NormalisableRange<float> (20.0f, 20000.0f, 1.0f), 100.0,
-                                     [](float value) {return String(value);}, nullptr);
+                                     [](float value) { return String((int) value); }, nullptr);
     parameters.createAndAddParameter("lowShelfGain", "LowShelf Gain", "dB",
                                      NormalisableRange<float> (-15.0f, 5.0f, 0.1f), -5.0f,
-                                     [](float value) {return String(value);}, nullptr);
+                                     [](float value) { return String(value, 1); }, nullptr);
     
     parameters.createAndAddParameter("highShelfFreq", "HighShelf Frequency", "Hz",
                                      NormalisableRange<float> (20., 20000.0f, 1.0f), 8000.0,
-                                     [](float value) {return String(value);}, nullptr);
+                                     [](float value) { return String((int) value); }, nullptr);
     parameters.createAndAddParameter("highShelfGain", "HighShelf Gain", "dB",
                                      NormalisableRange<float> (-15.0f, 5.0f, 0.1f), -5.0f,
-                                     [](float value) {return String(value);}, nullptr);
+                                     [](float value) { return String(value, 1); }, nullptr);
     
-    parameters.createAndAddParameter("reflCoeff", "Reflection Coefficient", "",
+    parameters.createAndAddParameter("reflCoeff", "Reflection Coefficient", "dB",
                                      NormalisableRange<float> (-15.0f, 0.0f, 0.01f), -1.0f,
-                                     [](float value) {return String(value);}, nullptr);
+                                     [](float value) { return String(value, 2); }, nullptr);
     
     parameters.createAndAddParameter ("syncChannel", "Synchronize to Channel", "",
                                       NormalisableRange<float> (0.0f, 4.0f, 1.0f), 0.0f,
@@ -128,28 +128,28 @@ parameters (*this, nullptr)
                                           else if (value >= 1.5f && value < 2.5f) return "Channel 2";
                                           else if (value >= 2.5f && value < 3.5f) return "Channel 3";
                                           else if (value >= 3.5f) return "Channel 4";
-                                          else return "None";},
+                                          else return "None"; },
                                       nullptr);
     
     parameters.createAndAddParameter ("syncRoomSize", "Synchronize Room Dimensions", "",
                                       NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                       [](float value) {
                                           if (value >= 0.5f) return "YES";
-                                          else return "NO";},
+                                          else return "NO"; },
                                       nullptr);
     
     parameters.createAndAddParameter ("syncReflection", "Synchronize Reflection Properties", "",
                                       NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                       [](float value) {
                                           if (value >= 0.5f) return "YES";
-                                          else return "NO";},
+                                          else return "NO"; },
                                       nullptr);
     
     parameters.createAndAddParameter ("syncListener", "Synchronize Listener Position", "",
                                       NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                       [](float value) {
                                           if (value >= 0.5f) return "YES";
-                                          else return "NO";},
+                                          else return "NO"; },
                                       nullptr);
     
     
@@ -501,7 +501,7 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
     }
     
     // prevent division by zero when source is as listener's position
-    if ((listenerPos-sourcePos).lengthSquared() < 0.0001) {sourcePos = listenerPos + Vector3D<float>(0.01f, 0.0f, 0.0f);}
+    if ((listenerPos-sourcePos).lengthSquared() < 0.0001) {sourcePos = listenerPos + Vector3D<float>(0.01f, 0.0f, 0.0f); }
     
     
     float* pMonoBufferWrite = monoBuffer.getWritePointer(0);

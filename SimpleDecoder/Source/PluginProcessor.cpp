@@ -68,7 +68,7 @@ parameters(*this, nullptr)
     
     parameters.createAndAddParameter ("lowPassFrequency", "LowPass Cutoff Frequency", "Hz",
                                       NormalisableRange<float> (20.f, 300.f, 1.0f), 80.f,
-                                      [](float value) {return String (value, 0);},
+                                      [](float value) {return String ((int) value);},
                                       nullptr);
     parameters.createAndAddParameter ("lowPassGain", "LowPass Gain", "dB",
                                       NormalisableRange<float> (-20.0f, 10.0, 0.1f), 0.0f,
@@ -77,7 +77,7 @@ parameters(*this, nullptr)
     
     parameters.createAndAddParameter ("highPassFrequency", "HighPass Cutoff Frequency", "Hz",
                                       NormalisableRange<float> (20.f, 300.f, 1.f), 80.f,
-                                      [](float value) {return String (value, 0);},
+                                      [](float value) {return String ((int) value);},
                                       nullptr);
 
     parameters.createAndAddParameter ("swMode", "Subwoofer Mode", "",
@@ -89,7 +89,7 @@ parameters(*this, nullptr)
     
     parameters.createAndAddParameter ("swChannel", "SW Channel Number", "",
                                       NormalisableRange<float> (1.0f, 64.0f, 1.0f), 1.0f,
-                                      [](float value) { return String (value, 0);}, nullptr);
+                                      [](float value) { return String ((int) value);}, nullptr);
     
     // this must be initialised after all calls to createAndAddParameter().
     parameters.state = ValueTree (Identifier ("Decoder"));
