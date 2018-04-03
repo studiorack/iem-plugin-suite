@@ -25,6 +25,12 @@
 
 class HammerAitov {
 public:
+    
+    /**
+     Calculates the HammerAitov-projection for azimiuth and elevation.
+     The x output represents the horizontal axis, with 0 being in the middle. Negative azimuth values result in positive x values (to the right) and vice versa.
+     The y output represents the vertical axis, with 0 being in the middle. Positive elevation values result in positive y values (up) and vice versa.
+     */
     static void sphericalToXY (float azimuthInRadians, float elevationInRadians, float& x, float& y)
     {
         while (azimuthInRadians > M_PI + FLT_EPSILON)
@@ -36,6 +42,13 @@ public:
         const float factor = 1.0f / sqrt(1.0f + cosEle * cos(0.5f * azimuthInRadians));
         x = factor * - cosEle * sin(0.5f * azimuthInRadians);
         y = factor * sin(elevationInRadians);
+    }
+    
+    static Point<float> sphericalToXY (float azimuthInRadians, float elevationInRadians)
+    {
+        Point<float> ret;
+        sphericalToXY (azimuthInRadians, elevationInRadians, ret.x, ret.y);
+        return ret;
     }
     
     static void XYToSpherical (const float x, const float y, float& azimuthInRadians, float& elevationInRadians)
