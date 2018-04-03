@@ -105,6 +105,7 @@ parameters(*this, nullptr)
     parameters.addParameterListener("azimuth", this);
     parameters.addParameterListener("elevation", this);
     parameters.addParameterListener("roll", this);
+    parameters.addParameterListener("width", this);
     parameters.addParameterListener("orderSetting", this);
     
     orderSetting = parameters.getRawParameterValue("orderSetting");
@@ -272,27 +273,29 @@ void StereoEncoderAudioProcessor::processBlock(AudioSampleBuffer &buffer, MidiBu
     float azimuthL, azimuthR, elevationL, elevationR;
     Conversions<float>::cartesianToSpherical(xyzL[0], xyzL[1], xyzL[2], azimuthL, elevationL);
     Conversions<float>::cartesianToSpherical(xyzR[0], xyzR[1], xyzR[2], azimuthR, elevationR);
+
     
-    
-    if (*highQuality < 0.5f)
+    if (*highQuality < 0.5f) // no high-quality
     {
-//        smoothYawL.setValue(yawL, true);
-//        smoothelevationL.setValue(elevationL, true);
-//        smoothYawR.setValue(yawR, true);
-//        smoothelevationR.setValue(elevationR, true);
+        smoothAzimuthL.setValue(azimuthL, true);
+        smoothElevationL.setValue(elevationL, true);
+        smoothAzimuthR.setValue(azimuthR, true);
+        smoothElevationR.setValue(elevationR, true);
         
         
         SHEval(ambisonicOrder, xyzL[0], xyzL[1], xyzL[2], SHL);
         SHEval(ambisonicOrder, xyzR[0], xyzR[1], xyzR[2], SHR);
         
-        if (*useSN3D > 0.5f) {
+        if (*useSN3D > 0.5f)
+        {
             FloatVectorOperations::multiply(SHL, SHL, n3d2sn3d, nChOut);
             FloatVectorOperations::multiply(SHR, SHR, n3d2sn3d, nChOut);
         }
         
         const float *leftIn = bufferCopy.getReadPointer(0);
         const float *rightIn = bufferCopy.getReadPointer(1);
-        for (int i = 0; i < nChOut; ++i) {
+        for (int i = 0; i < nChOut; ++i)
+        {
             buffer.copyFromWithRamp(i, 0, leftIn, buffer.getNumSamples(), _SHL[i], SHL[i]);
             buffer.addFromWithRamp(i, 0, rightIn, buffer.getNumSamples(), _SHR[i], SHR[i]);
         }
@@ -300,97 +303,67 @@ void StereoEncoderAudioProcessor::processBlock(AudioSampleBuffer &buffer, MidiBu
     else // high-quality sampling
     {
         if (smoothAzimuthL.getTargetValue() - azimuthL > M_PI)
-        {
-            smoothAzimuthL.setValue(smoothAzimuthL.getTargetValue() - 2.0f * M_PI);
-            smoothAzimuthL.reset(1,L);
-        }
+            smoothAzimuthL.setValue(smoothAzimuthL.getTargetValue() - 2.0f * M_PI, true);
         else if (azimuthL - smoothAzimuthL.getTargetValue() > M_PI)
-        {
-            smoothAzimuthL.setValue(smoothAzimuthL.getTargetValue() + 2.0f * M_PI);
-            smoothAzimuthL.reset(1,L);
-        }
+            smoothAzimuthL.setValue(smoothAzimuthL.getTargetValue() + 2.0f * M_PI, true);
         
         if (smoothElevationL.getTargetValue() - elevationL > M_PI)
-        {
-            smoothElevationL.setValue(smoothElevationL.getTargetValue() - 2.0f * M_PI);
-            smoothElevationL.reset(1,L);
-        }
+            smoothElevationL.setValue(smoothElevationL.getTargetValue() - 2.0f * M_PI, true);
         else if (elevationL - smoothElevationL.getTargetValue() > M_PI)
-        {
-            smoothElevationL.setValue(smoothElevationL.getTargetValue() + 2.0f * M_PI);
-            smoothElevationL.reset(1,L);
-        }
+            smoothElevationL.setValue(smoothElevationL.getTargetValue() + 2.0f * M_PI, true);
         
         if (smoothAzimuthR.getTargetValue() - azimuthR > M_PI)
-        {
-            smoothAzimuthR.setValue(smoothAzimuthR.getTargetValue() - 2.0f * M_PI);
-            smoothAzimuthR.reset(1,L);
-        }
+            smoothAzimuthR.setValue(smoothAzimuthR.getTargetValue() - 2.0f * M_PI, true);
         else if (azimuthR - smoothAzimuthR.getTargetValue() > M_PI)
-        {
-            smoothAzimuthR.setValue(smoothAzimuthR.getTargetValue() + 2.0f * M_PI);
-            smoothAzimuthR.reset(1,L);
-        }
+            smoothAzimuthR.setValue(smoothAzimuthR.getTargetValue() + 2.0f * M_PI, true);
         
         if (smoothElevationR.getTargetValue() - elevationR > M_PI)
-        {
-            smoothElevationR.setValue(smoothElevationR.getTargetValue() - 2.0f * M_PI);
-            smoothElevationR.reset(1,L);
-        }
+            smoothElevationR.setValue(smoothElevationR.getTargetValue() - 2.0f * M_PI, true);
         else if (elevationR - smoothElevationR.getTargetValue() > M_PI)
-        {
-            smoothElevationR.setValue(smoothElevationR.getTargetValue() + 2.0f * M_PI);
-            smoothElevationR.reset(1,L);
-        }
-        
+            smoothElevationR.setValue(smoothElevationR.getTargetValue() + 2.0f * M_PI, true);
         
         smoothAzimuthL.setValue(azimuthL);
         smoothElevationL.setValue(elevationL);
         smoothAzimuthR.setValue(azimuthR);
         smoothElevationR.setValue(elevationR);
         
-        for (int i = 0; i < L; ++i)
+        for (int i = 0; i < L; ++i) // left
         {
             const float azimuth = smoothAzimuthL.getNextValue();
             const float elevation = smoothElevationL.getNextValue();
-            const float coselevation = cos(elevation);
             float sample = bufferCopy.getSample(0, i);
-            SHEval(ambisonicOrder, coselevation * cos(azimuth), coselevation * sin(azimuth), sin(-1.0f * elevation), SHL);
             
-            for (int ch = 0; ch < nChOut; ++ch) {
+            const Vector3D<float> pos = Conversions<float>::sphericalToCartesian(azimuth, elevation);
+            SHEval(ambisonicOrder, pos.x, pos.y, pos.z, SHL);
+            
+            for (int ch = 0; ch < nChOut; ++ch)
                 buffer.setSample(ch, i, sample * SHL[ch]);
-            }
         }
         
-        for (int i = 0; i < L; ++i)
+        for (int i = 0; i < L; ++i) // right
         {
             const float azimuth = smoothAzimuthR.getNextValue();
             const float elevation = smoothElevationR.getNextValue();
-            const float coselevation = cos(elevation);
             float sample = bufferCopy.getSample(1, i);
-            SHEval(ambisonicOrder, coselevation * std::cos(azimuth), coselevation * sin(azimuth), sin(-1.0f * elevation), SHR);
             
-            for (int ch = 0; ch < nChOut; ++ch) {
+            const Vector3D<float> pos = Conversions<float>::sphericalToCartesian(azimuth, elevation);
+            SHEval(ambisonicOrder, pos.x, pos.y, pos.z, SHR);
+            
+            for (int ch = 0; ch < nChOut; ++ch)
                 buffer.addSample(ch, i, sample * SHR[ch]);
-                
-            }
         }
         
-        if (*useSN3D > 0.5f) {
-            for (int ch = 0; ch < nChOut; ++ch) {
+        if (*useSN3D > 0.5f)
+        {
+            for (int ch = 0; ch < nChOut; ++ch)
+            {
                 buffer.applyGain(ch, 0, L, n3d2sn3d[ch]);
             }
+            
             FloatVectorOperations::multiply(SHL, SHL, n3d2sn3d, nChOut);
             FloatVectorOperations::multiply(SHR, SHR, n3d2sn3d, nChOut);
         }
     }
-
-//    // update LCR position information for GUI
-//    posC = Vector3D<float>(xyz[0], xyz[1], xyz[2]);
-//    posL = Vector3D<float>(xyzL[0], xyzL[1], xyzL[2]);
-//    posR = Vector3D<float>(xyzR[0], xyzR[1], xyzR[2]);
-//    
-//    updatedPositionData = true;
 }
 
 //==============================================================================
@@ -412,6 +385,10 @@ void StereoEncoderAudioProcessor::parameterChanged(const String &parameterID, fl
         else if (parameterID == "azimuth" || parameterID == "elevation" || parameterID == "roll")
         {
             sphericalInput = true;
+            updatedPositionData = true;
+        }
+        else if (parameterID == "width")
+        {
             updatedPositionData = true;
         }
     }

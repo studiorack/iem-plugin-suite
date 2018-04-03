@@ -41,7 +41,7 @@ StereoEncoderAudioProcessorEditor::StereoEncoderAudioProcessorEditor (StereoEnco
     
     // ==== SPHERE AND ELEMENTS ===============
     addAndMakeVisible(&sphere);
-    //sphere.addListener(this);
+    sphere.addListener(this);
     
     leftElement.setColour(Colours::aqua);
     sphere.addElement(&leftElement);
@@ -56,10 +56,6 @@ StereoEncoderAudioProcessorEditor::StereoEncoderAudioProcessorEditor (StereoEnco
     sphere.addElement(&centerElement);
     centerElement.setLabel("C");
     centerElement.setGrabPriority(1);
-    
-
-
-    
     // ======================================
     
     
@@ -196,11 +192,7 @@ StereoEncoderAudioProcessorEditor::StereoEncoderAudioProcessorEditor (StereoEnco
 }
 
 
-void StereoEncoderAudioProcessorEditor::IEMSphereElementChanged (IEMSphere* sphere, IEMSphereElement* element)
-{
-}
-
-void StereoEncoderAudioProcessorEditor::IEMSphereMouseWheelMoved(IEMSphere* sphere, const juce::MouseEvent &event, const MouseWheelDetails &wheel)
+void StereoEncoderAudioProcessorEditor::mouseWheelOnSpherePannerMoved (SpherePanner* sphere, const MouseEvent &event, const MouseWheelDetails &wheel)
 {
     if (event.mods.isCommandDown() && event.mods.isAltDown())
         rollSlider.mouseWheelMove(event, wheel);
@@ -234,6 +226,7 @@ void StereoEncoderAudioProcessorEditor::timerCallback()
     // update positions, if at least one of them was updated (new data): repaint the sphere
     if (processor.updatedPositionData.get())
     {
+        processor.updatedPositionData = false;
         sphere.repaint();
     }
 }

@@ -20,8 +20,7 @@
  ==============================================================================
  */
 
-#ifndef PLUGINEDITOR_H_INCLUDED
-#define PLUGINEDITOR_H_INCLUDED
+#pragma once
 
 #define OutputAmbi
 
@@ -43,8 +42,7 @@ typedef AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
 */
 class StereoEncoderAudioProcessorEditor  : public AudioProcessorEditor,
 private Timer,
-public IEMSphere::IEMSphereListener,
-public IEMSphere::IEMSphereElement
+public SpherePanner::Listener
 {
 public:
 
@@ -54,9 +52,8 @@ public:
     //==============================================================================
     void paint (Graphics&) override;
     void resized() override;
-
-    void IEMSphereElementChanged (IEMSphere* sphere, IEMSphereElement* element) override;
-    void IEMSphereMouseWheelMoved(IEMSphere* sphere, const juce::MouseEvent &event, const MouseWheelDetails &wheel) override;
+    
+    void mouseWheelOnSpherePannerMoved (SpherePanner* sphere, const MouseEvent &event, const MouseWheelDetails &wheel) override;
 private:
     LaF globalLaF;
     
@@ -64,7 +61,6 @@ private:
     Footer footer;
     
     void timerCallback() override;
-    
     
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
@@ -80,8 +76,6 @@ private:
     SpherePanner::RollWidthParameterElement leftElement;
     SpherePanner::RollWidthParameterElement rightElement;
     
-    
-
     ScopedPointer<SliderAttachment> qwAttachment;
     ScopedPointer<SliderAttachment> qxAttachment;
     ScopedPointer<SliderAttachment> qyAttachment;
@@ -100,6 +94,3 @@ private:
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (StereoEncoderAudioProcessorEditor)
 };
-
-
-#endif  // PLUGINEDITOR_H_INCLUDED
