@@ -21,7 +21,7 @@
  */
 
 #pragma once
-
+#include "ReverseSlider.h"
 
 //==============================================================================
 /*
@@ -31,12 +31,9 @@ class DoubleSlider    : public Component, public Slider::Listener
 public:
     DoubleSlider()
     {
-        // In your constructor, you should add any child components, and
-        // initialise any special settings that your component needs.
-        
-        leftSlider = new Slider("left");
-        middleSlider = new Slider("middle");
-        rightSlider = new Slider("right");
+        leftSlider = new ReverseSlider("left");
+        middleSlider = new ReverseSlider("middle");
+        rightSlider = new ReverseSlider("right");
         
         addAndMakeVisible(leftSlider);
         addAndMakeVisible(middleSlider);
@@ -58,22 +55,22 @@ public:
         rightSlider->setRange(minRange, maxRange,1);
         rightSlider->setIncDecButtonsMode(Slider::incDecButtonsDraggable_AutoDirection);
         rightSlider->addListener(this);
-        
     }
 
-    ~DoubleSlider()
+    ~DoubleSlider() {}
+    
+    ReverseSlider* getLeftSliderAddress() {return leftSlider.get();}
+    ReverseSlider* getMiddleSliderAddress() {return middleSlider.get();}
+    ReverseSlider* getRightSliderAddress() {return rightSlider.get();}
+
+    void setLeftRightSliderWidth(float width)
     {
-    }
-    Slider* getLeftSliderAddress() {return leftSlider.get();}
-    Slider* getMiddleSliderAddress() {return middleSlider.get();}
-    Slider* getRightSliderAddress() {return rightSlider.get();}
-
-    void setLeftRightSliderWidth(float width) {
         leftRightSliderWidth = width;
         resized();
     };
     
-    void setColour(Colour colour) {
+    void setColour(Colour colour)
+    {
         middleSlider->setColour (Slider::rotarySliderOutlineColourId, colour);
     };
     
@@ -82,16 +79,18 @@ public:
         minRange = jmin(leftRange.start,rightRange.start);
         maxRange = jmax(leftRange.end,rightRange.end);
         middleSlider->setRange(minRange, maxRange);
-        middleSlider->setSkewFactor(leftRange.skew);
+        //middleSlider->setSkewFactor(leftRange.skew);
         
         middleSlider->setMinAndMaxValues(leftSlider->getValue(), rightSlider->getValue());
     };
     
-    void setSkew(double skew) {
+    void setSkew(double skew)
+    {
         leftSlider->setSkewFactor(skew);
         middleSlider->setSkewFactor(skew);
         rightSlider->setSkewFactor(skew);
     }
+    
     void mouseDown( const MouseEvent &event) override {};
     void mouseUp( const MouseEvent &event) override {};
     void sliderDragStarted(Slider* slider) override {};
@@ -110,7 +109,7 @@ public:
         }
         else if (slider->getName().equalsIgnoreCase("right"))
         {
-            middleSlider->setMaxValue(rightSlider->getValue(),dontSendNotification,true);
+            middleSlider->setMaxValue(rightSlider->getValue(), dontSendNotification, true);
         }
     };
     
@@ -137,7 +136,7 @@ public:
 
 private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DoubleSlider)
-    ScopedPointer<Slider> leftSlider, middleSlider, rightSlider;
+    ScopedPointer<ReverseSlider> leftSlider, middleSlider, rightSlider;
     float leftRightSliderWidth = 50;
     float minRange = 0;
     float maxRange = 1;
