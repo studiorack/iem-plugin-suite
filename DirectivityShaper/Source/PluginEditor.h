@@ -38,7 +38,7 @@
 #include "../../resources/customComponents/SpherePanner.h"
 
 
-typedef AudioProcessorValueTreeState::SliderAttachment SliderAttachment;
+typedef ReverseSlider::SliderAttachment SliderAttachment;
 typedef AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
 typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 
@@ -80,37 +80,37 @@ private:
     Slider slFilterGain[numberOfBands];
     Slider slOrder[numberOfBands];
     Slider slShape[numberOfBands];
-    ReverseSlider slYaw[numberOfBands];
-    ReverseSlider slPitch[numberOfBands];
-    ReverseSlider slMasterYaw;
-    ReverseSlider slMasterPitch;
-    ReverseSlider slMasterRoll;
+    ReverseSlider slAzimuth[numberOfBands];
+    ReverseSlider slElevation[numberOfBands];
+    ReverseSlider slProbeAzimuth;
+    ReverseSlider slProbeElevation;
+    ReverseSlider slProbeRoll;
     ComboBox cbNormalization;
     ScopedPointer<ComboBoxAttachment> cbNormalizationAttachment;
     
     SpherePanner sphere;
-    SpherePanner::Element sphereElements[numberOfBands];
-    SpherePanner::Element masterElement;
+    ScopedPointer<SpherePanner::AziumuthElevationParameterElement> sphereElements[numberOfBands];
+    SpherePanner::AziumuthElevationParameterElement probeElement;
     
-    SimpleLabel lbYaw, lbPitch, lbOrder, lbShape;
-    SimpleLabel lbProbeYaw, lbProbePitch, lbProbeRoll;
+    SimpleLabel lbAzimuth, lvElevation, lbOrder, lbShape;
+    SimpleLabel lbProbeAzimuth, lbProbeElevation, lbProbeRoll;
     SimpleLabel lbNormalization;
     
     GroupComponent gcFilterBands, gcOrderAndShape, gcPanning, gcSettings;
     
-    ToggleButton tbMasterToggle;
+    ToggleButton tbProbeLock;
     ScopedPointer<ComboBoxAttachment> cbFilterTypeAttachment[numberOfBands];
     ScopedPointer<SliderAttachment> slFilterFrequencyAttachment[numberOfBands];
     ScopedPointer<SliderAttachment> slFilterQAttachment[numberOfBands];
     ScopedPointer<SliderAttachment> slFilterGainAttachment[numberOfBands];
     ScopedPointer<SliderAttachment> slOrderAttachment[numberOfBands];
     ScopedPointer<SliderAttachment> slShapeAttachment[numberOfBands];
-    ScopedPointer<SliderAttachment> slYawAttachment[numberOfBands];
-    ScopedPointer<SliderAttachment> slPitchAttachment[numberOfBands];
-    ScopedPointer<SliderAttachment> slMasterYawAttachment;
-    ScopedPointer<SliderAttachment> slMasterPitchAttachment;
-    ScopedPointer<SliderAttachment> slMasterRollAttachment;
-    ScopedPointer<ButtonAttachment> tbMasterToggleAttachment;
+    ScopedPointer<SliderAttachment> slAzimuthAttachment[numberOfBands];
+    ScopedPointer<SliderAttachment> slElevationAttachment[numberOfBands];
+    ScopedPointer<SliderAttachment> slProbeAzimuthAttachment;
+    ScopedPointer<SliderAttachment> slProbeElevationAttachment;
+    ScopedPointer<SliderAttachment> slProbeRollAttachment;
+    ScopedPointer<ButtonAttachment> tbProbeLockAttachment;
     DirectivityVisualizer dv;
     FilterVisualizer<float> fv;
     

@@ -55,16 +55,16 @@ parameters(*this, nullptr)
                                           else return "Auto";},
                                       nullptr);
     
-    parameters.createAndAddParameter("masterYaw", "Master Yaw", "",
+    parameters.createAndAddParameter("probeAzimuth", "probe Azimuth", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
-                                     [](float value) {return String(value);}, nullptr);
-    parameters.createAndAddParameter("masterPitch", "Master Pitch", "",
+                                     [](float value) {return String(value, 2);}, nullptr);
+    parameters.createAndAddParameter("probeElevation", "probe Elevation", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
-                                     [](float value) {return String(value);}, nullptr);
-    parameters.createAndAddParameter("masterRoll", "Master Roll", "",
+                                     [](float value) {return String(value, 2);}, nullptr);
+    parameters.createAndAddParameter("probeRoll", "probe Roll", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
-                                     [](float value) {return String(value);}, nullptr);
-    parameters.createAndAddParameter("masterToggle", "Lock Directions", "",
+                                     [](float value) {return String(value, 2);}, nullptr);
+    parameters.createAndAddParameter("probeLock", "Lock Directions", "",
                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
                                      [](float value) {return (value >= 0.5f) ? "locked" : "not locked";}, nullptr);
     parameters.createAndAddParameter("normalization", "Directivity Normalization", "",
@@ -103,27 +103,27 @@ parameters(*this, nullptr)
         parameters.createAndAddParameter("shape" + String(i), "Shape Band " + String(i+1), "",
                                          NormalisableRange<float> (0.0f, 1.0f, 0.01f), 0.0,
                                          [](float value) {return String(value, 2);}, nullptr);
-        parameters.createAndAddParameter("yaw" + String(i), "Yaw Band " + String(i+1), "",
+        parameters.createAndAddParameter("azimuth" + String(i), "Azimuth Band " + String(i+1), CharPointer_UTF8 (R"(°)"),
                                          NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
                                          [](float value) {return String(value, 2);}, nullptr);
-        parameters.createAndAddParameter("pitch" + String(i), "Pitch Band " + String(i+1), "",
+        parameters.createAndAddParameter("elevation" + String(i), "Elevation Band " + String(i+1), CharPointer_UTF8 (R"(°)"),
                                          NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
                                          [](float value) {return String(value, 2);}, nullptr);
     }
     
     
     orderSetting = parameters.getRawParameterValue ("orderSetting");
-    masterYaw = parameters.getRawParameterValue ("masterYaw");
-    masterPitch = parameters.getRawParameterValue ("masterPitch");
-    masterRoll = parameters.getRawParameterValue ("masterRoll");
-    masterToggle = parameters.getRawParameterValue ("masterToggle");
+    probeAzimuth = parameters.getRawParameterValue ("probeAzimuth");
+    probeElevation = parameters.getRawParameterValue ("probeElevation");
+    probeRoll = parameters.getRawParameterValue ("probeRoll");
+    probeLock = parameters.getRawParameterValue ("probeLock");
     normalization = parameters.getRawParameterValue("normalization");
     
     parameters.addParameterListener("orderSetting", this);
-    parameters.addParameterListener("masterToggle", this);
-    parameters.addParameterListener("masterYaw", this);
-    parameters.addParameterListener("masterPitch", this);
-    parameters.addParameterListener("masterRoll", this);
+    parameters.addParameterListener("probeLock", this);
+    parameters.addParameterListener("probeAzimuth", this);
+    parameters.addParameterListener("probeElevation", this);
+    parameters.addParameterListener("probeRoll", this);
     
     
     for (int i = 0; i < numberOfBands; ++i)
@@ -134,14 +134,14 @@ parameters(*this, nullptr)
         filterGain[i] = parameters.getRawParameterValue ("filterGain" + String(i));
         order[i] = parameters.getRawParameterValue ("order" + String(i));
         shape[i] = parameters.getRawParameterValue ("shape" + String(i));
-        yaw[i] = parameters.getRawParameterValue ("yaw" + String(i));
-        pitch[i] = parameters.getRawParameterValue ("pitch" + String(i));
+        azimuth[i] = parameters.getRawParameterValue ("azimuth" + String(i));
+        elevation[i] = parameters.getRawParameterValue ("elevation" + String(i));
         parameters.addParameterListener("filterType" + String(i), this);
         parameters.addParameterListener("filterFrequency" + String(i), this);
         parameters.addParameterListener("filterQ" + String(i), this);
         parameters.addParameterListener("filterGain" + String(i), this);
-        parameters.addParameterListener("yaw" + String(i), this);
-        parameters.addParameterListener("pitch" + String(i), this);
+        parameters.addParameterListener("azimuth" + String(i), this);
+        parameters.addParameterListener("elevation" + String(i), this);
         parameters.addParameterListener("order" + String(i), this);
         parameters.addParameterListener("shape" + String(i), this);
         parameters.addParameterListener("normalization", this);
@@ -295,11 +295,11 @@ void DirectivityShaperAudioProcessor::processBlock (AudioSampleBuffer& buffer, M
     buffer.clear();
     
     float sh[64];
-    float masterSH[64];
+    float probeSH[64];
     
     {
-        Vector3D<float> pos = yawPitchToCartesian(degreesToRadians(*masterYaw), degreesToRadians(*masterPitch));
-        SHEval(orderToWorkWith, pos.x, pos.y, pos.z, masterSH);
+        Vector3D<float> pos = Conversions<float>::sphericalToCartesian(degreesToRadians(*probeAzimuth), degreesToRadians(*probeElevation));
+        SHEval(orderToWorkWith, pos.x, pos.y, pos.z, probeSH);
     }
     
     
@@ -368,8 +368,7 @@ void DirectivityShaperAudioProcessor::processBlock (AudioSampleBuffer& buffer, M
             for (int i = 0; i < 8; ++i )
                 tempWeights[i] = tempWeights[i] * cor;
         
-        
-        Vector3D<float> pos = yawPitchToCartesian(degreesToRadians(*yaw[b]), degreesToRadians(*pitch[b]));
+        Vector3D<float> pos = Conversions<float>::sphericalToCartesian(degreesToRadians(*azimuth[b]), degreesToRadians(*elevation[b]));
         SHEval(orderToWorkWith, pos.x, pos.y, pos.z, sh);
         
         float temp = 0.0f;
@@ -378,7 +377,7 @@ void DirectivityShaperAudioProcessor::processBlock (AudioSampleBuffer& buffer, M
         for (int i = 0; i < nChToWorkWith; ++i)
         {
             shTemp[i] *= tempWeights[isqrt(i)];
-            temp += shTemp[i] * masterSH[i];
+            temp += shTemp[i] * probeSH[i];
             buffer.addFromWithRamp(i, 0, filteredBuffer.getReadPointer(b), numSamples,shOld[b][i], shTemp[i]);
         }
         probeGains[b] = std::abs(temp);
@@ -387,6 +386,7 @@ void DirectivityShaperAudioProcessor::processBlock (AudioSampleBuffer& buffer, M
         {
             probeChanged = false;
             repaintFV = true;
+            repaintSphere = true;
         }
         
         cor = correction(orderToWorkWith)/correction(7);
@@ -401,6 +401,7 @@ void DirectivityShaperAudioProcessor::processBlock (AudioSampleBuffer& buffer, M
     if (changeWeights) {
         changeWeights = false;
         repaintDV = true;
+        repaintXY = true;
         repaintFV = true;
     }
     
@@ -435,7 +436,7 @@ void DirectivityShaperAudioProcessor::setStateInformation (const void* data, int
 void DirectivityShaperAudioProcessor::parameterChanged (const String &parameterID, float newValue)
 {
     if (parameterID == "orderSetting") userChangedIOSettings = true;
-    else if (parameterID == "masterToggle")
+    else if (parameterID == "probeLock")
     {
         if (newValue >= 0.5f && !toggled)
         {
@@ -445,44 +446,44 @@ void DirectivityShaperAudioProcessor::parameterChanged (const String &parameterI
             ypr[2] = 0.0f;
             for (int i = 0; i < numberOfBands; ++i)
             {
-                iem::Quaternion<float> masterQuat;
-                float masterypr[3];
-                masterypr[0] = degreesToRadians(*masterYaw);
-                masterypr[1] = degreesToRadians(*masterPitch);
-                masterypr[2] = degreesToRadians(*masterRoll);
-                masterQuat.fromYPR(masterypr);
-                masterQuat.conjugate();
+                iem::Quaternion<float> probeQuat;
+                float probeypr[3];
+                probeypr[0] = degreesToRadians(*probeAzimuth);
+                probeypr[1] = degreesToRadians(*probeElevation);
+                probeypr[2] = degreesToRadians(*probeRoll);
+                probeQuat.fromYPR(probeypr);
+                probeQuat.conjugate();
                 
-                ypr[0] = degreesToRadians(*yaw[i]);
-                ypr[1] = degreesToRadians(*pitch[i]);
+                ypr[0] = degreesToRadians(*azimuth[i]);
+                ypr[1] = degreesToRadians(*elevation[i]);
                 quats[i].fromYPR(ypr);
-                quats[i] = masterQuat*quats[i];
+                quats[i] = probeQuat*quats[i];
             }
             toggled = true;
         }
         else if (newValue < 0.5f)
             toggled = false;
     }
-    else if ((parameterID == "masterYaw") ||  (parameterID == "masterPitch") ||  (parameterID == "masterRoll"))
+    else if ((parameterID == "probeAzimuth") ||  (parameterID == "probeElevation") ||  (parameterID == "probeRoll"))
     {
         
         if (toggled)
         {
             DBG("moving");
             moving = true;
-            iem::Quaternion<float> masterQuat;
+            iem::Quaternion<float> probeQuat;
             float ypr[3];
-            ypr[0] = degreesToRadians(*masterYaw);
-            ypr[1] = degreesToRadians(*masterPitch);
-            ypr[2] = degreesToRadians(*masterRoll);
-            masterQuat.fromYPR(ypr);
+            ypr[0] = degreesToRadians(*probeAzimuth);
+            ypr[1] = degreesToRadians(*probeElevation);
+            ypr[2] = degreesToRadians(*probeRoll);
+            probeQuat.fromYPR(ypr);
             
             for (int i = 0; i < numberOfBands; ++i)
             {
-                iem::Quaternion<float> temp = masterQuat*quats[i];
+                iem::Quaternion<float> temp = probeQuat*quats[i];
                 temp.toYPR(ypr);
-                parameters.getParameterAsValue("yaw" + String(i)).setValue(radiansToDegrees(ypr[0]));
-                parameters.getParameterAsValue("pitch" + String(i)).setValue(radiansToDegrees(ypr[1]));
+                parameters.getParameterAsValue("azimuth" + String(i)).setValue(radiansToDegrees(ypr[0]));
+                parameters.getParameterAsValue("elevation" + String(i)).setValue(radiansToDegrees(ypr[1]));
             }
             moving = false;
             repaintSphere = true;
@@ -491,27 +492,26 @@ void DirectivityShaperAudioProcessor::parameterChanged (const String &parameterI
             probeChanged = true;
         
     }
-    else if (  (parameterID.startsWith("yaw") || parameterID.startsWith("pitch")))
+    else if (parameterID.startsWith("azimuth") || parameterID.startsWith("elevation"))
     {
         if (toggled && !moving)
         {
-            DBG("yawPitch");
             float ypr[3];
             ypr[2] = 0.0f;
             for (int i = 0; i < numberOfBands; ++i)
             {
-                iem::Quaternion<float> masterQuat;
-                float masterypr[3];
-                masterypr[0] = degreesToRadians(*masterYaw);
-                masterypr[1] = degreesToRadians(*masterPitch);
-                masterypr[2] = degreesToRadians(*masterRoll);
-                masterQuat.fromYPR(masterypr);
-                masterQuat.conjugate();
+                iem::Quaternion<float> probeQuat;
+                float probeypr[3];
+                probeypr[0] = degreesToRadians(*probeAzimuth);
+                probeypr[1] = degreesToRadians(*probeElevation);
+                probeypr[2] = degreesToRadians(*probeRoll);
+                probeQuat.fromYPR(probeypr);
+                probeQuat.conjugate();
                 
-                ypr[0] = degreesToRadians(*yaw[i]);
-                ypr[1] = degreesToRadians(*pitch[i]);
+                ypr[0] = degreesToRadians(*azimuth[i]);
+                ypr[1] = degreesToRadians(*elevation[i]);
                 quats[i].fromYPR(ypr);
-                quats[i] = masterQuat*quats[i];
+                quats[i] = probeQuat*quats[i];
             }
         }
         repaintSphere = true;
@@ -538,12 +538,3 @@ AudioProcessor* JUCE_CALLTYPE createPluginFilter()
     return new DirectivityShaperAudioProcessor();
 }
 
-inline Vector3D<float> DirectivityShaperAudioProcessor::yawPitchToCartesian(float yawInRad, float pitchInRad) {
-    float cosPitch = cos(pitchInRad);
-    return Vector3D<float>(cosPitch * cos(yawInRad), cosPitch * sin(yawInRad), sin(-1.0f * pitchInRad));
-}
-
-inline Point<float> DirectivityShaperAudioProcessor::cartesianToYawPitch(Vector3D<float> pos) {
-    float hypxy = sqrt(pos.x*pos.x+pos.y*pos.y);
-    return Point<float>(atan2(pos.y,pos.x), atan2(hypxy,pos.z)-M_PI/2);
-}

@@ -26,7 +26,10 @@
 
 //==============================================================================
 DirectivityShaperAudioProcessorEditor::DirectivityShaperAudioProcessorEditor (DirectivityShaperAudioProcessor& p, AudioProcessorValueTreeState& vts)
-: AudioProcessorEditor (&p), processor (p), valueTreeState(vts), fv(20.0f, 20000.0f, -50.0f, 10.0f, 10.0f)
+: AudioProcessorEditor (&p), processor (p), valueTreeState(vts),
+probeElement(*valueTreeState.getParameter("probeAzimuth"), valueTreeState.getParameterRange("probeAzimuth"),
+              *valueTreeState.getParameter("probeElevation"), valueTreeState.getParameterRange("probeElevation")),
+fv(20.0f, 20000.0f, -50.0f, 10.0f, 10.0f)
 {
     setSize (900, 710);
     setLookAndFeel (&globalLaF);
@@ -81,35 +84,31 @@ DirectivityShaperAudioProcessorEditor::DirectivityShaperAudioProcessorEditor (Di
     
     cbOrderSettingAttachment = new ComboBoxAttachment(valueTreeState, "orderSetting", *title.getOutputWidgetPtr()->getOrderCbPointer());
     
-    addAndMakeVisible(&slMasterYaw);
-    slMasterYaw.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
-    slMasterYaw.setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
-    slMasterYaw.setColour(Slider::rotarySliderOutlineColourId, Colours::black);
-    slMasterYaw.setReverse(true);
-    slMasterYaw.setRotaryParameters(M_PI, 3*M_PI, false);
-    slMasterYaw.setTextValueSuffix(CharPointer_UTF8 (R"(°)"));
-    slMasterYawAttachment = new SliderAttachment(valueTreeState, "masterYaw", slMasterYaw);
+    addAndMakeVisible(&slProbeAzimuth);
+    slProbeAzimuth.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
+    slProbeAzimuth.setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
+    slProbeAzimuth.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
+    slProbeAzimuth.setReverse(true);
+    slProbeAzimuth.setRotaryParameters(M_PI, 3*M_PI, false);
+    slProbeAzimuthAttachment = new SliderAttachment(valueTreeState, "probeAzimuth", slProbeAzimuth);
     
-    addAndMakeVisible(&slMasterPitch);
-    slMasterPitch.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
-    slMasterPitch.setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
-    slMasterPitch.setColour(Slider::rotarySliderOutlineColourId, Colours::black);
-    slMasterPitch.setReverse(true);
-    slMasterPitch.setRotaryParameters(M_PI, 3*M_PI, false);
-    slMasterPitch.setTextValueSuffix(CharPointer_UTF8 (R"(°)"));
-    slMasterPitchAttachment = new SliderAttachment(valueTreeState, "masterPitch", slMasterPitch);
+    addAndMakeVisible(&slProbeElevation);
+    slProbeElevation.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
+    slProbeElevation.setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
+    slProbeElevation.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
+    slProbeElevation.setRotaryParameters(0.5 * M_PI, 2.5 * M_PI, false);
+    slProbeElevationAttachment = new SliderAttachment(valueTreeState, "probeElevation", slProbeElevation);
     
-    addAndMakeVisible(&slMasterRoll);
-    slMasterRoll.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
-    slMasterRoll.setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
-    slMasterRoll.setColour(Slider::rotarySliderOutlineColourId, Colours::black);
-    slMasterRoll.setRotaryParameters(M_PI, 3*M_PI, false);
-    slMasterRoll.setTextValueSuffix(CharPointer_UTF8 (R"(°)"));
-    slMasterRollAttachment = new SliderAttachment(valueTreeState, "masterRoll", slMasterRoll);
+    addAndMakeVisible(&slProbeRoll);
+    slProbeRoll.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
+    slProbeRoll.setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
+    slProbeRoll.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
+    slProbeRoll.setRotaryParameters(M_PI, 3*M_PI, false);
+    slProbeRollAttachment = new SliderAttachment(valueTreeState, "probeRoll", slProbeRoll);
     
-    addAndMakeVisible(&tbMasterToggle);
-    tbMasterToggle.setButtonText("Lock Directions");
-    tbMasterToggleAttachment = new ButtonAttachment(valueTreeState, "masterToggle", tbMasterToggle);
+    addAndMakeVisible(&tbProbeLock);
+    tbProbeLock.setButtonText("Lock Directions");
+    tbProbeLockAttachment = new ButtonAttachment(valueTreeState, "probeLock", tbProbeLock);
     
     
     for (int i = 0; i < numberOfBands; ++i)
@@ -154,32 +153,32 @@ DirectivityShaperAudioProcessorEditor::DirectivityShaperAudioProcessorEditor (Di
         slShape[i].setColour(Slider::rotarySliderOutlineColourId, colours[i]);
         slShapeAttachment[i] = new SliderAttachment(valueTreeState, "shape" + String(i), slShape[i]);
         
-        addAndMakeVisible(&slYaw[i]);
-        slYaw[i].setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
-        slYaw[i].setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
-        slYaw[i].setColour(Slider::rotarySliderOutlineColourId, colours[i]);
-        slYaw[i].setReverse(true);
-        slYaw[i].setRotaryParameters(M_PI, 3*M_PI, false);
-        slYaw[i].setTextValueSuffix(CharPointer_UTF8 (R"(°)"));
-        slYawAttachment[i] = new SliderAttachment(valueTreeState, "yaw" + String(i), slYaw[i]);
+        addAndMakeVisible(&slAzimuth[i]);
+        slAzimuth[i].setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
+        slAzimuth[i].setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
+        slAzimuth[i].setColour(Slider::rotarySliderOutlineColourId, colours[i]);
+        slAzimuth[i].setReverse(true);
+        slAzimuth[i].setRotaryParameters(M_PI, 3*M_PI, false);
+        slAzimuth[i].setTextValueSuffix(CharPointer_UTF8 (R"(°)"));
+        slAzimuthAttachment[i] = new SliderAttachment(valueTreeState, "azimuth" + String(i), slAzimuth[i]);
         
-        addAndMakeVisible(&slPitch[i]);
-        slPitch[i].setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
-        slPitch[i].setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
-        slPitch[i].setColour(Slider::rotarySliderOutlineColourId, colours[i]);
-        slPitch[i].setReverse(true);
-        slPitch[i].setRotaryParameters(M_PI, 3*M_PI, false);
-        slPitch[i].setTextValueSuffix(CharPointer_UTF8 (R"(°)"));
-        slPitchAttachment[i] = new SliderAttachment(valueTreeState, "pitch" + String(i), slPitch[i]);
+        addAndMakeVisible(&slElevation[i]);
+        slElevation[i].setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
+        slElevation[i].setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
+        slElevation[i].setColour(Slider::rotarySliderOutlineColourId, colours[i]);
+        slElevation[i].setReverse(true);
+        slElevation[i].setRotaryParameters(0.5 * M_PI, 2.5 * M_PI, false);
+        slElevation[i].setTextValueSuffix(CharPointer_UTF8 (R"(°)"));
+        slElevationAttachment[i] = new SliderAttachment(valueTreeState, "elevation" + String(i), slElevation[i]);
     }
     
-    addAndMakeVisible(&lbYaw);
-    lbYaw.setText("Yaw");
-    lbYaw.setJustification(Justification::centred);
+    addAndMakeVisible(&lbAzimuth);
+    lbAzimuth.setText("Azimuth");
+    lbAzimuth.setJustification(Justification::centred);
     
-    addAndMakeVisible(&lbPitch);
-    lbPitch.setText("Pitch");
-    lbPitch.setJustification(Justification::centred);
+    addAndMakeVisible(&lvElevation);
+    lvElevation.setText("Elevation");
+    lvElevation.setJustification(Justification::centred);
     
     addAndMakeVisible(&lbOrder);
     lbOrder.setText("Order");
@@ -202,14 +201,13 @@ DirectivityShaperAudioProcessorEditor::DirectivityShaperAudioProcessorEditor (Di
     gcPanning.setText("Spatial Panning");
     
     
+    addAndMakeVisible(&lbProbeAzimuth);
+    lbProbeAzimuth.setText("Azimuth");
+    lbProbeAzimuth.setJustification(Justification::centred);
     
-    addAndMakeVisible(&lbProbeYaw);
-    lbProbeYaw.setText("Yaw");
-    lbProbeYaw.setJustification(Justification::centred);
-    
-    addAndMakeVisible(&lbProbePitch);
-    lbProbePitch.setText("Pitch");
-    lbProbePitch.setJustification(Justification::centred);
+    addAndMakeVisible(&lbProbeElevation);
+    lbProbeElevation.setText("Elevation");
+    lbProbeElevation.setJustification(Justification::centred);
     
     addAndMakeVisible(&lbProbeRoll);
     lbProbeRoll.setText("Roll");
@@ -224,14 +222,15 @@ DirectivityShaperAudioProcessorEditor::DirectivityShaperAudioProcessorEditor (Di
     addAndMakeVisible(&sphere);
     for (int i = 0; i < numberOfBands; ++i)
     {
-        sphereElements[i].setColour(colours[i]);
-        sphereElements[i].setSliders(&slYaw[i],&slPitch[i]);
-        sphere.addElement(&sphereElements[i]);
+        sphereElements[i] = new SpherePanner::AziumuthElevationParameterElement(*valueTreeState.getParameter("azimuth" + String(i)), valueTreeState.getParameterRange("azimuth" + String(i)), *valueTreeState.getParameter("elevation" + String(i)), valueTreeState.getParameterRange("elevation" + String(i)));
+        sphereElements[i]->setColour(colours[i]);
+        sphere.addElement(sphereElements[i]);
     }
     
-    masterElement.setColour(Colours::black);
-    masterElement.setSliders(&slMasterYaw,&slMasterPitch);
-    sphere.addElement(&masterElement);
+    probeElement.setColour(Colours::black);
+    probeElement.setTextColour(Colours::white);
+    probeElement.setLabel("P");
+    sphere.addElement(&probeElement);
     
     startTimer(30);
 }
@@ -340,19 +339,19 @@ void DirectivityShaperAudioProcessorEditor::resized()
             
             
             Rectangle<int> sliderRow = panningArea.removeFromBottom(50);
-            lbPitch.setBounds(sliderRow.removeFromLeft(47));
+            lvElevation.setBounds(sliderRow.removeFromLeft(47));
             for (int i = 0; i < numberOfBands; ++i)
             {
                 sliderRow.removeFromLeft(4);
-                slPitch[i].setBounds(sliderRow.removeFromLeft(40));
+                slElevation[i].setBounds(sliderRow.removeFromLeft(40));
             }
             
             sliderRow = panningArea.removeFromBottom(50);
-            lbYaw.setBounds(sliderRow.removeFromLeft(47));
+            lbAzimuth.setBounds(sliderRow.removeFromLeft(47));
             for (int i = 0; i < numberOfBands; ++i)
             {
                 sliderRow.removeFromLeft(4);
-                slYaw[i].setBounds(sliderRow.removeFromLeft(40));
+                slAzimuth[i].setBounds(sliderRow.removeFromLeft(40));
             }
             sphere.setBounds(panningArea);
             
@@ -364,18 +363,18 @@ void DirectivityShaperAudioProcessorEditor::resized()
                 
                 Rectangle<int> sliderRow(rightSide.removeFromTop(55));
                 
-                slMasterYaw.setBounds(sliderRow.removeFromLeft(40));
+                slProbeAzimuth.setBounds(sliderRow.removeFromLeft(40));
                 sliderRow.removeFromLeft(rotSliderSpacing);
-                slMasterPitch.setBounds(sliderRow.removeFromLeft(40));
+                slProbeElevation.setBounds(sliderRow.removeFromLeft(40));
                 sliderRow.removeFromLeft(rotSliderSpacing);
-                slMasterRoll.setBounds(sliderRow.removeFromLeft(40));
+                slProbeRoll.setBounds(sliderRow.removeFromLeft(40));
                 sliderRow.removeFromLeft(rotSliderSpacing);
-                tbMasterToggle.setBounds(sliderRow);
+                tbProbeLock.setBounds(sliderRow);
                 
                 sliderRow = rightSide.removeFromTop(15);
-                lbProbeYaw.setBounds(sliderRow.removeFromLeft(40));
+                lbProbeAzimuth.setBounds(sliderRow.removeFromLeft(40));
                 sliderRow.removeFromLeft(rotSliderSpacing);
-                lbProbePitch.setBounds(sliderRow.removeFromLeft(40));
+                lbProbeElevation.setBounds(sliderRow.removeFromLeft(40));
                 sliderRow.removeFromLeft(rotSliderSpacing);
                 lbProbeRoll.setBounds(sliderRow.removeFromLeft(40));
                 

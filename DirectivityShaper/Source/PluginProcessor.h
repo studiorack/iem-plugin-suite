@@ -82,9 +82,6 @@ public:
     
     inline dsp::IIR::Coefficients<float>::Ptr createFilterCoefficients(int type, double sampleRate, double frequency, double Q);
     
-    inline Vector3D<float> yawPitchToCartesian(float yawInRad, float pitchInRad); //TODO: to helper functions
-    inline Point<float> cartesianToYawPitch(Vector3D<float> pos);
-    
     IIR::Coefficients<float>::Ptr arrayOfCoefficients[4];
     IIR::Filter<float> filter[numberOfBands];
     
@@ -152,15 +149,15 @@ private:
     float* filterFrequency[numberOfBands];
     float* filterQ[numberOfBands];
     float* filterGain[numberOfBands];
-    float* masterYaw;
-    float* masterPitch;
-    float* masterRoll;
-    float* masterToggle;
+    float* probeAzimuth;
+    float* probeElevation;
+    float* probeRoll;
+    float* probeLock;
     float* normalization;
     float* order[numberOfBands];
     float* shape[numberOfBands];
-    float* yaw[numberOfBands];
-    float* pitch[numberOfBands];
+    float* azimuth[numberOfBands];
+    float* elevation[numberOfBands];
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DirectivityShaperAudioProcessor)
 };
