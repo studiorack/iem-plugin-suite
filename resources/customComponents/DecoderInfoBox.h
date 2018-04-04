@@ -81,7 +81,8 @@ public:
             GlyphArrangement arr;
             arr.addJustifiedText (font, descriptionText, resStart, fontHeight + baselineOffset, resWidth, Justification::left);
             arr.draw (g);
-            const int descEnd = arr.getBoundingBox(arr.getNumGlyphs()-1, 1, true).getBottom();
+            
+            const int descEnd = jmax(fontHeight * 3.0f, arr.getBoundingBox(jmax(0, arr.getNumGlyphs() - 1), 1, true).getBottom());
             
             font.setHeight(attHeight);
             g.setFont(font);
