@@ -207,30 +207,32 @@ void AllRADecoderAudioProcessor::setCurrentProgram (int index)
         undoManager.beginNewTransaction();
         loudspeakers.removeAllChildren(&undoManager);
         
-        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(4.635f, 0.0f, 1.341f), 1), &undoManager);
-        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(4.600f, 2.023f, 1.381f), 2), &undoManager);
-        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(4.113f, 4.596f, 1.401f), 3), &undoManager);
-        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(1.574f, 5.028, 1.405), 4), &undoManager);
-        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(-1.289, 5.553f, 1.406), 5), &undoManager);
-        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(-4.376f, 3.873f, 1.358f), 6), &undoManager);
-        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(-4.636f, 0.016f, 1.371f), 7), &undoManager);
-        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(-4.331f, -3.860f, 1.353), 8), &undoManager);
-        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(-1.068f, -5.533f, 1.400f), 9), &undoManager);
-        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(1.821f, -4.943f, 1.376), 10), &undoManager);
-        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(4.481f, -4.456f, 1.387f), 11), &undoManager);
-        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(4.711f, -1.850f, 1.385f), 12), &undoManager);
-        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(4.230f, 1.766f, 3.828f), 13), &undoManager);
-        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(1.806f, 4.441f, 3.938f), 14), &undoManager);
-        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(-2.189f, 4.873f, 4.173f), 15), &undoManager);
-        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(-3.624f, 1.476f, 3.478f), 16), &undoManager);
-        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(-3.602f, -1.577f, 3.493f), 17), &undoManager);
-        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(-2.055f, -4.782f, 4.160f), 18), &undoManager);
-        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(1.925f, -4.210f, 3.854f), 19), &undoManager);
-        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(4.223f, -1.767f, 3.771f), 20), &undoManager);
-        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(1.368f, 1.456f, 4.423f), 21), &undoManager);
-        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(-1.252f, 1.324f, 4.153f), 22), &undoManager);
-        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(-1.267f, -1.342f, 4.142f), 23), &undoManager);
-        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(1.399f, -1.325f, 4.392f), 24), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(4.63f, 0.0f, 0.0f), 1), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(5.0252f, -23.7f, 0.0f), 2), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(6.1677f, -48.17f, 0.0f), 3), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(5.26f, -72.17f, 0.0f), 4), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(5.7f, -103.0f, 0.0f), 5), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(5.84f, -138.0f, 0.0f), 6), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(4.63f, -180.0f, 0.0f), 7), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(5.8f, 138.0f, 0.0f), 8), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(5.63f, 101.0f, 0.0f), 9), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(5.3f, 70.0f, 0.0f), 10), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(6.3f, 45.0f, 0.0f), 11), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(5.1f, 21.0f, 0.0f), 12), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(5.2f, -22.0f, 28.0f), 13), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(5.4f, -68.0f, 28.0f), 14), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(5.1f, -114.0f, 28.0f), 15), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(4.43f, -158.0f, 28.0f), 16), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(4.45f, 156.0f, 28.0f), 17), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(5.9f, 113.0f, 28.0f), 18), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(5.2f, 65.0f, 28.0f), 19), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(5.2f, 22.0f, 28.0f), 20), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(3.6f, -47.0f, 56.0f), 21), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(3.3f, -133.0f, 56.0f), 22), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(3.3f, 133.0f, 56.0f), 23), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(3.55f, 43.0f, 56.0f), 24), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(1.0f, 0.0f, -90.0f), 24, true, 0.0f), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(1.0f, 0.0f, 45.0f), 25, true, 1.0f), &undoManager);
         
         loudspeakers.addListener(this);
         prepareLayout();
@@ -424,16 +426,16 @@ Result AllRADecoderAudioProcessor::verifyLoudspeakers()
                 return Result::fail("Loudspeaker #" + String(i+1) + ": Radius has to be greater than zero.");
         }
         
-        bool isVirt = false;
-        if (lsp.hasProperty("Virtual")) //optional
+        bool isImaginary = false;
+        if (lsp.hasProperty("IsImaginary")) //optional
         {
-            const var virt = lsp.getProperty("Virtual", var());
-            if (! virt.isBool())
-                return Result::fail("Loudspeaker #" + String(i+1) + ": 'Virtual' value is not a bool.");
-            isVirt = virt;
+            const var imaginary = lsp.getProperty("IsImaginary", var());
+            if (! imaginary.isBool())
+                return Result::fail("Loudspeaker #" + String(i+1) + ": 'IsImaginary' value is not a bool.");
+            isImaginary = imaginary;
         }
         
-        if (! isVirt)
+        if (! isImaginary)
         {
             if (lsp.hasProperty("Channel")) //mandatory
             {
@@ -456,15 +458,15 @@ Result AllRADecoderAudioProcessor::calculateTris()
 	return Result::ok();
 }
 
-ValueTree AllRADecoderAudioProcessor::createLoudspeakerFromCartesian (Vector3D<float> cartCoordinates, int channel, bool isVirtual, float gain)
+ValueTree AllRADecoderAudioProcessor::createLoudspeakerFromCartesian (Vector3D<float> cartCoordinates, int channel, bool isImaginary, float gain)
 {
     Vector3D<float> sphericalCoordinates = cartesianToSpherical(cartCoordinates);
-    return createLoudspeakerFromSpherical(sphericalCoordinates, channel, isVirtual, gain);
+    return createLoudspeakerFromSpherical(sphericalCoordinates, channel, isImaginary, gain);
 }
 
-ValueTree AllRADecoderAudioProcessor::createLoudspeakerFromSpherical (Vector3D<float> sphericalCoordinates, int channel, bool isVirtual, float gain)
+ValueTree AllRADecoderAudioProcessor::createLoudspeakerFromSpherical (Vector3D<float> sphericalCoordinates, int channel, bool isImaginary, float gain)
 {
-    return DecoderHelper::createLoudspeaker(sphericalCoordinates.y, sphericalCoordinates.z, sphericalCoordinates.x, channel, isVirtual, gain);
+    return DecoderHelper::createLoudspeaker(sphericalCoordinates.y, sphericalCoordinates.z, sphericalCoordinates.x, channel, isImaginary, gain);
 }
 
 Vector3D<float> AllRADecoderAudioProcessor::cartesianToSpherical(Vector3D<float> cartvect)

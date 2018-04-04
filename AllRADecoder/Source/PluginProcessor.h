@@ -169,8 +169,8 @@ private:
     float getKappa(float gIm, float gRe1, float gRe2, int N);
     Matrix<float> getInverse(Matrix<float> A);
     
-    ValueTree createLoudspeakerFromCartesian (Vector3D<float> cartesianCoordinates, int channel, bool isVirtual = false, float gain = 1.0f);
-    ValueTree createLoudspeakerFromSpherical (Vector3D<float> sphericalCoordinates, int channel, bool isVirtual = false, float gain = 1.0f);
+    ValueTree createLoudspeakerFromCartesian (Vector3D<float> cartesianCoordinates, int channel, bool isImaginary = false, float gain = 1.0f);
+    ValueTree createLoudspeakerFromSpherical (Vector3D<float> sphericalCoordinates, int channel, bool isImaginary = false, float gain = 1.0f);
     Vector3D<float> cartesianToSpherical (Vector3D<float> cartvect);
     Vector3D<float> sphericalToCartesian (Vector3D<float> sphervect);
     Vector3D<float> sphericalInRadiansToCartesian (Vector3D<float> sphervect);
