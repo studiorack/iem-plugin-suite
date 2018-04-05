@@ -26,8 +26,8 @@
 
 
 class  PositionPlane :  public Component
-
 {
+    
 public:
     PositionPlane() :
     Component(),
@@ -45,76 +45,42 @@ public:
         zx
     };
     
-    class PositionPlaneElement
+    class Element
     {
     public:
-        PositionPlaneElement() :
-        pos(0.0f, 0.0f, 0.0f)
-        {}
-        PositionPlaneElement(String newID) {ID = newID;}
-        virtual ~PositionPlaneElement () {}
+        Element() {}
+        Element (String newID) { ID = newID; }
+        virtual ~Element () {}
         
-        void moveElement (const MouseEvent &event, float centreX, float centreY, float scale, Planes plane, PositionPlane* positionPlane) {
-            //bool leftClick = event.mods.isLeftButtonDown();
-            
-            Point<float> mousePos = event.getPosition().toFloat();
-            mousePos.x -= centreX;
-            mousePos.y -= centreY;
-            mousePos /= scale;
-            //DBG(mousePos.x << " " << mousePos.y);
-            switch(plane)
-            {
-                case xy:
-                    pos.x = -mousePos.y;
-                    pos.y = -mousePos.x;
-                    break;
-                case zy:
-                    pos.z = -mousePos.y;
-                    pos.y = -mousePos.x;
-                    break;
-                case zx:
-                    pos.z = -mousePos.y;
-                    pos.x = mousePos.x;
-                    break;
-            }
-            
-            //clip pos to room dimensions
-            Vector3D<float> roomDims = positionPlane->getDimensions();
-            pos.x = Range<float>(- 0.5* roomDims.x, 0.5* roomDims.x).clipValue(pos.x);
-            pos.y = Range<float>(- 0.5* roomDims.y, 0.5* roomDims.y).clipValue(pos.y);
-            pos.z = Range<float>(- 0.5* roomDims.z, 0.5* roomDims.z).clipValue(pos.z);
-        }
+        virtual void startMovement() {};
+        virtual void moveElement (const MouseEvent &event, const Point<float> centre, const float scale, Planes plane, PositionPlane* positionPlane) = 0;
+        virtual void stopMovement() { };
         
         
         
-        void setActive ( bool shouldBeActive) {
-            active = shouldBeActive;
-        }
+        void setActive (bool shouldBeActive) { active = shouldBeActive; }
         bool isActive() { return active; }
         
         void setColour( Colour newColour) { faceColour = newColour; }
         Colour getColour() { return faceColour; }
-        void setPosition(Vector3D<float> newPos, bool repaint = false)
+        
+        void setLabel (String newLabel) { label = newLabel; }
+        void setID (String newID) { ID = newID; }
+        
+        
+        virtual Vector3D<float> getPosition() = 0;
+        
+        String getLabel() { return label; };
+        String getID() { return ID; };
+        
+        void addPlane (PositionPlane* positionPlane)
         {
-            pos = newPos;
-            if (repaint) repaintAllPlanesImIn();
-        }
-        
-        void setLabel(String newLabel) {label = newLabel;}
-        void setID(String newID) {ID = newID;}
-        
-        
-        Vector3D<float> getPosition() {return pos;}
-        
-        String getLabel() {return label;};
-        String getID() {return ID;};
-        
-        void addPlane (PositionPlane* const positionPlane) {
-            jassert (positionPlane != 0);
-            if (positionPlane !=0)
+            jassert (positionPlane != nullptr);
+            if (positionPlane != nullptr)
                 planesImIn.add (positionPlane);
         };
-        void removePlane (PositionPlane* const positionPlane) {
+        void removePlane (PositionPlane* positionPlane)
+        {
             planesImIn.removeFirstMatchingValue(positionPlane);
         };
         
@@ -122,29 +88,109 @@ public:
         {
             for (int i = planesImIn.size (); --i >= 0;)
             {
-                PositionPlane* handle = (PositionPlane*) planesImIn.getUnchecked (i);
+                PositionPlane* handle = planesImIn.getUnchecked (i);
                 handle->repaint();
             }
         }
         
     private:
-        Vector3D<float> pos;
-        
         bool active = true;
-    
+        
         Colour faceColour = Colours::white;
         String ID = "";
         String label = "";
         
-        Array<void*> planesImIn;
+        Array<PositionPlane*> planesImIn;
     };
     
+    class ParameterElement : public Element
+    {
+    public:
+        ParameterElement(AudioProcessorParameter& xParameter, NormalisableRange<float> xParameterRange, AudioProcessorParameter& yParameter, NormalisableRange<float> yParameterRange, AudioProcessorParameter& zParameter, NormalisableRange<float> zParameterRange) : Element(), x(xParameter), xRange(xParameterRange), y(yParameter), yRange(yParameterRange), z(zParameter), zRange(zParameterRange) {}
+        
+        void startMovement() override
+        {
+            x.beginChangeGesture();
+            y.beginChangeGesture();
+            z.beginChangeGesture();
+        };
+        
+        void moveElement (const MouseEvent &event, const Point<float> centre, const float scale, Planes plane, PositionPlane* positionPlane) override
+        {
+            Point<float> mousePos = event.getPosition().toFloat();
+            mousePos.x -= centre.x;
+            mousePos.y -= centre.y;
+            mousePos /= scale;
+            
+            Vector3D<float> roomDims = positionPlane->getDimensions();
+            Vector3D<float> pos;
+            
+            switch(plane)
+            {
+                case xy:
+                    pos.x = -mousePos.y;
+                    pos.y = -mousePos.x;
+                    pos.x = Range<float>(- 0.5 * roomDims.x, 0.5 * roomDims.x).clipValue(pos.x);
+                    pos.y = Range<float>(- 0.5 * roomDims.y, 0.5 * roomDims.y).clipValue(pos.y);
+                    x.setValueNotifyingHost(xRange.convertTo0to1(pos.x));
+                    y.setValueNotifyingHost(yRange.convertTo0to1(pos.y));
+                    
+                    break;
+                case zy:
+                    pos.z = -mousePos.y;
+                    pos.y = -mousePos.x;
+                    pos.z = Range<float>(- 0.5* roomDims.z, 0.5* roomDims.z).clipValue(pos.z);
+                    pos.y = Range<float>(- 0.5 * roomDims.y, 0.5 * roomDims.y).clipValue(pos.y);
+                    z.setValueNotifyingHost(zRange.convertTo0to1(pos.z));
+                    y.setValueNotifyingHost(yRange.convertTo0to1(pos.y));
+                    break;
+                case zx:
+                    pos.z = -mousePos.y;
+                    pos.x = mousePos.x;
+                    pos.z = Range<float>(- 0.5* roomDims.z, 0.5* roomDims.z).clipValue(pos.z);
+                    pos.x = Range<float>(- 0.5 * roomDims.x, 0.5 * roomDims.x).clipValue(pos.x);
+                    z.setValueNotifyingHost(zRange.convertTo0to1(pos.z));
+                    x.setValueNotifyingHost(xRange.convertTo0to1(pos.x));
+                    break;
+            }
+            
+            
+        }
+        
+        void stopMovement() override
+        {
+            x.endChangeGesture();
+            y.endChangeGesture();
+            z.endChangeGesture();
+        };
+        
+        
+        /**
+         Get cartesian coordinates
+         */
+        Vector3D<float> getPosition() override
+        {
+            return Vector3D<float> (xRange.convertFrom0to1(x.getValue()),
+                                    yRange.convertFrom0to1(y.getValue()),
+                                    zRange.convertFrom0to1(z.getValue()));
+        };
+        
+    private:
+        AudioProcessorParameter& x;
+        NormalisableRange<float> xRange;
+        AudioProcessorParameter& y;
+        NormalisableRange<float> yRange;
+        AudioProcessorParameter& z;
+        NormalisableRange<float> zRange;
+    };
+    
+  
     class PositionPlaneListener
     {
     public:
         virtual ~PositionPlaneListener () {}
         
-        virtual void PositionPlaneElementChanged (PositionPlane* plane, PositionPlaneElement* element) = 0;
+        virtual void PositionPlaneElementChanged (PositionPlane* plane, Element* element) = 0;
     };
     
     
@@ -236,7 +282,7 @@ public:
         
         
         for (int i = elements.size (); --i >= 0;) {
-            PositionPlaneElement* handle = (PositionPlaneElement*) elements.getUnchecked (i);
+            Element* handle = (Element*) elements.getUnchecked (i);
             
             Vector3D<float> position = handle->getPosition();
             g.setColour(handle->isActive() ? handle->getColour() : Colours::grey);
@@ -326,7 +372,7 @@ public:
     }
     
     void mouseDown (const MouseEvent &event) override {
-        PositionPlaneElement *handle;
+        Element *handle;
         
         Rectangle<float> bounds = getLocalBounds().toType<float>();
         const float centreX = bounds.getCentreX();
@@ -344,7 +390,7 @@ public:
             if (drawPlane == zx) mouseY *= -1;
             
             for (int i = elements.size(); --i >= 0;) {
-                handle = (PositionPlaneElement*) elements.getUnchecked (i);
+                handle = elements.getUnchecked (i);
                 
                 float posH, posW;
                 Vector3D<float> position = handle->getPosition();
@@ -374,27 +420,31 @@ public:
                 }
             }
         }
-        
-        //DBG(activeElem);
-        //activeElem = indexofSmallestElement(dist,nElem);
-        
+        if (activeElem != -1) {
+            elements.getUnchecked(activeElem)->startMovement();
+        }
     }
     
     void mouseDrag (const MouseEvent &event) override
     {
         Rectangle<float> bounds = getLocalBounds().toType<float>();
-        const float centreX = bounds.getCentreX();
-        const float centreY = bounds.getCentreY();
-        
+        const Point<float> centre = bounds.getCentre();
+
         if (activeElem != -1) {
-            PositionPlaneElement* handle = (PositionPlaneElement*) elements.getUnchecked (activeElem);
-            handle->moveElement(event, centreX, centreY, scale, drawPlane, this);
+            Element* handle = elements.getUnchecked (activeElem);
+            handle->moveElement(event, centre, scale, drawPlane, this);
             handle->repaintAllPlanesImIn();
             sendChanges(handle);
         }
+        repaint();
     }
     
-    
+    void mouseUp (const MouseEvent &event) override
+    {
+        if (activeElem != -1) {
+            elements.getUnchecked(activeElem)->stopMovement();
+        }
+    }
     
     void setPlane(Planes PlaneToDraw)
     {
@@ -410,13 +460,13 @@ public:
         listeners.removeFirstMatchingValue(listener);
     };
     
-    void sendChanges(PositionPlaneElement* element)
+    void sendChanges(Element* element)
     {
         for (int i = listeners.size (); --i >= 0;)
             ((PositionPlaneListener*) listeners.getUnchecked (i))->PositionPlaneElementChanged (this, element);
     }
     
-    void addElement (PositionPlaneElement* const element) {
+    void addElement (Element* const element) {
         jassert (element != 0);
         if (element !=0)
         {
@@ -424,7 +474,7 @@ public:
             element->addPlane(this);
         }
     };
-    void removeElement (PositionPlaneElement* const element) {
+    void removeElement (Element* const element) {
         element->removePlane(this);
         elements.removeFirstMatchingValue(element);
     };
@@ -452,7 +502,7 @@ private:
     int activeElem;
     bool activeElemWasUpBeforeDrag;
     Array<void*> listeners;
-    Array<void*> elements;
+    Array<Element*> elements;
 };
 
 

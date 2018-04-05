@@ -134,7 +134,7 @@ public:
         virtual void moveElement (const MouseEvent &event, Point<int> centre, float radius, bool upBeforeDrag,  bool linearElevation) = 0;
         virtual void stopMovement() { };
         
-        /*
+        /**
          Get cartesian coordinates
          */
         virtual Vector3D<float> getCoordinates() = 0;
