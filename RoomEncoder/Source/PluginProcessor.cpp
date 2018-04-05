@@ -193,6 +193,9 @@ parameters (*this, nullptr)
     parameters.addParameterListener ("listenerX", this);
     parameters.addParameterListener ("listenerY", this);
     parameters.addParameterListener ("listenerZ", this);
+    parameters.addParameterListener ("sourceX", this);
+    parameters.addParameterListener ("sourceY", this);
+    parameters.addParameterListener ("sourceZ", this);
     parameters.addParameterListener ("roomX", this);
     parameters.addParameterListener ("roomY", this);
     parameters.addParameterListener ("roomZ", this);
@@ -339,6 +342,10 @@ void RoomEncoderAudioProcessor::parameterChanged (const String &parameterID, flo
     }
     else if (parameterID == "lowShelfFreq" || parameterID == "lowShelfGain" ||
         parameterID == "highShelfFreq" || parameterID == "highShelfGain") userChangedFilterSettings = true;
+    else if (parameterID.startsWith("source") || parameterID.startsWith("listener"))
+    {
+        repaintPositionPlanes = true;
+    }
     
     if (*syncChannel >= 0.5f && !readingSharedParams)
     {
@@ -439,7 +446,7 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
         size_t ch;
         for (ch = 0; ch < partial; ++ch)
         {
-            addr[ch] = buffer.getReadPointer(i*SIMDRegister<float>::size() + ch);
+            addr[ch] = buffer.getReadPointer(i * SIMDRegister<float>::size() + ch);
         }
         for (; ch < SIMDRegister<float>::size(); ++ch)
         {

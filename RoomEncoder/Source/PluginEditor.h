@@ -40,7 +40,7 @@ typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 //==============================================================================
 /**
 */
-class RoomEncoderAudioProcessorEditor  : public AudioProcessorEditor, private Timer, public PositionPlane::PositionPlaneListener,
+class RoomEncoderAudioProcessorEditor  : public AudioProcessorEditor, private Timer,
                                         private Slider::Listener
 {
 public:
@@ -51,7 +51,7 @@ public:
     void paint (Graphics&) override;
     void resized() override;
 
-    void PositionPlaneElementChanged (PositionPlane* plane, PositionPlane::PositionPlaneElement* element) override;
+
     void sliderValueChanged(Slider *slider) override;
 private:
     LaF globalLaF;
@@ -60,7 +60,7 @@ private:
     
     void timerCallback() override;
     
-    
+    RoomEncoderAudioProcessor& processor;
     AudioProcessorValueTreeState& valueTreeState;
     
     ReverseSlider slSourceX, slSourceY, slSourceZ;
@@ -109,13 +109,13 @@ private:
     ScopedPointer<ComboBoxAttachment> cbDirectivityOrderSetting;
     
     PositionPlane xyPlane, zyPlane;
-    PositionPlane::PositionPlaneElement sourceElement, listenerElement;
+    PositionPlane::ParameterElement sourceElement, listenerElement;
 
     OpenGLContext mOpenGlContext;
     
     TooltipWindow toolTipWin;
 
-    RoomEncoderAudioProcessor& processor;
+    
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (RoomEncoderAudioProcessorEditor)
 };

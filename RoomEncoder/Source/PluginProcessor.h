@@ -134,6 +134,7 @@ public:
     
     void updateBuffers() override;
     
+    Atomic<bool> repaintPositionPlanes = true;
 private:
     //==============================================================================
     AudioProcessorValueTreeState parameters;

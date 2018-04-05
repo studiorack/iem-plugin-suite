@@ -30,14 +30,16 @@
 //==============================================================================
 RoomEncoderAudioProcessorEditor::RoomEncoderAudioProcessorEditor (RoomEncoderAudioProcessor& p, AudioProcessorValueTreeState& vts)
 : AudioProcessorEditor (&p),
+processor (p),
 valueTreeState(vts),
-processor (p)
+sourceElement(*valueTreeState.getParameter("sourceX"), valueTreeState.getParameterRange("sourceX"),
+              *valueTreeState.getParameter("sourceY"), valueTreeState.getParameterRange("sourceY"),
+              *valueTreeState.getParameter("sourceZ"), valueTreeState.getParameterRange("sourceZ")),
+listenerElement(*valueTreeState.getParameter("listenerX"), valueTreeState.getParameterRange("listenerX"),
+              *valueTreeState.getParameter("listenerY"), valueTreeState.getParameterRange("listenerY"),
+              *valueTreeState.getParameter("listenerZ"), valueTreeState.getParameterRange("listenerZ"))
 
 {
-    //mOpenGlContext.attachTo(*this); //this optimizes drawing, but looks different
-    //mOpenGlContext.attachTo(xyPlane); //this optimizes drawing, but looks different
-    //mOpenGlContext.attachTo(zyPlane); //this optimizes drawing, but looks different
-    
     
     setSize (800, 600);
     setLookAndFeel (&globalLaF);
@@ -114,7 +116,7 @@ processor (p)
     slRoomX.addListener(this);
     
     addAndMakeVisible(&slRoomY);
-    slRoomYAttachment = new SliderAttachment(valueTreeState,"roomY", slRoomY);
+    slRoomYAttachment = new SliderAttachment(valueTreeState, "roomY", slRoomY);
     slRoomY.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slRoomY.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slRoomY.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
@@ -123,7 +125,7 @@ processor (p)
     slRoomY.addListener(this);
     
     addAndMakeVisible(&slRoomZ);
-    slRoomZAttachment = new SliderAttachment(valueTreeState,"roomZ", slRoomZ);
+    slRoomZAttachment = new SliderAttachment(valueTreeState, "roomZ", slRoomZ);
     slRoomZ.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slRoomZ.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slRoomZ.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
@@ -134,18 +136,16 @@ processor (p)
     addAndMakeVisible(&xyPlane);
     xyPlane.addElement(&sourceElement);
     xyPlane.addElement(&listenerElement);
-    xyPlane.addListener(this);
     xyPlane.useAutoScale(false);
     
     addAndMakeVisible(&zyPlane);
     zyPlane.setPlane(PositionPlane::Planes::zy);
     zyPlane.addElement(&sourceElement);
     zyPlane.addElement(&listenerElement);
-    zyPlane.addListener(this);
     zyPlane.useAutoScale(false);
     
     addAndMakeVisible(&slSourceX);
-    slSourceXAttachment = new SliderAttachment(valueTreeState,"sourceX", slSourceX);
+    slSourceXAttachment = new SliderAttachment(valueTreeState, "sourceX", slSourceX);
     slSourceX.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slSourceX.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slSourceX.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
@@ -154,7 +154,7 @@ processor (p)
     slSourceX.addListener(this);
     
     addAndMakeVisible(&slSourceY);
-    slSourceYAttachment = new SliderAttachment(valueTreeState,"sourceY", slSourceY);
+    slSourceYAttachment = new SliderAttachment(valueTreeState, "sourceY", slSourceY);
     slSourceY.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slSourceY.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slSourceY.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
@@ -163,7 +163,7 @@ processor (p)
     slSourceY.addListener(this);
     
     addAndMakeVisible(&slSourceZ);
-    slSourceZAttachment = new SliderAttachment(valueTreeState,"sourceZ", slSourceZ);
+    slSourceZAttachment = new SliderAttachment(valueTreeState, "sourceZ", slSourceZ);
     slSourceZ.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slSourceZ.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slSourceZ.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
@@ -172,7 +172,7 @@ processor (p)
     slSourceZ.addListener(this);
     
     addAndMakeVisible(&slListenerX);
-    slListenerXAttachment = new SliderAttachment(valueTreeState,"listenerX", slListenerX);
+    slListenerXAttachment = new SliderAttachment(valueTreeState, "listenerX", slListenerX);
     slListenerX.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slListenerX.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slListenerX.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
@@ -200,10 +200,7 @@ processor (p)
     slListenerZ.addListener(this);
     
     sourceElement.setColour(globalLaF.ClWidgetColours[2]);
-    sourceElement.setPosition(Vector3D<float>(slSourceX.getValue(),slSourceY.getValue(),slSourceZ.getValue()));
-    
     listenerElement.setColour(globalLaF.ClWidgetColours[1]);
-    listenerElement.setPosition(Vector3D<float>(slListenerX.getValue(),slListenerY.getValue(),slListenerZ.getValue()));
     
     addAndMakeVisible(&lbNumReflections);
     lbNumReflections.setText("Number of Reflections");
@@ -480,45 +477,16 @@ void RoomEncoderAudioProcessorEditor::resized()
     }
 }
 
-void RoomEncoderAudioProcessorEditor::PositionPlaneElementChanged (PositionPlane* plane, PositionPlane::PositionPlaneElement* element)
-{
-    if (element == &sourceElement)
-    {
-        Vector3D<float> pos = element->getPosition();
-        slSourceX.setValue(pos.x);
-        slSourceY.setValue(pos.y);
-        slSourceZ.setValue(pos.z);
-    }
-    else if (element == &listenerElement)
-    {
-        Vector3D<float> pos = element->getPosition();
-        slListenerX.setValue(pos.x);
-        slListenerY.setValue(pos.y);
-        slListenerZ.setValue(pos.z);
-    }
-}
-
 void RoomEncoderAudioProcessorEditor::sliderValueChanged(Slider *slider)
 {
-    if (slider == &slSourceX || slider == &slSourceY || slider == &slSourceZ)
-    {
-        sourceElement.setPosition(Vector3D<float>(slSourceX.getValue(),slSourceY.getValue(),slSourceZ.getValue()),true);
-        sourceElement.repaintAllPlanesImIn();
-    }
-    else if (slider == &slListenerX || slider == &slListenerY || slider == &slListenerZ)
-    {
-        listenerElement.setPosition(Vector3D<float>(slListenerX.getValue(),slListenerY.getValue(),slListenerZ.getValue()),true);
-    }
-    else if (slider == &slRoomX || slider == &slRoomY || slider == &slRoomZ)
+    if (slider == &slRoomX || slider == &slRoomY || slider == &slRoomZ)
     {
         Vector3D<float> dims(slRoomX.getValue(), slRoomY.getValue(), slRoomZ.getValue());
         float scale = jmin(xyPlane.setDimensions(dims), zyPlane.setDimensions(dims));
         xyPlane.setScale(scale);
         zyPlane.setScale(scale);
     }
-    
 }
-
 
 void RoomEncoderAudioProcessorEditor::timerCallback()
 {
@@ -533,5 +501,12 @@ void RoomEncoderAudioProcessorEditor::timerCallback()
         fv.setOverallGainInDecibels(*valueTreeState.getRawParameterValue("reflCoeff"));
         processor.updateFv = false;
         fv.repaint();
+    }
+    
+    if (processor.repaintPositionPlanes.get())
+    {
+        processor.repaintPositionPlanes = false;
+        xyPlane.repaint();
+        zyPlane.repaint();
     }
 }
