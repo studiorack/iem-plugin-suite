@@ -612,7 +612,11 @@ Result AllRADecoderAudioProcessor::checkLayout()
     }
     
     // calculate convex hull
-    NewtonApple_hull_3D(points, triangles);
+    const int result = NewtonApple_hull_3D(points, triangles);
+    if (result != 1)
+    {
+        return Result::fail("ERROR: An error occured! The layout might be broken somehow.");
+    }
     
     // normalise normal vectors
     for (int i = 0; i < triangles.size(); ++i)
