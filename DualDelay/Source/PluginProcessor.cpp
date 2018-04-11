@@ -436,6 +436,7 @@ void DualDelayAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffe
         delayInt = delayInt>>interpShift;
         int idx = delayInt-interpOffset - firstIdx;
 
+#ifdef JUCE_USE_SSE_INTRINSICS
         __m128 interp = getInterpolatedLagrangeWeights(interpCoeffIdx, fraction);
 
         for (int ch = 0; ch < nCh; ++ch)
@@ -447,6 +448,20 @@ void DualDelayAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffe
             destSamples = _mm_add_ps(destSamples, _mm_mul_ps(interp, srcSample));
             _mm_storeu_ps(dest, destSamples);
         }
+#else /* !JUCE_USE_SSE_INTRINSICS */
+        float interp[4];
+        getInterpolatedLagrangeWeights(interpCoeffIdx, fraction, interp);
+
+        for (int ch = 0; ch < nCh; ++ch)
+        {
+            float* dest = delayTempBuffer.getWritePointer(ch, idx);
+            float src = readPtrArr[ch][i];
+            dest[0] += interp[0] * src;
+            dest[1] += interp[1] * src;
+            dest[2] += interp[2] * src;
+            dest[3] += interp[3] * src;
+        }
+#endif /* JUCE_USE_SSE_INTRINSICS */
     }
     writeOffsetLeft = readOffsetLeft + firstIdx;
     if (writeOffsetLeft >= delayBufferLength)
@@ -496,6 +511,7 @@ void DualDelayAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffe
         delayInt = delayInt>>interpShift;
         int idx = delayInt-interpOffset - firstIdx;
 
+#ifdef JUCE_USE_SSE_INTRINSICS
         __m128 interp = getInterpolatedLagrangeWeights(interpCoeffIdx, fraction);
 
         for (int ch = 0; ch < nCh; ++ch)
@@ -507,6 +523,20 @@ void DualDelayAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffe
             destSamples = _mm_add_ps(destSamples, _mm_mul_ps(interp, srcSample));
             _mm_storeu_ps(dest, destSamples);
         }
+#else /* !JUCE_USE_SSE_INTRINSICS */
+        float interp[4];
+        getInterpolatedLagrangeWeights(interpCoeffIdx, fraction, interp);
+
+        for (int ch = 0; ch < nCh; ++ch)
+        {
+            float* dest = delayTempBuffer.getWritePointer(ch, idx);
+            float src = readPtrArrR[ch][i];
+            dest[0] += interp[0] * src;
+            dest[1] += interp[1] * src;
+            dest[2] += interp[2] * src;
+            dest[3] += interp[3] * src;
+        }
+#endif /* JUCE_USE_SSE_INTRINSICS */
     }
     writeOffsetRight = readOffsetRight + firstIdx;
     if (writeOffsetRight >= delayBufferLength)

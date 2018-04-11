@@ -620,16 +620,22 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
 
             float* dest = tempWritePtr++ + idx;
 
+#ifdef JUCE_USE_SSE_INTRINSICS
             __m128 destSamples = _mm_loadu_ps(dest);
-
             __m128 srcSample = _mm_set1_ps(*readPtr++);
-
             __m128 interp = getInterpolatedLagrangeWeights(interpCoeffIdx, fraction);
 
             destSamples = _mm_add_ps(destSamples, _mm_mul_ps(interp, srcSample));
-            //temp = _mm_add_ps(temp, (interpCoeffsSIMD[interpCoeffIdx] * *readPtr++).value);
             _mm_storeu_ps(dest, destSamples);
-
+#else /* !JUCE_USE_SSE_INTRINSICS */
+            float interp[4];
+            getInterpolatedLagrangeWeights(interpCoeffIdx, fraction, interp);
+            float src = *readPtr++;
+            dest[0] += interp[0] * src;
+            dest[1] += interp[1] * src;
+            dest[2] += interp[2] * src;
+            dest[3] += interp[3] * src;
+#endif /* JUCE_USE_SSE_INTRINSICS */
             tempDelay += delayStep;
         }
 
