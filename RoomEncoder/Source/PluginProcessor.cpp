@@ -4,17 +4,17 @@
  Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
- 
+
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
- 
+
  The IEM plug-in suite is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
@@ -49,7 +49,7 @@ parameters (*this, nullptr)
                                           else if (value >= 7.5f) return "7th";
                                           else return "Auto"; },
                                       nullptr);
-    
+
     parameters.createAndAddParameter ("orderSetting", "Output Ambisonics Order", "",
                                       NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
                                       [](float value) {
@@ -68,7 +68,7 @@ parameters (*this, nullptr)
                                       [](float value) { if (value >= 0.5f ) return "SN3D";
                                           else return "N3D"; },
                                       nullptr);
-    
+
     parameters.createAndAddParameter("roomX", "room size x", "m",
                                      NormalisableRange<float> (1.0f, 30.0f, 0.01f), 10.0f,
                                      [](float value) { return String(value, 2); }, nullptr);
@@ -78,7 +78,7 @@ parameters (*this, nullptr)
     parameters.createAndAddParameter("roomZ", "room size z", "m",
                                      NormalisableRange<float> (1.0f, 20.0f, 0.01f), 7.0f,
                                      [](float value) { return String(value, 2); }, nullptr);
-    
+
     parameters.createAndAddParameter("sourceX", "source position x", "m",
                                      NormalisableRange<float> (-15.0f, 15.0f, 0.001f), 1.0f,
                                      [](float value) { return String(value, 3); }, nullptr);
@@ -88,7 +88,7 @@ parameters (*this, nullptr)
     parameters.createAndAddParameter("sourceZ", "source position z", "m",
                                      NormalisableRange<float> (-10.0f, 10.0f, 0.001f), 1.0f,
                                      [](float value) { return String(value, 3); }, nullptr);
-    
+
     parameters.createAndAddParameter("listenerX", "listener position x", "m",
                                      NormalisableRange<float> (-15.0f, 15.0f, 0.001f), 0.0f,
                                      [](float value) { return String(value, 3); }, nullptr);
@@ -98,29 +98,29 @@ parameters (*this, nullptr)
     parameters.createAndAddParameter("listenerZ", "listener position z", "m",
                                      NormalisableRange<float> (-10.0f, 10.0f, 0.001f), 0.0f,
                                      [](float value) { return String(value, 3); }, nullptr);
-    
+
     parameters.createAndAddParameter("numRefl", "number of reflections", "",
                                      NormalisableRange<float> (0.0f, nImgSrc-1, 1.0f), 19.0f,
                                      [](float value) { return String((int) value); }, nullptr);
-    
+
     parameters.createAndAddParameter("lowShelfFreq", "LowShelf Frequency", "Hz",
                                      NormalisableRange<float> (20.0f, 20000.0f, 1.0f), 100.0,
                                      [](float value) { return String((int) value); }, nullptr);
     parameters.createAndAddParameter("lowShelfGain", "LowShelf Gain", "dB",
                                      NormalisableRange<float> (-15.0f, 5.0f, 0.1f), -5.0f,
                                      [](float value) { return String(value, 1); }, nullptr);
-    
+
     parameters.createAndAddParameter("highShelfFreq", "HighShelf Frequency", "Hz",
                                      NormalisableRange<float> (20., 20000.0f, 1.0f), 8000.0,
                                      [](float value) { return String((int) value); }, nullptr);
     parameters.createAndAddParameter("highShelfGain", "HighShelf Gain", "dB",
                                      NormalisableRange<float> (-15.0f, 5.0f, 0.1f), -5.0f,
                                      [](float value) { return String(value, 1); }, nullptr);
-    
+
     parameters.createAndAddParameter("reflCoeff", "Reflection Coefficient", "dB",
                                      NormalisableRange<float> (-15.0f, 0.0f, 0.01f), -1.0f,
                                      [](float value) { return String(value, 2); }, nullptr);
-    
+
     parameters.createAndAddParameter ("syncChannel", "Synchronize to Channel", "",
                                       NormalisableRange<float> (0.0f, 4.0f, 1.0f), 0.0f,
                                       [](float value) {
@@ -130,39 +130,39 @@ parameters (*this, nullptr)
                                           else if (value >= 3.5f) return "Channel 4";
                                           else return "None"; },
                                       nullptr);
-    
+
     parameters.createAndAddParameter ("syncRoomSize", "Synchronize Room Dimensions", "",
                                       NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                       [](float value) {
                                           if (value >= 0.5f) return "YES";
                                           else return "NO"; },
                                       nullptr);
-    
+
     parameters.createAndAddParameter ("syncReflection", "Synchronize Reflection Properties", "",
                                       NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                       [](float value) {
                                           if (value >= 0.5f) return "YES";
                                           else return "NO"; },
                                       nullptr);
-    
+
     parameters.createAndAddParameter ("syncListener", "Synchronize Listener Position", "",
                                       NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                       [](float value) {
                                           if (value >= 0.5f) return "YES";
                                           else return "NO"; },
                                       nullptr);
-    
-    
+
+
     parameters.state = ValueTree (Identifier ("RoomEncoder"));
-    
+
     directivityOrderSetting = parameters.getRawParameterValue ("directivityOrderSetting");
     orderSetting = parameters.getRawParameterValue ("orderSetting");
     useSN3D = parameters.getRawParameterValue ("useSN3D");
-    
+
     roomX = parameters.getRawParameterValue ("roomX");
     roomY = parameters.getRawParameterValue ("roomY");
     roomZ = parameters.getRawParameterValue ("roomZ");
-    
+
     sourceX = parameters.getRawParameterValue ("sourceX");
     sourceY = parameters.getRawParameterValue ("sourceY");
     sourceZ = parameters.getRawParameterValue ("sourceZ");
@@ -171,17 +171,17 @@ parameters (*this, nullptr)
     listenerZ = parameters.getRawParameterValue ("listenerZ");
     numRefl = parameters.getRawParameterValue ("numRefl");
     reflCoeff = parameters.getRawParameterValue ("reflCoeff");
-    
+
     syncChannel = parameters.getRawParameterValue ("syncChannel");
     syncRoomSize = parameters.getRawParameterValue ("syncRoomSize");
     syncReflection = parameters.getRawParameterValue ("syncReflection");
     syncListener = parameters.getRawParameterValue ("syncListener");
-    
+
     lowShelfFreq = parameters.getRawParameterValue ("lowShelfFreq");
     lowShelfGain = parameters.getRawParameterValue ("lowShelfGain");
     highShelfFreq = parameters.getRawParameterValue ("highShelfFreq");
     highShelfGain = parameters.getRawParameterValue ("highShelfGain");
-    
+
     parameters.addParameterListener ("directivityOrderSetting", this);
     parameters.addParameterListener ("orderSetting", this);
     parameters.addParameterListener ("lowShelfFreq", this);
@@ -199,27 +199,27 @@ parameters (*this, nullptr)
     parameters.addParameterListener ("roomX", this);
     parameters.addParameterListener ("roomY", this);
     parameters.addParameterListener ("roomZ", this);
-    
+
     t = *roomX;
     b = *roomY;
     h = *roomZ;
-    
+
     _numRefl = 0;
-    
+
     sourcePos = Vector3D<float>(*sourceX, *sourceY, *sourceZ);
     listenerPos = Vector3D<float>(*listenerX, *listenerY, *listenerZ);
-    
+
     for (int i = 0; i<nImgSrc;++i) {
         oldDelay[i] = 44100/343.2f*interpMult; //init oldRadius
         allGains[i] = 0.0f;
         FloatVectorOperations::clear(SHcoeffsOld[i], 64);
         FloatVectorOperations::clear((float *) &SHsampleOld[i], 64);
     }
-    
+
     lowShelfCoefficients = IIR::Coefficients<float>::makeLowShelf(48000, *lowShelfFreq, 0.707f, Decibels::decibelsToGain(*lowShelfGain));
     highShelfCoefficients = IIR::Coefficients<float>::makeHighShelf(48000, *highShelfFreq, 0.707f, Decibels::decibelsToGain(*highShelfGain));
-    
-    
+
+
     lowShelfArray.clear();
     highShelfArray.clear();
     lowShelfArray2.clear();
@@ -231,7 +231,7 @@ parameters (*this, nullptr)
         lowShelfArray2.add(new IIR::Filter<juce::dsp::SIMDRegister<float>>(lowShelfCoefficients));
         highShelfArray2.add(new IIR::Filter<juce::dsp::SIMDRegister<float>>(highShelfCoefficients));
     }
-    
+
     startTimer(50);
 }
 
@@ -296,29 +296,29 @@ void RoomEncoderAudioProcessor::changeProgramName (int index, const String& newN
 void RoomEncoderAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     dist2smpls = sampleRate/343.2f*interpMult; //factor 128 is a small hack for Lagrange lookuptable
-    
+
     checkInputAndOutput(this, *directivityOrderSetting, *orderSetting, true);
-    
+
     readOffset = 0;
     bufferReadIdx = 0;
-    
-    
+
+
     interleavedData.clear();
-    
+
     for (int i = 0; i<16; ++i)
     {
         lowShelfArray[i]->reset(SIMDRegister<float>(0.0f));
         highShelfArray[i]->reset(SIMDRegister<float>(0.0f));
         lowShelfArray2[i]->reset(SIMDRegister<float>(0.0f));
         highShelfArray2[i]->reset(SIMDRegister<float>(0.0f));
-        
+
         interleavedData.add(new AudioBlock<SIMDRegister<float>> (interleavedBlockData[i], 1, samplesPerBlock));
         interleavedData.getLast()->clear();
     }
-    
+
     zero = AudioBlock<float> (zeroData, SIMDRegister<float>::size(), samplesPerBlock);
     zero.clear();
-    
+
     updateFv = true;
 }
 
@@ -346,12 +346,12 @@ void RoomEncoderAudioProcessor::parameterChanged (const String &parameterID, flo
     {
         repaintPositionPlanes = true;
     }
-    
+
     if (*syncChannel >= 0.5f && !readingSharedParams)
     {
         int ch = (int) *syncChannel;
         RoomParams& roomParam = sharedParams.get().rooms.getReference(ch);
-        
+
         bool sRoom(*syncRoomSize>=0.5f);
         bool sListener(*syncListener>=0.5f);
         bool sReflections(*syncReflection>=0.5f);
@@ -380,7 +380,7 @@ void RoomEncoderAudioProcessor::parameterChanged (const String &parameterID, flo
             roomParam.lowShelfGain = *lowShelfGain;
             roomParam.highShelfFreq = *highShelfFreq;
             roomParam.highShelfGain = *highShelfGain;
-            
+
             roomParam.validReflectionData = true;
         }
 
@@ -391,36 +391,36 @@ void RoomEncoderAudioProcessor::updateFilterCoefficients(double sampleRate) {
     *lowShelfCoefficients = *IIR::Coefficients<float>::makeLowShelf(sampleRate, *lowShelfFreq, 0.707f, Decibels::decibelsToGain(*lowShelfGain));
     *highShelfCoefficients = *IIR::Coefficients<float>::makeHighShelf(sampleRate, *highShelfFreq, 0.707f, Decibels::decibelsToGain(*highShelfGain));
     userChangedFilterSettings = false;
-    
+
     updateFv = true;
 }
 
 void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
     ScopedNoDenormals noDenormals;
-    
+
     checkInputAndOutput(this, *directivityOrderSetting, *orderSetting);
-    
+
     // =============================== settings and parameters
     const int maxNChIn = jmin(buffer.getNumChannels(), input.getNumberOfChannels());
     const int maxNChOut = jmin(buffer.getNumChannels(), output.getNumberOfChannels());
     const int directivityOrder = input.getOrder();
     const int ambisonicOrder = output.getOrder();
-    
+
     const int sampleRate = getSampleRate();
     const int L = buffer.getNumSamples();
     const float oneOverL = 1.0/((double) L);
-    
-    
+
+
     float* pBufferWrite = buffer.getWritePointer(0);
     const float* pBufferRead = buffer.getReadPointer(0);
-    
+
     const int nSIMDFilters = 1 + (maxNChIn-1)/SIMDRegister<float>::size();
-    
+
     // update iir filter coefficients
     if (userChangedFilterSettings) updateFilterCoefficients(sampleRate);
-    
-    
+
+
     //interleave input data
     int partial = maxNChIn%SIMDRegister<float>::size();
     if (partial == 0)
@@ -441,7 +441,7 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
                                                    reinterpret_cast<float*> (interleavedData[i]->getChannelPointer (0)), L,
                                                    static_cast<int> (SIMDRegister<float>::size()));
         }
-        
+
         const float* addr[4];
         size_t ch;
         for (ch = 0; ch < partial; ++ch)
@@ -456,13 +456,13 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
                                                reinterpret_cast<float*> (interleavedData[i]->getChannelPointer (0)), L,
                                                static_cast<int> (SIMDRegister<float>::size()));
     }
-    
-    
-    
+
+
+
     int currNumRefl = roundToInt(*numRefl);
     int workingNumRefl = (currNumRefl < _numRefl) ? _numRefl : currNumRefl;
-    
-    
+
+
     // calculating reflection coefficients (only if parameter changed)
     float reflCoeffGain = Decibels::decibelsToGain(*reflCoeff);
     if (powReflCoeff[1] != reflCoeffGain)
@@ -474,7 +474,7 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
             powReflCoeff[i] = powReflCoeff[i-1] * reflCoeffGain;
         }
     }
-    
+
     // ======================================== LIMIT MOVING SPEED OF SOURCE AND LISTENER
     float maxDist = 30.0 / sampleRate * L; // 30 meters per second
     {
@@ -482,7 +482,7 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
         float posDiffLength;
         posDiff = Vector3D<float>(*sourceX, *sourceY, *sourceZ) - sourcePos;
         posDiffLength = posDiff.length();
-        
+
         if (posDiffLength > maxDist)
         {
             posDiff *= maxDist/posDiffLength;
@@ -492,10 +492,10 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
         {
             sourcePos = Vector3D<float>(*sourceX, *sourceY, *sourceZ);
         }
-        
+
         posDiff = Vector3D<float>(*listenerX, *listenerY, *listenerZ) - listenerPos;
         posDiffLength = posDiff.length();
-        
+
         if (posDiffLength > maxDist)
         {
             posDiff *= maxDist/posDiffLength;
@@ -506,17 +506,17 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
             listenerPos = Vector3D<float>(*listenerX, *listenerY, *listenerZ);
         }
     }
-    
+
     // prevent division by zero when source is as listener's position
     if ((listenerPos-sourcePos).lengthSquared() < 0.0001) {sourcePos = listenerPos + Vector3D<float>(0.01f, 0.0f, 0.0f); }
-    
-    
+
+
     float* pMonoBufferWrite = monoBuffer.getWritePointer(0);
-    
+
     t = *roomX;
     b = *roomY;
     h = *roomZ;
-    
+
     for (int q = 0; q<nImgSrc; ++q) //process all, because we can (and it avoids artefacts when adding img sources)
     {
         int m = reflList[q][0];
@@ -525,18 +525,18 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
         mx[q] = m*t + mSig[m&1]*sourcePos.x - listenerPos.x;
         my[q] = n*b + mSig[n&1]*sourcePos.y - listenerPos.y;
         mz[q] = o*h + mSig[o&1]*sourcePos.z - listenerPos.z;
-        
+
         mRadius[q] = sqrt(mx[q]*mx[q] + my[q]*my[q]+ mz[q]*mz[q]);
         mx[q] /= mRadius[q];
         my[q] /= mRadius[q];
         mz[q] /= mRadius[q];
-        
+
         smx[q] = - mSig[m&1] * mx[q];
         smy[q] = - mSig[n&1] * my[q];
         smz[q] = - mSig[o&1] * mz[q];
     }
-    
-    
+
+
     for (int q=0; q<workingNumRefl+1; ++q) {
         if (q == 1) {
             for (int i = 0; i<nSIMDFilters; ++i)
@@ -554,17 +554,17 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
             }
         }
 
-        
+
         // ========================================   CALCULATE SAMPLED MONO SIGNALS
         SIMDRegister<float> SHsample[16]; //TODO: can be smaller: (N+1)^2/SIMDRegister.size()
         SIMDRegister<float> SHsampleStep[16];
         FloatVectorOperations::clear((float *) &SHsample->value, 64);
         SHEval(directivityOrder, smx[q], smy[q], smz[q],(float *) &SHsample->value);
-        
+
         Array<SIMDRegister<float>*> interleavedDataPtr;
         interleavedDataPtr.resize(nSIMDFilters);
         SIMDRegister<float>** intrlvdDataArrayPtr = interleavedDataPtr.getRawDataPointer();
-        
+
         for (int i = 0; i<nSIMDFilters; ++i)
         {
             intrlvdDataArrayPtr[i] = reinterpret_cast<SIMDRegister<float>*> (interleavedData[i]->getChannelPointer (0));
@@ -572,12 +572,12 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
             SHsampleStep[i] *= oneOverL;
             SHsample[i] = SHsampleOld[q][i];
         }
-        
+
         for (int smpl = 0; smpl < L; ++smpl)
         {
             SIMDRegister<float> SIMDTemp;
             SIMDTemp = 0.0f;
-            
+
             for (int i = 0; i<nSIMDFilters; ++i)
             {
                 SIMDTemp += SHsample[i] * *(intrlvdDataArrayPtr[i]++);
@@ -585,62 +585,62 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
             }
             pBufferWrite[smpl] = SIMDTemp.sum();
         }
-        
+
         // ============================================
-        
+
         double delay, delayStep;
         int firstIdx, copyL;
         delay = mRadius[q]*dist2smpls; // dist2smpls also contains factor 128 for LUT
         delayStep = (delay - oldDelay[q])*oneOverL;
-        
+
         //calculate firstIdx and copyL
         int startIdx = ((int)oldDelay[q])>>interpShift;
         int stopIdx = L-1 + (((int)(oldDelay[q] + delayStep * L-1))>>interpShift); // ((int)(startIdx + delayStep * L-1))>>7
         firstIdx = jmin(startIdx, stopIdx) - interpOffset;
         copyL = abs(stopIdx-startIdx) + interpLength;
-        
+
         monoBuffer.clear(0,firstIdx, copyL); //TODO: optimization idea: resample input to match delay stretching
-        
+
         float* tempWritePtr = pMonoBufferWrite; //reset writePtr as it gets increased during the next for loop
         const float* readPtr = pBufferRead;
-        
+
         double tempDelay = oldDelay[q]; //start from oldDelay and add delayStep after each interation;
-        
+
         //int interpCoeffIdx;
         for (int smplIdx = 0; smplIdx < L; ++smplIdx) {
             //int delayInt; = truncatePositiveToUnsignedInt(tempDelay); //(int)tempDelay;
             float integer;
             float fraction = modff(tempDelay, &integer);
             int delayInt = (int) integer;
-            
+
             int interpCoeffIdx = delayInt&interpMask;
             delayInt = delayInt>>interpShift;
             int idx = delayInt-interpOffset;
-            
-            
+
+
             float* dest = tempWritePtr++ + idx;
-            
+
             __m128 destSamples = _mm_loadu_ps(dest);
-            
+
             __m128 srcSample = _mm_set1_ps(*readPtr++);
-            
+
             __m128 interp = getInterpolatedLagrangeWeights(interpCoeffIdx, fraction);
 
             destSamples = _mm_add_ps(destSamples, _mm_mul_ps(interp, srcSample));
             //temp = _mm_add_ps(temp, (interpCoeffsSIMD[interpCoeffIdx] * *readPtr++).value);
             _mm_storeu_ps(dest, destSamples);
-            
+
             tempDelay += delayStep;
         }
-        
+
         const float* monoBufferReadPtrWithOffset = monoBuffer.getReadPointer(0) + firstIdx;
         firstIdx = firstIdx + readOffset;
         if (firstIdx >= bufferSize)
             firstIdx -= bufferSize;
-        
+
         float SHcoeffs[64];
         float SHcoeffsStep[64];
-        
+
         if (q<=currNumRefl)
         {
             SHEval(ambisonicOrder,mx[q], my[q], mz[q], SHcoeffs);
@@ -651,20 +651,20 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
         }
         else
             FloatVectorOperations::clear(SHcoeffs, 64);
-        
+
         float gain = powReflCoeff[reflList[q][3]]/mRadius[q];
         allGains[q] = gain; // for reflectionVisualizer
-        
+
         FloatVectorOperations::multiply(SHcoeffs, gain, maxNChOut);
         //FloatVectorOperations::multiply(SHcoeffs, mSig[reflList[q][3]&1]*gain, maxNChOut);
         FloatVectorOperations::subtract(SHcoeffsStep, SHcoeffs, SHcoeffsOld[q], maxNChOut);
         FloatVectorOperations::multiply(SHcoeffsStep, 1.0f/copyL, maxNChOut);
-        
+
         if (firstIdx + copyL - 1 >= bufferSize)
         {
             int firstNumCopy = bufferSize - firstIdx;
             int secondNumCopy = copyL-firstNumCopy;
-            
+
             for (int channel = 0; channel < maxNChOut; ++channel)
             {
                 if (SHcoeffsOld[q][channel] != SHcoeffs[channel])
@@ -723,34 +723,34 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
                                                            monoBufferReadPtrWithOffset,
                                                            SHcoeffs[channel], copyL);
                 }
-                
+
             }
         }
-        
+
         FloatVectorOperations::copy(SHcoeffsOld[q], SHcoeffs, maxNChOut);
         FloatVectorOperations::copy((float *) &SHsampleOld[q]->value, (float *) &SHsample->value, maxNChIn);
         //oldDelay[q] = delay;
         oldDelay[q] = tempDelay;
     }
-    
+
     //updating the remaining oldDelay values
     for (int q = workingNumRefl + 1; q < nImgSrc; ++q)
         oldDelay[q] = mRadius[q]*dist2smpls;
-    
+
     // Read from buffer
     buffer.clear();
     for (int channel = 0; channel < maxNChOut; ++channel)
     {
         buffer.copyFrom(channel, 0, delayBufferWritePtrArray[channel] + readOffset, L);
-        
+
         delayBuffer.clear(channel, readOffset, L);
     }
-    
+
     _numRefl = currNumRefl;
-    
+
     readOffset += L;
     if (readOffset >= bufferSize) readOffset = 0;
-    
+
 
 }
 
@@ -787,10 +787,10 @@ void RoomEncoderAudioProcessor::timerCallback()
         bool sRoom(*syncRoomSize>=0.5f);
         bool sListener(*syncListener>=0.5f);
         bool sReflections(*syncReflection>=0.5f);
-        
+
         RoomParams& roomParam = sharedParams.get().rooms.getReference(ch);
 
-        
+
         if (sRoom)
         {
             if (roomParam.validRoomData) {
@@ -855,20 +855,20 @@ void RoomEncoderAudioProcessor::timerCallback()
 void RoomEncoderAudioProcessor::updateBuffers() {
     DBG("IOHelper:  input size: " << input.getSize());
     DBG("IOHelper: output size: " << output.getSize());
-    
+
     const int nChOut = output.getNumberOfChannels();
     const int samplesPerBlock = getBlockSize();
-    
+
     bufferSize = round(180.0/343.2* getSampleRate()) + samplesPerBlock + 100;
     bufferSize += samplesPerBlock - bufferSize%samplesPerBlock;
-    
+
     monoBuffer.setSize(1, bufferSize);
     monoBuffer.clear();
-    
+
     delayBuffer.setSize(nChOut, bufferSize);
     delayBuffer.clear();
     delayBufferWritePtrArray = delayBuffer.getArrayOfWritePointers();
-    
+
     if (input.getSize() != input.getPreviousSize())
     {
         for (int i = 0; i<interleavedData.size(); ++i)
