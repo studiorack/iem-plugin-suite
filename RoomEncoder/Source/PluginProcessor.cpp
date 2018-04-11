@@ -442,7 +442,7 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
                                                    static_cast<int> (SIMDRegister<float>::size()));
         }
 
-        const float* addr[4];
+        const float* addr[SIMDRegister<float>::size()];
         size_t ch;
         for (ch = 0; ch < partial; ++ch)
         {
