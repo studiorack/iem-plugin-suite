@@ -23,7 +23,6 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
-
 //==============================================================================
 DualDelayAudioProcessor::DualDelayAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations

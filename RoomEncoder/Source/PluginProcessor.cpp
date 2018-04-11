@@ -398,7 +398,6 @@ void RoomEncoderAudioProcessor::updateFilterCoefficients(double sampleRate) {
 void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
     ScopedNoDenormals noDenormals;
-
     checkInputAndOutput(this, *directivityOrderSetting, *orderSetting);
 
     // =============================== settings and parameters
@@ -456,8 +455,6 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
                                                reinterpret_cast<float*> (interleavedData[i]->getChannelPointer (0)), L,
                                                static_cast<int> (SIMDRegister<float>::size()));
     }
-
-
 
     int currNumRefl = roundToInt(*numRefl);
     int workingNumRefl = (currNumRefl < _numRefl) ? _numRefl : currNumRefl;
@@ -756,7 +753,6 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
 
     readOffset += L;
     if (readOffset >= bufferSize) readOffset = 0;
-
 
 }
 
