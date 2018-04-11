@@ -4,32 +4,34 @@
  Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
- 
+
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
- 
+
  The IEM plug-in suite is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
  */
 
-#ifndef interpCoeffsSIMD_h
- #define interpCoeffsSIMD_h
+#ifndef interpLagrangeWeights_h
+# define interpLagrangeWeights_h
+
+
 #define interpLength 4
 #define interpOffset 1
 #define interpShift 7
 #define interpMult 128
 #define interpMask 127
 
-
-const __m128 interpCoeffsSIMD[129] = {{0.0, 1.0, 0.0, 0.0, },
+const float
+lagrange_weights[129][4] = {{0.0, 1.0, 0.0, 0.0, },
     {-0.0025737, 0.99603, 0.0078428, -0.001302, },
     {-0.0050869, 0.99195, 0.015745, -0.0026035, },
     {-0.00754, 0.98774, 0.023706, -0.0039041, },
@@ -162,11 +164,21 @@ const __m128 interpCoeffsSIMD[129] = {{0.0, 1.0, 0.0, 0.0, },
 
 // idx is the 7-bit-quantized fraction of your sample delay time , whereas fraction yields the fraction between two consecutive idx-values //TODO: write this text more understandable
 
+#ifdef JUCE_USE_SSE_INTRINSICS
 __m128 inline getInterpolatedLagrangeWeights(int idx, float fraction) {
     __m128 lowPart = _mm_set1_ps(1.0f - fraction);
     __m128 highPart = _mm_set1_ps(fraction);
-    __m128 interp = _mm_add_ps (_mm_mul_ps(lowPart, interpCoeffsSIMD[idx]), _mm_mul_ps(highPart, interpCoeffsSIMD[idx+1]));
+    __m128 interp = _mm_add_ps (_mm_mul_ps(lowPart , _mm_loadu_ps(lagrange_weights[idx])), _mm_mul_ps(highPart, _mm_loadu_ps(lagrange_weights[idx+1])));
     return interp;
 }
+#endif /* JUCE_USE_SSE_INTRINSICS */
 
-#endif
+inline void getInterpolatedLagrangeWeights(int idx, float fraction, float out[4]) {
+  float fraction_ = 1.0f - fraction;
+  const float*A = lagrange_weights[idx];
+  const float*B = lagrange_weights[idx+1];
+  for(int i=0; i<4; i++)
+    out[i] = A[i] * fraction_ + B[i] * fraction;
+}
+
+#endif /* interpLagrangeWeights_h */
