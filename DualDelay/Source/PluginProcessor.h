@@ -27,7 +27,7 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "../../resources/ambisonicTools.h"
-#include "../../resources/interpCoeffsSIMD.h"
+#include "../../resources/interpLagrangeWeights.h"
 #include "../../resources/IOHelper.h"
 
 //==============================================================================
