@@ -9,11 +9,10 @@
               pluginManufacturer="IEM" pluginManufacturerCode="IEMA" pluginCode="DiCo"
               pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
-              pluginAUExportPrefix="DirectionalCompressorAU" pluginRTASCategory=""
-              aaxIdentifier="at.iem.DirectionalCompressor" pluginAAXCategory="AAX_ePlugInCategory_Dynamics"
-              jucerVersion="5.3.0" cppLanguageStandard="14" companyName="IEM"
-              companyWebsite="IEM.at" companyCopyright="IEM - Daniel Rudrich"
-              headerPath="../../../resources/">
+              pluginAUExportPrefix="DirectionalCompressorAU" aaxIdentifier="at.iem.DirectionalCompressor"
+              pluginAAXCategory="2" jucerVersion="5.3.1" cppLanguageStandard="14"
+              companyName="IEM" companyWebsite="IEM.at" companyCopyright="IEM - Daniel Rudrich"
+              headerPath="../../../resources/" pluginFormats="buildVST,buildStandalone">
   <MAINGROUP id="Ld9vSw" name="DirectionalCompressor">
     <GROUP id="{DCBFE562-E532-8599-82E1-FE126A7BB663}" name="lookAndFeel">
       <FILE id="IYBFfk" name="IEM_LaF.h" compile="0" resource="0" file="../resources/lookAndFeel/IEM_LaF.h"/>
@@ -44,7 +43,7 @@
                        enablePluginBinaryCopyStep="1" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"/>
         <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="DirectionalCompressor"
                        linkTimeOptimisation="1" enablePluginBinaryCopyStep="1" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"
-                       osxSDK="10.9 SDK" osxCompatibility="10.9 SDK"/>
+                       osxCompatibility="10.9 SDK"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_core" path="../../../../../Applications/JUCE/modules"/>

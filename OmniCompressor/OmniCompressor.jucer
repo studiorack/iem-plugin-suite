@@ -8,11 +8,10 @@
               pluginDesc="OmniCompressor" pluginManufacturer="IEM" pluginManufacturerCode="IEMA"
               pluginCode="OmCo" pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
-              pluginAUExportPrefix="OmniCompressorAU" pluginRTASCategory=""
-              aaxIdentifier="at.iem.OmniCompressor" pluginAAXCategory="AAX_ePlugInCategory_Dynamics"
-              jucerVersion="5.3.0" cppLanguageStandard="14" companyName="IEM"
-              companyWebsite="IEM.at" companyCopyright="IEM - Daniel Rudrich"
-              headerPath="../../../resources/">
+              pluginAUExportPrefix="OmniCompressorAU" aaxIdentifier="at.iem.OmniCompressor"
+              pluginAAXCategory="2" jucerVersion="5.3.1" cppLanguageStandard="14"
+              companyName="IEM" companyWebsite="IEM.at" companyCopyright="IEM - Daniel Rudrich"
+              headerPath="../../../resources/" pluginFormats="buildVST,buildStandalone">
   <MAINGROUP id="Ld9vSw" name="OmniCompressor">
     <GROUP id="{C32F7877-3111-BA83-FFEC-FCA65904B997}" name="customComponents"/>
     <GROUP id="{43E57791-1B63-9909-D743-639418F6864A}" name="lookAndFeel">
@@ -42,7 +41,7 @@
                        enablePluginBinaryCopyStep="1" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"/>
         <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="OmniCompressor"
                        linkTimeOptimisation="1" enablePluginBinaryCopyStep="1" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"
-                       osxCompatibility="10.9 SDK" osxSDK="10.9 SDK"/>
+                       osxCompatibility="10.9 SDK"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_core" path="../../../../../Applications/JUCE/modules"/>

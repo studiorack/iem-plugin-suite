@@ -9,10 +9,10 @@
               pluginManufacturer="IEM" pluginManufacturerCode="IEMA" pluginCode="EnVi"
               pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
-              pluginAUExportPrefix="EnergyVisualizerAU" pluginRTASCategory=""
-              aaxIdentifier="at.iem.EnergyVisualizer" pluginAAXCategory="AAX_ePlugInCategory_Dynamics"
-              jucerVersion="5.3.0" companyCopyright="IEM - Daniel Rudrich"
-              companyName="IEM" companyWebsite="iem.at" headerPath="../../../resources/">
+              pluginAUExportPrefix="EnergyVisualizerAU" aaxIdentifier="at.iem.EnergyVisualizer"
+              pluginAAXCategory="2" jucerVersion="5.3.1" companyCopyright="IEM - Daniel Rudrich"
+              companyName="IEM" companyWebsite="iem.at" headerPath="../../../resources/"
+              pluginFormats="buildVST,buildStandalone">
   <MAINGROUP id="LpzrV9" name="EnergyVisualizer">
     <GROUP id="{1B6BB8E4-E576-FBC7-B6B6-8603D2CEBF9D}" name="lookAndFeel">
       <FILE id="JNnjS0" name="IEM_LaF.h" compile="0" resource="0" file="../resources/lookAndFeel/IEM_LaF.h"/>
@@ -47,7 +47,7 @@
                        enablePluginBinaryCopyStep="1" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"/>
         <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="EnergyVisualizer"
                        enablePluginBinaryCopyStep="1" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"
-                       osxSDK="10.9 SDK" osxCompatibility="10.9 SDK"/>
+                       osxCompatibility="10.9 SDK"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_core" path="../../../../../Applications/JUCE/modules"/>

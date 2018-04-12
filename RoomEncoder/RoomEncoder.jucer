@@ -8,10 +8,10 @@
               pluginDesc="RoomEncoder" pluginManufacturer="IEM" pluginManufacturerCode="IEMA"
               pluginCode="RoEn" pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
-              pluginAUExportPrefix="RoomEncoderAU" pluginRTASCategory="" aaxIdentifier="at.iem.RoomEncoder"
-              pluginAAXCategory="AAX_ePlugInCategory_Dynamics" jucerVersion="5.3.0"
-              companyName="IEM" companyWebsite="iem.at" cppLanguageStandard="latest"
-              companyCopyright="IEM - Daniel Rudrich" headerPath="../../../resources/">
+              pluginAUExportPrefix="RoomEncoderAU" aaxIdentifier="at.iem.RoomEncoder"
+              pluginAAXCategory="2" jucerVersion="5.3.1" companyName="IEM"
+              companyWebsite="iem.at" cppLanguageStandard="latest" companyCopyright="IEM - Daniel Rudrich"
+              headerPath="../../../resources/" pluginFormats="buildVST,buildStandalone">
   <MAINGROUP id="ONcHIf" name="RoomEncoder">
     <GROUP id="{417A8B9D-191D-95A1-7CD1-3876D83AFD09}" name="lookAndFeel">
       <FILE id="s7VnYv" name="IEM_LaF.h" compile="0" resource="0" file="../resources/lookAndFeel/IEM_LaF.h"/>
@@ -44,7 +44,7 @@
                        enablePluginBinaryCopyStep="1" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"/>
         <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="RoomEncoder"
                        linkTimeOptimisation="1" enablePluginBinaryCopyStep="1" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"
-                       osxSDK="10.9 SDK" osxCompatibility="10.9 SDK"/>
+                       osxCompatibility="10.9 SDK"/>
         <CONFIGURATION name="Debug with Optimizations" isDebug="1" optimisation="3"
                        targetName="RoomEncoder" enablePluginBinaryCopyStep="1" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"/>
       </CONFIGURATIONS>

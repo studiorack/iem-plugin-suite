@@ -7,12 +7,12 @@
               pluginManufacturer="IEM" pluginManufacturerCode="IEMA" pluginCode="PrDe"
               pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
-              pluginAUExportPrefix="ProbeDecoderAU" pluginRTASCategory="" aaxIdentifier="at.iem.ProbeDecoder"
-              pluginAAXCategory="AAX_ePlugInCategory_Dynamics" jucerVersion="5.3.0"
-              companyName="IEM" companyWebsite="iem.at" displaySplashScreen="0"
-              reportAppUsage="0" splashScreenColour="Dark" buildStandalone="1"
-              enableIAA="0" cppLanguageStandard="14" companyCopyright="IEM - Daniel Rudrich"
-              headerPath="../../../resources/">
+              pluginAUExportPrefix="ProbeDecoderAU" aaxIdentifier="at.iem.ProbeDecoder"
+              pluginAAXCategory="2" jucerVersion="5.3.1" companyName="IEM"
+              companyWebsite="iem.at" displaySplashScreen="0" reportAppUsage="0"
+              splashScreenColour="Dark" buildStandalone="1" enableIAA="0" cppLanguageStandard="14"
+              companyCopyright="IEM - Daniel Rudrich" headerPath="../../../resources/"
+              pluginFormats="buildVST,buildStandalone">
   <MAINGROUP id="u5XoJ7" name="ProbeDecoder">
     <GROUP id="{8535954E-DB57-A8DB-7C90-66B548D8B415}" name="lookAndFeel">
       <FILE id="UcARlb" name="IEM_LaF.h" compile="0" resource="0" file="../resources/lookAndFeel/IEM_LaF.h"/>
@@ -43,7 +43,7 @@
                        enablePluginBinaryCopyStep="1" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"/>
         <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="ProbeDecoder"
                        enablePluginBinaryCopyStep="1" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"
-                       osxSDK="10.9 SDK" osxCompatibility="10.9 SDK"/>
+                       osxCompatibility="10.9 SDK"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_core" path="../../../../../Applications/JUCE/modules"/>

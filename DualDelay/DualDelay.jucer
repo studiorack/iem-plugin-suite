@@ -8,10 +8,10 @@
               pluginDesc="DualDelay" pluginManufacturer="IEM" pluginManufacturerCode="IEMA"
               pluginCode="DuDe" pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
-              pluginAUExportPrefix="DualDelayAU" pluginRTASCategory="" aaxIdentifier="at.iem.DualDelay"
-              pluginAAXCategory="AAX_ePlugInCategory_Dynamics" jucerVersion="5.3.0"
-              companyName="IEM" companyWebsite="iem.at" cppLanguageStandard="14"
-              companyCopyright="IEM - Daniel Rudrich" headerPath="../../../resources/">
+              pluginAUExportPrefix="DualDelayAU" aaxIdentifier="at.iem.DualDelay"
+              pluginAAXCategory="2" jucerVersion="5.3.1" companyName="IEM"
+              companyWebsite="iem.at" cppLanguageStandard="14" companyCopyright="IEM - Daniel Rudrich"
+              headerPath="../../../resources/" pluginFormats="buildVST,buildStandalone">
   <MAINGROUP id="ie7lEF" name="DualDelay">
     <GROUP id="{733DAD44-69FE-47B0-7F02-2323D3DCB784}" name="lookAndFeel">
       <FILE id="V77kkS" name="IEM_LaF.h" compile="0" resource="0" file="../resources/lookAndFeel/IEM_LaF.h"/>
@@ -40,7 +40,7 @@
                        enablePluginBinaryCopyStep="1" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"/>
         <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="DualDelay"
                        enablePluginBinaryCopyStep="1" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"
-                       osxCompatibility="10.9 SDK" osxSDK="10.9 SDK"/>
+                       osxCompatibility="10.9 SDK"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_core" path="../../../../../Applications/JUCE/modules"/>
