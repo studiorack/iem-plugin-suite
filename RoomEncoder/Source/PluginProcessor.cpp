@@ -226,10 +226,10 @@ parameters (*this, nullptr)
     highShelfArray2.clear();
     for (int i = 0; i<16; ++i)
     {
-        lowShelfArray.add(new IIR::Filter<juce::dsp::SIMDRegister<float>>(lowShelfCoefficients));
-        highShelfArray.add(new IIR::Filter<juce::dsp::SIMDRegister<float>>(highShelfCoefficients));
-        lowShelfArray2.add(new IIR::Filter<juce::dsp::SIMDRegister<float>>(lowShelfCoefficients));
-        highShelfArray2.add(new IIR::Filter<juce::dsp::SIMDRegister<float>>(highShelfCoefficients));
+        lowShelfArray.add(new IIR::Filter<IIRfloat>(lowShelfCoefficients));
+        highShelfArray.add(new IIR::Filter<IIRfloat>(highShelfCoefficients));
+        lowShelfArray2.add(new IIR::Filter<IIRfloat>(lowShelfCoefficients));
+        highShelfArray2.add(new IIR::Filter<IIRfloat>(highShelfCoefficients));
     }
 
     startTimer(50);
@@ -307,16 +307,16 @@ void RoomEncoderAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
 
     for (int i = 0; i<16; ++i)
     {
-        lowShelfArray[i]->reset(SIMDRegister<float>(0.0f));
-        highShelfArray[i]->reset(SIMDRegister<float>(0.0f));
-        lowShelfArray2[i]->reset(SIMDRegister<float>(0.0f));
-        highShelfArray2[i]->reset(SIMDRegister<float>(0.0f));
+        lowShelfArray[i]->reset(IIRfloat(0.0f));
+        highShelfArray[i]->reset(IIRfloat(0.0f));
+        lowShelfArray2[i]->reset(IIRfloat(0.0f));
+        highShelfArray2[i]->reset(IIRfloat(0.0f));
 
-        interleavedData.add(new AudioBlock<SIMDRegister<float>> (interleavedBlockData[i], 1, samplesPerBlock));
+        interleavedData.add(new AudioBlock<IIRfloat> (interleavedBlockData[i], 1, samplesPerBlock));
         interleavedData.getLast()->clear();
     }
 
-    zero = AudioBlock<float> (zeroData, SIMDRegister<float>::size(), samplesPerBlock);
+    zero = AudioBlock<float> (zeroData, IIRfloat_elements(), samplesPerBlock);
     zero.clear();
 
     updateFv = true;
@@ -414,21 +414,21 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
     float* pBufferWrite = buffer.getWritePointer(0);
     const float* pBufferRead = buffer.getReadPointer(0);
 
-    const int nSIMDFilters = 1 + (maxNChIn-1)/SIMDRegister<float>::size();
+    const int nSIMDFilters = 1 + (maxNChIn-1)/IIRfloat_elements();
 
     // update iir filter coefficients
     if (userChangedFilterSettings) updateFilterCoefficients(sampleRate);
 
 
     //interleave input data
-    int partial = maxNChIn%SIMDRegister<float>::size();
+    int partial = maxNChIn%IIRfloat_elements();
     if (partial == 0)
     {
         for (int i = 0; i<nSIMDFilters; ++i)
         {
-            AudioDataConverters::interleaveSamples(buffer.getArrayOfReadPointers() + i*SIMDRegister<float>::size(),
+            AudioDataConverters::interleaveSamples(buffer.getArrayOfReadPointers() + i*IIRfloat_elements(),
                                                    reinterpret_cast<float*> (interleavedData[i]->getChannelPointer (0)), L,
-                                                   static_cast<int> (SIMDRegister<float>::size()));
+                                                   static_cast<int> (IIRfloat_elements()));
         }
     }
     else
@@ -436,24 +436,24 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
         int i;
         for (i = 0; i<nSIMDFilters-1; ++i)
         {
-            AudioDataConverters::interleaveSamples(buffer.getArrayOfReadPointers() + i*SIMDRegister<float>::size(),
+            AudioDataConverters::interleaveSamples(buffer.getArrayOfReadPointers() + i*IIRfloat_elements(),
                                                    reinterpret_cast<float*> (interleavedData[i]->getChannelPointer (0)), L,
-                                                   static_cast<int> (SIMDRegister<float>::size()));
+                                                   static_cast<int> (IIRfloat_elements()));
         }
 
-        const float* addr[SIMDRegister<float>::size()];
+        const float* addr[IIRfloat_elements()];
         size_t ch;
         for (ch = 0; ch < partial; ++ch)
         {
-            addr[ch] = buffer.getReadPointer(i * SIMDRegister<float>::size() + ch);
+            addr[ch] = buffer.getReadPointer(i * IIRfloat_elements() + ch);
         }
-        for (; ch < SIMDRegister<float>::size(); ++ch)
+        for (; ch < IIRfloat_elements(); ++ch)
         {
             addr[ch] = zero.getChannelPointer(ch);
         }
         AudioDataConverters::interleaveSamples(addr,
                                                reinterpret_cast<float*> (interleavedData[i]->getChannelPointer (0)), L,
-                                               static_cast<int> (SIMDRegister<float>::size()));
+                                               static_cast<int> (IIRfloat_elements()));
     }
 
     int currNumRefl = roundToInt(*numRefl);
@@ -538,7 +538,7 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
         if (q == 1) {
             for (int i = 0; i<nSIMDFilters; ++i)
             {
-                ProcessContextReplacing<SIMDRegister<float>> context (*interleavedData[i]);
+                ProcessContextReplacing<IIRfloat> context (*interleavedData[i]);
                 lowShelfArray[i]->process(context);
                 highShelfArray[i]->process(context);
             }
@@ -546,25 +546,36 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
         if (q == 7) {
             for (int i = 0; i<nSIMDFilters; ++i)
             {
-                lowShelfArray2[i]->process(ProcessContextReplacing<SIMDRegister<float>> (*interleavedData[i]));
-                highShelfArray2[i]->process(ProcessContextReplacing<SIMDRegister<float>> (*interleavedData[i]));
+                lowShelfArray2[i]->process(ProcessContextReplacing<IIRfloat> (*interleavedData[i]));
+                highShelfArray2[i]->process(ProcessContextReplacing<IIRfloat> (*interleavedData[i]));
             }
         }
 
 
         // ========================================   CALCULATE SAMPLED MONO SIGNALS
-        SIMDRegister<float> SHsample[16]; //TODO: can be smaller: (N+1)^2/SIMDRegister.size()
-        SIMDRegister<float> SHsampleStep[16];
-        FloatVectorOperations::clear((float *) &SHsample->value, 64);
+        /* JMZ:
+         * the following section is broken, as it hardcodes asumptions about how
+         * many floats can be stored in IIRfloat
+         */
+        IIRfloat SHsample[16]; //TODO: can be smaller: (N+1)^2/IIRfloat_elements()
+        IIRfloat SHsampleStep[16];
+#if JUCE_USE_SIMD
+        FloatVectorOperations::clear((float *) &SHsample->value,
+                                     IIRfloat_elements() * sizeof(SHsample) / sizeof(*SHsample));
         SHEval(directivityOrder, smx[q], smy[q], smz[q],(float *) &SHsample->value);
+#else  /* !JUCE_USE_SIMD */
+        FloatVectorOperations::clear((float *) SHsample,
+                                     IIRfloat_elements() * sizeof(SHsample) / sizeof(*SHsample));
+        SHEval(directivityOrder, smx[q], smy[q], smz[q],(float *) SHsample);
+#endif /* JUCE_USE_SIMD */
 
-        Array<SIMDRegister<float>*> interleavedDataPtr;
+        Array<IIRfloat*> interleavedDataPtr;
         interleavedDataPtr.resize(nSIMDFilters);
-        SIMDRegister<float>** intrlvdDataArrayPtr = interleavedDataPtr.getRawDataPointer();
+        IIRfloat** intrlvdDataArrayPtr = interleavedDataPtr.getRawDataPointer();
 
         for (int i = 0; i<nSIMDFilters; ++i)
         {
-            intrlvdDataArrayPtr[i] = reinterpret_cast<SIMDRegister<float>*> (interleavedData[i]->getChannelPointer (0));
+            intrlvdDataArrayPtr[i] = reinterpret_cast<IIRfloat*> (interleavedData[i]->getChannelPointer (0));
             SHsampleStep[i] = SHsample[i]-SHsampleOld[q][i];
             SHsampleStep[i] *= oneOverL;
             SHsample[i] = SHsampleOld[q][i];
@@ -572,7 +583,7 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
 
         for (int smpl = 0; smpl < L; ++smpl)
         {
-            SIMDRegister<float> SIMDTemp;
+            IIRfloat SIMDTemp;
             SIMDTemp = 0.0f;
 
             for (int i = 0; i<nSIMDFilters; ++i)
@@ -580,7 +591,11 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
                 SIMDTemp += SHsample[i] * *(intrlvdDataArrayPtr[i]++);
                 SHsample[i] += SHsampleStep[i];
             }
+#if JUCE_USE_SIMD
             pBufferWrite[smpl] = SIMDTemp.sum();
+#else /* !JUCE_USE_SIMD */
+            pBufferWrite[smpl] = SIMDTemp;
+#endif /* JUCE_USE_SIMD */
         }
 
         // ============================================
@@ -731,7 +746,11 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
         }
 
         FloatVectorOperations::copy(SHcoeffsOld[q], SHcoeffs, maxNChOut);
+#if JUCE_USE_SIMD
         FloatVectorOperations::copy((float *) &SHsampleOld[q]->value, (float *) &SHsample->value, maxNChIn);
+#else  /* !JUCE_USE_SIMD */
+        FloatVectorOperations::copy((float *) SHsampleOld[q], (float *) SHsample, maxNChIn);
+#endif /* JUCE_USE_SIMD */
         //oldDelay[q] = delay;
         oldDelay[q] = tempDelay;
     }

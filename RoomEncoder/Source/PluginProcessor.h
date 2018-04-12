@@ -39,6 +39,14 @@
 #include <Accelerate/Accelerate.h>
 #endif
 
+#if JUCE_USE_SIMD
+# define IIRfloat juce::dsp::SIMDRegister<float>
+# define IIRfloat_elements() IIRfloat::size()
+#else /* !JUCE_USE_SIMD */
+# define IIRfloat float
+# define IIRfloat_elements() 1
+#endif /* JUCE_USE_SIMD */
+
 const int mSig[] = {1,-1};
 using namespace juce::dsp;
 
@@ -178,12 +186,12 @@ private:
     SharedResourcePointer<SharedParams> sharedParams;
     
     //SIMD IIR Filter
-    OwnedArray<IIR::Filter<SIMDRegister<float>>> lowShelfArray;
-    OwnedArray<IIR::Filter<SIMDRegister<float>>> highShelfArray;
-    OwnedArray<IIR::Filter<SIMDRegister<float>>> lowShelfArray2;
-    OwnedArray<IIR::Filter<SIMDRegister<float>>> highShelfArray2;
+    OwnedArray<IIR::Filter<IIRfloat>> lowShelfArray;
+    OwnedArray<IIR::Filter<IIRfloat>> highShelfArray;
+    OwnedArray<IIR::Filter<IIRfloat>> lowShelfArray2;
+    OwnedArray<IIR::Filter<IIRfloat>> highShelfArray2;
     HeapBlock<char> interleavedBlockData[16], zeroData; //todo: dynamically?
-    OwnedArray<AudioBlock<SIMDRegister<float>>> interleavedData;
+    OwnedArray<AudioBlock<IIRfloat>> interleavedData;
     AudioBlock<float> zero;
     
     
@@ -212,7 +220,7 @@ private:
 
     float *tempAddr;
     float SHcoeffsOld[nImgSrc][64];
-    SIMDRegister<float> SHsampleOld[nImgSrc][16]; //TODO: can be smaller: (N+1)^2/SIMDRegister.size()
+    IIRfloat SHsampleOld[nImgSrc][16]; //TODO: can be smaller: (N+1)^2/IIRfloat_elements()
     float weightedSample;
     
     AudioBuffer<float> delayBuffer;
