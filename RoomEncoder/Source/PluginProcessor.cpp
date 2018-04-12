@@ -617,7 +617,7 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
 
             float* dest = tempWritePtr++ + idx;
 
-#ifdef JUCE_USE_SSE_INTRINSICS
+#if JUCE_USE_SSE_INTRINSICS
             __m128 destSamples = _mm_loadu_ps(dest);
             __m128 srcSample = _mm_set1_ps(*readPtr++);
             __m128 interp = getInterpolatedLagrangeWeights(interpCoeffIdx, fraction);

@@ -164,7 +164,7 @@ lagrange_weights[129][4] = {{0.0, 1.0, 0.0, 0.0, },
 
 // idx is the 7-bit-quantized fraction of your sample delay time , whereas fraction yields the fraction between two consecutive idx-values //TODO: write this text more understandable
 
-#ifdef JUCE_USE_SSE_INTRINSICS
+#if JUCE_USE_SSE_INTRINSICS
 __m128 inline getInterpolatedLagrangeWeights(int idx, float fraction) {
     __m128 lowPart = _mm_set1_ps(1.0f - fraction);
     __m128 highPart = _mm_set1_ps(fraction);

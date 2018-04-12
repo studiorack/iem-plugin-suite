@@ -435,7 +435,7 @@ void DualDelayAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffe
         delayInt = delayInt>>interpShift;
         int idx = delayInt-interpOffset - firstIdx;
 
-#ifdef JUCE_USE_SSE_INTRINSICS
+#if JUCE_USE_SSE_INTRINSICS
         __m128 interp = getInterpolatedLagrangeWeights(interpCoeffIdx, fraction);
 
         for (int ch = 0; ch < nCh; ++ch)
@@ -510,7 +510,7 @@ void DualDelayAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffe
         delayInt = delayInt>>interpShift;
         int idx = delayInt-interpOffset - firstIdx;
 
-#ifdef JUCE_USE_SSE_INTRINSICS
+#if JUCE_USE_SSE_INTRINSICS
         __m128 interp = getInterpolatedLagrangeWeights(interpCoeffIdx, fraction);
 
         for (int ch = 0; ch < nCh; ++ch)
