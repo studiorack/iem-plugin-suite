@@ -4,17 +4,17 @@
  Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
- 
+
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
- 
+
  The IEM plug-in suite is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
@@ -44,10 +44,10 @@ public:
         colourSelector->addChangeListener (this);
         colourSelector->setColour (ColourSelector::backgroundColourId, Colours::transparentBlack);
         colourSelector->setSize (300, 400);
-        
+
         CallOutBox::launchAsynchronously (colourSelector, getScreenBounds(), nullptr);
     }
-    
+
     void changeListenerCallback (ChangeBroadcaster* source) override
     {
         if (ColourSelector* cs = dynamic_cast<ColourSelector*> (source))
@@ -60,17 +60,17 @@ public:
             spherePanner.repaint();
         }
     }
-    
+
     void paint (Graphics& g) override
     {
         LookAndFeel& lf = getLookAndFeel();
-        
+
         Rectangle<float> buttonArea(0.0f, 0.0f, getWidth(), getHeight());
         buttonArea.reduce(1.0f, 1.0f);
-        
+
         const float width  = getWidth()-2;
         const float height = getHeight()-2;
-        
+
         if (width > 0 && height > 0)
         {
             const float cornerSize = jmin (15.0f, jmin (width, height) * 0.45f);
@@ -83,7 +83,7 @@ public:
 
         lf.drawButtonText (g, *this, isMouseOver(), isMouseButtonDown());
     }
-    
+
 private:
     MultiEncoderAudioProcessor& processor;
     int id;
@@ -98,11 +98,11 @@ public:
         setNumberOfChannels(nChannels);
     };
     ~EncoderList() {};
-    
+
     void setNumberOfChannels (int nCh) {
         const int nElements = sphereElementArray.size();
         const int nExcessive = nElements - nCh;
-        
+
         if (nExcessive > 0) // we have to delete some
         {
             for (int i = nCh; i < nElements; ++i)
@@ -137,7 +137,7 @@ public:
                 slGainArray.add(new ReverseSlider());
                 muteButtonArray.add(new MuteSoloButton());
                 soloButtonArray.add(new MuteSoloButton());
-                
+
                 SpherePanner::Element* sphereElement = sphereElementArray.getLast();
                 ColourChangeButton* colourChooser = colourChooserArray.getLast();
                 ReverseSlider* azimuthSlider = slAzimuthArray.getLast();
@@ -145,17 +145,17 @@ public:
                 ReverseSlider* gainSlider = slGainArray.getLast();
                 MuteSoloButton* muteButton = muteButtonArray.getLast();
                 MuteSoloButton* soloButton = soloButtonArray.getLast();
-                
+
                 sphereElement->setLabel(String(i+1));
                 sphereElement->setColour(processor.elementColours[i]);
                 sphereElement->setTextColour(Colours::white.overlaidWith(processor.elementColours[i]).contrasting());
-                
+
                 spherePanner.addElement(sphereElement);
-                
+
                 addAndMakeVisible(colourChooser);
                 colourChooser->setColour(TextButton::buttonColourId, processor.elementColours[i]);
                 colourChooser->setColour(TextButton::textColourOffId, Colours::white.overlaidWith (processor.elementColours[i]).contrasting());
-                
+
                 addAndMakeVisible(azimuthSlider);
                 slAzimuthSliderAttachment.add(new SliderAttachment(*pVts, "azimuth" + String(i), *azimuthSlider));
                 azimuthSlider->setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
@@ -164,7 +164,7 @@ public:
                 azimuthSlider->setColour (Slider::rotarySliderOutlineColourId, Colour(0xFF00CAFF));
                 azimuthSlider->setRotaryParameters(M_PI, 3*M_PI, false);
                 azimuthSlider->setTooltip("Azimuth angle");
-                
+
                 addAndMakeVisible(elevationSlider);
                 slElevationAttachmentArray.add(new SliderAttachment(*pVts, "elevation" + String(i), *elevationSlider));
                 elevationSlider->setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
@@ -172,7 +172,7 @@ public:
                 elevationSlider->setColour (Slider::rotarySliderOutlineColourId, Colour(0xFF4FFF00));
                 elevationSlider->setRotaryParameters(0.5*M_PI, 2.5*M_PI, false);
                 elevationSlider->setTooltip("Elevation angle");
-                
+
                 addAndMakeVisible(gainSlider);
                 slGainAttachmentArray.add(new SliderAttachment(*pVts, "gain" + String(i), *gainSlider));
                 gainSlider->setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
@@ -181,23 +181,23 @@ public:
                 gainSlider->setReverse(false);
                 gainSlider->setTooltip("Gain");
                 gainSlider->setTextValueSuffix("dB");
-                
+
                 addAndMakeVisible(muteButton);
                 muteButtonAttachmentArray.add(new ButtonAttachment(*pVts,"mute" + String(i), *muteButton));
                 muteButton->setType(MuteSoloButton::Type::mute);
-                
+
                 addAndMakeVisible(soloButton);
                 soloButtonAttachmentArray.add(new ButtonAttachment(*pVts,"solo" + String(i), *soloButton));
                 soloButton->setType(MuteSoloButton::Type::solo);
             }
         }
-        
+
         nChannels = nCh;
-        
+
         setBounds(0, 0, 200, nChannels*(63));  // const int rotSliderHeight = 55; const int labelHeight = 15;
-        
+
     }
-    
+
     void updateColours() {
         for (int i = 0; i < nChannels; ++i)
         {
@@ -208,19 +208,19 @@ public:
         }
         repaint();
     }
-    
+
     void paint (Graphics& g) override {
     };
-    
+
     void resized() override {
-        
+
         Rectangle<int> bounds = getBounds();
         Rectangle<int> sliderRow;
-        
+
         const int rotSliderSpacing = 10;
         const int rotSliderHeight = 55;
         const int rotSliderWidth = 40;
-        
+
         for (int i = 0; i < nChannels; ++i)
         {
             sliderRow = bounds.removeFromTop(rotSliderHeight);
@@ -232,7 +232,7 @@ public:
             sliderRow.removeFromLeft(rotSliderSpacing);
             slGainArray[i]->setBounds (sliderRow.removeFromLeft(rotSliderWidth));
             sliderRow.removeFromLeft(rotSliderSpacing);
-            
+
             sliderRow.reduce(0, 6);
             sliderRow.setWidth(18);
             soloButtonArray[i]->setBounds(sliderRow.removeFromTop(18));
@@ -240,19 +240,19 @@ public:
             muteButtonArray[i]->setBounds(sliderRow.removeFromTop(18));
             bounds.removeFromTop(8); //spacing
         }
-        
+
         repaint();
     }
     OwnedArray<SpherePanner::AziumuthElevationParameterElement> sphereElementArray;
-    
+
 private:
     MultiEncoderAudioProcessor& processor;
     SpherePanner& spherePanner;
     AudioProcessorValueTreeState* pVts;
     int nChannels;
-    
-    
-    
+
+
+
     OwnedArray<ReverseSlider> slAzimuthArray, slElevationArray, slGainArray;
     OwnedArray<MuteSoloButton> muteButtonArray, soloButtonArray;
     OwnedArray<ColourChangeButton> colourChooserArray;

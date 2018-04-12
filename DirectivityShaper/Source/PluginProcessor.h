@@ -4,17 +4,17 @@
  Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
- 
+
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
- 
+
  The IEM plug-in suite is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
@@ -79,21 +79,21 @@ public:
     void parameterChanged (const String &parameterID, float newValue) override;
     AudioProcessorValueTreeState parameters;
     float weights[numberOfBands][8];
-    
+
     inline dsp::IIR::Coefficients<float>::Ptr createFilterCoefficients(int type, double sampleRate, double frequency, double Q);
-    
+
     IIR::Coefficients<float>::Ptr arrayOfCoefficients[4];
     IIR::Filter<float> filter[numberOfBands];
-    
+
     float probeGains[numberOfBands];
-    
+
     Atomic<bool> repaintDV = true;
     Atomic<bool> repaintXY = true;
     Atomic<bool> repaintFV = true;
     Atomic<bool> repaintSphere = true;
-    
+
     void updateBuffers() override { repaintXY = true; };
-    
+
 private:
     const float maxRe[8][8] =
     {
@@ -106,7 +106,7 @@ private:
         {1.0f, 9.4921830632793713e-01f, 8.5152308960211620e-01f, 7.1432330396679700e-01f, 5.4794300713180655e-01f, 3.6475291657556469e-01f, 1.7813609450688817e-01f, 0.0f},
         {1.0f, 9.6036452263662697e-01f, 8.8345002450861454e-01f, 7.7381375334313540e-01f, 6.3791321433685355e-01f, 4.8368159255186721e-01f, 3.2000849790781744e-01f, 1.5616185043093761e-01f}
     };
-    
+
     const float inPhase[8][8] =
     {
         {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},
@@ -133,15 +133,15 @@ private:
 
 
     AudioSampleBuffer filteredBuffer;
-    
+
     iem::Quaternion<float> quats[numberOfBands];
 
     bool changeWeights = true;
     bool probeChanged = true;
-    
+
     bool toggled = false;
     bool moving = false;
-    
+
     float shOld[numberOfBands][64];
     // parameters
     float *orderSetting;

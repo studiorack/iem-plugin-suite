@@ -4,17 +4,17 @@
  Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
- 
+
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
- 
+
  The IEM plug-in suite is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
@@ -65,7 +65,7 @@ parameters(*this, nullptr)
                                          if (value >= 0.5f) return "SN3D";
                                          else return "N3D";
                                      }, nullptr);
-    
+
     parameters.createAndAddParameter("qw", "Quaternion W", "",
                                      NormalisableRange<float>(-1.0f, 1.0f, 0.001f), 1.0,
                                      [](float value) { return String(value, 2); }, nullptr);
@@ -90,14 +90,14 @@ parameters(*this, nullptr)
     parameters.createAndAddParameter("width", "Stereo Width", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float>(-360.0f, 360.0f, 0.01f), 0.0,
                                      [](float value) { return String(value, 2); }, nullptr);
-    
+
     parameters.createAndAddParameter("highQuality", "High-quality panning", "",
                                      NormalisableRange<float>(0.0f, 1.0f, 1.0f), 0.0f,
                                      [](float value) { return value < 0.5f ? "OFF" : "ON"; }, nullptr);
-    
-    
+
+
     parameters.state = ValueTree(Identifier("StereoEncoder"));
-    
+
     parameters.addParameterListener("qw", this);
     parameters.addParameterListener("qx", this);
     parameters.addParameterListener("qy", this);
@@ -107,7 +107,7 @@ parameters(*this, nullptr)
     parameters.addParameterListener("roll", this);
     parameters.addParameterListener("width", this);
     parameters.addParameterListener("orderSetting", this);
-    
+
     orderSetting = parameters.getRawParameterValue("orderSetting");
     useSN3D = parameters.getRawParameterValue("useSN3D");
     qw = parameters.getRawParameterValue("qw");
@@ -119,12 +119,12 @@ parameters(*this, nullptr)
     roll = parameters.getRawParameterValue("roll");
     width = parameters.getRawParameterValue("width");
     highQuality = parameters.getRawParameterValue("highQuality");
-    
+
     processorUpdatingParams = false;
-    
+
     sphericalInput = true; //input from ypr
-    
-    
+
+
     FloatVectorOperations::clear(SHL, 64);
     FloatVectorOperations::clear(SHR, 64);
 }
@@ -179,16 +179,16 @@ void StereoEncoderAudioProcessor::changeProgramName(int index, const String &new
 //==============================================================================
 void StereoEncoderAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) {
     checkInputAndOutput(this, 2, *orderSetting, true);
-    
+
     bufferCopy.setSize(2, samplesPerBlock);
-    
+
     smoothAzimuthL.setValue(*azimuth / 180.0f * (float) M_PI);
     smoothElevationL.setValue(*elevation / 180.0f * (float) M_PI);
-    
+
     smoothAzimuthR.setValue(*azimuth / 180.0f * (float) M_PI);
     smoothElevationR.setValue(*elevation / 180.0f * (float) M_PI);
-    
-    
+
+
     smoothAzimuthL.reset(1, samplesPerBlock);
     smoothElevationL.reset(1, samplesPerBlock);
     smoothAzimuthR.reset(1, samplesPerBlock);
@@ -210,28 +210,28 @@ bool StereoEncoderAudioProcessor::isBusesLayoutSupported(const BusesLayout &layo
 
 void StereoEncoderAudioProcessor::processBlock(AudioSampleBuffer &buffer, MidiBuffer &midiMessages) {
     checkInputAndOutput(this, 2, *orderSetting);
-    
+
     const int nChOut = jmin(buffer.getNumChannels(), output.getNumberOfChannels());
     const int L = buffer.getNumSamples();
     const int totalNumInputChannels = getTotalNumInputChannels() < 2 ? 1 : 2;
     const int ambisonicOrder = output.getOrder();
-    
+
     for (int i = 0; i < totalNumInputChannels; ++i)
         bufferCopy.copyFrom(i, 0, buffer.getReadPointer(i), buffer.getNumSamples());
     buffer.clear();
-    
+
     FloatVectorOperations::copy(_SHL, SHL, nChOut);
     FloatVectorOperations::copy(_SHR, SHR, nChOut);
-    
+
     iem::Quaternion<float> quat;
-    
+
     if (sphericalInput)
     {
         float ypr[3];
         ypr[0] = Conversions<float>::degreesToRadians(*azimuth);
         ypr[1] = - Conversions<float>::degreesToRadians(*elevation); // pitch
         ypr[2] = Conversions<float>::degreesToRadians(*roll);
-        
+
         //updating not active params
         quat.fromYPR(ypr);
         processorUpdatingParams = true;
@@ -247,7 +247,7 @@ void StereoEncoderAudioProcessor::processBlock(AudioSampleBuffer &buffer, MidiBu
         quat = iem::Quaternion<float>(*qw, *qx, *qy, *qz);
         quat.normalize();
         quat.toYPR(ypr);
-        
+
         //updating not active params
         processorUpdatingParams = true;
         parameters.getParameter("azimuth")->setValue(parameters.getParameterRange("azimuth").convertTo0to1(Conversions<float>::radiansToDegrees(ypr[0])));
@@ -255,43 +255,43 @@ void StereoEncoderAudioProcessor::processBlock(AudioSampleBuffer &buffer, MidiBu
         parameters.getParameter("roll")->setValue(parameters.getParameterRange("azimuth").convertTo0to1(Conversions<float>::radiansToDegrees(ypr[2])));
         processorUpdatingParams = false;
     }
-    
+
     float xyz[3];
     float xyzL[3];
     float xyzR[3];
     quat.toCartesian(xyz);
-    
+
     const float widthInRadiansQuarter {Conversions<float>::degreesToRadians(*width) / 4.0f};
     iem::Quaternion<float> quatLRot {iem::Quaternion<float>(cos(widthInRadiansQuarter), 0.0f, 0.0f, sin(widthInRadiansQuarter))};
     iem::Quaternion<float> quatL = quat * quatLRot;
     iem::Quaternion<float> quatR = quat * (quatLRot.getConjugate());
-    
+
     quatL.toCartesian(xyzL);
     quatR.toCartesian(xyzR);
-    
+
     //conversion to spherical for high-quality mode
     float azimuthL, azimuthR, elevationL, elevationR;
     Conversions<float>::cartesianToSpherical(xyzL[0], xyzL[1], xyzL[2], azimuthL, elevationL);
     Conversions<float>::cartesianToSpherical(xyzR[0], xyzR[1], xyzR[2], azimuthR, elevationR);
 
-    
+
     if (*highQuality < 0.5f) // no high-quality
     {
         smoothAzimuthL.setValue(azimuthL, true);
         smoothElevationL.setValue(elevationL, true);
         smoothAzimuthR.setValue(azimuthR, true);
         smoothElevationR.setValue(elevationR, true);
-        
-        
+
+
         SHEval(ambisonicOrder, xyzL[0], xyzL[1], xyzL[2], SHL);
         SHEval(ambisonicOrder, xyzR[0], xyzR[1], xyzR[2], SHR);
-        
+
         if (*useSN3D > 0.5f)
         {
             FloatVectorOperations::multiply(SHL, SHL, n3d2sn3d, nChOut);
             FloatVectorOperations::multiply(SHR, SHR, n3d2sn3d, nChOut);
         }
-        
+
         const float *leftIn = bufferCopy.getReadPointer(0);
         const float *rightIn = bufferCopy.getReadPointer(1);
         for (int i = 0; i < nChOut; ++i)
@@ -306,60 +306,60 @@ void StereoEncoderAudioProcessor::processBlock(AudioSampleBuffer &buffer, MidiBu
             smoothAzimuthL.setValue(smoothAzimuthL.getTargetValue() - 2.0f * M_PI, true);
         else if (azimuthL - smoothAzimuthL.getTargetValue() > M_PI)
             smoothAzimuthL.setValue(smoothAzimuthL.getTargetValue() + 2.0f * M_PI, true);
-        
+
         if (smoothElevationL.getTargetValue() - elevationL > M_PI)
             smoothElevationL.setValue(smoothElevationL.getTargetValue() - 2.0f * M_PI, true);
         else if (elevationL - smoothElevationL.getTargetValue() > M_PI)
             smoothElevationL.setValue(smoothElevationL.getTargetValue() + 2.0f * M_PI, true);
-        
+
         if (smoothAzimuthR.getTargetValue() - azimuthR > M_PI)
             smoothAzimuthR.setValue(smoothAzimuthR.getTargetValue() - 2.0f * M_PI, true);
         else if (azimuthR - smoothAzimuthR.getTargetValue() > M_PI)
             smoothAzimuthR.setValue(smoothAzimuthR.getTargetValue() + 2.0f * M_PI, true);
-        
+
         if (smoothElevationR.getTargetValue() - elevationR > M_PI)
             smoothElevationR.setValue(smoothElevationR.getTargetValue() - 2.0f * M_PI, true);
         else if (elevationR - smoothElevationR.getTargetValue() > M_PI)
             smoothElevationR.setValue(smoothElevationR.getTargetValue() + 2.0f * M_PI, true);
-        
+
         smoothAzimuthL.setValue(azimuthL);
         smoothElevationL.setValue(elevationL);
         smoothAzimuthR.setValue(azimuthR);
         smoothElevationR.setValue(elevationR);
-        
+
         for (int i = 0; i < L; ++i) // left
         {
             const float azimuth = smoothAzimuthL.getNextValue();
             const float elevation = smoothElevationL.getNextValue();
             float sample = bufferCopy.getSample(0, i);
-            
+
             const Vector3D<float> pos = Conversions<float>::sphericalToCartesian(azimuth, elevation);
             SHEval(ambisonicOrder, pos.x, pos.y, pos.z, SHL);
-            
+
             for (int ch = 0; ch < nChOut; ++ch)
                 buffer.setSample(ch, i, sample * SHL[ch]);
         }
-        
+
         for (int i = 0; i < L; ++i) // right
         {
             const float azimuth = smoothAzimuthR.getNextValue();
             const float elevation = smoothElevationR.getNextValue();
             float sample = bufferCopy.getSample(1, i);
-            
+
             const Vector3D<float> pos = Conversions<float>::sphericalToCartesian(azimuth, elevation);
             SHEval(ambisonicOrder, pos.x, pos.y, pos.z, SHR);
-            
+
             for (int ch = 0; ch < nChOut; ++ch)
                 buffer.addSample(ch, i, sample * SHR[ch]);
         }
-        
+
         if (*useSN3D > 0.5f)
         {
             for (int ch = 0; ch < nChOut; ++ch)
             {
                 buffer.applyGain(ch, 0, L, n3d2sn3d[ch]);
             }
-            
+
             FloatVectorOperations::multiply(SHL, SHL, n3d2sn3d, nChOut);
             FloatVectorOperations::multiply(SHR, SHR, n3d2sn3d, nChOut);
         }
@@ -415,5 +415,3 @@ void StereoEncoderAudioProcessor::setStateInformation(const void *data, int size
 AudioProcessor *JUCE_CALLTYPE createPluginFilter() {
     return new StereoEncoderAudioProcessor();
 }
-
-

@@ -4,17 +4,17 @@
  Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
- 
+
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
- 
+
  The IEM plug-in suite is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this software.  If not, see <http://www.gnu.org/licenses/>.
  ==============================================================================
@@ -57,14 +57,14 @@ public:
 
 private:
     LaF globalLaF;
-    
+
     DirectivityShaperAudioProcessor& processor;
     AudioProcessorValueTreeState& valueTreeState;
 
     ShapeAndOrderXyPad xyPad;
-    
+
     float weights[numberOfBands][8];
-    
+
     bool addedCoefficients = false;
     void timerCallback() override;
 
@@ -87,17 +87,17 @@ private:
     ReverseSlider slProbeRoll;
     ComboBox cbNormalization;
     ScopedPointer<ComboBoxAttachment> cbNormalizationAttachment;
-    
+
     SpherePanner sphere;
     ScopedPointer<SpherePanner::AziumuthElevationParameterElement> sphereElements[numberOfBands];
     SpherePanner::AziumuthElevationParameterElement probeElement;
-    
+
     SimpleLabel lbAzimuth, lvElevation, lbOrder, lbShape;
     SimpleLabel lbProbeAzimuth, lbProbeElevation, lbProbeRoll;
     SimpleLabel lbNormalization;
-    
+
     GroupComponent gcFilterBands, gcOrderAndShape, gcPanning, gcSettings;
-    
+
     ToggleButton tbProbeLock;
     ScopedPointer<ComboBoxAttachment> cbFilterTypeAttachment[numberOfBands];
     ScopedPointer<SliderAttachment> slFilterFrequencyAttachment[numberOfBands];
@@ -113,9 +113,9 @@ private:
     ScopedPointer<ButtonAttachment> tbProbeLockAttachment;
     DirectivityVisualizer dv;
     FilterVisualizer<float> fv;
-    
+
     ScopedPointer<SliderAttachment> slParam1Attachment, slParam2Attachment, slParam3Attachment;
     ScopedPointer<ComboBoxAttachment> cbOrderSettingAttachment;
-    
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DirectivityShaperAudioProcessorEditor)
 };

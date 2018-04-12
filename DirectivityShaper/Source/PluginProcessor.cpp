@@ -4,17 +4,17 @@
  Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
- 
+
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
- 
+
  The IEM plug-in suite is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
@@ -54,7 +54,7 @@ parameters(*this, nullptr)
                                           else if (value >= 7.5f) return "7th";
                                           else return "Auto";},
                                       nullptr);
-    
+
     parameters.createAndAddParameter("probeAzimuth", "probe Azimuth", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
                                      [](float value) {return String(value, 2);}, nullptr);
@@ -74,7 +74,7 @@ parameters(*this, nullptr)
                                          else if (value >= 1.5f && value < 2.5f) return "constant energy";
                                          else return "basic decode";
                                      }, nullptr);
-    
+
     for (int i = 0; i < numberOfBands; ++i)
     {
         parameters.createAndAddParameter("filterType" + String(i), "Filter Type " + String(i+1), "",
@@ -85,7 +85,7 @@ parameters(*this, nullptr)
                                              else if (value >= 2.5f) return "High-pass";
                                              else return "All-pass";},
                                          nullptr);
-        
+
         parameters.createAndAddParameter("filterFrequency" + String(i), "Filter Frequency " + String(i+1), "Hz",
                                          NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.4f), filterFrequencyPresets[i],
                                          [](float value) { return String((int) value); }, nullptr);
@@ -110,22 +110,22 @@ parameters(*this, nullptr)
                                          NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
                                          [](float value) {return String(value, 2);}, nullptr);
     }
-    
-    
+
+
     orderSetting = parameters.getRawParameterValue ("orderSetting");
     probeAzimuth = parameters.getRawParameterValue ("probeAzimuth");
     probeElevation = parameters.getRawParameterValue ("probeElevation");
     probeRoll = parameters.getRawParameterValue ("probeRoll");
     probeLock = parameters.getRawParameterValue ("probeLock");
     normalization = parameters.getRawParameterValue("normalization");
-    
+
     parameters.addParameterListener("orderSetting", this);
     parameters.addParameterListener("probeLock", this);
     parameters.addParameterListener("probeAzimuth", this);
     parameters.addParameterListener("probeElevation", this);
     parameters.addParameterListener("probeRoll", this);
-    
-    
+
+
     for (int i = 0; i < numberOfBands; ++i)
     {
         filterType[i] = parameters.getRawParameterValue ("filterType" + String(i));
@@ -145,22 +145,22 @@ parameters(*this, nullptr)
         parameters.addParameterListener("order" + String(i), this);
         parameters.addParameterListener("shape" + String(i), this);
         parameters.addParameterListener("normalization", this);
-        
+
         probeGains[i] = 0.0f;
     }
-    
+
     parameters.state = ValueTree (Identifier ("DirectivityShaper"));
-    
-    
+
+
     FloatVectorOperations::clear(shOld[0], 64 * numberOfBands);
     FloatVectorOperations::clear(weights[0], 8 * numberOfBands);
-    
-    
+
+
     for (int i = 0; i < numberOfBands; ++i)
     {
         filter[i].coefficients = createFilterCoefficients(roundToInt(*filterType[i]), 44100, *filterFrequency[i], *filterQ[i]);
     }
-    
+
 }
 
 inline dsp::IIR::Coefficients<float>::Ptr DirectivityShaperAudioProcessor::createFilterCoefficients(int type, double sampleRate, double frequency, double Q)
@@ -250,13 +250,13 @@ void DirectivityShaperAudioProcessor::changeProgramName (int index, const String
 void DirectivityShaperAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     checkInputAndOutput(this, 1, *orderSetting, true);
-    
+
     for (int i = 0; i < numberOfBands; ++i)
     {
         *filter[i].coefficients = *createFilterCoefficients(roundToInt(*filterType[i]), sampleRate, *filterFrequency[i], *filterQ[i]);
         filter[i].reset();
     }
-    
+
     filteredBuffer.setSize(numberOfBands, samplesPerBlock);
 }
 
@@ -277,13 +277,13 @@ void DirectivityShaperAudioProcessor::processBlock (AudioSampleBuffer& buffer, M
 {
     checkInputAndOutput(this, 1, *orderSetting);
     ScopedNoDenormals noDenormals;
-    
+
     int nChToWorkWith = jmin(buffer.getNumChannels(), output.getNumberOfChannels());
     const int orderToWorkWith = isqrt(nChToWorkWith) - 1;
     nChToWorkWith = squares[orderToWorkWith+1];
-    
+
     const int numSamples = buffer.getNumSamples();
-    
+
     AudioBlock<float> inBlock = AudioBlock<float>(buffer.getArrayOfWritePointers(), 1, numSamples);
     for (int i = 0; i < numberOfBands; ++i)
     {
@@ -291,18 +291,18 @@ void DirectivityShaperAudioProcessor::processBlock (AudioSampleBuffer& buffer, M
         AudioBlock<float> outBlock = AudioBlock<float>(filteredBuffer.getArrayOfWritePointers() + i, 1, numSamples);
         filter[i].process(ProcessContextNonReplacing<float>(inBlock, outBlock));
     }
-    
+
     buffer.clear();
-    
+
     float sh[64];
     float probeSH[64];
-    
+
     {
         Vector3D<float> pos = Conversions<float>::sphericalToCartesian(degreesToRadians(*probeAzimuth), degreesToRadians(*probeElevation));
         SHEval(orderToWorkWith, pos.x, pos.y, pos.z, probeSH);
     }
-    
-    
+
+
     for (int b = 0; b < numberOfBands; ++b)
     {
         float orderBlend, integer;
@@ -313,7 +313,7 @@ void DirectivityShaperAudioProcessor::processBlock (AudioSampleBuffer& buffer, M
             orderBlend = 1.0f;
         }
         int higherOrder = lowerOrder + 1;
-        
+
         float tempWeights[8];
         if (*shape[b]>=0.5f)
         {
@@ -335,10 +335,10 @@ void DirectivityShaperAudioProcessor::processBlock (AudioSampleBuffer& buffer, M
                 tempWeights[i] += orderBlend * ((1.0f-blend) *  basic[higherOrder][i] + blend * maxRe[higherOrder][i]); ;
             }
         }
-        
+
         float cor = 4.0f * M_PI / (higherOrder*higherOrder + (2 * higherOrder+1)*orderBlend);
         cor = cor/correction(orderToWorkWith)/correction(orderToWorkWith);
-        
+
         if (*normalization >= 0.5f && *normalization < 1.5f)
         {
             float cor2 = 0.0f;
@@ -349,28 +349,28 @@ void DirectivityShaperAudioProcessor::processBlock (AudioSampleBuffer& buffer, M
                 cor3 = (squares[orderToWorkWith+1]);
             else
                 cor3 = (squares[higherOrder] + (2 * higherOrder + 1)*orderBlend);
-            
+
             cor2 = cor3/cor2;
             cor *= cor2;
         }
-        
+
         if (*normalization >= 1.5f)
         {
             float sum = 0.0f;
             for (int i = 0; i <= orderToWorkWith; ++i)
                 sum += tempWeights[i]  * tempWeights[i] * (2*i + 1);
             sum = 1.0f / sqrt(sum) * (orderToWorkWith + 1);
-            
+
             for (int i = 0; i < 8; ++i )
                 tempWeights[i] = tempWeights[i] * sum;
         }
         else
             for (int i = 0; i < 8; ++i )
                 tempWeights[i] = tempWeights[i] * cor;
-        
+
         Vector3D<float> pos = Conversions<float>::sphericalToCartesian(degreesToRadians(*azimuth[b]), degreesToRadians(*elevation[b]));
         SHEval(orderToWorkWith, pos.x, pos.y, pos.z, sh);
-        
+
         float temp = 0.0f;
         float shTemp[64];
         FloatVectorOperations::multiply(shTemp, sh, Decibels::decibelsToGain(*filterGain[b]), 64);
@@ -381,14 +381,14 @@ void DirectivityShaperAudioProcessor::processBlock (AudioSampleBuffer& buffer, M
             buffer.addFromWithRamp(i, 0, filteredBuffer.getReadPointer(b), numSamples,shOld[b][i], shTemp[i]);
         }
         probeGains[b] = std::abs(temp);
-        
+
         if (probeChanged)
         {
             probeChanged = false;
             repaintFV = true;
             repaintSphere = true;
         }
-        
+
         cor = correction(orderToWorkWith)/correction(7);
         cor *= cor;
         FloatVectorOperations::copy(shOld[b], shTemp, 64);
@@ -397,14 +397,14 @@ void DirectivityShaperAudioProcessor::processBlock (AudioSampleBuffer& buffer, M
         for (int i = orderToWorkWith + 1; i < 8; ++i)
             weights[b][i] = 0.0f;
     }
-    
+
     if (changeWeights) {
         changeWeights = false;
         repaintDV = true;
         repaintXY = true;
         repaintFV = true;
     }
-    
+
 }
 
 //==============================================================================
@@ -441,7 +441,7 @@ void DirectivityShaperAudioProcessor::parameterChanged (const String &parameterI
         if (newValue >= 0.5f && !toggled)
         {
             DBG("toggled");
-            
+
             float ypr[3];
             ypr[2] = 0.0f;
             for (int i = 0; i < numberOfBands; ++i)
@@ -453,7 +453,7 @@ void DirectivityShaperAudioProcessor::parameterChanged (const String &parameterI
                 probeypr[2] = degreesToRadians(*probeRoll);
                 probeQuat.fromYPR(probeypr);
                 probeQuat.conjugate();
-                
+
                 ypr[0] = degreesToRadians(*azimuth[i]);
                 ypr[1] = degreesToRadians(*elevation[i]);
                 quats[i].fromYPR(ypr);
@@ -466,7 +466,7 @@ void DirectivityShaperAudioProcessor::parameterChanged (const String &parameterI
     }
     else if ((parameterID == "probeAzimuth") ||  (parameterID == "probeElevation") ||  (parameterID == "probeRoll"))
     {
-        
+
         if (toggled)
         {
             DBG("moving");
@@ -477,7 +477,7 @@ void DirectivityShaperAudioProcessor::parameterChanged (const String &parameterI
             ypr[1] = degreesToRadians(*probeElevation);
             ypr[2] = degreesToRadians(*probeRoll);
             probeQuat.fromYPR(ypr);
-            
+
             for (int i = 0; i < numberOfBands; ++i)
             {
                 iem::Quaternion<float> temp = probeQuat*quats[i];
@@ -490,7 +490,7 @@ void DirectivityShaperAudioProcessor::parameterChanged (const String &parameterI
         }
         else
             probeChanged = true;
-        
+
     }
     else if (parameterID.startsWith("azimuth") || parameterID.startsWith("elevation"))
     {
@@ -507,7 +507,7 @@ void DirectivityShaperAudioProcessor::parameterChanged (const String &parameterI
                 probeypr[2] = degreesToRadians(*probeRoll);
                 probeQuat.fromYPR(probeypr);
                 probeQuat.conjugate();
-                
+
                 ypr[0] = degreesToRadians(*azimuth[i]);
                 ypr[1] = degreesToRadians(*elevation[i]);
                 quats[i].fromYPR(ypr);
@@ -537,4 +537,3 @@ AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new DirectivityShaperAudioProcessor();
 }
-

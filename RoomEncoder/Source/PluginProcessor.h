@@ -4,17 +4,17 @@
  Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
- 
+
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
- 
+
  The IEM plug-in suite is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
@@ -114,77 +114,77 @@ public:
     //==============================================================================
     void getStateInformation (MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
-    
-    
-    
+
+
+
     void parameterChanged (const String &parameterID, float newValue) override;
-    
+
     double oldDelay[nImgSrc];
     //float oldRGain[nImgSrc];
     float allGains[nImgSrc];
     //float* oldDelayPtr;
-    
-    
+
+
     //filter coefficients
     IIR::Coefficients<float>::Ptr lowShelfCoefficients;
     IIR::Coefficients<float>::Ptr highShelfCoefficients;
-    
+
     bool userChangedFilterSettings = true;
     bool updateFv = false;
-    
+
     void timerCallback() override;
-    
+
 
     void updateFilterCoefficients(double sampleRate);
 
     float* numRefl;
     float mRadius[nImgSrc];
-    
+
     void updateBuffers() override;
-    
+
     Atomic<bool> repaintPositionPlanes = true;
 private:
     //==============================================================================
     AudioProcessorValueTreeState parameters;
-    
+
     bool readingSharedParams = false;;
-    
+
     double phi;
     double theta;
-    
+
     // Parameters
     float *directivityOrderSetting;
     float *orderSetting;
     float *useSN3D;
-    
+
     float* roomX;
     float* roomY;
     float* roomZ;
-    
+
     float* sourceX;
     float* sourceY;
     float* sourceZ;
-    
+
     float* listenerX;
     float* listenerY;
     float* listenerZ;
-    
+
     float* reflCoeff;
-    
+
     float* lowShelfFreq;
     float* lowShelfGain;
     float* highShelfFreq;
     float* highShelfGain;
-    
+
     float* syncChannel;
     float* syncRoomSize;
     float* syncReflection;
     float* syncListener;
-    
+
     int _numRefl;
-    
+
     SharedResourcePointer<SharedParams> sharedParams;
-    
+
     //SIMD IIR Filter
     OwnedArray<IIR::Filter<IIRfloat>> lowShelfArray;
     OwnedArray<IIR::Filter<IIRfloat>> highShelfArray;
@@ -193,28 +193,28 @@ private:
     HeapBlock<char> interleavedBlockData[16], zeroData; //todo: dynamically?
     OwnedArray<AudioBlock<IIRfloat>> interleavedData;
     AudioBlock<float> zero;
-    
-    
+
+
     Vector3D<float> sourcePos, listenerPos;
     float h,b,t;
-    
+
     float mx[nImgSrc];
     float my[nImgSrc];
     float mz[nImgSrc];
     float smx[nImgSrc];
     float smy[nImgSrc];
     float smz[nImgSrc];
-    
-    
+
+
     float hypxy;
     int bufferSize;
     int bufferReadIdx;
     int overflow;
     int temp;
-    
+
 
     int readOffset;
-    
+
     float powReflCoeff[maxOrderImgSrc+1];
     double dist2smpls;
 
@@ -222,11 +222,11 @@ private:
     float SHcoeffsOld[nImgSrc][64];
     IIRfloat SHsampleOld[nImgSrc][16]; //TODO: can be smaller: (N+1)^2/IIRfloat_elements()
     float weightedSample;
-    
+
     AudioBuffer<float> delayBuffer;
     AudioBuffer<float> monoBuffer;
-    
+
     float** delayBufferWritePtrArray;
-    
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (RoomEncoderAudioProcessor)
 };

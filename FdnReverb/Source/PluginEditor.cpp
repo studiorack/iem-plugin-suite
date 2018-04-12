@@ -4,17 +4,17 @@
  Author: Sebastian Grill
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
- 
+
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
- 
+
  The IEM plug-in suite is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
@@ -31,19 +31,19 @@ FdnReverbAudioProcessorEditor::FdnReverbAudioProcessorEditor (FdnReverbAudioProc
 {
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
-    
+
     setResizeLimits(600, 480, 1000, 950);
     setLookAndFeel (&globalLaF);
 
     //networkOrder.addListener (this);
     freezeMode.addListener (this);
-    
+
     addAndMakeVisible (&title);
     title.setTitle (String("FDN"), String("Reverb"));
     title.setFont (globalLaF.robotoBold, globalLaF.robotoLight);
 
     addAndMakeVisible(&footer);
-    
+
     addAndMakeVisible(&delayGroup);
     delayGroup.setText("General Settings");
     delayGroup.setTextLabelPosition (Justification::centredLeft);
@@ -183,8 +183,8 @@ FdnReverbAudioProcessorEditor::FdnReverbAudioProcessorEditor (FdnReverbAudioProc
     tv.addCoefficients(highpassCoeffs, Colours::cyan, &highCutoffSlider,
         &highGainSlider);
 
-	float gain = pow(10.0, -3.0 / revTimeSlider.getValue());
-	tv.setOverallGain(gain);
+        float gain = pow(10.0, -3.0 / revTimeSlider.getValue());
+        tv.setOverallGain(gain);
 
     tv.repaint();
 
@@ -232,12 +232,12 @@ void FdnReverbAudioProcessorEditor::buttonClicked (Button* button)
     }
 }
 
-void FdnReverbAudioProcessorEditor::sliderValueChanged(Slider* slider) 
-{   
+void FdnReverbAudioProcessorEditor::sliderValueChanged(Slider* slider)
+{
     if (slider == &highCutoffSlider ||
         slider == &highQSlider ||
         slider == &highGainSlider)
-    {   
+    {
         *highpassCoeffs = *IIR::Coefficients<float>::makeHighShelf(48000,
                  highCutoffSlider.getValue(), highQSlider.getValue(), Decibels::decibelsToGain(highGainSlider.getValue()));
 
@@ -247,7 +247,7 @@ void FdnReverbAudioProcessorEditor::sliderValueChanged(Slider* slider)
     else if (slider == &lowCutoffSlider ||
              slider == &lowQSlider ||
              slider == &lowGainSlider)
-    {   
+    {
         *lowpassCoeffs = *IIR::Coefficients<float>::makeLowShelf(48000,
             lowCutoffSlider.getValue(), lowQSlider.getValue(), Decibels::decibelsToGain(lowGainSlider.getValue()));
 
@@ -279,9 +279,9 @@ void FdnReverbAudioProcessorEditor::resized()
     const int rotSliderWidth = 40;
     const int labelHeight = 20;
     //const int labelWidth = 20;
-    
+
     Rectangle<int> area (getLocalBounds());
-    
+
     Rectangle<int> footerArea (area.removeFromBottom (footerHeight));
     footer.setBounds(footerArea);
 
@@ -291,17 +291,17 @@ void FdnReverbAudioProcessorEditor::resized()
     title.setBounds (headerArea);
     area.removeFromTop(10);
     area.removeFromBottom(5);
-    
-    
+
+
     { //====================== DELAY SETTINGS GROUP ==================================
         const int rotSliderWidth = 55;
-        
+
         Rectangle<int> settingsArea (area.removeFromRight(185));
         delayGroup.setBounds (settingsArea);
         settingsArea.removeFromTop (25); //for box headline
-        
+
         Rectangle<int> sliderRow (settingsArea.removeFromTop(rotSliderHeight));
-        
+
         delayLengthSlider.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
         sliderRow.removeFromLeft(rotSliderSpacing);
         revTimeSlider.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
@@ -310,7 +310,7 @@ void FdnReverbAudioProcessorEditor::resized()
         //sliderRow.removeFromLeft(3);
         //networkOrder.setBounds (sliderRow.removeFromLeft(70));
         //sliderRow.removeFromLeft(rotSliderSpacing);
-        
+
         sliderRow = settingsArea.removeFromTop(labelHeight);
 
         lbDelay.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
@@ -321,7 +321,7 @@ void FdnReverbAudioProcessorEditor::resized()
         //delayArea.removeFromLeft(3);
         // freezeMode.setBounds (delayArea.removeFromLeft(70));
     }
-    
+
     area.removeFromRight(10); //spacing
 
     const int height = (area.getHeight() - 10 - labelHeight - rotSliderHeight + 10) / 2;
@@ -331,48 +331,48 @@ void FdnReverbAudioProcessorEditor::resized()
         t60Area.removeFromTop (25);
         tv.setBounds(t60Area);
     }
-    
+
     area.removeFromTop(10); //spacing
-    
-    
+
+
     { //====================== FILTER GROUP ==================================
         const int rotSliderWidth = 40;
         Rectangle<int> filterArea(area);
         filterGroup.setBounds(filterArea);
         filterArea.removeFromTop(25);
-        
+
         Rectangle<int> sliderRow(filterArea.removeFromBottom(labelHeight));
         lbLowCutoff.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
         sliderRow.removeFromLeft (rotSliderSpacing);
         lbLowQ.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
         sliderRow.removeFromLeft (rotSliderSpacing);
         lbLowGain.setBounds (sliderRow.removeFromLeft(rotSliderWidth + 5));
-        
-        
+
+
         lbHighGain.setBounds (sliderRow.removeFromRight(rotSliderWidth + 5));
         sliderRow.removeFromRight (rotSliderSpacing);
         lbHighQ.setBounds (sliderRow.removeFromRight(rotSliderWidth));
         sliderRow.removeFromRight (rotSliderSpacing);
         lbHighCutoff.setBounds (sliderRow.removeFromRight(rotSliderWidth));
-        
+
         sliderRow = filterArea.removeFromBottom(rotSliderHeight-10);
-        
+
         lowCutoffSlider.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
         sliderRow.removeFromLeft(rotSliderSpacing);
         lowQSlider.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
         sliderRow.removeFromLeft(rotSliderSpacing);
         lowGainSlider.setBounds (sliderRow.removeFromLeft(rotSliderWidth + 5));
-        
+
         highGainSlider.setBounds (sliderRow.removeFromRight(rotSliderWidth + 5));
         sliderRow.removeFromRight(rotSliderSpacing);
         highQSlider.setBounds (sliderRow.removeFromRight(rotSliderWidth));
         sliderRow.removeFromRight(rotSliderSpacing);
         highCutoffSlider.setBounds (sliderRow.removeFromRight(rotSliderWidth));
-        
+
         fv.setBounds(filterArea);
     }
-    
-    
-    
+
+
+
 
 }

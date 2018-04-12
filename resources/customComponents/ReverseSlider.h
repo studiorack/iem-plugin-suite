@@ -4,17 +4,17 @@
  Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
- 
+
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
- 
+
  The IEM plug-in suite is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
@@ -36,7 +36,7 @@ public:
         isDual(false),
         scrollWheelEnabled(true)
     {};
-    
+
     ReverseSlider (const String& componentName) :
         Slider(componentName),
         lastDistanceFromDragStart(0),
@@ -44,11 +44,11 @@ public:
         isDual(false),
         scrollWheelEnabled(true)
     {};
-    
+
     ~ReverseSlider () {}
 
 public:
-    
+
     class SliderAttachment : public juce::AudioProcessorValueTreeState::SliderAttachment
     {
     public:
@@ -58,17 +58,17 @@ public:
         {
             sliderToControl.setParameter(stateToControl.getParameter(parameterID));
         };
-        
+
         SliderAttachment (juce::AudioProcessorValueTreeState& stateToControl,
                           const juce::String& parameterID,
                           Slider& sliderToControl) : AudioProcessorValueTreeState::SliderAttachment (stateToControl, parameterID, sliderToControl)
         {
         };
-        
+
         virtual ~SliderAttachment() = default;
     };
-    
-    
+
+
     void setReverse (bool shouldBeReversed)
     {
         if (reversed != shouldBeReversed)
@@ -99,16 +99,16 @@ public:
     {
         if (parameter == nullptr)
             return Slider::getTextFromValue (value);
-        
+
         // juce::AudioProcessorValueTreeState::SliderAttachment sets the slider minimum and maximum to custom values.
         // We map the range to a 0 to 1 range.
         const NormalisableRange<double> range (getMinimum(), getMaximum(), getInterval(), getSkewFactor());
         const float normalizedVal = (float) range.convertTo0to1 (value);
-        
+
         String result = parameter->getText (normalizedVal, getNumDecimalPlacesToDisplay()) + " " + parameter->getLabel();
         return result;
     }
-    
+
     double getValueFromText (const String& text) override
     {
         if (parameter == nullptr)

@@ -4,17 +4,17 @@
  Author: Daniel Rudrich, Sebastian Grill
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
- 
+
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
- 
+
  The IEM plug-in suite is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
@@ -32,26 +32,26 @@ class  T60Visualizer :  public Component
         float yMax = 60.0f;       // max displayed seconds
         float gridDiv = 5.0f;     // how many seconds per divisions (between grid lines)
     };
-    
+
     const float mL = 23.0f;
     const float mR = 10.0f;
     const float mT = 7.0f;
     const float mB = 15.0f;
     const float OH = 3.0f;
-    
+
 public:
     T60Visualizer() : Component(), overallGainInDb(0.0f), sampleRate(48000) {};
     T60Visualizer(float fMin, float fMax, float yMin, float yMax, float gridDiv) : Component(), overallGainInDb(0.0f), sampleRate(48000), s{fMin, fMax, yMin, yMax, gridDiv} {};
     ~T60Visualizer() {};
-    
+
 
     void paint (Graphics& g) override
     {
         g.setColour(Colours::steelblue.withMultipliedAlpha(0.01f));
         g.fillAll();
-        
+
         //int width = getWidth();
-        
+
         g.setFont(getLookAndFeel().getTypefaceForFont (Font(12.0f, 2)));
         g.setFont(12.0f);
 
@@ -66,7 +66,7 @@ public:
 
         for (float t=s.yMin; t <= s.yMax; t += powf(10, floorf(log10(t)))) {
             int ypos = t60ToY (t);
-            
+
             String axislabel;
             bool drawText = false;
 
@@ -84,10 +84,10 @@ public:
         // frequncy labels
         for (float f=s.fMin; f <= s.fMax; f += powf(10, floorf(log10(f)))) {
             int xpos = hzToX(f);
-            
+
             String axislabel;
             bool drawText = false;
-            
+
             if ((f == 20) || (f == 50) || (f == 100) || (f == 500))
             {
                 axislabel = String((int)f);
@@ -99,7 +99,7 @@ public:
                 axislabel << "k";
                 drawText = true;
             }
-            
+
             if (drawText)
             {
                 g.drawText (axislabel, xpos - 10, t60ToY(s.yMin) + OH + 0.0f, 20, 12, Justification::centred, false);
@@ -118,19 +118,19 @@ public:
 
         g.setColour(Colours::steelblue.withMultipliedAlpha(0.8f));
         g.strokePath (hzGridPath, PathStrokeType (0.5f));
-               
-        
+
+
         // draw filter magnitude responses
         Path magnitude;
         allMagnitudesInDb.fill(overallGainInDb);
-        
+
         int xMin = hzToX(s.fMin);
         int xMax = hzToX(s.fMax);
         int yMax = t60ToY(s.yMin);
         int yMin = t60ToY(s.yMax);
-        
+
         g.excludeClipRegion(Rectangle<int>(0.0f, yMax+OH, getWidth(), getHeight()-yMax-OH));
-        
+
         for (int i = arrayOfCoefficients.size (); --i >= 0;) {
             //bool isActive = activeElem == i;
 
@@ -146,12 +146,12 @@ public:
                 allMagnitudesInDb.setUnchecked(x-xMin, allMagnitudesInDb[x-xMin] + db);
             }
         }
-        
+
         //all magnitudes combined
         magnitude.clear();
-        
+
         magnitude.startNewSubPath(xMin, jlimit((float) yMin, (float) yMax + OH + 1, t60ToYFloat (gainToT60Float (allMagnitudesInDb[0]))));
-        
+
         for (int x = xMin + 1; x<=xMax; ++x)
         {
             magnitude.lineTo(x, jlimit((float) yMin, (float) yMax + OH + 1, t60ToYFloat (gainToT60Float (allMagnitudesInDb[x-xMin]))));
@@ -159,29 +159,29 @@ public:
         g.setColour(Colours::white);
         g.strokePath(magnitude, PathStrokeType(1.5f));
 
-        
+
         g.setColour(Colours::white.withMultipliedAlpha(0.3f));
         g.fillPath(tolerancePath, AffineTransform::translation(0.0f, t60ToY(gainToT60Float(overallGainInDb)) - t60ToY(10.0f)));
     };
-    
+
     void mouseWheelMove(const MouseEvent &e, const MouseWheelDetails &wheel) override {
         const double delta = 100*(std::abs (wheel.deltaX) > std::abs (wheel.deltaY) ? -wheel.deltaX : wheel.deltaY);
         //bool positiveDelta = delta >= 0.0;
-        
+
         float value = s.yMax + roundToInt(delta);
         value = jmin(value, 80.0f);
         value = jmax(value, 5.0f);
-        
+
         s.yMax = value;
         resized();
         repaint();
     }
-    
+
     void createTolerancePath ()
     {
         const float tRef = 10; //10 is our reference, can be anything
         tolerancePath.clear();
-        
+
         tolerancePath.startNewSubPath(hzToX(s.fMin), t60ToYFloat(getToleranceT60(s.fMin, tRef, true)));
         tolerancePath.lineTo(hzToX(250.0f), t60ToYFloat(1.2f*tRef));
         tolerancePath.lineTo(hzToX(s.fMax), t60ToYFloat(1.2f*tRef));
@@ -191,7 +191,7 @@ public:
         tolerancePath.lineTo(hzToX(s.fMin), t60ToYFloat(getToleranceT60(s.fMin, tRef, false)));
         tolerancePath.closeSubPath();
     }
-    
+
     float getToleranceT60 (float frequency, float tRef, bool upper)
     {
         if (frequency < 250)
@@ -217,7 +217,7 @@ public:
                     frequency * -0.00005f + 0.9f);
         }
     }
-    
+
     float gainToT60Float (float db)
     {
         return -3.f * 20.f / db;
@@ -227,34 +227,34 @@ public:
     {
         return -3.f * 20.f / T60;
     }
-    
+
     int t60ToY(float db)
     {
         int ypos = t60ToYFloat(db);
         return ypos;
     }
-    
+
     float t60ToYFloat(float db)
     {
         float height = (float) getHeight() - mB - mT;
         float ypos = mT + height * (1.f - (log (db / s.yMin) / log (s.yMax / s.yMin)));
         return ypos;
     }
-    
+
     float yToT60 (float y)
     {
         float height = (float) getHeight() - mB - mT;
         float db = s.yMin * powf (s.yMax / s.yMin, 1.f - (y - mT) / height);
         return db;
     }
-    
+
     int hzToX(float hz)
     {
         float width = (float) getWidth() - mL - mR;
         int xpos = mL + width * (log(hz/s.fMin) / log(s.fMax/s.fMin));
         return xpos;
     }
-    
+
     float xToHz(int x)
     {
         float width = (float) getWidth() - mL - mR;
@@ -264,31 +264,31 @@ public:
     void setSampleRate(int newSampleRate) {
         sampleRate = newSampleRate;
     }
-    
+
     void setOverallGain(float newGain) {
         overallGainInDb = Decibels::gainToDecibels(newGain, -500.0f);
     }
-    
+
     void mouseDrag(const MouseEvent &event) override
     {
         Point<int> pos = event.getPosition();
         float frequency = xToHz (pos.x);
         float gain = yToT60 (pos.y);
-        
+
         if (activeElem != -1)
         {
             Slider* slHandle;
-            
+
             slHandle = arrayOfFrequencySliders[activeElem];
             if (slHandle != nullptr)
                 slHandle->setValue(frequency);
-            
+
             slHandle = arrayOfGainSliders[activeElem];
             if (slHandle != nullptr)
                 slHandle->setValue(gain);
         }
     }
-    
+
     void mouseMove(const MouseEvent &event) override
     {
         Point<int> pos = event.getPosition();
@@ -302,18 +302,18 @@ public:
                 break;
             }
         }
-        
+
         if (oldActiveElem != activeElem)
             repaint();
-        
+
     }
-    
+
     void resized() override {
 
         int xMin = hzToX(s.fMin);
         int xMax = hzToX(s.fMax);
         allMagnitudesInDb.resize(xMax - xMin + 1);
-        
+
         const float width = getWidth() - mL - mR;
         dbGridPath.clear();
         dbGridPathBold.clear();
@@ -337,28 +337,28 @@ public:
                 dbGridPath.lineTo(mL + width+OH, ypos);
             }
         }
-        
+
         hzGridPath.clear();
         hzGridPathBold.clear();
-        
+
         for (float f=s.fMin; f <= s.fMax; f += powf(10, floorf(log10(f)))) {
             int xpos = hzToX(f);
-            
+
             if ((f == 20) || (f == 50) || (f == 100) || (f == 500) || (f == 1000) || (f == 5000) || (f == 10000) || (f == 20000))
             {
                 hzGridPathBold.startNewSubPath(xpos, t60ToY(s.yMax)-OH);
                 hzGridPathBold.lineTo(xpos, t60ToY(s.yMin)+OH);
-                
+
             } else
             {
                 hzGridPath.startNewSubPath(xpos, t60ToY(s.yMax)-OH);
                 hzGridPath.lineTo(xpos, t60ToY(s.yMin)+OH);
             }
         }
-        
+
         createTolerancePath();
     }
-    
+
     void addCoefficients(dsp::IIR::Coefficients<float>::Ptr newCoeffs, Colour newColourForCoeffs, Slider* frequencySlider = nullptr, Slider* gainSlider = nullptr)
     {
         arrayOfCoefficients.add(newCoeffs);
@@ -366,26 +366,26 @@ public:
         arrayOfGainSliders.add(gainSlider);
         arrayOfFrequencySliders.add(frequencySlider);
     }
-    
+
 private:
-    
+
     float overallGainInDb;
-    
+
     int sampleRate;
-    
+
     int activeElem = 0;
-    
+
     Settings s;
     Path dbGridPath;
     Path dbGridPathBold;
     Path hzGridPath;
     Path hzGridPathBold;
     Path tolerancePath;
-    
+
     Array<float> allMagnitudesInDb;
     Array<dsp::IIR::Coefficients<float>::Ptr> arrayOfCoefficients;
     Array<Slider*> arrayOfGainSliders, arrayOfFrequencySliders;
-    
+
     Array<Colour> arrayOfColours;
 
 };

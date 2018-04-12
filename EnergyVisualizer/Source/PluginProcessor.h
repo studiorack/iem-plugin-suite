@@ -4,17 +4,17 @@
  Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
- 
+
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
- 
+
  The IEM plug-in suite is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
@@ -84,23 +84,23 @@ public:
     //==============================================================================
     void parameterChanged (const String &parameterID, float newValue) override;
     AudioProcessorValueTreeState parameters;
-    
+
     Array<float> rms;
-    
+
 private:
-    
+
 
     Eigen::DiagonalMatrix<float, 64> maxReWeights;
-    
+
     float timeConstant;
     // parameter
     float *orderSetting, *useSN3D, *peakLevel;
-    
-    
+
+
     Eigen::Matrix<float,nSamplePoints,64,Eigen::ColMajor> YH;
     Eigen::Matrix<float,nSamplePoints,64,Eigen::ColMajor> workingMatrix;
     AudioSampleBuffer sampledSignals;
-    
+
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (EnergyVisualizerAudioProcessor)
 };

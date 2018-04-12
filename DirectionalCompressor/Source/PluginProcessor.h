@@ -4,17 +4,17 @@
  Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
- 
+
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
- 
+
  The IEM plug-in suite is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
@@ -79,27 +79,27 @@ public:
     void getStateInformation (MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
-    
+
     void parameterChanged (const String &parameterID, float newValue) override;
 
     float c1MaxRMS;
     float c1MaxGR;
     float c2MaxRMS;
     float c2MaxGR;
-    
+
     AudioProcessorValueTreeState parameters;
     void calcParams();
     Atomic<bool> updatedPositionData;
-    
+
 private:
     //==============================================================================
     void updateBuffers() override;
-    
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DirectionalCompressorAudioProcessor)
-    
+
     AudioBuffer<float> omniW;
     AudioBuffer<float> maskBuffer;
-    
+
     Eigen::Matrix<float,64,tDesignN> Y;
     Eigen::Matrix<float,tDesignN,64> YH;
 
@@ -108,19 +108,19 @@ private:
     Eigen::Matrix<float,64,64> P1;
 
     float dist[tDesignN];
-    
+
     const float *drivingPointers[3];
-    
+
     Array<float> c1Gains;
     Array<float> c2Gains;
-    
+
     float c1GR;
     float c2GR;
-    
+
     float sumMaskWeights;
-    
+
     bool paramChanged = true;
-    
+
     Compressor compressor1, compressor2;
     // == PARAMETERS ==
     // settings and mask

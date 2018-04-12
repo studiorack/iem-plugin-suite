@@ -4,17 +4,17 @@
  Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
- 
+
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
- 
+
  The IEM plug-in suite is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
@@ -56,11 +56,11 @@ parameters (*this, nullptr)
                                          if (value >= 0.5f) return "SN3D";
                                          else return "N3D";
                                      }, nullptr);
-    
+
     parameters.createAndAddParameter("preGain", "Input Gain ", "dB",
                                      NormalisableRange<float> (-10.0f, 10.0f, 0.1f), 0.0f,
                                      [](float value) {return String(value, 1);}, nullptr);
-    
+
     // compressor 1
     parameters.createAndAddParameter("c1Enabled", "Compressor 1", "",
                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0,
@@ -69,7 +69,7 @@ parameters (*this, nullptr)
                                          if (value >= 0.5f) return "ON";
                                          else return "OFF";
                                      }, nullptr);
-    
+
     parameters.createAndAddParameter("c1DrivingSignal", "Compressor 1 Driving Signal", "",
                                      NormalisableRange<float> (0.0f, 2.0f, 1.0f), 1.0,
                                      [](float value)
@@ -92,7 +92,7 @@ parameters (*this, nullptr)
     parameters.createAndAddParameter("c1Knee", "Knee", "dB",
                                      NormalisableRange<float> (0.0f, 10.0f, 0.1f), 0.0f,
                                      [](float value) {return String(value, 1);}, nullptr);
-    
+
     parameters.createAndAddParameter("c1Attack", "Attack Time 1", "ms",
                                      NormalisableRange<float> (0.0f, 100.0f, 0.1f), 30.0,
                                      [](float value) {return String(value, 1);}, nullptr);
@@ -105,12 +105,12 @@ parameters (*this, nullptr)
                                          if (value > 15.9f)
                                              return String("inf");
                                          return String(value, 1);
-                                         
+
                                      }, nullptr);
     parameters.createAndAddParameter("c1Makeup", "MakeUp Gain 1", "dB",
                                      NormalisableRange<float> (-10.0f, 20.0f, 0.10f), 0.0,
                                      [](float value) {return String(value, 1);}, nullptr);
-    
+
     // compressor 2
     parameters.createAndAddParameter("c2Enabled", "Compressor 2", "",
                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0,
@@ -141,7 +141,7 @@ parameters (*this, nullptr)
     parameters.createAndAddParameter("c2Knee", "Knee", "dB",
                                      NormalisableRange<float> (0.0f, 10.0f, 0.1f), 0.0f,
                                      [](float value) {return String(value, 1);}, nullptr);
-    
+
     parameters.createAndAddParameter("c2Attack", "Attack Time 2", "ms",
                                      NormalisableRange<float> (0.0f, 100.0f, 0.1f), 30.0,
                                      [](float value) {return String(value, 1);}, nullptr);
@@ -154,14 +154,14 @@ parameters (*this, nullptr)
                                          if (value > 15.9f)
                                              return String("inf");
                                          return String(value, 1);
-                                         
+
                                      }, nullptr);
     parameters.createAndAddParameter("c2Makeup", "MakeUp Gain 2", "dB",
                                      NormalisableRange<float> (-10.0f, 20.0f, 0.10f), 0.0,
                                      [](float value) { return String(value, 1); }, nullptr);
-    
-    
-    
+
+
+
     parameters.createAndAddParameter("azimuth", "Azimuth of mask", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
                                      [](float value) { return String(value, 2); }, nullptr);
@@ -171,7 +171,7 @@ parameters (*this, nullptr)
     parameters.createAndAddParameter("width", "Width of mask", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float> (10.0f, 180.0f, 0.01f), 40.0f,
                                      [](float value) { return String(value, 2); }, nullptr);
-    
+
     parameters.createAndAddParameter("listen", "Listen to", "",
                                      NormalisableRange<float> (0.0f, 2.0f, 1.0f), 0.0,
                                      [](float value)
@@ -180,20 +180,20 @@ parameters (*this, nullptr)
                                          else if (value >= 1.5f) return "Unmasked";
                                          else return "Full";
                                      }, nullptr);
-    
-    
+
+
     parameters.state = ValueTree (Identifier ("DirectionalCompressor"));
-    
-    
+
+
     parameters.addParameterListener ("azimuth", this);
     parameters.addParameterListener ("elevation", this);
     parameters.addParameterListener ("width", this);
     parameters.addParameterListener ("orderSetting", this);
-    
+
     orderSetting = parameters.getRawParameterValue ("orderSetting");
     useSN3D = parameters.getRawParameterValue ("useSN3D");
     preGain = parameters.getRawParameterValue ("preGain");
-    
+
     c1Enabled = parameters.getRawParameterValue ("c1Enabled");
     c1DrivingSignal = parameters.getRawParameterValue ("c1DrivingSignal");
     c1Apply = parameters.getRawParameterValue ("c1Apply");
@@ -203,7 +203,7 @@ parameters (*this, nullptr)
     c1Release = parameters.getRawParameterValue ("c1Release");
     c1Ratio = parameters.getRawParameterValue ("c1Ratio");
     c1Makeup = parameters.getRawParameterValue ("c1Makeup");
- 
+
     c2Enabled = parameters.getRawParameterValue ("c2Enabled");
     c2DrivingSignal = parameters.getRawParameterValue ("c2DrivingSignal");
     c2Apply = parameters.getRawParameterValue ("c2Apply");
@@ -213,24 +213,24 @@ parameters (*this, nullptr)
     c2Release = parameters.getRawParameterValue ("c2Release");
     c2Ratio = parameters.getRawParameterValue ("c2Ratio");
     c2Makeup = parameters.getRawParameterValue ("c2Makeup");
-    
+
     azimuth = parameters.getRawParameterValue ("azimuth");
     elevation = parameters.getRawParameterValue ("elevation");
     width = parameters.getRawParameterValue ("width");
     listen = parameters.getRawParameterValue ("listen");
-    
+
     c1MaxGR = 0.0f;
     c2MaxGR = 0.0f;
     c1GR = 0.0f;
     c2GR = 0.0f;
-    
+
     // calc Y and YH
     for (int point=0; point<tDesignN; ++point)
     {
         SHEval(7, tDesignX[point], tDesignY[point], tDesignZ[point], Y.data()+point*64);
         //FloatVectorOperations::multiply(Y.data()+point*64, Y.data()+point*64, sn3d2n3d, 64); //expecting sn3d normalization -> converting it to n3d
     }
-    
+
     Y *= sqrt(4 * M_PI / tDesignN) / correction(7); // reverting 7th order correction
     //Y.transposeInPlace();
     YH = Y.transpose();
@@ -239,7 +239,7 @@ parameters (*this, nullptr)
 
 DirectionalCompressorAudioProcessor::~DirectionalCompressorAudioProcessor()
 {
-    
+
 }
 
 //==============================================================================
@@ -309,15 +309,15 @@ void DirectionalCompressorAudioProcessor::parameterChanged (const String &parame
 void DirectionalCompressorAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     checkInputAndOutput(this, *orderSetting, *orderSetting, true);
-    
+
     dsp::ProcessSpec spec;
     spec.sampleRate = sampleRate;
     spec.numChannels = 1;
     spec.maximumBlockSize = samplesPerBlock;
-    
+
     compressor1.prepare(spec);
     compressor2.prepare(spec);
-    
+
     omniW.setSize(1, samplesPerBlock);
     c1Gains.resize(samplesPerBlock);
     c2Gains.resize(samplesPerBlock);
@@ -342,14 +342,14 @@ void DirectionalCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffe
 {
     checkInputAndOutput(this, *orderSetting, *orderSetting);
     if (paramChanged) calcParams();
-    
+
     const int totalNumInputChannels  = getTotalNumInputChannels();
     const int totalNumOutputChannels = getTotalNumOutputChannels();
     const int bufferSize = buffer.getNumSamples();
     const int ambisonicOrder = input.getOrder();
-    
+
     const float gainCorrection = Decibels::gainToDecibels(ambisonicOrder+1.0f);
-    
+
     // Compressor 1 settings
     if (*c1Ratio > 15.9f)
         compressor1.setRatio(INFINITY);
@@ -360,7 +360,7 @@ void DirectionalCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffe
     compressor1.setReleaseTime(*c1Release / 1000.0f);
     compressor1.setThreshold(*c1Threshold - gainCorrection);
     compressor1.setMakeUpGain(*c1Makeup);
-    
+
     // Compressor 2 settings
     if (*c2Ratio > 15.9f)
         compressor2.setRatio(INFINITY);
@@ -372,25 +372,25 @@ void DirectionalCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffe
     compressor2.setThreshold(*c2Threshold - gainCorrection);
     compressor2.setMakeUpGain(*c2Makeup);
 
-    
-    
+
+
     drivingPointers[0] = maskBuffer.getReadPointer(0);
     drivingPointers[1] = buffer.getReadPointer(0);
     drivingPointers[2] = omniW.getReadPointer(0);
-    
-    
+
+
     const int numCh = jmin(input.getNumberOfChannels(), buffer.getNumChannels());
-    
+
     // preGain - can be tweaked by adding gain to compressor gains
     float preGainLinear = Decibels::decibelsToGain(*preGain);
-    
+
     if (*useSN3D >= 0.5f)
         for (int i = 0; i < numCh; ++i)
             buffer.applyGain(i, 0, bufferSize, sn3d2n3d[i]*preGainLinear);
     else
         buffer.applyGain(Decibels::decibelsToGain(*preGain));
-    
-    
+
+
     // --------- make copys of buffer
     omniW.copyFrom(0, 0, buffer, 0, 0, bufferSize);
 
@@ -407,12 +407,12 @@ void DirectionalCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffe
     /* This makes the buffer containing the negative mask */
     for (int chIn = 0; chIn < numCh; ++chIn)
         FloatVectorOperations::subtract(buffer.getWritePointer(chIn), maskBuffer.getReadPointer(chIn), bufferSize);
-    
+
     // ------- clear not needed channels
     for (int i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
-    
-    
+
+
 
     // =============== COMPRESSOR 1 ====================
     {
@@ -422,12 +422,12 @@ void DirectionalCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffe
             else if (*c1DrivingSignal >= 1.5f) return drivingPointers[1];
             else return drivingPointers[2];
         }();
-        
+
         compressor1.getGainFromSidechainSignal(drivingSignalPtr, c1Gains.getRawDataPointer(), bufferSize);
         c1MaxRMS = compressor1.getMaxLevelInDecibels() + gainCorrection;
         c1MaxGR = Decibels::gainToDecibels(FloatVectorOperations::findMinimum(c1Gains.getRawDataPointer(), bufferSize)) - *c1Makeup;
     }
-    
+
     // =============== COMPRESSOR 2 ====================
     {
         // set compressor driving signal
@@ -436,16 +436,16 @@ void DirectionalCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffe
             else if (*c2DrivingSignal >= 1.5f) return drivingPointers[1];
             else return drivingPointers[2];
         }();
-        
+
         compressor2.getGainFromSidechainSignal(drivingSignalPtr, c2Gains.getRawDataPointer(), bufferSize);
         c2MaxRMS = compressor2.getMaxLevelInDecibels() + gainCorrection;
         c2MaxGR = Decibels::gainToDecibels(FloatVectorOperations::findMinimum(c2Gains.getRawDataPointer(), bufferSize)) - *c2Makeup;
     }
-    
+
 
     // =============== OUTPUT CALCULATIONS ====================
     // REMEMBER: buffer contains negative mask content
-    
+
     // apply gains from compressor 1
     if (*c1Enabled >= 0.5f)
     {
@@ -476,7 +476,7 @@ void DirectionalCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffe
             }
         }
     }
-    
+
     // apply gains from compressor 2
     if (*c2Enabled >= 0.5f)
     {
@@ -507,7 +507,7 @@ void DirectionalCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffe
             }
         }
     }
-    
+
     //add channels or replace
     if (*listen >= 0.5f && *listen < 1.5f) //mask
     {
@@ -518,7 +518,7 @@ void DirectionalCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffe
         for (int chIn = 0; chIn < numCh; ++chIn)
             FloatVectorOperations::add(buffer.getWritePointer(chIn), maskBuffer.getReadPointer(chIn), bufferSize);
     }
-    
+
 
     if (*useSN3D >= 0.5f)
         for (int i = 0; i < numCh; ++i)
@@ -528,12 +528,12 @@ void DirectionalCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffe
 void DirectionalCompressorAudioProcessor::calcParams()
 {
     paramChanged = false;
-    
+
     // convert azimuth and elevation to cartesian coordinates
     Vector3D<float> pos {Conversions<float>::sphericalToCartesian(Conversions<float>::degreesToRadians(*azimuth), Conversions<float>::degreesToRadians(*elevation))};
     pos = pos.normalised();
-    
-    
+
+
     for (int point=0; point<tDesignN; ++point)
     {
         //dist[point] = acosf(xyz[0]*tDesignX[point] + xyz[1]*tDesignY[point] + xyz[2]*tDesignZ[point]); // could yield nans
@@ -541,14 +541,14 @@ void DirectionalCompressorAudioProcessor::calcParams()
         dist[point] /= sqrt(tDesignX[point]*tDesignX[point] + tDesignY[point]*tDesignY[point] + tDesignZ[point]*tDesignZ[point]); // optimize by normalising tDesign on startup
         dist[point] = acos(dist[point]);
     }
-    
+
     float widthHalf = Conversions<float>::degreesToRadians(*width) * 0.25f; // it's actually width fourth (symmetric mask)
     widthHalf = jmax(widthHalf,FloatVectorOperations::findMinimum(dist, tDesignN));
-    
+
     FloatVectorOperations::clip(dist, dist, widthHalf, 3*widthHalf, tDesignN);
     FloatVectorOperations::add(dist, - widthHalf, tDesignN);
     FloatVectorOperations::multiply(dist, 0.25f * M_PI / widthHalf, tDesignN);
-    
+
     sumMaskWeights = 0.0f;
     for (int point=0; point<tDesignN; ++point)
     {
@@ -556,10 +556,10 @@ void DirectionalCompressorAudioProcessor::calcParams()
         W.diagonal()[point] = g;
         sumMaskWeights += g;
     }
-    
+
     tempMat = W*YH;
     P1 = Y*tempMat;
-    
+
 }
 //==============================================================================
 bool DirectionalCompressorAudioProcessor::hasEditor() const
@@ -600,5 +600,3 @@ AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new DirectionalCompressorAudioProcessor();
 }
-
-

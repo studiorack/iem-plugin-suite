@@ -4,17 +4,17 @@
  Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
- 
+
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
- 
+
  The IEM plug-in suite is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
@@ -51,21 +51,21 @@ public:
     //==============================================================================
     void paint (Graphics&) override;
     void resized() override;
-    
+
     void mouseWheelOnSpherePannerMoved (SpherePanner* sphere, const MouseEvent &event, const MouseWheelDetails &wheel) override;
 private:
     LaF globalLaF;
-    
+
     TitleBar<AudioChannelsIOWidget<2,false>, AmbisonicIOWidget<>> title;
     Footer footer;
-    
+
     void timerCallback() override;
-    
+
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     StereoEncoderAudioProcessor& processor;
     AudioProcessorValueTreeState& valueTreeState;
-    
+
     GroupComponent quatGroup,ypGroup,settingsGroup;
     ReverseSlider azimuthSlider, elevationSlider, rollSlider, widthSlider, qwSlider, qxSlider, qySlider, qzSlider;
     ComboBox inputChooser;
@@ -74,7 +74,7 @@ private:
     SpherePanner::AziumuthElevationParameterElement centerElement;
     SpherePanner::RollWidthParameterElement leftElement;
     SpherePanner::RollWidthParameterElement rightElement;
-    
+
     ScopedPointer<SliderAttachment> qwAttachment;
     ScopedPointer<SliderAttachment> qxAttachment;
     ScopedPointer<SliderAttachment> qyAttachment;
@@ -87,7 +87,7 @@ private:
     ScopedPointer<ComboBoxAttachment> cbOrderAtachement;
 
     TooltipWindow toolTipWin;
-    
+
     // labels
     SimpleLabel lbAzimuth, lbElevation, lbRoll, lblWidth, lbW, lbX, lbY, lbZ;
 

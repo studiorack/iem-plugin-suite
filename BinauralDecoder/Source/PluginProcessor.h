@@ -4,17 +4,17 @@
  Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
- 
+
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
- 
+
  The IEM plug-in suite is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
@@ -38,8 +38,8 @@ class BinauralDecoderAudioProcessor  : public AudioProcessor,
                                         public AudioProcessorValueTreeState::Listener,
                                         public IOHelper<IOTypes::Ambisonics<>, IOTypes::AudioChannels<2>>
 {
-    
-    
+
+
 public:
     //==============================================================================
     BinauralDecoderAudioProcessor();
@@ -81,22 +81,22 @@ public:
     //==============================================================================
     void parameterChanged (const String &parameterID, float newValue) override;
     void updateBuffers() override; // use this to implement a buffer update method
-    
+
     const StringArray headphoneEQs = {
         "AKG-K141MK2", "AKG-K240DF", "AKG-K240MK2", "AKG-K271MK2", "AKG-K271STUDIO", "AKG-K601", "AKG-K701", "AKG-K702", "AKG-K1000-Closed", "AKG-K1000-Open", "AudioTechnica-ATH-M50", "Beyerdynamic-DT250", "Beyerdynamic-DT770PRO-250Ohms", "Beyerdynamic-DT880", "Beyerdynamic-DT990PRO", "Presonus-HD7", "Sennheiser-HD430", "Sennheiser-HD480", "Sennheiser-HD560ovationII", "Sennheiser-HD565ovation", "Sennheiser-HD600", "Sennheiser-HD650", "SHURE-SRH940"
     };
-    
+
 private:
     // ====== parameters
     AudioProcessorValueTreeState parameters;
-    
+
     // list of used audio parameters
     float* inputOrderSetting;
     float* useSN3D;
     float* applyHeadphoneEq;
 
     Convolution EQ;
-    
+
     int fftLength = -1;
     int irLengthMinusOne = 235;
     float* in = nullptr;
@@ -105,17 +105,17 @@ private:
     fftwf_complex* out = nullptr;
     fftwf_complex* accumLeft = nullptr;
     fftwf_complex* accumRight = nullptr;
-    
+
     fftwf_plan fftForward, fftBackwardLeft, fftBackwardRight;
     bool fftwWasPlanned = false;
-    
+
     AudioBuffer<float> stereoSum, stereoTemp;
     AudioBuffer<float> overlapBuffer;
     AudioBuffer<float> irs[7];
-    
+
     AudioBuffer<float> irsFrequencyDomain;
     double irsSampleRate = 44100.0;
-    
+
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BinauralDecoderAudioProcessor)
 };

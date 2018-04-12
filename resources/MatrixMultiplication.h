@@ -4,17 +4,17 @@
  Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
- 
+
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
- 
+
  The IEM plug-in suite is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
@@ -32,42 +32,42 @@ class MatrixMultiplication : private ProcessorBase
 public:
     MatrixMultiplication() {
     }
-    
+
     ~MatrixMultiplication() {}
-    
+
     void prepare (const ProcessSpec& newSpec) override {
         spec = newSpec;
-        
+
         buffer.setSize(buffer.getNumChannels(), spec.maximumBlockSize);
-        
+
         //inputMatrix.resize(Eigen::NoChange, spec.maximumBlockSize);
         checkIfNewMatrixAvailable();
     }
-    
+
     void process (const ProcessContextReplacing<float>& context) override {
         ScopedNoDenormals noDenormals;
         checkIfNewMatrixAvailable();
-        
+
         ReferenceCountedMatrix::Ptr retainedCurrentMatrix (currentMatrix);
         if (retainedCurrentMatrix == nullptr)
         {
             context.getOutputBlock().clear();
             return;
         }
-        
+
         auto& inputBlock = context.getInputBlock();
         auto& T = retainedCurrentMatrix->getMatrix();
-        
+
         const int nInputChannels = jmin( (int) inputBlock.getNumChannels(), (int) T.getNumColumns());
         const int nSamples = (int) inputBlock.getNumSamples();
-        
+
         // copy input data to buffer
         for (int ch = 0; ch < nInputChannels; ++ch)
             buffer.copyFrom(ch, 0, inputBlock.getChannelPointer(ch), nSamples);
-        
+
         auto& outputBlock = context.getOutputBlock();
         //const int nChOut = jmin((int) outputBlock.getNumChannels(), buffer.getNumChannels());
-        
+
         for (int row = 0; row < T.getNumRows(); ++row)
         {
             const int destCh = retainedCurrentMatrix->getRoutingArrayReference().getUnchecked(row);
@@ -79,7 +79,7 @@ public:
                     FloatVectorOperations::addWithMultiply(dest, buffer.getReadPointer(i), T(row, i), nSamples); // ch 0
             }
         }
-        
+
         Array<int> routingCopy (retainedCurrentMatrix->getRoutingArrayReference());
         routingCopy.sort();
         int lastDest = -1;
@@ -92,13 +92,13 @@ public:
                     FloatVectorOperations::clear(outputBlock.getChannelPointer(lastDest), (int) outputBlock.getNumSamples());
             lastDest = destCh;
         }
-    
+
         for (int ch = routingCopy.getLast() + 1; ch < outputBlock.getNumChannels(); ++ch)
             FloatVectorOperations::clear(outputBlock.getChannelPointer(ch), (int) outputBlock.getNumSamples());
     }
-    
+
     void reset() override {};
-    
+
     bool checkIfNewMatrixAvailable() {
         if (newMatrixAvailable)
         {
@@ -114,7 +114,7 @@ public:
                 buffer.setSize(cols, buffer.getNumSamples());
                 DBG("MatrixTransformer: buffer resized to " << buffer.getNumChannels() << "x" << buffer.getNumSamples());
             }
-            
+
             currentMatrix = newMatrix;
             newMatrix = nullptr;
             newMatrixAvailable = false;
@@ -122,19 +122,19 @@ public:
         }
         return false;
     };
-    
+
     void setMatrix(ReferenceCountedMatrix::Ptr newMatrixToUse, bool force = false) {
         newMatrix = newMatrixToUse;
         newMatrixAvailable = true;
         if (force)
             checkIfNewMatrixAvailable();
     }
-    
+
     ReferenceCountedMatrix::Ptr getMatrix()
     {
         return currentMatrix;
     }
-    
+
 private:
     //==============================================================================
     ProcessSpec spec = {-1, 0, 0};
@@ -142,5 +142,5 @@ private:
     ReferenceCountedMatrix::Ptr newMatrix {nullptr};
     AudioBuffer<float> buffer;
     bool newMatrixAvailable {false};
-    
+
 };

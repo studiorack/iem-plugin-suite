@@ -4,17 +4,17 @@
  Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
- 
+
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
- 
+
  The IEM plug-in suite is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
@@ -51,48 +51,48 @@ parameters (*this, nullptr)
                                          else if (value >= 7.5f) return "7th";
                                          else return "Auto";
                                      }, nullptr);
-    
+
     parameters.createAndAddParameter("useSN3D", "Normalization", "",
                                      NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value) {
                                          if (value >= 0.5f) return "SN3D";
                                          else return "N3D";
                                      }, nullptr);
-    
+
     parameters.createAndAddParameter("threshold", "Threshold", "dB",
                                      NormalisableRange<float> (-50.0f, 10.0f, 0.1f), -10.0,
                                      [](float value) {return String(value, 1);}, nullptr);
-    
+
     parameters.createAndAddParameter("knee", "Knee", "dB",
                                      NormalisableRange<float> (0.0f, 10.0f, 0.1f), 0.0f,
                                      [](float value) {return String(value, 1);}, nullptr);
-    
+
     parameters.createAndAddParameter("attack", "Attack Time", "ms",
                                      NormalisableRange<float> (0.0f, 100.0f, 0.1f), 30.0,
                                      [](float value) {return String(value, 1);}, nullptr);
-    
+
     parameters.createAndAddParameter("release", "Release Time", "ms",
                                      NormalisableRange<float> (0.0f, 500.0f, 0.1f), 150.0,
                                      [](float value) {return String(value, 1);}, nullptr);
-    
+
     parameters.createAndAddParameter("ratio", "Ratio", " : 1",
                                      NormalisableRange<float> (1.0f, 16.0f, .2f), 4.0,
                                      [](float value) {
                                          if (value > 15.9f)
                                              return String("inf");
                                          return String(value, 1);
-                                         
+
                                      }, nullptr);
-    
+
     parameters.createAndAddParameter("outGain", "MakeUp Gain", "dB",
                                      NormalisableRange<float> (-10.0f, 20.0f, 0.1f), 0.0,
                                      [](float value) {return String(value, 1);}, nullptr);
-    
+
     parameters.state = ValueTree (Identifier ("OmniCompressor"));
-    
+
     parameters.addParameterListener("orderSetting", this);
-    
-    
+
+
     orderSetting = parameters.getRawParameterValue("orderSetting");
     threshold = parameters.getRawParameterValue ("threshold");
     knee = parameters.getRawParameterValue("knee");
@@ -171,16 +171,16 @@ void OmniCompressorAudioProcessor::parameterChanged (const String &parameterID, 
 void OmniCompressorAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     checkInputAndOutput(this, *orderSetting, *orderSetting, true);
-    
+
     RMS.resize(samplesPerBlock);
     gains.resize(samplesPerBlock);
     allGR.resize(samplesPerBlock);
-    
+
     dsp::ProcessSpec spec;
     spec.sampleRate = sampleRate;
     spec.numChannels = 1;
     spec.maximumBlockSize = samplesPerBlock;
-    
+
     compressor.prepare(spec);
 }
 
@@ -200,11 +200,11 @@ bool OmniCompressorAudioProcessor::isBusesLayoutSupported (const BusesLayout& la
 void OmniCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
     checkInputAndOutput(this, *orderSetting, *orderSetting);
-    
+
     const int totalNumInputChannels  = getTotalNumInputChannels();
     const int totalNumOutputChannels = getTotalNumOutputChannels();
     const int bufferSize = buffer.getNumSamples();
-    
+
     const int numCh = jmin(buffer.getNumChannels(), input.getNumberOfChannels(), output.getNumberOfChannels());
     const int ambisonicOrder = jmin(input.getOrder(), output.getOrder());
     const float* bufferReadPtr = buffer.getReadPointer(0);
@@ -213,20 +213,20 @@ void OmniCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer, Midi
         compressor.setRatio(INFINITY);
     else
         compressor.setRatio(*ratio);
-    
+
     compressor.setKnee(*knee);
-    
+
     compressor.setAttackTime(*attack / 1000.0f);
     compressor.setReleaseTime(*release / 1000.0f);
     float gainCorrection = Decibels::gainToDecibels(ambisonicOrder+1.0f);
     compressor.setThreshold(*threshold - gainCorrection);
     compressor.setMakeUpGain(*outGain);
-    
-    
+
+
     for (int i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
-    
-    
+
+
     compressor.getGainFromSidechainSignal(bufferReadPtr, gains.getRawDataPointer(), bufferSize);
     maxRMS = compressor.getMaxLevelInDecibels() + gainCorrection;
     maxGR = Decibels::gainToDecibels(FloatVectorOperations::findMinimum(gains.getRawDataPointer(), bufferSize)) - *outGain;
@@ -269,4 +269,3 @@ AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new OmniCompressorAudioProcessor();
 }
-

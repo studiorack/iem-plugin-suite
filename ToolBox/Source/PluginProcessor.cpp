@@ -4,17 +4,17 @@
  Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
- 
+
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
- 
+
  The IEM plug-in suite is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
@@ -51,14 +51,14 @@ parameters(*this, nullptr), flipXMask(int64(0)), flipYMask(int64(0)), flipZMask(
                                           else if (value >= 7.5f) return "7th";
                                           else return "Auto";},
                                       nullptr);
-    
+
     parameters.createAndAddParameter("useSn3dInput", "Input Normalization", "",
                                      NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value) {
                                          if (value >= 0.5f) return "SN3D";
                                          else return "N3D";
                                      }, nullptr);
-     
+
     parameters.createAndAddParameter ("outputOrderSetting", "Output Ambisonic Order", "",
                                       NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
                                       [](float value) {
@@ -72,29 +72,29 @@ parameters(*this, nullptr), flipXMask(int64(0)), flipYMask(int64(0)), flipZMask(
                                           else if (value >= 7.5f) return "7th";
                                           else return "Auto";},
                                       nullptr);
-    
+
     parameters.createAndAddParameter("useSn3dOutput", "Output Normalization", "",
                                      NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value) {
                                          if (value >= 0.5f) return "SN3D";
                                          else return "N3D";
                                      }, nullptr);
-    
+
     parameters.createAndAddParameter("flipX", "Flip X axis", "",
                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
                                      [](float value) {if (value >= 0.5f) return "ON";
                                          else return "OFF";}, nullptr);
-    
+
     parameters.createAndAddParameter("flipY", "Flip Y axis", "",
                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
                                      [](float value) {if (value >= 0.5f) return "ON";
                                          else return "OFF";}, nullptr);
-    
+
     parameters.createAndAddParameter("flipZ", "Flip Z axis", "",
                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
                                      [](float value) {if (value >= 0.5f) return "ON";
                                          else return "OFF";}, nullptr);
-    
+
     parameters.createAndAddParameter ("loaWeights", "Lower Order Ambisonic Weighting", "",
                                       NormalisableRange<float> (0.0f, 2.0f, 1.0f), 0.0f,
                                       [](float value) {
@@ -102,13 +102,13 @@ parameters(*this, nullptr), flipXMask(int64(0)), flipYMask(int64(0)), flipZMask(
                                           else if (value >= 1.5f) return "inPhase";
                                           else return "none";},
                                       nullptr);
-    
-    
+
+
     // this must be initialised after all calls to createAndAddParameter().
     parameters.state = ValueTree (Identifier ("ToolBox"));
     // tip: you can also add other values to parameters.state, which are also saved and restored when the session is closed/reopened
-    
-    
+
+
     // get pointers to the parameters
     inputOrderSetting = parameters.getRawParameterValue("inputOrderSetting");
     outputOrderSetting = parameters.getRawParameterValue ("outputOrderSetting");
@@ -119,34 +119,34 @@ parameters(*this, nullptr), flipXMask(int64(0)), flipYMask(int64(0)), flipZMask(
     flipZ = parameters.getRawParameterValue ("flipZ");
     loaWeights = parameters.getRawParameterValue("loaWeights");
 
-    
+
     // add listeners to parameter changes
     parameters.addParameterListener ("inputOrderSetting", this);
     parameters.addParameterListener ("outputOrderSetting", this);
     parameters.addParameterListener ("flipX", this);
     parameters.addParameterListener ("flipY", this);
     parameters.addParameterListener ("flipZ", this);
-    
-    
+
+
     // calculate flip masks
-    
-    
+
+
     for (int ch = 0; ch < 64; ++ch)
     {
         int l, m;
         ACNtoLM(ch, l, m);
-        
+
         if (((m < 0) && (m % 2 == 0)) || ((m > 0) && (m % 2 == 1)))
             flipXMask.setBit(ch);
-        
+
         if (m < 0)
             flipYMask.setBit(ch);
-        
+
         if ((l + m) % 2)
             flipZMask.setBit(ch);
     }
-    
-    
+
+
 }
 
 ToolBoxAudioProcessor::~ToolBoxAudioProcessor()
@@ -219,7 +219,7 @@ void ToolBoxAudioProcessor::changeProgramName (int index, const String& newName)
 void ToolBoxAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     checkInputAndOutput(this, *inputOrderSetting, *outputOrderSetting, true);
-    
+
     doFlipX = *flipX >= 0.5f;
     doFlipY = *flipY >= 0.5f;
     doFlipZ = *flipZ >= 0.5f;
@@ -242,25 +242,25 @@ void ToolBoxAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
 {
     checkInputAndOutput(this, *inputOrderSetting, *outputOrderSetting, false);
     ScopedNoDenormals noDenormals;
-   
+
     const int nChIn = jmin(buffer.getNumChannels(), input.getNumberOfChannels());
     const int nChOut = jmin(buffer.getNumChannels(), output.getNumberOfChannels());
     const int nCh = jmin(nChIn, nChOut);
-    
+
     const int L = buffer.getNumSamples();
-    
+
     const int orderIn = input.getOrder();
     const int orderOut = output.getOrder();
-    
+
     float weights[64];
-    
+
     float weight = 1.0f;
-    
+
     if (orderIn != orderOut)
         weight = ((float) orderIn + 1) / ((float) orderOut + 1);
-    
+
     FloatVectorOperations::fill(weights, weight, nCh);
-    
+
     // create mask for all flips
     if (doFlipX || doFlipY || doFlipZ)
     {
@@ -271,13 +271,13 @@ void ToolBoxAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
             mask ^= flipYMask;
         if (doFlipZ)
             mask ^= flipZMask;
-        
+
         for (int ch = 0; ch < nCh; ++ch)
             if (mask[ch])
                 weights[ch] *= -1.0f;
     }
-    
-    
+
+
     // lower order ambisonics weighting
     if (orderIn < orderOut)
     {
@@ -297,8 +297,8 @@ void ToolBoxAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
                 weights[i] /= deWeights[i];
         }
     }
-    
-    
+
+
     // normalization
     bool inSN3D = *useSn3dInput >= 0.5f;
     bool outSN3D = *useSn3dOutput >= 0.5f;
@@ -309,9 +309,9 @@ void ToolBoxAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
         else
             FloatVectorOperations::multiply(weights, n3d2sn3d, nCh);
     }
-    
-    
-    
+
+
+
     // apply weights;
     for (int ch = 0; ch < nCh; ++ch)
     {
@@ -320,13 +320,13 @@ void ToolBoxAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
             FloatVectorOperations::multiply(buffer.getWritePointer(ch), weights[ch], L);
         }
     }
-    
+
     // clear not used channels
     for (int ch = nCh; ch < buffer.getNumChannels(); ++ch)
         buffer.clear(ch, 0, L);
-    
-    
-    
+
+
+
 }
 
 //==============================================================================
@@ -366,7 +366,7 @@ void ToolBoxAudioProcessor::setStateInformation (const void* data, int sizeInByt
 void ToolBoxAudioProcessor::parameterChanged (const String &parameterID, float newValue)
 {
     DBG("Parameter with ID " << parameterID << " has changed. New value: " << newValue);
-    
+
     if (parameterID == "inputOrderSetting" || parameterID == "outputOrderSetting" )
         userChangedIOSettings = true;
     else if (parameterID == "flipX")

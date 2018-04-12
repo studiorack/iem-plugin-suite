@@ -4,17 +4,17 @@
  Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
- 
+
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
- 
+
  The IEM plug-in suite is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
@@ -25,7 +25,7 @@
 
 
 /* Helper class to check the available input and output channels e.g. for auto settings of Ambisonic order
- 
+
  Use this in your editor's timer callback:
  // === update titleBar widgets according to available input/output channel counts
  int maxInSize, maxOutSize;
@@ -42,7 +42,7 @@ namespace IOTypes {
         int getSize() { return 0; }
         int getMaxSize() {return 0; }
     };
-    
+
     template <int maxNumberOfInputChannels = 64>
     class AudioChannels
     {
@@ -52,9 +52,9 @@ namespace IOTypes {
             nChannels = 0;
             _nChannels = 0;
         };
-        
+
         ~AudioChannels() {};
-        
+
         bool check(AudioProcessor* p, int setting, bool isInput)
         {
             int previous = nChannels;
@@ -64,17 +64,17 @@ namespace IOTypes {
             maxSize = maxNumInputs;
             return previous != nChannels;
         };
-        
+
         int getMaxSize() { return maxSize; }
         int getSize() { return nChannels; }
         int getPreviousSize() { return _nChannels; }
-        
+
     private:
         int nChannels;
         int _nChannels;
         int maxSize = maxNumberOfInputChannels;
     };
-    
+
     template <int highestOrder = 7>
     class Ambisonics
     {
@@ -86,14 +86,14 @@ namespace IOTypes {
             _order = -1;
             _nChannels = 0;
         };
-        
+
         ~Ambisonics() {};
-        
+
         bool check(AudioProcessor* p, int setting, bool isInput)
         {
             int previousOrder = order;
             --setting;
-            
+
             int maxPossibleOrder = jmin(isqrt(isInput ? p->getTotalNumInputChannels() : p->getTotalNumOutputChannels())-1, highestOrder);
             if (setting == -1 || setting > maxPossibleOrder) order = maxPossibleOrder; // Auto setting or requested order exceeds highest possible order
             else order = setting;
@@ -101,18 +101,18 @@ namespace IOTypes {
             maxSize = maxPossibleOrder;
             return previousOrder != order;
         };
-        
+
         int getSize() { return getOrder(); }
         int getPreviousSize() { return getPreviousOrder(); };
-        
+
         int getOrder() { return order; }
         int getPreviousOrder () { return _order; }
-        
+
         int getNumberOfChannels() { return nChannels; }
         int getPreviousNumberOfChannels() { return _nChannels; }
-        
+
         int getMaxSize() { return maxSize; }
-        
+
     private:
         int order, _order;
         int nChannels, _nChannels;
@@ -126,21 +126,21 @@ class IOHelper
 public:
     IOHelper() {}
     virtual ~IOHelper() {}
-    
-    
+
+
     Input input;
     Output output;
-    
+
     bool inputSizeHasChanged;
     bool outputSizeHasChanged;
-    
+
     /** Call to check number available of input and output channels
-     
+
      @inputSetting and @outputSetting should hold the user's setting:
      Audio: 0 equals auto mode, >=1 equals number of channels
      Ambisonics: 0 equals auto mode, >=1 equals Ambisonic order - 1
      E.g.: Ambisonic: 5 -> user set 4th order.
-     
+
      This function should be called in every call of prepareToPlay()
      and at the beginning of the processBlock() with a check if
      the user has changed the input/output settings.
@@ -153,39 +153,39 @@ public:
             DBG("IOHelper: processors I/O channel counts: " << p->getTotalNumInputChannels() << "/" << p->getTotalNumOutputChannels());
             inputSizeHasChanged = input.check(p, inputSetting, true);
             outputSizeHasChanged = output.check(p, outputSetting, false);
-            
+
             if (force || inputSizeHasChanged || outputSizeHasChanged)
             {
                 DBG("IOHelper:  I/O sizes have changed. calling updateBuffers()");
                 updateBuffers();
             }
-            
+
             userChangedIOSettings = false;
         }
     }
-    
+
     void getMaxSize(int& maxInputSize, int& maxOutputSize)
     {
         maxInputSize = input.getMaxSize();
         maxOutputSize = output.getMaxSize();
-        
+
         if (combined)
         {
             maxInputSize = jmin(maxInputSize, maxOutputSize);
             maxOutputSize = maxInputSize;
         }
     }
-    
+
     bool userChangedIOSettings = true;
-    
+
 private:
-    
+
     /** Update buffers
      @inputSetting and @outputSetting should hold the user's setting:
      Audio: 0 equals auto mode, >=1 equals number of channels
      Ambisonics: 0 equals auto mode, >=1 equals Ambisonic order - 1
      E.g.: Ambisonic: 5 -> user set 4th order.
-     
+
      This function should be called in every call of prepareToPlay()
      and at the beginning of the processBlock() with a check if
      the user has changed the input/output settings.

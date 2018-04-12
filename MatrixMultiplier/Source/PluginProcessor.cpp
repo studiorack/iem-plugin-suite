@@ -4,17 +4,17 @@
  Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
- 
+
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
- 
+
  The IEM plug-in suite is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
@@ -41,20 +41,20 @@ parameters(*this, nullptr)
     // this must be initialised after all calls to createAndAddParameter().
     parameters.state = ValueTree (Identifier ("MatrixMultiplier"));
     // tip: you can also add other values to parameters.state, which are also saved and restored when the session is closed/reopened
-    
+
     PropertiesFile::Options options;
     options.applicationName     = "MatrixMultiplier";
     options.filenameSuffix      = "settings";
     options.folderName          = "IEM";
     options.osxLibrarySubFolder = "Preferences";
-    
+
     properties = new PropertiesFile(options);
     lastDir = File(properties->getValue("configurationFolder"));
 }
 
 MatrixMultiplierAudioProcessor::~MatrixMultiplierAudioProcessor()
 {
-    
+
 }
 
 void MatrixMultiplierAudioProcessor::setLastDir(File newLastDir)
@@ -62,7 +62,7 @@ void MatrixMultiplierAudioProcessor::setLastDir(File newLastDir)
     lastDir = newLastDir;
     const var v (lastDir.getFullPathName());
     properties->setValue("configurationFolder", v);
-    
+
 }
 
 //==============================================================================
@@ -131,14 +131,14 @@ void MatrixMultiplierAudioProcessor::changeProgramName (int index, const String&
 void MatrixMultiplierAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     checkInputAndOutput(this, 0, 0, true);
-    
+
     ProcessSpec specs;
     specs.sampleRate = sampleRate;
     specs.maximumBlockSize = samplesPerBlock;
     specs.numChannels = 64;
-    
+
     matTrans.prepare(specs);
-    
+
 }
 
 void MatrixMultiplierAudioProcessor::releaseResources()
@@ -206,14 +206,14 @@ void MatrixMultiplierAudioProcessor::setStateInformation (const void* data, int 
                     loadConfiguration(f);
                 }
             }
-            
-            
+
+
         }
 }
 
 //==============================================================================
 void MatrixMultiplierAudioProcessor::parameterChanged (const String &parameterID, float newValue)
-{    
+{
     if (parameterID == "inputChannelsSetting" || parameterID == "outputOrderSetting" )
         userChangedIOSettings = true;
 }
@@ -234,7 +234,7 @@ AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 void MatrixMultiplierAudioProcessor::loadConfiguration(const File& configurationFile)
 {
     ReferenceCountedMatrix::Ptr tempMatrix = nullptr;
-    
+
     Result result = DecoderHelper::parseFileForTransformationMatrix(configurationFile, &tempMatrix);
     if (!result.wasOk()) {
         messageForEditor = result.getErrorMessage();
@@ -242,7 +242,7 @@ void MatrixMultiplierAudioProcessor::loadConfiguration(const File& configuration
     }
 
     lastFile = configurationFile;
-    
+
     String output;
     if (tempMatrix != nullptr)
     {

@@ -4,17 +4,17 @@
  Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
- 
+
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
- 
+
  The IEM plug-in suite is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
@@ -31,7 +31,7 @@ class ReflectionsVisualizer    : public Component, private Timer
     const float mR = 10.0f;
     const float mT = 7.0f;
     const float mB = 15.0f;
-    
+
 public:
     ReflectionsVisualizer()
     {
@@ -47,60 +47,60 @@ public:
     void paint (Graphics& g) override
     {
         Rectangle<int> bounds = getLocalBounds();
-        
-        
-        
+
+
+
         g.setColour(Colours::steelblue.withMultipliedAlpha(0.01f));
         g.fillAll();
-        
+
         g.setColour (Colours::steelblue.withMultipliedAlpha(0.9f));
         g.strokePath (axes, PathStrokeType (1.0f));
         g.setColour (Colours::steelblue.withMultipliedAlpha(0.8f));
         g.strokePath (dBGrid, PathStrokeType (0.5f));
-        
-        
+
+
         g.setColour(Colours::white);
         g.setFont(getLookAndFeel().getTypefaceForFont (Font(12.0f, 2)));
         g.setFont(12.0f);
-        
-        
+
+
         for (int dB = 0; dB >= -60; dB -= 10)
         {
             float yPos = dBToY((float) dB);
             g.drawText (String(dB), 0, yPos-6, 18, 12.0f, Justification::right, false);
         }
-        
+
         int msStep;
         if (xRangeInMs < 80)
             msStep = 5;
         else if (xRangeInMs < 200)
             msStep = 10;
         else msStep = 20;
-        
+
         for (int timeInMs = 0; timeInMs <= xRangeInMs; timeInMs += msStep)
         {
             float xPos = timeToX((float) timeInMs);
             g.drawText (String(timeInMs), xPos-15.0f, mT+plotHeight+2.0f, 30, 12.0f, Justification::centred, false);
         }
-        
 
-        
+
+
         const float xFactor = 1000.0f/343.2f;
-        
-        
+
+
         if (radiusPtr != nullptr)
         {
             int numRef = roundToInt(*numReflPtr);
-            
+
             float gainDb = Decibels::gainToDecibels(gainPtr[0]);
-            
+
             float xPos = timeToX(radiusPtr[0]*xFactor);
             float yPos = dBToY(gainDb);
-            
+
             g.drawLine(xPos, yPos, xPos, mT + plotHeight, 2.0f);
-            
+
             g.setColour(Colours::white.withMultipliedAlpha(0.5f));
-            
+
             for (int i = 1; i <= numRef; ++i)
             {
                 float gainDb = Decibels::gainToDecibels(gainPtr[i]);
@@ -113,16 +113,16 @@ public:
             }
         }
     }
-    
+
     inline float timeToX (float timeInMs) {
         return mL + timeInMs/xRangeInMs*plotWidth;
     }
-    
+
     inline float dBToY (float gainInDB) {
         const float dynRange = - 1.0f/60.0f;
         return mT + dynRange * gainInDB * plotHeight;
     }
-    
+
     void mouseWheelMove(const MouseEvent &e, const MouseWheelDetails &wheel) override {
         const double delta = 100*(std::abs (wheel.deltaX) > std::abs (wheel.deltaY) ? -wheel.deltaX : wheel.deltaY);
         //bool positiveDelta = delta >= 0.0;
@@ -136,21 +136,21 @@ public:
         numReflPtr = NumRefl;
         radiusPtr = Radius;
     }
-    
+
     void resized() override
     {
         plotWidth = getLocalBounds().getWidth() - mL - mR;
         plotHeight = getLocalBounds().getHeight() - mT - mB;
-        
+
         axes.clear();
         //horizontal
         axes.startNewSubPath(timeToX(0.0f)-2, dBToY(-60.0f));
         axes.lineTo(timeToX(xRangeInMs), dBToY(-60.0f));
-        
+
         //vertical
         axes.startNewSubPath(timeToX(0.0f), dBToY(-60.0f)+2.0f);
         axes.lineTo(timeToX(0.0f), mT-2.0f);
-        
+
         dBGrid.clear();
         for (int dB = 0; dB >= -50; dB -= 10)
         {
@@ -174,4 +174,3 @@ private:
     float* gainPtr = nullptr;
     float* radiusPtr = nullptr;
 };
-

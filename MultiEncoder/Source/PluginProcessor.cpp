@@ -4,17 +4,17 @@
  Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
- 
+
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
- 
+
  The IEM plug-in suite is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
@@ -67,7 +67,7 @@ parameters (*this, nullptr)
                                           if (value >= 0.5f ) return "SN3D";
                                           else return "N3D";
                                       }, nullptr);
-    
+
     parameters.createAndAddParameter("masterAzimuth", "Master azimuth angle", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0f,
                                      [](float value) {return String(value, 2);}, nullptr);
@@ -77,11 +77,11 @@ parameters (*this, nullptr)
     parameters.createAndAddParameter("masterRoll", "Master roll angle", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0f,
                                      [](float value) {return String(value, 2);}, nullptr);
-    
+
     parameters.createAndAddParameter("lockedToMaster", "Lock Directions relative to Master", "",
                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
                                      [](float value) {return (value >= 0.5f) ? "locked" : "not locked";}, nullptr);
-    
+
     for (int i = 0; i < maxNumberOfInputs; ++i)
     {
         parameters.createAndAddParameter("azimuth" + String(i), "Azimuth angle " + String(i), CharPointer_UTF8 (R"(°)"),
@@ -97,30 +97,30 @@ parameters (*this, nullptr)
         parameters.createAndAddParameter("mute" + String(i), "Mute input " + String(i), "",
                                          NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
                                          [](float value) {return (value >= 0.5f) ? "muted" : "not muted";}, nullptr);
-        
+
         parameters.createAndAddParameter("solo" + String(i), "Solo input " + String(i), "",
                                          NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
                                          [](float value) {return (value >= 0.5f) ? "soloed" : "not soloed";}, nullptr);
     }
-    
-    
-    
-    
+
+
+
+
     parameters.state = ValueTree (Identifier ("MultiEncoder"));
-    
+
     parameters.addParameterListener("masterAzimuth", this);
     parameters.addParameterListener("masterElevation", this);
     parameters.addParameterListener("masterRoll", this);
     parameters.addParameterListener("lockedToMaster", this);
-    
+
     parameters.addParameterListener("orderSetting", this);
     parameters.addParameterListener("inputSetting", this);
-    
+
     muteMask.clear();
     soloMask.clear();
-    
-    
-    
+
+
+
     for (int i = 0; i < maxNumberOfInputs; ++i)
     {
         azimuth[i] = parameters.getRawParameterValue ("azimuth"+String(i));
@@ -128,30 +128,30 @@ parameters (*this, nullptr)
         gain[i] = parameters.getRawParameterValue ("gain"+String(i));
         mute[i] = parameters.getRawParameterValue ("mute"+String(i));
         solo[i] = parameters.getRawParameterValue ("solo"+String(i));
-        
+
         if (*mute[i] >= 0.5f) muteMask.setBit(i);
         if (*solo[i] >= 0.5f) soloMask.setBit(i);
-        
+
         parameters.addParameterListener("azimuth"+String(i), this);
         parameters.addParameterListener("elevation"+String(i), this);
         parameters.addParameterListener("mute"+String(i), this);
         parameters.addParameterListener("solo"+String(i), this);
     }
-    
+
     masterAzimuth = parameters.getRawParameterValue("masterAzimuth");
     masterElevation = parameters.getRawParameterValue("masterElevation");
     masterRoll = parameters.getRawParameterValue("masterRoll");
     lockedToMaster = parameters.getRawParameterValue("locking");
-    
-    
-    
+
+
+
     inputSetting = parameters.getRawParameterValue("inputSetting");
     orderSetting = parameters.getRawParameterValue ("orderSetting");
     useSN3D = parameters.getRawParameterValue ("useSN3D");
     processorUpdatingParams = false;
-    
+
     yprInput = true; //input from ypr
-    
+
     for (int i = 0; i < maxNumberOfInputs; ++i)
     {
         FloatVectorOperations::clear(SH[i], 64);
@@ -159,11 +159,11 @@ parameters (*this, nullptr)
         //elemActive[i] = *gain[i] >= -59.9f;
         elementColours[i] = Colours::cyan;
     }
-    
-    
+
+
     updateQuaternions();
-    
-    
+
+
 }
 
 MultiEncoderAudioProcessor::~MultiEncoderAudioProcessor()
@@ -245,22 +245,22 @@ bool MultiEncoderAudioProcessor::isBusesLayoutSupported (const BusesLayout& layo
 void MultiEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
     checkInputAndOutput(this, *inputSetting, *orderSetting);
-    
+
     const int nChOut = jmin(buffer.getNumChannels(), output.getNumberOfChannels());
     const int nChIn = jmin(buffer.getNumChannels(), input.getSize());
     const int ambisonicOrder = output.getOrder();
-    
+
     for (int i = 0; i < nChIn; ++i){
         bufferCopy.copyFrom(i, 0, buffer.getReadPointer(i), buffer.getNumSamples());
     }
-    
+
     buffer.clear();
-    
+
     for (int i = 0; i < nChIn; ++i)
     {
         FloatVectorOperations::copy(_SH[i], SH[i], nChOut);
         float currGain = 0.0f;
-        
+
         if (!soloMask.isZero()) {
             if (soloMask[i]) currGain = Decibels::decibelsToGain(*gain[i]);
         }
@@ -268,27 +268,27 @@ void MultiEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBu
         {
             if (!muteMask[i]) currGain = Decibels::decibelsToGain(*gain[i]);
         }
-        
+
         const float azimuthInRad = degreesToRadians(*azimuth[i]);
         const float elevationInRad = degreesToRadians(*elevation[i]);
-        
+
         Vector3D<float> pos {Conversions<float>::sphericalToCartesian(azimuthInRad, elevationInRad)};
-        
+
         SHEval(ambisonicOrder, pos.x, pos.y, pos.z, SH[i]);
-        
+
         if (*useSN3D >= 0.5f)
         {
             FloatVectorOperations::multiply(SH[i], SH[i], n3d2sn3d, nChOut);
         }
-        
+
         const float* inpReadPtr = bufferCopy.getReadPointer(i);
         for (int ch = 0; ch < nChOut; ++ch) {
             buffer.addFromWithRamp(ch, 0, inpReadPtr, buffer.getNumSamples(), _SH[i][ch]*_gain[i], SH[i][ch]*currGain);
         }
         _gain[i] = currGain;
     }
-    
-    
+
+
 }
 
 //==============================================================================
@@ -337,7 +337,7 @@ void MultiEncoderAudioProcessor::parameterChanged (const String &parameterID, fl
                 masterypr[2] = degreesToRadians(*masterRoll);
                 masterQuat.fromYPR(masterypr);
                 masterQuat.conjugate();
-                
+
                 ypr[0] = degreesToRadians(*azimuth[i]);
                 ypr[1] = degreesToRadians(*elevation[i]);
                 quats[i].fromYPR(ypr);
@@ -358,7 +358,7 @@ void MultiEncoderAudioProcessor::parameterChanged (const String &parameterID, fl
         ypr[1] = degreesToRadians(*masterElevation);
         ypr[2] = degreesToRadians(*masterRoll);
         masterQuat.fromYPR(ypr);
-        
+
         const int nChIn = input.getSize();
         for (int i = 0; i < nChIn; ++i)
         {
@@ -383,7 +383,7 @@ void MultiEncoderAudioProcessor::parameterChanged (const String &parameterID, fl
             masterypr[2] = degreesToRadians(*masterRoll);
             masterQuat.fromYPR(masterypr);
             masterQuat.conjugate();
-            
+
             ypr[0] = degreesToRadians(*azimuth[i]);
             ypr[1] = degreesToRadians(*elevation[i]);
             quats[i].fromYPR(ypr);
@@ -398,13 +398,13 @@ void MultiEncoderAudioProcessor::getStateInformation (MemoryBlock& destData)
 {
     for (int i = 0; i < maxNumberOfInputs; ++i)
         parameters.state.setProperty("colour" + String(i), elementColours[i].toString(), nullptr);
-    
+
     ScopedPointer<XmlElement> xml (parameters.state.createXml());
     copyXmlToBinary (*xml, destData);
 }
 
 void MultiEncoderAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
-{    
+{
     ScopedPointer<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
     if (xmlState != nullptr)
         if (xmlState->hasTagName (parameters.state.getType()))
@@ -429,12 +429,12 @@ AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 void MultiEncoderAudioProcessor::updateBuffers() {
     DBG("IOHelper:  input size: " << input.getSize());
     DBG("IOHelper: output size: " << output.getSize());
-    
+
     const int nChIn = input.getSize();
     const int _nChIn = input.getPreviousSize();
-    
+
     bufferCopy.setSize(nChIn, getBlockSize());
-    
+
     // disable solo and mute for deleted input channels
     for (int i = nChIn; i < _nChIn; ++i)
     {
@@ -445,10 +445,10 @@ void MultiEncoderAudioProcessor::updateBuffers() {
 
 void MultiEncoderAudioProcessor::updateQuaternions()
 {
-    
+
     float ypr[3];
     ypr[2] = 0.0f;
-    
+
     iem::Quaternion<float> masterQuat;
     float masterypr[3];
     masterypr[0] = degreesToRadians(*masterAzimuth);
@@ -456,7 +456,7 @@ void MultiEncoderAudioProcessor::updateQuaternions()
     masterypr[2] = degreesToRadians(*masterRoll);
     masterQuat.fromYPR(masterypr);
     masterQuat.conjugate();
-    
+
     for (int i = 0; i < maxNumberOfInputs; ++i)
     {
         ypr[0] = degreesToRadians(*azimuth[i]);

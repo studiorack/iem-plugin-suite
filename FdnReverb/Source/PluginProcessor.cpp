@@ -265,7 +265,7 @@ void FdnReverbAudioProcessor::setFreezeMode (bool freezeState)
 
 void FdnReverbAudioProcessor::getT60ForFrequencyArray (double* frequencies, double* t60Data, size_t numSamples)
 {
-	fdn.getT60ForFrequencyArray(frequencies, t60Data, numSamples);
+        fdn.getT60ForFrequencyArray(frequencies, t60Data, numSamples);
 }
 
 //==============================================================================
