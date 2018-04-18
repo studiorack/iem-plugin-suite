@@ -83,7 +83,7 @@ public:
     }
 
 
-    void getGainFromSidechainSignal(const float* sideChainSignal, float* destination, int numSamples)
+    void getGainFromSidechainSignal(const float* sideChainSignal, float* destination, const int numSamples)
     {
         maxLevel = -INFINITY;
         for (int i = 0; i < numSamples; ++i)
@@ -102,7 +102,7 @@ public:
                 overShoot = slope * overShoot; //y_G = levelInDecibels + slope * overShoot;
 
             // ballistics
-            float diff = overShoot - state;
+            const float diff = overShoot - state;
             if (diff < 0.0f)
                 state += alphaAttack * diff;
             else
