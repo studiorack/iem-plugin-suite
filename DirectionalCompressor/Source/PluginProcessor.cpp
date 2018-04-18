@@ -227,19 +227,17 @@ parameters (*this, nullptr)
     // calc Y and YH
     for (int point=0; point<tDesignN; ++point)
     {
-        SHEval(7, tDesignX[point], tDesignY[point], tDesignZ[point], Y.data()+point*64);
+        SHEval(7, tDesignX[point], tDesignY[point], tDesignZ[point], Y.data() + point * 64, false);
         //FloatVectorOperations::multiply(Y.data()+point*64, Y.data()+point*64, sn3d2n3d, 64); //expecting sn3d normalization -> converting it to n3d
     }
 
-    Y *= sqrt(4 * M_PI / tDesignN) / correction(7); // reverting 7th order correction
-    //Y.transposeInPlace();
+    Y *= sqrt(4 * M_PI / tDesignN) / decodeCorrection(7); // reverting 7th order correction
     YH = Y.transpose();
 }
 
 
 DirectionalCompressorAudioProcessor::~DirectionalCompressorAudioProcessor()
 {
-
 }
 
 //==============================================================================
@@ -302,7 +300,10 @@ void DirectionalCompressorAudioProcessor::parameterChanged (const String &parame
         updatedPositionData = true;
         paramChanged = true;
     }
-    else if (parameterID == "orderSetting") userChangedIOSettings = true;
+    else if (parameterID == "orderSetting")
+    {
+        userChangedIOSettings = true;
+    }
 }
 
 //==============================================================================
@@ -346,19 +347,18 @@ void DirectionalCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffe
     const int totalNumInputChannels  = getTotalNumInputChannels();
     const int totalNumOutputChannels = getTotalNumOutputChannels();
     const int bufferSize = buffer.getNumSamples();
-    const int ambisonicOrder = input.getOrder();
-
-    const float gainCorrection = Decibels::gainToDecibels(ambisonicOrder+1.0f);
-
+    //const int ambisonicOrder = input.getOrder();
+    
     // Compressor 1 settings
     if (*c1Ratio > 15.9f)
         compressor1.setRatio(INFINITY);
     else
         compressor1.setRatio(*c1Ratio);
+    
     compressor1.setKnee(*c1Knee);
     compressor1.setAttackTime(*c1Attack / 1000.0f);
     compressor1.setReleaseTime(*c1Release / 1000.0f);
-    compressor1.setThreshold(*c1Threshold - gainCorrection);
+    compressor1.setThreshold(*c1Threshold);
     compressor1.setMakeUpGain(*c1Makeup);
 
     // Compressor 2 settings
@@ -366,12 +366,12 @@ void DirectionalCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffe
         compressor2.setRatio(INFINITY);
     else
         compressor2.setRatio(*c2Ratio);
+    
     compressor2.setKnee(*c2Knee);
     compressor2.setAttackTime(*c2Attack / 1000.0f);
     compressor2.setReleaseTime(*c2Release / 1000.0f);
-    compressor2.setThreshold(*c2Threshold - gainCorrection);
+    compressor2.setThreshold(*c2Threshold);
     compressor2.setMakeUpGain(*c2Makeup);
-
 
 
     drivingPointers[0] = maskBuffer.getReadPointer(0);
@@ -386,7 +386,7 @@ void DirectionalCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffe
 
     if (*useSN3D >= 0.5f)
         for (int i = 0; i < numCh; ++i)
-            buffer.applyGain(i, 0, bufferSize, sn3d2n3d[i]*preGainLinear);
+            buffer.applyGain(i, 0, bufferSize, sn3d2n3d[i] * preGainLinear);
     else
         buffer.applyGain(Decibels::decibelsToGain(*preGain));
 
@@ -424,7 +424,7 @@ void DirectionalCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffe
         }();
 
         compressor1.getGainFromSidechainSignal(drivingSignalPtr, c1Gains.getRawDataPointer(), bufferSize);
-        c1MaxRMS = compressor1.getMaxLevelInDecibels() + gainCorrection;
+        c1MaxRMS = compressor1.getMaxLevelInDecibels();
         c1MaxGR = Decibels::gainToDecibels(FloatVectorOperations::findMinimum(c1Gains.getRawDataPointer(), bufferSize)) - *c1Makeup;
     }
 
@@ -438,7 +438,7 @@ void DirectionalCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffe
         }();
 
         compressor2.getGainFromSidechainSignal(drivingSignalPtr, c2Gains.getRawDataPointer(), bufferSize);
-        c2MaxRMS = compressor2.getMaxLevelInDecibels() + gainCorrection;
+        c2MaxRMS = compressor2.getMaxLevelInDecibels();
         c2MaxGR = Decibels::gainToDecibels(FloatVectorOperations::findMinimum(c2Gains.getRawDataPointer(), bufferSize)) - *c2Makeup;
     }
 
@@ -557,10 +557,10 @@ void DirectionalCompressorAudioProcessor::calcParams()
         sumMaskWeights += g;
     }
 
-    tempMat = W*YH;
-    P1 = Y*tempMat;
-
+    tempMat = W * YH;
+    P1 = Y * tempMat;
 }
+
 //==============================================================================
 bool DirectionalCompressorAudioProcessor::hasEditor() const
 {
