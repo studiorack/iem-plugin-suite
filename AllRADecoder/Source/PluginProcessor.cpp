@@ -263,8 +263,6 @@ void AllRADecoderAudioProcessor::prepareToPlay (double sampleRate, int samplesPe
     specs.numChannels = 64;
 
     decoder.prepare(specs);
-    decoder.setInputNormalization(*useSN3D >= 0.5f ? ReferenceCountedDecoder::Normalization::sn3d : ReferenceCountedDecoder::Normalization::n3d);
-
 }
 
 void AllRADecoderAudioProcessor::releaseResources()
@@ -285,12 +283,8 @@ void AllRADecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBu
     checkInputAndOutput(this, *inputOrderSetting, 64, false);
     ScopedNoDenormals noDenormals;
 
-    if (decoder.getCurrentDecoder() == nullptr)
-    {
-        buffer.clear();
-        return;
-    }
-
+    decoder.setInputNormalization(*useSN3D >= 0.5f ? ReferenceCountedDecoder::Normalization::sn3d : ReferenceCountedDecoder::Normalization::n3d);
+    
     AudioBlock<float> ab = AudioBlock<float>(buffer);
     ProcessContextReplacing<float> context (ab);
     decoder.process(context);
@@ -735,7 +729,7 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
     for (int i = 0; i < 5200; ++i) //iterate over each tDesign point
     {
         const Matrix<float> source (3, 1, tDesign5200[i]);
-        SHEval(N, source(0,0), source(1,0), source(2,0), &sh[0]);
+        SHEval(N, source(0,0), source(1,0), source(2,0), &sh[0], false);
 
         const Matrix<float> gains (3, 1);
 
@@ -815,7 +809,7 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
         const R3 point = points[i];
         if (! point.isImaginary)
         {
-            SHEval(N, point.x, point.y, point.z, &sh[0]);
+            SHEval(N, point.x, point.y, point.z, &sh[0]); // encoding at loudspeaker position
             float sumOfSquares = 0.0f;
             for (int m = 0; m < nRealLsps; ++m)
             {
@@ -846,7 +840,7 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
             Vector3D<float> spher (1.0f, 0.0f, 0.0f);
             HammerAitov::XYToSpherical((x - wHalf) / wHalf, (hHalf - y) / hHalf, spher.y, spher.z);
             Vector3D<float> cart = sphericalInRadiansToCartesian(spher);
-            SHEval(N, cart.x, cart.y, cart.z, &sh[0]);
+            SHEval(N, cart.x, cart.y, cart.z, &sh[0]); // encoding a source
 
             float sumOfSquares = 0.0f;
             for (int m = 0; m < nRealLsps; ++m)
@@ -870,7 +864,6 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
             if (sumOfSquares > maxSumOfSuares)
                 maxSumOfSuares = sumOfSquares;
         }
-
 
 
     DBG("min: " << minLvl << " max: " << maxLvl);
