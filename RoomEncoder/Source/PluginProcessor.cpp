@@ -562,11 +562,11 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
 #if JUCE_USE_SIMD
         FloatVectorOperations::clear((float *) &SHsample->value,
                                      IIRfloat_elements() * sizeof(SHsample) / sizeof(*SHsample));
-        SHEval(directivityOrder, smx[q], smy[q], smz[q],(float *) &SHsample->value);
+        SHEval(directivityOrder, smx[q], smy[q], smz[q],(float *) &SHsample->value, false); // deoding -> false
 #else  /* !JUCE_USE_SIMD */
         FloatVectorOperations::clear((float *) SHsample,
                                      IIRfloat_elements() * sizeof(SHsample) / sizeof(*SHsample));
-        SHEval(directivityOrder, smx[q], smy[q], smz[q],(float *) SHsample);
+        SHEval(directivityOrder, smx[q], smy[q], smz[q],(float *) SHsample, false); // deoding -> false
 #endif /* JUCE_USE_SIMD */
 
         Array<IIRfloat*> interleavedDataPtr;
@@ -661,7 +661,7 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
 
         if (q<=currNumRefl)
         {
-            SHEval(ambisonicOrder,mx[q], my[q], mz[q], SHcoeffs);
+            SHEval(ambisonicOrder, mx[q], my[q], mz[q], SHcoeffs, true); // encoding -> true
             if (*useSN3D > 0.5f)
             {
                 FloatVectorOperations::multiply(SHcoeffs, SHcoeffs, n3d2sn3d, maxNChOut);
