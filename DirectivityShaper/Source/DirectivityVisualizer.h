@@ -42,18 +42,22 @@ class DirectivityVisualizer    : public Component
     const float power = 3.0f;
     const int dBstep = 10;
     //#define scale 4
-    const float scale = correction(7) * correction(7);
+    const float scale = sqrt(4 * M_PI) * decodeCorrection(7);
 public:
     DirectivityVisualizer()
     {
         // 0th
-        lookUpTables.add(new LookupTableTransform<float>([this] (float phi) { return scale * (0.25f / M_PI); }, -M_PI, M_PI, nLookUpSamples));
+        lookUpTables.add(new LookupTableTransform<float>([this] (float phi) { return scale * (0.25f / (float) M_PI); }, -M_PI, M_PI, nLookUpSamples));
+        
         // 1st
         lookUpTables.add(new LookupTableTransform<float>([this] (float phi) { return scale * (0.75f / M_PI) * std::cos (phi); }, -M_PI, M_PI, nLookUpSamples));
+        
         // 2nd
         lookUpTables.add(new LookupTableTransform<float>([this] (float phi) { return scale * 2.0f*(5.0f /16.0f / M_PI) * (3 * std::cos (phi) * std::cos (phi) - 1.0f); }, -M_PI, M_PI, nLookUpSamples));
+        
         // 3rd
         lookUpTables.add(new LookupTableTransform<float>([this] (float phi) { return scale * (7.0f / M_PI) / 8.0f * (5 * pow(std::cos (phi), 3) - 3.0f * std::cos (phi));}, -M_PI, M_PI, nLookUpSamples));
+        
         // 4th
         lookUpTables.add(new LookupTableTransform<float>([this] (float phi) { return scale * 9.0f / 32.0f / M_PI * (35 * pow(std::cos (phi),4) - 30* pow(std::cos (phi), 2) + 3.0f); }, -M_PI, M_PI, nLookUpSamples));
 
@@ -88,9 +92,9 @@ public:
             subGrid.addPath(circle, AffineTransform().scaled(dBToRadius(-dB)));
 
         subGrid.addPath(line);
-        subGrid.addPath(line, AffineTransform().rotation(0.25f*M_PI));
-        subGrid.addPath(line, AffineTransform().rotation(0.5f*M_PI));
-        subGrid.addPath(line, AffineTransform().rotation(0.75f*M_PI));
+        subGrid.addPath(line, AffineTransform().rotation(0.25f * M_PI));
+        subGrid.addPath(line, AffineTransform().rotation(0.5f * M_PI));
+        subGrid.addPath(line, AffineTransform().rotation(0.75f * M_PI));
 
     }
 
@@ -133,9 +137,9 @@ public:
         g.setColour (Colours::white);
         g.setFont(getLookAndFeel().getTypefaceForFont (Font(12.0f, 2)));
         g.setFont(12.0f);
-        g.drawText("0 dB", centreX-10, centreY + scale*dBToRadius(0.0f)-12, 20, 12, Justification::centred);
-        g.drawText("-10", centreX-10, centreY + scale*dBToRadius(-10.0f), 20, 12, Justification::centred);
-        g.drawText("-20", centreX-10, centreY + scale*dBToRadius(-20.0f), 20, 12, Justification::centred);
+        g.drawText("0 dB", centreX-10, centreY + scale * dBToRadius(0.0f) - 12, 20, 12, Justification::centred);
+        g.drawText("-10", centreX-10, centreY + scale * dBToRadius(-10.0f), 20, 12, Justification::centred);
+        g.drawText("-20", centreX-10, centreY + scale * dBToRadius(-20.0f), 20, 12, Justification::centred);
 
 
         int size = elements.size();

@@ -27,6 +27,7 @@
 #include "../../resources/ambisonicTools.h"
 #include "../../resources/Quaternion.h"
 #include "../../resources/IOHelper.h"
+#include "../../resources/Weights.h"
 #define numberOfBands 4
 using namespace juce::dsp;
 

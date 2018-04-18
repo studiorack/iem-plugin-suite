@@ -39,6 +39,7 @@
           file="../resources/efficientSHvanilla.cpp"/>
     <FILE id="yAoa74" name="ShapeAndOrderXyPad.h" compile="0" resource="0"
           file="Source/ShapeAndOrderXyPad.h"/>
+    <FILE id="Vfiosg" name="Weights.h" compile="0" resource="0" file="../resources/Weights.h"/>
   </MAINGROUP>
   <EXPORTFORMATS>
     <XCODE_MAC targetFolder="Builds/MacOSX">

@@ -299,77 +299,86 @@ void DirectivityShaperAudioProcessor::processBlock (AudioSampleBuffer& buffer, M
 
     {
         Vector3D<float> pos = Conversions<float>::sphericalToCartesian(degreesToRadians(*probeAzimuth), degreesToRadians(*probeElevation));
-        SHEval(orderToWorkWith, pos.x, pos.y, pos.z, probeSH);
+        SHEval(orderToWorkWith, pos.x, pos.y, pos.z, probeSH, false); // decoding -> false
     }
 
 
     for (int b = 0; b < numberOfBands; ++b)
     {
-        float orderBlend, integer;
-        orderBlend = modff(*order[b], &integer);
-        int lowerOrder = roundToInt(integer);
-        if (lowerOrder == 7) {
-            lowerOrder = 6;
-            orderBlend = 1.0f;
-        }
-        int higherOrder = lowerOrder + 1;
+//        float orderBlend, integer;
+//        orderBlend = modff(*order[b], &integer);
+//        int lowerOrder = roundToInt(integer);
+//        if (lowerOrder == 7) {
+//            lowerOrder = 6;
+//            orderBlend = 1.0f;
+//        }
+//        int higherOrder = lowerOrder + 1;
+//
+//        float tempWeights[8];
+//        if (*shape[b]>=0.5f)
+//        {
+//            float blend = *shape[b] * 2.0f - 1.0f;
+//            for (int i=0; i<=orderToWorkWith; ++i)
+//            {
+//                tempWeights[i] = (1.0f-blend) *  maxRe[lowerOrder][i] + blend * inPhase[lowerOrder][i];
+//                tempWeights[i] *= (1.0f-orderBlend);
+//                tempWeights[i] += orderBlend * ((1.0f-blend) *  maxRe[higherOrder][i] + blend * inPhase[higherOrder][i]); ;
+//            }
+//        }
+//        else
+//        {
+//            float blend = *shape[b] * 2.0f;
+//            for (int i = 0; i <= orderToWorkWith; ++i)
+//            {
+//                tempWeights[i] = (1.0f-blend) *  basic[lowerOrder][i] + blend * maxRe[lowerOrder][i];
+//                tempWeights[i] *= (1.0f-orderBlend);
+//                tempWeights[i] += orderBlend * ((1.0f-blend) *  basic[higherOrder][i] + blend * maxRe[higherOrder][i]); ;
+//            }
+//        }
 
         float tempWeights[8];
-        if (*shape[b]>=0.5f)
-        {
-            float blend = *shape[b] * 2.0f - 1.0f;
-            for (int i=0; i<=orderToWorkWith; ++i)
-            {
-                tempWeights[i] = (1.0f-blend) *  maxRe[lowerOrder][i] + blend * inPhase[lowerOrder][i];
-                tempWeights[i] *= (1.0f-orderBlend);
-                tempWeights[i] += orderBlend * ((1.0f-blend) *  maxRe[higherOrder][i] + blend * inPhase[higherOrder][i]); ;
-            }
-        }
-        else
-        {
-            float blend = *shape[b] * 2.0f;
-            for (int i = 0; i <= orderToWorkWith; ++i)
-            {
-                tempWeights[i] = (1.0f-blend) *  basic[lowerOrder][i] + blend * maxRe[lowerOrder][i];
-                tempWeights[i] *= (1.0f-orderBlend);
-                tempWeights[i] += orderBlend * ((1.0f-blend) *  basic[higherOrder][i] + blend * maxRe[higherOrder][i]); ;
-            }
-        }
+        const int nWeights = Weights::getWeights(*order[b], *shape[b], tempWeights);
+        for (int i = nWeights; i < 8; ++i)
+            tempWeights[i] = 0.0f;
+        
+        Weights::applyNormalization(tempWeights, *order[b], orderToWorkWith, Weights::Normalization::OnAxis);
+        
+//        float cor = 4.0f * M_PI / (higherOrder*higherOrder + (2 * higherOrder+1) * orderBlend);
+//        cor = cor / decodeCorrection(orderToWorkWith) / decodeCorrection(orderToWorkWith);
+//
+//        if (*normalization >= 0.5f && *normalization < 1.5f)
+//        {
+//            float cor2 = 0.0f;
+//            for (int i = 0; i <= orderToWorkWith; ++i)
+//                cor2 += (2*i + 1)*tempWeights[i];
+//            float cor3;
+//            if (higherOrder > orderToWorkWith)
+//                cor3 = (squares[orderToWorkWith+1]);
+//            else
+//                cor3 = (squares[higherOrder] + (2 * higherOrder + 1)*orderBlend);
+//
+//            cor2 = cor3/cor2;
+//            cor *= cor2;
+//        }
+//
+//        if (*normalization >= 1.5f)
+//        {
+//            float sum = 0.0f;
+//            for (int i = 0; i <= orderToWorkWith; ++i)
+//                sum += tempWeights[i]  * tempWeights[i] * (2*i + 1);
+//            sum = 1.0f / sqrt(sum) * (orderToWorkWith + 1);
+//
+//            for (int i = 0; i < 8; ++i )
+//                tempWeights[i] = tempWeights[i] * sum;
+//        }
+//        else
+//            for (int i = 0; i < 8; ++i )
+//                tempWeights[i] = tempWeights[i] * cor;
 
-        float cor = 4.0f * M_PI / (higherOrder*higherOrder + (2 * higherOrder+1)*orderBlend);
-        cor = cor/correction(orderToWorkWith)/correction(orderToWorkWith);
-
-        if (*normalization >= 0.5f && *normalization < 1.5f)
-        {
-            float cor2 = 0.0f;
-            for (int i = 0; i <= orderToWorkWith; ++i)
-                cor2 += (2*i + 1)*tempWeights[i];
-            float cor3;
-            if (higherOrder > orderToWorkWith)
-                cor3 = (squares[orderToWorkWith+1]);
-            else
-                cor3 = (squares[higherOrder] + (2 * higherOrder + 1)*orderBlend);
-
-            cor2 = cor3/cor2;
-            cor *= cor2;
-        }
-
-        if (*normalization >= 1.5f)
-        {
-            float sum = 0.0f;
-            for (int i = 0; i <= orderToWorkWith; ++i)
-                sum += tempWeights[i]  * tempWeights[i] * (2*i + 1);
-            sum = 1.0f / sqrt(sum) * (orderToWorkWith + 1);
-
-            for (int i = 0; i < 8; ++i )
-                tempWeights[i] = tempWeights[i] * sum;
-        }
-        else
-            for (int i = 0; i < 8; ++i )
-                tempWeights[i] = tempWeights[i] * cor;
-
+        // TODO: use normalization methods!
+        
         Vector3D<float> pos = Conversions<float>::sphericalToCartesian(degreesToRadians(*azimuth[b]), degreesToRadians(*elevation[b]));
-        SHEval(orderToWorkWith, pos.x, pos.y, pos.z, sh);
+        SHEval(orderToWorkWith, pos.x, pos.y, pos.z, sh, true); // encoding -> true
 
         float temp = 0.0f;
         float shTemp[64];
@@ -378,8 +387,9 @@ void DirectivityShaperAudioProcessor::processBlock (AudioSampleBuffer& buffer, M
         {
             shTemp[i] *= tempWeights[isqrt(i)];
             temp += shTemp[i] * probeSH[i];
-            buffer.addFromWithRamp(i, 0, filteredBuffer.getReadPointer(b), numSamples,shOld[b][i], shTemp[i]);
+            buffer.addFromWithRamp(i, 0, filteredBuffer.getReadPointer(b), numSamples, shOld[b][i], shTemp[i]);
         }
+        
         probeGains[b] = std::abs(temp);
 
         if (probeChanged)
@@ -388,17 +398,28 @@ void DirectivityShaperAudioProcessor::processBlock (AudioSampleBuffer& buffer, M
             repaintFV = true;
             repaintSphere = true;
         }
-
-        cor = correction(orderToWorkWith)/correction(7);
-        cor *= cor;
+        
+        float cor;
+        cor = decodeCorrection(orderToWorkWith) / decodeCorrection(7);
+        
         FloatVectorOperations::copy(shOld[b], shTemp, 64);
         for (int i = 0; i <= orderToWorkWith ; ++i)
-            weights[b][i] = cor*tempWeights[i];
+            weights[b][i] = cor * tempWeights[i];
         for (int i = orderToWorkWith + 1; i < 8; ++i)
             weights[b][i] = 0.0f;
     }
 
-    if (changeWeights) {
+    float foo[8];
+    Weights::getWeights(*order[0], *shape[0], foo);
+    DBG(foo[0] << "\t" << foo[1] << "\t" << foo[2] << "\t" << foo[3] << "\t" << foo[4] << "\t" << foo[5] << "\t" << foo[6] << "\t" << foo[7]);
+    
+//    for (int i = 0; i < 8; ++i)
+//        weights[0][i] = 1.0f;
+    
+    
+    
+    if (changeWeights)
+    {
         changeWeights = false;
         repaintDV = true;
         repaintXY = true;
