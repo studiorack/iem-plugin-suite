@@ -78,10 +78,10 @@ parameters(*this, nullptr)
     // calc Y and YH
     for (int point=0; point<nSamplePoints; ++point)
     {
-        SHEval(7, hammerAitovSampleX[point], hammerAitovSampleY[point], hammerAitovSampleZ[point], Y.data()+point*64);
+        SHEval(7, hammerAitovSampleX[point], hammerAitovSampleY[point], hammerAitovSampleZ[point], Y.data() + point * 64, false);
         FloatVectorOperations::multiply(Y.data()+point*64, Y.data()+point*64, sn3d2n3d, 64); //expecting sn3d normalization -> converting it to n3d
     }
-    Y *= 1.0f/correction(7); // revert 7th order correction
+    Y *= 1.0f / decodeCorrection(7); // revert 7th order correction
     YH = Y.transpose();
 
 //    DBG(hammerAitovSampleX[218] << " - " << hammerAitovSampleY[218] << " - " << hammerAitovSampleZ[218]);
@@ -197,12 +197,13 @@ void EnergyVisualizerAudioProcessor::processBlock (AudioSampleBuffer& buffer, Mi
     //outMatrix = YH.block(0,0,tDesignN,nCh) * inpMatrix;
     FloatVectorOperations::clear(&maxReWeights.diagonal()[0],64);
     copyMaxRE(workingOrder, &maxReWeights.diagonal()[0]);
-    FloatVectorOperations::multiply(&maxReWeights.diagonal()[0], maxRECorrection[workingOrder] * correction(workingOrder), nCh);
+    FloatVectorOperations::multiply(&maxReWeights.diagonal()[0], maxRECorrection[workingOrder] * decodeCorrection(workingOrder), nCh);
 
     if (*useSN3D < 0.5f)
     {
         FloatVectorOperations::multiply(&maxReWeights.diagonal()[0], n3d2sn3d, 64);
     }
+    
     workingMatrix = YH * maxReWeights;
     //workingMatrix = YH; // * maxReWeights;
     outMatrix = workingMatrix.block(0, 0, nSamplePoints, nCh) * inpMatrix;

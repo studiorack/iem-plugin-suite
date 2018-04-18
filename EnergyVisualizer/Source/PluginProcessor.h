@@ -29,7 +29,7 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "../hammerAitovSample.h"
 #include <Eigen/Dense>
-#include <efficientSHvanilla.h>
+#include "../../resources/efficientSHvanilla.h"
 #include "../../resources/ambisonicTools.h"
 #include "../../resources/IOHelper.h"
 #include "../../resources/MaxRE.h"
