@@ -206,7 +206,7 @@ void OmniCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer, Midi
     const int bufferSize = buffer.getNumSamples();
 
     const int numCh = jmin(buffer.getNumChannels(), input.getNumberOfChannels(), output.getNumberOfChannels());
-    const int ambisonicOrder = jmin(input.getOrder(), output.getOrder());
+    //const int ambisonicOrder = jmin(input.getOrder(), output.getOrder());
     const float* bufferReadPtr = buffer.getReadPointer(0);
 
     if (*ratio > 15.9f)
@@ -216,19 +216,17 @@ void OmniCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer, Midi
 
     compressor.setKnee(*knee);
 
-    compressor.setAttackTime(*attack / 1000.0f);
-    compressor.setReleaseTime(*release / 1000.0f);
-    float gainCorrection = Decibels::gainToDecibels(ambisonicOrder+1.0f);
-    compressor.setThreshold(*threshold - gainCorrection);
+    compressor.setAttackTime(*attack * 0.001f);
+    compressor.setReleaseTime(*release * 0.001f);
+    compressor.setThreshold(*threshold);
     compressor.setMakeUpGain(*outGain);
-
 
     for (int i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-
     compressor.getGainFromSidechainSignal(bufferReadPtr, gains.getRawDataPointer(), bufferSize);
-    maxRMS = compressor.getMaxLevelInDecibels() + gainCorrection;
+    maxRMS = compressor.getMaxLevelInDecibels();
+    DBG(FloatVectorOperations::findMinimum(gains.getRawDataPointer(), bufferSize));
     maxGR = Decibels::gainToDecibels(FloatVectorOperations::findMinimum(gains.getRawDataPointer(), bufferSize)) - *outGain;
 
     for (int channel = 0; channel < numCh; ++channel)
