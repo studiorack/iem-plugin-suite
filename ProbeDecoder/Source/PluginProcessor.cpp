@@ -73,8 +73,8 @@ parameters(*this, nullptr) {
 
     orderSetting = parameters.getRawParameterValue("orderSetting");
     useSN3D = parameters.getRawParameterValue("useSN3D");
-    yaw = parameters.getRawParameterValue("azimuth");
-    pitch = parameters.getRawParameterValue("elevation");
+    azimuth = parameters.getRawParameterValue("azimuth");
+    elevation = parameters.getRawParameterValue("elevation");
 
     parameters.addParameterListener("orderSetting", this);
     parameters.addParameterListener("azimuth", this);
@@ -153,15 +153,12 @@ void ProbeDecoderAudioProcessor::processBlock(AudioSampleBuffer &buffer, MidiBuf
     const int ambisonicOrder = input.getOrder();
     const int nChannels = jmin(buffer.getNumChannels(), input.getNumberOfChannels());
 
-    float yawInRad = degreesToRadians(*yaw);
-    float pitchInRad = degreesToRadians(*pitch);
-    float cosPitch = cos(pitchInRad);
-    Vector3D<float> xyz(cosPitch * cos(yawInRad), cosPitch * sin(yawInRad), sin(-1.0f * pitchInRad));
-
+    Vector3D<float> xyz = Conversions<float>::sphericalToCartesian(degreesToRadians(*azimuth), degreesToRadians(*elevation));
+    
     float sh[64];
 
-    SHEval(ambisonicOrder, xyz, sh);
-
+    SHEval(ambisonicOrder, xyz, sh, false);
+    
     const int nCh = jmin(buffer.getNumChannels(), nChannels);
     const int numSamples = buffer.getNumSamples();
 
@@ -170,7 +167,8 @@ void ProbeDecoderAudioProcessor::processBlock(AudioSampleBuffer &buffer, MidiBuf
 
     buffer.applyGainRamp(0, 0, numSamples, previousSH[0], sh[0]);
 
-    for (int i = 1; i < nCh; i++) {
+    for (int i = 1; i < nCh; i++)
+    {
         buffer.addFromWithRamp(0, 0, buffer.getReadPointer(i), numSamples, previousSH[i], sh[i]);
         buffer.clear(i, 0, numSamples);
     }

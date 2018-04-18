@@ -84,8 +84,8 @@ private:
     //==============================================================================
 
     AudioProcessorValueTreeState parameters;
-    float *yaw;
-    float *pitch;
+    float *azimuth;
+    float *elevation;
 
     float previousSH[64];
 
