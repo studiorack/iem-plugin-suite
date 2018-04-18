@@ -72,7 +72,7 @@ DirectionalCompressorAudioProcessorEditor::DirectionalCompressorAudioProcessorEd
 
     addAndMakeVisible(&slAzimuth);
     slAzimuthAttachment = new SliderAttachment(valueTreeState,"azimuth", slAzimuth);
-    slAzimuth.setSliderStyle (Slider::Rotary);
+    slAzimuth.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slAzimuth.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slAzimuth.setReverse(true);
     slAzimuth.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
@@ -81,7 +81,7 @@ DirectionalCompressorAudioProcessorEditor::DirectionalCompressorAudioProcessorEd
 
     addAndMakeVisible(&slElevation);
     slElevationAttachment = new SliderAttachment(valueTreeState,"elevation", slElevation);
-    slElevation.setSliderStyle (Slider::Rotary);
+    slElevation.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slElevation.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slElevation.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
     slElevation.setRotaryParameters(0.5*M_PI, 2.5*M_PI, false);
@@ -89,7 +89,7 @@ DirectionalCompressorAudioProcessorEditor::DirectionalCompressorAudioProcessorEd
 
     addAndMakeVisible(&slWidth);
     slWidthAttachment = new SliderAttachment(valueTreeState,"width", slWidth);
-    slWidth.setSliderStyle (Slider::Rotary);
+    slWidth.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slWidth.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slWidth.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
     slWidth.setTooltip("Width of the spatial mask");
