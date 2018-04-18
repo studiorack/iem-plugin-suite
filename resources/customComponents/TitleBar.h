@@ -453,9 +453,10 @@ private:
 class IEMLogo : public Component
 {
 public:
-    IEMLogo() : Component() {
+    IEMLogo() : Component()
+    {
         IEMPath.loadPathFromData (IEMpathData, sizeof (IEMpathData));
-        url = URL("https://iem.at/");
+        url = URL("https://plugins.iem.at/");
     }
     ~IEMLogo() {};
 
@@ -479,20 +480,20 @@ public:
         setMouseCursor(MouseCursor(MouseCursor::PointingHandCursor));
         repaint();
     }
+    
     void mouseExit(const MouseEvent &event) override
     {
         setMouseCursor(MouseCursor(MouseCursor::NormalCursor));
         repaint();
     }
+    
     void mouseUp(const MouseEvent &event) override
     {
         if (url.isWellFormed())
             url.launchInDefaultBrowser();
     }
 
-
 private:
-    //bool isMouseOver = false;
     Path IEMPath;
     URL url;
 };
@@ -511,9 +512,13 @@ public:
         g.setColour(Colours::white.withAlpha(0.5f));
         g.setFont(getLookAndFeel().getTypefaceForFont (Font(12.0f, 0)));
         g.setFont(14.0f);
-        char versionString[10];
-        strcpy(versionString, "v");
-        strcat(versionString, JucePlugin_VersionString);
+        String versionString = "v";
+        
+    #if JUCE_DEBUG
+        versionString = "DEBUG - v";
+    #endif
+        versionString.append(JucePlugin_VersionString, 6);
+    
         g.drawText(versionString, 0, 0, bounds.getWidth()-8,bounds.getHeight()-2, Justification::bottomRight);
     };
 
