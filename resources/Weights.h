@@ -23,7 +23,7 @@
 #pragma once
 
 
-constexpr const static float maxRe2[8][8] =
+constexpr const static float maxRe[8][8] =
 {
     {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},
     {1.0f, 5.7754104119288496e-01f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},
@@ -35,7 +35,7 @@ constexpr const static float maxRe2[8][8] =
     {1.0f, 9.6036452263662697e-01f, 8.8345002450861454e-01f, 7.7381375334313540e-01f, 6.3791321433685355e-01f, 4.8368159255186721e-01f, 3.2000849790781744e-01f, 1.5616185043093761e-01f}
 };
 
-constexpr const static float inPhase2[8][8] =
+constexpr const static float inPhase[8][8] =
 {
     {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},
     {1.0f, 3.3333333333333331e-01f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},
@@ -47,7 +47,7 @@ constexpr const static float inPhase2[8][8] =
     {1.0f, 7.7777777777777779e-01f, 4.6666666666666667e-01f, 2.1212121212121213e-01f, 7.0707070707070704e-02f, 1.6317016317016316e-02f, 2.3310023310023310e-03f, 1.5540015540015540e-04f}
 };
 
-constexpr const static float basic2[8][8] =
+constexpr const static float basic[8][8] =
 {
     {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},
     {1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},
@@ -66,7 +66,7 @@ public:
     {
         BasicDecode,
         OnAxis,
-        Energy
+        ConstantEnergy
     };
     
     static void applyNormalization (float* weights, float order, const int decodeOrder, Normalization normalization)
@@ -114,7 +114,7 @@ public:
             for (int i = 0; i <= decodeOrder; ++i)
                 weights[i] *= correction;
         }
-        else // energy
+        else // ConstantEnergy
         {
             float sum = 0.0f;
             for (int i = 0; i <= decodeOrder; ++i)
@@ -165,9 +165,9 @@ public:
             const float blend = shape * 2.0f - 1.0f;
             for (int i = 0; i <= higherOrder; ++i)
             {
-                tempWeights[i] = (1.0f - blend) *  maxRe2[lowerOrder][i] + blend * inPhase2[lowerOrder][i];
+                tempWeights[i] = (1.0f - blend) *  maxRe[lowerOrder][i] + blend * inPhase[lowerOrder][i];
                 tempWeights[i] *= (1.0f - orderBlend);
-                tempWeights[i] += orderBlend * ((1.0f - blend) *  maxRe2[higherOrder][i] + blend * inPhase2[higherOrder][i]); ;
+                tempWeights[i] += orderBlend * ((1.0f - blend) *  maxRe[higherOrder][i] + blend * inPhase[higherOrder][i]); ;
             }
         }
         else
@@ -175,9 +175,9 @@ public:
             const float blend = shape * 2.0f;
             for (int i = 0; i <= higherOrder; ++i)
             {
-                tempWeights[i] = (1.0f - blend) *  basic2[lowerOrder][i] + blend * maxRe2[lowerOrder][i];
+                tempWeights[i] = (1.0f - blend) *  basic[lowerOrder][i] + blend * maxRe[lowerOrder][i];
                 tempWeights[i] *= (1.0f - orderBlend);
-                tempWeights[i] += orderBlend * ((1.0f - blend) *  basic2[higherOrder][i] + blend * maxRe2[higherOrder][i]); ;
+                tempWeights[i] += orderBlend * ((1.0f - blend) *  basic[higherOrder][i] + blend * maxRe[higherOrder][i]); ;
             }
         }
         
