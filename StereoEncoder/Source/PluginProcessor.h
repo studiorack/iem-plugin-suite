@@ -108,8 +108,6 @@ public:
 
     double phi, theta;
 
-    //pointer_sized_int handleVstPluginCanDo (int32 index, pointer_sized_int value, void* ptr, float opt);
-
 private:
     //==============================================================================
 
