@@ -113,7 +113,7 @@ public:
     {
         if (parameter == nullptr)
             return Slider::getValueFromText(text);
-        const NormalisableRange<double> range (getMinimum(), getMaximum());
+        const NormalisableRange<double> range (getMinimum(), getMaximum(), getInterval(), getSkewFactor());
         return range.convertFrom0to1(parameter->getValueForText(text));
     }
 
