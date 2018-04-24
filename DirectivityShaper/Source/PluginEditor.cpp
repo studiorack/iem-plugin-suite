@@ -321,12 +321,9 @@ void DirectivityShaperAudioProcessorEditor::resized()
                 slShape[i].setBounds(row.removeFromLeft(40));
             }
         }
-        DBG("remaining height: " << leftSide.getHeight());
     }
 
-
     area.removeFromLeft(20);
-    DBG(area.getWidth());
 
     {
         Rectangle<int> rightSide(area);
