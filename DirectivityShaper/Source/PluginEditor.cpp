@@ -125,7 +125,6 @@ fv(20.0f, 20000.0f, -50.0f, 10.0f, 10.0f)
         slFilterFrequency[i].setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
         slFilterFrequency[i].setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
         slFilterFrequency[i].setColour(Slider::rotarySliderOutlineColourId, colours[i]);
-        slFilterFrequency[i].setTextValueSuffix(" Hz");
         slFilterFrequencyAttachment[i] = new SliderAttachment(valueTreeState, "filterFrequency" + String(i), slFilterFrequency[i]);
 
         addAndMakeVisible(&slFilterQ[i]);
@@ -138,7 +137,6 @@ fv(20.0f, 20000.0f, -50.0f, 10.0f, 10.0f)
         slFilterGain[i].setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
         slFilterGain[i].setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
         slFilterGain[i].setColour(Slider::rotarySliderOutlineColourId, colours[i]);
-        slFilterGain[i].setTextValueSuffix(" dB");
         slFilterGainAttachment[i] = new SliderAttachment(valueTreeState, "filterGain" + String(i), slFilterGain[i]);
 
         addAndMakeVisible(&slOrder[i]);
