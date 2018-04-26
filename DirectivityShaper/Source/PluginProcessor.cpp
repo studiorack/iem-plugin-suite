@@ -414,7 +414,7 @@ void DirectivityShaperAudioProcessor::parameterChanged (const String &parameterI
                 float probeypr[3];
                 probeypr[0] = degreesToRadians(*probeAzimuth);
                 probeypr[1] = degreesToRadians(*probeElevation);
-                probeypr[2] = degreesToRadians(*probeRoll);
+                probeypr[2] = - degreesToRadians(*probeRoll);
                 probeQuat.fromYPR(probeypr);
                 probeQuat.conjugate();
 
@@ -439,7 +439,7 @@ void DirectivityShaperAudioProcessor::parameterChanged (const String &parameterI
             float ypr[3];
             ypr[0] = degreesToRadians(*probeAzimuth);
             ypr[1] = degreesToRadians(*probeElevation);
-            ypr[2] = degreesToRadians(*probeRoll);
+            ypr[2] = - degreesToRadians(*probeRoll);
             probeQuat.fromYPR(ypr);
 
             for (int i = 0; i < numberOfBands; ++i)
@@ -468,7 +468,7 @@ void DirectivityShaperAudioProcessor::parameterChanged (const String &parameterI
                 float probeypr[3];
                 probeypr[0] = degreesToRadians(*probeAzimuth);
                 probeypr[1] = degreesToRadians(*probeElevation);
-                probeypr[2] = degreesToRadians(*probeRoll);
+                probeypr[2] = - degreesToRadians(*probeRoll);
                 probeQuat.fromYPR(probeypr);
                 probeQuat.conjugate();
 
