@@ -338,7 +338,7 @@ void DirectivityShaperAudioProcessorEditor::resized()
             for (int i = 0; i < numberOfBands; ++i)
             {
                 sliderRow.removeFromLeft(4);
-                slElevation[i].setBounds(sliderRow.removeFromLeft(40));
+                slElevation[i].setBounds(sliderRow.removeFromLeft(50));
             }
 
             sliderRow = panningArea.removeFromBottom(50);
@@ -346,7 +346,7 @@ void DirectivityShaperAudioProcessorEditor::resized()
             for (int i = 0; i < numberOfBands; ++i)
             {
                 sliderRow.removeFromLeft(4);
-                slAzimuth[i].setBounds(sliderRow.removeFromLeft(40));
+                slAzimuth[i].setBounds(sliderRow.removeFromLeft(50));
             }
             sphere.setBounds(panningArea);
 
@@ -360,7 +360,7 @@ void DirectivityShaperAudioProcessorEditor::resized()
 
                 slProbeAzimuth.setBounds(sliderRow.removeFromLeft(40));
                 sliderRow.removeFromLeft(rotSliderSpacing);
-                slProbeElevation.setBounds(sliderRow.removeFromLeft(40));
+                slProbeElevation.setBounds(sliderRow.removeFromLeft(45));
                 sliderRow.removeFromLeft(rotSliderSpacing);
                 slProbeRoll.setBounds(sliderRow.removeFromLeft(40));
                 sliderRow.removeFromLeft(rotSliderSpacing);
@@ -369,7 +369,7 @@ void DirectivityShaperAudioProcessorEditor::resized()
                 sliderRow = rightSide.removeFromTop(15);
                 lbProbeAzimuth.setBounds(sliderRow.removeFromLeft(40));
                 sliderRow.removeFromLeft(rotSliderSpacing);
-                lbProbeElevation.setBounds(sliderRow.removeFromLeft(40));
+                lbProbeElevation.setBounds(sliderRow.removeFromLeft(45));
                 sliderRow.removeFromLeft(rotSliderSpacing);
                 lbProbeRoll.setBounds(sliderRow.removeFromLeft(40));
 
