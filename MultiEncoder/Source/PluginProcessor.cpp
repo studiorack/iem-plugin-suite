@@ -334,7 +334,7 @@ void MultiEncoderAudioProcessor::parameterChanged (const String &parameterID, fl
                 float masterypr[3];
                 masterypr[0] = degreesToRadians(*masterAzimuth);
                 masterypr[1] = degreesToRadians(*masterElevation);
-                masterypr[2] = degreesToRadians(*masterRoll);
+                masterypr[2] = - degreesToRadians(*masterRoll);
                 masterQuat.fromYPR(masterypr);
                 masterQuat.conjugate();
 
@@ -356,7 +356,7 @@ void MultiEncoderAudioProcessor::parameterChanged (const String &parameterID, fl
         float ypr[3];
         ypr[0] = degreesToRadians(*masterAzimuth);
         ypr[1] = degreesToRadians(*masterElevation);
-        ypr[2] = degreesToRadians(*masterRoll);
+        ypr[2] = - degreesToRadians(*masterRoll);
         masterQuat.fromYPR(ypr);
 
         const int nChIn = input.getSize();
@@ -380,7 +380,7 @@ void MultiEncoderAudioProcessor::parameterChanged (const String &parameterID, fl
             float masterypr[3];
             masterypr[0] = degreesToRadians(*masterAzimuth);
             masterypr[1] = degreesToRadians(*masterElevation);
-            masterypr[2] = degreesToRadians(*masterRoll);
+            masterypr[2] = - degreesToRadians(*masterRoll);
             masterQuat.fromYPR(masterypr);
             masterQuat.conjugate();
 
@@ -453,7 +453,7 @@ void MultiEncoderAudioProcessor::updateQuaternions()
     float masterypr[3];
     masterypr[0] = degreesToRadians(*masterAzimuth);
     masterypr[1] = degreesToRadians(*masterElevation);
-    masterypr[2] = degreesToRadians(*masterRoll);
+    masterypr[2] = - degreesToRadians(*masterRoll);
     masterQuat.fromYPR(masterypr);
     masterQuat.conjugate();
 
