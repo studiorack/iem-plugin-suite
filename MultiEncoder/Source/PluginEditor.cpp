@@ -78,7 +78,7 @@ masterElement(*valueTreeState.getParameter("masterAzimuth"), valueTreeState.getP
 
     addAndMakeVisible(&slMasterAzimuth);
     slMasterAzimuthAttachment = new SliderAttachment(valueTreeState, "masterAzimuth", slMasterAzimuth);
-    slMasterAzimuth.setSliderStyle (Slider::Rotary);
+    slMasterAzimuth.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slMasterAzimuth.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slMasterAzimuth.setReverse(true);
     slMasterAzimuth.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
@@ -87,7 +87,7 @@ masterElement(*valueTreeState.getParameter("masterAzimuth"), valueTreeState.getP
 
     addAndMakeVisible(&slMasterElevation);
     slMasterElevationAttachment = new SliderAttachment(valueTreeState, "masterElevation", slMasterElevation);
-    slMasterElevation.setSliderStyle (Slider::Rotary);
+    slMasterElevation.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slMasterElevation.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slMasterElevation.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
     slMasterElevation.setRotaryParameters(0.5*M_PI, 2.5*M_PI, false);
@@ -95,7 +95,7 @@ masterElement(*valueTreeState.getParameter("masterAzimuth"), valueTreeState.getP
 
     addAndMakeVisible(&slMasterRoll);
     slMasterRollAttachment = new SliderAttachment(valueTreeState, "masterRoll", slMasterRoll);
-    slMasterRoll.setSliderStyle (Slider::Rotary);
+    slMasterRoll.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slMasterRoll.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slMasterRoll.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
     slMasterRoll.setRotaryParameters(M_PI, 3*M_PI, false);
