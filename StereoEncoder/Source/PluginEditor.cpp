@@ -54,7 +54,6 @@ StereoEncoderAudioProcessorEditor::StereoEncoderAudioProcessorEditor (StereoEnco
 
     centerElement.setColour(Colours::white);
     sphere.addElement(&centerElement);
-    centerElement.setLabel("C");
     centerElement.setGrabPriority(1);
     // ======================================
 
