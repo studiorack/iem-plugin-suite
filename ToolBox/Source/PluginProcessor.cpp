@@ -253,13 +253,7 @@ void ToolBoxAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
     const int orderOut = output.getOrder();
 
     float weights[64];
-
-    float weight = 1.0f;
-
-    if (orderIn != orderOut)
-        weight = ((float) orderIn + 1) / ((float) orderOut + 1);
-
-    FloatVectorOperations::fill(weights, weight, nCh);
+    FloatVectorOperations::fill(weights, 1.0f, nCh);
 
     // create mask for all flips
     if (doFlipX || doFlipY || doFlipZ)
