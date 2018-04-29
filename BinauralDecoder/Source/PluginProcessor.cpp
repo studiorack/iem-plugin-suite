@@ -89,11 +89,11 @@ parameters(*this, nullptr)
     MemoryInputStream* mis[7];
     mis[0] = new MemoryInputStream (BinaryData::irsOrd1_wav, BinaryData::irsOrd1_wavSize, false);
     mis[1] = new MemoryInputStream (BinaryData::irsOrd2_wav, BinaryData::irsOrd2_wavSize, false);
-    mis[2] = new MemoryInputStream (BinaryData::irsOrd3_wav, BinaryData::irsOrd2_wavSize, false);
-    mis[3] = new MemoryInputStream (BinaryData::irsOrd4_wav, BinaryData::irsOrd3_wavSize, false);
-    mis[4] = new MemoryInputStream (BinaryData::irsOrd5_wav, BinaryData::irsOrd4_wavSize, false);
-    mis[5] = new MemoryInputStream (BinaryData::irsOrd6_wav, BinaryData::irsOrd5_wavSize, false);
-    mis[6] = new MemoryInputStream (BinaryData::irsOrd7_wav, BinaryData::irsOrd6_wavSize, false);
+    mis[2] = new MemoryInputStream (BinaryData::irsOrd3_wav, BinaryData::irsOrd3_wavSize, false);
+    mis[3] = new MemoryInputStream (BinaryData::irsOrd4_wav, BinaryData::irsOrd4_wavSize, false);
+    mis[4] = new MemoryInputStream (BinaryData::irsOrd5_wav, BinaryData::irsOrd5_wavSize, false);
+    mis[5] = new MemoryInputStream (BinaryData::irsOrd6_wav, BinaryData::irsOrd6_wavSize, false);
+    mis[6] = new MemoryInputStream (BinaryData::irsOrd7_wav, BinaryData::irsOrd7_wavSize, false);
 
     for (int i = 0; i < 7; ++i)
     {
