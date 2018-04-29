@@ -97,9 +97,9 @@ parameters(*this, nullptr)
 
     for (int i = 0; i < 7; ++i)
     {
-        irs[i].setSize(2 * square(i + 2), 236);
+        irs[i].setSize(2 * square(i + 2), irLength);
         ScopedPointer<AudioFormatReader> reader = wavFormat.createReaderFor(mis[i], true);
-        reader->read(&irs[i], 0, 236, 0, true, false);
+        reader->read(&irs[i], 0, irLength, 0, true, false);
     }
 
 }
@@ -364,15 +364,14 @@ void BinauralDecoderAudioProcessor::updateBuffers()
     DBG("order: " << order);
     DBG("nCh: " << nCh);
 
-    int irLength = 236;
     AudioBuffer<float> resampledIRs;
     bool useResampled = false;
 
-    if (sampleRate != 44100.0) // do resampling!
+    if (sampleRate != irsSampleRate) // do resampling!
     {
         useResampled = true;
-        double factorReading = 44100.0f / sampleRate;
-        irLength = roundToInt (236 / factorReading + 0.49);
+        double factorReading = irsSampleRate / sampleRate;
+        irLength = roundToInt (irLength / factorReading + 0.49);
 
         MemoryAudioSource memorySource (irs[order - 1], false);
         ResamplingAudioSource resamplingSource (&memorySource, false, 2 * nCh);

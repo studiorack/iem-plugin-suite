@@ -98,7 +98,8 @@ private:
     Convolution EQ;
 
     int fftLength = -1;
-    int irLengthMinusOne = 235;
+	int irLength = 236;
+    int irLengthMinusOne = irLength-1;
     float* in = nullptr;
     float* ifftOutputLeft = nullptr;
     float* ifftOutputRight = nullptr;
