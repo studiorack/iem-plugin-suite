@@ -107,6 +107,7 @@ private:
     ScopedPointer<ComboBoxAttachment> cbNormalizationAtachement;
     ScopedPointer<ComboBoxAttachment> cbOrderAtachement;
     ScopedPointer<ComboBoxAttachment> cbDirectivityOrderSetting;
+    ScopedPointer<ComboBoxAttachment> cbDirectivityNormalizationAttachment;
 
     PositionPlane xyPlane, zyPlane;
     PositionPlane::ParameterElement sourceElement, listenerElement;

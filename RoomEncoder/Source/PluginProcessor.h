@@ -154,6 +154,7 @@ private:
 
     // Parameters
     float *directivityOrderSetting;
+    float *inputIsSN3D;
     float *orderSetting;
     float *useSN3D;
 

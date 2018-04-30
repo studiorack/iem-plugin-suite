@@ -51,6 +51,7 @@ listenerElement(*valueTreeState.getParameter("listenerX"), valueTreeState.getPar
     cbNormalizationAtachement = new ComboBoxAttachment(valueTreeState,"useSN3D", *title.getOutputWidgetPtr()->getNormCbPointer());
     cbOrderAtachement = new ComboBoxAttachment(valueTreeState,"orderSetting", *title.getOutputWidgetPtr()->getOrderCbPointer());
     cbDirectivityOrderSetting = new ComboBoxAttachment(valueTreeState,"directivityOrderSetting", *title.getInputWidgetPtr()->getOrderCbPointer());
+    cbDirectivityNormalizationAttachment = new ComboBoxAttachment(valueTreeState, "inputIsSN3D", *title.getInputWidgetPtr()->getNormCbPointer());
     addAndMakeVisible (&footer);
 
 
