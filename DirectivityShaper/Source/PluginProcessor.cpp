@@ -308,6 +308,10 @@ void DirectivityShaperAudioProcessor::processBlock (AudioSampleBuffer& buffer, M
     {
         Vector3D<float> pos = Conversions<float>::sphericalToCartesian(degreesToRadians(*probeAzimuth), degreesToRadians(*probeElevation));
         SHEval(orderToWorkWith, pos.x, pos.y, pos.z, probeSH, false); // decoding -> false
+        if (applySN3D)
+        { // reverting SN3D in probeSH
+            FloatVectorOperations::multiply(probeSH, sn3d2n3d, nChToWorkWith);
+        }
     }
 
     Weights::Normalization norm;
