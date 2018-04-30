@@ -4,17 +4,17 @@
  Author: Daniel Rudrich
  Copyright (c) 2018 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
- 
+
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
- 
+
  The IEM plug-in suite is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
@@ -60,7 +60,7 @@ constexpr const static float basic[8][8] =
 };
 
 class Weights {
-    
+
 public:
     enum Normalization
     {
@@ -68,7 +68,7 @@ public:
         OnAxis,
         ConstantEnergy
     };
-    
+
     static void applyNormalization (float* weights, const float order, const int decodeOrder, const Normalization normalization, const bool useSN3D = false)
     {
         float orderBlend, integer;
@@ -80,15 +80,15 @@ public:
             orderBlend = 1.0f;
         }
         int higherOrder = lowerOrder + 1;
-        
+
         if (normalization == Normalization::BasicDecode)
         {
             const float ssqrt4PI = 3.544907701811032f;
             float correction = ssqrt4PI / (higherOrder * higherOrder + (2 * higherOrder + 1) * orderBlend);
             correction /= decodeCorrection(decodeOrder);
-            
+
             //correction = decodeCorrection(order) /  decodeCorrection(decodeOrder); <- would be nice
-            
+
             for (int i = 0; i <= decodeOrder; ++i)
                 weights[i] *= correction;
         }
@@ -97,20 +97,20 @@ public:
             const float ssqrt4PI = 3.544907701811032f;
             float correction = ssqrt4PI / (higherOrder * higherOrder + (2 * higherOrder + 1) * orderBlend);
             correction /= decodeCorrection(decodeOrder);
-            
+
             float sum = 0.0f;
             for (int i = 0; i <= decodeOrder; ++i)
                 sum += (2*i + 1) * weights[i];
-            
+
             float cor3;
             if (higherOrder > decodeOrder)
                 cor3 = squares[decodeOrder + 1];
             else
                 cor3 = squares[higherOrder] + (2 * higherOrder + 1) * orderBlend;
-            
+
             //cor2 = cor3 / cor2;
             correction = correction * cor3 / sum;
-            
+
             for (int i = 0; i <= decodeOrder; ++i)
                 weights[i] *= correction;
         }
@@ -120,7 +120,7 @@ public:
             for (int i = 0; i <= decodeOrder; ++i)
                 sum += weights[i]  * weights[i] * (2 * i + 1);
             sum = 1.0f / sqrt(sum) * (decodeOrder + 1);
-            
+
             for (int i = 0; i < decodeOrder; ++i )
                 weights[i] *= sum;
         }
@@ -131,23 +131,23 @@ public:
             FloatVectorOperations::multiply(weights, n3d2sn3d_short, decodeOrder);
         }
     }
-    
+
     static void getWeights (const float order, const float shape, float* dest, const int decodeOrder, Normalization normalization)
     {
         float weights[8];
         for (int i = 0; i <= decodeOrder; ++i)
             weights[i] = 0.0f;
-        
+
         getWeights (order, shape, weights);
-        
+
         // Normalization
         applyNormalization (weights, order, decodeOrder, normalization);
         //
-        
+
         for (int i = 0; i <= decodeOrder; ++i)
             dest[i] = weights[i];
     }
-    
+
     /** Returns number of weights
      shape: 0: basic, 0.5: maxrE, 1.0: inPhase
      */
@@ -156,16 +156,16 @@ public:
         float orderBlend, integer;
         orderBlend = modff(order, &integer);
         int lowerOrder = roundToInt(integer);
-        
+
         if (lowerOrder == 7)
         {
             lowerOrder = 6;
             orderBlend = 1.0f;
         }
         int higherOrder = lowerOrder + 1;
-        
+
         float tempWeights[8];
-        
+
         if (shape >= 0.5f)
         {
             const float blend = shape * 2.0f - 1.0f;
@@ -186,17 +186,17 @@ public:
                 tempWeights[i] += orderBlend * ((1.0f - blend) *  basic[higherOrder][i] + blend * maxRe[higherOrder][i]); ;
             }
         }
-        
+
         // copy weights to destination
         for (int i = 0; i <= higherOrder; ++i)
         {
             dest[i] = tempWeights[i];
         }
-        
+
         return higherOrder + 1;
     }
-    
-    
+
+
 private:
-    
+
 };
