@@ -63,7 +63,7 @@ fv(20.0f, 20000.0f, -50.0f, 10.0f, 10.0f)
     cbDirectivityNormalization.addItem("basic decode", 1);
     cbDirectivityNormalization.addItem("on-axis", 2);
     cbDirectivityNormalization.addItem("constant energy", 3);
-    cbNormalizationAttachment = new ComboBoxAttachment(valueTreeState, "normalization", cbDirectivityNormalization);
+    cbDirectivityNormalizationAttachment = new ComboBoxAttachment(valueTreeState, "normalization", cbDirectivityNormalization);
 
 
     addAndMakeVisible(&fv);
