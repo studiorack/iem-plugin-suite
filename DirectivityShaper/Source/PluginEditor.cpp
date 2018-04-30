@@ -59,11 +59,11 @@ fv(20.0f, 20000.0f, -50.0f, 10.0f, 10.0f)
     };
 
 
-    addAndMakeVisible(&cbNormalization);
-    cbNormalization.addItem("basic decode", 1);
-    cbNormalization.addItem("on-axis", 2);
-    cbNormalization.addItem("constant energy", 3);
-    cbNormalizationAttachment = new ComboBoxAttachment(valueTreeState, "normalization", cbNormalization);
+    addAndMakeVisible(&cbDirectivityNormalization);
+    cbDirectivityNormalization.addItem("basic decode", 1);
+    cbDirectivityNormalization.addItem("on-axis", 2);
+    cbDirectivityNormalization.addItem("constant energy", 3);
+    cbNormalizationAttachment = new ComboBoxAttachment(valueTreeState, "normalization", cbDirectivityNormalization);
 
 
     addAndMakeVisible(&fv);
@@ -80,9 +80,8 @@ fv(20.0f, 20000.0f, -50.0f, 10.0f, 10.0f)
     for (int i = 0; i < numberOfBands; ++i)
         dv.addElement(weights[i], colours[i]);
 
-
-
     cbOrderSettingAttachment = new ComboBoxAttachment(valueTreeState, "orderSetting", *title.getOutputWidgetPtr()->getOrderCbPointer());
+    cbNormalizationAttachment = new ComboBoxAttachment(valueTreeState, "useSN3D", *title.getOutputWidgetPtr()->getNormCbPointer());
 
     addAndMakeVisible(&slProbeAzimuth);
     slProbeAzimuth.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
@@ -378,7 +377,7 @@ void DirectivityShaperAudioProcessorEditor::resized()
                 sliderRow = rightSide.removeFromTop(20);
                 lbNormalization.setBounds(sliderRow.removeFromLeft(80));
                 sliderRow.removeFromLeft(10);
-                cbNormalization.setBounds(sliderRow.removeFromLeft(90));
+                cbDirectivityNormalization.setBounds(sliderRow.removeFromLeft(90));
             }
         }
     }

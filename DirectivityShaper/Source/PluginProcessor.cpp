@@ -41,7 +41,7 @@ DirectivityShaperAudioProcessor::DirectivityShaperAudioProcessor()
 #endif
 parameters(*this, nullptr)
 {
-    parameters.createAndAddParameter ("orderSetting", "Input Order", "",
+    parameters.createAndAddParameter ("orderSetting", "Directivity Order", "",
                                       NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
                                       [](float value) {
                                           if (value >= 0.5f && value < 1.5f) return "0th";
@@ -53,6 +53,11 @@ parameters(*this, nullptr)
                                           else if (value >= 6.5f && value < 7.5f) return "6th";
                                           else if (value >= 7.5f) return "7th";
                                           else return "Auto";},
+                                      nullptr);
+    parameters.createAndAddParameter ("useSN3D", "Directivity Normalization", "",
+                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
+                                      [](float value) { if (value >= 0.5f ) return "SN3D";
+                                          else return "N3D"; },
                                       nullptr);
 
     parameters.createAndAddParameter("probeAzimuth", "probe Azimuth", CharPointer_UTF8 (R"(°)"),
@@ -113,6 +118,7 @@ parameters(*this, nullptr)
 
 
     orderSetting = parameters.getRawParameterValue ("orderSetting");
+    useSN3D = parameters.getRawParameterValue ("useSN3D");
     probeAzimuth = parameters.getRawParameterValue ("probeAzimuth");
     probeElevation = parameters.getRawParameterValue ("probeElevation");
     probeRoll = parameters.getRawParameterValue ("probeRoll");
@@ -278,6 +284,8 @@ void DirectivityShaperAudioProcessor::processBlock (AudioSampleBuffer& buffer, M
     checkInputAndOutput(this, 1, *orderSetting);
     ScopedNoDenormals noDenormals;
 
+    const bool applySN3D = *useSN3D > 0.5f;
+
     int nChToWorkWith = jmin(buffer.getNumChannels(), output.getNumberOfChannels());
     const int orderToWorkWith = isqrt(nChToWorkWith) - 1;
     nChToWorkWith = squares[orderToWorkWith+1];
@@ -329,7 +337,7 @@ void DirectivityShaperAudioProcessor::processBlock (AudioSampleBuffer& buffer, M
         // ============================================
 
         // normalize weights for audio
-        Weights::applyNormalization(tempWeights, *order[b], orderToWorkWith, norm);
+        Weights::applyNormalization(tempWeights, *order[b], orderToWorkWith, norm, applySN3D);
 
 
         Vector3D<float> pos = Conversions<float>::sphericalToCartesian(degreesToRadians(*azimuth[b]), degreesToRadians(*elevation[b]));

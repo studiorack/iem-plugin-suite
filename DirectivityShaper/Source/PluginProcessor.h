@@ -107,8 +107,10 @@ private:
     bool moving = false;
 
     float shOld[numberOfBands][64];
+    
     // parameters
     float *orderSetting;
+    float *useSN3D;
     float* filterType[numberOfBands];
     float* filterFrequency[numberOfBands];
     float* filterQ[numberOfBands];

@@ -85,8 +85,9 @@ private:
     ReverseSlider slProbeAzimuth;
     ReverseSlider slProbeElevation;
     ReverseSlider slProbeRoll;
-    ComboBox cbNormalization;
-    ScopedPointer<ComboBoxAttachment> cbNormalizationAttachment;
+    ComboBox cbDirectivityNormalization;
+    ScopedPointer<ComboBoxAttachment> cbDirectivityNormalizationAttachment;
+
 
     SpherePanner sphere;
     ScopedPointer<SpherePanner::AziumuthElevationParameterElement> sphereElements[numberOfBands];
@@ -116,6 +117,7 @@ private:
 
     ScopedPointer<SliderAttachment> slParam1Attachment, slParam2Attachment, slParam3Attachment;
     ScopedPointer<ComboBoxAttachment> cbOrderSettingAttachment;
-
+    ScopedPointer<ComboBoxAttachment> cbNormalizationAttachment;
+    
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DirectivityShaperAudioProcessorEditor)
 };
