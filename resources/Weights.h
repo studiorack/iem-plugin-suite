@@ -21,7 +21,7 @@
  */
 
 #pragma once
-
+#include "ambisonicTools.h"
 
 constexpr const static float maxRe[8][8] =
 {
@@ -69,7 +69,7 @@ public:
         ConstantEnergy
     };
     
-    static void applyNormalization (float* weights, float order, const int decodeOrder, Normalization normalization)
+    static void applyNormalization (float* weights, const float order, const int decodeOrder, const Normalization normalization, const bool useSN3D = false)
     {
         float orderBlend, integer;
         orderBlend = modff(order, &integer);
@@ -123,6 +123,12 @@ public:
             
             for (int i = 0; i < decodeOrder; ++i )
                 weights[i] *= sum;
+        }
+
+
+        if (useSN3D) // apply SN3D normalization
+        {
+            FloatVectorOperations::multiply(weights, n3d2sn3d_short, decodeOrder);
         }
     }
     
