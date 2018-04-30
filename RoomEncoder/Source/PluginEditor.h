@@ -104,9 +104,9 @@ private:
     ScopedPointer<SliderAttachment> slLowShelfFreqAttachment, slLowShelfGainAttachment, slHighShelfFreqAttachment, slHighShelfGainAttachment;
     ScopedPointer<SliderAttachment> slNumReflectionsAttachment;
 
-    ScopedPointer<ComboBoxAttachment> cbNormalizationAtachement;
-    ScopedPointer<ComboBoxAttachment> cbOrderAtachement;
-    ScopedPointer<ComboBoxAttachment> cbDirectivityOrderSetting;
+    ScopedPointer<ComboBoxAttachment> cbNormalizationAttachement;
+    ScopedPointer<ComboBoxAttachment> cbOrderAttachement;
+    ScopedPointer<ComboBoxAttachment> cbDirectivityOrderAttachment;
     ScopedPointer<ComboBoxAttachment> cbDirectivityNormalizationAttachment;
 
     PositionPlane xyPlane, zyPlane;

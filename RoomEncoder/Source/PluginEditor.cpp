@@ -48,9 +48,9 @@ listenerElement(*valueTreeState.getParameter("listenerX"), valueTreeState.getPar
     addAndMakeVisible(&title);
     title.setTitle(String("Room"),String("Encoder"));
     title.setFont(globalLaF.robotoBold,globalLaF.robotoLight);
-    cbNormalizationAtachement = new ComboBoxAttachment(valueTreeState,"useSN3D", *title.getOutputWidgetPtr()->getNormCbPointer());
-    cbOrderAtachement = new ComboBoxAttachment(valueTreeState,"orderSetting", *title.getOutputWidgetPtr()->getOrderCbPointer());
-    cbDirectivityOrderSetting = new ComboBoxAttachment(valueTreeState,"directivityOrderSetting", *title.getInputWidgetPtr()->getOrderCbPointer());
+    cbNormalizationAttachement = new ComboBoxAttachment(valueTreeState,"useSN3D", *title.getOutputWidgetPtr()->getNormCbPointer());
+    cbOrderAttachement = new ComboBoxAttachment(valueTreeState,"orderSetting", *title.getOutputWidgetPtr()->getOrderCbPointer());
+    cbDirectivityOrderAttachment = new ComboBoxAttachment(valueTreeState,"directivityOrderSetting", *title.getInputWidgetPtr()->getOrderCbPointer());
     cbDirectivityNormalizationAttachment = new ComboBoxAttachment(valueTreeState, "inputIsSN3D", *title.getInputWidgetPtr()->getNormCbPointer());
     addAndMakeVisible (&footer);
 
