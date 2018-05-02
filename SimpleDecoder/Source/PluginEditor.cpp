@@ -109,6 +109,7 @@ SimpleDecoderAudioProcessorEditor::SimpleDecoderAudioProcessorEditor (SimpleDeco
     btLoadFile.addListener(this);
     //btLoadFile.setColour(TextButton::textColourOffId, Colours::cornflowerblue);
     //btLoadFile.setColour(TextButton::buttonColourId, Colours::cornflowerblue); //globalLaF.ClWidgetColours[0]);
+    btLoadFile.setColour(TextButton::buttonColourId, Colours::orange);
 
     dcInfoBox.setErrorMessage(processor.getMessageForEditor());
 
@@ -177,11 +178,13 @@ void SimpleDecoderAudioProcessorEditor::resized()
     { //====================== CONFIGURATION GROUP ==================================
         Rectangle<int> configArea(leftSide);
         Rectangle<int> buttonArea = configArea;
-        buttonArea = buttonArea.removeFromRight(130).removeFromTop(21);
-        btLoadFile.setBounds(buttonArea);
+
         configArea.removeFromTop(extraMargin);
         gcConfiguration.setBounds(configArea);
         configArea.removeFromTop(25);
+
+        buttonArea = configArea.removeFromTop(21).removeFromLeft(130);
+        btLoadFile.setBounds(buttonArea);
 
         configArea.removeFromTop(5);
 
