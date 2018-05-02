@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <JUCERPROJECT id="mbpAgi" name="BinauralDecoder" displaySplashScreen="0" reportAppUsage="0"
-              splashScreenColour="Dark" projectType="audioplug" version="0.3"
+              splashScreenColour="Dark" projectType="audioplug" version="0.3.1"
               bundleIdentifier="at.iem.BinauralDecoder" includeBinaryInAppConfig="1"
               cppLanguageStandard="14" buildVST="1" buildVST3="0" buildAU="0"
               buildAUv3="0" buildRTAS="0" buildAAX="0" buildStandalone="1"
-              enableIAA="0" pluginName="BinauralDecoderMS" pluginDesc="BinauralDecoderMS"
+              enableIAA="0" pluginName="BinauralDecoder" pluginDesc="BinauralDecoder"
               pluginManufacturer="IEM" pluginManufacturerCode="IEMA" pluginCode="BiDe"
               pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
@@ -115,16 +115,16 @@
     <VS2017 targetFolder="Builds/VisualStudio2017" externalLibraries="libfftwf-3.3.lib">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" winWarningLevel="4" generateManifest="1" winArchitecture="x64"
-                       isDebug="1" optimisation="1" targetName="BinauralDecoderMS" debugInformationFormat="ProgramDatabase"
+                       isDebug="1" optimisation="1" targetName="BinauralDecoder" debugInformationFormat="ProgramDatabase"
                        enablePluginBinaryCopyStep="0" libraryPath="..\..\..\resources\fftw3\x64\"
                        headerPath="..\..\..\resources\fftw3\x64\"/>
         <CONFIGURATION name="Release 64bit" winWarningLevel="4" generateManifest="1"
-                       winArchitecture="x64" isDebug="0" optimisation="3" targetName="BinauralDecoderMS_x64"
+                       winArchitecture="x64" isDebug="0" optimisation="3" targetName="BinauralDecoder_x64"
                        debugInformationFormat="ProgramDatabase" enablePluginBinaryCopyStep="0"
                        linkTimeOptimisation="1" libraryPath="..\..\..\resources\fftw3\x64\"
                        headerPath="..\..\..\resources\fftw3\x64\"/>
         <CONFIGURATION name="Release 32bit" winWarningLevel="4" generateManifest="1"
-                       winArchitecture="Win32" isDebug="0" optimisation="3" targetName="BinauralDecoderMS_win32"
+                       winArchitecture="Win32" isDebug="0" optimisation="3" targetName="BinauralDecoder_win32"
                        debugInformationFormat="ProgramDatabase" enablePluginBinaryCopyStep="0"
                        linkTimeOptimisation="1" libraryPath="..\..\..\resources\fftw3\win32\"
                        headerPath="..\..\..\resources\fftw3\win32\"/>
