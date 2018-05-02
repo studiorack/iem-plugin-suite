@@ -37,7 +37,7 @@ AllRADecoderAudioProcessor::AllRADecoderAudioProcessor()
                      #endif
                        ),
 #endif
-energyDistribution(Image::PixelFormat::ARGB, 200, 100, true), parameters(*this, nullptr)
+energyDistribution(Image::PixelFormat::ARGB, 200, 100, true), rEVector(Image::PixelFormat::ARGB, 200, 100, true), parameters(*this, nullptr)
 {
 
     parameters.createAndAddParameter ("inputOrderSetting", "Ambisonic Order", "",
@@ -826,7 +826,15 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
 
     decoderMatrix = decoderMatrix * (1.0f / maxGain);
 
-    // calculate energy
+    // calculate energy and rE vector
+    Array<Vector3D<float>> realLspsCoordinates;
+    realLspsCoordinates.resize(nRealLsps);
+    for (int i = 0; i < nLsps; ++i)
+    {
+        if (! points[i].isImaginary)
+            realLspsCoordinates.set(points[i].realLspNum, Vector3D<float>(points[i].x, points[i].y, points[i].z).normalised()); // zero count
+    }
+
     const int w = energyDistribution.getWidth();
     const float wHalf = w / 2;
     const int h = energyDistribution.getHeight();
@@ -842,14 +850,21 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
             Vector3D<float> cart = sphericalInRadiansToCartesian(spher);
             SHEval(N, cart.x, cart.y, cart.z, &sh[0]); // encoding a source
 
+            Vector3D<float> rE (0.0f, 0.0f, 0.0f);
             float sumOfSquares = 0.0f;
             for (int m = 0; m < nRealLsps; ++m)
             {
                 float sum = 0.0f;
                 for (int n = 0; n < nCoeffs; ++n)
                     sum += (sh[n] * decoderMatrix(m, n));
-                sumOfSquares += square(sum);
+                const float sumSquared = square(sum);
+                rE = rE + realLspsCoordinates[m] * sumSquared;
+                sumOfSquares += sumSquared;
             }
+
+            rE /= sumOfSquares;
+            const float width = 2.0f * acos(rE.length());
+
             const float lvl = 0.5f * Decibels::gainToDecibels(sumOfSquares);
             if (lvl > maxLvl)
                 maxLvl = lvl;
@@ -857,8 +872,12 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
                 minLvl = lvl;
             const float map = jlimit(-0.5f, 0.5f, 0.5f * 0.16666667f * Decibels::gainToDecibels(sumOfSquares)) + 0.5f;
 
+            const float reMap = jlimit(0.0f, 1.0f, width / (float) M_PI);
+
+            Colour rEPixelColour = Colours::limegreen.withMultipliedAlpha(reMap);
             Colour pixelColour = Colours::red.withMultipliedAlpha(map);
 
+            rEVector.setPixelAt(x, y, rEPixelColour);
             energyDistribution.setPixelAt(x, y, pixelColour);
 
             if (sumOfSquares > maxSumOfSuares)
@@ -900,8 +919,10 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
 
     decoder.setDecoder(newDecoder);
     decoderConfig = newDecoder;
-    DBG("finished");
+
     updateChannelCount = true;
+
+    DBG("finished");
 
     MailBox::Message newMessage;
     newMessage.messageColour = Colours::green;
