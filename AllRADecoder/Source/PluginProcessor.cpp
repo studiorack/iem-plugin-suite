@@ -862,8 +862,8 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
                 sumOfSquares += sumSquared;
             }
 
-            rE /= sumOfSquares;
-            const float width = 2.0f * acos(rE.length());
+            rE /= sumOfSquares + FLT_EPSILON;
+            const float width = 2.0f * acos(jmin(1.0f, rE.length()));
 
             const float lvl = 0.5f * Decibels::gainToDecibels(sumOfSquares);
             if (lvl > maxLvl)
