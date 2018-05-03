@@ -95,7 +95,7 @@ $(ALL_PROJECTS:%=%-clean):
 		$<
 %-VC2017-clean: $$(subst @,%,@/Builds/VisualStudio2017/@.sln)
 	MSBuild.exe \
-		/t:Clean \
+		-t:Clean \
 		$<
 
 
