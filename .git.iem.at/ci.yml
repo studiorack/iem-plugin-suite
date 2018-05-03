@@ -1,8 +1,7 @@
 # gitlab-ci configuration for the IEM Plugin Suite
 
 variables:
-# for now we exclude 'BinauralDecoder' as it is incompatible with JUCE-5.2.0 (huckleberry)
-  PROJECTS: AllRADecoder DirectionalCompressor DirectivityShaper DualDelay EnergyVisualizer FdnReverb MatrixMultiplicator MultiEncoder OmniCompressor ProbeDecoder RoomEncoder SimpleDecoder StereoEncoder ToolBox
+  PROJECTS: AllRADecoder BinauralDecoder DirectionalCompressor DirectivityShaper DualDelay EnergyVisualizer FdnReverb MatrixMultiplicator MultiEncoder OmniCompressor ProbeDecoder RoomEncoder SimpleDecoder StereoEncoder ToolBox
   CONFIG: Release
   PKGLIBS: jack flac vorbis vorbisenc vorbisfile ogg libjpeg libpng zlib fftw3f
 
@@ -32,7 +31,7 @@ osx:
     - develop
   script:
     - brew install fftw
-    - curl -o juce.zip https://d30pueezughrda.cloudfront.net/juce/juce-huckleberry-osx.zip
+    - curl -o juce.zip https://d30pueezughrda.cloudfront.net/juce/juce-5.3.1-osx.zip
     - mkdir -p ~/JUCE
     - unzip -q juce.zip -d ~/JUCE
     - mv ~/JUCE/JUCE/* ~/JUCE/ || true
