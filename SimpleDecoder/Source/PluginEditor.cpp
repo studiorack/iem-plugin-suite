@@ -26,11 +26,11 @@
 
 //==============================================================================
 SimpleDecoderAudioProcessorEditor::SimpleDecoderAudioProcessorEditor (SimpleDecoderAudioProcessor& p, AudioProcessorValueTreeState& vts)
-    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts), fv(20, 20000, -20, 10, 5)
+: AudioProcessorEditor (&p), processor (p), valueTreeState(vts), fv(20, 20000, -20, 10, 5)
 {
     // ============== BEGIN: essentials ======================
     // set GUI size and lookAndFeel
-    setResizeLimits(670, 280, 1000, 700); // use this to create a resizeable GUI
+    setResizeLimits(670, 300, 1000, 700); // use this to create a resizeable GUI
     setLookAndFeel (&globalLaF);
 
     // make title and footer visible, and set the PluginName
@@ -40,11 +40,13 @@ SimpleDecoderAudioProcessorEditor::SimpleDecoderAudioProcessorEditor (SimpleDeco
     addAndMakeVisible (&footer);
     // ============= END: essentials ========================
 
+    valueTreeState.addParameterListener ("swChannel", this);
+    valueTreeState.addParameterListener ("swMode", this);
 
     // create the connection between title component's comboBoxes and parameters
     cbOrderSettingAttachment = new ComboBoxAttachment(valueTreeState, "inputOrderSetting", *title.getInputWidgetPtr()->getOrderCbPointer());
     cbNormalizationSettingAttachment = new ComboBoxAttachment(valueTreeState, "useSN3D", *title.getInputWidgetPtr()->getNormCbPointer());
-    //cbOutputChannelsSettingAttachment = new ComboBoxAttachment(valueTreeState, "outputChannelsSetting", *title.getOutputWidgetPtr()->getChannelsCbPointer());
+
 
     addAndMakeVisible(gcFilter);
     gcFilter.setText("Frequency Bands");
@@ -90,25 +92,27 @@ SimpleDecoderAudioProcessorEditor::SimpleDecoderAudioProcessorEditor (SimpleDeco
     cbSwMode.addItem("discrete", 2);
     cbSwMode.addItem("virtual", 3);
     cbSwModeAttachment = new ComboBoxAttachment(valueTreeState, "swMode", cbSwMode);
+    const bool channelSelectShouldBeEnabled = (int) *valueTreeState.getRawParameterValue("swMode") == 1;
 
     addAndMakeVisible(lbSwMode);
     lbSwMode.setText("Subwoofer mode");
 
     addAndMakeVisible(lbSwChannel);
     lbSwChannel.setText("Subwoofer Channel");
+    lbSwChannel.setEnabled(channelSelectShouldBeEnabled);
 
     addAndMakeVisible(slSwChannel);
     slSwChannelAttachment = new SliderAttachment(valueTreeState, "swChannel", slSwChannel);
     slSwChannel.setSliderStyle(Slider::IncDecButtons);
     slSwChannel.setTextBoxStyle (Slider::TextBoxLeft, false, 200, 20);
+    slSwChannel.setEnabled(channelSelectShouldBeEnabled);
 
     // ================= END: Subwoofer mode =======================
 
     addAndMakeVisible(btLoadFile);
     btLoadFile.setButtonText("Load configuration");
     btLoadFile.addListener(this);
-    //btLoadFile.setColour(TextButton::textColourOffId, Colours::cornflowerblue);
-    //btLoadFile.setColour(TextButton::buttonColourId, Colours::cornflowerblue); //globalLaF.ClWidgetColours[0]);
+    btLoadFile.setColour(TextButton::buttonColourId, Colours::orange);
 
     dcInfoBox.setErrorMessage(processor.getMessageForEditor());
 
@@ -126,6 +130,8 @@ SimpleDecoderAudioProcessorEditor::SimpleDecoderAudioProcessorEditor (SimpleDeco
 
 SimpleDecoderAudioProcessorEditor::~SimpleDecoderAudioProcessorEditor()
 {
+    valueTreeState.removeParameterListener("swChannel", this);
+    valueTreeState.removeParameterListener("swMode", this);
     ModalComponentManager::getInstance()->cancelAllModalComponents();
     setLookAndFeel(nullptr);
 }
@@ -177,11 +183,13 @@ void SimpleDecoderAudioProcessorEditor::resized()
     { //====================== CONFIGURATION GROUP ==================================
         Rectangle<int> configArea(leftSide);
         Rectangle<int> buttonArea = configArea;
-        buttonArea = buttonArea.removeFromRight(130).removeFromTop(21);
-        btLoadFile.setBounds(buttonArea);
+
         configArea.removeFromTop(extraMargin);
         gcConfiguration.setBounds(configArea);
         configArea.removeFromTop(25);
+
+        buttonArea = configArea.removeFromTop(21).removeFromLeft(130);
+        btLoadFile.setBounds(buttonArea);
 
         configArea.removeFromTop(5);
 
@@ -304,4 +312,38 @@ void SimpleDecoderAudioProcessorEditor::loadPresetFile()
         dcInfoBox.setDecoderConfig(processor.getCurrentDecoderConfig());
     }
 
+}
+
+void SimpleDecoderAudioProcessorEditor::parameterChanged (const String &parameterID, float newValue)
+{
+    if (parameterID == "swChannel" || parameterID == "swMode")
+    {
+        ReferenceCountedDecoder::Ptr currentDecoder = processor.getCurrentDecoderConfig();
+        if (currentDecoder != nullptr)
+        {
+            const int swMode = *valueTreeState.getRawParameterValue("swMode");
+            int neededChannels = 0;
+            if (swMode == 1)
+                neededChannels = jmax(currentDecoder->getNumOutputChannels(), (int) *valueTreeState.getRawParameterValue("swChannel"));
+            else
+                neededChannels = currentDecoder->getNumOutputChannels();
+
+            title.getOutputWidgetPtr()->setSizeIfUnselectable(neededChannels);
+        }
+    }
+
+    if (parameterID == "swMode")
+    {
+        const int swMode = *valueTreeState.getRawParameterValue("swMode");
+        if (swMode == 1)
+        {
+            slSwChannel.setEnabled(true);
+            lbSwChannel.setEnabled(true);
+        }
+        else
+        {
+            slSwChannel.setEnabled(false);
+            lbSwChannel.setEnabled(false);
+        }
+    }
 }

@@ -43,7 +43,7 @@ typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 //==============================================================================
 /**
 */
-class SimpleDecoderAudioProcessorEditor  : public AudioProcessorEditor, private Timer, private Button::Listener
+class SimpleDecoderAudioProcessorEditor  : public AudioProcessorEditor, private Timer, private Button::Listener, public AudioProcessorValueTreeState::Listener
 {
 public:
     SimpleDecoderAudioProcessorEditor (SimpleDecoderAudioProcessor&, AudioProcessorValueTreeState&);
@@ -58,7 +58,7 @@ public:
     void buttonClicked (Button* button) override;
     void buttonStateChanged (Button* button) override;
     void loadPresetFile();
-
+    void parameterChanged (const String &parameterID, float newValue) override;
 private:
     // ====================== beging essentials ==================
     // lookAndFeel class with the IEM plug-in suite design

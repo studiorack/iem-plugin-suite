@@ -13,6 +13,10 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
     - added linear elevation plot style to SpherePanner (triggered by double-click)
 
 - plug-in specific changes
+    - **AllRA**Decoder
+        - added visualization of the acos-rE source width
+    - **Binaural**Decoder
+        - performance improvements
     - **Dual**Delay
         - fixed high CPU load which occured occasionally
     - **Matrix**Multiplier
@@ -33,7 +37,7 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
         - renamed parameters (probe instead of master)  (`!!BREAKING CHANGE!!`)
         - using azimuth and elevation instead of yaw and pitch  (`!!BREAKING CHANGE!!`)
         - adjusted parameter limits (threshold and makeup gain)  (`!!BREAKING CHANGE!!`)
-    - **Directivity**Shaper
+    - **Room**Shaper
         - added SN3D support (`!!BREAKING CHANGE!!`)
 
         
