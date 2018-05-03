@@ -36,3 +36,18 @@ osx:
     - unzip -q juce.zip -d ~/JUCE
     - mv ~/JUCE/JUCE/* ~/JUCE/ || true
     - make -k CONFIG=$CONFIG PROJUCER="~/JUCE/Projucer.app/Contents/MacOS/Projucer"
+
+windows:
+  tags:
+    - windows
+  stage: build
+  only:
+    - master
+    - develop
+  script:
+    - . ci-setenv vs2017
+    - curl -o juce.zip https://d30pueezughrda.cloudfront.net/juce/juce-5.3.1-windows.zip
+    - mkdir -p /c/JUCE
+    - unzip -q juce.zip -d /c/JUCE
+    - mv /c/JUCE/JUCE/* /c/JUCE/ || true
+    - make -k CONFIG=$CONFIG PROJUCER="/c/JUCE/Projucer.exe"
