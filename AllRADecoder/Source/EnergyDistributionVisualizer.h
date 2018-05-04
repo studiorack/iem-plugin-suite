@@ -86,6 +86,7 @@ public:
         else
             imgComp.setImage(energyImage);
         imgComp.repaint();
+        repaint();
     }
 
     void setActiveSpeakerIndex (int newIdx)
