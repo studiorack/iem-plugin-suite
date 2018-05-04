@@ -213,7 +213,7 @@ listenerElement(*valueTreeState.getParameter("listenerX"), valueTreeState.getPar
 
 
     addAndMakeVisible(&lbReflCoeff);
-    lbReflCoeff.setText("Refl. Atten.");
+    lbReflCoeff.setText("Reflection Attenuation");
 
     addAndMakeVisible(&slReflCoeff);
     slReflCoeffAttachment = new SliderAttachment(valueTreeState,"reflCoeff", slReflCoeff);

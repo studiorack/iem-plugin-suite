@@ -91,21 +91,21 @@ parameters (*this, nullptr)
                                      NormalisableRange<float> (-15.0f, 15.0f, 0.001f), 1.0f,
                                      [](float value) { return String(value, 3); }, nullptr);
     parameters.createAndAddParameter("sourceZ", "source position z", "m",
-                                     NormalisableRange<float> (-10.0f, 10.0f, 0.001f), 1.0f,
+                                     NormalisableRange<float> (-10.0f, 10.0f, 0.001f), -1.0f,
                                      [](float value) { return String(value, 3); }, nullptr);
 
     parameters.createAndAddParameter("listenerX", "listener position x", "m",
-                                     NormalisableRange<float> (-15.0f, 15.0f, 0.001f), 0.0f,
+                                     NormalisableRange<float> (-15.0f, 15.0f, 0.001f), -1.0f,
                                      [](float value) { return String(value, 3); }, nullptr);
     parameters.createAndAddParameter("listenerY", "listener position y", "m",
-                                     NormalisableRange<float> (-15.0f, 15.0f, 0.001f), 0.0f,
+                                     NormalisableRange<float> (-15.0f, 15.0f, 0.001f), -1.0f,
                                      [](float value) { return String(value, 3); }, nullptr);
     parameters.createAndAddParameter("listenerZ", "listener position z", "m",
-                                     NormalisableRange<float> (-10.0f, 10.0f, 0.001f), 0.0f,
+                                     NormalisableRange<float> (-10.0f, 10.0f, 0.001f), -1.0f,
                                      [](float value) { return String(value, 3); }, nullptr);
 
     parameters.createAndAddParameter("numRefl", "number of reflections", "",
-                                     NormalisableRange<float> (0.0f, nImgSrc-1, 1.0f), 19.0f,
+                                     NormalisableRange<float> (0.0f, nImgSrc-1, 1.0f), 33.0f,
                                      [](float value) { return String((int) value); }, nullptr);
 
     parameters.createAndAddParameter("lowShelfFreq", "LowShelf Frequency", "Hz",
