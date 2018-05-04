@@ -101,6 +101,12 @@ SimpleDecoderAudioProcessorEditor::SimpleDecoderAudioProcessorEditor (SimpleDeco
     lbSwChannel.setText("Subwoofer Channel");
     lbSwChannel.setEnabled(channelSelectShouldBeEnabled);
 
+    addAndMakeVisible(lbAlreadyUsed);
+    lbAlreadyUsed.setText("already used!");
+    lbAlreadyUsed.setJustification(Justification::centred);
+    lbAlreadyUsed.setTextColour(Colours::orangered);
+    lbAlreadyUsed.setVisible(false);
+
     addAndMakeVisible(slSwChannel);
     slSwChannelAttachment = new SliderAttachment(valueTreeState, "swChannel", slSwChannel);
     slSwChannel.setSliderStyle(Slider::IncDecButtons);
@@ -209,6 +215,7 @@ void SimpleDecoderAudioProcessorEditor::resized()
 
         slSwChannel.setBounds(swArea.removeFromTop(20));
         lbSwChannel.setBounds(swArea.removeFromTop(labelHeight));
+        lbAlreadyUsed.setBounds(swArea.removeFromTop(12));
     }
 
     { //====================== FILTER GROUP ==================================
@@ -254,12 +261,12 @@ void SimpleDecoderAudioProcessorEditor::timerCallback()
     }
 
     ReferenceCountedDecoder::Ptr currentDecoder = processor.getCurrentDecoderConfig();
+    const int swMode = *valueTreeState.getRawParameterValue("swMode");
     if (lastDecoder != currentDecoder)
     {
         lastDecoder = currentDecoder;
         if (lastDecoder != nullptr)
         {
-            const int swMode = *valueTreeState.getRawParameterValue("swMode");
             int neededChannels = 0;
             if (swMode == 1)
                 neededChannels = jmax(currentDecoder->getNumOutputChannels(), (int) *valueTreeState.getRawParameterValue("swChannel"));
@@ -276,6 +283,27 @@ void SimpleDecoderAudioProcessorEditor::timerCallback()
         }
     }
 
+    if (updateChannelsInWidget)
+    {
+        const int swMode = *valueTreeState.getRawParameterValue("swMode");
+        int neededChannels = 0;
+        if (swMode == 1)
+            neededChannels = jmax(currentDecoder->getNumOutputChannels(), (int) *valueTreeState.getRawParameterValue("swChannel"));
+        else
+            neededChannels = currentDecoder->getNumOutputChannels();
+
+        title.getOutputWidgetPtr()->setSizeIfUnselectable(neededChannels);
+        updateChannelsInWidget = false;
+    }
+
+    if (swMode == 1 && currentDecoder != nullptr && currentDecoder->getRoutingArrayReference().contains((int) *valueTreeState.getRawParameterValue("swChannel") - 1))
+    {
+        lbAlreadyUsed.setVisible(true);
+    }
+    else
+    {
+        lbAlreadyUsed.setVisible(false);
+    }
 
     if (processor.updateFv)
     {
@@ -328,7 +356,7 @@ void SimpleDecoderAudioProcessorEditor::parameterChanged (const String &paramete
             else
                 neededChannels = currentDecoder->getNumOutputChannels();
 
-            title.getOutputWidgetPtr()->setSizeIfUnselectable(neededChannels);
+            updateChannelsInWidget = true;
         }
     }
 

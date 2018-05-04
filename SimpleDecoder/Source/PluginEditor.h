@@ -87,6 +87,8 @@ private:
     ScopedPointer<ComboBoxAttachment> cbNormalizationSettingAttachment;
     //ScopedPointer<ComboBoxAttachment> cbOutputChannelsSettingAttachment;
 
+    bool updateChannelsInWidget = false;
+    
     GroupComponent gcFilter, gcSw, gcConfiguration;
 
     // Filter slider
@@ -97,7 +99,7 @@ private:
     // Subwoofer mode
     ComboBox cbSwMode;
     ScopedPointer<ComboBoxAttachment> cbSwModeAttachment;
-    SimpleLabel lbSwMode, lbSwChannel;
+    SimpleLabel lbSwMode, lbSwChannel, lbAlreadyUsed;
     ReverseSlider slSwChannel;
     ScopedPointer<SliderAttachment> slSwChannelAttachment;
     //
