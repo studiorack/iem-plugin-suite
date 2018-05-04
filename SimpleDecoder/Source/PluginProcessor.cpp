@@ -325,7 +325,7 @@ void SimpleDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiB
     const int nChOut = jmin(decoder.getCurrentDecoder()->getNumOutputChannels(), buffer.getNumChannels());
     const int swProcessing = *swMode;
 
-    for (int ch = nChIn; ch < buffer.getNumChannels(); ++ch)
+    for (int ch = jmax(nChIn, nChOut); ch < buffer.getNumChannels(); ++ch) // clear all not needed channels
         buffer.clear(ch, 0, buffer.getNumSamples());
 
     if (swProcessing > 0)
@@ -344,9 +344,14 @@ void SimpleDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiB
         highPass2.process(highPassContext);
     }
 
-    AudioBlock<float> SimpleDecoderAudioBlock = AudioBlock<float>(buffer.getArrayOfWritePointers(), jmax(nChIn, nChOut), buffer.getNumSamples());
-    ProcessContextReplacing<float> decoderContext (SimpleDecoderAudioBlock);
-    decoder.process(SimpleDecoderAudioBlock);
+    const int L = buffer.getNumSamples();
+    AudioBlock<float> inputAudioBlock = AudioBlock<float>(buffer.getArrayOfWritePointers(), nChIn, L);
+    AudioBlock<float> outputAudioBlock = AudioBlock<float>(buffer.getArrayOfWritePointers(), nChOut, L);
+    ProcessContextNonReplacing<float> decoderContext (inputAudioBlock, outputAudioBlock);
+    decoder.process(decoderContext);
+
+    for (int ch = nChOut; ch < nChIn; ++ch) // clear all not needed channels
+        buffer.clear(ch, 0, buffer.getNumSamples());
 
 
     // =================== subwoofer processing ==================================
@@ -453,19 +458,16 @@ void SimpleDecoderAudioProcessor::loadPreset(const File& presetFile)
         messageForEditor = result.getErrorMessage();
     }
 
-    decoder.setDecoder(tempDecoder);
-
     if (tempDecoder != nullptr)
     {
-        tempDecoder->processAppliedWeights();
         lastFile = presetFile;
         messageForEditor = "";
     }
 
+    decoder.setDecoder(tempDecoder);
     decoderConfig = tempDecoder;
 
     messageChanged = true;
-
 }
 
 //==============================================================================
