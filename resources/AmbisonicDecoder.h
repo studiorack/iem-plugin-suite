@@ -65,7 +65,7 @@ public:
             const int chAmbi = square(order+1);
 
             float weights[64];
-            const float correction = (static_cast<float>(retainedDecoder->getOrder()) + 1) / (static_cast<float>(order) + 1);
+            const float correction = sqrt((static_cast<float>(retainedDecoder->getOrder()) + 1) / (static_cast<float>(order) + 1));
             FloatVectorOperations::fill(weights, correction, chAmbi);
             
             if (retainedDecoder->getSettings().weights == ReferenceCountedDecoder::Weights::maxrE)
