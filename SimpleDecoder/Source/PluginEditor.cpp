@@ -112,7 +112,6 @@ SimpleDecoderAudioProcessorEditor::SimpleDecoderAudioProcessorEditor (SimpleDeco
     slSwChannel.setSliderStyle(Slider::IncDecButtons);
     slSwChannel.setTextBoxStyle (Slider::TextBoxLeft, false, 200, 20);
     slSwChannel.setEnabled(channelSelectShouldBeEnabled);
-
     // ================= END: Subwoofer mode =======================
 
     addAndMakeVisible(btLoadFile);
