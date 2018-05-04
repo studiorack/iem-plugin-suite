@@ -31,14 +31,14 @@
 #include "inPhase.h"
 
 using namespace dsp;
-class AmbisonicDecoder : private ProcessorBase
+class AmbisonicDecoder
 {
 public:
     AmbisonicDecoder() {}
     
     ~AmbisonicDecoder() {}
     
-    void prepare (const ProcessSpec& newSpec) override
+    void prepare (const ProcessSpec& newSpec)
     {
         spec = newSpec;
         matMult.prepare(newSpec);
@@ -51,7 +51,7 @@ public:
         inputNormalization = newNormalization;
     }
     
-    void process (const ProcessContextReplacing<float>& context) override
+    void process (const ProcessContextNonReplacing<float>& context)
     {
         ScopedNoDenormals noDenormals;
         checkIfNewDecoderAvailable();
@@ -88,13 +88,15 @@ public:
         matMult.process(context);
     }
     
-    void reset() override {};
-    
-    bool checkIfNewDecoderAvailable()
+    const bool checkIfNewDecoderAvailable()
     {
         if (newDecoderAvailable)
         {
             currentDecoder = newDecoder;
+            
+            if (currentDecoder != nullptr)
+                currentDecoder->processAppliedWeights();
+
             matMult.setMatrix(currentDecoder, true);
             
             newDecoder = nullptr;
