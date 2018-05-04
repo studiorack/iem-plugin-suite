@@ -14,6 +14,7 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
 
 - plug-in specific changes
     - **AllRA**Decoder
+        - fixed distorted visualization
         - added visualization of the acos-rE source width
     - **Binaural**Decoder
         - performance improvements
