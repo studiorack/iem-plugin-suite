@@ -64,6 +64,15 @@ public:
         repaint();
     }
 
+    void setTextColour(const Colour newColour)
+    {
+        if (colour != newColour)
+        {
+            colour = newColour;
+            repaint();
+        }
+    }
+    
     void enablementChanged() override
     {
         repaint();
@@ -72,12 +81,12 @@ public:
     void paint (Graphics& g) override
     {
         Rectangle<int> bounds = getLocalBounds();
-        paintSimpleLabel(g, bounds, text, isBold,justification);
+        paintSimpleLabel(g, bounds, text, isBold, justification);
     }
 
     virtual void paintSimpleLabel(Graphics& g, Rectangle<int> bounds, String text, bool isBold, Justification justification)
     {
-        g.setColour (Colours::white.withMultipliedAlpha(this->isEnabled() ? 1.0f : 0.4f));
+        g.setColour (colour.withMultipliedAlpha(this->isEnabled() ? 1.0f : 0.4f));
         g.setFont (bounds.getHeight());
         g.setFont(getLookAndFeel().getTypefaceForFont(Font(bounds.getHeight())));
         g.drawText (text, bounds,
@@ -92,6 +101,7 @@ private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SimpleLabel)
     String text = "";
     bool isBold = false;
+    Colour colour = Colours::white;
     Justification justification = Justification::centred;
 };
 
