@@ -160,7 +160,7 @@ void MatrixMultiplierAudioProcessor::processBlock (AudioSampleBuffer& buffer, Mi
     ScopedNoDenormals noDenormals;
 
     AudioBlock<float> ab (buffer);
-    ProcessContextReplacing<float> context (ab);
+    ProcessContextNonReplacing<float> context (ab, ab);
     matTrans.process(context);
 }
 
