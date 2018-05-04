@@ -43,8 +43,9 @@ public:
     ~EnergyDistributionVisualizer() {};
 
 
-    void resized () override {
-        imgComp.setBounds(getLocalBounds());
+    void resized () override
+    {
+        imgComp.setBounds(getLocalBounds().reduced(10, 20));
         background.setBounds(getLocalBounds());
     }
 
