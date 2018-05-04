@@ -311,6 +311,14 @@ void SimpleDecoderAudioProcessorEditor::timerCallback()
         processor.updateFv = false;
     }
 
+    if (changeEnablement)
+    {
+        slSwChannel.setEnabled(enableSubwooferChannelControls);
+        lbSwChannel.setEnabled(enableSubwooferChannelControls);
+        changeEnablement = false;
+    }
+
+
 }
 
 void SimpleDecoderAudioProcessorEditor::buttonClicked(Button* button)
@@ -339,7 +347,6 @@ void SimpleDecoderAudioProcessorEditor::loadPresetFile()
 
         dcInfoBox.setDecoderConfig(processor.getCurrentDecoderConfig());
     }
-
 }
 
 void SimpleDecoderAudioProcessorEditor::parameterChanged (const String &parameterID, float newValue)
@@ -363,15 +370,8 @@ void SimpleDecoderAudioProcessorEditor::parameterChanged (const String &paramete
     if (parameterID == "swMode")
     {
         const int swMode = *valueTreeState.getRawParameterValue("swMode");
-        if (swMode == 1)
-        {
-            slSwChannel.setEnabled(true);
-            lbSwChannel.setEnabled(true);
-        }
-        else
-        {
-            slSwChannel.setEnabled(false);
-            lbSwChannel.setEnabled(false);
-        }
+        enableSubwooferChannelControls = swMode == 1;
+        changeEnablement = true;
+
     }
 }

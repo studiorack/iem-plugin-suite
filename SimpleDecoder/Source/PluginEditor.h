@@ -88,6 +88,8 @@ private:
     //ScopedPointer<ComboBoxAttachment> cbOutputChannelsSettingAttachment;
 
     bool updateChannelsInWidget = false;
+    bool enableSubwooferChannelControls;
+    bool changeEnablement = false;
     
     GroupComponent gcFilter, gcSw, gcConfiguration;
 
