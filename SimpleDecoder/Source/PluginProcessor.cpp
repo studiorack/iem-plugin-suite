@@ -301,7 +301,10 @@ void SimpleDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiB
     checkInputAndOutput(this, *inputOrderSetting, 0, false);
     ScopedNoDenormals noDenormals;
 
-    if (decoder.checkIfNewDecoderAvailable() && decoder.getCurrentDecoder() != nullptr)
+    const bool newDecoderWasAvailable = decoder.checkIfNewDecoderAvailable();
+    ReferenceCountedDecoder::Ptr retainedDecoder = decoder.getCurrentDecoder();
+
+    if (newDecoderWasAvailable && retainedDecoder != nullptr)
     {
         highPassSpecs.numChannels = decoder.getCurrentDecoder()->getNumInputChannels();
         highPass1.prepare(highPassSpecs);
@@ -311,18 +314,27 @@ void SimpleDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiB
             parameters.getParameterAsValue("swChannel").setValue(decoder.getCurrentDecoder()->getSettings().subwooferChannel);
             parameters.getParameterAsValue("swMode").setValue(1); //discrete
         }
+
+        // calculate mean omni-signal-gain
+        Matrix<float>& decoderMatrix = retainedDecoder->getMatrix();
+        const int nLsps = (int) decoderMatrix.getNumRows();
+        float sumGains = 0.0f;
+        for (int i = 0; i < nLsps; ++i)
+            sumGains += decoderMatrix(i, 0);
+
+        omniGain = sumGains / nLsps;
     }
 
     // ====== is a decoder loaded? stop processing if not ===========
-    if (decoder.getCurrentDecoder() == nullptr)
+    if (retainedDecoder == nullptr)
     {
         buffer.clear();
         return;
     }
     // ==============================================================
 
-    const int nChIn = jmin(decoder.getCurrentDecoder()->getNumInputChannels(), buffer.getNumChannels(), input.getNumberOfChannels());
-    const int nChOut = jmin(decoder.getCurrentDecoder()->getNumOutputChannels(), buffer.getNumChannels());
+    const int nChIn = jmin(retainedDecoder->getNumInputChannels(), buffer.getNumChannels(), input.getNumberOfChannels());
+    const int nChOut = jmin(retainedDecoder->getNumOutputChannels(), buffer.getNumChannels());
     const int swProcessing = *swMode;
 
     for (int ch = jmax(nChIn, nChOut); ch < buffer.getNumChannels(); ++ch) // clear all not needed channels
@@ -331,6 +343,14 @@ void SimpleDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiB
     if (swProcessing > 0)
     {
         swBuffer.copyFrom(0, 0, buffer, 0, 0, buffer.getNumSamples());
+        const int order = isqrt((int) nChIn) - 1;
+        float correction = sqrt((static_cast<float>(retainedDecoder->getOrder()) + 1) / (static_cast<float>(order) + 1));
+
+        if (swProcessing == 1) // subwoofer-mode: discrete
+            correction *= sqrt(nChOut); // correction for only one subwoofer instead of nChOut loudspeakers
+
+        swBuffer.applyGain(omniGain * correction);
+
         // low pass filtering
         AudioBlock<float> lowPassAudioBlock = AudioBlock<float>(swBuffer);
         ProcessContextReplacing<float> lowPassContext(lowPassAudioBlock);
