@@ -71,7 +71,7 @@ public:
         int maxChannel = 0;
         for (int i = routingArray.size(); --i >= 0;)
         {
-            int newValue = routingArray.getUnchecked(i);
+            const int newValue = routingArray.getUnchecked(i);
             if (newValue > maxChannel)
                 maxChannel = newValue;
         }

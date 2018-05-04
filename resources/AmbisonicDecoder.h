@@ -34,8 +34,7 @@ using namespace dsp;
 class AmbisonicDecoder : private ProcessorBase
 {
 public:
-    AmbisonicDecoder() {
-    }
+    AmbisonicDecoder() {}
     
     ~AmbisonicDecoder() {}
     
@@ -62,10 +61,9 @@ public:
         if (retainedDecoder != nullptr) // if decoder is available, do the pre-processing
         {
             AudioBlock<float> inputBlock = context.getInputBlock();
-            
             const int order = isqrt((int) inputBlock.getNumChannels()) - 1;
             const int chAmbi = square(order+1);
-            
+
             float weights[64];
             const float correction = (static_cast<float>(retainedDecoder->getOrder()) + 1) / (static_cast<float>(order) + 1);
             FloatVectorOperations::fill(weights, correction, chAmbi);
@@ -105,20 +103,23 @@ public:
         }
         return false;
     };
-    
+
+    /** Giving the AmbisonicDecoder a new decoder for the audio processing. Note: The AmbisonicDecoder will call the processAppliedWeights() of the ReferenceCountedDecoder before it processes audio! The matrix elements may change due to this method.
+     */
     void setDecoder (ReferenceCountedDecoder::Ptr newDecoderToUse)
     {
         newDecoder = newDecoderToUse;
         newDecoderAvailable = true;
     }
     
-    ReferenceCountedDecoder::Ptr getCurrentDecoder() {
+    ReferenceCountedDecoder::Ptr getCurrentDecoder()
+    {
         return currentDecoder;
     }
     
     /** Checks if a new decoder waiting to be used.
      */
-    bool isNewDecoderWaiting()
+    const bool isNewDecoderWaiting()
     {
         return newDecoderAvailable;
     }

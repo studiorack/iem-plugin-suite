@@ -123,7 +123,8 @@ public:
         return false;
     };
 
-    void setMatrix(ReferenceCountedMatrix::Ptr newMatrixToUse, bool force = false) {
+    void setMatrix(ReferenceCountedMatrix::Ptr newMatrixToUse, bool force = false)
+    {
         newMatrix = newMatrixToUse;
         newMatrixAvailable = true;
         if (force)

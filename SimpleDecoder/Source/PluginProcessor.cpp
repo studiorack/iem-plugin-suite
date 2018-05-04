@@ -462,8 +462,6 @@ void SimpleDecoderAudioProcessor::loadPreset(const File& presetFile)
         messageForEditor = "";
     }
 
-
-    //highPassFilters.prepare(highPassSpecs);
     decoderConfig = tempDecoder;
 
     messageChanged = true;

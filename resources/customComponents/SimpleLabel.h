@@ -39,23 +39,27 @@ public:
     {
     }
 
-    void setText(String newText) {
+    void setText(String newText)
+    {
         text = newText;
         repaint();
     }
-    void setText(String newText, bool newBold) {
+    void setText(String newText, bool newBold)
+    {
         text = newText;
         isBold = newBold;
         repaint();
     }
-    void setText(String newText, bool newBold, Justification newJustification) {
+    void setText(String newText, bool newBold, Justification newJustification)
+    {
         text = newText;
         isBold = newBold;
         justification = newJustification;
         repaint();
     }
 
-    void setJustification(Justification newJustification) {
+    void setJustification(Justification newJustification)
+    {
         justification = newJustification;
         repaint();
     }
@@ -64,6 +68,7 @@ public:
     {
         repaint();
     };
+
     void paint (Graphics& g) override
     {
         Rectangle<int> bounds = getLocalBounds();
