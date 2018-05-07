@@ -40,12 +40,13 @@ osx:
 windows:
   tags:
     - windows
+  variables:
+    IEMCI_CONFIGURATIONS: vs2017
   stage: build
   only:
     - master
     - develop
   script:
-    - . ci-setenv vs2017
     - curl -o juce.zip https://d30pueezughrda.cloudfront.net/juce/juce-5.3.1-windows.zip
     - mkdir -p /c/JUCE
     - unzip -q juce.zip -d /c/JUCE
