@@ -9,7 +9,7 @@ ifeq ($(findstring $(uname), Linux GNU GNU/kFreeBSD), $(uname))
 endif
 
 ifeq ($(findstring MSYS, $(uname)), MSYS)
-  BUILDSYSTEM = VC2017
+  BUILDSYSTEM = VS2017
   BITS = 64
 endif
 
@@ -88,12 +88,12 @@ $(ALL_PROJECTS:%=%-clean):
 	$(PROJUCER) -resave $(subst @,$(firstword $(subst /, ,$@)),@/@.jucer)
 
 
-# VC2017 based rules
+# VS2017 based rules
 # TODO: find out how to pass CONFIG and TARGET
-%-VC2017-build: $$(subst @,%,@/Builds/VisualStudio2017/@.sln)
+%-VS2017-build: $$(subst @,%,@/Builds/VisualStudio2017/@.sln)
 	MSBuild.exe \
 		$<
-%-VC2017-clean: $$(subst @,%,@/Builds/VisualStudio2017/@.sln)
+%-VS2017-clean: $$(subst @,%,@/Builds/VisualStudio2017/@.sln)
 	MSBuild.exe \
 		-t:Clean \
 		$<
