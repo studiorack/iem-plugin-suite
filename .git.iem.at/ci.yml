@@ -4,6 +4,7 @@ variables:
   PROJECTS: AllRADecoder BinauralDecoder DirectionalCompressor DirectivityShaper DualDelay EnergyVisualizer FdnReverb MatrixMultiplicator MultiEncoder OmniCompressor ProbeDecoder RoomEncoder SimpleDecoder StereoEncoder ToolBox
   CONFIG: Release
   PKGLIBS: jack flac vorbis vorbisenc vorbisfile ogg libjpeg libpng zlib fftw3f
+  JUCEVERSION: 5.3.1
 
 debian_buster:
   image: debian:buster
@@ -31,7 +32,7 @@ osx:
     - develop
   script:
     - brew install fftw
-    - curl -o juce.zip https://d30pueezughrda.cloudfront.net/juce/juce-5.3.1-osx.zip
+    - curl -o juce.zip https://d30pueezughrda.cloudfront.net/juce/juce-${JUCEVERSION}-osx.zip
     - mkdir -p ~/JUCE
     - unzip -q juce.zip -d ~/JUCE
     - mv ~/JUCE/JUCE/* ~/JUCE/ || true
@@ -47,7 +48,7 @@ windows:
     - master
     - develop
   script:
-    - curl -o juce.zip https://d30pueezughrda.cloudfront.net/juce/juce-5.3.1-windows.zip
+    - curl -o juce.zip https://d30pueezughrda.cloudfront.net/juce/juce-${JUCEVERSION}-windows.zip
     - mkdir -p /c/JUCE
     - unzip -q juce.zip -d /c/JUCE
     - mv /c/JUCE/JUCE/* /c/JUCE/ || true
