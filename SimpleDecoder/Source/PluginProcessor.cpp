@@ -343,11 +343,10 @@ void SimpleDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiB
     if (swProcessing > 0)
     {
         swBuffer.copyFrom(0, 0, buffer, 0, 0, buffer.getNumSamples());
-        const int order = isqrt((int) nChIn) - 1;
-        float correction = sqrt((static_cast<float>(retainedDecoder->getOrder()) + 1) / (static_cast<float>(order) + 1));
+        float correction = sqrt((static_cast<float>(retainedDecoder->getOrder()) + 1));
 
         if (swProcessing == 1) // subwoofer-mode: discrete
-            correction *= sqrt(nChOut); // correction for only one subwoofer instead of nChOut loudspeakers
+            correction *= sqrt((float) nChOut); // correction for only one subwoofer instead of nChOut loudspeakers
 
         swBuffer.applyGain(omniGain * correction);
 
