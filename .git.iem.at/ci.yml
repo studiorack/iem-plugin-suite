@@ -48,8 +48,10 @@ windows:
     - master
     - develop
   script:
+# install JUCE
     - curl -o juce.zip https://d30pueezughrda.cloudfront.net/juce/juce-${JUCEVERSION}-windows.zip
     - mkdir -p /c/JUCE
     - unzip -q juce.zip -d /c/JUCE
     - mv /c/JUCE/JUCE/* /c/JUCE/ || true
+# run the actual build
     - make -k CONFIG=$CONFIG PROJUCER="/c/JUCE/Projucer.exe"
