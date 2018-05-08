@@ -304,8 +304,8 @@ void BinauralDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, Mid
         FloatVectorOperations::clear(overlapBuffer.getWritePointer(1, howManyAreLeft), ergL - howManyAreLeft);
 
 		/* MS -> LR  */
-		FloatVectorOperations::copy(overlapBuffer.getWritePointer(0), &ifftOutputMid[L], irLengthMinusOne);
-		FloatVectorOperations::copy(overlapBuffer.getWritePointer(1), &ifftOutputMid[L], irLengthMinusOne);
+		FloatVectorOperations::add(overlapBuffer.getWritePointer(0), &ifftOutputMid[L], irLengthMinusOne);
+		FloatVectorOperations::add(overlapBuffer.getWritePointer(1), &ifftOutputMid[L], irLengthMinusOne);
 		FloatVectorOperations::add(overlapBuffer.getWritePointer(0), &ifftOutputSide[L], irLengthMinusOne);
 		FloatVectorOperations::subtract(overlapBuffer.getWritePointer(1), &ifftOutputSide[L], irLengthMinusOne);
     }
