@@ -53,5 +53,11 @@ windows:
     - mkdir -p /c/JUCE
     - unzip -q juce.zip -d /c/JUCE
     - mv /c/JUCE/JUCE/* /c/JUCE/ || true
+# install fftw3
+    - curl -o fftw.x64.zip ftp://ftp.fftw.org/pub/fftw/fftw-3.3.5-dll64.zip
+    - mkdir -p resources/fftw3/x64/
+    - unzip fftw.x64.zip -d resources/fftw3/x64/
+    - for f in resources/fftw3/x64/libfftw3*.*; do mv -v "${f}" $(echo $f | sed -e 's|-|-3.|' -e 's|/libfftw3|/libfftw|'); done
+    - for f in resources/fftw3/x64/libfftw*.def; do Lib.exe -machine:x64 -def:"${f}"; done
 # run the actual build
     - make -k CONFIG=$CONFIG PROJUCER="/c/JUCE/Projucer.exe"
