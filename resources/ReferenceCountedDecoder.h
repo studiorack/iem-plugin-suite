@@ -69,10 +69,6 @@ public:
         return "Decoder named '" + name + "' destroyed.";
     }
 
-//    Eigen::MatrixXf* getMatrix()
-//    {
-//        return &matrix;
-//    }
     const String getName()
     {
         return name;
@@ -83,7 +79,7 @@ public:
         return description;
     }
 
-    void setSettings(Settings newSettings)
+    void setSettings (const Settings newSettings)
     {
         settings = newSettings;
     }
@@ -92,11 +88,6 @@ public:
     {
         return settings;
     }
-
-//    const String getSettingsAsString()
-//    {
-//        return "Decoder expects Ambisonic input up to " + getOrderString(order) + " order with " + String(settings.expectedNormalization == Normalization::n3d ? "N3D" : "SN3D") + " normalization. The weights are '" + getWeightsString() + "' and are " + String(settings.weightsAlreadyApplied ? "already applied." : "not aplied yet.");
-//    }
 
     const String getWeightsString()
     {
@@ -107,6 +98,10 @@ public:
             default: return String("none");
         }
     }
+
+    /**
+     Applies the inverse weights to the decoder matrix, so it can be used with different orders. This method has to be called before the decoder processes audio input.
+    */
     void processAppliedWeights()
     {
         if (settings.weightsAlreadyApplied && settings.weights != Weights::none)
@@ -123,7 +118,7 @@ public:
         }
     }
 
-    int getOrder()
+    const int getOrder()
     {
         return order;
     }

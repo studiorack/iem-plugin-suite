@@ -49,6 +49,11 @@ parameters (*this, nullptr)
                                           else if (value >= 7.5f) return "7th";
                                           else return "Auto"; },
                                       nullptr);
+    parameters.createAndAddParameter ("inputIsSN3D", "Input Directivity Normalization", "",
+                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
+                                      [](float value) { if (value >= 0.5f ) return "SN3D";
+                                          else return "N3D"; },
+                                      nullptr);
 
     parameters.createAndAddParameter ("orderSetting", "Output Ambisonics Order", "",
                                       NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
@@ -86,21 +91,21 @@ parameters (*this, nullptr)
                                      NormalisableRange<float> (-15.0f, 15.0f, 0.001f), 1.0f,
                                      [](float value) { return String(value, 3); }, nullptr);
     parameters.createAndAddParameter("sourceZ", "source position z", "m",
-                                     NormalisableRange<float> (-10.0f, 10.0f, 0.001f), 1.0f,
+                                     NormalisableRange<float> (-10.0f, 10.0f, 0.001f), -1.0f,
                                      [](float value) { return String(value, 3); }, nullptr);
 
     parameters.createAndAddParameter("listenerX", "listener position x", "m",
-                                     NormalisableRange<float> (-15.0f, 15.0f, 0.001f), 0.0f,
+                                     NormalisableRange<float> (-15.0f, 15.0f, 0.001f), -1.0f,
                                      [](float value) { return String(value, 3); }, nullptr);
     parameters.createAndAddParameter("listenerY", "listener position y", "m",
-                                     NormalisableRange<float> (-15.0f, 15.0f, 0.001f), 0.0f,
+                                     NormalisableRange<float> (-15.0f, 15.0f, 0.001f), -1.0f,
                                      [](float value) { return String(value, 3); }, nullptr);
     parameters.createAndAddParameter("listenerZ", "listener position z", "m",
-                                     NormalisableRange<float> (-10.0f, 10.0f, 0.001f), 0.0f,
+                                     NormalisableRange<float> (-10.0f, 10.0f, 0.001f), -1.0f,
                                      [](float value) { return String(value, 3); }, nullptr);
 
     parameters.createAndAddParameter("numRefl", "number of reflections", "",
-                                     NormalisableRange<float> (0.0f, nImgSrc-1, 1.0f), 19.0f,
+                                     NormalisableRange<float> (0.0f, nImgSrc-1, 1.0f), 33.0f,
                                      [](float value) { return String((int) value); }, nullptr);
 
     parameters.createAndAddParameter("lowShelfFreq", "LowShelf Frequency", "Hz",
@@ -156,6 +161,7 @@ parameters (*this, nullptr)
     parameters.state = ValueTree (Identifier ("RoomEncoder"));
 
     directivityOrderSetting = parameters.getRawParameterValue ("directivityOrderSetting");
+    inputIsSN3D = parameters.getRawParameterValue ("inputIsSN3D");
     orderSetting = parameters.getRawParameterValue ("orderSetting");
     useSN3D = parameters.getRawParameterValue ("useSN3D");
 
@@ -410,6 +416,7 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
     const int L = buffer.getNumSamples();
     const float oneOverL = 1.0/((double) L);
 
+    const bool doInputSn3dToN3dConversion = *inputIsSN3D > 0.5f;
 
     float* pBufferWrite = buffer.getWritePointer(0);
     const float* pBufferRead = buffer.getReadPointer(0);
@@ -569,6 +576,9 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
         SHEval(directivityOrder, smx[q], smy[q], smz[q],(float *) SHsample, false); // deoding -> false
 #endif /* JUCE_USE_SIMD */
 
+        if (doInputSn3dToN3dConversion)
+            FloatVectorOperations::multiply((float *) SHsample, sn3d2n3d, maxNChIn);
+        
         Array<IIRfloat*> interleavedDataPtr;
         interleavedDataPtr.resize(nSIMDFilters);
         IIRfloat** intrlvdDataArrayPtr = interleavedDataPtr.getRawDataPointer();

@@ -5,11 +5,21 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
 
 ## untagged changes
 - general changes
+    - unity gain normalization has moved fully to the decoding stage:  (`!!BREAKING CHANGE!!`)
+        - encoding a source results in unity gain in the W-channel (omni)
+        - decoding is normalized resulting in unity gain for the sampled mono signal
     - renamed **Matrix**Multiplicator to **Matrix**Multiplier (`!!BREAKING CHANGE!!`)
     - refactored SpherePanner, which fixes automation writing issues
     - added linear elevation plot style to SpherePanner (triggered by double-click)
 
 - plug-in specific changes
+    - **AllRA**Decoder
+        - fixed distorted visualization
+        - added visualization of the acos-rE source width
+    - **Binaural**Decoder
+        - performance improvements
+    - **Dual**Delay
+        - fixed high CPU load which occured occasionally
     - **Matrix**Multiplier
         - smaller GUI changes
     - **Multi**Encoder
@@ -24,9 +34,12 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
         - using azimuth and elevation instead of yaw and pitch  (`!!BREAKING CHANGE!!`)
         - adjusted parameter limits (threshold and makeup gain)  (`!!BREAKING CHANGE!!`)
     - **Directivity**Shaper
+        - added SN3D support (`!!BREAKING CHANGE!!`)
         - renamed parameters (probe instead of master)  (`!!BREAKING CHANGE!!`)
         - using azimuth and elevation instead of yaw and pitch  (`!!BREAKING CHANGE!!`)
         - adjusted parameter limits (threshold and makeup gain)  (`!!BREAKING CHANGE!!`)
+    - **Room**Shaper
+        - added SN3D support (`!!BREAKING CHANGE!!`)
 
         
 ## v1.2.0

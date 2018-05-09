@@ -37,7 +37,7 @@ AllRADecoderAudioProcessor::AllRADecoderAudioProcessor()
                      #endif
                        ),
 #endif
-energyDistribution(Image::PixelFormat::ARGB, 200, 100, true), parameters(*this, nullptr)
+energyDistribution(Image::PixelFormat::ARGB, 200, 100, true), rEVector(Image::PixelFormat::ARGB, 200, 100, true), parameters(*this, nullptr)
 {
 
     parameters.createAndAddParameter ("inputOrderSetting", "Ambisonic Order", "",
@@ -283,12 +283,31 @@ void AllRADecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBu
     checkInputAndOutput(this, *inputOrderSetting, 64, false);
     ScopedNoDenormals noDenormals;
 
-    decoder.setInputNormalization(*useSN3D >= 0.5f ? ReferenceCountedDecoder::Normalization::sn3d : ReferenceCountedDecoder::Normalization::n3d);
-    
-    AudioBlock<float> ab = AudioBlock<float>(buffer);
-    ProcessContextReplacing<float> context (ab);
-    decoder.process(context);
+    // ====== is a decoder loaded? stop processing if not ===========
+    decoder.checkIfNewDecoderAvailable();
+    if (decoder.getCurrentDecoder() == nullptr)
+    {
+        buffer.clear();
+        return;
+    }
+    // ==============================================================
 
+    const int nChIn = jmin(decoder.getCurrentDecoder()->getNumInputChannels(), buffer.getNumChannels(), input.getNumberOfChannels());
+    const int nChOut = jmin(decoder.getCurrentDecoder()->getNumOutputChannels(), buffer.getNumChannels());
+
+    for (int ch = jmax(nChIn, nChOut); ch < buffer.getNumChannels(); ++ch) // clear all not needed channels
+        buffer.clear(ch, 0, buffer.getNumSamples());
+
+    decoder.setInputNormalization(*useSN3D >= 0.5f ? ReferenceCountedDecoder::Normalization::sn3d : ReferenceCountedDecoder::Normalization::n3d);
+
+    const int L = buffer.getNumSamples();
+    AudioBlock<float> inputAudioBlock = AudioBlock<float>(buffer.getArrayOfWritePointers(), nChIn, L);
+    AudioBlock<float> outputAudioBlock = AudioBlock<float>(buffer.getArrayOfWritePointers(), nChOut, L);
+    ProcessContextNonReplacing<float> decoderContext (inputAudioBlock, outputAudioBlock);
+    decoder.process(decoderContext);
+
+    for (int ch = nChOut; ch < nChIn; ++ch) // clear all not needed channels
+        buffer.clear(ch, 0, buffer.getNumSamples());
 }
 
 //==============================================================================
@@ -357,7 +376,7 @@ void AllRADecoderAudioProcessor::parameterChanged (const String &parameterID, fl
 {
     DBG("Parameter with ID " << parameterID << " has changed. New value: " << newValue);
 
-    if (parameterID == "inputChannelsSetting" || parameterID == "outputOrderSetting" )
+    if (parameterID == "inputOrderSetting" || parameterID == "outputOrderSetting" )
         userChangedIOSettings = true;
     else if (parameterID == "useSN3D")
     {
@@ -826,7 +845,15 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
 
     decoderMatrix = decoderMatrix * (1.0f / maxGain);
 
-    // calculate energy
+    // calculate energy and rE vector
+    Array<Vector3D<float>> realLspsCoordinates;
+    realLspsCoordinates.resize(nRealLsps);
+    for (int i = 0; i < nLsps; ++i)
+    {
+        if (! points[i].isImaginary)
+            realLspsCoordinates.set(points[i].realLspNum, Vector3D<float>(points[i].x, points[i].y, points[i].z).normalised()); // zero count
+    }
+
     const int w = energyDistribution.getWidth();
     const float wHalf = w / 2;
     const int h = energyDistribution.getHeight();
@@ -842,14 +869,21 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
             Vector3D<float> cart = sphericalInRadiansToCartesian(spher);
             SHEval(N, cart.x, cart.y, cart.z, &sh[0]); // encoding a source
 
+            Vector3D<float> rE (0.0f, 0.0f, 0.0f);
             float sumOfSquares = 0.0f;
             for (int m = 0; m < nRealLsps; ++m)
             {
                 float sum = 0.0f;
                 for (int n = 0; n < nCoeffs; ++n)
                     sum += (sh[n] * decoderMatrix(m, n));
-                sumOfSquares += square(sum);
+                const float sumSquared = square(sum);
+                rE = rE + realLspsCoordinates[m] * sumSquared;
+                sumOfSquares += sumSquared;
             }
+
+            rE /= sumOfSquares + FLT_EPSILON;
+            const float width = 2.0f * acos(jmin(1.0f, rE.length()));
+
             const float lvl = 0.5f * Decibels::gainToDecibels(sumOfSquares);
             if (lvl > maxLvl)
                 maxLvl = lvl;
@@ -857,8 +891,12 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
                 minLvl = lvl;
             const float map = jlimit(-0.5f, 0.5f, 0.5f * 0.16666667f * Decibels::gainToDecibels(sumOfSquares)) + 0.5f;
 
+            const float reMap = jlimit(0.0f, 1.0f, width / (float) M_PI);
+
+            Colour rEPixelColour = Colours::limegreen.withMultipliedAlpha(reMap);
             Colour pixelColour = Colours::red.withMultipliedAlpha(map);
 
+            rEVector.setPixelAt(x, y, rEPixelColour);
             energyDistribution.setPixelAt(x, y, pixelColour);
 
             if (sumOfSquares > maxSumOfSuares)
@@ -900,8 +938,10 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
 
     decoder.setDecoder(newDecoder);
     decoderConfig = newDecoder;
-    DBG("finished");
+
     updateChannelCount = true;
+
+    DBG("finished");
 
     MailBox::Message newMessage;
     newMessage.messageColour = Colours::green;

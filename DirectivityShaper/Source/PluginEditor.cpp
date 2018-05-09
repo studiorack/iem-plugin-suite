@@ -59,11 +59,11 @@ fv(20.0f, 20000.0f, -50.0f, 10.0f, 10.0f)
     };
 
 
-    addAndMakeVisible(&cbNormalization);
-    cbNormalization.addItem("basic decode", 1);
-    cbNormalization.addItem("on-axis", 2);
-    cbNormalization.addItem("constant energy", 3);
-    cbNormalizationAttachment = new ComboBoxAttachment(valueTreeState, "normalization", cbNormalization);
+    addAndMakeVisible(&cbDirectivityNormalization);
+    cbDirectivityNormalization.addItem("basic decode", 1);
+    cbDirectivityNormalization.addItem("on-axis", 2);
+    cbDirectivityNormalization.addItem("constant energy", 3);
+    cbDirectivityNormalizationAttachment = new ComboBoxAttachment(valueTreeState, "normalization", cbDirectivityNormalization);
 
 
     addAndMakeVisible(&fv);
@@ -80,9 +80,8 @@ fv(20.0f, 20000.0f, -50.0f, 10.0f, 10.0f)
     for (int i = 0; i < numberOfBands; ++i)
         dv.addElement(weights[i], colours[i]);
 
-
-
     cbOrderSettingAttachment = new ComboBoxAttachment(valueTreeState, "orderSetting", *title.getOutputWidgetPtr()->getOrderCbPointer());
+    cbNormalizationAttachment = new ComboBoxAttachment(valueTreeState, "useSN3D", *title.getOutputWidgetPtr()->getNormCbPointer());
 
     addAndMakeVisible(&slProbeAzimuth);
     slProbeAzimuth.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
@@ -125,7 +124,6 @@ fv(20.0f, 20000.0f, -50.0f, 10.0f, 10.0f)
         slFilterFrequency[i].setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
         slFilterFrequency[i].setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
         slFilterFrequency[i].setColour(Slider::rotarySliderOutlineColourId, colours[i]);
-        slFilterFrequency[i].setTextValueSuffix(" Hz");
         slFilterFrequencyAttachment[i] = new SliderAttachment(valueTreeState, "filterFrequency" + String(i), slFilterFrequency[i]);
 
         addAndMakeVisible(&slFilterQ[i]);
@@ -138,7 +136,6 @@ fv(20.0f, 20000.0f, -50.0f, 10.0f, 10.0f)
         slFilterGain[i].setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
         slFilterGain[i].setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
         slFilterGain[i].setColour(Slider::rotarySliderOutlineColourId, colours[i]);
-        slFilterGain[i].setTextValueSuffix(" dB");
         slFilterGainAttachment[i] = new SliderAttachment(valueTreeState, "filterGain" + String(i), slFilterGain[i]);
 
         addAndMakeVisible(&slOrder[i]);
@@ -323,12 +320,9 @@ void DirectivityShaperAudioProcessorEditor::resized()
                 slShape[i].setBounds(row.removeFromLeft(40));
             }
         }
-        DBG("remaining height: " << leftSide.getHeight());
     }
 
-
     area.removeFromLeft(20);
-    DBG(area.getWidth());
 
     {
         Rectangle<int> rightSide(area);
@@ -343,7 +337,7 @@ void DirectivityShaperAudioProcessorEditor::resized()
             for (int i = 0; i < numberOfBands; ++i)
             {
                 sliderRow.removeFromLeft(4);
-                slElevation[i].setBounds(sliderRow.removeFromLeft(40));
+                slElevation[i].setBounds(sliderRow.removeFromLeft(50));
             }
 
             sliderRow = panningArea.removeFromBottom(50);
@@ -351,7 +345,7 @@ void DirectivityShaperAudioProcessorEditor::resized()
             for (int i = 0; i < numberOfBands; ++i)
             {
                 sliderRow.removeFromLeft(4);
-                slAzimuth[i].setBounds(sliderRow.removeFromLeft(40));
+                slAzimuth[i].setBounds(sliderRow.removeFromLeft(50));
             }
             sphere.setBounds(panningArea);
 
@@ -365,7 +359,7 @@ void DirectivityShaperAudioProcessorEditor::resized()
 
                 slProbeAzimuth.setBounds(sliderRow.removeFromLeft(40));
                 sliderRow.removeFromLeft(rotSliderSpacing);
-                slProbeElevation.setBounds(sliderRow.removeFromLeft(40));
+                slProbeElevation.setBounds(sliderRow.removeFromLeft(45));
                 sliderRow.removeFromLeft(rotSliderSpacing);
                 slProbeRoll.setBounds(sliderRow.removeFromLeft(40));
                 sliderRow.removeFromLeft(rotSliderSpacing);
@@ -374,7 +368,7 @@ void DirectivityShaperAudioProcessorEditor::resized()
                 sliderRow = rightSide.removeFromTop(15);
                 lbProbeAzimuth.setBounds(sliderRow.removeFromLeft(40));
                 sliderRow.removeFromLeft(rotSliderSpacing);
-                lbProbeElevation.setBounds(sliderRow.removeFromLeft(40));
+                lbProbeElevation.setBounds(sliderRow.removeFromLeft(45));
                 sliderRow.removeFromLeft(rotSliderSpacing);
                 lbProbeRoll.setBounds(sliderRow.removeFromLeft(40));
 
@@ -383,7 +377,7 @@ void DirectivityShaperAudioProcessorEditor::resized()
                 sliderRow = rightSide.removeFromTop(20);
                 lbNormalization.setBounds(sliderRow.removeFromLeft(80));
                 sliderRow.removeFromLeft(10);
-                cbNormalization.setBounds(sliderRow.removeFromLeft(90));
+                cbDirectivityNormalization.setBounds(sliderRow.removeFromLeft(90));
             }
         }
     }

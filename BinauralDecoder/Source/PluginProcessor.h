@@ -98,15 +98,16 @@ private:
     Convolution EQ;
 
     int fftLength = -1;
-    int irLengthMinusOne = 235;
+	int irLength = 236;
+    int irLengthMinusOne = irLength-1;
     float* in = nullptr;
-    float* ifftOutputLeft = nullptr;
-    float* ifftOutputRight = nullptr;
+    float* ifftOutputMid = nullptr;
+    float* ifftOutputSide = nullptr;
     fftwf_complex* out = nullptr;
-    fftwf_complex* accumLeft = nullptr;
-    fftwf_complex* accumRight = nullptr;
+    fftwf_complex* accumMid = nullptr;
+    fftwf_complex* accumSide = nullptr;
 
-    fftwf_plan fftForward, fftBackwardLeft, fftBackwardRight;
+    fftwf_plan fftForward, fftBackwardMid, fftBackwardSide;
     bool fftwWasPlanned = false;
 
     AudioBuffer<float> stereoSum, stereoTemp;
@@ -115,6 +116,12 @@ private:
 
     AudioBuffer<float> irsFrequencyDomain;
     double irsSampleRate = 44100.0;
+	//mapping between mid-channel index and channel index
+	int mix2cix[36] = { 0, 2, 3, 6, 7, 8, 12, 13, 14, 15, 20, 21, 22, 23, 24, 30, 31, 32, 33, 34, 35, 42, 43, 44, 45, 46, 47, 48, 56, 57, 58, 59, 60, 61, 62, 63 };
+	//mapping between side-channel index and channel index
+	int six2cix[28] = { 1, 4, 5, 9, 10, 11, 16, 17, 18, 19, 25, 26, 27, 28, 29, 36, 37, 38, 39, 40, 41, 49, 50, 51, 52, 53, 54, 55 };
+	int nMidCh;
+	int nSideCh;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BinauralDecoderAudioProcessor)

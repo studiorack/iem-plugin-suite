@@ -27,7 +27,7 @@
 #include "ReferenceCountedDecoder.h"
 
 using namespace dsp;
-class MatrixMultiplication : private ProcessorBase
+class MatrixMultiplication
 {
 public:
     MatrixMultiplication() {
@@ -35,7 +35,8 @@ public:
 
     ~MatrixMultiplication() {}
 
-    void prepare (const ProcessSpec& newSpec) override {
+    void prepare (const ProcessSpec& newSpec)
+    {
         spec = newSpec;
 
         buffer.setSize(buffer.getNumChannels(), spec.maximumBlockSize);
@@ -44,7 +45,8 @@ public:
         checkIfNewMatrixAvailable();
     }
 
-    void process (const ProcessContextReplacing<float>& context) override {
+    void process (const ProcessContextNonReplacing<float>& context)
+    {
         ScopedNoDenormals noDenormals;
         checkIfNewMatrixAvailable();
 
@@ -56,6 +58,7 @@ public:
         }
 
         auto& inputBlock = context.getInputBlock();
+        auto& outputBlock = context.getOutputBlock();
         auto& T = retainedCurrentMatrix->getMatrix();
 
         const int nInputChannels = jmin( (int) inputBlock.getNumChannels(), (int) T.getNumColumns());
@@ -64,9 +67,6 @@ public:
         // copy input data to buffer
         for (int ch = 0; ch < nInputChannels; ++ch)
             buffer.copyFrom(ch, 0, inputBlock.getChannelPointer(ch), nSamples);
-
-        auto& outputBlock = context.getOutputBlock();
-        //const int nChOut = jmin((int) outputBlock.getNumChannels(), buffer.getNumChannels());
 
         for (int row = 0; row < T.getNumRows(); ++row)
         {
@@ -97,9 +97,8 @@ public:
             FloatVectorOperations::clear(outputBlock.getChannelPointer(ch), (int) outputBlock.getNumSamples());
     }
 
-    void reset() override {};
-
-    bool checkIfNewMatrixAvailable() {
+    const bool checkIfNewMatrixAvailable()
+    {
         if (newMatrixAvailable)
         {
             if (newMatrix == nullptr)
@@ -123,7 +122,8 @@ public:
         return false;
     };
 
-    void setMatrix(ReferenceCountedMatrix::Ptr newMatrixToUse, bool force = false) {
+    void setMatrix(ReferenceCountedMatrix::Ptr newMatrixToUse, bool force = false)
+    {
         newMatrix = newMatrixToUse;
         newMatrixAvailable = true;
         if (force)

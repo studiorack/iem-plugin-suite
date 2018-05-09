@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <JUCERPROJECT id="mbpAgi" name="BinauralDecoder" displaySplashScreen="0" reportAppUsage="0"
-              splashScreenColour="Dark" projectType="audioplug" version="0.3"
+              splashScreenColour="Dark" projectType="audioplug" version="0.3.1"
               bundleIdentifier="at.iem.BinauralDecoder" includeBinaryInAppConfig="1"
               cppLanguageStandard="14" buildVST="1" buildVST3="0" buildAU="0"
               buildAUv3="0" buildRTAS="0" buildAAX="0" buildStandalone="1"
@@ -14,6 +14,15 @@
               companyName="IEM" companyWebsite="iem.at" headerPath="../../../resources/"
               pluginFormats="buildVST,buildStandalone">
   <MAINGROUP id="LpzrV9" name="BinauralDecoder">
+    <GROUP id="{C1C55B51-F542-B1C9-6FA4-94FB642C5EEF}" name="IRs">
+      <FILE id="nHipry" name="irsOrd1.wav" compile="0" resource="1" file="Source/IRs/irsOrd1.wav"/>
+      <FILE id="NdQo2E" name="irsOrd2.wav" compile="0" resource="1" file="Source/IRs/irsOrd2.wav"/>
+      <FILE id="jpDPuO" name="irsOrd3.wav" compile="0" resource="1" file="Source/IRs/irsOrd3.wav"/>
+      <FILE id="epdtBi" name="irsOrd4.wav" compile="0" resource="1" file="Source/IRs/irsOrd4.wav"/>
+      <FILE id="dy5FFt" name="irsOrd5.wav" compile="0" resource="1" file="Source/IRs/irsOrd5.wav"/>
+      <FILE id="qVcJI8" name="irsOrd6.wav" compile="0" resource="1" file="Source/IRs/irsOrd6.wav"/>
+      <FILE id="B00FYC" name="irsOrd7.wav" compile="0" resource="1" file="Source/IRs/irsOrd7.wav"/>
+    </GROUP>
     <GROUP id="{1B6BB8E4-E576-FBC7-B6B6-8603D2CEBF9D}" name="lookAndFeel">
       <FILE id="AVFaGo" name="IEM_LaF.h" compile="0" resource="0" file="../resources/lookAndFeel/IEM_LaF.h"/>
       <FILE id="zmzhlf" name="Roboto-Bold.ttf" compile="0" resource="1" file="../resources/lookAndFeel/Roboto-Bold.ttf"/>
@@ -32,15 +41,6 @@
       <FILE id="Zu7LI7" name="PluginEditor.cpp" compile="1" resource="0"
             file="Source/PluginEditor.cpp"/>
       <FILE id="Ur0OCo" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
-    </GROUP>
-    <GROUP id="{848318E3-7280-2A9B-B6E8-284187E3A440}" name="IRs">
-      <FILE id="YBoZ8E" name="irsOrd1.wav" compile="0" resource="1" file="Source/IRs/irsOrd1.wav"/>
-      <FILE id="h2tdiX" name="irsOrd2.wav" compile="0" resource="1" file="Source/IRs/irsOrd2.wav"/>
-      <FILE id="i6GCOR" name="irsOrd3.wav" compile="0" resource="1" file="Source/IRs/irsOrd3.wav"/>
-      <FILE id="pINitS" name="irsOrd4.wav" compile="0" resource="1" file="Source/IRs/irsOrd4.wav"/>
-      <FILE id="T3hzTI" name="irsOrd5.wav" compile="0" resource="1" file="Source/IRs/irsOrd5.wav"/>
-      <FILE id="pd0SMr" name="irsOrd6.wav" compile="0" resource="1" file="Source/IRs/irsOrd6.wav"/>
-      <FILE id="cGKJHN" name="irsOrd7.wav" compile="0" resource="1" file="Source/IRs/irsOrd7.wav"/>
     </GROUP>
     <GROUP id="{4C728F38-6245-4A74-F8C2-CE36402AD786}" name="EQ">
       <FILE id="aAYEkx" name="AKG-K141MK2.wav" compile="0" resource="1" file="Source/EQ/AKG-K141MK2.wav"/>
@@ -117,17 +117,17 @@
         <CONFIGURATION name="Debug" winWarningLevel="4" generateManifest="1" winArchitecture="x64"
                        isDebug="1" optimisation="1" targetName="BinauralDecoder" debugInformationFormat="ProgramDatabase"
                        enablePluginBinaryCopyStep="0" libraryPath="..\..\..\resources\fftw3\x64\"
-                       defines="..\..\..\resources\fftw3\x64\"/>
+                       headerPath="..\..\..\resources\fftw3\x64\"/>
         <CONFIGURATION name="Release 64bit" winWarningLevel="4" generateManifest="1"
                        winArchitecture="x64" isDebug="0" optimisation="3" targetName="BinauralDecoder_x64"
                        debugInformationFormat="ProgramDatabase" enablePluginBinaryCopyStep="0"
                        linkTimeOptimisation="1" libraryPath="..\..\..\resources\fftw3\x64\"
-                       defines="..\..\..\resources\fftw3\x64\"/>
+                       headerPath="..\..\..\resources\fftw3\x64\"/>
         <CONFIGURATION name="Release 32bit" winWarningLevel="4" generateManifest="1"
                        winArchitecture="Win32" isDebug="0" optimisation="3" targetName="BinauralDecoder_win32"
                        debugInformationFormat="ProgramDatabase" enablePluginBinaryCopyStep="0"
                        linkTimeOptimisation="1" libraryPath="..\..\..\resources\fftw3\win32\"
-                       defines="..\..\..\resources\fftw3\win32\"/>
+                       headerPath="..\..\..\resources\fftw3\win32\"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_core" path="../../../../../Applications/JUCE/modules"/>

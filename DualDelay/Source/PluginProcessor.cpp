@@ -281,6 +281,7 @@ bool DualDelayAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts
 
 void DualDelayAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
+    ScopedNoDenormals noDenormals;
     checkInputAndOutput(this, *orderSetting, *orderSetting);
 
     const int totalNumInputChannels  =  getTotalNumInputChannels();

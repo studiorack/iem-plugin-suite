@@ -26,7 +26,7 @@
 
 //==============================================================================
 AllRADecoderAudioProcessorEditor::AllRADecoderAudioProcessorEditor (AllRADecoderAudioProcessor& p, AudioProcessorValueTreeState& vts)
-    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts), lv(processor.points, processor.triangles, processor.normals, processor.imaginaryFlags), lspList(processor.getLoudspeakersValueTree(), lv, grid, processor.undoManager), grid(processor.points, processor.imaginaryFlags, processor.energyDistribution)
+    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts), lv(processor.points, processor.triangles, processor.normals, processor.imaginaryFlags), lspList(processor.getLoudspeakersValueTree(), lv, grid, processor.undoManager), grid(processor.points, processor.imaginaryFlags, processor.energyDistribution, processor.rEVector)
 {
     // ============== BEGIN: essentials ======================
     // set GUI size and lookAndFeel

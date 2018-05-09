@@ -39,40 +39,54 @@ public:
     {
     }
 
-    void setText(String newText) {
+    void setText(String newText)
+    {
         text = newText;
         repaint();
     }
-    void setText(String newText, bool newBold) {
+    void setText(String newText, bool newBold)
+    {
         text = newText;
         isBold = newBold;
         repaint();
     }
-    void setText(String newText, bool newBold, Justification newJustification) {
+    void setText(String newText, bool newBold, Justification newJustification)
+    {
         text = newText;
         isBold = newBold;
         justification = newJustification;
         repaint();
     }
 
-    void setJustification(Justification newJustification) {
+    void setJustification(Justification newJustification)
+    {
         justification = newJustification;
         repaint();
     }
 
+    void setTextColour(const Colour newColour)
+    {
+        if (colour != newColour)
+        {
+            colour = newColour;
+            repaint();
+        }
+    }
+    
     void enablementChanged() override
     {
         repaint();
     };
+
     void paint (Graphics& g) override
     {
         Rectangle<int> bounds = getLocalBounds();
-        paintSimpleLabel(g, bounds, text, isBold,justification);
+        paintSimpleLabel(g, bounds, text, isBold, justification);
     }
 
     virtual void paintSimpleLabel(Graphics& g, Rectangle<int> bounds, String text, bool isBold, Justification justification)
     {
-        g.setColour (Colours::white.withMultipliedAlpha(this->isEnabled() ? 1.0f : 0.4f));
+        g.setColour (colour.withMultipliedAlpha(this->isEnabled() ? 1.0f : 0.4f));
         g.setFont (bounds.getHeight());
         g.setFont(getLookAndFeel().getTypefaceForFont(Font(bounds.getHeight())));
         g.drawText (text, bounds,
@@ -87,6 +101,7 @@ private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SimpleLabel)
     String text = "";
     bool isBold = false;
+    Colour colour = Colours::white;
     Justification justification = Justification::centred;
 };
 

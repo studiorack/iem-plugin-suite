@@ -133,6 +133,7 @@ public:
     File getLastDir() {return lastDir;};
 
     Image energyDistribution;
+    Image rEVector;
 
     MailBox::Message messageToEditor;
 

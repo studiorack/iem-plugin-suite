@@ -116,6 +116,8 @@ private:
 
     // =========================================
 
+    float omniGain = 0.0f;
+    
     File lastDir;
     File lastFile;
     ScopedPointer<PropertiesFile> properties;

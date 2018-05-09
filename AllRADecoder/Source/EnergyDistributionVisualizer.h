@@ -28,11 +28,13 @@
 class  EnergyDistributionVisualizer :  public Component
 {
 public:
-    EnergyDistributionVisualizer(std::vector<R3>& pts, BigInteger& imagFlags, Image& imageFromProcessor) : Component(), extPoints(pts), imaginaryFlags(imagFlags), image(imageFromProcessor) {
+    EnergyDistributionVisualizer(std::vector<R3>& pts, BigInteger& imagFlags, Image& energyImageFromProcessor, Image& rEImageFromProcessor) : Component(), extPoints(pts), imaginaryFlags(imagFlags), energyImage(energyImageFromProcessor), rEImage(rEImageFromProcessor)
+    {
         setBufferedToImage(true);
 
+        showrEVector = false;
         addAndMakeVisible(imgComp);
-        imgComp.setImage(image);
+        imgComp.setImage(energyImage);
         imgComp.setImagePlacement(RectanglePlacement::stretchToFit);
 
         addAndMakeVisible(background);
@@ -41,8 +43,9 @@ public:
     ~EnergyDistributionVisualizer() {};
 
 
-    void resized () override {
-        imgComp.setBounds(getLocalBounds());
+    void resized () override
+    {
+        imgComp.setBounds(getLocalBounds().reduced(10, 20));
         background.setBounds(getLocalBounds());
     }
 
@@ -66,7 +69,25 @@ public:
             Rectangle<float> rect (centreX + x*wh - 5.0f, centreY - y*hh - 5.0f, 10.0f, 10.0f);
             g.fillRoundedRectangle(rect, 5.0f);
         }
+
+        g.setColour(Colours::white);
+        g.setFont (getLookAndFeel().getTypefaceForFont(Font(12.0f)));
+        g.setFont (12.f);
+
+        String displayText = showrEVector ? "acos-rE source width (double-click to change)" : "energy fluctuations (double-click to change)";
+        g.drawText(displayText, getLocalBounds().removeFromBottom(12), Justification::centred);
     };
+
+    void mouseDoubleClick (const MouseEvent &event) override
+    {
+        showrEVector = !showrEVector;
+        if (showrEVector)
+            imgComp.setImage(rEImage);
+        else
+            imgComp.setImage(energyImage);
+        imgComp.repaint();
+        repaint();
+    }
 
     void setActiveSpeakerIndex (int newIdx)
     {
@@ -79,7 +100,8 @@ private:
     BigInteger& imaginaryFlags;
     int activePoint = -1;
     ImageComponent imgComp;
-    Image& image;
+    Image& energyImage, rEImage;
+    bool showrEVector;
 
     HammerAitovGrid background;
 

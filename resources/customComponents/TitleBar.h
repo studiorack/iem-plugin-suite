@@ -321,7 +321,15 @@ public:
         cbOrder.addItem("6th", 8);
         cbOrder.addItem("7th", 9);
         cbOrder.setBounds(35, 15, 70, 15);
+
+        addAndMakeVisible(&cbNormalization);
+        cbNormalization.setJustificationType(Justification::centred);
+        cbNormalization.addSectionHeading("Normalization");
+        cbNormalization.addItem("N3D", 1);
+        cbNormalization.addItem("SN3D", 2);
+        cbNormalization.setBounds(35, 0, 70, 15);
     };
+
     ~DirectivityIOWidget() {};
 
     const int getComponentSize() override { return 110; }
@@ -348,6 +356,8 @@ public:
             setBusTooSmall(false);
 
     }
+
+    ComboBox* getNormCbPointer() { return &cbNormalization; }
     ComboBox* getOrderCbPointer() { return &cbOrder; }
 
     void paint (Graphics& g) override
@@ -355,16 +365,11 @@ public:
         DirectivityPath.applyTransform(DirectivityPath.getTransformToScaleToFit(0, 0, 30, 30, true,Justification::centred));
         g.setColour((Colours::white).withMultipliedAlpha(0.5));
         g.fillPath(DirectivityPath);
-
-        g.setColour((Colours::white).withMultipliedAlpha(0.5));
-        g.setFont(getLookAndFeel().getTypefaceForFont (Font(12.0f, 1)));
-        g.setFont(13.0f);
-        g.drawFittedText("N3D", 40, 0, 40, 13, Justification::centred, 1);
     };
 
 private:
     String orderStrings[8];
-    ComboBox cbOrder;
+    ComboBox cbNormalization, cbOrder;
     Path DirectivityPath;
 };
 

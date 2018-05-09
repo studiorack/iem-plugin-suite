@@ -1,10 +1,10 @@
 # gitlab-ci configuration for the IEM Plugin Suite
 
 variables:
-# for now we exclude 'BinauralDecoder' as it is incompatible with JUCE-5.2.0 (huckleberry)
-  PROJECTS: AllRADecoder DirectionalCompressor DirectivityShaper DualDelay EnergyVisualizer FdnReverb MatrixMultiplicator MultiEncoder OmniCompressor ProbeDecoder RoomEncoder SimpleDecoder StereoEncoder ToolBox
+  PROJECTS: AllRADecoder BinauralDecoder DirectionalCompressor DirectivityShaper DualDelay EnergyVisualizer FdnReverb MatrixMultiplicator MultiEncoder OmniCompressor ProbeDecoder RoomEncoder SimpleDecoder StereoEncoder ToolBox
   CONFIG: Release
   PKGLIBS: jack flac vorbis vorbisenc vorbisfile ogg libjpeg libpng zlib fftw3f
+  JUCEVERSION: 5.3.1
 
 debian_buster:
   image: debian:buster
@@ -32,8 +32,33 @@ osx:
     - develop
   script:
     - brew install fftw
-    - curl -o juce.zip https://d30pueezughrda.cloudfront.net/juce/juce-huckleberry-osx.zip
+    - curl -o juce.zip https://d30pueezughrda.cloudfront.net/juce/juce-${JUCEVERSION}-osx.zip
     - mkdir -p ~/JUCE
     - unzip -q juce.zip -d ~/JUCE
     - mv ~/JUCE/JUCE/* ~/JUCE/ || true
     - make -k CONFIG=$CONFIG PROJUCER="~/JUCE/Projucer.app/Contents/MacOS/Projucer"
+
+windows:
+  tags:
+    - windows
+  variables:
+    IEMCI_CONFIGURATIONS: vs2017
+  stage: build
+  only:
+    - master
+    - develop
+  script:
+# install JUCE
+    - curl -o juce.zip https://d30pueezughrda.cloudfront.net/juce/juce-${JUCEVERSION}-windows.zip
+    - mkdir -p /c/JUCE
+    - unzip -q juce.zip -d /c/JUCE
+    - mv /c/JUCE/JUCE/* /c/JUCE/ || true
+# install fftw3
+    - curl -o fftw.x64.zip ftp://ftp.fftw.org/pub/fftw/fftw-3.3.5-dll64.zip
+    - mkdir -p resources/fftw3/x64/
+    - unzip fftw.x64.zip -d resources/fftw3/x64/
+    - for f in resources/fftw3/x64/libfftw3*.*; do mv -v "${f}" $(echo $f | sed -e 's|-|-3.|' -e 's|/libfftw3|/libfftw|'); done
+    - for f in resources/fftw3/x64/libfftw*.def; do Lib.exe -machine:x64 -def:"${f}"; done
+    - mv -v libfftw*.* resources/fftw3/x64/
+# run the actual build
+    - make -k CONFIG=$CONFIG PROJUCER="/c/JUCE/Projucer.exe"
