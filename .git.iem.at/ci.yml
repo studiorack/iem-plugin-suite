@@ -59,5 +59,6 @@ windows:
     - unzip fftw.x64.zip -d resources/fftw3/x64/
     - for f in resources/fftw3/x64/libfftw3*.*; do mv -v "${f}" $(echo $f | sed -e 's|-|-3.|' -e 's|/libfftw3|/libfftw|'); done
     - for f in resources/fftw3/x64/libfftw*.def; do Lib.exe -machine:x64 -def:"${f}"; done
+    - mv -v libfftw*.* resources/fftw3/x64/
 # run the actual build
     - make -k CONFIG=$CONFIG PROJUCER="/c/JUCE/Projucer.exe"
