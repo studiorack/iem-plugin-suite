@@ -226,7 +226,7 @@ void OmniCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer, Midi
 
     compressor.getGainFromSidechainSignal(bufferReadPtr, gains.getRawDataPointer(), bufferSize);
     maxRMS = compressor.getMaxLevelInDecibels();
-    DBG(FloatVectorOperations::findMinimum(gains.getRawDataPointer(), bufferSize));
+
     maxGR = Decibels::gainToDecibels(FloatVectorOperations::findMinimum(gains.getRawDataPointer(), bufferSize)) - *outGain;
 
     for (int channel = 0; channel < numCh; ++channel)
@@ -262,8 +262,22 @@ void OmniCompressorAudioProcessor::setStateInformation (const void* data, int si
 }
 
 //==============================================================================
+pointer_sized_int OmniCompressorAudioProcessor::handleVstPluginCanDo (int32 index,
+                                                                     pointer_sized_int value, void* ptr, float opt)
+{
+    auto text = (const char*) ptr;
+    auto matches = [=](const char* s) { return strcmp (text, s) == 0; };
+
+    if (matches ("wantsChannelCountNotifications"))
+        return 1;
+    return 0;
+}
+
+//==============================================================================
 // This creates new instances of the plugin..
 AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new OmniCompressorAudioProcessor();
 }
+
+

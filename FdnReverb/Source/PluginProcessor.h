@@ -28,7 +28,7 @@
 //==============================================================================
 /**
 */
-class FdnReverbAudioProcessor  : public AudioProcessor, public AudioProcessorValueTreeState::Listener
+class FdnReverbAudioProcessor  : public AudioProcessor, public AudioProcessorValueTreeState::Listener, public VSTCallbackHandler
 {
 public:
 //==============================================================================
@@ -69,6 +69,13 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
 
     void parameterChanged (const String &parameterID, float newValue) override;
+
+    //======== PluginCanDo =========================================================
+    pointer_sized_int handleVstManufacturerSpecific (int32 index, pointer_sized_int value,
+                                                     void* ptr, float opt) override { return 0; };
+    pointer_sized_int handleVstPluginCanDo (int32 index, pointer_sized_int value,
+                                            void* ptr, float opt) override;
+    //==============================================================================
 
 //==============================================================================
     // parameters/functions for interfacing with GUI

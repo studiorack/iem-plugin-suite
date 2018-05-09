@@ -36,7 +36,8 @@
 */
 class PluginTemplateAudioProcessor  : public AudioProcessor,
                                         public AudioProcessorValueTreeState::Listener,
-                                        public IOHelper<IOTypes::AudioChannels<10>, IOTypes::Ambisonics<7>>
+                                        public IOHelper<IOTypes::AudioChannels<10>, IOTypes::Ambisonics<7>>,
+                                        public VSTCallbackHandler
 {
 public:
     //==============================================================================
@@ -80,6 +81,13 @@ public:
     void parameterChanged (const String &parameterID, float newValue) override;
     void updateBuffers() override; // use this to implement a buffer update method
 
+    //======== PluginCanDo =========================================================
+    pointer_sized_int handleVstManufacturerSpecific (int32 index, pointer_sized_int value,
+                                                     void* ptr, float opt) override { return 0; };
+
+    pointer_sized_int handleVstPluginCanDo (int32 index, pointer_sized_int value,
+                                            void* ptr, float opt) override;
+    //==============================================================================
 
 private:
     // ====== parameters

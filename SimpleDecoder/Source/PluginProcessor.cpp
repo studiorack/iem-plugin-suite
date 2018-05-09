@@ -490,6 +490,18 @@ void SimpleDecoderAudioProcessor::loadPreset(const File& presetFile)
 }
 
 //==============================================================================
+pointer_sized_int SimpleDecoderAudioProcessor::handleVstPluginCanDo (int32 index,
+                                                                     pointer_sized_int value, void* ptr, float opt)
+{
+    auto text = (const char*) ptr;
+    auto matches = [=](const char* s) { return strcmp (text, s) == 0; };
+
+    if (matches ("wantsChannelCountNotifications"))
+        return 1;
+    return 0;
+}
+
+//==============================================================================
 // This creates new instances of the plugin..
 AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {

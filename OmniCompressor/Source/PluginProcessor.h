@@ -31,9 +31,10 @@
 //==============================================================================
 /**
 */
-class OmniCompressorAudioProcessor  : public AudioProcessor,
-                                            public AudioProcessorValueTreeState::Listener,
-public IOHelper<IOTypes::Ambisonics<>, IOTypes:: Ambisonics<>>
+class OmniCompressorAudioProcessor  :   public AudioProcessor,
+                                        public AudioProcessorValueTreeState::Listener,
+                                        public IOHelper<IOTypes::Ambisonics<>, IOTypes:: Ambisonics<>>,
+                                        public VSTCallbackHandler
 
 {
 public:
@@ -72,9 +73,15 @@ public:
     //==============================================================================
     void getStateInformation (MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
-
-
     void parameterChanged (const String &parameterID, float newValue) override;
+
+    //======== PluginCanDo =========================================================
+    pointer_sized_int handleVstManufacturerSpecific (int32 index, pointer_sized_int value,
+                                                     void* ptr, float opt) override { return 0; };
+    pointer_sized_int handleVstPluginCanDo (int32 index, pointer_sized_int value,
+                                            void* ptr, float opt) override;
+    //==============================================================================
+
 
     float maxRMS;
     float maxGR;

@@ -36,7 +36,8 @@ using namespace dsp;
 */
 class BinauralDecoderAudioProcessor  : public AudioProcessor,
                                         public AudioProcessorValueTreeState::Listener,
-                                        public IOHelper<IOTypes::Ambisonics<>, IOTypes::AudioChannels<2>>
+                                        public IOHelper<IOTypes::Ambisonics<>, IOTypes::AudioChannels<2>>,
+                                        public VSTCallbackHandler
 {
 
 
@@ -82,6 +83,13 @@ public:
     void parameterChanged (const String &parameterID, float newValue) override;
     void updateBuffers() override; // use this to implement a buffer update method
 
+    //======== PluginCanDo =========================================================
+    pointer_sized_int handleVstManufacturerSpecific (int32 index, pointer_sized_int value,
+                                                     void* ptr, float opt) override { return 0; };
+    pointer_sized_int handleVstPluginCanDo (int32 index, pointer_sized_int value,
+                                            void* ptr, float opt) override;
+    //==============================================================================
+    
     const StringArray headphoneEQs = {
         "AKG-K141MK2", "AKG-K240DF", "AKG-K240MK2", "AKG-K271MK2", "AKG-K271STUDIO", "AKG-K601", "AKG-K701", "AKG-K702", "AKG-K1000-Closed", "AKG-K1000-Open", "AudioTechnica-ATH-M50", "Beyerdynamic-DT250", "Beyerdynamic-DT770PRO-250Ohms", "Beyerdynamic-DT880", "Beyerdynamic-DT990PRO", "Presonus-HD7", "Sennheiser-HD430", "Sennheiser-HD480", "Sennheiser-HD560ovationII", "Sennheiser-HD565ovation", "Sennheiser-HD600", "Sennheiser-HD650", "SHURE-SRH940"
     };

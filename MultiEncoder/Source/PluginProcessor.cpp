@@ -465,3 +465,15 @@ void MultiEncoderAudioProcessor::updateQuaternions()
         quats[i] = masterQuat*quats[i];
     }
 }
+
+//==============================================================================
+pointer_sized_int MultiEncoderAudioProcessor::handleVstPluginCanDo (int32 index,
+                                                                     pointer_sized_int value, void* ptr, float opt)
+{
+    auto text = (const char*) ptr;
+    auto matches = [=](const char* s) { return strcmp (text, s) == 0; };
+
+    if (matches ("wantsChannelCountNotifications"))
+        return 1;
+    return 0;
+}

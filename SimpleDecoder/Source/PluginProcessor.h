@@ -38,9 +38,10 @@ using namespace dsp;
     - Ambisonics<maxOrder> (can also be used for directivity signals)
  You can leave `maxChannelCount` and `maxOrder` empty for default values (64 channels and 7th order)
 */
-class SimpleDecoderAudioProcessor  : public AudioProcessor,
+class SimpleDecoderAudioProcessor  :    public AudioProcessor,
                                         public AudioProcessorValueTreeState::Listener,
-                                        public IOHelper<IOTypes::Ambisonics<>, IOTypes::AudioChannels<>>
+                                        public IOHelper<IOTypes::Ambisonics<>, IOTypes::AudioChannels<>>,
+                                        public VSTCallbackHandler
 {
 public:
     //==============================================================================
@@ -84,6 +85,12 @@ public:
     void parameterChanged (const String &parameterID, float newValue) override;
     void updateBuffers() override; // use this to implement a buffer update method
 
+    //======== PluginCanDo =========================================================
+    pointer_sized_int handleVstManufacturerSpecific (int32 index, pointer_sized_int value,
+                                                     void* ptr, float opt) override { return 0; };
+    pointer_sized_int handleVstPluginCanDo (int32 index, pointer_sized_int value,
+                                            void* ptr, float opt) override;
+    //==============================================================================
 
     File getLastDir() {return lastDir;}
     void setLastDir(File newLastDir);

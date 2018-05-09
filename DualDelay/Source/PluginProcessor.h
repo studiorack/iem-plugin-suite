@@ -35,7 +35,7 @@
 */
 class DualDelayAudioProcessor  : public AudioProcessor,
                                         public AudioProcessorValueTreeState::Listener,
-public IOHelper<IOTypes::Ambisonics<>, IOTypes::Ambisonics<>, true>
+public IOHelper<IOTypes::Ambisonics<>, IOTypes::Ambisonics<>, true>, public VSTCallbackHandler
 {
 public:
     //==============================================================================
@@ -75,6 +75,13 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
 
     void parameterChanged (const String &parameterID, float newValue) override;
+
+    //======== PluginCanDo =========================================================
+    pointer_sized_int handleVstManufacturerSpecific (int32 index, pointer_sized_int value,
+                                                     void* ptr, float opt) override { return 0; };
+    pointer_sized_int handleVstPluginCanDo (int32 index, pointer_sized_int value,
+                                            void* ptr, float opt) override;
+    //==============================================================================
 
     float getleftLPValue() {return *LPcutOffL;}
     void updateBuffers() override;
