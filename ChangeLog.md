@@ -1,7 +1,7 @@
 This file only contains the major changes of the IEM Plug-in Suite.
 For a list of all changes and bugfixes see the git log.
 
-Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They might lead to an unexpected behaviour and might not be compatible with your previous projects without making some adaptions. See the [Breaking changes article](http://localhost:1313/docs/breakingchanges/) for more information.
+Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They might lead to an unexpected behaviour and might not be compatible with your previous projects without making some adaptions. See the [Breaking changes article](https://plugins.iem.at/docs/breakingchanges/) for more information.
 
 ## v1.3.0
 - general changes
