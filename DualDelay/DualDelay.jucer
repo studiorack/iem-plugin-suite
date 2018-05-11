@@ -9,7 +9,7 @@
               pluginCode="DuDe" pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
               pluginAUExportPrefix="DualDelayAU" aaxIdentifier="at.iem.DualDelay"
-              pluginAAXCategory="2" jucerVersion="5.3.1" companyName="IEM"
+              pluginAAXCategory="2" jucerVersion="5.3.2" companyName="IEM"
               companyWebsite="iem.at" cppLanguageStandard="14" companyCopyright="IEM - Daniel Rudrich"
               headerPath="../../../resources/" pluginFormats="buildVST,buildStandalone">
   <MAINGROUP id="ie7lEF" name="DualDelay">
@@ -135,4 +135,7 @@
   <JUCEOPTIONS JUCE_QUICKTIME="disabled" JUCE_WEB_BROWSER="0" JUCE_USE_WINDOWS_MEDIA_FORMAT="0"
                JUCE_USE_LAME_AUDIO_FORMAT="0" JUCE_USE_MP3AUDIOFORMAT="0" JUCE_USE_OGGVORBIS="0"
                JUCE_USE_FLAC="0"/>
+  <LIVE_SETTINGS>
+    <OSX/>
+  </LIVE_SETTINGS>
 </JUCERPROJECT>

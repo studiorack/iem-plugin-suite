@@ -9,7 +9,7 @@
               pluginCode="OmCo" pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
               pluginAUExportPrefix="OmniCompressorAU" aaxIdentifier="at.iem.OmniCompressor"
-              pluginAAXCategory="2" jucerVersion="5.3.1" cppLanguageStandard="14"
+              pluginAAXCategory="2" jucerVersion="5.3.2" cppLanguageStandard="14"
               companyName="IEM" companyWebsite="IEM.at" companyCopyright="IEM - Daniel Rudrich"
               headerPath="../../../resources/" pluginFormats="buildVST,buildStandalone">
   <MAINGROUP id="Ld9vSw" name="OmniCompressor">
@@ -132,4 +132,7 @@
   <JUCEOPTIONS JUCE_QUICKTIME="disabled" JUCE_WEB_BROWSER="0" JUCE_USE_FLAC="0"
                JUCE_USE_OGGVORBIS="0" JUCE_USE_MP3AUDIOFORMAT="0" JUCE_USE_LAME_AUDIO_FORMAT="0"
                JUCE_USE_WINDOWS_MEDIA_FORMAT="0"/>
+  <LIVE_SETTINGS>
+    <OSX/>
+  </LIVE_SETTINGS>
 </JUCERPROJECT>
