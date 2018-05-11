@@ -78,20 +78,20 @@ parameters(*this, nullptr)
     parameters.createAndAddParameter("qz", "Quaternion Z", "",
                                      NormalisableRange<float>(-1.0f, 1.0f, 0.001f), 0.0,
                                      [](float value) { return String(value, 2); }, nullptr);
-    parameters.createAndAddParameter("azimuth", "Azimuth angle", CharPointer_UTF8 (R"(°)"),
+    parameters.createAndAddParameter("azimuth", "Azimuth Angle", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
                                      [](float value) { return String(value, 2); }, nullptr);
-    parameters.createAndAddParameter("elevation", "Elevation angle", CharPointer_UTF8 (R"(°)"),
+    parameters.createAndAddParameter("elevation", "Elevation Angle", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
                                      [](float value) { return String(value, 2); }, nullptr);
-    parameters.createAndAddParameter("roll", "Roll angle", CharPointer_UTF8 (R"(°)"),
+    parameters.createAndAddParameter("roll", "Roll Angle", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
                                      [](float value) { return String(value, 2); }, nullptr);
     parameters.createAndAddParameter("width", "Stereo Width", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float>(-360.0f, 360.0f, 0.01f), 0.0,
                                      [](float value) { return String(value, 2); }, nullptr);
 
-    parameters.createAndAddParameter("highQuality", "High-quality panning", "",
+    parameters.createAndAddParameter("highQuality", "Sample-wise Panning", "",
                                      NormalisableRange<float>(0.0f, 1.0f, 1.0f), 0.0f,
                                      [](float value) { return value < 0.5f ? "OFF" : "ON"; }, nullptr);
 
