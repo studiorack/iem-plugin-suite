@@ -1,9 +1,9 @@
 This file only contains the major changes of the IEM Plug-in Suite.
 For a list of all changes and bugfixes see the git log.
 
-Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They might lead to an unexpected behaviour and may not be compatible with your previous projects without making some adaptions.
+Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They might lead to an unexpected behaviour and might not be compatible with your previous projects without making some adaptions.
 
-## untagged changes
+## v1.3.0
 - general changes
     - unity gain normalization has moved fully to the decoding stage:  (`!!BREAKING CHANGE!!`)
         - encoding a source results in unity gain in the W-channel (omni)
@@ -18,6 +18,7 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
         - added visualization of the acos-rE source width
     - **Binaural**Decoder
         - performance improvements
+        - new binaural filters
     - **Dual**Delay
         - fixed high CPU load which occured occasionally
     - **Matrix**Multiplier
