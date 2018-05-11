@@ -41,6 +41,9 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
         - adjusted parameter limits (threshold and makeup gain)  (`!!BREAKING CHANGE!!`)
     - **Room**Shaper
         - added SN3D support (`!!BREAKING CHANGE!!`)
+    - **Simple**Decoder
+        - new bass-management (`!!BREAKING CHANGE!!`)
+        - added warning, showing if subwoofer channel is already occupied
 
         
 ## v1.2.0
