@@ -47,7 +47,6 @@ public:
 
         middleSlider->setSliderStyle(Slider::TwoValueHorizontal);
         middleSlider->setTextBoxStyle(Slider::NoTextBox, false, 50, 50);
-        middleSlider->setMinAndMaxValues(minRange, maxRange);
         middleSlider->addListener(this);
 
         rightSlider->setSliderStyle(Slider::IncDecButtons);
@@ -79,7 +78,7 @@ public:
         minRange = jmin(leftRange.start,rightRange.start);
         maxRange = jmax(leftRange.end,rightRange.end);
         middleSlider->setRange(minRange, maxRange);
-        //middleSlider->setSkewFactor(leftRange.skew);
+        middleSlider->setSkewFactor(leftRange.skew);
 
         middleSlider->setMinAndMaxValues(leftSlider->getValue(), rightSlider->getValue());
     };
