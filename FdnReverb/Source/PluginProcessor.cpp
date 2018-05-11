@@ -4,17 +4,17 @@
  Author: Sebastian Grill
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
- 
+
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
- 
+
  The IEM plug-in suite is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
@@ -24,7 +24,7 @@
 #include "PluginEditor.h"
 
 //==============================================================================
-FdnReverbAudioProcessor::FdnReverbAudioProcessor() 
+FdnReverbAudioProcessor::FdnReverbAudioProcessor()
 
 #ifndef JucePlugin_PreferredChannelConfigurations
 :AudioProcessor (BusesProperties()
@@ -39,16 +39,16 @@ FdnReverbAudioProcessor::FdnReverbAudioProcessor()
 
     parameters (*this, nullptr)
 
-{   
+{
     parameters.createAndAddParameter ("delayLength", "Room Size", "",
-                                      NormalisableRange<float> (1.0f, 30.0f, 1.0f), 20.0f, 
+                                      NormalisableRange<float> (1.0f, 30.0f, 1.0f), 20.0f,
                                       [](float value) {return String (value, 0);},
                                       nullptr);
     parameters.createAndAddParameter ("revTime", "Reverberation Time", "s",
                                       NormalisableRange<float> (0.1f, 9.0f, 0.1f), 5.f,
-                                      [](float value) {return String (value,1);},
+                                      [](float value) {return String (value, 1);},
                                       nullptr);
-    
+
     parameters.createAndAddParameter ("lowCutoff", "Lows Cutoff Frequency", "Hz",
                                       NormalisableRange<float> (20.f, 20000.f, 1.f), 100.f,
                                       [](float value) {return String (value, 0);},
@@ -62,7 +62,7 @@ FdnReverbAudioProcessor::FdnReverbAudioProcessor()
                                       NormalisableRange<float> (-80.0f, 6.0, 0.1f), 1.f,
                                       [](float value) {return String (value, 1);},
                                       nullptr);
-    
+
     parameters.createAndAddParameter ("highCutoff", "Highs Cutoff Frequency", "Hz",
                                       NormalisableRange<float> (20.f, 20000.f, 1.f), 2000.f,
                                       [](float value) {return String (value, 0);},
@@ -77,7 +77,7 @@ FdnReverbAudioProcessor::FdnReverbAudioProcessor()
                                       [](float value) {return String (value, 1);},
                                       nullptr);
 
-    
+
 //    parameters.createAndAddParameter ("fdnSize",
 //                                      "FDN size", "",
 //                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
@@ -90,7 +90,7 @@ FdnReverbAudioProcessor::FdnReverbAudioProcessor()
 
 
     parameters.state = ValueTree (Identifier ("FdnReverb"));
-    
+
     parameters.addParameterListener ("delayLength", this);
     parameters.addParameterListener ("revTime", this);
     parameters.addParameterListener ("highCutoff", this);
@@ -101,7 +101,7 @@ FdnReverbAudioProcessor::FdnReverbAudioProcessor()
     parameters.addParameterListener ("lowGain", this);
 //    parameters.addParameterListener ("fdnSize", this);
     parameters.addParameterListener ("dryWet", this);
-    
+
     delayLength = parameters.getRawParameterValue ("delayLength");
     revTime = parameters.getRawParameterValue ("revTime");
     highCutoff = parameters.getRawParameterValue ("highCutoff");
@@ -112,7 +112,7 @@ FdnReverbAudioProcessor::FdnReverbAudioProcessor()
     lowGain = parameters.getRawParameterValue ("lowGain");
 //    fdnSize = parameters.getRawParameterValue("fdnSize");
     wet = parameters.getRawParameterValue("dryWet");
- 
+
     fdn.setFdnSize(FeedbackDelayNetwork::big);
 }
 
@@ -174,7 +174,7 @@ void FdnReverbAudioProcessor::changeProgramName (int index, const String& newNam
 }
 
 void FdnReverbAudioProcessor::parameterChanged (const String & parameterID, float newValue)
-{   
+{
     if (parameterID == "delayLength")
         fdn.setDelayLength (*delayLength);
     else if (parameterID == "revTime")
@@ -193,22 +193,22 @@ void FdnReverbAudioProcessor::updateFilterParameters()
 {
     FeedbackDelayNetwork::FilterParameter lowShelf;
     FeedbackDelayNetwork::FilterParameter highShelf;
-    
+
     lowShelf.frequency = *lowCutoff;
     lowShelf.q = *lowQ;
     lowShelf.linearGain = Decibels::decibelsToGain(*lowGain);
-    
+
     highShelf.frequency = *highCutoff;
     highShelf.q = *highQ;
     highShelf.linearGain = Decibels::decibelsToGain(*highGain);
-    
+
     fdn.setFilterParameter (lowShelf, highShelf);
 }
 //==============================================================================
 void FdnReverbAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     updateFilterParameters();
-    
+
     ProcessSpec spec;
     spec.sampleRate = sampleRate;
     spec.maximumBlockSize = samplesPerBlock;
@@ -240,14 +240,14 @@ bool FdnReverbAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts
 
 //------------------------------------------------------------------------------
 void FdnReverbAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& midiMessages)
-{   
+{
     dsp::AudioBlock<float> block (buffer);
     fdn.process (dsp::ProcessContextReplacing<float> (block));
 }
 
 //------------------------------------------------------------------------------
 void FdnReverbAudioProcessor::setNetworkOrder (int order)
-{   
+{
 //    FeedbackDelayNetwork::FdnSize size;
 //    if (order == 64)
 //        size = FeedbackDelayNetwork::FdnSize::big;
@@ -265,7 +265,7 @@ void FdnReverbAudioProcessor::setFreezeMode (bool freezeState)
 
 void FdnReverbAudioProcessor::getT60ForFrequencyArray (double* frequencies, double* t60Data, size_t numSamples)
 {
-	fdn.getT60ForFrequencyArray(frequencies, t60Data, numSamples);
+        fdn.getT60ForFrequencyArray(frequencies, t60Data, numSamples);
 }
 
 //==============================================================================
@@ -291,6 +291,19 @@ void FdnReverbAudioProcessor::setStateInformation (const void* data, int sizeInB
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
+}
+
+
+//==============================================================================
+pointer_sized_int FdnReverbAudioProcessor::handleVstPluginCanDo (int32 index,
+                                                                     pointer_sized_int value, void* ptr, float opt)
+{
+    auto text = (const char*) ptr;
+    auto matches = [=](const char* s) { return strcmp (text, s) == 0; };
+
+    if (matches ("wantsChannelCountNotifications"))
+        return 1;
+    return 0;
 }
 
 //==============================================================================

@@ -4,17 +4,17 @@
  Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
- 
+
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
- 
+
  The IEM plug-in suite is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
@@ -29,90 +29,76 @@
 
 //==============================================================================
 ProbeDecoderAudioProcessorEditor::ProbeDecoderAudioProcessorEditor (ProbeDecoderAudioProcessor& p, AudioProcessorValueTreeState& vts)
-: AudioProcessorEditor (&p), processor (p), valueTreeState(vts)//, sphere_opengl(nullptr)
+: AudioProcessorEditor (&p), processor (p), valueTreeState(vts),
+probe(*valueTreeState.getParameter("azimuth"), valueTreeState.getParameterRange("azimuth"),
+      *valueTreeState.getParameter("elevation"), valueTreeState.getParameterRange("elevation"))
 {
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
     setSize (500, 325);
     setLookAndFeel (&globalLaF);
-    
+
     // ==== SPHERE AND ELEMENTS ===============
     addAndMakeVisible(&sphere);
     //sphere.addListener(this);
-    
+
     probe.setColour(Colours::aqua);
-    probe.setSliders(&slYaw, &slPitch);
     sphere.addElement(&probe);
 
 
     // ======================================
-    
-    
+
+
     addAndMakeVisible(&title);
     title.setTitle(String("Probe"),String("Decoder"));
     title.setFont(globalLaF.robotoBold,globalLaF.robotoLight);
-    
+
     addAndMakeVisible(&footer);
-    
+
     toolTipWin.setMillisecondsBeforeTipAppears(500);
-    
+
 
     cbNormalizationAtachement = new ComboBoxAttachment(valueTreeState,"useSN3D", *title.getInputWidgetPtr()->getNormCbPointer());
     cbOrderAtachement = new ComboBoxAttachment(valueTreeState,"orderSetting", *title.getInputWidgetPtr()->getOrderCbPointer());
-    
-    
+
+
     // ======================== YAW PITCH ROLL GROUP
-    ypGroup.setText("Yaw & Pitch");
+    ypGroup.setText("Azimuth & Elevation");
     ypGroup.setTextLabelPosition (Justification::centredLeft);
     ypGroup.setColour (GroupComponent::outlineColourId, globalLaF.ClSeperator);
     ypGroup.setColour (GroupComponent::textColourId, Colours::white);
     addAndMakeVisible(&ypGroup);
     ypGroup.setVisible(true);
-    
-    addAndMakeVisible(&slYaw);
-    slYawAttachment = new SliderAttachment(valueTreeState,"yaw", slYaw);
-    slYaw.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slYaw.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slYaw.setReverse(true);
-    slYaw.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
-    slYaw.setRotaryParameters(M_PI, 3*M_PI, false);
-    slYaw.setTooltip("Yaw angle");
-    slYaw.setTextValueSuffix(CharPointer_UTF8 (R"(°)"));
-    
-    addAndMakeVisible(&slPitch);
-    slPitchAttachment = new SliderAttachment(valueTreeState,"pitch", slPitch);
-    slPitch.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slPitch.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slPitch.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
-    slPitch.setReverse(true);
-    slPitch.setRotaryParameters(0.5*M_PI, 2.5*M_PI, false);
-    slPitch.setTooltip("Pitch angle");
-    slPitch.setTextValueSuffix(CharPointer_UTF8 (R"(°)"));
-    
 
-    
+    addAndMakeVisible(&slAzimuth);
+    slAzimuthAttachment = new SliderAttachment(valueTreeState,"azimuth", slAzimuth);
+    slAzimuth.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
+    slAzimuth.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
+    slAzimuth.setReverse(true);
+    slAzimuth.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
+    slAzimuth.setRotaryParameters(M_PI, 3*M_PI, false);
+    slAzimuth.setTooltip("Azimuth angle");
+    slAzimuth.setTextValueSuffix(CharPointer_UTF8 (R"(°)"));
+
+    addAndMakeVisible(&slElevation);
+    slElevationAttachment = new SliderAttachment(valueTreeState,"elevation", slElevation);
+    slElevation.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
+    slElevation.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
+    slElevation.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
+    slElevation.setRotaryParameters(0.5*M_PI, 2.5*M_PI, false);
+    slElevation.setTooltip("Elevation angle");
+
+
     // ================ LABELS ===================
-    addAndMakeVisible(&lbYaw);
-    lbYaw.setText("Yaw");
-    
-    addAndMakeVisible(&lbPitch);
-    lbPitch.setText("Pitch");
+    addAndMakeVisible(&lbAzimuth);
+    lbAzimuth.setText("Azimuth");
+
+    addAndMakeVisible(&lbElevation);
+    lbElevation.setText("Elevation");
 
     startTimer(10);
 }
 
-
-//void ProbeDecoderAudioProcessorEditor::IEMSphereMouseWheelMoved(IEMSphere* sphere, const juce::MouseEvent &event, const MouseWheelDetails &wheel)
-//{
-//    if (event.mods.isCommandDown() && event.mods.isAltDown())
-//        rollSlider.mouseWheelMove(event, wheel);
-//    else if (event.mods.isShiftDown())
-//        widthSlider.mouseWheelMove(event, wheel);
-//    else if (event.mods.isAltDown())
-//        pitchSlider.mouseWheelMove(event, wheel);
-//    else if (event.mods.isCommandDown())
-//        yawSlider.mouseWheelMove(event, wheel);
-//}
 
 ProbeDecoderAudioProcessorEditor::~ProbeDecoderAudioProcessorEditor()
 {
@@ -132,29 +118,33 @@ void ProbeDecoderAudioProcessorEditor::timerCallback()
     processor.getMaxSize(maxInSize, maxOutSize);
     title.setMaxSize(maxInSize, maxOutSize);
     // ==========================================
-    
-    sphere.repaint();
+
+    if (processor.updatedPositionData.get())
+    {
+        processor.updatedPositionData = false;
+        sphere.repaint();
+    }
 }
 
 void ProbeDecoderAudioProcessorEditor::resized()
 {
-    
+
     const int leftRightMargin = 30;
     const int headerHeight = 60;
     const int footerHeight = 25;
     Rectangle<int> area (getLocalBounds());
-    
+
     Rectangle<int> footerArea (area.removeFromBottom (footerHeight));
     footer.setBounds(footerArea);
-    
+
     area.removeFromLeft(leftRightMargin);
     area.removeFromRight(leftRightMargin);
     Rectangle<int> headerArea = area.removeFromTop    (headerHeight);
     title.setBounds (headerArea);
     area.removeFromTop(10);
-    
+
     Rectangle<int> sliderRow;
-    
+
     // ============== SIDEBAR RIGHT ====================
     // =================================================
     Rectangle<int> sideBarArea (area.removeFromRight(190));
@@ -164,29 +154,22 @@ void ProbeDecoderAudioProcessorEditor::resized()
 
     const int rotSliderWidth = 40;
     const int labelHeight = 15;
-    
+
 
     // -------------- Yaw Pitch Roll ------------------
-    Rectangle<int> yprArea (sideBarArea.removeFromTop(25+rotSliderHeight+labelHeight));
+    Rectangle<int> yprArea (sideBarArea.removeFromTop(25 + rotSliderHeight + labelHeight));
     ypGroup.setBounds (yprArea);
     yprArea.removeFromTop(25); //for box headline
-    
+
     sliderRow = (yprArea.removeFromTop(rotSliderHeight));
-    slYaw.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
+    slAzimuth.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
     sliderRow.removeFromLeft(rotSliderSpacing);
-    slPitch.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
-    sliderRow.removeFromLeft(rotSliderSpacing);
-   
-    
-    
-    lbYaw.setBounds(yprArea.removeFromLeft(rotSliderWidth));
-    yprArea.removeFromLeft(rotSliderSpacing);
-    lbPitch.setBounds(yprArea.removeFromLeft(rotSliderWidth));
-    yprArea.removeFromLeft(rotSliderSpacing);
-    lbRoll.setBounds(yprArea.removeFromLeft(rotSliderWidth));
-    yprArea.removeFromLeft(rotSliderSpacing);
-    lblWidth.setBounds(yprArea.removeFromLeft(rotSliderWidth));
-    
+    slElevation.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
+
+    lbAzimuth.setBounds(yprArea.removeFromLeft(rotSliderWidth));
+    yprArea.removeFromLeft(rotSliderSpacing - 5);
+    lbElevation.setBounds(yprArea.removeFromLeft(rotSliderWidth + 10));
+
     sideBarArea.removeFromTop(20);
 
 
@@ -194,7 +177,6 @@ void ProbeDecoderAudioProcessorEditor::resized()
 
     area.removeFromRight(10); // spacing
     sphere.setBounds(area.getX(), area.getY(),area.getWidth()-20,area.getWidth()-20);
-    
-    
-}
 
+
+}

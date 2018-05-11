@@ -4,17 +4,17 @@
  Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
- 
+
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
- 
+
  The IEM plug-in suite is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
@@ -60,26 +60,26 @@ parameters(*this, nullptr) {
                                          if (value >= 0.5f) return "SN3D";
                                          else return "N3D";
                                      }, nullptr);
-    
-    parameters.createAndAddParameter("yaw", "Yaw angle", "deg",
+
+    parameters.createAndAddParameter("azimuth", "Azimuth angle", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
-                                     [](float value) { return String(value); }, nullptr);
-    parameters.createAndAddParameter("pitch", "Pitch angle", "deg",
+                                     [](float value) { return String(value, 2); }, nullptr);
+    parameters.createAndAddParameter("elevation", "Elevation angle", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
-                                     [](float value) { return String(value); }, nullptr);
-    
-    
-    
+                                     [](float value) { return String(value, 2); }, nullptr);
+
+
     parameters.state = ValueTree(Identifier("ProbeDecoder"));
-    
+
     orderSetting = parameters.getRawParameterValue("orderSetting");
     useSN3D = parameters.getRawParameterValue("useSN3D");
-    
+    azimuth = parameters.getRawParameterValue("azimuth");
+    elevation = parameters.getRawParameterValue("elevation");
+
     parameters.addParameterListener("orderSetting", this);
-    
-    yaw = parameters.getRawParameterValue("yaw");
-    pitch = parameters.getRawParameterValue("pitch");
-    
+    parameters.addParameterListener("azimuth", this);
+    parameters.addParameterListener("elevation", this);
+
     FloatVectorOperations::clear(previousSH, 64);
 }
 
@@ -152,30 +152,28 @@ void ProbeDecoderAudioProcessor::processBlock(AudioSampleBuffer &buffer, MidiBuf
     checkInputAndOutput(this, *orderSetting, 1);
     const int ambisonicOrder = input.getOrder();
     const int nChannels = jmin(buffer.getNumChannels(), input.getNumberOfChannels());
-    
-    float yawInRad = degreesToRadians(*yaw);
-    float pitchInRad = degreesToRadians(*pitch);
-    float cosPitch = cos(pitchInRad);
-    Vector3D<float> xyz(cosPitch * cos(yawInRad), cosPitch * sin(yawInRad), sin(-1.0f * pitchInRad));
+
+    Vector3D<float> xyz = Conversions<float>::sphericalToCartesian(degreesToRadians(*azimuth), degreesToRadians(*elevation));
     
     float sh[64];
-    
-    SHEval(ambisonicOrder, xyz, sh);
 
+    SHEval(ambisonicOrder, xyz, sh, false);
+    
     const int nCh = jmin(buffer.getNumChannels(), nChannels);
     const int numSamples = buffer.getNumSamples();
-    
+
     if (*useSN3D >= 0.5f)
         FloatVectorOperations::multiply(sh, sh, sn3d2n3d, nChannels);
-    
+
     buffer.applyGainRamp(0, 0, numSamples, previousSH[0], sh[0]);
-    
-    for (int i = 1; i < nCh; i++) {
+
+    for (int i = 1; i < nCh; i++)
+    {
         buffer.addFromWithRamp(0, 0, buffer.getReadPointer(i), numSamples, previousSH[i], sh[i]);
         buffer.clear(i, 0, numSamples);
     }
-    
-    
+
+
     FloatVectorOperations::copy(previousSH, sh, nChannels);
 }
 
@@ -190,6 +188,10 @@ AudioProcessorEditor *ProbeDecoderAudioProcessor::createEditor() {
 
 void ProbeDecoderAudioProcessor::parameterChanged(const String &parameterID, float newValue) {
     if (parameterID == "orderSetting") userChangedIOSettings = true;
+    else if (parameterID == "azimuth" || parameterID == "elevation")
+    {
+        updatedPositionData = true;
+    }
 }
 
 
@@ -208,9 +210,19 @@ void ProbeDecoderAudioProcessor::setStateInformation(const void *data, int sizeI
 }
 
 //==============================================================================
+pointer_sized_int ProbeDecoderAudioProcessor::handleVstPluginCanDo (int32 index,
+                                                                     pointer_sized_int value, void* ptr, float opt)
+{
+    auto text = (const char*) ptr;
+    auto matches = [=](const char* s) { return strcmp (text, s) == 0; };
+
+    if (matches ("wantsChannelCountNotifications"))
+        return 1;
+    return 0;
+}
+
+//==============================================================================
 // This creates new instances of the plugin..
 AudioProcessor *JUCE_CALLTYPE createPluginFilter() {
     return new ProbeDecoderAudioProcessor();
 }
-
-

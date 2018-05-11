@@ -4,17 +4,17 @@
  Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
- 
+
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
- 
+
  The IEM plug-in suite is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
@@ -52,22 +52,22 @@ public:
         addChildComponent(alert);
         alert.setBounds(15, 15, 15, 15);
     };
-    
+
     ~IOWidget() {};
     virtual const int getComponentSize() = 0;
     virtual void setMaxSize (int maxSize) {};
-    
+
     void setBusTooSmall (bool isBusTooSmall)
     {
         busTooSmall = isBusTooSmall;
         alert.setVisible(isBusTooSmall);
     }
-    
+
     bool isBusTooSmall ()
     {
         return busTooSmall;
     }
-    
+
 private:
     AlertSymbol alert;
     bool busTooSmall = false;
@@ -89,7 +89,7 @@ public:
         BinauralPath.loadPathFromData (BinauralPathData, sizeof (BinauralPathData));
         setBufferedToImage(true);
     };
-    
+
     ~BinauralIOWidget() {};
     const int getComponentSize() override { return 30; }
     void setMaxSize (int maxSize) override {};
@@ -100,7 +100,7 @@ public:
         g.fillPath(BinauralPath);
 
     };
-    
+
 private:
     Path BinauralPath;
 };
@@ -113,7 +113,7 @@ public:
     AudioChannelsIOWidget() : IOWidget() {
         WaveformPath.loadPathFromData (WaveformPathData, sizeof (WaveformPathData));
         setBufferedToImage(true);
-        
+
         if (selectable) {
             cbChannels = new ComboBox();
             addAndMakeVisible(cbChannels);
@@ -126,9 +126,9 @@ public:
         }
     };
     ~AudioChannelsIOWidget() {};
-    
+
     const int getComponentSize() override { return selectable ? 110 : 75; }
-    
+
     void setMaxSize (int maxPossibleNumberOfChannels) override
     {
         if (selectable)
@@ -150,7 +150,7 @@ public:
                 setBusTooSmall(true);
             else
                 setBusTooSmall(false);
-            
+
             cbChannels->setText(cbChannels->getItemText(cbChannels->indexOfItemId((currId))));
         }
         else
@@ -169,7 +169,7 @@ public:
         }
         availableChannels = maxPossibleNumberOfChannels;
     }
-    
+
     void setSizeIfUnselectable (int newSize)
     {
         if (! selectable)
@@ -179,19 +179,19 @@ public:
             repaint();
         }
     }
-    
+
     ComboBox* getChannelsCbPointer()
     {
         if (selectable) return cbChannels;
         return nullptr;
     }
-    
+
     void paint (Graphics& g) override
     {
         WaveformPath.applyTransform(WaveformPath.getTransformToScaleToFit(0, 0, 30, 30, true,Justification::centred));
         g.setColour((Colours::white).withMultipliedAlpha(0.5));
         g.fillPath(WaveformPath);
-        
+
         if (!selectable)
         {
             g.setColour((Colours::white).withMultipliedAlpha(0.5));
@@ -200,7 +200,7 @@ public:
             g.drawFittedText(displayTextIfNotSelectable, 35, 0, 40, 30, Justification::centredLeft, 2);
         }
     };
-    
+
 private:
     ScopedPointer<ComboBox> cbChannels;
     Path WaveformPath;
@@ -216,12 +216,12 @@ public:
     AmbisonicIOWidget() : IOWidget() {
         AmbiLogoPath.loadPathFromData (AmbiLogoPathData, sizeof (AmbiLogoPathData));
         setBufferedToImage(true);
-        
+
         addAndMakeVisible(&cbOrder);
         cbOrder.setJustificationType(Justification::centred);
         cbOrder.setBounds(35, 15, 70, 15);
         updateMaxOrder();
-        
+
         addAndMakeVisible(&cbNormalization);
         cbNormalization.setJustificationType(Justification::centred);
         cbNormalization.addSectionHeading("Normalization");
@@ -230,7 +230,7 @@ public:
         cbNormalization.setBounds(35, 0, 70, 15);
     };
     ~AmbisonicIOWidget() {};
-    
+
     void updateMaxOrder()
     {
         const int previousIndex = cbOrder.getSelectedItemIndex();
@@ -239,19 +239,19 @@ public:
         cbOrder.addItem("Auto", 1);
         for (int o = 0; o <= maxOrder; ++o)
             cbOrder.addItem(getOrderString(o), o + 2);
-        
+
         cbOrder.setSelectedItemIndex(previousIndex);
     }
-    
+
     void setMaxOrder (int newMaxOrder)
     {
         maxOrder = newMaxOrder;
         updateMaxOrder();
         setMaxSize (maxPossibleOrder);
     }
-    
+
     const int getComponentSize() override { return 110; }
-    
+
     void setMaxSize (int newMaxPossibleOrder) override
     {
         maxPossibleOrder = jmin(newMaxPossibleOrder, maxOrder);
@@ -268,24 +268,24 @@ public:
         {
             cbOrder.changeItemText(i+2, getOrderString(i) + " (bus too small)");
         }
-        
+
         cbOrder.setText(cbOrder.getItemText(cbOrder.indexOfItemId((currId))));
         if (currId - 2> maxPossibleOrder)
             setBusTooSmall(true);
         else
             setBusTooSmall(false);
     }
-    
+
     ComboBox* getNormCbPointer() { return &cbNormalization; }
     ComboBox* getOrderCbPointer() { return &cbOrder; }
-    
+
     void paint (Graphics& g) override
     {
         AmbiLogoPath.applyTransform(AmbiLogoPath.getTransformToScaleToFit(0, 0, 30, 30, true,Justification::centred));
         g.setColour((Colours::white).withMultipliedAlpha(0.5));
         g.fillPath(AmbiLogoPath);
     };
-    
+
 private:
     ComboBox cbNormalization, cbOrder;
     Path AmbiLogoPath;
@@ -307,7 +307,7 @@ public:
         orderStrings[5] = String("5th");
         orderStrings[6] = String("6th");
         orderStrings[7] = String("7th");
-        
+
         addAndMakeVisible(&cbOrder);
         cbOrder.setJustificationType(Justification::centred);
         cbOrder.addSectionHeading("Directivity Order");
@@ -321,11 +321,19 @@ public:
         cbOrder.addItem("6th", 8);
         cbOrder.addItem("7th", 9);
         cbOrder.setBounds(35, 15, 70, 15);
+
+        addAndMakeVisible(&cbNormalization);
+        cbNormalization.setJustificationType(Justification::centred);
+        cbNormalization.addSectionHeading("Normalization");
+        cbNormalization.addItem("N3D", 1);
+        cbNormalization.addItem("SN3D", 2);
+        cbNormalization.setBounds(35, 0, 70, 15);
     };
+
     ~DirectivityIOWidget() {};
-    
+
     const int getComponentSize() override { return 110; }
-    
+
     void setMaxSize (int maxPossibleOrder) override
     {
         if (maxPossibleOrder > -1) cbOrder.changeItemText(1, "Auto (" + orderStrings[maxPossibleOrder] + ")");
@@ -346,25 +354,22 @@ public:
             setBusTooSmall(true);
         else
             setBusTooSmall(false);
-        
+
     }
+
+    ComboBox* getNormCbPointer() { return &cbNormalization; }
     ComboBox* getOrderCbPointer() { return &cbOrder; }
-    
+
     void paint (Graphics& g) override
     {
         DirectivityPath.applyTransform(DirectivityPath.getTransformToScaleToFit(0, 0, 30, 30, true,Justification::centred));
         g.setColour((Colours::white).withMultipliedAlpha(0.5));
         g.fillPath(DirectivityPath);
-        
-        g.setColour((Colours::white).withMultipliedAlpha(0.5));
-        g.setFont(getLookAndFeel().getTypefaceForFont (Font(12.0f, 1)));
-        g.setFont(13.0f);
-        g.drawFittedText("N3D", 40, 0, 40, 13, Justification::centred, 1);
     };
-    
+
 private:
     String orderStrings[8];
-    ComboBox cbOrder;
+    ComboBox cbNormalization, cbOrder;
     Path DirectivityPath;
 };
 
@@ -378,26 +383,26 @@ public:
         addAndMakeVisible(&outputWidget);
     };
     ~TitleBar() {};
-    
+
     Tin* getInputWidgetPtr() { return &inputWidget; }
     Tout* getOutputWidgetPtr() { return &outputWidget; }
-    
-    
+
+
     void setTitle (String newBoldText, String newRegularText) {
         boldText = newBoldText;
         regularText = newRegularText;
     }
-    
+
     void setFont (Typeface::Ptr newBoldFont, Typeface::Ptr newRegularFont) {
         boldFont = newBoldFont;
         regularFont = newRegularFont;
     }
-    
+
     void resized () override
     {
         const int leftWidth = inputWidget.getComponentSize();
         const int rightWidth = outputWidget.getComponentSize();
-        
+
         inputWidget.setBounds(getLocalBounds().removeFromLeft(leftWidth).reduced(0,15));
         outputWidget.setBounds(getLocalBounds().removeFromRight(rightWidth).reduced(0,15));
     }
@@ -406,7 +411,7 @@ public:
         inputWidget.setMaxSize(inputSize);
         outputWidget.setMaxSize(outputSize);
     }
-    
+
     void paint (Graphics& g) override
     {
         Rectangle<int> bounds = getLocalBounds();
@@ -416,30 +421,30 @@ public:
         const float regularHeight = 25.f;
         const int leftWidth = inputWidget.getComponentSize();
         const int rightWidth = outputWidget.getComponentSize();
-        
+
         boldFont.setHeight(boldHeight);
         regularFont.setHeight(regularHeight);
-        
+
         const float boldWidth = boldFont.getStringWidth(boldText);
         const float regularWidth = regularFont.getStringWidth(regularText);
-        
+
         Rectangle<float> textArea (0, 0, boldWidth + regularWidth, jmax(boldHeight, regularHeight));
         textArea.setCentre(centreX,centreY);
-        
+
         if (textArea.getX() < leftWidth) textArea.setX(leftWidth);
         if (textArea.getRight() > bounds.getRight() - rightWidth) textArea.setRight(bounds.getRight() - rightWidth);
-  
-        
+
+
         g.setColour(Colours::white);
         g.setFont(boldFont);
         g.drawFittedText(boldText, textArea.removeFromLeft(boldWidth).toNearestInt(), Justification::bottom, 1);
         g.setFont(regularFont);
         g.drawFittedText(regularText, textArea.toNearestInt(), Justification::bottom, 1);
-        
+
         g.setColour((Colours::white).withMultipliedAlpha(0.5));
         g.drawLine(bounds.getX(),bounds.getY()+bounds.getHeight()-4, bounds.getX()+bounds.getWidth(), bounds.getY()+bounds.getHeight()-4);
     };
-    
+
 private:
     Tin inputWidget;
     Tout outputWidget;
@@ -453,46 +458,47 @@ private:
 class IEMLogo : public Component
 {
 public:
-    IEMLogo() : Component() {
+    IEMLogo() : Component()
+    {
         IEMPath.loadPathFromData (IEMpathData, sizeof (IEMpathData));
-        url = URL("https://iem.at/");
+        url = URL("https://plugins.iem.at/");
     }
     ~IEMLogo() {};
-    
+
     void paint (Graphics& g) override
     {
         Rectangle<int> bounds = getLocalBounds();
         IEMPath.applyTransform(IEMPath.getTransformToScaleToFit(bounds.reduced(2, 2).toFloat(), true, Justification::bottomLeft));
-        
+
         if (isMouseOver())
         {
             g.setColour(Colour::fromRGB(52, 88, 165));
             g.fillAll();
         }
-        
+
         g.setColour(isMouseOver() ? Colour::fromRGB(249, 226, 45) : Colours::white.withMultipliedAlpha(0.5));
         g.fillPath(IEMPath);
     }
-    
+
     void mouseEnter(const MouseEvent &event) override
     {
         setMouseCursor(MouseCursor(MouseCursor::PointingHandCursor));
         repaint();
     }
+    
     void mouseExit(const MouseEvent &event) override
     {
         setMouseCursor(MouseCursor(MouseCursor::NormalCursor));
         repaint();
     }
+    
     void mouseUp(const MouseEvent &event) override
     {
         if (url.isWellFormed())
             url.launchInDefaultBrowser();
     }
-    
-    
+
 private:
-    //bool isMouseOver = false;
     Path IEMPath;
     URL url;
 };
@@ -504,25 +510,28 @@ public:
         addAndMakeVisible(&iemLogo);
     };
     ~Footer() {};
-    
+
     void paint (Graphics& g) override
     {
         Rectangle<int> bounds = getLocalBounds();
         g.setColour(Colours::white.withAlpha(0.5f));
         g.setFont(getLookAndFeel().getTypefaceForFont (Font(12.0f, 0)));
         g.setFont(14.0f);
-        char versionString[10];
-        strcpy(versionString, "v");
-        strcat(versionString, JucePlugin_VersionString);
+        String versionString = "v";
+        
+    #if JUCE_DEBUG
+        versionString = "DEBUG - v";
+    #endif
+        versionString.append(JucePlugin_VersionString, 6);
+    
         g.drawText(versionString, 0, 0, bounds.getWidth()-8,bounds.getHeight()-2, Justification::bottomRight);
     };
-    
+
     void resized () override
     {
         iemLogo.setBounds(0, 0, 40, getHeight());
     }
-    
+
 private:
     IEMLogo iemLogo;
 };
-

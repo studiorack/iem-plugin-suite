@@ -4,17 +4,17 @@
  Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
- 
+
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
- 
+
  The IEM plug-in suite is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
@@ -30,74 +30,65 @@ class ReferenceCountedDecoder : public ReferenceCountedMatrix
 {
 public:
     typedef ReferenceCountedObjectPtr<ReferenceCountedDecoder> Ptr;
-    
+
     enum Normalization
     {
         n3d,
         sn3d
     };
-    
+
     enum Weights
     {
         none,
         maxrE,
         inPhase
     };
-    
+
     struct Settings {
         Normalization expectedNormalization = sn3d;
         Weights weights = none;
         bool weightsAlreadyApplied = false;
         int subwooferChannel = -1;
     };
-    
-    
+
+
     ReferenceCountedDecoder (const String& nameToUse, const String& descriptionToUse, int rows, int columns)
     :   ReferenceCountedMatrix(nameToUse, descriptionToUse, rows, columns), order(isqrt(columns)-1)
     {}
-    
+
     ~ReferenceCountedDecoder()
     {}
-    
+
     virtual String getConstructorMessage() override
     {
         return "Decoder named '" + name + "' constructed. Size: " + String(matrix.getNumRows()) + "x" + String(matrix.getNumColumns());
     }
-    
+
     virtual String getDeconstructorMessage() override
     {
         return "Decoder named '" + name + "' destroyed.";
     }
-    
-//    Eigen::MatrixXf* getMatrix()
-//    {
-//        return &matrix;
-//    }
+
     const String getName()
     {
         return name;
     }
-    
+
     const String getDescription()
     {
         return description;
     }
-    
-    void setSettings(Settings newSettings)
+
+    void setSettings (const Settings newSettings)
     {
         settings = newSettings;
     }
-    
+
     const Settings getSettings()
     {
         return settings;
     }
 
-//    const String getSettingsAsString()
-//    {
-//        return "Decoder expects Ambisonic input up to " + getOrderString(order) + " order with " + String(settings.expectedNormalization == Normalization::n3d ? "N3D" : "SN3D") + " normalization. The weights are '" + getWeightsString() + "' and are " + String(settings.weightsAlreadyApplied ? "already applied." : "not aplied yet.");
-//    }
-    
     const String getWeightsString()
     {
         switch(settings.weights)
@@ -107,6 +98,10 @@ public:
             default: return String("none");
         }
     }
+
+    /**
+     Applies the inverse weights to the decoder matrix, so it can be used with different orders. This method has to be called before the decoder processes audio input.
+    */
     void processAppliedWeights()
     {
         if (settings.weightsAlreadyApplied && settings.weights != Weights::none)
@@ -122,8 +117,8 @@ public:
             settings.weightsAlreadyApplied = false;
         }
     }
-    
-    int getOrder()
+
+    const int getOrder()
     {
         return order;
     }
@@ -133,4 +128,3 @@ private:
     const int order;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ReferenceCountedDecoder)
 };
-

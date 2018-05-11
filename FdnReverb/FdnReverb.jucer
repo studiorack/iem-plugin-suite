@@ -8,10 +8,10 @@
               pluginDesc="FdnReverb" pluginManufacturer="IEM" pluginManufacturerCode="IEMA"
               pluginCode="FdRe" pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
-              pluginAUExportPrefix="FdnReverbAU" pluginRTASCategory="" aaxIdentifier="at.IEM.FdnReverb"
-              pluginAAXCategory="AAX_ePlugInCategory_Dynamics" jucerVersion="5.2.1"
-              companyName="IEM" companyWebsite="iem.at" cppLanguageStandard="14"
-              companyCopyright="IEM - Sebastian Grill">
+              pluginAUExportPrefix="FdnReverbAU" aaxIdentifier="at.IEM.FdnReverb"
+              pluginAAXCategory="2" jucerVersion="5.3.2" companyName="IEM"
+              companyWebsite="iem.at" cppLanguageStandard="14" companyCopyright="IEM - Sebastian Grill"
+              headerPath="../../../resources/" pluginFormats="buildVST,buildStandalone">
   <MAINGROUP id="IWaAhA" name="FdnReverb">
     <GROUP id="{FF79C8C1-CE70-FACC-7429-B6FE05F4C53A}" name="resources">
       <GROUP id="{5152CA90-0646-EDE3-BFDF-03793E4AC1D7}" name="WalshHadamard">
@@ -99,7 +99,8 @@
         <CONFIGURATION name="Debug" enablePluginBinaryCopyStep="1" isDebug="1" optimisation="1"
                        linkTimeOptimisation="0" targetName="FdnReverb" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"/>
         <CONFIGURATION name="Release" enablePluginBinaryCopyStep="1" isDebug="0" optimisation="3"
-                       linkTimeOptimisation="1" targetName="FdnReverb" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"/>
+                       linkTimeOptimisation="1" targetName="FdnReverb" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"
+                       osxCompatibility="10.9 SDK"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_opengl" path="../../juce"/>
@@ -136,5 +137,10 @@
     <MODULE id="juce_gui_extra" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_opengl" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
   </MODULES>
-  <JUCEOPTIONS JUCE_QUICKTIME="disabled"/>
+  <JUCEOPTIONS JUCE_QUICKTIME="disabled" JUCE_WEB_BROWSER="0" JUCE_USE_FLAC="0"
+               JUCE_USE_OGGVORBIS="0" JUCE_USE_MP3AUDIOFORMAT="0" JUCE_USE_LAME_AUDIO_FORMAT="0"
+               JUCE_USE_WINDOWS_MEDIA_FORMAT="0"/>
+  <LIVE_SETTINGS>
+    <OSX/>
+  </LIVE_SETTINGS>
 </JUCERPROJECT>

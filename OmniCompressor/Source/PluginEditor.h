@@ -4,17 +4,17 @@
  Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
- 
+
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
- 
+
  The IEM plug-in suite is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
@@ -30,7 +30,6 @@
 #include "../../resources/customComponents/SimpleLabel.h"
 #include "../../resources/customComponents/LevelMeter.h"
 
-//typedef AudioProcessorValueTreeState::SliderAttachment SliderAttachment;
 typedef ReverseSlider::SliderAttachment SliderAttachment;
 typedef AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
 
@@ -53,29 +52,29 @@ private:
 
     OmniCompressorAudioProcessor& processor;
     AudioProcessorValueTreeState& valueTreeState;
-    
+
     TitleBar<AmbisonicIOWidget<>, NoIOWidget> title;
     Footer footer;
-    
-    
+
+
     void timerCallback() override;
-    
+
     ReverseSlider sliderKnee, sliderThreshold, sliderRatio, sliderAttackTime, sliderReleaseTime, sliderMakeupGain;
-    
+
     ScopedPointer<ComboBoxAttachment> cbNormalizationAtachement;
     ScopedPointer<ComboBoxAttachment> cbOrderAtachement;
-    
+
     ScopedPointer<SliderAttachment> KnAttachment;
     ScopedPointer<SliderAttachment> ThAttachment;
     ScopedPointer<SliderAttachment> RaAttachment;
     ScopedPointer<SliderAttachment> ATAttachment;
     ScopedPointer<SliderAttachment> RTAttachment;
     ScopedPointer<SliderAttachment> MGAttachment;
-    
+
 
     LevelMeter inpMeter, dbGRmeter;
-    
+
     SimpleLabel lbKnee, lbThreshold, lbOutGain, lbRatio, lbAttack, lbRelease;
-    
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OmniCompressorAudioProcessorEditor)
 };

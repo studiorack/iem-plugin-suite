@@ -4,17 +4,17 @@
  Authors: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
- 
+
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
- 
+
  The IEM plug-in suite is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
@@ -31,15 +31,15 @@
 #include "inPhase.h"
 
 using namespace dsp;
-class AmbisonicDecoder : private ProcessorBase
+class AmbisonicDecoder
 {
 public:
-    AmbisonicDecoder() {
-    }
+    AmbisonicDecoder() {}
     
     ~AmbisonicDecoder() {}
     
-    void prepare (const ProcessSpec& newSpec) override {
+    void prepare (const ProcessSpec& newSpec)
+    {
         spec = newSpec;
         matMult.prepare(newSpec);
         
@@ -51,44 +51,52 @@ public:
         inputNormalization = newNormalization;
     }
     
-    void process (const ProcessContextReplacing<float>& context) override {
+    void process (const ProcessContextNonReplacing<float>& context)
+    {
         ScopedNoDenormals noDenormals;
         checkIfNewDecoderAvailable();
         
         ReferenceCountedDecoder::Ptr retainedDecoder = currentDecoder;
-        AudioBlock<float> inputBlock = context.getInputBlock();
-
         
-        const int order = isqrt((int) inputBlock.getNumChannels()) - 1;
-        const int chAmbi = square(order+1);
-        
-        float weights[64];
-        const float correction = (static_cast<float>(retainedDecoder->getOrder()) + 1) / (static_cast<float>(order) + 1);
-        FloatVectorOperations::fill(weights, correction, chAmbi);
-
-        if (retainedDecoder->getSettings().weights == ReferenceCountedDecoder::Weights::maxrE)
-            multiplyMaxRE(order, weights);
-        else if (retainedDecoder->getSettings().weights == ReferenceCountedDecoder::Weights::inPhase)
-            multiplyInPhase(order, weights);
-            
-        if (retainedDecoder->getSettings().expectedNormalization != inputNormalization)
+        if (retainedDecoder != nullptr) // if decoder is available, do the pre-processing
         {
-            const float* conversionPtr (inputNormalization == ReferenceCountedDecoder::Normalization::sn3d ? sn3d2n3d : n3d2sn3d);
-            FloatVectorOperations::multiply(weights, conversionPtr, chAmbi);
+            AudioBlock<float> inputBlock = context.getInputBlock();
+            const int order = isqrt((int) inputBlock.getNumChannels()) - 1;
+            const int chAmbi = square(order+1);
+
+            float weights[64];
+            const float correction = sqrt((static_cast<float>(retainedDecoder->getOrder()) + 1) / (static_cast<float>(order) + 1));
+            FloatVectorOperations::fill(weights, correction, chAmbi);
+            
+            if (retainedDecoder->getSettings().weights == ReferenceCountedDecoder::Weights::maxrE)
+                multiplyMaxRE(order, weights);
+            else if (retainedDecoder->getSettings().weights == ReferenceCountedDecoder::Weights::inPhase)
+                multiplyInPhase(order, weights);
+            
+            if (retainedDecoder->getSettings().expectedNormalization != inputNormalization)
+            {
+                const float* conversionPtr (inputNormalization == ReferenceCountedDecoder::Normalization::sn3d ? sn3d2n3d : n3d2sn3d);
+                FloatVectorOperations::multiply(weights, conversionPtr, chAmbi);
+            }
+            
+            for (int ch = 0; ch < chAmbi; ++ch)
+                FloatVectorOperations::multiply(inputBlock.getChannelPointer(ch), weights[ch], (int) inputBlock.getNumSamples());
+            
         }
         
-        for (int ch = 0; ch < chAmbi; ++ch)
-            FloatVectorOperations::multiply(inputBlock.getChannelPointer(ch), weights[ch], (int) inputBlock.getNumSamples());
-        
+        //can be called even if there's no decoder available (will clear context then)
         matMult.process(context);
     }
     
-    void reset() override {};
-    
-    bool checkIfNewDecoderAvailable() {
+    const bool checkIfNewDecoderAvailable()
+    {
         if (newDecoderAvailable)
         {
             currentDecoder = newDecoder;
+            
+            if (currentDecoder != nullptr)
+                currentDecoder->processAppliedWeights();
+
             matMult.setMatrix(currentDecoder, true);
             
             newDecoder = nullptr;
@@ -97,14 +105,25 @@ public:
         }
         return false;
     };
-    
-    void setDecoder(ReferenceCountedDecoder::Ptr newDecoderToUse) {
+
+    /** Giving the AmbisonicDecoder a new decoder for the audio processing. Note: The AmbisonicDecoder will call the processAppliedWeights() of the ReferenceCountedDecoder before it processes audio! The matrix elements may change due to this method.
+     */
+    void setDecoder (ReferenceCountedDecoder::Ptr newDecoderToUse)
+    {
         newDecoder = newDecoderToUse;
         newDecoderAvailable = true;
     }
     
-    ReferenceCountedDecoder::Ptr getCurrentDecoder() {
+    ReferenceCountedDecoder::Ptr getCurrentDecoder()
+    {
         return currentDecoder;
+    }
+    
+    /** Checks if a new decoder waiting to be used.
+     */
+    const bool isNewDecoderWaiting()
+    {
+        return newDecoderAvailable;
     }
     
 private:

@@ -4,24 +4,23 @@
  Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
- 
+
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
- 
+
  The IEM plug-in suite is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
  */
 
-#ifndef PLUGINEDITOR_H_INCLUDED
-#define PLUGINEDITOR_H_INCLUDED
+#pragma once
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "PluginProcessor.h"
@@ -31,7 +30,7 @@
 #include "../../resources/customComponents/SpherePanner.h"
 #include "../../resources/customComponents/SimpleLabel.h"
 
-typedef AudioProcessorValueTreeState::SliderAttachment SliderAttachment;
+typedef ReverseSlider::SliderAttachment SliderAttachment;
 typedef AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
 
 //==============================================================================
@@ -51,39 +50,33 @@ public:
 
 private:
     LaF globalLaF;
-    
+
     TitleBar<AmbisonicIOWidget<>, AudioChannelsIOWidget<1,false>> title;
     Footer footer;
-    
+
     void timerCallback() override;
-    
 
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     ProbeDecoderAudioProcessor& processor;
-
-    GroupComponent ypGroup, settingsGroup;
-    ReverseSlider slYaw, slPitch;
-
-    SpherePanner sphere;
-    SpherePanner::Element probe;
-    
     AudioProcessorValueTreeState& valueTreeState;
 
+    GroupComponent ypGroup, settingsGroup;
+    ReverseSlider slAzimuth, slElevation;
 
-    ScopedPointer<SliderAttachment> slYawAttachment;
-    ScopedPointer<SliderAttachment> slPitchAttachment;
+    SpherePanner sphere;
+    SpherePanner::AziumuthElevationParameterElement probe;
+
+    ScopedPointer<SliderAttachment> slAzimuthAttachment;
+    ScopedPointer<SliderAttachment> slElevationAttachment;
 
     ScopedPointer<ComboBoxAttachment> cbNormalizationAtachement;
     ScopedPointer<ComboBoxAttachment> cbOrderAtachement;
 
     TooltipWindow toolTipWin;
-    
+
     // labels
-    SimpleLabel lbYaw, lbPitch, lbRoll, lblWidth, lbW, lbX, lbY, lbZ;
+    SimpleLabel lbAzimuth, lbElevation;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ProbeDecoderAudioProcessorEditor)
 };
-
-
-#endif  // PLUGINEDITOR_H_INCLUDED

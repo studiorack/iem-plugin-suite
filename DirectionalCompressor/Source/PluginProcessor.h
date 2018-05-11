@@ -4,17 +4,17 @@
  Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
- 
+
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
- 
+
  The IEM plug-in suite is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
@@ -29,22 +29,23 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "../../resources/efficientSHvanilla.h"
 #include "../../resources/tDesignN7.h"
-#include "../../resources/Eigen/Dense"
+#include <Eigen/Dense>
 #include "../../resources/ambisonicTools.h"
 #include "../../resources/IOHelper.h"
 #include "../../resources/Compressor.h"
+#include "../../resources/Conversions.h"
 
 //==============================================================================
 /**
 */
-class AmbisonicCompressorAudioProcessor  : public AudioProcessor,
+class DirectionalCompressorAudioProcessor  : public AudioProcessor,
                                             public AudioProcessorValueTreeState::Listener,
-public IOHelper<IOTypes::Ambisonics<>, IOTypes::Ambisonics<>>
+public IOHelper<IOTypes::Ambisonics<>, IOTypes::Ambisonics<>>, public VSTCallbackHandler
 {
 public:
     //==============================================================================
-    AmbisonicCompressorAudioProcessor();
-    ~AmbisonicCompressorAudioProcessor();
+    DirectionalCompressorAudioProcessor();
+    ~DirectionalCompressorAudioProcessor();
 
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
@@ -78,29 +79,33 @@ public:
     void getStateInformation (MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
-    
+    //======== PluginCanDo =========================================================
+    pointer_sized_int handleVstManufacturerSpecific (int32 index, pointer_sized_int value,
+                                                     void* ptr, float opt) override { return 0; };
+    pointer_sized_int handleVstPluginCanDo (int32 index, pointer_sized_int value,
+                                            void* ptr, float opt) override;
+    //==============================================================================
+
     void parameterChanged (const String &parameterID, float newValue) override;
 
     float c1MaxRMS;
     float c1MaxGR;
     float c2MaxRMS;
     float c2MaxGR;
-    
-    float xyz[3];
-    
+
     AudioProcessorValueTreeState parameters;
     void calcParams();
-    
-    
+    Atomic<bool> updatedPositionData;
+
 private:
     //==============================================================================
     void updateBuffers() override;
-    
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AmbisonicCompressorAudioProcessor)
-    
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DirectionalCompressorAudioProcessor)
+
     AudioBuffer<float> omniW;
     AudioBuffer<float> maskBuffer;
-    
+
     Eigen::Matrix<float,64,tDesignN> Y;
     Eigen::Matrix<float,tDesignN,64> YH;
 
@@ -109,27 +114,27 @@ private:
     Eigen::Matrix<float,64,64> P1;
 
     float dist[tDesignN];
-    
+
     const float *drivingPointers[3];
-    
+
     Array<float> c1Gains;
     Array<float> c2Gains;
-    
+
     float c1GR;
     float c2GR;
-    
+
     float sumMaskWeights;
-    
+
     bool paramChanged = true;
-    
+
     Compressor compressor1, compressor2;
     // == PARAMETERS ==
     // settings and mask
     float *orderSetting;
     float *useSN3D;
     float *preGain;
-    float *yaw;
-    float *pitch;
+    float *azimuth;
+    float *elevation;
     float *width;
     float *listen;
     // compressor 1

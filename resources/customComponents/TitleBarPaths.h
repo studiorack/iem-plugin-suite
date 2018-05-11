@@ -4,17 +4,17 @@
  Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
- 
+
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
- 
+
  The IEM plug-in suite is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
@@ -143,4 +143,3 @@ static const unsigned char WaveformPathData[] = { 110,109,135,86,64,67,242,114,5
     30,153,67,108,68,43,156,67,250,222,108,67,99,109,135,86,94,67,205,12,118,67,108,223,111,82,67,205,12,118,67,108,223,111,82,67,16,136,148,67,108,135,86,94,67,16,136,148,67,108,135,86,94,67,205,12,118,67,99,109,135,86,4,67,41,28,125,67,108,66,224,240,66,
     41,28,125,67,108,66,224,240,66,98,0,145,67,108,135,86,4,67,98,0,145,67,108,135,86,4,67,41,28,125,67,99,109,68,43,171,67,25,52,132,67,108,16,56,165,67,25,52,132,67,108,16,56,165,67,94,90,139,67,108,68,43,171,67,94,90,139,67,108,68,43,171,67,25,52,132,
     67,99,109,14,173,204,66,25,52,132,67,108,190,223,180,66,25,52,132,67,108,190,223,180,66,94,90,139,67,108,14,173,204,66,94,90,139,67,108,14,173,204,66,25,52,132,67,99,101,0,0 };
-

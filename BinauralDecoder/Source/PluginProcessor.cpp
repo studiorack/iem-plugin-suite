@@ -4,17 +4,17 @@
  Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
- 
+
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
- 
+
  The IEM plug-in suite is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
@@ -38,7 +38,7 @@ BinauralDecoderAudioProcessor::BinauralDecoderAudioProcessor()
 #endif
 parameters(*this, nullptr)
 {
-    
+
     parameters.createAndAddParameter ("inputOrderSetting", "Ambisonic Order", "",
                                       NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
                                       [](float value) {
@@ -58,74 +58,74 @@ parameters(*this, nullptr)
                                          if (value >= 0.5f) return "SN3D";
                                          else return "N3D";
                                      }, nullptr);
-    
+
     parameters.createAndAddParameter("applyHeadphoneEq", "Headphone Equalization", "",
                                      NormalisableRange<float>(0.0f, float(headphoneEQs.size()), 1.0f), 0.0f,
                                      [this](float value) {
                                          if (value < 0.5f) return String("OFF");
                                          else return String(this->headphoneEQs[roundToInt(value)-1]);
                                      }, nullptr);
-    
+
     // this must be initialised after all calls to createAndAddParameter().
     parameters.state = ValueTree (Identifier ("BinauralDecoder"));
     // tip: you can also add other values to parameters.state, which are also saved and restored when the session is closed/reopened
-    
-    
+
+
     // get pointers to the parameters
     inputOrderSetting = parameters.getRawParameterValue("inputOrderSetting");
     useSN3D = parameters.getRawParameterValue ("useSN3D");
     applyHeadphoneEq = parameters.getRawParameterValue("applyHeadphoneEq");
-    
+
     // add listeners to parameter changes
     parameters.addParameterListener ("inputOrderSetting", this);
     parameters.addParameterListener ("applyHeadphoneEq", this);
-    
-    
+
+
     // load IRs
     AudioFormatManager formatManager;
     formatManager.registerBasicFormats();
     WavAudioFormat wavFormat;
-    
+
     MemoryInputStream* mis[7];
     mis[0] = new MemoryInputStream (BinaryData::irsOrd1_wav, BinaryData::irsOrd1_wavSize, false);
     mis[1] = new MemoryInputStream (BinaryData::irsOrd2_wav, BinaryData::irsOrd2_wavSize, false);
-    mis[2] = new MemoryInputStream (BinaryData::irsOrd3_wav, BinaryData::irsOrd2_wavSize, false);
-    mis[3] = new MemoryInputStream (BinaryData::irsOrd4_wav, BinaryData::irsOrd3_wavSize, false);
-    mis[4] = new MemoryInputStream (BinaryData::irsOrd5_wav, BinaryData::irsOrd4_wavSize, false);
-    mis[5] = new MemoryInputStream (BinaryData::irsOrd6_wav, BinaryData::irsOrd5_wavSize, false);
-    mis[6] = new MemoryInputStream (BinaryData::irsOrd7_wav, BinaryData::irsOrd6_wavSize, false);
-    
+    mis[2] = new MemoryInputStream (BinaryData::irsOrd3_wav, BinaryData::irsOrd3_wavSize, false);
+    mis[3] = new MemoryInputStream (BinaryData::irsOrd4_wav, BinaryData::irsOrd4_wavSize, false);
+    mis[4] = new MemoryInputStream (BinaryData::irsOrd5_wav, BinaryData::irsOrd5_wavSize, false);
+    mis[5] = new MemoryInputStream (BinaryData::irsOrd6_wav, BinaryData::irsOrd6_wavSize, false);
+    mis[6] = new MemoryInputStream (BinaryData::irsOrd7_wav, BinaryData::irsOrd7_wavSize, false);
+
     for (int i = 0; i < 7; ++i)
     {
-        irs[i].setSize(2 * square(i + 2), 236);
+        irs[i].setSize(square(i + 2), irLength);
         ScopedPointer<AudioFormatReader> reader = wavFormat.createReaderFor(mis[i], true);
-        reader->read(&irs[i], 0, 236, 0, true, false);
+        reader->read(&irs[i], 0, irLength, 0, true, false);
     }
-    
+
 }
 
 BinauralDecoderAudioProcessor::~BinauralDecoderAudioProcessor()
 {
-    
+
     if (fftwWasPlanned)
     {
         fftwf_destroy_plan(fftForward);
-        fftwf_destroy_plan(fftBackwardLeft);
-        fftwf_destroy_plan(fftBackwardRight);
+        fftwf_destroy_plan(fftBackwardMid);
+        fftwf_destroy_plan(fftBackwardSide);
     }
-    
+
     if (in != nullptr)
         fftwf_free(in);
     if (out != nullptr)
         fftwf_free(out);
-    if (accumLeft != nullptr)
-        fftwf_free(accumLeft);
-    if (accumRight != nullptr)
-        fftwf_free(accumRight);
-    if (ifftOutputLeft != nullptr)
-        fftwf_free(ifftOutputLeft);
-    if (ifftOutputRight != nullptr)
-        fftwf_free(ifftOutputRight);
+    if (accumMid != nullptr)
+        fftwf_free(accumMid);
+    if (accumSide != nullptr)
+        fftwf_free(accumSide);
+    if (ifftOutputMid != nullptr)
+        fftwf_free(ifftOutputMid);
+    if (ifftOutputSide != nullptr)
+        fftwf_free(ifftOutputSide);
 }
 
 //==============================================================================
@@ -194,16 +194,16 @@ void BinauralDecoderAudioProcessor::changeProgramName (int index, const String& 
 void BinauralDecoderAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     checkInputAndOutput(this, *inputOrderSetting, 0, true);
-    
+
     stereoTemp.setSize(2, samplesPerBlock);
-    
+
     ProcessSpec convSpec;
     convSpec.sampleRate = sampleRate;
     convSpec.maximumBlockSize = samplesPerBlock;
     convSpec.numChannels = 2; // convolve two channels (which actually point two one and the same input channel)
-    
+
     EQ.prepare(convSpec);
-    
+
 }
 
 void BinauralDecoderAudioProcessor::releaseResources()
@@ -223,69 +223,101 @@ void BinauralDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, Mid
 {
     checkInputAndOutput(this, *inputOrderSetting, 0, false);
     ScopedNoDenormals noDenormals;
-    
+
     const int nIRsPerChannel = input.getNumberOfChannels();
     const int nCh = jmin(buffer.getNumChannels(), input.getNumberOfChannels());
     const int L = buffer.getNumSamples();
     const int ergL = overlapBuffer.getNumSamples();
     const int overlap = irLengthMinusOne;
     const int copyL = jmin(L, overlap); // copy max L samples of the overlap data
-    
+
     if (*useSN3D >= 0.5f)
         for (int ch = 1; ch < nCh; ++ch)
             buffer.applyGain(ch, 0, buffer.getNumSamples(), sn3d2n3d[ch]);
-    
+
     AudioBlock<float> tempBlock (stereoTemp);
-    
-    FloatVectorOperations::clear((float*) accumLeft, fftLength + 2);
-    FloatVectorOperations::clear((float*) accumRight, fftLength + 2);
-    
-    const int nZeros = fftLength - L;
-    for (int ch = 0; ch < nCh; ++ch)
-    {
-        FloatVectorOperations::clear(&in[L], nZeros); // TODO: only last part
-        FloatVectorOperations::copy(in, buffer.getReadPointer(ch), L);
-        fftwf_execute(fftForward);
-        
-        fftwf_complex* irLeft = (fftwf_complex*) irsFrequencyDomain.getReadPointer(ch);
-        fftwf_complex* irRight = (fftwf_complex*) irsFrequencyDomain.getReadPointer(nIRsPerChannel + ch);
-        
-        for (int i = 0; i < fftLength / 2 + 1; ++i)
-        {
-            accumLeft[i][0]  += out[i][0] *  irLeft[i][0] - out[i][1] *  irLeft[i][1];
-            accumLeft[i][1]  += out[i][1] *  irLeft[i][0] + out[i][0] *  irLeft[i][1];
-            accumRight[i][0] += out[i][0] * irRight[i][0] - out[i][1] * irRight[i][1];
-            accumRight[i][1] += out[i][1] * irRight[i][0] + out[i][0] * irRight[i][1];
-        }
-    }
-    
-    fftwf_execute(fftBackwardLeft);
-    fftwf_execute(fftBackwardRight);
-    
-    FloatVectorOperations::copy(buffer.getWritePointer(0), ifftOutputLeft, L);
-    FloatVectorOperations::copy(buffer.getWritePointer(1), ifftOutputRight, L);
-    
+
+    FloatVectorOperations::clear((float*) accumMid, fftLength + 2);
+    FloatVectorOperations::clear((float*) accumSide, fftLength + 2);
+
+	const int nZeros = fftLength - L;
+
+	//compute mid signal in frequency domain
+	for (int midix = 0; midix < nMidCh; ++midix)
+	{
+		int ch = mix2cix[midix];
+
+		FloatVectorOperations::clear(&in[L], nZeros); // TODO: only last part
+		FloatVectorOperations::copy(in, buffer.getReadPointer(ch), L);
+		fftwf_execute(fftForward);
+
+		fftwf_complex* tfMid = (fftwf_complex*) irsFrequencyDomain.getReadPointer(ch);
+
+		for (int i = 0; i < fftLength / 2 + 1; ++i)
+		{
+		    accumMid[i][0]  += out[i][0] *  tfMid[i][0] - out[i][1] *  tfMid[i][1]; //real part
+		    accumMid[i][1]  += out[i][1] *  tfMid[i][0] + out[i][0] *  tfMid[i][1]; //imag part
+		}
+	}
+
+	//compute side signal in frequency domain
+	for (int sidix = 0; sidix < nSideCh; ++sidix)
+	{
+		int ch = six2cix[sidix];
+
+		FloatVectorOperations::clear(&in[L], nZeros); // TODO: only last part
+		FloatVectorOperations::copy(in, buffer.getReadPointer(ch), L);
+		fftwf_execute(fftForward);
+
+		fftwf_complex* tfSide = (fftwf_complex*)irsFrequencyDomain.getReadPointer(ch);
+
+		for (int i = 0; i < fftLength / 2 + 1; ++i)
+		{
+			accumSide[i][0] += out[i][0] * tfSide[i][0] - out[i][1] * tfSide[i][1];
+			accumSide[i][1] += out[i][1] * tfSide[i][0] + out[i][0] * tfSide[i][1];
+		}
+	}
+
+    fftwf_execute(fftBackwardMid);
+    fftwf_execute(fftBackwardSide);
+
+
+	///* MS -> LR  */
+	FloatVectorOperations::copy(buffer.getWritePointer(0), ifftOutputMid, L);
+	FloatVectorOperations::copy(buffer.getWritePointer(1), ifftOutputMid, L);
+	FloatVectorOperations::add(buffer.getWritePointer(0), ifftOutputSide, L);
+	FloatVectorOperations::subtract(buffer.getWritePointer(1), ifftOutputSide, L);
+
     FloatVectorOperations::add (buffer.getWritePointer(0), overlapBuffer.getWritePointer(0), copyL);
     FloatVectorOperations::add (buffer.getWritePointer(1), overlapBuffer.getWritePointer(1), copyL);
-    
+
     if (copyL < overlap) // there is some overlap left, want some?
     {
         const int howManyAreLeft = overlap - L;
+
+		//shift the overlap buffer to the left
         FloatVectorOperations::copy(overlapBuffer.getWritePointer(0), overlapBuffer.getReadPointer(0, L), howManyAreLeft);
         FloatVectorOperations::copy(overlapBuffer.getWritePointer(1), overlapBuffer.getReadPointer(1, L), howManyAreLeft);
-        
+
+		//clear the tail
         FloatVectorOperations::clear(overlapBuffer.getWritePointer(0, howManyAreLeft), ergL - howManyAreLeft);
         FloatVectorOperations::clear(overlapBuffer.getWritePointer(1, howManyAreLeft), ergL - howManyAreLeft);
-        
-        FloatVectorOperations::add(overlapBuffer.getWritePointer(0), &ifftOutputLeft[L], irLengthMinusOne);
-        FloatVectorOperations::add(overlapBuffer.getWritePointer(1), &ifftOutputRight[L], irLengthMinusOne);
+
+		/* MS -> LR  */
+		FloatVectorOperations::add(overlapBuffer.getWritePointer(0), &ifftOutputMid[L], irLengthMinusOne);
+		FloatVectorOperations::add(overlapBuffer.getWritePointer(1), &ifftOutputMid[L], irLengthMinusOne);
+		FloatVectorOperations::add(overlapBuffer.getWritePointer(0), &ifftOutputSide[L], irLengthMinusOne);
+		FloatVectorOperations::subtract(overlapBuffer.getWritePointer(1), &ifftOutputSide[L], irLengthMinusOne);
     }
     else
     {
-        FloatVectorOperations::copy(overlapBuffer.getWritePointer(0), &ifftOutputLeft[L], irLengthMinusOne);
-        FloatVectorOperations::copy(overlapBuffer.getWritePointer(1), &ifftOutputRight[L], irLengthMinusOne);
+		/* MS -> LR  */
+		FloatVectorOperations::copy(overlapBuffer.getWritePointer(0), &ifftOutputMid[L], irLengthMinusOne);
+		FloatVectorOperations::copy(overlapBuffer.getWritePointer(1), &ifftOutputMid[L], irLengthMinusOne);
+		FloatVectorOperations::add(overlapBuffer.getWritePointer(0), &ifftOutputSide[L], irLengthMinusOne);
+		FloatVectorOperations::subtract(overlapBuffer.getWritePointer(1), &ifftOutputSide[L], irLengthMinusOne);
     }
-    
+
     if (*applyHeadphoneEq >= 0.5f)
     {
         float* channelData[2] = {buffer.getWritePointer(0), buffer.getWritePointer(1)};
@@ -293,7 +325,7 @@ void BinauralDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, Mid
         ProcessContextReplacing<float> eqContext (sumBlock);
         EQ.process(eqContext);
     }
-    
+
     for (int ch = 2; ch < buffer.getNumChannels(); ++ch)
         buffer.clear(ch, 0, buffer.getNumSamples());
 }
@@ -355,108 +387,109 @@ void BinauralDecoderAudioProcessor::updateBuffers()
 {
     DBG("IOHelper:  input size: " << input.getSize());
     DBG("IOHelper: output size: " << output.getSize());
-    
+
     const double sampleRate = getSampleRate();
     const int blockSize = getBlockSize();
-    
-    const int order = jmax(input.getOrder(), 1);
-    const int nCh = input.getNumberOfChannels();
+
+    int order = jmax(input.getOrder(), 1);
+    const int nCh = input.getNumberOfChannels(); // why not jmin(buffer.....)? Is updateBuffers called before the first processBlock?
     DBG("order: " << order);
     DBG("nCh: " << nCh);
-    
-    int irLength = 236;
+
+	int tmpOrder = sqrt(nCh) - 1;
+	if (tmpOrder < order) {
+		order = tmpOrder;
+	}
+
     AudioBuffer<float> resampledIRs;
     bool useResampled = false;
-    
-    if (sampleRate != 44100.0) // do resampling!
+
+    if (sampleRate != irsSampleRate) // do resampling!
     {
         useResampled = true;
-        double factorReading = 44100.0f / sampleRate;
-        irLength = roundToInt (236 / factorReading + 0.49);
-        
+        double factorReading = irsSampleRate / sampleRate;
+        irLength = roundToInt (irLength / factorReading + 0.49);
+
         MemoryAudioSource memorySource (irs[order - 1], false);
-        ResamplingAudioSource resamplingSource (&memorySource, false, 2 * nCh);
-        
+        ResamplingAudioSource resamplingSource (&memorySource, false, nCh);
+
         resamplingSource.setResamplingRatio (factorReading);
         resamplingSource.prepareToPlay (irLength, sampleRate);
-        
-        resampledIRs.setSize(2 * nCh, irLength);
+
+        resampledIRs.setSize(nCh, irLength);
         AudioSourceChannelInfo info;
         info.startSample = 0;
         info.numSamples = irLength;
         info.buffer = &resampledIRs;
-        
+
         resamplingSource.getNextAudioBlock (info);
     }
 
     irLengthMinusOne = irLength - 1;
-    
+
     const int prevFftLength = fftLength;
-    
-    const int ergL = blockSize + irLength - 1;
-    fftLength = nextPowerOfTwo(ergL);
-    
+
+    const int ergL = blockSize + irLength - 1; //max number of nonzero output samples
+    fftLength = nextPowerOfTwo(ergL);          //fftLength >= ergL
+
     overlapBuffer.setSize(2, irLengthMinusOne);
     overlapBuffer.clear();
-    
+
     if (prevFftLength != fftLength)
     {
         if (fftwWasPlanned)
         {
             fftwf_destroy_plan(fftForward);
-            fftwf_destroy_plan(fftBackwardLeft);
-            fftwf_destroy_plan(fftBackwardRight);
+            fftwf_destroy_plan(fftBackwardMid);
+            fftwf_destroy_plan(fftBackwardSide);
         }
-        
+
         if (in != nullptr)
             fftwf_free(in);
         if (out != nullptr)
             fftwf_free(out);
-        if (accumLeft != nullptr)
-            fftwf_free(accumLeft);
-        if (accumRight != nullptr)
-            fftwf_free(accumRight);
-        if (ifftOutputLeft != nullptr)
-            fftwf_free(ifftOutputLeft);
-        if (ifftOutputRight != nullptr)
-            fftwf_free(ifftOutputRight);
-        
+        if (accumMid != nullptr)
+            fftwf_free(accumMid);
+        if (accumSide != nullptr)
+            fftwf_free(accumSide);
+        if (ifftOutputMid != nullptr)
+            fftwf_free(ifftOutputMid);
+        if (ifftOutputSide != nullptr)
+            fftwf_free(ifftOutputSide);
+
         in = (float*) fftwf_malloc(sizeof(float) * fftLength);
         out = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * (fftLength / 2 + 1));
-        accumLeft = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * (fftLength / 2 + 1));
-        accumRight = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * (fftLength / 2 + 1));
-        ifftOutputLeft = (float*) fftwf_malloc(sizeof(float) * fftLength);
-        ifftOutputRight = (float*) fftwf_malloc(sizeof(float) * fftLength);
-        
+        accumMid = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * (fftLength / 2 + 1));
+        accumSide = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * (fftLength / 2 + 1));
+        ifftOutputMid = (float*) fftwf_malloc(sizeof(float) * fftLength);
+        ifftOutputSide = (float*) fftwf_malloc(sizeof(float) * fftLength);
+
         fftForward = fftwf_plan_dft_r2c_1d(fftLength, in, out, FFTW_MEASURE);
-        fftBackwardLeft = fftwf_plan_dft_c2r_1d(fftLength, accumLeft, ifftOutputLeft, FFTW_MEASURE);
-        fftBackwardRight = fftwf_plan_dft_c2r_1d(fftLength, accumRight, ifftOutputRight, FFTW_MEASURE);
+        fftBackwardMid = fftwf_plan_dft_c2r_1d(fftLength, accumMid, ifftOutputMid, FFTW_MEASURE);
+        fftBackwardSide = fftwf_plan_dft_c2r_1d(fftLength, accumSide, ifftOutputSide, FFTW_MEASURE);
         fftwWasPlanned = true;
     }
-    
+
     FloatVectorOperations::clear((float*) in, fftLength); // clear (after plan creation!)
-    
-    irsFrequencyDomain.setSize(2 * nCh, 2 * (fftLength / 2 + 1));
+
+    irsFrequencyDomain.setSize(nCh, 2 * (fftLength / 2 + 1));
     irsFrequencyDomain.clear();
-    
+
     for (int i = 0; i < nCh; ++i)
     {
-        {  // left channel
-            const float* src = useResampled ? resampledIRs.getReadPointer(2*i) : irs[order - 1].getReadPointer(2 * i);
-            FloatVectorOperations::multiply((float*) in, src, 1.0 / fftLength, irLength);
-            FloatVectorOperations::clear(&in[irLength], fftLength - irLength); // zero padding
-            fftwf_execute(fftForward);
-            FloatVectorOperations::copy(irsFrequencyDomain.getWritePointer(i), (float*) out, 2 * (fftLength / 2 + 1));
-        }
-        
-        {  // right channel
-            const float* src = useResampled ? resampledIRs.getReadPointer(2*i + 1) : irs[order - 1].getReadPointer(2 * i + 1);
-            FloatVectorOperations::multiply((float*) in, src, 1.0 / fftLength, irLength);
-            FloatVectorOperations::clear(&in[irLength], fftLength - irLength); // zero padding
-            fftwf_execute(fftForward);
-            FloatVectorOperations::copy(irsFrequencyDomain.getWritePointer(nCh + i), (float*) out, 2 * (fftLength / 2 + 1));
-        }
+		{
+			const float* src = useResampled ? resampledIRs.getReadPointer(i) : irs[order - 1].getReadPointer(i);
+			FloatVectorOperations::multiply((float*)in, src, 1.0 / fftLength, irLength);
+			FloatVectorOperations::clear(&in[irLength], fftLength - irLength); // zero padding
+			fftwf_execute(fftForward);
+			FloatVectorOperations::copy(irsFrequencyDomain.getWritePointer(i), (float*)out, 2 * (fftLength / 2 + 1));
+		}
+
     }
+
+	//get number of mid- and side-channels
+	nSideCh = order * (order + 1) / 2;
+	nMidCh = square(order + 1) - nSideCh; 	//nMidCh = nCh - nSideCh; //nCh should be equalt to (order+1)^2
 }
 
 //==============================================================================
@@ -464,4 +497,16 @@ void BinauralDecoderAudioProcessor::updateBuffers()
 AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new BinauralDecoderAudioProcessor();
+}
+
+//==============================================================================
+pointer_sized_int BinauralDecoderAudioProcessor::handleVstPluginCanDo (int32 index,
+                                                                     pointer_sized_int value, void* ptr, float opt)
+{
+    auto text = (const char*) ptr;
+    auto matches = [=](const char* s) { return strcmp (text, s) == 0; };
+
+    if (matches ("wantsChannelCountNotifications"))
+        return 1;
+    return 0;
 }

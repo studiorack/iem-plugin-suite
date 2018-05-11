@@ -8,6 +8,11 @@ ifeq ($(findstring $(uname), Linux GNU GNU/kFreeBSD), $(uname))
   BUILDSYSTEM = LinuxMakefile
 endif
 
+ifeq ($(findstring MSYS, $(uname)), MSYS)
+  BUILDSYSTEM = VS2017
+  BITS = 64
+endif
+
 ifeq ($(uname), Darwin)
   BUILDSYSTEM = XCode
 endif
@@ -22,6 +27,11 @@ system:
 # list of projects
 ALL_PROJECTS=$(patsubst %/, %, $(dir $(wildcard */*.jucer)))
 PROJECTS=$(filter-out _PluginTemplate, $(ALL_PROJECTS))
+
+
+# what do we want to build: Standalone, VST; all
+## currently this has only an effect on the Linux buildsystem
+TARGET=all
 
 # helper applications
 PROJUCER=Projucer
@@ -47,7 +57,7 @@ $(ALL_PROJECTS:%=%-clean):
 %-LinuxMakefile-build: %/Builds/LinuxMakefile/Makefile
 	make -C $(<D) \
 		CONFIG="$(CONFIG)" \
-		all
+		$(TARGET)
 %-LinuxMakefile-clean: %/Builds/LinuxMakefile/Makefile
 	make -C $(<D) \
 		CONFIG="$(CONFIG)" \
@@ -76,3 +86,21 @@ $(ALL_PROJECTS:%=%-clean):
 # so Projucer will be called for each %-build
 %.pbxproj:
 	$(PROJUCER) -resave $(subst @,$(firstword $(subst /, ,$@)),@/@.jucer)
+
+
+# VS2017 based rules
+# TODO: find out how to pass CONFIG and TARGET
+%-VS2017-build: $$(subst @,%,@/Builds/VisualStudio2017/@.sln)
+	MSBuild.exe \
+		$<
+%-VS2017-clean: $$(subst @,%,@/Builds/VisualStudio2017/@.sln)
+	MSBuild.exe \
+		-t:Clean \
+		$<
+
+
+# this does not declare a proper dependency,
+# so Projucer will be called for each %-build
+%.sln:
+	$(PROJUCER) -resave $(subst @,$(firstword $(subst /, ,$@)),@/@.jucer)
+

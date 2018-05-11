@@ -4,24 +4,24 @@
  Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
- 
+
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
- 
+
  The IEM plug-in suite is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
  */
 
 #ifndef hammerAitovSample_h
- #define hammerAitovSample_h 
+ #define hammerAitovSample_h
 
 #define nSamplePoints 426
  const float hammerAitovSampleX[426]= {-9.8942823302790495e-01,
@@ -450,7 +450,7 @@
                                             -9.7732312869673676e-01,
                                             -9.9015709600166602e-01,
                                             -9.7732312869673676e-01
-  }; 
+  };
  const float hammerAitovSampleY[426]= {-1.4502334876590658e-01,
                                             1.0516091195246342e-01,
                                             7.0450506826574583e-02,
@@ -877,7 +877,7 @@
                                             -6.0277522057913181e-02,
                                             -1.3996044168817004e-01,
                                             -6.0277522057913181e-02
-  }; 
+  };
  const float hammerAitovSampleZ[426]= {0.0000000000000000e+00,
                                             -3.0779783328158683e-01,
                                             -2.0349428526192753e-01,
@@ -1304,7 +1304,7 @@
                                             -2.0299291231217795e-01,
                                             0.0000000000000000e+00,
                                             2.0299291231217795e-01
-  }; 
+  };
  const float hammerAitovSampleVertices[852]= {9.6296205447948291e-01,
                                                    0.0000000000000000e+00,
                                                    -9.2592592592592604e-01,
@@ -2157,7 +2157,7 @@
                                                    0.0000000000000000e+00,
                                                    9.6428571428571441e-01,
                                                    1.9999999999999996e-01
-  }; 
+  };
  const int hammerAitovSampleIndices[2472]= {137,
                                                   118,
                                                   117,
@@ -4630,6 +4630,6 @@
                                                   390,
                                                   375,
                                                   403
-  }; 
+  };
 
  #endif

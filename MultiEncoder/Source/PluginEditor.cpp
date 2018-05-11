@@ -4,17 +4,17 @@
  Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
- 
+
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
- 
+
  The IEM plug-in suite is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
@@ -29,89 +29,83 @@
 
 //==============================================================================
 MultiEncoderAudioProcessorEditor::MultiEncoderAudioProcessorEditor (MultiEncoderAudioProcessor& p, AudioProcessorValueTreeState& vts)
-: AudioProcessorEditor (&p), processor (p), valueTreeState(vts), encoderList(p, sphere, &vts)//, sphere_opengl(nullptr)
+: AudioProcessorEditor (&p), processor (p), valueTreeState(vts), encoderList(p, sphere, &vts),
+masterElement(*valueTreeState.getParameter("masterAzimuth"), valueTreeState.getParameterRange("masterAzimuth"), *valueTreeState.getParameter("masterElevation"), valueTreeState.getParameterRange("masterElevation"))
 {
     setLookAndFeel (&globalLaF);
-    
+
     for (int i = 0; i < maxNumberOfInputs; ++i)
     {
-        valueTreeState.addParameterListener("yaw"+String(i), this);
-        valueTreeState.addParameterListener("pitch"+String(i), this);
+        valueTreeState.addParameterListener("azimuth"+String(i), this);
+        valueTreeState.addParameterListener("elevation"+String(i), this);
     }
-    valueTreeState.addParameterListener("masterYaw", this);
-    valueTreeState.addParameterListener("masterPitch", this);
-    
+    valueTreeState.addParameterListener("masterAzimuth", this);
+    valueTreeState.addParameterListener("masterElevation", this);
+
     // ==== SPHERE AND ELEMENTS ===============
     addAndMakeVisible(&sphere);
     sphere.addListener(this);
-    
+
     sphere.addElement(&masterElement);
     masterElement.setColour(Colours::black);
     masterElement.setTextColour(Colours::white);
     masterElement.setLabel("M");
-    masterElement.setID("master");
-    masterElement.setSliders(&slMasterYaw, &slMasterPitch);
-    
+
     // ======================================
-    
+
     addAndMakeVisible(&title);
     title.setTitle(String("Multi"),String("Encoder"));
     title.setFont(globalLaF.robotoBold,globalLaF.robotoLight);
-    
+
     addAndMakeVisible(&footer);
-    
+
     toolTipWin.setMillisecondsBeforeTipAppears(500);
-    
+
     addAndMakeVisible(&viewport);
     viewport.setViewedComponent(&encoderList);
-    
+
     cbNumInputChannelsAttachment = new ComboBoxAttachment(valueTreeState,"inputSetting",*title.getInputWidgetPtr()->getChannelsCbPointer());
     cbNormalizationAtachment = new ComboBoxAttachment(valueTreeState,"useSN3D",*title.getOutputWidgetPtr()->getNormCbPointer());
     cbOrderAtachment = new ComboBoxAttachment(valueTreeState,"orderSetting",*title.getOutputWidgetPtr()->getOrderCbPointer());
-    
-    // ======================== YAW PITCH ROLL GROUP
+
+    // ======================== AZIMUTH ELEVATION ROLL GROUP
     ypGroup.setText("Encoder settings");
     ypGroup.setTextLabelPosition (Justification::centredLeft);
     ypGroup.setColour (GroupComponent::outlineColourId, globalLaF.ClSeperator);
     ypGroup.setColour (GroupComponent::textColourId, Colours::white);
     addAndMakeVisible(&ypGroup);
     ypGroup.setVisible(true);
-    
-    addAndMakeVisible(&slMasterYaw);
-    slMasterYawAttachment = new SliderAttachment(valueTreeState,"masterYaw", slMasterYaw);
-    slMasterYaw.setSliderStyle (Slider::Rotary);
-    slMasterYaw.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slMasterYaw.setReverse(true);
-    slMasterYaw.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
-    slMasterYaw.setRotaryParameters(M_PI, 3*M_PI, false);
-    slMasterYaw.setTooltip("Master yaw angle");
-    slMasterYaw.setTextValueSuffix(CharPointer_UTF8 ("\xc2\xb0"));
-    
-    addAndMakeVisible(&slMasterPitch);
-    slMasterPitchAttachment = new SliderAttachment(valueTreeState,"masterPitch", slMasterPitch);
-    slMasterPitch.setSliderStyle (Slider::Rotary);
-    slMasterPitch.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slMasterPitch.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
-    slMasterPitch.setReverse(true);
-    slMasterPitch.setRotaryParameters(0.5*M_PI, 2.5*M_PI, false);
-    slMasterPitch.setTooltip("Master pitch angle");
-    slMasterPitch.setTextValueSuffix(CharPointer_UTF8 ("\xc2\xb0"));
-    
+
+    addAndMakeVisible(&slMasterAzimuth);
+    slMasterAzimuthAttachment = new SliderAttachment(valueTreeState, "masterAzimuth", slMasterAzimuth);
+    slMasterAzimuth.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
+    slMasterAzimuth.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
+    slMasterAzimuth.setReverse(true);
+    slMasterAzimuth.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
+    slMasterAzimuth.setRotaryParameters(M_PI, 3*M_PI, false);
+    slMasterAzimuth.setTooltip("Master azimuth angle");
+
+    addAndMakeVisible(&slMasterElevation);
+    slMasterElevationAttachment = new SliderAttachment(valueTreeState, "masterElevation", slMasterElevation);
+    slMasterElevation.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
+    slMasterElevation.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
+    slMasterElevation.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
+    slMasterElevation.setRotaryParameters(0.5*M_PI, 2.5*M_PI, false);
+    slMasterElevation.setTooltip("Master elevation angle");
+
     addAndMakeVisible(&slMasterRoll);
-    slMasterRollAttachment = new SliderAttachment(valueTreeState,"masterRoll", slMasterRoll);
-    slMasterRoll.setSliderStyle (Slider::Rotary);
+    slMasterRollAttachment = new SliderAttachment(valueTreeState, "masterRoll", slMasterRoll);
+    slMasterRoll.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slMasterRoll.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slMasterRoll.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
-    slMasterRoll.setRotaryParameters(0.5*M_PI, 2.5*M_PI, false);
+    slMasterRoll.setRotaryParameters(M_PI, 3*M_PI, false);
     slMasterRoll.setTooltip("Master roll angle");
-    slMasterRoll.setTextValueSuffix(CharPointer_UTF8 ("\xc2\xb0"));
-    
+
     addAndMakeVisible(&tbLockedToMaster);
-    tbLockedToMasterAttachment = new ButtonAttachment(valueTreeState,"lockedToMaster", tbLockedToMaster);
+    tbLockedToMasterAttachment = new ButtonAttachment(valueTreeState, "lockedToMaster", tbLockedToMaster);
     tbLockedToMaster.setName("locking");
     tbLockedToMaster.setButtonText("Lock Directions");
-    
-    
+
     // ====================== GRAB GROUP
     quatGroup.setText("Master");
     quatGroup.setTextLabelPosition (Justification::centredLeft);
@@ -119,23 +113,30 @@ MultiEncoderAudioProcessorEditor::MultiEncoderAudioProcessorEditor (MultiEncoder
     quatGroup.setColour (GroupComponent::textColourId, Colours::white);
     addAndMakeVisible(&quatGroup);
     quatGroup.setVisible(true);
-    
-    
-    
+
+
     // ================ LABELS ===================
     addAndMakeVisible(&lbNum);
     lbNum.setText("#");
-    
-    addAndMakeVisible(&lbYaw);
-    lbYaw.setText("Yaw");
-    
-    addAndMakeVisible(&lbPitch);
-    lbPitch.setText("Pitch");
-    
+
+    addAndMakeVisible(&lbAzimuth);
+    lbAzimuth.setText("Azimuth");
+
+    addAndMakeVisible(&lbElevation);
+    lbElevation.setText("Elevation");
+
     addAndMakeVisible(&lbGain);
     lbGain.setText("Gain");
-    
-    
+
+    addAndMakeVisible(&lbMasterAzimuth);
+    lbMasterAzimuth.setText("Azimuth");
+
+    addAndMakeVisible(&lbMasterElevation);
+    lbMasterElevation.setText("Elevation");
+
+    addAndMakeVisible(&lbMasterRoll);
+    lbMasterRoll.setText("Roll");
+
     setResizeLimits(590, 455, 800, 1200);
     startTimer(40);
 }
@@ -146,11 +147,11 @@ MultiEncoderAudioProcessorEditor::~MultiEncoderAudioProcessorEditor()
     setLookAndFeel(nullptr);
     for (int i = 0; i < maxNumberOfInputs; ++i)
     {
-        valueTreeState.removeParameterListener("yaw"+String(i), this);
-        valueTreeState.removeParameterListener("pitch"+String(i), this);
+        valueTreeState.removeParameterListener("azimuth"+String(i), this);
+        valueTreeState.removeParameterListener("elevation"+String(i), this);
     }
-    valueTreeState.removeParameterListener("masterYaw", this);
-    valueTreeState.removeParameterListener("masterPitch", this);
+    valueTreeState.removeParameterListener("masterAzimuth", this);
+    valueTreeState.removeParameterListener("masterElevation", this);
 }
 
 //==============================================================================
@@ -166,9 +167,9 @@ void MultiEncoderAudioProcessorEditor::timerCallback()
     processor.getMaxSize(maxInSize, maxOutSize);
     title.setMaxSize(maxInSize, maxOutSize);
     // ==========================================
-    
-    
-    
+
+
+
     const int nChIn = processor.input.getSize();
     if (nChIn != lastSetNumChIn)
     {
@@ -176,7 +177,7 @@ void MultiEncoderAudioProcessorEditor::timerCallback()
         lastSetNumChIn = nChIn;
         sphere.repaint();
     }
-    
+
     if (processor.soloMuteChanged)
     {
         if (! processor.soloMask.isZero()) {
@@ -193,12 +194,14 @@ void MultiEncoderAudioProcessorEditor::timerCallback()
             }
         }
         processor.soloMuteChanged = false;
+        sphere.repaint();
     }
-    
+
     if (processor.updateColours)
     {
         processor.updateColours = false;
         encoderList.updateColours();
+        sphere.repaint();
     }
 }
 
@@ -207,9 +210,9 @@ void MultiEncoderAudioProcessorEditor::mouseWheelOnSpherePannerMoved (SpherePann
     if (event.mods.isCommandDown() && event.mods.isAltDown())
         slMasterRoll.mouseWheelMove(event, wheel);
     else if (event.mods.isAltDown())
-        slMasterPitch.mouseWheelMove(event, wheel);
+        slMasterElevation.mouseWheelMove(event, wheel);
     else if (event.mods.isCommandDown())
-        slMasterYaw.mouseWheelMove(event, wheel);
+        slMasterAzimuth.mouseWheelMove(event, wheel);
 }
 void MultiEncoderAudioProcessorEditor::parameterChanged (const String &parameterID, float newValue)
 {
@@ -223,19 +226,19 @@ void MultiEncoderAudioProcessorEditor::resized()
     const int headerHeight = 60;
     const int footerHeight = 25;
     Rectangle<int> area (getLocalBounds());
-    
+
     Rectangle<int> footerArea (area.removeFromBottom (footerHeight));
     footer.setBounds(footerArea);
-    
+
     area.removeFromLeft(leftRightMargin);
     area.removeFromRight(leftRightMargin);
     Rectangle<int> headerArea = area.removeFromTop    (headerHeight);
     title.setBounds (headerArea);
     area.removeFromTop(10);
     area.removeFromBottom(5);
-    
+
     Rectangle<int> sliderRow;
-    
+
     // ============== SIDEBAR RIGHT ====================
     // =================================================
     Rectangle<int> sideBarArea (area.removeFromRight(220));
@@ -246,55 +249,62 @@ void MultiEncoderAudioProcessorEditor::resized()
     const int rotSliderWidth = 40;
     //const int labelHeight = 15;
     //const int labelWidth = 20;
-    
-    
-    // -------------- Yaw Pitch Roll Labels ------------------
+
+
+    // -------------- Azimuth Elevation Roll Labels ------------------
     Rectangle<int> yprArea (sideBarArea);
     ypGroup.setBounds (yprArea);
     yprArea.removeFromTop(25); //for box headline
-    
-    
+
+
     sliderRow = (yprArea.removeFromTop(15));
     lbNum.setBounds(sliderRow.removeFromLeft(22));
     sliderRow.removeFromLeft(5);
-    lbYaw.setBounds(sliderRow.removeFromLeft(rotSliderWidth));
-    sliderRow.removeFromLeft(rotSliderSpacing);
-    lbPitch.setBounds(sliderRow.removeFromLeft(rotSliderWidth));
-    sliderRow.removeFromLeft(rotSliderSpacing);
+    lbAzimuth.setBounds(sliderRow.removeFromLeft(rotSliderWidth));
+    sliderRow.removeFromLeft(rotSliderSpacing - 5);
+    lbElevation.setBounds(sliderRow.removeFromLeft(rotSliderWidth + 10));
+    sliderRow.removeFromLeft(rotSliderSpacing - 5);
     lbGain.setBounds(sliderRow.removeFromLeft(rotSliderWidth));
-    
+
     viewport.setBounds(yprArea);
-    
-    
-    
+
+
     // ============== SIDEBAR LEFT ====================
-    
-    const int grapperAreaHeight = 70;
+
+    const int masterAreaHeight = 90;
     area.removeFromRight(10); // spacing
-    
+
     Rectangle<int> sphereArea (area);
-    sphereArea.removeFromBottom(grapperAreaHeight);
-    
+    sphereArea.removeFromBottom(masterAreaHeight);
+
     if ((float)sphereArea.getWidth()/sphereArea.getHeight() > 1)
         sphereArea.setWidth(sphereArea.getHeight());
     else
         sphereArea.setHeight(sphereArea.getWidth());
     sphere.setBounds(sphereArea);
-    
+
     area.removeFromTop(sphereArea.getHeight());
-    
-    // ------------- Grabber ------------------------
-    Rectangle<int> grabberArea (area.removeFromTop(grapperAreaHeight));
-    quatGroup.setBounds (grabberArea);
-    grabberArea.removeFromTop(25); //for box headline
-    
-    sliderRow = (grabberArea.removeFromTop(rotSliderHeight));
-    slMasterYaw.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
+
+    // ------------- Master Grabber ------------------------
+    Rectangle<int> masterArea (area.removeFromTop(masterAreaHeight));
+    quatGroup.setBounds (masterArea);
+    masterArea.removeFromTop(25); //for box headline
+
+
+    sliderRow = (masterArea.removeFromBottom(12));
+    lbMasterAzimuth.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
+    sliderRow.removeFromLeft(rotSliderSpacing - 5);
+    lbMasterElevation.setBounds (sliderRow.removeFromLeft(rotSliderWidth + 10));
+    sliderRow.removeFromLeft(rotSliderSpacing - 5);
+    lbMasterRoll.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
     sliderRow.removeFromLeft(rotSliderSpacing);
-    slMasterPitch.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
+
+    sliderRow = masterArea;
+    slMasterAzimuth.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
+    sliderRow.removeFromLeft(rotSliderSpacing);
+    slMasterElevation.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
     sliderRow.removeFromLeft(rotSliderSpacing);
     slMasterRoll.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
     sliderRow.removeFromLeft(rotSliderSpacing);
     tbLockedToMaster.setBounds (sliderRow.removeFromLeft(100));
 }
-

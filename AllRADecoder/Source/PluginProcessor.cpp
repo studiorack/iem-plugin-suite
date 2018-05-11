@@ -4,17 +4,17 @@
  Authors: Daniel Rudrich, Franz Zotter
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
- 
+
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
- 
+
  The IEM plug-in suite is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
@@ -22,6 +22,8 @@
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+
+#include <cfloat>
 
 //==============================================================================
 AllRADecoderAudioProcessor::AllRADecoderAudioProcessor()
@@ -35,9 +37,9 @@ AllRADecoderAudioProcessor::AllRADecoderAudioProcessor()
                      #endif
                        ),
 #endif
-energyDistribution(Image::PixelFormat::ARGB, 200, 100, true), parameters(*this, nullptr) 
+energyDistribution(Image::PixelFormat::ARGB, 200, 100, true), rEVector(Image::PixelFormat::ARGB, 200, 100, true), parameters(*this, nullptr)
 {
-     
+
     parameters.createAndAddParameter ("inputOrderSetting", "Ambisonic Order", "",
                                       NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
                                       [](float value) {
@@ -51,14 +53,14 @@ energyDistribution(Image::PixelFormat::ARGB, 200, 100, true), parameters(*this, 
                                           else if (value >= 7.5f) return "7th";
                                           else return "Auto";},
                                       nullptr);
-    
+
     parameters.createAndAddParameter("useSN3D", "Normalization", "",
                                      NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value) {
                                          if (value >= 0.5f) return "SN3D";
                                          else return "N3D";
                                      }, nullptr);
-    
+
     parameters.createAndAddParameter ("decoderOrder", "Decoder Order", "",
                                       NormalisableRange<float> (0.0f, 6.0f, 1.0f), 0.0f,
                                       [](float value) {
@@ -70,74 +72,74 @@ energyDistribution(Image::PixelFormat::ARGB, 200, 100, true), parameters(*this, 
                                           else if (value >= 5.5f ) return "7th";
                                           else return "1st";},
                                       nullptr);
-    
+
     parameters.createAndAddParameter ("exportDecoder", "Export Decoder", "",
                                       NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                       [](float value) {
                                           if (value >= 0.5f) return "Yes";
                                           else return "No";
                                       }, nullptr);
-    
+
     parameters.createAndAddParameter ("exportLayout", "Export Layout", "",
                                       NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                       [](float value) {
                                           if (value >= 0.5f) return "Yes";
                                           else return "No";
                                       }, nullptr);
-    
 
-    
+
+
     // this must be initialised after all calls to createAndAddParameter().
     parameters.state = ValueTree (Identifier ("AllRADecoder"));
     // tip: you can also add other values to parameters.state, which are also saved and restored when the session is closed/reopened
-    
-    
+
+
     // get pointers to the parameters
     inputOrderSetting = parameters.getRawParameterValue ("inputOrderSetting");
     useSN3D = parameters.getRawParameterValue ("useSN3D");
     decoderOrder = parameters.getRawParameterValue ("decoderOrder");
     exportDecoder = parameters.getRawParameterValue ("exportDecoder");
     exportLayout = parameters.getRawParameterValue ("exportLayout");
-    
+
     // add listeners to parameter changes
     parameters.addParameterListener ("inputOrderSetting", this);
     parameters.addParameterListener ("useSN3D", this);
-    
+
     // global properties
     PropertiesFile::Options options;
     options.applicationName     = "AllRADecoder";
     options.filenameSuffix      = "settings";
     options.folderName          = "IEM";
     options.osxLibrarySubFolder = "Preferences";
-    
+
     properties = new PropertiesFile(options);
     lastDir = File(properties->getValue("presetFolder"));
-    
+
     undoManager.beginNewTransaction();
     loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (1.0f, 0.0f, 0.0f), 1), &undoManager);
     undoManager.beginNewTransaction();
     loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (1.0f, 45.0f, 0.0f), 2, true), &undoManager);
     undoManager.beginNewTransaction();
     loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (1.0f, 90.0f, 0.0f), 3), &undoManager);
-	undoManager.beginNewTransaction();
-	loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(1.0f, 135.0f, 0.0f), 4), &undoManager);
-	undoManager.beginNewTransaction();
-	loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(1.0f, 180.0f, 0.0f), 5), &undoManager);
-	undoManager.beginNewTransaction();
-	loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(1.0f, -135.0f, 0.0f), 6), &undoManager);
-	undoManager.beginNewTransaction();
+        undoManager.beginNewTransaction();
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(1.0f, 135.0f, 0.0f), 4), &undoManager);
+        undoManager.beginNewTransaction();
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(1.0f, 180.0f, 0.0f), 5), &undoManager);
+        undoManager.beginNewTransaction();
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(1.0f, -135.0f, 0.0f), 6), &undoManager);
+        undoManager.beginNewTransaction();
     loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (1.0f, -90.0f, 0.0f), 7), &undoManager);
     undoManager.beginNewTransaction();
     loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (1.0f, -45.0f, 0.0f), 8), &undoManager);
-	undoManager.beginNewTransaction();
-	loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(1.0f, 22.5f, 40.0f), 9), &undoManager);
-	undoManager.beginNewTransaction();
-	loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(1.0f, 142.5f, 40.0f), 10), &undoManager);
-	undoManager.beginNewTransaction();
-	loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(1.0f, -97.5f, 40.0f), 11), &undoManager);
+        undoManager.beginNewTransaction();
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(1.0f, 22.5f, 40.0f), 9), &undoManager);
+        undoManager.beginNewTransaction();
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(1.0f, 142.5f, 40.0f), 10), &undoManager);
+        undoManager.beginNewTransaction();
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(1.0f, -97.5f, 40.0f), 11), &undoManager);
 
-	undoManager.beginNewTransaction();
-	loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(1.0f, 0.0f, -90.0f), 12), &undoManager);
+        undoManager.beginNewTransaction();
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(1.0f, 0.0f, -90.0f), 12), &undoManager);
 
     loudspeakers.addListener(this);
     prepareLayout();
@@ -201,35 +203,37 @@ void AllRADecoderAudioProcessor::setCurrentProgram (int index)
     if (index == 1)
     {
         loudspeakers.removeListener(this);
-        
+
         undoManager.beginNewTransaction();
         loudspeakers.removeAllChildren(&undoManager);
-        
-        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(4.635f, 0.0f, 1.341f), 1), &undoManager);
-        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(4.600f, 2.023f, 1.381f), 2), &undoManager);
-        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(4.113f, 4.596f, 1.401f), 3), &undoManager);
-        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(1.574f, 5.028, 1.405), 4), &undoManager);
-        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(-1.289, 5.553f, 1.406), 5), &undoManager);
-        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(-4.376f, 3.873f, 1.358f), 6), &undoManager);
-        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(-4.636f, 0.016f, 1.371f), 7), &undoManager);
-        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(-4.331f, -3.860f, 1.353), 8), &undoManager);
-        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(-1.068f, -5.533f, 1.400f), 9), &undoManager);
-        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(1.821f, -4.943f, 1.376), 10), &undoManager);
-        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(4.481f, -4.456f, 1.387f), 11), &undoManager);
-        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(4.711f, -1.850f, 1.385f), 12), &undoManager);
-        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(4.230f, 1.766f, 3.828f), 13), &undoManager);
-        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(1.806f, 4.441f, 3.938f), 14), &undoManager);
-        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(-2.189f, 4.873f, 4.173f), 15), &undoManager);
-        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(-3.624f, 1.476f, 3.478f), 16), &undoManager);
-        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(-3.602f, -1.577f, 3.493f), 17), &undoManager);
-        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(-2.055f, -4.782f, 4.160f), 18), &undoManager);
-        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(1.925f, -4.210f, 3.854f), 19), &undoManager);
-        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(4.223f, -1.767f, 3.771f), 20), &undoManager);
-        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(1.368f, 1.456f, 4.423f), 21), &undoManager);
-        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(-1.252f, 1.324f, 4.153f), 22), &undoManager);
-        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(-1.267f, -1.342f, 4.142f), 23), &undoManager);
-        loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(1.399f, -1.325f, 4.392f), 24), &undoManager);
-        
+
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(4.63f, 0.0f, 0.0f), 1), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(5.0252f, -23.7f, 0.0f), 2), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(6.1677f, -48.17f, 0.0f), 3), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(5.26f, -72.17f, 0.0f), 4), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(5.7f, -103.0f, 0.0f), 5), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(5.84f, -138.0f, 0.0f), 6), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(4.63f, -180.0f, 0.0f), 7), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(5.8f, 138.0f, 0.0f), 8), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(5.63f, 101.0f, 0.0f), 9), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(5.3f, 70.0f, 0.0f), 10), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(6.3f, 45.0f, 0.0f), 11), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(5.1f, 21.0f, 0.0f), 12), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(5.2f, -22.0f, 28.0f), 13), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(5.4f, -68.0f, 28.0f), 14), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(5.1f, -114.0f, 28.0f), 15), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(4.43f, -158.0f, 28.0f), 16), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(4.45f, 156.0f, 28.0f), 17), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(5.9f, 113.0f, 28.0f), 18), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(5.2f, 65.0f, 28.0f), 19), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(5.2f, 22.0f, 28.0f), 20), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(3.6f, -47.0f, 56.0f), 21), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(3.3f, -133.0f, 56.0f), 22), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(3.3f, 133.0f, 56.0f), 23), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(3.55f, 43.0f, 56.0f), 24), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(1.0f, 0.0f, -90.0f), 24, true, 0.0f), &undoManager);
+        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(1.0f, 0.0f, 45.0f), 25, true, 1.0f), &undoManager);
+
         loudspeakers.addListener(this);
         prepareLayout();
         updateTable = true;
@@ -252,15 +256,13 @@ void AllRADecoderAudioProcessor::changeProgramName (int index, const String& new
 void AllRADecoderAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     checkInputAndOutput(this, *inputOrderSetting, 64, true);
-    
+
     ProcessSpec specs;
     specs.sampleRate = sampleRate;
     specs.maximumBlockSize = samplesPerBlock;
     specs.numChannels = 64;
-    
+
     decoder.prepare(specs);
-    decoder.setInputNormalization(*useSN3D >= 0.5f ? ReferenceCountedDecoder::Normalization::sn3d : ReferenceCountedDecoder::Normalization::n3d);
-    
 }
 
 void AllRADecoderAudioProcessor::releaseResources()
@@ -281,16 +283,31 @@ void AllRADecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBu
     checkInputAndOutput(this, *inputOrderSetting, 64, false);
     ScopedNoDenormals noDenormals;
 
+    // ====== is a decoder loaded? stop processing if not ===========
+    decoder.checkIfNewDecoderAvailable();
     if (decoder.getCurrentDecoder() == nullptr)
     {
         buffer.clear();
         return;
     }
-    
-    AudioBlock<float> ab = AudioBlock<float>(buffer);
-    ProcessContextReplacing<float> context (ab);
-    decoder.process(context);
-    
+    // ==============================================================
+
+    const int nChIn = jmin(decoder.getCurrentDecoder()->getNumInputChannels(), buffer.getNumChannels(), input.getNumberOfChannels());
+    const int nChOut = jmin(decoder.getCurrentDecoder()->getNumOutputChannels(), buffer.getNumChannels());
+
+    for (int ch = jmax(nChIn, nChOut); ch < buffer.getNumChannels(); ++ch) // clear all not needed channels
+        buffer.clear(ch, 0, buffer.getNumSamples());
+
+    decoder.setInputNormalization(*useSN3D >= 0.5f ? ReferenceCountedDecoder::Normalization::sn3d : ReferenceCountedDecoder::Normalization::n3d);
+
+    const int L = buffer.getNumSamples();
+    AudioBlock<float> inputAudioBlock = AudioBlock<float>(buffer.getArrayOfWritePointers(), nChIn, L);
+    AudioBlock<float> outputAudioBlock = AudioBlock<float>(buffer.getArrayOfWritePointers(), nChOut, L);
+    ProcessContextNonReplacing<float> decoderContext (inputAudioBlock, outputAudioBlock);
+    decoder.process(decoderContext);
+
+    for (int ch = nChOut; ch < nChIn; ++ch) // clear all not needed channels
+        buffer.clear(ch, 0, buffer.getNumSamples());
 }
 
 //==============================================================================
@@ -312,7 +329,7 @@ void AllRADecoderAudioProcessor::getStateInformation (MemoryBlock& destData)
         parameters.state.removeChild(parameters.state.getChildWithName("Loudspeakers"), nullptr);
     }
     parameters.state.appendChild(loudspeakers, nullptr);
-    
+
     ScopedPointer<XmlElement> xml (parameters.state.createXml());
     copyXmlToBinary (*xml, destData);
 }
@@ -326,7 +343,7 @@ void AllRADecoderAudioProcessor::setStateInformation (const void* data, int size
     {
         if (xmlState->hasTagName (parameters.state.getType()))
             parameters.state = ValueTree::fromXml (*xmlState);
-        
+
         XmlElement* lsps (xmlState->getChildByName("Loudspeakers"));
         if (lsps != nullptr)
         {
@@ -351,15 +368,15 @@ void AllRADecoderAudioProcessor::setStateInformation (const void* data, int size
             calculateDecoder();
         }
     }
-    
+
 }
 
 //==============================================================================
 void AllRADecoderAudioProcessor::parameterChanged (const String &parameterID, float newValue)
 {
     DBG("Parameter with ID " << parameterID << " has changed. New value: " << newValue);
-    
-    if (parameterID == "inputChannelsSetting" || parameterID == "outputOrderSetting" )
+
+    if (parameterID == "inputOrderSetting" || parameterID == "outputOrderSetting" )
         userChangedIOSettings = true;
     else if (parameterID == "useSN3D")
     {
@@ -385,14 +402,14 @@ Result AllRADecoderAudioProcessor::verifyLoudspeakers()
     const int nLsps = loudspeakers.getNumChildren();
     if (nLsps == 0)
         return Result::fail("There are no loudspeakers.");
-    
+
     for (int i = 0; i < nLsps; ++i)
     {
         ValueTree lsp = loudspeakers.getChild(i);
         if (! lsp.isValid())
             return Result::fail("Something went wrong. Try again!");
-        
-        
+
+
         if (lsp.hasProperty("Azimuth"))
         {
             const var azimuth = lsp.getProperty("Azimuth", var());
@@ -401,8 +418,8 @@ Result AllRADecoderAudioProcessor::verifyLoudspeakers()
         }
         else
             return Result::fail("Loudspeaker #" + String(i+1) + ": Missing 'Azumith' attribute.");
-        
-        
+
+
         if (lsp.hasProperty("Elevation")) //mandatory
         {
             const var elevation = lsp.getProperty("Elevation", var());
@@ -411,8 +428,8 @@ Result AllRADecoderAudioProcessor::verifyLoudspeakers()
         }
         else
             return Result::fail("Loudspeaker #" + String(i+1) + ": Missing 'Elevation' attribute.");
-        
-        
+
+
         if (lsp.hasProperty("Radius")) //optional
         {
             const var radius = lsp.getProperty("Radius", var());
@@ -421,17 +438,17 @@ Result AllRADecoderAudioProcessor::verifyLoudspeakers()
             if ((float) radius < FLT_EPSILON)
                 return Result::fail("Loudspeaker #" + String(i+1) + ": Radius has to be greater than zero.");
         }
-        
-        bool isVirt = false;
-        if (lsp.hasProperty("Virtual")) //optional
+
+        bool isImaginary = false;
+        if (lsp.hasProperty("IsImaginary")) //optional
         {
-            const var virt = lsp.getProperty("Virtual", var());
-            if (! virt.isBool())
-                return Result::fail("Loudspeaker #" + String(i+1) + ": 'Virtual' value is not a bool.");
-            isVirt = virt;
+            const var imaginary = lsp.getProperty("IsImaginary", var());
+            if (! imaginary.isBool())
+                return Result::fail("Loudspeaker #" + String(i+1) + ": 'IsImaginary' value is not a bool.");
+            isImaginary = imaginary;
         }
-        
-        if (! isVirt)
+
+        if (! isImaginary)
         {
             if (lsp.hasProperty("Channel")) //mandatory
             {
@@ -443,7 +460,7 @@ Result AllRADecoderAudioProcessor::verifyLoudspeakers()
                 return Result::fail("Loudspeaker #" + String(i+1) + ": Missing 'Channel' attribute.");
         }
     }
-    
+
     return Result::ok();
 }
 
@@ -451,18 +468,18 @@ Result AllRADecoderAudioProcessor::verifyLoudspeakers()
 
 Result AllRADecoderAudioProcessor::calculateTris()
 {
-	return Result::ok();
+        return Result::ok();
 }
 
-ValueTree AllRADecoderAudioProcessor::createLoudspeakerFromCartesian (Vector3D<float> cartCoordinates, int channel, bool isVirtual, float gain)
+ValueTree AllRADecoderAudioProcessor::createLoudspeakerFromCartesian (Vector3D<float> cartCoordinates, int channel, bool isImaginary, float gain)
 {
     Vector3D<float> sphericalCoordinates = cartesianToSpherical(cartCoordinates);
-    return createLoudspeakerFromSpherical(sphericalCoordinates, channel, isVirtual, gain);
+    return createLoudspeakerFromSpherical(sphericalCoordinates, channel, isImaginary, gain);
 }
 
-ValueTree AllRADecoderAudioProcessor::createLoudspeakerFromSpherical (Vector3D<float> sphericalCoordinates, int channel, bool isVirtual, float gain)
+ValueTree AllRADecoderAudioProcessor::createLoudspeakerFromSpherical (Vector3D<float> sphericalCoordinates, int channel, bool isImaginary, float gain)
 {
-    return DecoderHelper::createLoudspeaker(sphericalCoordinates.y, sphericalCoordinates.z, sphericalCoordinates.x, channel, isVirtual, gain);
+    return DecoderHelper::createLoudspeaker(sphericalCoordinates.y, sphericalCoordinates.z, sphericalCoordinates.x, channel, isImaginary, gain);
 }
 
 Vector3D<float> AllRADecoderAudioProcessor::cartesianToSpherical(Vector3D<float> cartvect)
@@ -514,12 +531,12 @@ void AllRADecoderAudioProcessor::convertLoudspeakersToArray()
         spherical.x = isImaginary ? (float) (*it).getProperty("Radius") : 1.0f;
         spherical.y = (*it).getProperty("Azimuth");
         spherical.z = (*it).getProperty("Elevation");
-        
+
         Vector3D<float> cart = sphericalToCartesian(spherical);
-        
+
         R3 newPoint {cart.x, cart.y, cart.z};
         newPoint.lspNum = i;
-        
+
         if (isImaginary) {
             imaginaryFlags.setBit(i);
             ++imaginaryCount;
@@ -527,17 +544,18 @@ void AllRADecoderAudioProcessor::convertLoudspeakersToArray()
         }
         else
             newPoint.realLspNum = i - imaginaryCount;
-        
+
         newPoint.azimuth = (*it).getProperty("Azimuth");
         newPoint.elevation = (*it).getProperty("Elevation");
-        
+        newPoint.radius = (*it).getProperty("Radius");
+
         newPoint.isImaginary = isImaginary;
         newPoint.gain = (*it).getProperty("Gain");
         newPoint.channel = (*it).getProperty("Channel");
-        
+
         if (newPoint.channel > highestChannelNumber)
             highestChannelNumber = newPoint.channel;
-        
+
         DBG(newPoint.lspNum << " \t " << newPoint.realLspNum << " \t " << newPoint.gain << " \t " << newPoint.x << " \t " << newPoint.y << " \t " << newPoint.z);
         points.push_back(newPoint);
         ++i;
@@ -567,7 +585,7 @@ void AllRADecoderAudioProcessor::prepareLayout()
         newMessage.text = "The layout is ready to calculate a decoder.";
         messageToEditor = newMessage;
         updateMessage = true;
-        
+
         isLayoutReady = true;
     }
 }
@@ -577,7 +595,7 @@ Result AllRADecoderAudioProcessor::checkLayout()
     points.clear();
     triangles.clear();
     normals.clear();
-    
+
     // Check if loudspeakers are stored properly
     Result res = verifyLoudspeakers();
     if (res.failed())
@@ -585,39 +603,43 @@ Result AllRADecoderAudioProcessor::checkLayout()
         updateLoudspeakerVisualization = true;
         return Result::fail(res.getErrorMessage());
     }
-    
+
     convertLoudspeakersToArray();
-    
+
     // Check for duplicates
     std::vector<int> outx;
     std::vector<R3> noDuplicates;
     const int nDuplicates = de_duplicateR3(points, outx, noDuplicates);
-    
+
     if (nDuplicates > 0)
     {
         updateLoudspeakerVisualization = true;
         return Result::fail("ERROR 1: There are duplicate loudspeakers.");
     }
-    
+
     const int nLsps = loudspeakers.getNumChildren();
     if (nLsps < 4)
     {
         updateLoudspeakerVisualization = true;
         return Result::fail("ERROR 2: There are less than 4 loudspeakers! Add some more!");
     }
-    
+
     // calculate convex hull
-    NewtonApple_hull_3D(points, triangles);
-    
+    const int result = NewtonApple_hull_3D(points, triangles);
+    if (result != 1)
+    {
+        return Result::fail("ERROR: An error occured! The layout might be broken somehow.");
+    }
+
     // normalise normal vectors
     for (int i = 0; i < triangles.size(); ++i)
     {
         const Tri tri = triangles[i];
         normals.push_back(Vector3D<float>(tri.er, tri.ec, tri.ez).normalised());
     }
-    
+
     updateLoudspeakerVisualization = true;
-    
+
     Array<int> usedIndices;
     // calculate centroid
     Vector3D<float> centroid {0.0f, 0.0f, 0.0f};
@@ -628,28 +650,28 @@ Result AllRADecoderAudioProcessor::checkLayout()
         usedIndices.add(i);
     }
     centroid /= nLsps;
-    
+
     DBG("centroid: x: " << centroid.x << " y: " << centroid.y << " z: " << centroid.z);
     for (int i = 0; i < triangles.size(); ++i)
     {
         Tri tri = triangles[i];
         Vector3D<float> a {points[tri.a].x, points[tri.a].y, points[tri.a].z};
-        
+
         usedIndices.removeFirstMatchingValue(tri.a);
         usedIndices.removeFirstMatchingValue(tri.b);
         usedIndices.removeFirstMatchingValue(tri.c);
-        
+
         const float dist = normals[i] * (a - centroid);
         if (dist < 0.001f) // too flat!
         {
             return Result::fail("ERROR 3: Convex hull is too flat. Check coordinates and/or try adding imaginary loudspeakers.");
         }
-        
+
         if (normals[i] * a < 0.001f) // origin is not within hull
         {
             return Result::fail("ERROR 4: Point of origin is not within the convex hull. Try adding imaginary loudspeakers.");
         }
-        
+
         const int numberOfImaginaryLspsInTriangle = (int) imaginaryFlags[points[tri.a].lspNum] + (int) imaginaryFlags[points[tri.b].lspNum] + (int) imaginaryFlags[points[tri.c].lspNum];
         if (numberOfImaginaryLspsInTriangle > 1)
         {
@@ -659,8 +681,8 @@ Result AllRADecoderAudioProcessor::checkLayout()
 
     if (usedIndices.size() > 0)
         return Result::fail("ERROR 6: There is at least one loudspeaker which is not part of the convex hull.");
-    
-    
+
+
     if (imaginaryFlags.countNumberOfSetBits() == nLsps)
         return Result::fail("ERROR 7: There are only imaginary loudspeakers.");
 
@@ -672,14 +694,14 @@ Result AllRADecoderAudioProcessor::checkLayout()
             const int channel = points[i].channel;
             if (channel < 1 || channel > 64)
                 return Result::fail("ERROR 8: A channel number is smaller than 1 or greater than 64.");
-            
+
             if (routing.contains(channel))
                 return Result::fail("ERROR 9: Channel number duplicates: a channel number may occur only once.");
             else
                 routing.add(channel);
         }
     }
-    
+
     return Result::ok();
 }
 
@@ -688,14 +710,14 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
 {
     if (! isLayoutReady)
         return Result::fail("Layout not ready!");
-    
+
     const int N = roundToInt(*decoderOrder) + 1;
     const int nCoeffs = square(N+1);
     const int nLsps = (int) points.size();
     const int nRealLsps = nLsps - imaginaryFlags.countNumberOfSetBits();
     DBG("Number of loudspeakers: " << nLsps << ". Number of real loudspeakers: " << nRealLsps);
     Matrix<float> decoderMatrix(nRealLsps, nCoeffs);
-    
+
     Array<Matrix<float>> inverseArray;
     for (int t = 0; t < triangles.size(); ++t) //iterate over each triangle
     {
@@ -715,21 +737,21 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
                 L(2, i) *= factor;
             }
         }
-        
+
         inverseArray.add(getInverse(L));
     }
-    
-    
+
+
     std::vector<float> sh;
     sh.resize(nCoeffs);
-    
+
     for (int i = 0; i < 5200; ++i) //iterate over each tDesign point
     {
         const Matrix<float> source (3, 1, tDesign5200[i]);
-        SHEval(N, source(0,0), source(1,0), source(2,0), &sh[0]);
-        
+        SHEval(N, source(0,0), source(1,0), source(2,0), &sh[0], false);
+
         const Matrix<float> gains (3, 1);
-        
+
         int t = 0;
         for (; t < triangles.size(); ++t) //iterate over each triangle
         {
@@ -749,10 +771,10 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
                 {
                     const int imagGainIdx = imagFlags.indexOf(true); // which of the three corresponds to the imaginary loudspeaker
                     const int imaginaryLspIdx = triangleIndices[imagGainIdx];
-                    
+
                     Array<int> realGainIndex (0, 1, 2);
                     realGainIndex.remove(imagGainIdx);
-                    
+
                     Array<int> connectedLsps;
                     connectedLsps.add(imaginaryLspIdx);
                     for (int k = 0; k < triangles.size(); ++k) //iterate over each triangle
@@ -768,15 +790,15 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
                             }
                         }
                     }
-                    
+
                     connectedLsps.remove(0); // remove imaginary loudspeaker again
                     Array<float> gainVector;
                     gainVector.resize(connectedLsps.size());
-                    
+
                     const float kappa = getKappa(gains(imagGainIdx, 0), gains(realGainIndex[0], 0), gains(realGainIndex[1], 0), connectedLsps.size());
-                    
+
                     gainVector.fill(gains(imagGainIdx, 0) * (points[imaginaryLspIdx].gain) * kappa);
-                    
+
                     for (int j = 0; j < 2; ++j)
                     {
                         const int idx = connectedLsps.indexOf(triangleIndices[realGainIndex[j]]);
@@ -785,7 +807,7 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
 
                     for (int n = 0; n < connectedLsps.size(); ++n)
                         FloatVectorOperations::addWithMultiply(&decoderMatrix(points[connectedLsps[n]].realLspNum, 0), &sh[0], gainVector[n], nCoeffs);
-                    
+
                 }
                 else
                 {
@@ -806,7 +828,7 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
         const R3 point = points[i];
         if (! point.isImaginary)
         {
-            SHEval(N, point.x, point.y, point.z, &sh[0]);
+            SHEval(N, point.x, point.y, point.z, &sh[0]); // encoding at loudspeaker position
             float sumOfSquares = 0.0f;
             for (int m = 0; m < nRealLsps; ++m)
             {
@@ -820,10 +842,18 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
                 maxGain = sumOfSquares;
         }
     }
-    
+
     decoderMatrix = decoderMatrix * (1.0f / maxGain);
-   
-    // calculate energy
+
+    // calculate energy and rE vector
+    Array<Vector3D<float>> realLspsCoordinates;
+    realLspsCoordinates.resize(nRealLsps);
+    for (int i = 0; i < nLsps; ++i)
+    {
+        if (! points[i].isImaginary)
+            realLspsCoordinates.set(points[i].realLspNum, Vector3D<float>(points[i].x, points[i].y, points[i].z).normalised()); // zero count
+    }
+
     const int w = energyDistribution.getWidth();
     const float wHalf = w / 2;
     const int h = energyDistribution.getHeight();
@@ -837,25 +867,36 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
             Vector3D<float> spher (1.0f, 0.0f, 0.0f);
             HammerAitov::XYToSpherical((x - wHalf) / wHalf, (hHalf - y) / hHalf, spher.y, spher.z);
             Vector3D<float> cart = sphericalInRadiansToCartesian(spher);
-            SHEval(N, cart.x, cart.y, cart.z, &sh[0]);
-            
+            SHEval(N, cart.x, cart.y, cart.z, &sh[0]); // encoding a source
+
+            Vector3D<float> rE (0.0f, 0.0f, 0.0f);
             float sumOfSquares = 0.0f;
             for (int m = 0; m < nRealLsps; ++m)
             {
                 float sum = 0.0f;
                 for (int n = 0; n < nCoeffs; ++n)
                     sum += (sh[n] * decoderMatrix(m, n));
-                sumOfSquares += square(sum);
+                const float sumSquared = square(sum);
+                rE = rE + realLspsCoordinates[m] * sumSquared;
+                sumOfSquares += sumSquared;
             }
+
+            rE /= sumOfSquares + FLT_EPSILON;
+            const float width = 2.0f * acos(jmin(1.0f, rE.length()));
+
             const float lvl = 0.5f * Decibels::gainToDecibels(sumOfSquares);
             if (lvl > maxLvl)
                 maxLvl = lvl;
             if (lvl < minLvl)
                 minLvl = lvl;
             const float map = jlimit(-0.5f, 0.5f, 0.5f * 0.16666667f * Decibels::gainToDecibels(sumOfSquares)) + 0.5f;
-            
+
+            const float reMap = jlimit(0.0f, 1.0f, width / (float) M_PI);
+
+            Colour rEPixelColour = Colours::limegreen.withMultipliedAlpha(reMap);
             Colour pixelColour = Colours::red.withMultipliedAlpha(map);
 
+            rEVector.setPixelAt(x, y, rEPixelColour);
             energyDistribution.setPixelAt(x, y, pixelColour);
 
             if (sumOfSquares > maxSumOfSuares)
@@ -863,9 +904,8 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
         }
 
 
-
     DBG("min: " << minLvl << " max: " << maxLvl);
-            
+
     updateLoudspeakerVisualization = true;
 
     Colour colormapData[8];
@@ -877,8 +917,8 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
     colormapData[5] = Colour::fromFloatRGBA(0.8f, 0.620f, 0.077f, 0.8f);
     colormapData[6] = Colour::fromFloatRGBA(0.8f, 0.620f, 0.077f, 1.0f);
     colormapData[7] = Colours::red;
-    
-    
+
+
     ReferenceCountedDecoder::Ptr newDecoder = new ReferenceCountedDecoder("Decoder", "A " + getOrderString(N) + " order Ambisonics decoder using the AllRAD approach.", (int) decoderMatrix.getSize()[0], (int) decoderMatrix.getSize()[1]);
     newDecoder->getMatrix() = decoderMatrix;
     ReferenceCountedDecoder::Settings newSettings;
@@ -887,7 +927,7 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
     newSettings.weightsAlreadyApplied = false;
 
     newDecoder->setSettings(newSettings);
-    
+
     Array<int>& routing = newDecoder->getRoutingArrayReference();
     routing.resize(nRealLsps);
     for (int i = 0; i < nLsps; ++i)
@@ -895,20 +935,22 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
         if (! points[i].isImaginary)
             routing.set(points[i].realLspNum, points[i].channel - 1); // zero count
     }
-    
+
     decoder.setDecoder(newDecoder);
     decoderConfig = newDecoder;
-    DBG("finished");
+
     updateChannelCount = true;
-    
+
+    DBG("finished");
+
     MailBox::Message newMessage;
     newMessage.messageColour = Colours::green;
     newMessage.headline = "Decoder created";
     newMessage.text = "The decoder was calculated successfully.";
     messageToEditor = newMessage;
     updateMessage = true;
-    
-    
+
+
     return Result::ok();
 }
 
@@ -924,19 +966,19 @@ Matrix<float> AllRADecoderAudioProcessor::getInverse(Matrix<float> A)
     const float det = A (0, 0) * (A (1, 1) * A (2, 2) - A (1, 2) * A (2, 1))
     + A (0, 1) * (A (1, 2) * A (2, 0) - A (1, 0) * A (2, 2))
     + A (0, 2) * (A (1, 0) * A (2, 1) - A (1, 1) * A (2, 0));
-    
+
     const float factor = 1.0 / det;
-    
+
     Matrix<float> inverse(3, 3);
-    
+
     inverse(0, 0) = (A (1, 1) * A (2, 2) - A (1, 2) * A (2, 1)) * factor;
     inverse(0, 1) = (-A (0, 1) * A (2, 2) + A (0, 2) * A (2, 1)) * factor;
     inverse(0, 2) = (A (0, 1) * A (1, 2) - A (0, 2) * A (1, 1)) * factor;
-    
+
     inverse(1, 0) = (-A (1, 0) * A (2, 2) + A (1, 2) * A (2, 0)) * factor;
     inverse(1, 1) = (A (0, 0) * A (2, 2) - A (0, 2) * A (2, 0)) * factor;
     inverse(1, 2) = (-A (0, 0) * A (1, 2) + A (0, 2) * A (1, 0)) * factor;
-    
+
     inverse(2, 0) = ( A (1, 0) * A (2, 1) - A (1, 1) * A (2, 0)) * factor;
     inverse(2, 1) = (-A (0, 0) * A (2, 1) + A (0, 1) * A (2, 0)) * factor;
     inverse(2, 2) = ( A (0, 0) * A (1, 1) - A (0, 1) * A (1, 0)) * factor;
@@ -958,7 +1000,7 @@ void AllRADecoderAudioProcessor::saveConfigurationToFile(File destination)
         updateMessage = true;
         return;
     }
-    
+
     DynamicObject* jsonObj = new DynamicObject();
     jsonObj->setProperty("Name", var("All-Round Ambisonic decoder (AllRAD) and loudspeaker layout"));
     char versionString[10];
@@ -981,11 +1023,11 @@ void AllRADecoderAudioProcessor::saveConfigurationToFile(File destination)
             updateMessage = true;
             return;
         }
-        
+
     }
     if (*exportLayout >= 0.5f)
         jsonObj->setProperty("LoudspeakerLayout", convertLoudspeakersToVar());
-    
+
     String jsonString = JSON::toString(var(jsonObj));
     DBG(jsonString);
     if (destination.replaceWithText(jsonString))
@@ -1046,22 +1088,22 @@ var AllRADecoderAudioProcessor::convertLoudspeakersToVar ()
     DynamicObject* obj = new DynamicObject(); // loudspeaker layout object
     obj->setProperty("Name", "a loudspeaker layout");
     obj->setProperty("Description", "description");
-    
+
     var loudspeakerArray;
-    
+
     const int nLsp = (int) points.size();
     for (int i = 0; i < nLsp; ++i)
     {
         R3 lsp = points[i];
         DynamicObject* loudspeaker = new DynamicObject(); // loudspeaker which get's added to the loudspeakerArray var
-        
+
         loudspeaker->setProperty("Azimuth", lsp.azimuth);
         loudspeaker->setProperty("Elevation", lsp.elevation);
-        loudspeaker->setProperty("Radius", sqrt(square(lsp.x) + square(lsp.y) + square(lsp.z)));
+        loudspeaker->setProperty("Radius", lsp.radius);
         loudspeaker->setProperty("IsImaginary", lsp.isImaginary);
         loudspeaker->setProperty("Channel", lsp.channel);
         loudspeaker->setProperty("Gain", lsp.gain);
-        
+
         loudspeakerArray.append(var(loudspeaker));
     }
 
@@ -1073,7 +1115,7 @@ void AllRADecoderAudioProcessor::loadConfiguration (const File& configFile)
 {
     undoManager.beginNewTransaction();
     loudspeakers.removeAllChildren(&undoManager);
-    
+
     Result result = DecoderHelper::parseFileForLoudspeakerLayout (configFile, loudspeakers, undoManager);
     if (!result.wasOk())
     {
@@ -1085,4 +1127,16 @@ void AllRADecoderAudioProcessor::loadConfiguration (const File& configFile)
         messageToEditor = newMessage;
         updateMessage = true;
     }
+}
+
+//==============================================================================
+pointer_sized_int AllRADecoderAudioProcessor::handleVstPluginCanDo (int32 index,
+                                                                     pointer_sized_int value, void* ptr, float opt)
+{
+    auto text = (const char*) ptr;
+    auto matches = [=](const char* s) { return strcmp (text, s) == 0; };
+
+    if (matches ("wantsChannelCountNotifications"))
+        return 1;
+    return 0;
 }

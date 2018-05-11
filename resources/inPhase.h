@@ -248,18 +248,6 @@ const float inPhase7[64] = {
     1.5540015540015540e-04f
 };
 
-//as max re attenuates higher orders, encoding and sampling at same directions won't result the same amplitude
-//these are the correction factors for that problem
-//const float inPhaseCorrection[8] = {
-//    1.0f,
-//    1.463794976147894f,
-//    1.687692544652202f,
-//    1.818864885628318f,
-//    1.904961155192695f,
-//    1.965800739863925f,
-//    2.011075537215868f,
-//    2.046081944498225f
-//};
 
 inline void multiplyInPhase(const int N, float *data) {
     switch (N) {

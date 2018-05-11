@@ -4,17 +4,17 @@
  Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
- 
+
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
- 
+
  The IEM plug-in suite is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
@@ -22,7 +22,6 @@
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
-
 
 //==============================================================================
 DualDelayAudioProcessor::DualDelayAudioProcessor()
@@ -36,7 +35,7 @@ DualDelayAudioProcessor::DualDelayAudioProcessor()
 #endif
                   ),
 #endif
-parameters(*this,nullptr), LFOLeft([] (float phi) { return std::sin(phi);}), LFORight([] (float phi) { return std::sin(phi);})
+parameters(*this,nullptr), LFOLeft([] (float phi) { return std::sin(phi); }), LFORight([] (float phi) { return std::sin(phi); })
 {
     parameters.createAndAddParameter("orderSetting", "Ambisonics Order", "",
                                      NormalisableRange<float>(0.0f, 8.0f, 1.0f), 0.0f,
@@ -51,7 +50,7 @@ parameters(*this,nullptr), LFOLeft([] (float phi) { return std::sin(phi);}), LFO
                                          else if (value >= 7.5f) return "7th";
                                          else return "Auto";
                                      }, nullptr);
-    
+
     parameters.createAndAddParameter ("useSN3D", "Normalization", "",
                                       NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                       [](float value)
@@ -59,81 +58,81 @@ parameters(*this,nullptr), LFOLeft([] (float phi) { return std::sin(phi);}), LFO
                                           if (value >= 0.5f ) return "SN3D";
                                           else return "N3D";
                                       }, nullptr);
-    
-    
+
+
     parameters.createAndAddParameter("dryGain", "Dry amount", "dB",
                                      NormalisableRange<float> (-60.0f, 0.0f, 0.1f), 0.0f,
-                                     [](float value) {return (value >= -59.9f) ? String(value) : "-inf";}, nullptr);
+                                     [](float value) { return (value >= -59.9f) ? String(value, 1) : "-inf"; }, nullptr);
     parameters.createAndAddParameter("wetGainL", "Wet amount left", "dB",
                                      NormalisableRange<float> (-60.0f, 0.0f, 0.1f), -6.0f,
-                                     [](float value) {return (value >= -59.9f) ? String(value) : "-inf";}, nullptr);
+                                     [](float value) { return (value >= -59.9f) ? String(value, 1) : "-inf"; }, nullptr);
     parameters.createAndAddParameter("wetGainR", "Wet amount right", "dB",
                                      NormalisableRange<float> (-60.0f, 0.0f, 0.1f), -6.0f,
-                                     [](float value) {return (value >= -59.9f) ? String(value) : "-inf";}, nullptr);
-    
+                                     [](float value) { return (value >= -59.9f) ? String(value, 1) : "-inf"; }, nullptr);
+
     parameters.createAndAddParameter("delayTimeL", "delay time left", "ms",
                                      NormalisableRange<float> (10.0f, 500.0f, 0.1f), 500.0f,
-                                     [](float value) {return String(value);}, nullptr);
+                                     [](float value) { return String(value, 1); }, nullptr);
     parameters.createAndAddParameter("delayTimeR", "delay time right", "ms",
                                      NormalisableRange<float> (10.0f, 500.0f, 0.1f), 375.0f,
-                                     [](float value) {return String(value);}, nullptr);
-    
-    parameters.createAndAddParameter("rotationL", "rotation left", "degree",
+                                     [](float value) { return String(value, 1); }, nullptr);
+
+    parameters.createAndAddParameter("rotationL", "rotation left", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float> (-180.0f, 180.0f, 0.1f), 10.0f,
-                                     [](float value) {return String(value);}, nullptr);
-    parameters.createAndAddParameter("rotationR", "rotation right", "degree",
+                                     [](float value) { return String(value, 1); }, nullptr);
+    parameters.createAndAddParameter("rotationR", "rotation right", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float> (-180.0f, 180.0f, 0.1f), -7.5f,
-                                     [](float value) {return String(value);}, nullptr);
-    
-    
+                                     [](float value) { return String(value, 1); }, nullptr);
+
+
     parameters.createAndAddParameter("LPcutOffL", "lowpass frequency left", "Hz",
-                                     NormalisableRange<float> (20.0f, 20000.0f, 1.0f,0.2), 100.0f,
-                                     [](float value) {return String(value);}, nullptr);
+                                     NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.2), 100.0f,
+                                     [](float value) { return String(value, 1); }, nullptr);
     parameters.createAndAddParameter("LPcutOffR", "lowpass frequency right", "Hz",
-                                     NormalisableRange<float> (20.0f, 20000.0f, 1.0f,0.2), 100.0f,
-                                     [](float value) {return String(value);}, nullptr);
-    
+                                     NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.2), 100.0f,
+                                     [](float value) { return String(value, 1); }, nullptr);
+
     parameters.createAndAddParameter("HPcutOffL", "highpass frequency left", "Hz",
-                                     NormalisableRange<float> (20.0f, 20000.0f, 1.0f,0.2), 20000.0f,
-                                     [](float value) {return String(value);}, nullptr);
+                                     NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.2), 20000.0f,
+                                     [](float value) { return String(value, 1); }, nullptr);
     parameters.createAndAddParameter("HPcutOffR", "highpass frequency right", "Hz",
-                                     NormalisableRange<float> (20.0f, 20000.0f, 1.0f,0.2), 20000.0f,
-                                     [](float value) {return String(value);}, nullptr);
-    
-    
+                                     NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.2), 20000.0f,
+                                     [](float value) { return String(value, 1); }, nullptr);
+
+
     parameters.createAndAddParameter("feedbackL", "feedback left", "dB",
                                      NormalisableRange<float> (-60.0f, 0.0f, 0.1f), -8.0f,
-                                     [](float value) {return (value >= -59.9f) ? String(value) : "-inf";}, nullptr);
+                                     [](float value) { return (value >= -59.9f) ? String(value, 1) : "-inf"; }, nullptr);
     parameters.createAndAddParameter("feedbackR", "feedback right", "dB",
                                      NormalisableRange<float> (-60.0f, 0.0f, 0.1f), -8.0f,
-                                     [](float value) {return (value >= -59.9f) ? String(value) : "-inf";}, nullptr);
-    
+                                     [](float value) { return (value >= -59.9f) ? String(value, 1) : "-inf"; }, nullptr);
+
     parameters.createAndAddParameter("xfeedbackL", "cross feedback left", "dB",
                                      NormalisableRange<float> (-60.0f, 0.0f, 0.1f), -20.0f,
-                                     [](float value) {return (value >= -59.9f) ? String(value) : "-inf";}, nullptr);
+                                     [](float value) { return (value >= -59.9f) ? String(value, 1) : "-inf"; }, nullptr);
     parameters.createAndAddParameter("xfeedbackR", "cross feedback right", "dB",
                                      NormalisableRange<float> (-60.0f, 0.0f, 0.1f), -20.0f,
-                                     [](float value) {return (value >= -59.9f) ? String(value) : "-inf";}, nullptr);
-    
+                                     [](float value) { return (value >= -59.9f) ? String(value, 1) : "-inf"; }, nullptr);
+
     parameters.createAndAddParameter("lfoRateL", "LFO left rate", "Hz",
                                      NormalisableRange<float> (0.0f, 10.0f, 0.01f), 0.0f,
-                                     [](float value) {return String(value);}, nullptr);
+                                     [](float value) { return String(value, 2); }, nullptr);
     parameters.createAndAddParameter("lfoRateR", "LFO right rate", "Hz",
                                      NormalisableRange<float> (0.0f, 10.0f, 0.01f), 0.0f,
-                                     [](float value) {return String(value);}, nullptr);
-    
+                                     [](float value) { return String(value, 2); }, nullptr);
+
     parameters.createAndAddParameter("lfoDepthL", "LFO left depth", "ms",
                                      NormalisableRange<float> (0.0f, 1.0f, 0.01f), 0.0f,
-                                     [](float value) {return String(value);}, nullptr);
+                                     [](float value) { return String(value, 2); }, nullptr);
     parameters.createAndAddParameter("lfoDepthR", "LFO right depth", "ms",
                                      NormalisableRange<float> (0.0f, 1.0f, 0.01f), 0.0f,
-                                     [](float value) {return String(value);}, nullptr);
-    
-    
-    
-    
+                                     [](float value) { return String(value, 2); }, nullptr);
+
+
+
+
     parameters.state = ValueTree (Identifier ("DualDelay"));
-    
+
     dryGain = parameters.getRawParameterValue("dryGain");
     wetGainL = parameters.getRawParameterValue("wetGainL");
     wetGainR = parameters.getRawParameterValue("wetGainR");
@@ -155,10 +154,10 @@ parameters(*this,nullptr), LFOLeft([] (float phi) { return std::sin(phi);}), LFO
     lfoDepthR = parameters.getRawParameterValue("lfoDepthR");
     orderSetting = parameters.getRawParameterValue("orderSetting");
     parameters.addParameterListener("orderSetting", this);
-    
-    
-    
-    
+
+
+
+
     cos_z.resize(8);
     sin_z.resize(8);
     cos_z.set(0, 1.f);
@@ -167,13 +166,6 @@ parameters(*this,nullptr), LFOLeft([] (float phi) { return std::sin(phi);}), LFO
 
 DualDelayAudioProcessor::~DualDelayAudioProcessor()
 {
-//    for (int i=0; i<lowPassFiltersLeft.size(); ++i)
-//    {
-//        delete lowPassFiltersLeft[i];
-//        delete lowPassFiltersRight[i];
-//        delete highPassFiltersLeft[i];
-//        delete highPassFiltersRight[i];
-//    }
 }
 
 //==============================================================================
@@ -233,14 +225,16 @@ void DualDelayAudioProcessor::changeProgramName (int index, const String& newNam
 void DualDelayAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     checkInputAndOutput(this, *orderSetting, *orderSetting, true);
-    
+
     dsp::ProcessSpec spec;
     spec.sampleRate = sampleRate;
     spec.numChannels = 1;
     spec.maximumBlockSize = samplesPerBlock;
     LFOLeft.prepare(spec);
     LFORight.prepare(spec);
-    
+    LFOLeft.setFrequency(*lfoRateL, true);
+    LFORight.setFrequency(*lfoRateR, true);
+
     for (int i = lowPassFiltersLeft.size(); --i >= 0;)
     {
         lowPassFiltersLeft[i]->reset();
@@ -248,30 +242,30 @@ void DualDelayAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBl
         highPassFiltersLeft[i]->reset();
         highPassFiltersRight[i]->reset();
     }
-    
+
     delayBufferLeft.clear();
     delayBufferRight.clear();
-    
+
     writeOffsetLeft = 0;
     writeOffsetRight = 0;
     readOffsetLeft = 0;
     readOffsetRight = 0;
-    
+
     delay.resize(samplesPerBlock);
     interpCoeffIdx.resize(samplesPerBlock);
     idx.resize(samplesPerBlock);
-    
+
     //AudioIN.setSize(AudioIN.getNumChannels(), samplesPerBlock);
     //delayOutLeft.setSize(delayOutLeft.getNumChannels(), samplesPerBlock);
     //delayOutRight.setSize(delayOutRight.getNumChannels(), samplesPerBlock);
     delayOutLeft.clear();
     delayOutRight.clear();
-    
+
     //delayInLeft.setSize(delayInLeft.getNumChannels(), samplesPerBlock);
     //delayInRight.setSize(delayInRight.getNumChannels(), samplesPerBlock);
     delayInLeft.clear();
     delayInRight.clear();
-    
+
     _delayL = *delayTimeL * sampleRate / 1000.0 * 128;
     _delayR = *delayTimeR * sampleRate / 1000.0 * 128;
 }
@@ -287,47 +281,46 @@ bool DualDelayAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts
 
 void DualDelayAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
+    ScopedNoDenormals noDenormals;
     checkInputAndOutput(this, *orderSetting, *orderSetting);
-    
+
     const int totalNumInputChannels  =  getTotalNumInputChannels();
     const int workingOrder = jmin(isqrt(buffer.getNumChannels())-1, input.getOrder(), output.getOrder());
     const int nCh = squares[workingOrder+1];
-    
-    
+
+
     const int delayBufferLength = getSampleRate(); // not necessarily samplerate
     const int fs = getSampleRate();
-    
+
     const float msToFractSmpls = getSampleRate() / 1000.0 * 128.0;
     const int spb = buffer.getNumSamples();
-    
+
     //clear not used channels
     for (int channel = nCh; channel<totalNumInputChannels; ++channel)
         buffer.clear(channel, 0, spb);
-    
-    
+
     LFOLeft.setFrequency(*lfoRateL);
     LFORight.setFrequency(*lfoRateR);
-    
-    
+
     for (int i=0; i<nCh; ++i)
     {
-        lowPassFiltersLeft[i]->setCoefficients(IIRCoefficients::makeLowPass(fs,*LPcutOffL));
-        lowPassFiltersRight[i]->setCoefficients(IIRCoefficients::makeLowPass(fs,*LPcutOffR));
-        highPassFiltersLeft[i]->setCoefficients(IIRCoefficients::makeHighPass(fs,*HPcutOffL));
-        highPassFiltersRight[i]->setCoefficients(IIRCoefficients::makeHighPass(fs,*HPcutOffR));
+        lowPassFiltersLeft[i]->setCoefficients(IIRCoefficients::makeLowPass(fs, *LPcutOffL));
+        lowPassFiltersRight[i]->setCoefficients(IIRCoefficients::makeLowPass(fs, *LPcutOffR));
+        highPassFiltersLeft[i]->setCoefficients(IIRCoefficients::makeHighPass(fs, *HPcutOffL));
+        highPassFiltersRight[i]->setCoefficients(IIRCoefficients::makeHighPass(fs, *HPcutOffR));
     }
-    
+
     // ==================== MAKE COPY OF INPUT BUFFER==============================
     for (int channel = 0; channel < nCh; ++channel)
     {
         AudioIN.copyFrom(channel, 0, buffer, channel, 0, spb);
     }
-    
+
     // ==================== READ FROM DELAYLINE AND GENERTE OUTPUT SIGNAL ===========
     // LEFT CHANNEL
     if (readOffsetLeft + spb >= delayBufferLength) { // overflow
         int nFirstRead = delayBufferLength - readOffsetLeft;
-        
+
         for (int channel = 0; channel < nCh; ++channel)
         {
             delayOutLeft.copyFrom(channel, 0, delayBufferLeft, channel, readOffsetLeft, nFirstRead);
@@ -335,10 +328,10 @@ void DualDelayAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffe
         }
         delayBufferLeft.clear(readOffsetLeft, nFirstRead);
         delayBufferLeft.clear(0, spb-nFirstRead);
-        
+
         readOffsetLeft += spb;
         readOffsetLeft -= delayBufferLength;
-        
+
     }
     else { //noverflow
         for (int channel = 0; channel < nCh; ++channel)
@@ -348,11 +341,11 @@ void DualDelayAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffe
         delayBufferLeft.clear(readOffsetLeft, spb);
         readOffsetLeft += spb;
     }
-    
+
     // RIGHT CHANNEL
     if (readOffsetRight + spb >= delayBufferLength) { // overflow
         int nFirstRead = delayBufferLength - readOffsetRight;
-        
+
         for (int channel = 0; channel < nCh; ++channel)
         {
             delayOutRight.copyFrom(channel, 0, delayBufferRight, channel, readOffsetRight, nFirstRead);
@@ -360,10 +353,10 @@ void DualDelayAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffe
         }
         delayBufferRight.clear(readOffsetRight, nFirstRead);
         delayBufferRight.clear(0, spb-nFirstRead);
-        
+
         readOffsetRight += spb;
         readOffsetRight -= delayBufferLength;
-        
+
     }
     else { //noverflow
         for (int channel = 0; channel < nCh; ++channel)
@@ -373,7 +366,7 @@ void DualDelayAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffe
         delayBufferRight.clear(readOffsetRight, spb);
         readOffsetRight += spb;
     }
-    
+
     // ========== OUTPUT
     buffer.applyGain(Decibels::decibelsToGain(*dryGain,-59.91f)); //dry signal
     for (int channel = 0; channel < nCh; ++channel)
@@ -381,9 +374,9 @@ void DualDelayAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffe
         buffer.addFrom(channel, 0, delayOutLeft, channel, 0, spb, Decibels::decibelsToGain(*wetGainL,-59.91f)); //wet signal
         buffer.addFrom(channel, 0, delayOutRight, channel, 0, spb, Decibels::decibelsToGain(*wetGainR,-59.91f)); //wet signal
     }
-    
+
     // ================ ADD INPUT AND FED BACK OUTPUT WITH PROCESSING ===========
-    
+
     for (int channel = 0; channel < nCh; ++channel) // should be optimizable with SIMD
     {
         delayInLeft.copyFrom(channel, 0, AudioIN.getReadPointer(channel), spb); // input
@@ -391,33 +384,33 @@ void DualDelayAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffe
         delayInLeft.addFrom(channel, 0, delayOutRight.getReadPointer(channel),  spb, Decibels::decibelsToGain(*xfeedbackR,-59.91f) ); // feedback bleed gain
         lowPassFiltersLeft[channel]->processSamples(delayInLeft.getWritePointer(channel), spb); //filter
         highPassFiltersLeft[channel]->processSamples(delayInLeft.getWritePointer(channel), spb); //filter
-        
+
         delayInRight.copyFrom(channel, 0, AudioIN.getReadPointer(channel), spb); // input
         delayInRight.addFrom(channel, 0, delayOutRight.getReadPointer(channel), spb,  Decibels::decibelsToGain(*feedbackR,-59.91f) ); // feedback gain
         delayInRight.addFrom(channel, 0, delayOutLeft.getReadPointer(channel), spb, Decibels::decibelsToGain(*xfeedbackL,-59.91f) ); // feedback bleed gain
         lowPassFiltersRight[channel]->processSamples(delayInRight.getWritePointer(channel), spb); //filter
         highPassFiltersRight[channel]->processSamples(delayInRight.getWritePointer(channel), spb); //filter
     }
-    
+
     // left delay rotation
     calcParams(*rotationL/180.0f*M_PI);
     rotateBuffer(&delayInLeft, nCh, spb);
-    
+
     // right delay rotation
     calcParams(*rotationR/180.0f*M_PI);
     rotateBuffer(&delayInRight, nCh, spb);
-    
-    
+
+
     // =============== UPDATE DELAY PARAMETERS =====
     float delayL = *delayTimeL * msToFractSmpls;
     float delayR = *delayTimeR * msToFractSmpls;
-    
+
     int firstIdx, copyL;
-    
+
     // ============= WRITE INTO DELAYLINE ========================
     // ===== LEFT CHANNEL
-    
-    
+
+
     float delayStep = (delayL - _delayL)/spb;
     //calculate firstIdx and copyL
     for (int i=0; i<spb; ++i) {
@@ -426,43 +419,58 @@ void DualDelayAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffe
     firstIdx = (((int) *std::min_element(delay.getRawDataPointer(),delay.getRawDataPointer()+spb)) >> interpShift) - interpOffset;
     int lastIdx =  (((int) *std::max_element(delay.getRawDataPointer(),delay.getRawDataPointer()+spb)) >> interpShift) - interpOffset;
     copyL = abs(firstIdx - lastIdx) + interpLength;
-    
-    
-    
+
+
+
     delayTempBuffer.clear(0, copyL);
     //delayTempBuffer.clear();
     const float** readPtrArr = delayInLeft.getArrayOfReadPointers();
-    
+
     for (int i=0; i<spb; ++i) {
-        
+
         float integer;
         float fraction = modff(delay[i], &integer);
         int delayInt = (int) integer;
-        
+
         int interpCoeffIdx = delayInt&interpMask;
         delayInt = delayInt>>interpShift;
         int idx = delayInt-interpOffset - firstIdx;
-        
+
+#if JUCE_USE_SSE_INTRINSICS
         __m128 interp = getInterpolatedLagrangeWeights(interpCoeffIdx, fraction);
-        
+
         for (int ch = 0; ch < nCh; ++ch)
         {
             float* dest = delayTempBuffer.getWritePointer(ch, idx);
-            
+
             __m128 destSamples = _mm_loadu_ps(dest);
             __m128 srcSample = _mm_set1_ps(readPtrArr[ch][i]);
             destSamples = _mm_add_ps(destSamples, _mm_mul_ps(interp, srcSample));
             _mm_storeu_ps(dest, destSamples);
         }
+#else /* !JUCE_USE_SSE_INTRINSICS */
+        float interp[4];
+        getInterpolatedLagrangeWeights(interpCoeffIdx, fraction, interp);
+
+        for (int ch = 0; ch < nCh; ++ch)
+        {
+            float* dest = delayTempBuffer.getWritePointer(ch, idx);
+            float src = readPtrArr[ch][i];
+            dest[0] += interp[0] * src;
+            dest[1] += interp[1] * src;
+            dest[2] += interp[2] * src;
+            dest[3] += interp[3] * src;
+        }
+#endif /* JUCE_USE_SSE_INTRINSICS */
     }
     writeOffsetLeft = readOffsetLeft + firstIdx;
     if (writeOffsetLeft >= delayBufferLength)
         writeOffsetLeft -= delayBufferLength;
-    
+
     if (writeOffsetLeft + copyL >= delayBufferLength) { // overflow
         int firstNumCopy = delayBufferLength - writeOffsetLeft;
         int secondNumCopy = copyL-firstNumCopy;
-        
+
         for (int channel = 0; channel < nCh; ++channel)
         {
             delayBufferLeft.addFrom(channel, writeOffsetLeft, delayTempBuffer, channel, 0, firstNumCopy);
@@ -475,10 +483,10 @@ void DualDelayAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffe
             delayBufferLeft.addFrom(channel, writeOffsetLeft, delayTempBuffer, channel, 0 , copyL);
         }
     }
-    
+
     // ===== Right CHANNEL
-    
-    
+
+
     delayStep = (delayR - _delayR)/spb;
     //calculate firstIdx and copyL
     for (int i=0; i<spb; ++i) {
@@ -487,42 +495,57 @@ void DualDelayAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffe
     firstIdx = (((int) *std::min_element(delay.getRawDataPointer(),delay.getRawDataPointer()+spb)) >> interpShift) - interpOffset;
     lastIdx =  (((int) *std::max_element(delay.getRawDataPointer(),delay.getRawDataPointer()+spb)) >> interpShift) - interpOffset;
     copyL = abs(firstIdx - lastIdx) + interpLength;
-    
-    
-    
+
+
+
     delayTempBuffer.clear(0, copyL);
-    
+
     const float** readPtrArrR = delayInRight.getArrayOfReadPointers();
-    
+
     for (int i=0; i<spb; ++i) {
         float integer;
         float fraction = modff(delay[i], &integer);
         int delayInt = (int) integer;
-        
+
         int interpCoeffIdx = delayInt&interpMask;
         delayInt = delayInt>>interpShift;
         int idx = delayInt-interpOffset - firstIdx;
-        
+
+#if JUCE_USE_SSE_INTRINSICS
         __m128 interp = getInterpolatedLagrangeWeights(interpCoeffIdx, fraction);
-        
+
         for (int ch = 0; ch < nCh; ++ch)
         {
             float* dest = delayTempBuffer.getWritePointer(ch, idx);
-            
+
             __m128 destSamples = _mm_loadu_ps(dest);
             __m128 srcSample = _mm_set1_ps(readPtrArrR[ch][i]);
             destSamples = _mm_add_ps(destSamples, _mm_mul_ps(interp, srcSample));
             _mm_storeu_ps(dest, destSamples);
         }
+#else /* !JUCE_USE_SSE_INTRINSICS */
+        float interp[4];
+        getInterpolatedLagrangeWeights(interpCoeffIdx, fraction, interp);
+
+        for (int ch = 0; ch < nCh; ++ch)
+        {
+            float* dest = delayTempBuffer.getWritePointer(ch, idx);
+            float src = readPtrArrR[ch][i];
+            dest[0] += interp[0] * src;
+            dest[1] += interp[1] * src;
+            dest[2] += interp[2] * src;
+            dest[3] += interp[3] * src;
+        }
+#endif /* JUCE_USE_SSE_INTRINSICS */
     }
     writeOffsetRight = readOffsetRight + firstIdx;
     if (writeOffsetRight >= delayBufferLength)
         writeOffsetRight -= delayBufferLength;
-    
+
     if (writeOffsetRight + copyL >= delayBufferLength) { // overflow
         int firstNumCopy = delayBufferLength - writeOffsetRight;
         int secondNumCopy = copyL-firstNumCopy;
-        
+
         for (int channel = 0; channel < nCh; ++channel)
         {
             delayBufferRight.addFrom(channel, writeOffsetRight, delayTempBuffer, channel, 0, firstNumCopy);
@@ -535,11 +558,11 @@ void DualDelayAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffe
             delayBufferRight.addFrom(channel, writeOffsetRight, delayTempBuffer, channel, 0 , copyL);
         }
     }
-    
+
     // =============== UPDATE DELAY PARAMETERS =====
     _delayL = delayL;
     _delayR = delayR;
-    
+
 }
 
 //==============================================================================
@@ -580,7 +603,7 @@ void DualDelayAudioProcessor::calcParams(float phi)
     // use mathematical negative angles!
     cos_z.set(1, cos(phi));
     sin_z.set(1, sin(phi));
-    
+
     // chebyshev recursion
     for (int i = 2; i < 8; i++) {
         cos_z.set(i, 2 * cos_z[1] * cos_z[i-1] - cos_z[i-2]);
@@ -593,25 +616,25 @@ void DualDelayAudioProcessor::rotateBuffer(AudioBuffer<float>* bufferToRotate, c
     AudioBuffer<float> tempBuffer;
     tempBuffer.makeCopyOf(*bufferToRotate);
     bufferToRotate->clear();
-    
+
     //int nCh = jmin(nChannels, bufferToRotate->getNumChannels());
-    
+
     for (int acn_out = 0; acn_out < nCh; ++acn_out)
     {
         int l_out = 0;
         int m_out = 0;
-        
+
         ACNtoLM(acn_out, l_out, m_out);
-        
+
         for (int acn_in = 0; acn_in < nCh; ++acn_in)
         {
             int l_in=0; // degree 0, 1, 2, 3, 4, ......
             int m_in=0; // order ...., -2, -1, 0 , 1, 2, ...
-            
+
             ACNtoLM(acn_in, l_in, m_in);
-            
+
             if (abs(m_out) == abs (m_in) && l_in == l_out) { // if degree and order match  do something
-                
+
                 if (m_out == 0 && m_in == 0) {
                     // gain 1 -> no interpolation needed
                     bufferToRotate->copyFrom(acn_out, 0, tempBuffer, acn_in, 0, samples);
@@ -632,11 +655,11 @@ void DualDelayAudioProcessor::rotateBuffer(AudioBuffer<float>* bufferToRotate, c
                 {
                     bufferToRotate->addFrom(acn_out, 0, tempBuffer.getReadPointer(acn_in), samples, sin_z[m_in]);
                 }
-                
+
             }
-            
+
         }
-        
+
     }
 }
 
@@ -649,11 +672,11 @@ void DualDelayAudioProcessor::updateBuffers()
 {
     DBG("IOHelper:  input size: " << input.getSize());
     DBG("IOHelper: output size: " << output.getSize());
-    
+
     const int nChannels = jmin(input.getNumberOfChannels(), output.getNumberOfChannels());
     const int _nChannels = jmin(input.getPreviousNumberOfChannels(), output.getPreviousNumberOfChannels());
     const int samplesPerBlock = getBlockSize();
-    
+
     const double sampleRate = getSampleRate();
     if (nChannels > _nChannels)
     {
@@ -672,26 +695,37 @@ void DualDelayAudioProcessor::updateBuffers()
         highPassFiltersLeft.removeRange(nChannels, diff);
         highPassFiltersRight.removeRange(nChannels, diff);
     }
-    
+
     AudioIN.setSize(nChannels, samplesPerBlock);
     AudioIN.clear();
-    
+
     delayBufferLeft.setSize(nChannels, 50000);
     delayBufferRight.setSize(nChannels, 50000);
     delayBufferLeft.clear();
     delayBufferRight.clear();
-    
+
     int maxLfoDepth = (int) ceilf(parameters.getParameterRange("lfoDepthL").getRange().getEnd()*sampleRate/500.0f);
     delayTempBuffer.setSize(nChannels, samplesPerBlock+interpOffset-1+maxLfoDepth+sampleRate*0.5);
-    
+
     delayOutLeft.setSize(nChannels, samplesPerBlock);
     delayOutRight.setSize(nChannels, samplesPerBlock);
     delayOutLeft.clear();
     delayOutRight.clear();
-    
+
     delayInLeft.setSize(nChannels, samplesPerBlock);
     delayInRight.setSize(nChannels, samplesPerBlock);
     delayInLeft.clear();
     delayInRight.clear();
 }
 
+//==============================================================================
+pointer_sized_int DualDelayAudioProcessor::handleVstPluginCanDo (int32 index,
+                                                                     pointer_sized_int value, void* ptr, float opt)
+{
+    auto text = (const char*) ptr;
+    auto matches = [=](const char* s) { return strcmp (text, s) == 0; };
+
+    if (matches ("wantsChannelCountNotifications"))
+        return 1;
+    return 0;
+}

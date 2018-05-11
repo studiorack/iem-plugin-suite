@@ -1,9 +1,8 @@
 These impulse responses are part of the IEM plug-in suite: https://plugins-iem.at
  
-They were created using KU100 HRIR measurements by Benjamin Bernschuetz [1] and the rendering approach by Markus Zaunschirm, Christian Schoerkhuber and Robert Hoeldrich [2].
+They were created using KU100 HRIR measurements presented in [1] and the rendering approach proposed in [2].
 
+[1] Bernschütz, Benjamin. "A Spherical Far Field HRIR/HRTF Compilation of the Neumann KU 100", Proceedings of the 40th Italian (AIA) Annual Conference on Acoustics and the 39th German Annual Conference on Acoustics (DAGA) Conference on Acoustics. 2013. http://audiogroup.web.th-koeln.de/ku100hrir.html
 
+[2] Schoerkhuber, Christian; Zaunschirm, Markus; Hoeldrich, Robert. "Binaural Rendering of Ambisonic Signals via Magnitude Least Squares", Fortschritte der Akustik, DAGA, 2018
 
-[1] Bernschuetz, B. (2013. A Spherical Far Field HRIR/HRTF Compilation of the Neumann KU 100. AIA-DAGA 2013 Merano. http://audiogroup.web.th-koeln.de/ku100hrir.html
-
-[2] Zaunschirm, M., Schoerkhuber, C., Hoeldrich, R. (to be published). Binaural rendering of Ambisonic signals by HRIR time alignment and a diffuseness constraint. (JASA)

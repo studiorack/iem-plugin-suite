@@ -4,37 +4,38 @@
  Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
- 
+
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
- 
+
  The IEM plug-in suite is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
  */
 
-#ifndef PLUGINPROCESSOR_H_INCLUDED
-#define PLUGINPROCESSOR_H_INCLUDED
+#pragma once
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "../../resources/efficientSHvanilla.h"
 #include "../../resources/ambisonicTools.h"
 #include "../../resources/IOHelper.h"
+#include "../../resources/Conversions.h"
 
 
 //==============================================================================
 /**
 */
 class ProbeDecoderAudioProcessor  : public AudioProcessor,
-                                                public AudioProcessorValueTreeState::Listener,
-public IOHelper<IOTypes::Ambisonics<>, IOTypes::AudioChannels<1>>
+                                    public AudioProcessorValueTreeState::Listener,
+                                    public IOHelper<IOTypes::Ambisonics<>, IOTypes::AudioChannels<1>>,
+                                    public VSTCallbackHandler
 {
 public:
     //==============================================================================
@@ -72,25 +73,29 @@ public:
     //==============================================================================
     void getStateInformation (MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
-    
+
     void parameterChanged (const String &parameterID, float newValue) override;
-    
+
+    //======== PluginCanDo =========================================================
+    pointer_sized_int handleVstManufacturerSpecific (int32 index, pointer_sized_int value,
+                                                     void* ptr, float opt) override { return 0; };
+    pointer_sized_int handleVstPluginCanDo (int32 index, pointer_sized_int value,
+                                            void* ptr, float opt) override;
+    //==============================================================================
+
     float *orderSetting;
     float *useSN3D;
 
+    Atomic<bool> updatedPositionData {true};
 
 private:
     //==============================================================================
 
     AudioProcessorValueTreeState parameters;
-    float *yaw;
-    float *pitch;
-    
-    float previousSH[64];
+    float *azimuth;
+    float *elevation;
 
+    float previousSH[64];
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ProbeDecoderAudioProcessor)
 };
-
-
-#endif  // PLUGINPROCESSOR_H_INCLUDED

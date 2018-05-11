@@ -4,17 +4,17 @@
  Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
- 
+
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
- 
+
  The IEM plug-in suite is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
@@ -43,7 +43,7 @@ typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 //==============================================================================
 /**
 */
-class SimpleDecoderAudioProcessorEditor  : public AudioProcessorEditor, private Timer, private Button::Listener
+class SimpleDecoderAudioProcessorEditor  : public AudioProcessorEditor, private Timer, private Button::Listener, public AudioProcessorValueTreeState::Listener
 {
 public:
     SimpleDecoderAudioProcessorEditor (SimpleDecoderAudioProcessor&, AudioProcessorValueTreeState&);
@@ -52,23 +52,23 @@ public:
     //==============================================================================
     void paint (Graphics&) override;
     void resized() override;
-    
-    
+
+
     void timerCallback() override;
     void buttonClicked (Button* button) override;
     void buttonStateChanged (Button* button) override;
     void loadPresetFile();
-    
+    void parameterChanged (const String &parameterID, float newValue) override;
 private:
     // ====================== beging essentials ==================
     // lookAndFeel class with the IEM plug-in suite design
     LaF globalLaF;
-    
+
     // stored references to the AudioProcessor and ValueTreeState holding all the parameters
     SimpleDecoderAudioProcessor& processor;
     AudioProcessorValueTreeState& valueTreeState;
 
-    
+
     /* title and footer component
      title component can hold different widgets for in- and output:
         - NoIOWidget (if there's no need for an input or output widget)
@@ -76,19 +76,23 @@ private:
         - AmbisonicIOWidget
         - DirectivitiyIOWidget
      */
-    
+
     TitleBar<AmbisonicIOWidget<0>, AudioChannelsIOWidget<0,false>> title;
     Footer footer;
     // =============== end essentials ============
-    
+
     // Attachments to create a connection between IOWidgets comboboxes
     // and the associated parameters
     ScopedPointer<ComboBoxAttachment> cbOrderSettingAttachment;
     ScopedPointer<ComboBoxAttachment> cbNormalizationSettingAttachment;
     //ScopedPointer<ComboBoxAttachment> cbOutputChannelsSettingAttachment;
-      
-    GroupComponent gcFilter, gcSw, gcConfiguration;
+
+    bool updateChannelsInWidget = false;
+    bool enableSubwooferChannelControls;
+    bool changeEnablement = false;
     
+    GroupComponent gcFilter, gcSw, gcConfiguration;
+
     // Filter slider
     ReverseSlider slLowPassFrequency, slHighPassFrequency, slLowPassGain;
     ScopedPointer<SliderAttachment> slLowPassFrequencyAttachment, slLowPassGainAttachment, slHighPassFrequencyAttachment;
@@ -97,15 +101,15 @@ private:
     // Subwoofer mode
     ComboBox cbSwMode;
     ScopedPointer<ComboBoxAttachment> cbSwModeAttachment;
-    SimpleLabel lbSwMode, lbSwChannel;
+    SimpleLabel lbSwMode, lbSwChannel, lbAlreadyUsed;
     ReverseSlider slSwChannel;
     ScopedPointer<SliderAttachment> slSwChannelAttachment;
     //
     TextButton btLoadFile;
     DecoderInfoBox dcInfoBox;
-    
+
     ReferenceCountedDecoder::Ptr lastDecoder = nullptr;
-    
+
     FilterVisualizer<double> fv;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SimpleDecoderAudioProcessorEditor)

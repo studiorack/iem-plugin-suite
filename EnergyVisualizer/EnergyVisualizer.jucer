@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <JUCERPROJECT id="mbpAgi" name="EnergyVisualizer" displaySplashScreen="0" reportAppUsage="0"
-              splashScreenColour="Dark" projectType="audioplug" version="0.3.2"
+              splashScreenColour="Dark" projectType="audioplug" version="0.4.0"
               bundleIdentifier="at.iem.EnergyVisualizer" includeBinaryInAppConfig="1"
               cppLanguageStandard="14" buildVST="1" buildVST3="0" buildAU="0"
               buildAUv3="0" buildRTAS="0" buildAAX="0" buildStandalone="1"
@@ -9,10 +9,10 @@
               pluginManufacturer="IEM" pluginManufacturerCode="IEMA" pluginCode="EnVi"
               pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
-              pluginAUExportPrefix="EnergyVisualizerAU" pluginRTASCategory=""
-              aaxIdentifier="at.iem.EnergyVisualizer" pluginAAXCategory="AAX_ePlugInCategory_Dynamics"
-              jucerVersion="5.2.1" companyCopyright="IEM - Daniel Rudrich"
-              companyName="IEM" companyWebsite="iem.at">
+              pluginAUExportPrefix="EnergyVisualizerAU" aaxIdentifier="at.iem.EnergyVisualizer"
+              pluginAAXCategory="2" jucerVersion="5.3.2" companyCopyright="IEM - Daniel Rudrich"
+              companyName="IEM" companyWebsite="iem.at" headerPath="../../../resources/"
+              pluginFormats="buildVST,buildStandalone">
   <MAINGROUP id="LpzrV9" name="EnergyVisualizer">
     <GROUP id="{1B6BB8E4-E576-FBC7-B6B6-8603D2CEBF9D}" name="lookAndFeel">
       <FILE id="JNnjS0" name="IEM_LaF.h" compile="0" resource="0" file="../resources/lookAndFeel/IEM_LaF.h"/>
@@ -46,7 +46,8 @@
         <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="EnergyVisualizer"
                        enablePluginBinaryCopyStep="1" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"/>
         <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="EnergyVisualizer"
-                       enablePluginBinaryCopyStep="1" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"/>
+                       enablePluginBinaryCopyStep="1" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"
+                       osxCompatibility="10.9 SDK"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_core" path="../../../../../Applications/JUCE/modules"/>
@@ -136,5 +137,10 @@
     <MODULE id="juce_gui_extra" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_opengl" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
   </MODULES>
-  <JUCEOPTIONS JUCE_QUICKTIME="disabled"/>
+  <JUCEOPTIONS JUCE_QUICKTIME="disabled" JUCE_WEB_BROWSER="0" JUCE_USE_WINDOWS_MEDIA_FORMAT="0"
+               JUCE_USE_LAME_AUDIO_FORMAT="0" JUCE_USE_MP3AUDIOFORMAT="0" JUCE_USE_OGGVORBIS="0"
+               JUCE_USE_FLAC="0"/>
+  <LIVE_SETTINGS>
+    <OSX/>
+  </LIVE_SETTINGS>
 </JUCERPROJECT>

@@ -3,17 +3,17 @@
  This file is part of the IEM plug-in suite.
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
- 
+
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
- 
+
  The IEM plug-in suite is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
@@ -34,12 +34,12 @@ void SHEval0(const float fX, const float fY, const float fZ, float *pSH)
 void SHEval1(const float fX, const float fY, const float fZ, float *pSH)
 {
     float fC0,fS0,fTmpC;
-    
+
     pSH[0] = 0.2820947917738781f;
     pSH[2] = 0.4886025119029199f*fZ;
     fC0 = fX;
     fS0 = fY;
-    
+
     fTmpC = 0.48860251190292f;
     pSH[3] = fTmpC*fC0;
     pSH[1] = fTmpC*fS0;
@@ -50,13 +50,13 @@ void SHEval2(const float fX, const float fY, const float fZ, float *pSH)
 {
     float fC0,fC1,fS0,fS1,fTmpA,fTmpB,fTmpC;
     float fZ2 = fZ*fZ;
-    
+
     pSH[0] = 0.2820947917738781f;
     pSH[2] = 0.4886025119029199f*fZ;
     pSH[6] = 0.9461746957575601f*fZ2 + -0.31539156525252f;
     fC0 = fX;
     fS0 = fY;
-    
+
     fTmpA = 0.48860251190292f;
     pSH[3] = fTmpA*fC0;
     pSH[1] = fTmpA*fS0;
@@ -65,7 +65,7 @@ void SHEval2(const float fX, const float fY, const float fZ, float *pSH)
     pSH[5] = fTmpB*fS0;
     fC1 = fX*fC0 - fY*fS0;
     fS1 = fX*fS0 + fY*fC0;
-    
+
     fTmpC = 0.5462742152960395f;
     pSH[8] = fTmpC*fC1;
     pSH[4] = fTmpC*fS1;
@@ -76,14 +76,14 @@ void SHEval3(const float fX, const float fY, const float fZ, float *pSH)
 {
     float fC0,fC1,fS0,fS1,fTmpA,fTmpB,fTmpC;
     float fZ2 = fZ*fZ;
-    
+
     pSH[0] = 0.2820947917738781f;
     pSH[2] = 0.4886025119029199f*fZ;
     pSH[6] = 0.9461746957575601f*fZ2 + -0.31539156525252f;
     pSH[12] = fZ*(1.865881662950577f*fZ2 + -1.119528997770346f);
     fC0 = fX;
     fS0 = fY;
-    
+
     fTmpA = 0.48860251190292f;
     pSH[3] = fTmpA*fC0;
     pSH[1] = fTmpA*fS0;
@@ -95,7 +95,7 @@ void SHEval3(const float fX, const float fY, const float fZ, float *pSH)
     pSH[11] = fTmpC*fS0;
     fC1 = fX*fC0 - fY*fS0;
     fS1 = fX*fS0 + fY*fC0;
-    
+
     fTmpA = 0.5462742152960395f;
     pSH[8] = fTmpA*fC1;
     pSH[4] = fTmpA*fS1;
@@ -104,7 +104,7 @@ void SHEval3(const float fX, const float fY, const float fZ, float *pSH)
     pSH[10] = fTmpB*fS1;
     fC0 = fX*fC1 - fY*fS1;
     fS0 = fX*fS1 + fY*fC1;
-    
+
     fTmpC = 0.5900435899266435f;
     pSH[15] = fTmpC*fC0;
     pSH[9] = fTmpC*fS0;
@@ -115,7 +115,7 @@ void SHEval4(const float fX, const float fY, const float fZ, float *pSH)
 {
     float fC0,fC1,fS0,fS1,fTmpA,fTmpB,fTmpC;
     float fZ2 = fZ*fZ;
-    
+
     pSH[0] = 0.2820947917738781f;
     pSH[2] = 0.4886025119029199f*fZ;
     pSH[6] = 0.9461746957575601f*fZ2 + -0.31539156525252f;
@@ -123,7 +123,7 @@ void SHEval4(const float fX, const float fY, const float fZ, float *pSH)
     pSH[20] = 1.984313483298443f*fZ*pSH[12] + -1.006230589874905f*pSH[6];
     fC0 = fX;
     fS0 = fY;
-    
+
     fTmpA = 0.48860251190292f;
     pSH[3] = fTmpA*fC0;
     pSH[1] = fTmpA*fS0;
@@ -138,7 +138,7 @@ void SHEval4(const float fX, const float fY, const float fZ, float *pSH)
     pSH[19] = fTmpA*fS0;
     fC1 = fX*fC0 - fY*fS0;
     fS1 = fX*fS0 + fY*fC0;
-    
+
     fTmpA = 0.5462742152960395f;
     pSH[8] = fTmpA*fC1;
     pSH[4] = fTmpA*fS1;
@@ -150,7 +150,7 @@ void SHEval4(const float fX, const float fY, const float fZ, float *pSH)
     pSH[18] = fTmpC*fS1;
     fC0 = fX*fC1 - fY*fS1;
     fS0 = fX*fS1 + fY*fC1;
-    
+
     fTmpA = 0.5900435899266435f;
     pSH[15] = fTmpA*fC0;
     pSH[9] = fTmpA*fS0;
@@ -159,7 +159,7 @@ void SHEval4(const float fX, const float fY, const float fZ, float *pSH)
     pSH[17] = fTmpB*fS0;
     fC1 = fX*fC0 - fY*fS0;
     fS1 = fX*fS0 + fY*fC0;
-    
+
     fTmpC = 0.6258357354491763f;
     pSH[24] = fTmpC*fC1;
     pSH[16] = fTmpC*fS1;
@@ -170,7 +170,7 @@ void SHEval5(const float fX, const float fY, const float fZ, float *pSH)
 {
     float fC0,fC1,fS0,fS1,fTmpA,fTmpB,fTmpC;
     float fZ2 = fZ*fZ;
-    
+
     pSH[0] = 0.2820947917738781f;
     pSH[2] = 0.4886025119029199f*fZ;
     pSH[6] = 0.9461746957575601f*fZ2 + -0.31539156525252f;
@@ -179,7 +179,7 @@ void SHEval5(const float fX, const float fY, const float fZ, float *pSH)
     pSH[30] = 1.98997487421324f*fZ*pSH[20] + -1.002853072844814f*pSH[12];
     fC0 = fX;
     fS0 = fY;
-    
+
     fTmpA = 0.48860251190292f;
     pSH[3] = fTmpA*fC0;
     pSH[1] = fTmpA*fS0;
@@ -197,7 +197,7 @@ void SHEval5(const float fX, const float fY, const float fZ, float *pSH)
     pSH[29] = fTmpB*fS0;
     fC1 = fX*fC0 - fY*fS0;
     fS1 = fX*fS0 + fY*fC0;
-    
+
     fTmpA = 0.5462742152960395f;
     pSH[8] = fTmpA*fC1;
     pSH[4] = fTmpA*fS1;
@@ -212,7 +212,7 @@ void SHEval5(const float fX, const float fY, const float fZ, float *pSH)
     pSH[28] = fTmpA*fS1;
     fC0 = fX*fC1 - fY*fS1;
     fS0 = fX*fS1 + fY*fC1;
-    
+
     fTmpA = 0.5900435899266435f;
     pSH[15] = fTmpA*fC0;
     pSH[9] = fTmpA*fS0;
@@ -224,7 +224,7 @@ void SHEval5(const float fX, const float fY, const float fZ, float *pSH)
     pSH[27] = fTmpC*fS0;
     fC1 = fX*fC0 - fY*fS0;
     fS1 = fX*fS0 + fY*fC0;
-    
+
     fTmpA = 0.6258357354491763f;
     pSH[24] = fTmpA*fC1;
     pSH[16] = fTmpA*fS1;
@@ -233,7 +233,7 @@ void SHEval5(const float fX, const float fY, const float fZ, float *pSH)
     pSH[26] = fTmpB*fS1;
     fC0 = fX*fC1 - fY*fS1;
     fS0 = fX*fS1 + fY*fC1;
-    
+
     fTmpC = 0.6563820568401703f;
     pSH[35] = fTmpC*fC0;
     pSH[25] = fTmpC*fS0;
@@ -244,7 +244,7 @@ void SHEval6(const float fX, const float fY, const float fZ, float *pSH)
 {
     float fC0,fC1,fS0,fS1,fTmpA,fTmpB,fTmpC;
     float fZ2 = fZ*fZ;
-    
+
     pSH[0] = 0.2820947917738781f;
     pSH[2] = 0.4886025119029199f*fZ;
     pSH[6] = 0.9461746957575601f*fZ2 + -0.31539156525252f;
@@ -254,7 +254,7 @@ void SHEval6(const float fX, const float fY, const float fZ, float *pSH)
     pSH[42] = 1.993043457183566f*fZ*pSH[30] + -1.001542020962219f*pSH[20];
     fC0 = fX;
     fS0 = fY;
-    
+
     fTmpA = 0.48860251190292f;
     pSH[3] = fTmpA*fC0;
     pSH[1] = fTmpA*fS0;
@@ -275,7 +275,7 @@ void SHEval6(const float fX, const float fY, const float fZ, float *pSH)
     pSH[41] = fTmpC*fS0;
     fC1 = fX*fC0 - fY*fS0;
     fS1 = fX*fS0 + fY*fC0;
-    
+
     fTmpA = 0.5462742152960395f;
     pSH[8] = fTmpA*fC1;
     pSH[4] = fTmpA*fS1;
@@ -293,7 +293,7 @@ void SHEval6(const float fX, const float fY, const float fZ, float *pSH)
     pSH[40] = fTmpB*fS1;
     fC0 = fX*fC1 - fY*fS1;
     fS0 = fX*fS1 + fY*fC1;
-    
+
     fTmpA = 0.5900435899266435f;
     pSH[15] = fTmpA*fC0;
     pSH[9] = fTmpA*fS0;
@@ -308,7 +308,7 @@ void SHEval6(const float fX, const float fY, const float fZ, float *pSH)
     pSH[39] = fTmpA*fS0;
     fC1 = fX*fC0 - fY*fS0;
     fS1 = fX*fS0 + fY*fC0;
-    
+
     fTmpA = 0.6258357354491763f;
     pSH[24] = fTmpA*fC1;
     pSH[16] = fTmpA*fS1;
@@ -320,7 +320,7 @@ void SHEval6(const float fX, const float fY, const float fZ, float *pSH)
     pSH[38] = fTmpC*fS1;
     fC0 = fX*fC1 - fY*fS1;
     fS0 = fX*fS1 + fY*fC1;
-    
+
     fTmpA = 0.6563820568401703f;
     pSH[35] = fTmpA*fC0;
     pSH[25] = fTmpA*fS0;
@@ -329,7 +329,7 @@ void SHEval6(const float fX, const float fY, const float fZ, float *pSH)
     pSH[37] = fTmpB*fS0;
     fC1 = fX*fC0 - fY*fS0;
     fS1 = fX*fS0 + fY*fC0;
-    
+
     fTmpC = 0.6831841051919144f;
     pSH[48] = fTmpC*fC1;
     pSH[36] = fTmpC*fS1;
@@ -340,7 +340,7 @@ void SHEval7(const float fX, const float fY, const float fZ, float *pSH)
 {
     float fC0,fC1,fS0,fS1,fTmpA,fTmpB,fTmpC;
     float fZ2 = fZ*fZ;
-    
+
     pSH[0] = 0.2820947917738781f;
     pSH[2] = 0.4886025119029199f*fZ;
     pSH[6] = 0.9461746957575601f*fZ2 + -0.31539156525252f;
@@ -351,7 +351,7 @@ void SHEval7(const float fX, const float fY, const float fZ, float *pSH)
     pSH[56] = 1.994891434824135f*fZ*pSH[42] + -1.000927213921958f*pSH[30];
     fC0 = fX;
     fS0 = fY;
-    
+
     fTmpA = 0.48860251190292f;
     pSH[3] = fTmpA*fC0;
     pSH[1] = fTmpA*fS0;
@@ -375,7 +375,7 @@ void SHEval7(const float fX, const float fY, const float fZ, float *pSH)
     pSH[55] = fTmpA*fS0;
     fC1 = fX*fC0 - fY*fS0;
     fS1 = fX*fS0 + fY*fC0;
-    
+
     fTmpA = 0.5462742152960395f;
     pSH[8] = fTmpA*fC1;
     pSH[4] = fTmpA*fS1;
@@ -396,7 +396,7 @@ void SHEval7(const float fX, const float fY, const float fZ, float *pSH)
     pSH[54] = fTmpC*fS1;
     fC0 = fX*fC1 - fY*fS1;
     fS0 = fX*fS1 + fY*fC1;
-    
+
     fTmpA = 0.5900435899266435f;
     pSH[15] = fTmpA*fC0;
     pSH[9] = fTmpA*fS0;
@@ -414,7 +414,7 @@ void SHEval7(const float fX, const float fY, const float fZ, float *pSH)
     pSH[53] = fTmpB*fS0;
     fC1 = fX*fC0 - fY*fS0;
     fS1 = fX*fS0 + fY*fC0;
-    
+
     fTmpA = 0.6258357354491763f;
     pSH[24] = fTmpA*fC1;
     pSH[16] = fTmpA*fS1;
@@ -429,7 +429,7 @@ void SHEval7(const float fX, const float fY, const float fZ, float *pSH)
     pSH[52] = fTmpA*fS1;
     fC0 = fX*fC1 - fY*fS1;
     fS0 = fX*fS1 + fY*fC1;
-    
+
     fTmpA = 0.6563820568401703f;
     pSH[35] = fTmpA*fC0;
     pSH[25] = fTmpA*fS0;
@@ -441,7 +441,7 @@ void SHEval7(const float fX, const float fY, const float fZ, float *pSH)
     pSH[51] = fTmpC*fS0;
     fC1 = fX*fC0 - fY*fS0;
     fS1 = fX*fS0 + fY*fC0;
-    
+
     fTmpA = 0.6831841051919144f;
     pSH[48] = fTmpA*fC1;
     pSH[36] = fTmpA*fS1;
@@ -450,7 +450,7 @@ void SHEval7(const float fX, const float fY, const float fZ, float *pSH)
     pSH[50] = fTmpB*fS1;
     fC0 = fX*fC1 - fY*fS1;
     fS0 = fX*fS1 + fY*fC1;
-    
+
     fTmpC = 0.7071627325245963f;
     pSH[63] = fTmpC*fC0;
     pSH[49] = fTmpC*fS0;
@@ -461,7 +461,7 @@ void SHEval8(const float fX, const float fY, const float fZ, float *pSH)
 {
     float fC0,fC1,fS0,fS1,fTmpA,fTmpB,fTmpC;
     float fZ2 = fZ*fZ;
-    
+
     pSH[0] = 0.2820947917738781f;
     pSH[2] = 0.4886025119029199f*fZ;
     pSH[6] = 0.9461746957575601f*fZ2 + -0.31539156525252f;
@@ -473,7 +473,7 @@ void SHEval8(const float fX, const float fY, const float fZ, float *pSH)
     pSH[72] = 1.996089927833914f*fZ*pSH[56] + -1.000600781069515f*pSH[42];
     fC0 = fX;
     fS0 = fY;
-    
+
     fTmpA = 0.48860251190292f;
     pSH[3] = fTmpA*fC0;
     pSH[1] = fTmpA*fS0;
@@ -500,7 +500,7 @@ void SHEval8(const float fX, const float fY, const float fZ, float *pSH)
     pSH[71] = fTmpB*fS0;
     fC1 = fX*fC0 - fY*fS0;
     fS1 = fX*fS0 + fY*fC0;
-    
+
     fTmpA = 0.5462742152960395f;
     pSH[8] = fTmpA*fC1;
     pSH[4] = fTmpA*fS1;
@@ -524,7 +524,7 @@ void SHEval8(const float fX, const float fY, const float fZ, float *pSH)
     pSH[70] = fTmpA*fS1;
     fC0 = fX*fC1 - fY*fS1;
     fS0 = fX*fS1 + fY*fC1;
-    
+
     fTmpA = 0.5900435899266435f;
     pSH[15] = fTmpA*fC0;
     pSH[9] = fTmpA*fS0;
@@ -545,7 +545,7 @@ void SHEval8(const float fX, const float fY, const float fZ, float *pSH)
     pSH[69] = fTmpC*fS0;
     fC1 = fX*fC0 - fY*fS0;
     fS1 = fX*fS0 + fY*fC0;
-    
+
     fTmpA = 0.6258357354491763f;
     pSH[24] = fTmpA*fC1;
     pSH[16] = fTmpA*fS1;
@@ -563,7 +563,7 @@ void SHEval8(const float fX, const float fY, const float fZ, float *pSH)
     pSH[68] = fTmpB*fS1;
     fC0 = fX*fC1 - fY*fS1;
     fS0 = fX*fS1 + fY*fC1;
-    
+
     fTmpA = 0.6563820568401703f;
     pSH[35] = fTmpA*fC0;
     pSH[25] = fTmpA*fS0;
@@ -578,7 +578,7 @@ void SHEval8(const float fX, const float fY, const float fZ, float *pSH)
     pSH[67] = fTmpA*fS0;
     fC1 = fX*fC0 - fY*fS0;
     fS1 = fX*fS0 + fY*fC0;
-    
+
     fTmpA = 0.6831841051919144f;
     pSH[48] = fTmpA*fC1;
     pSH[36] = fTmpA*fS1;
@@ -590,7 +590,7 @@ void SHEval8(const float fX, const float fY, const float fZ, float *pSH)
     pSH[66] = fTmpC*fS1;
     fC0 = fX*fC1 - fY*fS1;
     fS0 = fX*fS1 + fY*fC1;
-    
+
     fTmpA = 0.7071627325245963f;
     pSH[63] = fTmpA*fC0;
     pSH[49] = fTmpA*fS0;
@@ -599,9 +599,8 @@ void SHEval8(const float fX, const float fY, const float fZ, float *pSH)
     pSH[65] = fTmpB*fS0;
     fC1 = fX*fC0 - fY*fS0;
     fS1 = fX*fS0 + fY*fC0;
-    
+
     fTmpC = 0.72892666017483f;
     pSH[80] = fTmpC*fC1;
     pSH[64] = fTmpC*fS1;
 }
-

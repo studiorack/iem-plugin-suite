@@ -4,17 +4,17 @@
  Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
- 
+
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
- 
+
  The IEM plug-in suite is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
@@ -36,14 +36,15 @@
     - Ambisonics<maxOrder> (can also be used for directivity signals)
  You can leave `maxChannelCount` and `maxOrder` empty for default values (64 channels and 7th order)
 */
-class MatrixMultiplicatorAudioProcessor  : public AudioProcessor,
+class MatrixMultiplierAudioProcessor  : public AudioProcessor,
                                         public AudioProcessorValueTreeState::Listener,
-                                        public IOHelper<IOTypes::AudioChannels<64>, IOTypes::AudioChannels<64>>
+                                        public IOHelper<IOTypes::AudioChannels<64>, IOTypes::AudioChannels<64>>,
+                                        public VSTCallbackHandler
 {
 public:
     //==============================================================================
-    MatrixMultiplicatorAudioProcessor();
-    ~MatrixMultiplicatorAudioProcessor();
+    MatrixMultiplierAudioProcessor();
+    ~MatrixMultiplierAudioProcessor();
 
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
@@ -81,35 +82,42 @@ public:
     //==============================================================================
     void parameterChanged (const String &parameterID, float newValue) override;
     void updateBuffers() override; // use this to implement a buffer update method
+
+    //======== PluginCanDo =========================================================
+    pointer_sized_int handleVstManufacturerSpecific (int32 index, pointer_sized_int value,
+                                                     void* ptr, float opt) override { return 0; };
+    pointer_sized_int handleVstPluginCanDo (int32 index, pointer_sized_int value,
+                                            void* ptr, float opt) override;
+    //==============================================================================
     
     void setMatrix(ReferenceCountedMatrix::Ptr newMatrixToUse) {
         matTrans.setMatrix(newMatrixToUse);
     }
-    
+
     File getLastDir() {return lastDir;}
     void setLastDir(File newLastDir);
-    void loadPreset(const File& presetFile);
-    
+    void loadConfiguration(const File& configurationFile);
+
     bool messageChanged {true};
     String getMessageForEditor() {return messageForEditor;}
-    
+
     ReferenceCountedMatrix::Ptr getCurrentMatrix() {return currentMatrix;}
-    
+
 private:
     // ====== parameters
     AudioProcessorValueTreeState parameters;
-    
+
     // list of used audio parameters
 //    float *inputChannelsSetting, *outputChannelsSetting;
-    
+
     MatrixMultiplication matTrans;
     ReferenceCountedMatrix::Ptr currentMatrix {nullptr};
-    
+
     File lastDir;
     File lastFile;
     ScopedPointer<PropertiesFile> properties;
-    
-    String messageForEditor {"No preset loaded."};
+
+    String messageForEditor {"Please load a configuration."};
     //==============================================================================
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MatrixMultiplicatorAudioProcessor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MatrixMultiplierAudioProcessor)
 };

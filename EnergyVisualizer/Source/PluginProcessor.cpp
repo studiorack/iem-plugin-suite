@@ -4,17 +4,17 @@
  Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
- 
+
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
- 
+
  The IEM plug-in suite is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
@@ -52,7 +52,7 @@ parameters(*this, nullptr)
                                           else if (value >= 7.5f) return "7th";
                                           else return "Auto";
                                       }, nullptr);
-    
+
     parameters.createAndAddParameter ("useSN3D", "Normalization", "",
                                       NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                       [](float value)
@@ -60,30 +60,30 @@ parameters(*this, nullptr)
                                           if (value >= 0.5f ) return "SN3D";
                                           else return "N3D";
                                       }, nullptr);
-    
+
     parameters.createAndAddParameter("peakLevel", "Peak level", "dB",
                                      NormalisableRange<float> (-50.0f, 10.0f, 0.1f), 0.0,
-                                     [](float value) {return String(value);}, nullptr);
+                                     [](float value) {return String(value, 1);}, nullptr);
 
-    
+
     orderSetting = parameters.getRawParameterValue ("orderSetting");
     useSN3D = parameters.getRawParameterValue ("useSN3D");
     peakLevel = parameters.getRawParameterValue ("peakLevel");
-    
+
     parameters.addParameterListener ("orderSetting", this);
-    
+
     parameters.state = ValueTree (Identifier ("EnergyVisualizer"));
-    
+
     Eigen::Matrix<float,64,nSamplePoints> Y;
     // calc Y and YH
     for (int point=0; point<nSamplePoints; ++point)
     {
-        SHEval(7, hammerAitovSampleX[point], hammerAitovSampleY[point], hammerAitovSampleZ[point], Y.data()+point*64);
+        SHEval(7, hammerAitovSampleX[point], hammerAitovSampleY[point], hammerAitovSampleZ[point], Y.data() + point * 64, false);
         FloatVectorOperations::multiply(Y.data()+point*64, Y.data()+point*64, sn3d2n3d, 64); //expecting sn3d normalization -> converting it to n3d
     }
-    Y *= 1.0f/correction(7); // revert 7th order correction
+    Y *= 1.0f / decodeCorrection(7); // revert 7th order correction
     YH = Y.transpose();
-    
+
 //    DBG(hammerAitovSampleX[218] << " - " << hammerAitovSampleY[218] << " - " << hammerAitovSampleZ[218]);
     rms.resize(nSamplePoints);
 }
@@ -179,41 +179,42 @@ bool EnergyVisualizerAudioProcessor::isBusesLayoutSupported (const BusesLayout& 
 void EnergyVisualizerAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
     ScopedNoDenormals noDenormals;
-    
+
     checkInputAndOutput(this, *orderSetting, 0);
-    
+
     //const int nCh = buffer.getNumChannels();
     const int L = buffer.getNumSamples();
     const int workingOrder = jmin(isqrt(buffer.getNumChannels())-1, input.getOrder());
-    
+
     const int nCh = squares[workingOrder+1];
     //DBG(buffer.getNumChannels() << " - " << workingOrder << " - " << nCh);
-    
-    
+
+
     Eigen::Map<const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>> inpMatrix (buffer.getReadPointer(0),nCh,L);
-    
+
     Eigen::Map<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>> outMatrix (sampledSignals.getWritePointer(0), nSamplePoints,L);
 
     //outMatrix = YH.block(0,0,tDesignN,nCh) * inpMatrix;
     FloatVectorOperations::clear(&maxReWeights.diagonal()[0],64);
     copyMaxRE(workingOrder, &maxReWeights.diagonal()[0]);
-    FloatVectorOperations::multiply(&maxReWeights.diagonal()[0], maxRECorrection[workingOrder] * correction(workingOrder), nCh);
-    
+    FloatVectorOperations::multiply(&maxReWeights.diagonal()[0], maxRECorrection[workingOrder] * decodeCorrection(workingOrder), nCh);
+
     if (*useSN3D < 0.5f)
     {
         FloatVectorOperations::multiply(&maxReWeights.diagonal()[0], n3d2sn3d, 64);
     }
+    
     workingMatrix = YH * maxReWeights;
     //workingMatrix = YH; // * maxReWeights;
     outMatrix = workingMatrix.block(0, 0, nSamplePoints, nCh) * inpMatrix;
-    
+
     float* pRms = rms.getRawDataPointer();
     float oneMinusTimeConstant = 1.0f - timeConstant;
     for (int i = 0; i < nSamplePoints; ++i)
     {
         pRms[i] = timeConstant * pRms[i] + oneMinusTimeConstant * ((Decibels::gainToDecibels(sampledSignals.getRMSLevel(i, 0, L)) - *peakLevel) / 35.0f + 1.0f);
     }
-    
+
     FloatVectorOperations::clip(rms.getRawDataPointer(), rms.getRawDataPointer(), 0.0f, 1.0f, nSamplePoints);
 }
 
@@ -249,10 +250,20 @@ void EnergyVisualizerAudioProcessor::parameterChanged (const String &parameterID
 }
 
 //==============================================================================
+pointer_sized_int EnergyVisualizerAudioProcessor::handleVstPluginCanDo (int32 index,
+                                                                     pointer_sized_int value, void* ptr, float opt)
+{
+    auto text = (const char*) ptr;
+    auto matches = [=](const char* s) { return strcmp (text, s) == 0; };
+
+    if (matches ("wantsChannelCountNotifications"))
+        return 1;
+    return 0;
+}
+
+//==============================================================================
 // This creates new instances of the plugin..
 AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new EnergyVisualizerAudioProcessor();
 }
-
-

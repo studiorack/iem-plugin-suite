@@ -1,11 +1,56 @@
 This file only contains the major changes of the IEM Plug-in Suite.
 For a list of all changes and bugfixes see the git log.
 
+Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They might lead to an unexpected behaviour and might not be compatible with your previous projects without making some adaptions. See the [Breaking changes article](http://localhost:1313/docs/breakingchanges/) for more information.
+
+## v1.3.0
+- general changes
+    - unity gain normalization has moved fully to the decoding stage:  (`!!BREAKING CHANGE!!`)
+        - encoding a source results in unity gain in the W-channel (omni)
+        - decoding is normalized resulting in unity gain for the sampled mono signal
+    - renamed **Matrix**Multiplicator to **Matrix**Multiplier (`!!BREAKING CHANGE!!`)
+    - refactored SpherePanner, which fixes automation writing issues
+    - added linear elevation plot style to SpherePanner (triggered by double-click)
+
+- plug-in specific changes
+    - **AllRA**Decoder
+        - fixed distorted visualization
+        - added visualization of the acos-rE source width
+    - **Binaural**Decoder
+        - performance improvements
+        - new binaural filters
+    - **Dual**Delay
+        - fixed high CPU load which occured occasionally
+    - **Matrix**Multiplier
+        - smaller GUI changes
+    - **Multi**Encoder
+        - colour-chooser now has the same look as the elements in the sphere panner, again
+        - Solo/Mute changes will repaint sphere
+        - using azimuth and elevation instead of yaw and pitch  (`!!BREAKING CHANGE!!`)
+    - **Stereo**Encoder
+        - using azimuth and elevation instead of yaw and pitch  (`!!BREAKING CHANGE!!`)
+    - **Probe**Decoder
+        - using azimuth and elevation instead of yaw and pitch  (`!!BREAKING CHANGE!!`)
+    - **DirectionalCompressor**Decoder
+        - using azimuth and elevation instead of yaw and pitch  (`!!BREAKING CHANGE!!`)
+        - adjusted parameter limits (threshold and makeup gain)  (`!!BREAKING CHANGE!!`)
+    - **Directivity**Shaper
+        - added SN3D support (`!!BREAKING CHANGE!!`)
+        - renamed parameters (probe instead of master)  (`!!BREAKING CHANGE!!`)
+        - using azimuth and elevation instead of yaw and pitch  (`!!BREAKING CHANGE!!`)
+        - adjusted parameter limits (threshold and makeup gain)  (`!!BREAKING CHANGE!!`)
+    - **Room**Shaper
+        - added SN3D support (`!!BREAKING CHANGE!!`)
+    - **Simple**Decoder
+        - new bass-management (`!!BREAKING CHANGE!!`)
+        - added warning, showing if subwoofer channel is already occupied
+
+        
 ## v1.2.0
 - new plug-ins:
     - **AllRA**Decoder
     
-- plugin specific changes
+- plug-in specific changes
     - **Binaural**Decoder
         - refactored convolution -> way better performance on all platforms
     - **Matrix**Multiplicator
@@ -17,7 +62,7 @@ For a list of all changes and bugfixes see the git log.
     - directivity IO widget now shows the normalization (which is N3D)
     - added warning sign to titlebar widgets when bus is too small
     
-- plugin specific changes
+- plug-in specific changes
     - **Multi**Encoder
         - changed element colours are now displayed at once
     - **Binaural**Decoder
@@ -46,7 +91,7 @@ For a list of all changes and bugfixes see the git log.
     - some GUIs now resizable  
     - smaller GUI layout changes (e.g. ComboBox PopupMenu)
 
-- plugin specific changes
+- plug-in specific changes
     - **Multi**Encoder
         - maximum input channel size increased to 64 
         - parameters and colours are stored correctly now

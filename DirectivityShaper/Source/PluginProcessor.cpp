@@ -4,17 +4,17 @@
  Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
- 
+
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
- 
+
  The IEM plug-in suite is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
@@ -41,7 +41,7 @@ DirectivityShaperAudioProcessor::DirectivityShaperAudioProcessor()
 #endif
 parameters(*this, nullptr)
 {
-    parameters.createAndAddParameter ("orderSetting", "Input Order", "",
+    parameters.createAndAddParameter ("orderSetting", "Directivity Order", "",
                                       NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
                                       [](float value) {
                                           if (value >= 0.5f && value < 1.5f) return "0th";
@@ -54,17 +54,22 @@ parameters(*this, nullptr)
                                           else if (value >= 7.5f) return "7th";
                                           else return "Auto";},
                                       nullptr);
-    
-    parameters.createAndAddParameter("masterYaw", "Master Yaw", "",
+    parameters.createAndAddParameter ("useSN3D", "Directivity Normalization", "",
+                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
+                                      [](float value) { if (value >= 0.5f ) return "SN3D";
+                                          else return "N3D"; },
+                                      nullptr);
+
+    parameters.createAndAddParameter("probeAzimuth", "probe Azimuth", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
-                                     [](float value) {return String(value);}, nullptr);
-    parameters.createAndAddParameter("masterPitch", "Master Pitch", "",
+                                     [](float value) {return String(value, 2);}, nullptr);
+    parameters.createAndAddParameter("probeElevation", "probe Elevation", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
-                                     [](float value) {return String(value);}, nullptr);
-    parameters.createAndAddParameter("masterRoll", "Master Roll", "",
+                                     [](float value) {return String(value, 2);}, nullptr);
+    parameters.createAndAddParameter("probeRoll", "probe Roll", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
-                                     [](float value) {return String(value);}, nullptr);
-    parameters.createAndAddParameter("masterToggle", "Lock Directions", "",
+                                     [](float value) {return String(value, 2);}, nullptr);
+    parameters.createAndAddParameter("probeLock", "Lock Directions", "",
                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
                                      [](float value) {return (value >= 0.5f) ? "locked" : "not locked";}, nullptr);
     parameters.createAndAddParameter("normalization", "Directivity Normalization", "",
@@ -74,7 +79,7 @@ parameters(*this, nullptr)
                                          else if (value >= 1.5f && value < 2.5f) return "constant energy";
                                          else return "basic decode";
                                      }, nullptr);
-    
+
     for (int i = 0; i < numberOfBands; ++i)
     {
         parameters.createAndAddParameter("filterType" + String(i), "Filter Type " + String(i+1), "",
@@ -85,47 +90,48 @@ parameters(*this, nullptr)
                                              else if (value >= 2.5f) return "High-pass";
                                              else return "All-pass";},
                                          nullptr);
-        
+
         parameters.createAndAddParameter("filterFrequency" + String(i), "Filter Frequency " + String(i+1), "Hz",
                                          NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.4f), filterFrequencyPresets[i],
-                                         [](float value) {return String(value, 1);}, nullptr);
+                                         [](float value) { return String((int) value); }, nullptr);
         parameters.createAndAddParameter("filterQ" + String(i), "Filter Q " + String(i+1), "",
                                          NormalisableRange<float> (0.05f, 10.0f, 0.05f), 0.5f,
-                                         [](float value) {return String(value, 2);},
+                                         [](float value) { return String(value, 2); },
                                          nullptr);
         parameters.createAndAddParameter("filterGain" + String(i), "Filter Gain " + String(i+1), "dB",
                                          NormalisableRange<float> (-60.0f, 10.0f, 0.1f), 0.0f,
-                                         [](float value) {return (value >= -59.9f) ? String(value, 1) : "-inf";},
+                                         [](float value) { return (value >= -59.9f) ? String(value, 1) : "-inf"; },
                                          nullptr);
         parameters.createAndAddParameter("order" + String(i), "Order Band " + String(i+1), "",
                                          NormalisableRange<float> (0.0f, 7.0f, 0.01f), 0.0,
-                                         [](float value) {return String(value, 2);}, nullptr);
+                                         [](float value) { return String(value, 2); }, nullptr);
         parameters.createAndAddParameter("shape" + String(i), "Shape Band " + String(i+1), "",
                                          NormalisableRange<float> (0.0f, 1.0f, 0.01f), 0.0,
-                                         [](float value) {return String(value, 2);}, nullptr);
-        parameters.createAndAddParameter("yaw" + String(i), "Yaw Band " + String(i+1), "",
+                                         [](float value) { return String(value, 2); }, nullptr);
+        parameters.createAndAddParameter("azimuth" + String(i), "Azimuth Band " + String(i+1), CharPointer_UTF8 (R"(°)"),
                                          NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
-                                         [](float value) {return String(value, 2);}, nullptr);
-        parameters.createAndAddParameter("pitch" + String(i), "Pitch Band " + String(i+1), "",
+                                         [](float value) { return String(value, 2); }, nullptr);
+        parameters.createAndAddParameter("elevation" + String(i), "Elevation Band " + String(i+1), CharPointer_UTF8 (R"(°)"),
                                          NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
                                          [](float value) {return String(value, 2);}, nullptr);
     }
-    
-    
+
+
     orderSetting = parameters.getRawParameterValue ("orderSetting");
-    masterYaw = parameters.getRawParameterValue ("masterYaw");
-    masterPitch = parameters.getRawParameterValue ("masterPitch");
-    masterRoll = parameters.getRawParameterValue ("masterRoll");
-    masterToggle = parameters.getRawParameterValue ("masterToggle");
+    useSN3D = parameters.getRawParameterValue ("useSN3D");
+    probeAzimuth = parameters.getRawParameterValue ("probeAzimuth");
+    probeElevation = parameters.getRawParameterValue ("probeElevation");
+    probeRoll = parameters.getRawParameterValue ("probeRoll");
+    probeLock = parameters.getRawParameterValue ("probeLock");
     normalization = parameters.getRawParameterValue("normalization");
-    
+
     parameters.addParameterListener("orderSetting", this);
-    parameters.addParameterListener("masterToggle", this);
-    parameters.addParameterListener("masterYaw", this);
-    parameters.addParameterListener("masterPitch", this);
-    parameters.addParameterListener("masterRoll", this);
-    
-    
+    parameters.addParameterListener("probeLock", this);
+    parameters.addParameterListener("probeAzimuth", this);
+    parameters.addParameterListener("probeElevation", this);
+    parameters.addParameterListener("probeRoll", this);
+
+
     for (int i = 0; i < numberOfBands; ++i)
     {
         filterType[i] = parameters.getRawParameterValue ("filterType" + String(i));
@@ -134,33 +140,33 @@ parameters(*this, nullptr)
         filterGain[i] = parameters.getRawParameterValue ("filterGain" + String(i));
         order[i] = parameters.getRawParameterValue ("order" + String(i));
         shape[i] = parameters.getRawParameterValue ("shape" + String(i));
-        yaw[i] = parameters.getRawParameterValue ("yaw" + String(i));
-        pitch[i] = parameters.getRawParameterValue ("pitch" + String(i));
+        azimuth[i] = parameters.getRawParameterValue ("azimuth" + String(i));
+        elevation[i] = parameters.getRawParameterValue ("elevation" + String(i));
         parameters.addParameterListener("filterType" + String(i), this);
         parameters.addParameterListener("filterFrequency" + String(i), this);
         parameters.addParameterListener("filterQ" + String(i), this);
         parameters.addParameterListener("filterGain" + String(i), this);
-        parameters.addParameterListener("yaw" + String(i), this);
-        parameters.addParameterListener("pitch" + String(i), this);
+        parameters.addParameterListener("azimuth" + String(i), this);
+        parameters.addParameterListener("elevation" + String(i), this);
         parameters.addParameterListener("order" + String(i), this);
         parameters.addParameterListener("shape" + String(i), this);
         parameters.addParameterListener("normalization", this);
-        
+
         probeGains[i] = 0.0f;
     }
-    
+
     parameters.state = ValueTree (Identifier ("DirectivityShaper"));
-    
-    
+
+
     FloatVectorOperations::clear(shOld[0], 64 * numberOfBands);
     FloatVectorOperations::clear(weights[0], 8 * numberOfBands);
-    
-    
+
+
     for (int i = 0; i < numberOfBands; ++i)
     {
         filter[i].coefficients = createFilterCoefficients(roundToInt(*filterType[i]), 44100, *filterFrequency[i], *filterQ[i]);
     }
-    
+
 }
 
 inline dsp::IIR::Coefficients<float>::Ptr DirectivityShaperAudioProcessor::createFilterCoefficients(int type, double sampleRate, double frequency, double Q)
@@ -250,13 +256,13 @@ void DirectivityShaperAudioProcessor::changeProgramName (int index, const String
 void DirectivityShaperAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     checkInputAndOutput(this, 1, *orderSetting, true);
-    
+
     for (int i = 0; i < numberOfBands; ++i)
     {
         *filter[i].coefficients = *createFilterCoefficients(roundToInt(*filterType[i]), sampleRate, *filterFrequency[i], *filterQ[i]);
         filter[i].reset();
     }
-    
+
     filteredBuffer.setSize(numberOfBands, samplesPerBlock);
 }
 
@@ -277,13 +283,15 @@ void DirectivityShaperAudioProcessor::processBlock (AudioSampleBuffer& buffer, M
 {
     checkInputAndOutput(this, 1, *orderSetting);
     ScopedNoDenormals noDenormals;
-    
+
+    const bool applySN3D = *useSN3D > 0.5f;
+
     int nChToWorkWith = jmin(buffer.getNumChannels(), output.getNumberOfChannels());
     const int orderToWorkWith = isqrt(nChToWorkWith) - 1;
     nChToWorkWith = squares[orderToWorkWith+1];
-    
+
     const int numSamples = buffer.getNumSamples();
-    
+
     AudioBlock<float> inBlock = AudioBlock<float>(buffer.getArrayOfWritePointers(), 1, numSamples);
     for (int i = 0; i < numberOfBands; ++i)
     {
@@ -291,119 +299,84 @@ void DirectivityShaperAudioProcessor::processBlock (AudioSampleBuffer& buffer, M
         AudioBlock<float> outBlock = AudioBlock<float>(filteredBuffer.getArrayOfWritePointers() + i, 1, numSamples);
         filter[i].process(ProcessContextNonReplacing<float>(inBlock, outBlock));
     }
-    
+
     buffer.clear();
-    
+
     float sh[64];
-    float masterSH[64];
-    
+    float probeSH[64];
+
     {
-        Vector3D<float> pos = yawPitchToCartesian(degreesToRadians(*masterYaw), degreesToRadians(*masterPitch));
-        SHEval(orderToWorkWith, pos.x, pos.y, pos.z, masterSH);
+        Vector3D<float> pos = Conversions<float>::sphericalToCartesian(degreesToRadians(*probeAzimuth), degreesToRadians(*probeElevation));
+        SHEval(orderToWorkWith, pos.x, pos.y, pos.z, probeSH, false); // decoding -> false
+        if (applySN3D)
+        { // reverting SN3D in probeSH
+            FloatVectorOperations::multiply(probeSH, sn3d2n3d, nChToWorkWith);
+        }
     }
-    
-    
+
+    Weights::Normalization norm;
+    if (*normalization < 0.5f)
+        norm = Weights::Normalization::BasicDecode;
+    else if (*normalization >= 0.5f && *normalization < 1.5f)
+        norm = Weights::Normalization::OnAxis;
+    else
+        norm = Weights::Normalization::ConstantEnergy;
+
+
     for (int b = 0; b < numberOfBands; ++b)
     {
-        float orderBlend, integer;
-        orderBlend = modff(*order[b], &integer);
-        int lowerOrder = roundToInt(integer);
-        if (lowerOrder == 7) {
-            lowerOrder = 6;
-            orderBlend = 1.0f;
-        }
-        int higherOrder = lowerOrder + 1;
-        
         float tempWeights[8];
-        if (*shape[b]>=0.5f)
-        {
-            float blend = *shape[b] * 2.0f - 1.0f;
-            for (int i=0; i<=orderToWorkWith; ++i)
-            {
-                tempWeights[i] = (1.0f-blend) *  maxRe[lowerOrder][i] + blend * inPhase[lowerOrder][i];
-                tempWeights[i] *= (1.0f-orderBlend);
-                tempWeights[i] += orderBlend * ((1.0f-blend) *  maxRe[higherOrder][i] + blend * inPhase[higherOrder][i]); ;
-            }
-        }
-        else
-        {
-            float blend = *shape[b] * 2.0f;
-            for (int i = 0; i <= orderToWorkWith; ++i)
-            {
-                tempWeights[i] = (1.0f-blend) *  basic[lowerOrder][i] + blend * maxRe[lowerOrder][i];
-                tempWeights[i] *= (1.0f-orderBlend);
-                tempWeights[i] += orderBlend * ((1.0f-blend) *  basic[higherOrder][i] + blend * maxRe[higherOrder][i]); ;
-            }
-        }
-        
-        float cor = 4.0f * M_PI / (higherOrder*higherOrder + (2 * higherOrder+1)*orderBlend);
-        cor = cor/correction(orderToWorkWith)/correction(orderToWorkWith);
-        
-        if (*normalization >= 0.5f && *normalization < 1.5f)
-        {
-            float cor2 = 0.0f;
-            for (int i = 0; i <= orderToWorkWith; ++i)
-                cor2 += (2*i + 1)*tempWeights[i];
-            float cor3;
-            if (higherOrder > orderToWorkWith)
-                cor3 = (squares[orderToWorkWith+1]);
-            else
-                cor3 = (squares[higherOrder] + (2 * higherOrder + 1)*orderBlend);
-            
-            cor2 = cor3/cor2;
-            cor *= cor2;
-        }
-        
-        if (*normalization >= 1.5f)
-        {
-            float sum = 0.0f;
-            for (int i = 0; i <= orderToWorkWith; ++i)
-                sum += tempWeights[i]  * tempWeights[i] * (2*i + 1);
-            sum = 1.0f / sqrt(sum) * (orderToWorkWith + 1);
-            
-            for (int i = 0; i < 8; ++i )
-                tempWeights[i] = tempWeights[i] * sum;
-        }
-        else
-            for (int i = 0; i < 8; ++i )
-                tempWeights[i] = tempWeights[i] * cor;
-        
-        
-        Vector3D<float> pos = yawPitchToCartesian(degreesToRadians(*yaw[b]), degreesToRadians(*pitch[b]));
-        SHEval(orderToWorkWith, pos.x, pos.y, pos.z, sh);
-        
+        const int nWeights = Weights::getWeights(*order[b], *shape[b], tempWeights);
+
+        // fill higher orders with zeros
+        for (int i = nWeights; i < 8; ++i)
+            tempWeights[i] = 0.0f;
+
+        // ==== COPY WEIGHTS FOR GUI VISUALIZATION ====
+        // copy non-normalized weights for GUI
+        FloatVectorOperations::copy(weights[b], tempWeights, 8);
+
+        // normalize weights for GUI (7th order decode)
+        Weights::applyNormalization(weights[b], *order[b], 7, norm);
+        // ============================================
+
+        // normalize weights for audio
+        Weights::applyNormalization(tempWeights, *order[b], orderToWorkWith, norm, applySN3D);
+
+
+        Vector3D<float> pos = Conversions<float>::sphericalToCartesian(degreesToRadians(*azimuth[b]), degreesToRadians(*elevation[b]));
+        SHEval(orderToWorkWith, pos.x, pos.y, pos.z, sh, true); // encoding -> true
+
         float temp = 0.0f;
         float shTemp[64];
         FloatVectorOperations::multiply(shTemp, sh, Decibels::decibelsToGain(*filterGain[b]), 64);
         for (int i = 0; i < nChToWorkWith; ++i)
         {
             shTemp[i] *= tempWeights[isqrt(i)];
-            temp += shTemp[i] * masterSH[i];
-            buffer.addFromWithRamp(i, 0, filteredBuffer.getReadPointer(b), numSamples,shOld[b][i], shTemp[i]);
+            temp += shTemp[i] * probeSH[i];
+            buffer.addFromWithRamp(i, 0, filteredBuffer.getReadPointer(b), numSamples, shOld[b][i], shTemp[i]);
         }
-        probeGains[b] = std::abs(temp);
         
+        probeGains[b] = std::abs(temp);
+
         if (probeChanged)
         {
             probeChanged = false;
             repaintFV = true;
+            repaintSphere = true;
         }
-        
-        cor = correction(orderToWorkWith)/correction(7);
-        cor *= cor;
         FloatVectorOperations::copy(shOld[b], shTemp, 64);
-        for (int i = 0; i <= orderToWorkWith ; ++i)
-            weights[b][i] = cor*tempWeights[i];
-        for (int i = orderToWorkWith + 1; i < 8; ++i)
-            weights[b][i] = 0.0f;
     }
     
-    if (changeWeights) {
+    
+    if (changeWeights)
+    {
         changeWeights = false;
         repaintDV = true;
+        repaintXY = true;
         repaintFV = true;
     }
-    
+
 }
 
 //==============================================================================
@@ -434,84 +407,87 @@ void DirectivityShaperAudioProcessor::setStateInformation (const void* data, int
 //==============================================================================
 void DirectivityShaperAudioProcessor::parameterChanged (const String &parameterID, float newValue)
 {
-    if (parameterID == "orderSetting") userChangedIOSettings = true;
-    else if (parameterID == "masterToggle")
+    if (parameterID == "orderSetting")
+    {
+        userChangedIOSettings = true;
+        changeWeights = true;
+    }
+    else if (parameterID == "probeLock")
     {
         if (newValue >= 0.5f && !toggled)
         {
             DBG("toggled");
-            
+
             float ypr[3];
             ypr[2] = 0.0f;
             for (int i = 0; i < numberOfBands; ++i)
             {
-                iem::Quaternion<float> masterQuat;
-                float masterypr[3];
-                masterypr[0] = degreesToRadians(*masterYaw);
-                masterypr[1] = degreesToRadians(*masterPitch);
-                masterypr[2] = degreesToRadians(*masterRoll);
-                masterQuat.fromYPR(masterypr);
-                masterQuat.conjugate();
-                
-                ypr[0] = degreesToRadians(*yaw[i]);
-                ypr[1] = degreesToRadians(*pitch[i]);
+                iem::Quaternion<float> probeQuat;
+                float probeypr[3];
+                probeypr[0] = degreesToRadians(*probeAzimuth);
+                probeypr[1] = degreesToRadians(*probeElevation);
+                probeypr[2] = - degreesToRadians(*probeRoll);
+                probeQuat.fromYPR(probeypr);
+                probeQuat.conjugate();
+
+                ypr[0] = degreesToRadians(*azimuth[i]);
+                ypr[1] = degreesToRadians(*elevation[i]);
                 quats[i].fromYPR(ypr);
-                quats[i] = masterQuat*quats[i];
+                quats[i] = probeQuat*quats[i];
             }
             toggled = true;
         }
         else if (newValue < 0.5f)
             toggled = false;
     }
-    else if ((parameterID == "masterYaw") ||  (parameterID == "masterPitch") ||  (parameterID == "masterRoll"))
+    else if ((parameterID == "probeAzimuth") ||  (parameterID == "probeElevation") ||  (parameterID == "probeRoll"))
     {
-        
+
         if (toggled)
         {
             DBG("moving");
             moving = true;
-            iem::Quaternion<float> masterQuat;
+            iem::Quaternion<float> probeQuat;
             float ypr[3];
-            ypr[0] = degreesToRadians(*masterYaw);
-            ypr[1] = degreesToRadians(*masterPitch);
-            ypr[2] = degreesToRadians(*masterRoll);
-            masterQuat.fromYPR(ypr);
-            
+            ypr[0] = degreesToRadians(*probeAzimuth);
+            ypr[1] = degreesToRadians(*probeElevation);
+            ypr[2] = - degreesToRadians(*probeRoll);
+            probeQuat.fromYPR(ypr);
+
             for (int i = 0; i < numberOfBands; ++i)
             {
-                iem::Quaternion<float> temp = masterQuat*quats[i];
+                iem::Quaternion<float> temp = probeQuat*quats[i];
                 temp.toYPR(ypr);
-                parameters.getParameterAsValue("yaw" + String(i)).setValue(radiansToDegrees(ypr[0]));
-                parameters.getParameterAsValue("pitch" + String(i)).setValue(radiansToDegrees(ypr[1]));
+                parameters.getParameterAsValue("azimuth" + String(i)).setValue(radiansToDegrees(ypr[0]));
+                parameters.getParameterAsValue("elevation" + String(i)).setValue(radiansToDegrees(ypr[1]));
             }
             moving = false;
             repaintSphere = true;
         }
         else
             probeChanged = true;
-        
+
     }
-    else if (  (parameterID.startsWith("yaw") || parameterID.startsWith("pitch")))
+    else if (parameterID.startsWith("azimuth") || parameterID.startsWith("elevation"))
     {
         if (toggled && !moving)
         {
-            DBG("yawPitch");
             float ypr[3];
             ypr[2] = 0.0f;
             for (int i = 0; i < numberOfBands; ++i)
             {
-                iem::Quaternion<float> masterQuat;
-                float masterypr[3];
-                masterypr[0] = degreesToRadians(*masterYaw);
-                masterypr[1] = degreesToRadians(*masterPitch);
-                masterypr[2] = degreesToRadians(*masterRoll);
-                masterQuat.fromYPR(masterypr);
-                masterQuat.conjugate();
-                
-                ypr[0] = degreesToRadians(*yaw[i]);
-                ypr[1] = degreesToRadians(*pitch[i]);
+                iem::Quaternion<float> probeQuat;
+                float probeypr[3];
+                probeypr[0] = degreesToRadians(*probeAzimuth);
+                probeypr[1] = degreesToRadians(*probeElevation);
+                probeypr[2] = - degreesToRadians(*probeRoll);
+                probeQuat.fromYPR(probeypr);
+                probeQuat.conjugate();
+
+                ypr[0] = degreesToRadians(*azimuth[i]);
+                ypr[1] = degreesToRadians(*elevation[i]);
                 quats[i].fromYPR(ypr);
-                quats[i] = masterQuat*quats[i];
+                quats[i] = probeQuat*quats[i];
             }
         }
         repaintSphere = true;
@@ -532,18 +508,21 @@ void DirectivityShaperAudioProcessor::parameterChanged (const String &parameterI
 }
 
 //==============================================================================
+pointer_sized_int DirectivityShaperAudioProcessor::handleVstPluginCanDo (int32 index,
+                                                                     pointer_sized_int value, void* ptr, float opt)
+{
+    auto text = (const char*) ptr;
+    auto matches = [=](const char* s) { return strcmp (text, s) == 0; };
+
+    if (matches ("wantsChannelCountNotifications"))
+        return 1;
+    return 0;
+}
+
+
+//==============================================================================
 // This creates new instances of the plugin..
 AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new DirectivityShaperAudioProcessor();
-}
-
-inline Vector3D<float> DirectivityShaperAudioProcessor::yawPitchToCartesian(float yawInRad, float pitchInRad) {
-    float cosPitch = cos(pitchInRad);
-    return Vector3D<float>(cosPitch * cos(yawInRad), cosPitch * sin(yawInRad), sin(-1.0f * pitchInRad));
-}
-
-inline Point<float> DirectivityShaperAudioProcessor::cartesianToYawPitch(Vector3D<float> pos) {
-    float hypxy = sqrt(pos.x*pos.x+pos.y*pos.y);
-    return Point<float>(atan2(pos.y,pos.x), atan2(hypxy,pos.z)-M_PI/2);
 }

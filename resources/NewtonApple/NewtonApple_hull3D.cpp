@@ -1,3 +1,7 @@
+/*
+ This file was modified to fit the requirements of the IEM Plug-in Suite.
+ */
+
 #include <iostream>
 #include <set>
 #include <vector>
@@ -6,6 +10,7 @@
 #include <math.h>
 #include <string>
 #include <algorithm>
+#include <cstring>
 
 
 #include "NewtonApple_hull3D.h"
@@ -266,7 +271,7 @@ int NewtonApple_Delaunay( std::vector<R3> &pts, std::vector<Tri> &hulk)
             if( taken[T.ab] < 0 ){
                 cerr << "broken hull" << endl;
                 delete [] taken;
-                exit(0);
+                return -1; //exit(0);
             }
             T.ab = taken[T.ab];
             
@@ -274,14 +279,14 @@ int NewtonApple_Delaunay( std::vector<R3> &pts, std::vector<Tri> &hulk)
             if( taken[T.bc] < 0 ){
                 cerr << "broken hull" << endl;
                 delete [] taken;
-                exit(0);
+                return -1; //exit(0);
             }
             T.bc = taken[T.bc];
             
             if( taken[T.ac] < 0 ){
                 cerr << "broken hull" << endl;
                 delete [] taken;
-                exit(0);
+                return -1; //exit(0);
             }
             T.ac = taken[T.ac];
             
@@ -348,7 +353,7 @@ int NewtonApple_hull_3D( std::vector<R3> &pts, std::vector<Tri> &hulk)
             if( taken[T.ab] < 0 ){
                 cerr << "broken hull" << endl;
                 delete [] taken;
-                exit(0);
+                return -1; //exit(0);
             }
             T.ab = taken[T.ab];
             
@@ -356,14 +361,14 @@ int NewtonApple_hull_3D( std::vector<R3> &pts, std::vector<Tri> &hulk)
             if( taken[T.bc] < 0 ){
                 cerr << "broken hull" << endl;
                 delete [] taken;
-                exit(0);
+                return -1; //exit(0);
             }
             T.bc = taken[T.bc];
             
             if( taken[T.ac] < 0 ){
                 cerr << "broken hull" << endl;
                 delete [] taken;
-                exit(0);
+                return -1; //exit(0);
             }
             T.ac = taken[T.ac];
             
@@ -449,7 +454,7 @@ int init_hull3D( std::vector<R3> &pts, std::vector<Tri> &hull)
     float e2 = r01*c02 - r02*c01;
     
     if( e0==0 && e1==0 && e2==0 ){ // do not add a facet.
-        cerr << "stop fucking me arround and give me a valid opening facet, you tit. " << endl;
+        cerr << "stop fucking me around and give me a valid opening facet, you tit. " << endl;
         return(-1);
     }
     
@@ -1249,7 +1254,7 @@ int init_hull3D_compact( std::vector<R3> &pts, std::vector<Tri> &hull)
     float e2 = r01*c02 - r02*c01;
     
     if( e0==0 && e1==0 && e2==0 ){ // do not add a facet.
-        cerr << "stop fucking me arround and give me a valid opening facet, you tit. " << endl;
+        cerr << "stop fucking me around and give me a valid opening facet, you tit. " << endl;
         return(-1);
     }
     

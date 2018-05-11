@@ -2,17 +2,17 @@
 
 <JUCERPROJECT id="PASmMZ" name="DirectionalCompressor" displaySplashScreen="0"
               reportAppUsage="0" splashScreenColour="Dark" projectType="audioplug"
-              version="0.9.1" bundleIdentifier="at.iem.DirectionalCompressor"
+              version="1.0.0" bundleIdentifier="at.iem.DirectionalCompressor"
               includeBinaryInAppConfig="1" buildVST="1" buildVST3="0" buildAU="0"
               buildAUv3="0" buildRTAS="0" buildAAX="0" buildStandalone="1"
               enableIAA="0" pluginName="DirectionalCompressor" pluginDesc="DirectionalCompressor"
               pluginManufacturer="IEM" pluginManufacturerCode="IEMA" pluginCode="DiCo"
               pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
-              pluginAUExportPrefix="DirectionalCompressorAU" pluginRTASCategory=""
-              aaxIdentifier="at.iem.DirectionalCompressor" pluginAAXCategory="AAX_ePlugInCategory_Dynamics"
-              jucerVersion="5.2.1" cppLanguageStandard="14" companyName="IEM"
-              companyWebsite="IEM.at" companyCopyright="IEM - Daniel Rudrich">
+              pluginAUExportPrefix="DirectionalCompressorAU" aaxIdentifier="at.iem.DirectionalCompressor"
+              pluginAAXCategory="2" jucerVersion="5.3.2" cppLanguageStandard="14"
+              companyName="IEM" companyWebsite="IEM.at" companyCopyright="IEM - Daniel Rudrich"
+              headerPath="../../../resources/" pluginFormats="buildVST,buildStandalone">
   <MAINGROUP id="Ld9vSw" name="DirectionalCompressor">
     <GROUP id="{DCBFE562-E532-8599-82E1-FE126A7BB663}" name="lookAndFeel">
       <FILE id="IYBFfk" name="IEM_LaF.h" compile="0" resource="0" file="../resources/lookAndFeel/IEM_LaF.h"/>
@@ -42,7 +42,8 @@
         <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="DirectionalCompressor"
                        enablePluginBinaryCopyStep="1" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"/>
         <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="DirectionalCompressor"
-                       linkTimeOptimisation="1" enablePluginBinaryCopyStep="1" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"/>
+                       linkTimeOptimisation="1" enablePluginBinaryCopyStep="1" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"
+                       osxCompatibility="10.9 SDK"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_core" path="../../../../../Applications/JUCE/modules"/>
@@ -134,5 +135,10 @@
     <MODULE id="juce_gui_extra" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_opengl" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
   </MODULES>
-  <JUCEOPTIONS JUCE_QUICKTIME="disabled"/>
+  <JUCEOPTIONS JUCE_QUICKTIME="disabled" JUCE_WEB_BROWSER="0" JUCE_USE_FLAC="0"
+               JUCE_USE_OGGVORBIS="0" JUCE_USE_MP3AUDIOFORMAT="0" JUCE_USE_LAME_AUDIO_FORMAT="0"
+               JUCE_USE_WINDOWS_MEDIA_FORMAT="0"/>
+  <LIVE_SETTINGS>
+    <OSX/>
+  </LIVE_SETTINGS>
 </JUCERPROJECT>

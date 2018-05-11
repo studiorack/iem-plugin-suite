@@ -4,17 +4,17 @@
  Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
- 
+
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
- 
+
  The IEM plug-in suite is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
@@ -34,16 +34,16 @@
 #include "../../resources/efficientSHvanilla.h"
 #include "../../resources/ambisonicTools.h"
 #include "../../resources/IOHelper.h"
-
-
+#include "../../resources/Conversions.h"
 
 
 //==============================================================================
 /**
 */
 class MultiEncoderAudioProcessor  : public AudioProcessor,
-                                                public AudioProcessorValueTreeState::Listener,
-public IOHelper<IOTypes::AudioChannels<maxNumberOfInputs>, IOTypes::Ambisonics<>>
+                                    public AudioProcessorValueTreeState::Listener,
+                                    public IOHelper<IOTypes::AudioChannels<maxNumberOfInputs>, IOTypes::Ambisonics<>>,
+                                    public VSTCallbackHandler
 {
 public:
     //==============================================================================
@@ -81,43 +81,50 @@ public:
     //==============================================================================
     void getStateInformation (MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
-    
+
     void parameterChanged (const String &parameterID, float newValue) override;
-    
-    
+
+    //======== PluginCanDo =========================================================
+    pointer_sized_int handleVstManufacturerSpecific (int32 index, pointer_sized_int value,
+                                                     void* ptr, float opt) override { return 0; };
+    pointer_sized_int handleVstPluginCanDo (int32 index, pointer_sized_int value,
+                                            void* ptr, float opt) override;
+    //==============================================================================
+
+
     float xyzGrab[3];
     float xyz[maxNumberOfInputs][3];
-    
-    float *yaw[maxNumberOfInputs];
-    float *pitch[maxNumberOfInputs];
+
+    float *azimuth[maxNumberOfInputs];
+    float *elevation[maxNumberOfInputs];
     float *gain[maxNumberOfInputs];
     float *mute[maxNumberOfInputs];
     float *solo[maxNumberOfInputs];
-    
+
     BigInteger muteMask;
     BigInteger soloMask;
-    
-    float *masterYaw;
-    float *masterPitch;
+
+    float *masterAzimuth;
+    float *masterElevation;
     float *masterRoll;
     float *lockedToMaster;
-    
+
     float *inputSetting;
     float *orderSetting;
     float *useSN3D;
-    
+
 
     bool yprInput;
     double phi, theta;
-    
+
     bool updateColours = false;
     bool soloMuteChanged = true;
-    
+
     Colour elementColours[maxNumberOfInputs];
-    
+
     void updateBuffers() override;
     void updateQuaternions();
-    
+
 private:
     //==============================================================================
 //    iem::Quaternion quat;
@@ -125,22 +132,20 @@ private:
     bool processorUpdatingParams;
     AudioProcessorValueTreeState parameters;
     float masterYpr[3];
-  
+
     iem::Quaternion<float> quats[maxNumberOfInputs];
-    
+
     float dist[maxNumberOfInputs];
-    
+
     bool wasLockedBefore;
     bool locked = false;
     bool moving = false;
-    
+
     float SH[maxNumberOfInputs][64];
     float _SH[maxNumberOfInputs][64];
     float _gain[maxNumberOfInputs];
-    
-    
-    
+
     AudioBuffer<float> bufferCopy;
-    
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MultiEncoderAudioProcessor)
 };

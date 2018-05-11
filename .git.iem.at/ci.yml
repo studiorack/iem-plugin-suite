@@ -1,34 +1,64 @@
 # gitlab-ci configuration for the IEM Plugin Suite
 
 variables:
-# for now we exclude 'BinauralDecoder' as it is incompatible with JUCE-5.2.0 (huckleberry)
-  PROJECTS: DirectionalCompressor DirectivityShaper DualDelay EnergyVisualizer FdnReverb MatrixMultiplicator MultiEncoder OmniCompressor ProbeDecoder RoomEncoder SimpleDecoder StereoEncoder ToolBox
+  PROJECTS: AllRADecoder BinauralDecoder DirectionalCompressor DirectivityShaper DualDelay EnergyVisualizer FdnReverb MatrixMultiplicator MultiEncoder OmniCompressor ProbeDecoder RoomEncoder SimpleDecoder StereoEncoder ToolBox
   CONFIG: Release
+  PKGLIBS: jack flac vorbis vorbisenc vorbisfile ogg libjpeg libpng zlib fftw3f
+  JUCEVERSION: 5.3.2
 
 debian_buster:
   image: debian:buster
+  stage: build
   tags:
     - docker
   only:
     - master
     - develop
   script:
+# we need deb-src to be able to install the build-deps for 'iem-plugin-suite'
     - sed -e 's|^deb|deb-src|' /etc/apt/sources.list > /etc/apt/sources.list.d/deb-src.list
     - apt update -y
     - apt dist-upgrade -y
     - apt-get build-dep -y --no-install-recommends iem-plugin-suite
     - apt-get install -y --no-install-recommends libfftw3-dev
-    - xvfb-run -a make -k V=1 CONFIG=$CONFIG CPPFLAGS=-DJUCE_JACK=1 LDFLAGS="$(pkg-config --libs jack flac vorbis vorbisenc vorbisfile ogg libjpeg libpng zlib fftw3f)"
+    - xvfb-run -a make -k V=1 CONFIG=$CONFIG CPPFLAGS=-DJUCE_JACK=1 CFLAGS="$(pkg-config --cflags $PKGLIBS)" LDFLAGS="$(pkg-config --libs $PKGLIBS)"
 
 osx:
   tags:
     - osx
+  stage: build
   only:
     - master
     - develop
   script:
     - brew install fftw
-    - curl -o juce.zip https://d30pueezughrda.cloudfront.net/juce/juce-huckleberry-osx.zip
-    - unzip -q juce.zip -d ~
+    - curl -o juce.zip https://d30pueezughrda.cloudfront.net/juce/juce-${JUCEVERSION}-osx.zip
+    - mkdir -p ~/JUCE
+    - unzip -q juce.zip -d ~/JUCE
+    - mv ~/JUCE/JUCE/* ~/JUCE/ || true
     - make -k CONFIG=$CONFIG PROJUCER="~/JUCE/Projucer.app/Contents/MacOS/Projucer"
-  allow_failure: true
+
+windows:
+  tags:
+    - windows
+  variables:
+    IEMCI_CONFIGURATIONS: vs2017
+  stage: build
+  only:
+    - master
+    - develop
+  script:
+# install JUCE
+    - curl -o juce.zip https://d30pueezughrda.cloudfront.net/juce/juce-${JUCEVERSION}-windows.zip
+    - mkdir -p /c/JUCE
+    - unzip -q juce.zip -d /c/JUCE
+    - mv /c/JUCE/JUCE/* /c/JUCE/ || true
+# install fftw3
+    - curl -o fftw.x64.zip ftp://ftp.fftw.org/pub/fftw/fftw-3.3.5-dll64.zip
+    - mkdir -p resources/fftw3/x64/
+    - unzip fftw.x64.zip -d resources/fftw3/x64/
+    - for f in resources/fftw3/x64/libfftw3*.*; do mv -v "${f}" $(echo $f | sed -e 's|-|-3.|' -e 's|/libfftw3|/libfftw|'); done
+    - for f in resources/fftw3/x64/libfftw*.def; do Lib.exe -machine:x64 -def:"${f}"; done
+    - mv -v libfftw*.* resources/fftw3/x64/
+# run the actual build
+    - make -k CONFIG=$CONFIG PROJUCER="/c/JUCE/Projucer.exe"
