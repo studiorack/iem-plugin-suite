@@ -21,7 +21,7 @@ variables:
     - apt dist-upgrade -y
     - apt-get install -y --no-install-recommends juce-modules-source libfftw3-dev
     - .git-ci/getjuce.sh "${JUCEVERSION}-linux" ~/JUCE
-    - xvfb-run -a make -k V=1 CONFIG=$CONFIG CPPFLAGS=-DJUCE_JACK=1 CFLAGS="$(pkg-config --cflags $PKGLIBS)" LDFLAGS="$(pkg-config --libs $PKGLIBS)" PROJUCER=~/JUCE/Projucer
+    - xvfb-run -a make -k V=1 CONFIG=${CONFIG} CPPFLAGS=-DJUCE_JACK=1 CFLAGS="$(pkg-config --cflags ${PKGLIBS})" LDFLAGS="$(pkg-config --libs ${PKGLIBS})" PROJUCER=~/JUCE/Projucer
 
     - mkdir IEM
     - cp -rav */Builds/*/build/*.so IEM/
