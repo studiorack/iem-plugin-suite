@@ -3,7 +3,7 @@
 variables:
   PROJECTS: AllRADecoder BinauralDecoder DirectionalCompressor DirectivityShaper DualDelay EnergyVisualizer FdnReverb MatrixMultiplicator MultiEncoder OmniCompressor ProbeDecoder RoomEncoder SimpleDecoder StereoEncoder ToolBox
   CONFIG: Release
-  PKGLIBS: jack flac vorbis vorbisenc vorbisfile ogg libjpeg libpng zlib fftw3f
+  PKGLIBS: jack fftw3f
   JUCEVERSION: 5.3.2
 
 ### configuration templates (to be used for snapshot and release builds)
@@ -16,13 +16,11 @@ variables:
     - master
     - develop
   script:
-# we need deb-src to be able to install the build-deps for 'iem-plugin-suite'
-    - sed -e 's|^deb|deb-src|' /etc/apt/sources.list > /etc/apt/sources.list.d/deb-src.list
     - apt update -y
     - apt dist-upgrade -y
-    - apt-get build-dep -y --no-install-recommends iem-plugin-suite
-    - apt-get install -y --no-install-recommends libfftw3-dev
-    - xvfb-run -a make -k V=1 CONFIG=$CONFIG CPPFLAGS=-DJUCE_JACK=1 CFLAGS="$(pkg-config --cflags $PKGLIBS)" LDFLAGS="$(pkg-config --libs $PKGLIBS)"
+    - apt-get install -y --no-install-recommends juce-modules-source libfftw3-dev
+    - .git-ci/getjuce.sh "${JUCEVERSION}-linux" ~/JUCE
+    - xvfb-run -a make -k V=1 CONFIG=$CONFIG CPPFLAGS=-DJUCE_JACK=1 CFLAGS="$(pkg-config --cflags $PKGLIBS)" LDFLAGS="$(pkg-config --libs $PKGLIBS)" PROJUCER=~/JUCE/Projucer
 
     - mkdir IEM
     - cp -rav */Builds/*/build/*.so IEM/
