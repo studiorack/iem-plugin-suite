@@ -6,7 +6,8 @@ variables:
   PKGLIBS: jack flac vorbis vorbisenc vorbisfile ogg libjpeg libpng zlib fftw3f
   JUCEVERSION: 5.3.2
 
-debian_buster:
+### configuration templates (to be used for snapshot and release builds)
+debian_buster_template: &debian_buster_template
   image: debian:buster
   stage: build
   tags:
@@ -23,7 +24,10 @@ debian_buster:
     - apt-get install -y --no-install-recommends libfftw3-dev
     - xvfb-run -a make -k V=1 CONFIG=$CONFIG CPPFLAGS=-DJUCE_JACK=1 CFLAGS="$(pkg-config --cflags $PKGLIBS)" LDFLAGS="$(pkg-config --libs $PKGLIBS)"
 
-osx:
+    - mkdir IEM
+    - cp -rav */Builds/*/build/*.so IEM/
+
+osx_template: &osx_template
   tags:
     - osx
   stage: build
@@ -38,7 +42,10 @@ osx:
     - mv ~/JUCE/JUCE/* ~/JUCE/ || true
     - make -k CONFIG=$CONFIG PROJUCER="~/JUCE/Projucer.app/Contents/MacOS/Projucer"
 
-windows:
+    - mkdir IEM
+    - cp -rav */Builds/*/build/$(CONFIG)/*.vst IEM/
+
+windows_template: &windows_template
   tags:
     - windows
   variables:
@@ -54,11 +61,30 @@ windows:
     - unzip -q juce.zip -d /c/JUCE
     - mv /c/JUCE/JUCE/* /c/JUCE/ || true
 # install fftw3
-    - curl -o fftw.x64.zip ftp://ftp.fftw.org/pub/fftw/fftw-3.3.5-dll64.zip
-    - mkdir -p resources/fftw3/x64/
-    - unzip fftw.x64.zip -d resources/fftw3/x64/
-    - for f in resources/fftw3/x64/libfftw3*.*; do mv -v "${f}" $(echo $f | sed -e 's|-|-3.|' -e 's|/libfftw3|/libfftw|'); done
-    - for f in resources/fftw3/x64/libfftw*.def; do Lib.exe -machine:x64 -def:"${f}"; done
-    - mv -v libfftw*.* resources/fftw3/x64/
+    - .git-ci/fftw4win.sh $BITS
 # run the actual build
-    - make -k CONFIG=$CONFIG PROJUCER="/c/JUCE/Projucer.exe"
+    - make -k CONFIG=$CONFIG BITS=$BITS PROJUCER="/c/JUCE/Projucer.exe"
+
+    - mkdir IEM
+    - cp -rav */Builds/*/build/*/*.dll IEM/
+
+
+###################################################
+# expand the templates to real jobs
+#
+# development snapshots
+debian_buster_snapshot:
+  <<: *debian_buster_template
+
+osx_snapshot:
+  <<: *osx_template
+
+windows32_snapshot:
+  variables:
+    BITS: 32
+  <<: *windows_template
+
+windows64_snapshot:
+  variables:
+    BITS: 64
+  <<: *windows_template
