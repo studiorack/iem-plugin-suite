@@ -20,10 +20,13 @@ CONFIG = Release
 
 
 ifeq ($(BUILDSYSTEM), VS2017)
-  BITS = 64
-  WINTARGET = Release $(BITS)bit
+  WINBITS = $(BITS)
+  ifeq ($(WINBITS), )
+    WINBITS = 64
+  endif
+  WINTARGET = Release $(WINBITS)bit
   WINPLATFORM = x64
-  ifeq ($(CONFIG)$(BITS), Release32)
+  ifeq ($(CONFIG)$(WINBITS), Release32)
     WINPLATFORM = win32
   endif
   ifeq ($(CONFIG), Debug)
