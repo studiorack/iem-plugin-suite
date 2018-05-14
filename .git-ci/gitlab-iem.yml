@@ -7,7 +7,7 @@ variables:
   JUCEVERSION: 5.3.2
 
 ### configuration templates (to be used for snapshot and release builds)
-debian_buster_template: &debian_buster_template
+.debian_buster_template: &debian_buster_template
   image: debian:buster
   stage: build
   tags:
@@ -27,7 +27,7 @@ debian_buster_template: &debian_buster_template
     - mkdir IEM
     - cp -rav */Builds/*/build/*.so IEM/
 
-osx_template: &osx_template
+.osx_template: &osx_template
   tags:
     - osx
   stage: build
@@ -45,7 +45,7 @@ osx_template: &osx_template
     - mkdir IEM
     - cp -rav */Builds/*/build/$(CONFIG)/*.vst IEM/
 
-windows_template: &windows_template
+.windows_template: &windows_template
   tags:
     - windows
   variables:
