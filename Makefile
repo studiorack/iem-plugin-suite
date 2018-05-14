@@ -10,7 +10,6 @@ endif
 
 ifeq ($(findstring MSYS, $(uname)), MSYS)
   BUILDSYSTEM = VS2017
-  BITS = 64
 endif
 
 ifeq ($(uname), Darwin)
@@ -19,10 +18,27 @@ endif
 
 CONFIG = Release
 
+
+ifeq ($(BUILDSYSTEM), VS2017)
+  BITS = 64
+  WINTARGET = Release $(BITS)bit
+  WINPLATFORM = x64
+  ifeq ($(CONFIG)$(BITS), Release32)
+    WINPLATFORM = win32
+  endif
+  ifeq ($(CONFIG), Debug)
+    WINPLATFORM = x64
+    WINTARGET = Debug
+  endif
+endif
+
 system:
 	@echo "uname : $(uname)"
 	@echo "system: $(BUILDSYSTEM)"
 	@echo "config: $(CONFIG)"
+ifeq ($(BUILDSYSTEM), VS2017)
+	@echo "VS2017: $(WINTARGET) | $(WINPLATFORM)"
+endif
 
 # list of projects
 ALL_PROJECTS=$(patsubst %/, %, $(dir $(wildcard */*.jucer)))
@@ -92,9 +108,11 @@ $(ALL_PROJECTS:%=%-clean):
 # TODO: find out how to pass CONFIG and TARGET
 %-VS2017-build: $$(subst @,%,@/Builds/VisualStudio2017/@.sln)
 	MSBuild.exe \
+		-p:Configuration="Release $(BIT)bit",Platform=$(WINPLATFORM) \
 		$<
 %-VS2017-clean: $$(subst @,%,@/Builds/VisualStudio2017/@.sln)
 	MSBuild.exe \
+		-p:Configuration="Release $(BIT)bit",Platform=$(WINPLATFORM) \
 		-t:Clean \
 		$<
 
