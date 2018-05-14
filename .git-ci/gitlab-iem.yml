@@ -68,6 +68,11 @@ windows_template: &windows_template
     - mkdir IEM
     - cp -rav */Builds/*/build/*/*.dll IEM/
 
+
+###################################################
+# expand the templates to real jobs
+#
+# development snapshots
 debian_buster_snapshot:
   <<: *debian_buster_template
 
