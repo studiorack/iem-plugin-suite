@@ -20,7 +20,7 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
         - performance improvements
         - new binaural filters
     - **Dual**Delay
-        - fixed high CPU load which occured occasionally
+        - fixed high CPU load which occurred occasionally
     - **Matrix**Multiplier
         - smaller GUI changes
     - **Multi**Encoder

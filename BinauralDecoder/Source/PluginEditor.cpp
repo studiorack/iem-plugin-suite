@@ -31,7 +31,7 @@ BinauralDecoderAudioProcessorEditor::BinauralDecoderAudioProcessorEditor (Binaur
     // ============== BEGIN: essentials ======================
     // set GUI size and lookAndFeel
     setSize(450, 140); // use this to create a fixed-size GUI
-    //setResizeLimits(500, 300, 800, 500); // use this to create a resizeable GUI
+    //setResizeLimits(500, 300, 800, 500); // use this to create a resizable GUI
     setLookAndFeel (&globalLaF);
 
     // make title and footer visible, and set the PluginName

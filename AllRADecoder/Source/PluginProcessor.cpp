@@ -628,7 +628,7 @@ Result AllRADecoderAudioProcessor::checkLayout()
     const int result = NewtonApple_hull_3D(points, triangles);
     if (result != 1)
     {
-        return Result::fail("ERROR: An error occured! The layout might be broken somehow.");
+        return Result::fail("ERROR: An error occurred! The layout might be broken somehow.");
     }
 
     // normalise normal vectors
@@ -858,7 +858,7 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
     const float wHalf = w / 2;
     const int h = energyDistribution.getHeight();
     const float hHalf = h / 2;
-    float maxSumOfSuares = 0.0f;
+    float maxSumOfSquares = 0.0f;
     float minLvl = 0.0f;
     float maxLvl = 0.0f;
     for (int y = 0; y < h; ++y)
@@ -899,8 +899,8 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
             rEVector.setPixelAt(x, y, rEPixelColour);
             energyDistribution.setPixelAt(x, y, pixelColour);
 
-            if (sumOfSquares > maxSumOfSuares)
-                maxSumOfSuares = sumOfSquares;
+            if (sumOfSquares > maxSumOfSquares)
+                maxSumOfSquares = sumOfSquares;
         }
 
 
