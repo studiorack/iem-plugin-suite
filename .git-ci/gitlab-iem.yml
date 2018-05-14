@@ -36,10 +36,7 @@ variables:
     - develop
   script:
     - brew install fftw
-    - curl -o juce.zip https://d30pueezughrda.cloudfront.net/juce/juce-${JUCEVERSION}-osx.zip
-    - mkdir -p ~/JUCE
-    - unzip -q juce.zip -d ~/JUCE
-    - mv ~/JUCE/JUCE/* ~/JUCE/ || true
+    - .git-ci/getjuce.sh "${JUCEVERSION}-osx" ~/JUCE
     - make -k CONFIG=$CONFIG PROJUCER="~/JUCE/Projucer.app/Contents/MacOS/Projucer"
 
     - mkdir IEM
@@ -55,12 +52,7 @@ variables:
     - master
     - develop
   script:
-# install JUCE
-    - curl -o juce.zip https://d30pueezughrda.cloudfront.net/juce/juce-${JUCEVERSION}-windows.zip
-    - mkdir -p /c/JUCE
-    - unzip -q juce.zip -d /c/JUCE
-    - mv /c/JUCE/JUCE/* /c/JUCE/ || true
-# install fftw3
+    - .git-ci/getjuce.sh "${JUCEVERSION}-windows" /c/JUCE
     - .git-ci/fftw4win.sh $BITS
 # run the actual build
     - make -k CONFIG=$CONFIG BITS=$BITS PROJUCER="/c/JUCE/Projucer.exe"
