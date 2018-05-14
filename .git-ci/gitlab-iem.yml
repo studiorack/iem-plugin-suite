@@ -52,6 +52,7 @@ variables:
     - master
     - develop
   script:
+    - test -f .myenv && . .myenv
     - .git-ci/getjuce.sh "${JUCEVERSION}-windows" /c/JUCE
     - .git-ci/fftw4win.sh $BITS
 # run the actual build
@@ -72,11 +73,11 @@ osx_snapshot:
   <<: *osx_template
 
 windows32_snapshot:
-  variables:
-    BITS: 32
+  before_script:
+    - echo "BITS=32" > .myenv
   <<: *windows_template
 
 windows64_snapshot:
-  variables:
-    BITS: 64
+  before_script:
+    - echo "BITS=64" > .myenv
   <<: *windows_template
