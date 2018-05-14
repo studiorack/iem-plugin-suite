@@ -254,7 +254,11 @@ void AllRADecoderAudioProcessorEditor::buttonClicked (Button* button)
 {
     if (button == &tbAddSpeakers)
     {
-        processor.addRandomPoint();
+        const auto& modifiers = ModifierKeys::getCurrentModifiers();
+        if (modifiers.isAltDown())
+            processor.addImaginaryLoudspeakerBelow();
+        else
+            processor.addRandomPoint();
     }
     else if (button == &tbCalculateDecoder)
     {

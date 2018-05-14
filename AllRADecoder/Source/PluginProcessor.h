@@ -110,7 +110,8 @@ public:
     void valueTreeParentChanged (ValueTree &treeWhoseParentHasChanged) override;
 
     void addRandomPoint();
-
+    void addImaginaryLoudspeakerBelow();
+    
     void undo() { undoManager.undo(); }
     void redo() { undoManager.redo(); }
 

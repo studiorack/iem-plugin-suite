@@ -512,6 +512,12 @@ Vector3D<float> AllRADecoderAudioProcessor::sphericalInRadiansToCartesian(Vector
                            );
 }
 
+void AllRADecoderAudioProcessor::addImaginaryLoudspeakerBelow()
+{
+    undoManager.beginNewTransaction();
+    loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(0.0f, 0.0f, -1.0f), highestChannelNumber + 1, true), &undoManager);
+}
+
 void AllRADecoderAudioProcessor::addRandomPoint()
 {
     undoManager.beginNewTransaction();
