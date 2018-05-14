@@ -81,7 +81,7 @@ public:
             }
         }
 
-        // frequncy labels
+        // frequency labels
         for (float f=s.fMin; f <= s.fMax; f += powf(10, floorf(log10(f)))) {
             int xpos = hzToX(f);
 

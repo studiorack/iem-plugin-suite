@@ -81,7 +81,7 @@ private:
     ScopedPointer<SliderAttachment> SlRightRotAttachment;
     ScopedPointer<SliderAttachment> SlRightDelayAttachment, SlRightLfoRateAttachment, SlRightLfoDepthAttachment, SlRightFbAttachment, SlRightCrossFbAttachment, SlRightGainAttachment;
 
-    // lables and groups
+    // labels and groups
     SimpleLabel lbRotL, lbDelL, lbFbL, lbXFbL;
     SimpleLabel lbRotR, lbDelR, lbFbR, lbXFbR;
     SimpleLabel lbGainL, lbGainR, lbGainDry;
