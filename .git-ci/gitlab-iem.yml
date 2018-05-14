@@ -41,7 +41,7 @@ variables:
     - make -k CONFIG=$CONFIG PROJUCER="~/JUCE/Projucer.app/Contents/MacOS/Projucer"
 
     - mkdir IEM
-    - cp */Builds/*/build/${CONFIG}/*.vst IEM/
+    - cp -R -H */Builds/*/build/${CONFIG}/*.vst IEM/
 
 .build:windows: &build_windows
   tags:
