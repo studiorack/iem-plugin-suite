@@ -6,7 +6,8 @@ variables:
   PKGLIBS: jack flac vorbis vorbisenc vorbisfile ogg libjpeg libpng zlib fftw3f
   JUCEVERSION: 5.3.2
 
-debian_buster:
+### configuration templates (to be used for snapshot and release builds)
+debian_buster_template: &debian_buster_template
   image: debian:buster
   stage: build
   tags:
@@ -23,7 +24,7 @@ debian_buster:
     - apt-get install -y --no-install-recommends libfftw3-dev
     - xvfb-run -a make -k V=1 CONFIG=$CONFIG CPPFLAGS=-DJUCE_JACK=1 CFLAGS="$(pkg-config --cflags $PKGLIBS)" LDFLAGS="$(pkg-config --libs $PKGLIBS)"
 
-osx:
+osx_template: &osx_template
   tags:
     - osx
   stage: build
@@ -38,7 +39,7 @@ osx:
     - mv ~/JUCE/JUCE/* ~/JUCE/ || true
     - make -k CONFIG=$CONFIG PROJUCER="~/JUCE/Projucer.app/Contents/MacOS/Projucer"
 
-windows:
+windows_template: &windows_template
   tags:
     - windows
   variables:
@@ -57,3 +58,14 @@ windows:
     - .git-ci/fftw4win.sh
 # run the actual build
     - make -k CONFIG=$CONFIG PROJUCER="/c/JUCE/Projucer.exe"
+
+
+
+debian_buster_snapshot:
+  <<: *debian_buster_template
+
+osx_snapshot:
+  <<: *osx_template
+
+windows_snapshot:
+  <<: *windows_template
