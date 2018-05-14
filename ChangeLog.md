@@ -9,6 +9,7 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
         - using a perceptually motivated colormap
     - **AllRA**Decoder
         - clicking 'add loudspeaker' while holding the alt-key adds an imaginary loudspeaker at the nadir
+        - added noise generator for testing correct signal routing
 
 ## v1.3.0
 - general changes

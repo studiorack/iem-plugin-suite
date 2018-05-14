@@ -263,6 +263,7 @@ void AllRADecoderAudioProcessor::prepareToPlay (double sampleRate, int samplesPe
     specs.numChannels = 64;
 
     decoder.prepare(specs);
+    noiseBurst.prepare(specs);
 }
 
 void AllRADecoderAudioProcessor::releaseResources()
@@ -308,6 +309,8 @@ void AllRADecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBu
 
     for (int ch = nChOut; ch < nChIn; ++ch) // clear all not needed channels
         buffer.clear(ch, 0, buffer.getNumSamples());
+
+    noiseBurst.processBuffer(buffer);
 }
 
 //==============================================================================
@@ -510,6 +513,11 @@ Vector3D<float> AllRADecoderAudioProcessor::sphericalInRadiansToCartesian(Vector
                            sphervect.x * cos(sphervect.z) * sin(sphervect.y),
                            sphervect.x * sin(sphervect.z)
                            );
+}
+
+void AllRADecoderAudioProcessor::playNoiseBurst (const int channel)
+{
+    noiseBurst.setChannel(channel);
 }
 
 void AllRADecoderAudioProcessor::addImaginaryLoudspeakerBelow()

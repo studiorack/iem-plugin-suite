@@ -32,7 +32,7 @@ class LoudspeakerTableComponent : public Component, public TableListBoxModel
 {
 
 public:
-    LoudspeakerTableComponent(ValueTree& loudspeakers, LoudspeakerVisualizer& visualizer, EnergyDistributionVisualizer& energyVis, UndoManager& undoM) : data(loudspeakers), undoManager(undoM), lspVisualizer(visualizer), engVisualizer(energyVis)
+    LoudspeakerTableComponent(ValueTree& loudspeakers, LoudspeakerVisualizer& visualizer, EnergyDistributionVisualizer& energyVis, UndoManager& undoM, AllRADecoderAudioProcessor& audioProcessor) : data(loudspeakers), undoManager(undoM), processor(audioProcessor), lspVisualizer(visualizer), engVisualizer(energyVis)
     {
         typeFace = getLookAndFeel().getTypefaceForFont(12);
 
@@ -48,6 +48,7 @@ public:
         table.getHeader().addColumn(getAttributeNameForColumnId(5), 5, 50);
         table.getHeader().addColumn(getAttributeNameForColumnId(6), 6, 50);
         table.getHeader().addColumn(getAttributeNameForColumnId(7), 7, 38);
+        table.getHeader().addColumn(getAttributeNameForColumnId(9), 9, 40, 40, 40, TableHeaderComponent::notSortable);
         table.getHeader().addColumn(getAttributeNameForColumnId(8), 8, 60, 60, 60, TableHeaderComponent::notSortable);
 
         table.setHeaderHeight(23);
@@ -58,6 +59,15 @@ public:
 
     ~LoudspeakerTableComponent()
     {
+    }
+
+    void playNoise (const int row)
+    {
+        if (! data.getChild(row).getProperty("Imaginary"))
+        {
+            const int ch = (int) data.getChild(row).getProperty("Channel");
+            processor.playNoiseBurst(ch);
+        }
     }
 
     void selectedRowsChanged (int lastRowSelected) override
@@ -154,6 +164,15 @@ public:
             removeButton->setRowAndColumn (rowNumber, columnId);
             return removeButton;
         }
+        else if (columnId == 9) // Noise
+        {
+            NoiseButton* noiseButton = static_cast<NoiseButton*> (existingComponentToUpdate);
+            if (noiseButton == nullptr)
+                noiseButton = new NoiseButton (*this);
+
+            noiseButton->setRowAndColumn (rowNumber, columnId);
+            return noiseButton;
+        }
 
 
         // The other columns are editable text columns, for which we use the custom Label component
@@ -178,6 +197,7 @@ public:
             case 6: return "Imaginary";  break;
             case 7: return "Gain"; break;
             case 8: return "Remove"; break;
+            case 9: return "Noise"; break;
             default: return ""; break;
         }
     }
@@ -246,6 +266,7 @@ private:
     ValueTree& data;
     UndoManager& undoManager;
 
+    AllRADecoderAudioProcessor& processor;
     LoudspeakerVisualizer& lspVisualizer;
     EnergyDistributionVisualizer& engVisualizer;
 
@@ -352,6 +373,51 @@ private:
         LoudspeakerTableComponent& owner;
         int row, columnId;
     };
+
+    class NoiseButton  : public TextButton
+    {
+    public:
+        NoiseButton (LoudspeakerTableComponent& td)  : owner (td)
+        {
+            setButtonText("Noise");
+            setColour(TextButton::buttonColourId, Colours::green);
+            onClick = [this](){ owner.playNoise(row); };
+        }
+
+        void setRowAndColumn (const int newRow, const int newColumn)
+        {
+            row = newRow;
+            column = newColumn;
+        }
+
+        void paintButton (Graphics& g, bool isMouseOverButton, bool isButtonDown) override
+        {
+            LookAndFeel& lf = getLookAndFeel();
+
+            Rectangle<float> buttonArea(0.0f, 0.0f, getWidth(), getHeight());
+            buttonArea.reduce(2.0f, 2.0f);
+
+            g.setColour(findColour(TextButton::buttonColourId).withMultipliedAlpha(isButtonDown ? 1.0f : isMouseOverButton ? 0.7f : 0.5f));
+            if (isButtonDown)
+                buttonArea.reduce(0.8f, 0.8f);
+            else if (isMouseOverButton)
+                buttonArea.reduce(0.4f, 0.4f);
+
+            g.drawRoundedRectangle(buttonArea, 2.0f, 1.0f);
+
+            buttonArea.reduce(1.5f, 1.5f);
+            g.setColour(findColour(TextButton::buttonColourId).withMultipliedAlpha(isButtonDown ? 1.0f : isMouseOverButton ? 0.5f : 0.2f));
+
+            g.fillRoundedRectangle(buttonArea, 2.0f);
+
+            lf.drawButtonText (g, *this, isMouseOverButton, isButtonDown);
+        }
+
+    private:
+        LoudspeakerTableComponent& owner;
+        int row, column;
+    };
+
 
     class ImaginaryButton  : public Component
     {
