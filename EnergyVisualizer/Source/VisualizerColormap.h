@@ -23,6 +23,7 @@
 #pragma once
 
 #include "../JuceLibraryCode/JuceHeader.h"
+#include "../../resources/viridis_cropped.h"
 
 //==============================================================================
 /*
@@ -43,37 +44,24 @@ public:
 
     void paint (Graphics& g) override
     {
-        /* This demo code just fills the component's background and
-           draws some placeholder text to get you started.
-
-           You should replace everything in this method with your own
-           drawing code..
-        */
-
-        Colour colormapData[8];
-        colormapData[0] = Colours::skyblue.withMultipliedAlpha(0.0f);
-        colormapData[1] = Colours::skyblue.withMultipliedAlpha(0.2f);
-        colormapData[2] = Colours::skyblue.withMultipliedAlpha(0.3f);
-        colormapData[3] = Colour::fromFloatRGBA(0.167f, 0.620f, 0.077f, 6.0f);
-        colormapData[4] = Colour::fromFloatRGBA(0.167f, 0.620f, 0.077f, 7.0f);
-        colormapData[5] = Colour::fromFloatRGBA(0.8f, 0.620f, 0.077f, 0.8f);
-        colormapData[6] = Colour::fromFloatRGBA(0.8f, 0.620f, 0.077f, 1.0f);
-        colormapData[7] = Colours::red;
-
-
-
+        Colour colormapData[256];
+        for (int i = 0; i < 256; ++i)
+        {
+            const float alpha = jlimit(0.0f, 1.0f, (float) i / 50.0f);
+            colormapData[i] = Colour::fromFloatRGBA(viridis_cropped[i][0], viridis_cropped[i][1], viridis_cropped[i][2], alpha);
+        }
 
         Rectangle<int> colormapArea(getLocalBounds());
         colormapArea.removeFromTop(12);
         colormapArea.removeFromBottom(6);
+
+        colormapArea.removeFromRight(25);
         ColourGradient gradient;
         gradient.point1 = colormapArea.getTopLeft().toFloat();
         gradient.point2 = colormapArea.getBottomLeft().toFloat();
 
-        for (int i=0; i<8; ++i)
-        {
-            gradient.addColour(1.0f - i*1.f/7, colormapData[i]);
-        }
+        for (int i = 0; i < 256; ++i)
+            gradient.addColour(1.0f - i * 1.0f / 256, colormapData[i]);
 
         Path path;
         path.addRectangle(colormapArea);
@@ -84,22 +72,20 @@ public:
         int width = colormapArea.getWidth();
 
         g.setFont(getLookAndFeel().getTypefaceForFont (Font(12.0f, 1)));
-        g.drawText("dB", 0, 0, width, 12, Justification::centred);
+        g.drawText("dB", 25, 0, width, 12, Justification::centred);
 
         g.setFont(getLookAndFeel().getTypefaceForFont (Font(12.0f, 0)));
         g.setFont(12.0f);
 
-        float yStep = (float) colormapArea.getHeight() / 7;
-
-        g.drawText(String(maxLevel,1), 0, 12, width, 12, Justification::centred);
-        for (int i=1; i<8; ++i)
+        const float yStep = (float) colormapArea.getHeight() / 7;
+        g.drawText(String(maxLevel,1), 25, 12, width, 12, Justification::centred);
+        for (int i = 1; i < 8; ++i)
         {
-            g.drawText(String(maxLevel - 5 * i,1), 0, 6 + yStep * i, width, 12, Justification::centred);
+            g.drawText(String(maxLevel - 5 * i,1), 25, 6 + yStep * i, width, 12, Justification::centred);
         }
-
     }
 
-    void setMaxLevel(float newMaxLevel)
+    void setMaxLevel (const float newMaxLevel)
     {
         maxLevel = newMaxLevel;
         repaint();
@@ -107,9 +93,6 @@ public:
 
     void resized() override
     {
-        // This method is where you should set the bounds of any child
-        // components that your component contains..
-
     }
 
 private:
