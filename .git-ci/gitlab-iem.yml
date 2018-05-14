@@ -24,6 +24,9 @@ debian_buster_template: &debian_buster_template
     - apt-get install -y --no-install-recommends libfftw3-dev
     - xvfb-run -a make -k V=1 CONFIG=$CONFIG CPPFLAGS=-DJUCE_JACK=1 CFLAGS="$(pkg-config --cflags $PKGLIBS)" LDFLAGS="$(pkg-config --libs $PKGLIBS)"
 
+    - mkdir IEM
+    - cp -rav */Builds/*/build/*.so IEM/
+
 osx_template: &osx_template
   tags:
     - osx
@@ -38,6 +41,9 @@ osx_template: &osx_template
     - unzip -q juce.zip -d ~/JUCE
     - mv ~/JUCE/JUCE/* ~/JUCE/ || true
     - make -k CONFIG=$CONFIG PROJUCER="~/JUCE/Projucer.app/Contents/MacOS/Projucer"
+
+    - mkdir IEM
+    - cp -rav */Builds/*/build/$(CONFIG)/*.vst IEM/
 
 windows_template: &windows_template
   tags:
@@ -59,6 +65,8 @@ windows_template: &windows_template
 # run the actual build
     - make -k CONFIG=$CONFIG BITS=$BITS PROJUCER="/c/JUCE/Projucer.exe"
 
+    - mkdir IEM
+    - cp -rav */Builds/*/build/*/*.dll IEM/
 
 debian_buster_snapshot:
   <<: *debian_buster_template
