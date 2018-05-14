@@ -7,7 +7,7 @@ variables:
   JUCEVERSION: 5.3.2
 
 ### configuration templates (to be used for snapshot and release builds)
-.debian_buster_template: &debian_buster_template
+.linux_template: &linux_template
   image: debian:buster
   stage: build
   tags:
@@ -63,8 +63,8 @@ variables:
 # expand the templates to real jobs
 #
 # development snapshots
-debian_buster_snapshot:
-  <<: *debian_buster_template
+linux_snapshot:
+  <<: *linux_template
 
 osx_snapshot:
   <<: *osx_template
