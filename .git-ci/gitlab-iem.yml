@@ -83,3 +83,6 @@ windows64_snapshot:
   before_script:
     - echo "BITS=64" > .myenv
   <<: *build_windows
+
+after_script:
+  - test -d IEM && find IEM -type f -exec file {} +
