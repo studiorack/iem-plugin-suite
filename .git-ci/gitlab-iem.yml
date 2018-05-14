@@ -3,7 +3,6 @@
 variables:
   PROJECTS: AllRADecoder BinauralDecoder DirectionalCompressor DirectivityShaper DualDelay EnergyVisualizer FdnReverb MatrixMultiplicator MultiEncoder OmniCompressor ProbeDecoder RoomEncoder SimpleDecoder StereoEncoder ToolBox
   CONFIG: Release
-  PKGLIBS: jack fftw3f
   JUCEVERSION: 5.3.2
 
 ### configuration templates (to be used for snapshot and release builds)
@@ -15,6 +14,8 @@ variables:
   only:
     - master
     - develop
+  variables:
+    PKGLIBS: jack fftw3f
   script:
     - apt update -y
     - apt dist-upgrade -y
