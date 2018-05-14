@@ -25,7 +25,7 @@ variables:
     - xvfb-run -a make -k V=1 CONFIG=${CONFIG} CPPFLAGS=-DJUCE_JACK=1 CFLAGS="$(pkg-config --cflags ${PKGLIBS})" LDFLAGS="$(pkg-config --libs ${PKGLIBS})" PROJUCER=~/JUCE/Projucer
 
     - mkdir IEM
-    - cp -rav */Builds/*/build/*.so IEM/
+    - cp */Builds/*/build/*.so IEM/
 
 .build:osx: &build_osx
   tags:
@@ -40,7 +40,7 @@ variables:
     - make -k CONFIG=$CONFIG PROJUCER="~/JUCE/Projucer.app/Contents/MacOS/Projucer"
 
     - mkdir IEM
-    - cp -rav */Builds/*/build/${CONFIG}/*.vst IEM/
+    - cp */Builds/*/build/${CONFIG}/*.vst IEM/
 
 .build:windows: &build_windows
   tags:
@@ -62,8 +62,7 @@ variables:
     - make -k CONFIG=$CONFIG BITS=$BITS PROJUCER="/c/JUCE/Projucer.exe"
 
     - mkdir IEM
-    - cp -rav */Builds/*/build/*/*.dll IEM/
-
+    - cp */Builds/*/build/*/*.dll IEM/
 
 ###################################################
 # expand the templates to real jobs
