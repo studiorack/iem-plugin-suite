@@ -7,6 +7,8 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
 - plug-in specific changes
     - **Energy**Visualizer
         - using a perceptually motivated colormap
+    - **AllRA**Decoder
+        - clicking 'add loudspeaker' while holding the alt-key adds an imaginary loudspeaker at the nadir
 
 ## v1.3.0
 - general changes
