@@ -209,7 +209,10 @@ public:
         else if (data.getChild(rowNumber).getProperty(getAttributeNameForColumnId(columnId)).isDouble())
         {
             const float value = data.getChild(rowNumber).getProperty(getAttributeNameForColumnId(columnId));
-            return String(value, 0);
+            String ret = String(value, 0);
+            if (columnId == 2 || columnId == 3)
+                ret = ret + String(CharPointer_UTF8 (R"(°)"));
+            return ret;
         }
         else return("NaN");
     }
@@ -282,7 +285,11 @@ private:
             {
                 const float alpha = isEnabled() ? 1.0f : 0.5f;
 
-                g.setColour (Colours::white);
+                if ((columnId == 4 || columnId == 7) && ! owner.data.getChild(row).getProperty("Imaginary"))
+                    g.setColour (Colours::white.withMultipliedAlpha(0.4f));
+                else
+                    g.setColour (Colours::white);
+
                 g.setFont (getLookAndFeel().getTypefaceForFont(Font(12.0f)));
                 g.setFont (13.f);
 
@@ -354,7 +361,10 @@ private:
             addAndMakeVisible(button);
             button.setButtonText("");
             button.setColour(ToggleButton::tickColourId, Colours::orange);
-            button.onClick = [this](){ owner.setBool(columnId, row, button.getToggleState()); };
+            button.onClick = [this](){
+                owner.setBool(columnId, row, button.getToggleState());
+                owner.repaint();
+            };
         }
 
         void mouseDown (const MouseEvent& event) override
