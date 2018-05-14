@@ -111,11 +111,11 @@ $(ALL_PROJECTS:%=%-clean):
 # TODO: find out how to pass CONFIG and TARGET
 %-VS2017-build: $$(subst @,%,@/Builds/VisualStudio2017/@.sln)
 	MSBuild.exe \
-		-p:Configuration="Release $(BIT)bit",Platform=$(WINPLATFORM) \
+		-p:Configuration="$(WINTARGET)",Platform=$(WINPLATFORM) \
 		$<
 %-VS2017-clean: $$(subst @,%,@/Builds/VisualStudio2017/@.sln)
 	MSBuild.exe \
-		-p:Configuration="Release $(BIT)bit",Platform=$(WINPLATFORM) \
+		-p:Configuration="$(WINTARGET)",Platform=$(WINPLATFORM) \
 		-t:Clean \
 		$<
 
