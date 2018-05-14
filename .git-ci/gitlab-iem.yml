@@ -55,10 +55,9 @@ windows_template: &windows_template
     - unzip -q juce.zip -d /c/JUCE
     - mv /c/JUCE/JUCE/* /c/JUCE/ || true
 # install fftw3
-    - .git-ci/fftw4win.sh
+    - .git-ci/fftw4win.sh $BITS
 # run the actual build
-    - make -k CONFIG=$CONFIG PROJUCER="/c/JUCE/Projucer.exe"
-
+    - make -k CONFIG=$CONFIG BITS=$BITS PROJUCER="/c/JUCE/Projucer.exe"
 
 
 debian_buster_snapshot:
@@ -67,5 +66,12 @@ debian_buster_snapshot:
 osx_snapshot:
   <<: *osx_template
 
-windows_snapshot:
+windows32_snapshot:
+  variables:
+    BITS: 32
+  <<: *windows_template
+
+windows64_snapshot:
+  variables:
+    BITS: 64
   <<: *windows_template
