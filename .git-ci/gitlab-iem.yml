@@ -6,7 +6,7 @@ variables:
   JUCEVERSION: 5.3.2
 
 ### configuration templates (to be used for snapshot and release builds)
-.linux_template: &linux_template
+.build:linux: &build_linux
   image: debian:buster
   stage: build
   tags:
@@ -27,7 +27,7 @@ variables:
     - mkdir IEM
     - cp -rav */Builds/*/build/*.so IEM/
 
-.osx_template: &osx_template
+.build:osx: &build_osx
   tags:
     - osx
   stage: build
@@ -42,7 +42,7 @@ variables:
     - mkdir IEM
     - cp -rav */Builds/*/build/${CONFIG}/*.vst IEM/
 
-.windows_template: &windows_template
+.build:windows: &build_windows
   tags:
     - windows
   variables:
@@ -67,17 +67,17 @@ variables:
 #
 # development snapshots
 linux_snapshot:
-  <<: *linux_template
+  <<: *build_linux
 
 osx_snapshot:
-  <<: *osx_template
+  <<: *build_osx
 
 windows32_snapshot:
   before_script:
     - echo "BITS=32" > .myenv
-  <<: *windows_template
+  <<: *build_windows
 
 windows64_snapshot:
   before_script:
     - echo "BITS=64" > .myenv
-  <<: *windows_template
+  <<: *build_windows
