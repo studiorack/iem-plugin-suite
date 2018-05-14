@@ -6,7 +6,11 @@
 BITS="$1"
 LIB="Lib.exe"
 
+echo -n "downloading FFTW for ${BITS}"
+
 if [ "x${BITS}" = "x" ]; then BITS="32 64"; fi
+
+echo "... ${BITS}"
 
 def2lib() {
  for f3 in libfftw3*.*; do
