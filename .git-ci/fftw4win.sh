@@ -32,9 +32,16 @@ for b in $BITS; do
   fi
   mkdir -p "${outdir}"
 
+  URL="ftp://ftp.fftw.org/pub/fftw/${FFTW}"
+
 # install fftw3
-  curl -o "${FFTW}" ftp://ftp.fftw.org/pub/fftw/"${FFTW}"
+  echo "extracting ${URL} to ${outdir}"
+
+  curl -o "${FFTW}" "${URL}"
   unzip -q "${FFTW}" -d "${outdir}"
   (cd "${outdir}"; def2lib)
   rm "${FFTW}"
+
+  echo "extracted files:"
+  find "${outdir}"
 done
