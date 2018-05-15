@@ -63,7 +63,7 @@ variables:
     - make -k CONFIG=$CONFIG BITS=$BITS PROJUCER="/c/JUCE/Projucer.exe"
 
     - mkdir IEM
-    - cp */Builds/*/build/*/*.dll IEM/
+    - cp */Builds/*/*/*/VST/*.dll IEM/
 
 ###################################################
 # expand the templates to real jobs
