@@ -42,14 +42,16 @@ variables:
   artifacts:
     name: IEMPluginSuite_linux
   script:
+# install dependencies
     - apt update -y
     - apt dist-upgrade -y
     - apt-get install -y --no-install-recommends xvfb xauth curl unzip build-essential ca-certificates
     - apt-get install -y --no-install-recommends libwebkit2gtk-4.0-dev libasound2-dev libfreetype6-dev libcurl4-gnutls-dev libgl1-mesa-dev libx11-dev libxext-dev libxinerama-dev libxrandr-dev libgtk-3-dev
     - apt-get install -y --no-install-recommends libjack-dev libfftw3-dev
     - .git-ci/getjuce.sh "${JUCEVERSION}-linux" ~/JUCE
+# run the actual build
     - xvfb-run -a make -k V=1 CONFIG=${CONFIG} CPPFLAGS=-DJUCE_JACK=1 CFLAGS="$(pkg-config --cflags ${PKGLIBS})" LDFLAGS="$(pkg-config --libs ${PKGLIBS})" PROJUCER=~/JUCE/Projucer
-
+# collect binaries for artifacts
     - mkdir IEM
     - cp */Builds/*/build/*.so IEM/
 
@@ -60,10 +62,12 @@ variables:
   artifacts:
     name: IEMPluginSuite_macOS
   script:
+# install dependencies
     - brew install fftw
     - .git-ci/getjuce.sh "${JUCEVERSION}-osx" ~/JUCE
+# run the actual build
     - make -k CONFIG=$CONFIG PROJUCER="~/JUCE/Projucer.app/Contents/MacOS/Projucer"
-
+# collect binaries for artifacts
     - mkdir IEM
     - cp -R -H */Builds/*/build/${CONFIG}/*.vst IEM/
 
@@ -75,11 +79,12 @@ variables:
     IEMCI_CONFIGURATIONS: vs2017
   script:
     - test -f .myenv && . .myenv
+# install dependencies
     - .git-ci/getjuce.sh "${JUCEVERSION}-windows" /c/JUCE
     - .git-ci/fftw4win.sh $BITS
 # run the actual build
     - make -k CONFIG=$CONFIG BITS=$BITS PROJUCER="/c/JUCE/Projucer.exe"
-
+# collect binaries for artifacts
     - mkdir IEM
     - cp */Builds/*/*/*/VST/*.dll IEM/
 
@@ -115,7 +120,7 @@ windows64_snapshot:
   artifacts:
     name: IEMPluginSuite_w64
 
-# release builds
+# release builds (for tags; artifacts are kept forever)
 linux_release:
   <<: *release
   <<: *build_linux
