@@ -3,14 +3,16 @@
 # script to download and "install" FFTW for windows, so we can use it for juce
 # see http://www.fftw.org/install/windows.html
 
-BITS="$1"
-LIB="Lib.exe"
+bits="$1"
+libexe="Lib.exe"
+outdirbase="resources/fftw3"
+fftwversion=3.3.5
 
-echo -n "downloading FFTW for ${BITS}"
+echo -n "downloading fftw for ${bits}"
 
-if [ "x${BITS}" = "x" ]; then BITS="32 64"; fi
+if [ "x${bits}" = "x" ]; then bits="32 64"; fi
 
-echo "... ${BITS}"
+echo "... ${bits}"
 
 def2lib() {
  for f3 in libfftw3*.*; do
@@ -18,29 +20,29 @@ def2lib() {
    mv -v "${f3}" "${f}"
  done
  for def in libfftw*.def; do
-  "${LIB}" -machine:${machine} -def:"${def}"
+  "${libexe}" -machine:${machine} -def:"${def}"
  done
 }
 
-for b in $BITS; do
-  FFTW="fftw-3.3.5-dll${b}.zip"
-  outdir="resources/fftw/x${b}"
+for b in ${bits}; do
+  fftw="fftw-${fftwversion}-dll${b}.zip"
+  outdir="${outdirbase}/x${b}"
   machine="x${b}"
   if [ "x${b}" = "x32" ]; then
-    outdir="resources/fftw/win${b}"
+    outdir="${outdirbase}/win${b}"
     machine=x86
   fi
   mkdir -p "${outdir}"
 
-  URL="ftp://ftp.fftw.org/pub/fftw/${FFTW}"
+  url="ftp://ftp.fftw.org/pub/fftw/${fftw}"
 
 # install fftw3
-  echo "extracting ${URL} to ${outdir}"
+  echo "extracting ${url} to ${outdir}"
 
-  curl -o "${FFTW}" "${URL}"
-  unzip -q "${FFTW}" -d "${outdir}"
+  curl -o "${fftw}" "${url}"
+  unzip -q "${fftw}" -d "${outdir}"
   (cd "${outdir}"; def2lib)
-  rm "${FFTW}"
+  rm "${fftw}"
 
   echo "extracted files:"
   find "${outdir}"
