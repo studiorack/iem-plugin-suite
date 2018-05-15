@@ -524,7 +524,7 @@ void AllRADecoderAudioProcessor::playNoiseBurst (const int channel)
 void AllRADecoderAudioProcessor::addImaginaryLoudspeakerBelow()
 {
     undoManager.beginNewTransaction();
-    loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(0.0f, 0.0f, -1.0f), highestChannelNumber + 1, true), &undoManager);
+    loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(0.0f, 0.0f, -1.0f), highestChannelNumber + 1, true, 0.0f), &undoManager);
 }
 
 void AllRADecoderAudioProcessor::addRandomPoint()
