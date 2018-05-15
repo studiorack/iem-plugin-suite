@@ -8,11 +8,7 @@ libexe="Lib.exe"
 outdirbase="resources/fftw3"
 fftwversion=3.3.5
 
-echo -n "downloading fftw for ${bits}"
-
 if [ "x${bits}" = "x" ]; then bits="32 64"; fi
-
-echo "... ${bits}"
 
 def2lib() {
  for f3 in libfftw3*.*; do
@@ -43,7 +39,4 @@ for b in ${bits}; do
   unzip -q "${fftw}" -d "${outdir}"
   (cd "${outdir}"; def2lib)
   rm "${fftw}"
-
-  echo "extracted files:"
-  find "${outdir}"
 done
