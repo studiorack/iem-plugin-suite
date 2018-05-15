@@ -75,12 +75,9 @@ variables:
     IEMCI_CONFIGURATIONS: vs2017
   script:
     - test -f .myenv && . .myenv
-    - test -f .myenv && cat .myenv
-    - echo "BITS...$BITS"
     - .git-ci/getjuce.sh "${JUCEVERSION}-windows" /c/JUCE
     - .git-ci/fftw4win.sh $BITS
 # run the actual build
-    - make system CONFIG=$CONFIG BITS=$BITS PROJUCER="/c/JUCE/Projucer.exe"
     - make -k CONFIG=$CONFIG BITS=$BITS PROJUCER="/c/JUCE/Projucer.exe"
 
     - mkdir IEM
