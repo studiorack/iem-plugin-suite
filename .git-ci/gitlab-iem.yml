@@ -39,8 +39,6 @@ variables:
     - docker
   variables:
     PKGLIBS: jack fftw3f
-  artifacts:
-    name: IEMPluginSuite_linux
   script:
 # install dependencies
     - apt update -y
@@ -59,8 +57,6 @@ variables:
   stage: build
   tags:
     - osx
-  artifacts:
-    name: IEMPluginSuite_macOS
   script:
 # install dependencies
     - brew install fftw
