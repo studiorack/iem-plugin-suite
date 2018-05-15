@@ -25,6 +25,15 @@ variables:
       - ChangeLog.md
     expire_in: 1 week
 
+.build:release: &release
+  stage: build
+  only:
+    - tags
+  artifacts:
+    paths:
+      - IEM
+      - ChangeLog.md
+
 .build:linux: &build_linux
   image: debian:buster
   tags:
@@ -108,4 +117,31 @@ windows64_snapshot:
   artifacts:
     name: IEMPluginSuite_w64
 
+# release builds
+linux_release:
+  <<: *release
+  <<: *build_linux
+  artifacts:
+    name: IEMPluginSuite_${CI_COMMIT_TAG}_linux
 
+osx_release:
+  <<: *build_osx
+  <<: *release
+  artifacts:
+    name: IEMPluginSuite_${CI_COMMIT_TAG}_macOS
+
+windows32_release:
+  before_script:
+    - echo "BITS=32" > .myenv
+  <<: *build_windows
+  <<: *release
+  artifacts:
+    name: IEMPluginSuite_${CI_COMMIT_TAG}_w32
+
+windows64_release:
+  before_script:
+    - echo "BITS=64" > .myenv
+  <<: *build_windows
+  <<: *release
+  artifacts:
+    name: IEMPluginSuite_${CI_COMMIT_TAG}_w64
