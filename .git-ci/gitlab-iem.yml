@@ -5,6 +5,12 @@ variables:
   CONFIG: Release
   JUCEVERSION: 5.3.2
 
+###################################################
+# cleanup after the job (e.g. rename files for the artifacts...)
+.after_script:
+  - test -d IEM && find IEM -type f -exec file {} +
+
+###################################################
 ### configuration templates (to be used for snapshot and release builds)
 .build:linux: &build_linux
   image: debian:buster
@@ -109,5 +115,4 @@ windows64_snapshot:
       - ChangeLog.md
     expire_in: 1 week
 
-after_script:
-  - test -d IEM && find IEM -type f -exec file {} +
+
