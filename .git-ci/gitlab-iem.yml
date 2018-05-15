@@ -12,16 +12,27 @@ variables:
 
 ###################################################
 ### configuration templates (to be used for snapshot and release builds)
-.build:linux: &build_linux
-  image: debian:buster
+.build:snapshot: &snapshot
   stage: build
-  tags:
-    - docker
   only:
     - master
     - develop
+  except:
+    - tags
+  artifacts:
+    paths:
+      - IEM
+      - ChangeLog.md
+    expire_in: 1 week
+
+.build:linux: &build_linux
+  image: debian:buster
+  tags:
+    - docker
   variables:
     PKGLIBS: jack fftw3f
+  artifacts:
+    name: IEMPluginSuite_linux
   script:
     - apt update -y
     - apt dist-upgrade -y
@@ -37,10 +48,8 @@ variables:
 .build:osx: &build_osx
   tags:
     - osx
-  stage: build
-  only:
-    - master
-    - develop
+  artifacts:
+    name: IEMPluginSuite_macOS
   script:
     - brew install fftw
     - .git-ci/getjuce.sh "${JUCEVERSION}-osx" ~/JUCE
@@ -54,10 +63,6 @@ variables:
     - windows
   variables:
     IEMCI_CONFIGURATIONS: vs2017
-  stage: build
-  only:
-    - master
-    - develop
   script:
     - test -f .myenv && . .myenv
     - test -f .myenv && cat .myenv
@@ -76,43 +81,31 @@ variables:
 #
 # development snapshots
 linux_snapshot:
+  <<: *snapshot
   <<: *build_linux
   artifacts:
     name: IEMPluginSuite_linux
-    paths:
-      - IEM
-      - ChangeLog.md
-    expire_in: 1 week
 
 osx_snapshot:
   <<: *build_osx
+  <<: *snapshot
   artifacts:
     name: IEMPluginSuite_macOS
-    paths:
-      - IEM
-      - ChangeLog.md
-    expire_in: 1 week
 
 windows32_snapshot:
   before_script:
     - echo "BITS=32" > .myenv
   <<: *build_windows
+  <<: *snapshot
   artifacts:
     name: IEMPluginSuite_w32
-    paths:
-      - IEM
-      - ChangeLog.md
-    expire_in: 1 week
 
 windows64_snapshot:
   before_script:
     - echo "BITS=64" > .myenv
   <<: *build_windows
+  <<: *snapshot
   artifacts:
     name: IEMPluginSuite_w64
-    paths:
-      - IEM
-      - ChangeLog.md
-    expire_in: 1 week
 
 
