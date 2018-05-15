@@ -48,7 +48,7 @@ variables:
     - apt-get install -y --no-install-recommends libjack-dev libfftw3-dev
     - .git-ci/getjuce.sh "${JUCEVERSION}-linux" ~/JUCE
 # run the actual build
-    - xvfb-run -a make -k V=1 CONFIG=${CONFIG} CPPFLAGS=-DJUCE_JACK=1 CFLAGS="$(pkg-config --cflags ${PKGLIBS})" LDFLAGS="$(pkg-config --libs ${PKGLIBS})" PROJUCER=~/JUCE/Projucer
+    - xvfb-run -a make -j$(nproc) -k V=1 CONFIG=${CONFIG} CPPFLAGS=-DJUCE_JACK=1 CFLAGS="$(pkg-config --cflags ${PKGLIBS})" LDFLAGS="$(pkg-config --libs ${PKGLIBS})" PROJUCER=~/JUCE/Projucer
 # collect binaries for artifacts
     - mkdir IEM
     - cp */Builds/*/build/*.so IEM/
