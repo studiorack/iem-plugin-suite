@@ -13,7 +13,6 @@ variables:
 ###################################################
 ### configuration templates (to be used for snapshot and release builds)
 .build:snapshot: &snapshot
-  stage: build
   only:
     - master
     - develop
@@ -26,7 +25,6 @@ variables:
     expire_in: 1 week
 
 .build:release: &release
-  stage: build
   only:
     - tags
   artifacts:
@@ -35,6 +33,7 @@ variables:
       - ChangeLog.md
 
 .build:linux: &build_linux
+  stage: build
   image: debian:buster
   tags:
     - docker
@@ -55,6 +54,7 @@ variables:
     - cp */Builds/*/build/*.so IEM/
 
 .build:osx: &build_osx
+  stage: build
   tags:
     - osx
   artifacts:
@@ -68,6 +68,7 @@ variables:
     - cp -R -H */Builds/*/build/${CONFIG}/*.vst IEM/
 
 .build:windows: &build_windows
+  stage: build
   tags:
     - windows
   variables:
