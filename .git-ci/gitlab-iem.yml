@@ -71,19 +71,43 @@ variables:
 # development snapshots
 linux_snapshot:
   <<: *build_linux
+  artifacts:
+    name: IEMPluginSuite_linux
+    paths:
+      - IEM
+      - ChangeLog.md
+    expire_in: 1 week
 
 osx_snapshot:
   <<: *build_osx
+  artifacts:
+    name: IEMPluginSuite_macOS
+    paths:
+      - IEM
+      - ChangeLog.md
+    expire_in: 1 week
 
 windows32_snapshot:
   before_script:
     - echo "BITS=32" > .myenv
   <<: *build_windows
+  artifacts:
+    name: IEMPluginSuite_w32
+    paths:
+      - IEM
+      - ChangeLog.md
+    expire_in: 1 week
 
 windows64_snapshot:
   before_script:
     - echo "BITS=64" > .myenv
   <<: *build_windows
+  artifacts:
+    name: IEMPluginSuite_w64
+    paths:
+      - IEM
+      - ChangeLog.md
+    expire_in: 1 week
 
 after_script:
   - test -d IEM && find IEM -type f -exec file {} +
