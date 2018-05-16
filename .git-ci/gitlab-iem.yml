@@ -7,8 +7,9 @@ variables:
 
 ###################################################
 # cleanup after the job (e.g. rename files for the artifacts...)
-.after_script:
+after_script:
   - test -d IEM && find IEM -type f -exec file {} +
+  - find DualDelay/Builds/ -type f -exec file {} +
 
 ###################################################
 ### configuration templates (to be used for snapshot and release builds)
