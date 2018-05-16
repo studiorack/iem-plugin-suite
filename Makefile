@@ -1,5 +1,19 @@
 default: all
 
+# list of projects
+ALL_PROJECTS=$(patsubst %/, %, $(dir $(wildcard */*.jucer)))
+PROJECTS=$(filter-out _PluginTemplate, $(ALL_PROJECTS))
+
+# what do we want to build: Standalone, VST; all
+## currently this has only an effect on the Linux buildsystem
+TARGET=all
+
+# select configuration: Release or Debug
+CONFIG = Release
+
+# helper applications
+PROJUCER=Projucer
+
 # the buildsystem we are using
 # possible values: LinuxMakefile XCode
 uname := $(shell uname)
@@ -16,7 +30,6 @@ ifeq ($(uname), Darwin)
   BUILDSYSTEM = XCode
 endif
 
-CONFIG = Release
 
 
 ifeq ($(BUILDSYSTEM), VS2017)
@@ -42,18 +55,6 @@ system:
 ifeq ($(BUILDSYSTEM), VS2017)
 	@echo "VS2017: $(WINTARGET) | $(WINPLATFORM)"
 endif
-
-# list of projects
-ALL_PROJECTS=$(patsubst %/, %, $(dir $(wildcard */*.jucer)))
-PROJECTS=$(filter-out _PluginTemplate, $(ALL_PROJECTS))
-
-
-# what do we want to build: Standalone, VST; all
-## currently this has only an effect on the Linux buildsystem
-TARGET=all
-
-# helper applications
-PROJUCER=Projucer
 
 # generic rules
 .PHONY: distclean clean all
