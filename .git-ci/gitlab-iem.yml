@@ -48,6 +48,7 @@ variables:
     - apt-get install -y --no-install-recommends libjack-dev libfftw3-dev
     - .git-ci/getjuce.sh "${JUCEVERSION}-linux" ~/JUCE
 # run the actual build
+    - make system V=1 CONFIG=${CONFIG} CPPFLAGS=-DJUCE_JACK=1 CFLAGS="$(pkg-config --cflags ${PKGLIBS})" LDFLAGS="$(pkg-config --libs ${PKGLIBS})" PROJUCER=~/JUCE/Projucer PARALLEL=$(nproc)
     - xvfb-run -a make V=1 CONFIG=${CONFIG} CPPFLAGS=-DJUCE_JACK=1 CFLAGS="$(pkg-config --cflags ${PKGLIBS})" LDFLAGS="$(pkg-config --libs ${PKGLIBS})" PROJUCER=~/JUCE/Projucer PARALLEL=$(nproc)
 # collect binaries for artifacts
     - mkdir IEM
@@ -62,6 +63,7 @@ variables:
     - brew install fftw
     - .git-ci/getjuce.sh "${JUCEVERSION}-osx" ~/JUCE
 # run the actual build
+    - make system CONFIG=$CONFIG PROJUCER="~/JUCE/Projucer.app/Contents/MacOS/Projucer"
     - make CONFIG=$CONFIG PROJUCER="~/JUCE/Projucer.app/Contents/MacOS/Projucer"
 # collect binaries for artifacts
     - mkdir IEM
@@ -79,6 +81,7 @@ variables:
     - .git-ci/getjuce.sh "${JUCEVERSION}-windows" /c/JUCE
     - .git-ci/fftw4win.sh $BITS
 # run the actual build
+    - make system CONFIG=$CONFIG BITS=$BITS PROJUCER="/c/JUCE/Projucer.exe"
     - make CONFIG=$CONFIG BITS=$BITS PROJUCER="/c/JUCE/Projucer.exe"
 # collect binaries for artifacts
     - mkdir IEM
