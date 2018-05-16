@@ -52,8 +52,9 @@ variables:
     - make system V=1 CONFIG=${CONFIG} CPPFLAGS=-DJUCE_JACK=1 CFLAGS="$(pkg-config --cflags ${PKGLIBS})" LDFLAGS="$(pkg-config --libs ${PKGLIBS})" PROJUCER=~/JUCE/Projucer PARALLEL=$(nproc)
     - xvfb-run -a make V=1 CONFIG=${CONFIG} CPPFLAGS=-DJUCE_JACK=1 CFLAGS="$(pkg-config --cflags ${PKGLIBS})" LDFLAGS="$(pkg-config --libs ${PKGLIBS})" PROJUCER=~/JUCE/Projucer PARALLEL=$(nproc)
 # collect binaries for artifacts
-    - mkdir IEM
+    - mkdir -p IEM/standalone/
     - cp */Builds/*/build/*.so IEM/
+    - find */Builds/*/build/ -maxdepth 1 -type f -executable -not -name "*.so" -exec cp {} IEM/standalone/ ";"
 
 .build:osx: &build_osx
   stage: build
@@ -67,8 +68,9 @@ variables:
     - make system CONFIG=$CONFIG PROJUCER="~/JUCE/Projucer.app/Contents/MacOS/Projucer"
     - make CONFIG=$CONFIG PROJUCER="~/JUCE/Projucer.app/Contents/MacOS/Projucer"
 # collect binaries for artifacts
-    - mkdir IEM
+    - mkdir IEM/standalone
     - cp -R -H */Builds/*/build/${CONFIG}/*.vst IEM/
+    - cp -R -H */Builds/*/build/${CONFIG}/*.app IEM/standalone/
 
 .build:windows: &build_windows
   stage: build
@@ -85,8 +87,9 @@ variables:
     - make system CONFIG=$CONFIG BITS=$BITS PROJUCER="/c/JUCE/Projucer.exe"
     - make CONFIG=$CONFIG BITS=$BITS PROJUCER="/c/JUCE/Projucer.exe"
 # collect binaries for artifacts
-    - mkdir IEM
+    - mkdir -p IEM/standalone
     - cp */Builds/*/*/*/VST/*.dll IEM/
+    - cp */Builds/*/*/*/*/*.exe IEM/standalone/
 
 ###################################################
 # expand the templates to real jobs
