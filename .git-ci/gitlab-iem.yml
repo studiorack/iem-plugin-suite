@@ -68,7 +68,7 @@ variables:
     - make system CONFIG=$CONFIG PROJUCER="~/JUCE/Projucer.app/Contents/MacOS/Projucer"
     - make CONFIG=$CONFIG PROJUCER="~/JUCE/Projucer.app/Contents/MacOS/Projucer"
 # collect binaries for artifacts
-    - mkdir IEM/standalone
+    - mkdir -p IEM/standalone
     - cp -R -H */Builds/*/build/${CONFIG}/*.vst IEM/
     - cp -R -H */Builds/*/build/${CONFIG}/*.app IEM/standalone/
 # embed non-standard libraries in the bundles
