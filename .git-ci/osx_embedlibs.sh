@@ -11,6 +11,7 @@ embed() {
 }
 
 for f in "$@"; do
+  echo "embedding non-standard libraries for ${f}"
   (cd "${f%/*}"; embed "${f##*/}")
 done
 
