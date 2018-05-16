@@ -93,6 +93,10 @@ variables:
     - mkdir -p IEM/standalone
     - cp */Builds/*/*/*/VST/*.dll IEM/
     - cp */Builds/*/*/*/*/*.exe IEM/standalone/
+# embed non-standard libraries in the bundles
+# FIXME: this requires that we have either x64 or x86, not both
+    - cp resources/fftw3/*/libfftwf*.dll IEM/standalone/
+    - cp resources/fftw3/*/libfftwf*.dll IEM/
 
 ###################################################
 # expand the templates to real jobs
