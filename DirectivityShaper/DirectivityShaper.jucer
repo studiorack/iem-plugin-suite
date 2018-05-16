@@ -77,7 +77,7 @@
                        debugInformationFormat="ProgramDatabase" enablePluginBinaryCopyStep="0"
                        linkTimeOptimisation="1"/>
         <CONFIGURATION name="Release 32bit" winWarningLevel="4" generateManifest="1"
-                       winArchitecture="Win32" isDebug="0" optimisation="3" targetName="DirectivityShaper_Win32"
+                       winArchitecture="Win32" isDebug="0" optimisation="3" targetName="DirectivityShaper_win32"
                        debugInformationFormat="ProgramDatabase" enablePluginBinaryCopyStep="0"
                        linkTimeOptimisation="1"/>
       </CONFIGURATIONS>

@@ -76,7 +76,7 @@
                        linkTimeOptimisation="1"/>
         <CONFIGURATION name="Release 32bit" winWarningLevel="4" generateManifest="1"
                        winArchitecture="Win32" debugInformationFormat="ProgramDatabase"
-                       enablePluginBinaryCopyStep="0" linkTimeOptimisation="1" targetName="RoomEncoder_Win32"
+                       enablePluginBinaryCopyStep="0" linkTimeOptimisation="1" targetName="RoomEncoder_win32"
                        optimisation="3"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
