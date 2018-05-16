@@ -14,6 +14,11 @@ CONFIG = Release
 # helper applications
 PROJUCER=Projucer
 
+
+# how many parallel builds we want
+#PARALLEL = 1
+PARALLEL =
+
 # the buildsystem we are using
 # possible values: LinuxMakefile XCode
 uname := $(shell uname)
@@ -31,6 +36,8 @@ ifeq ($(uname), Darwin)
 endif
 
 
+# generic buildflags
+buildflags =
 
 ifeq ($(BUILDSYSTEM), VS2017)
   WINBITS = $(BITS)
@@ -46,14 +53,44 @@ ifeq ($(BUILDSYSTEM), VS2017)
     WINPLATFORM = x64
     WINTARGET = Debug
   endif
+  buildflags += -nologo
 endif
 
+# if no CPU is requested, use the defaults
+numcpus = $(strip $(PARALLEL))
+ifeq ($(strip $(numcpus)),)
+  numcpus = 0
+endif
+ifeq ($(strip $(numcpus)), 0)
+  numcpus = <default>
+  ifeq ($(BUILDSYSTEM), VS2017)
+    buildflags += -maxcpucount
+  endif
+else
+  ifeq ($(BUILDSYSTEM), LinuxMakefile)
+    buildflags += -j$(numcpus)
+  endif
+  ifeq ($(BUILDSYSTEM), VS2017)
+    buildflags += -maxcpucount:$(numcpus)
+  endif
+  ifeq ($(BUILDSYSTEM), XCode)
+    buildflags += -IDEBuildOperationMaxNumberOfConcurrentCompileTasks=$(numcpus)
+  endif
+endif
+
+.PHONY: system
 system:
 	@echo "uname : $(uname)"
 	@echo "system: $(BUILDSYSTEM)"
 	@echo "config: $(CONFIG)"
 ifeq ($(BUILDSYSTEM), VS2017)
 	@echo "VS2017: $(WINTARGET) | $(WINPLATFORM)"
+endif
+ifneq ($(numcpus),)
+	@echo "CPUs  : $(numcpus)"
+endif
+ifneq ($(strip $(buildflags)),)
+	@echo "xflags: $(buildflags)"
 endif
 
 # generic rules
@@ -75,21 +112,21 @@ $(ALL_PROJECTS:%=%-clean):
 
 # LinuxMakefile based rules
 %-LinuxMakefile-build: %/Builds/LinuxMakefile/Makefile
-	make -C $(<D) \
+	make $(buildflags) \
+		-C $(<D) \
 		CONFIG="$(CONFIG)" \
 		$(TARGET)
 %-LinuxMakefile-clean: %/Builds/LinuxMakefile/Makefile
 	make -C $(<D) \
 		CONFIG="$(CONFIG)" \
 		clean
-
 %/Builds/LinuxMakefile/Makefile: %.jucer
 	$(PROJUCER) -resave "$^"
 
 # XCode based rules
 .SECONDEXPANSION:
 %-XCode-build: $$(subst @,%,@/Builds/MacOSX/@.xcodeproj/project.pbxproj)
-	xcodebuild \
+	xcodebuild $(buildflags) \
 		-project $(<D) \
 		-target "$(firstword $(subst /, ,$<)) - All" \
 		-configuration "$(CONFIG)" \
@@ -100,8 +137,6 @@ $(ALL_PROJECTS:%=%-clean):
 		-target "$(firstword $(subst /, ,$<)) - All" \
 		-configuration "$(CONFIG)" \
 		clean
-
-
 # this does not declare a proper dependency,
 # so Projucer will be called for each %-build
 %.pbxproj:
@@ -111,8 +146,7 @@ $(ALL_PROJECTS:%=%-clean):
 # VS2017 based rules
 # TODO: find out how to pass CONFIG and TARGET
 %-VS2017-build: $$(subst @,%,@/Builds/VisualStudio2017/@.sln)
-	MSBuild.exe \
-		-maxcpucount -nologo \
+	MSBuild.exe $(buildflags) \
 		-p:Configuration="$(WINTARGET)",Platform=$(WINPLATFORM) \
 		$<
 %-VS2017-clean: $$(subst @,%,@/Builds/VisualStudio2017/@.sln)
@@ -120,8 +154,6 @@ $(ALL_PROJECTS:%=%-clean):
 		-p:Configuration="$(WINTARGET)",Platform=$(WINPLATFORM) \
 		-t:Clean \
 		$<
-
-
 # this does not declare a proper dependency,
 # so Projucer will be called for each %-build
 %.sln:
