@@ -71,6 +71,9 @@ variables:
     - mkdir IEM/standalone
     - cp -R -H */Builds/*/build/${CONFIG}/*.vst IEM/
     - cp -R -H */Builds/*/build/${CONFIG}/*.app IEM/standalone/
+# embed non-standard libraries in the bundles
+    - for f in IEM/*.vst/Contents/MacOS/*; do .git-ci/osx_embedlibs.sh "${f}"; done
+    - for f in IEM/standalone/*.app/Contents/MacOS/*; do .git-ci/osx_embedlibs.sh "${f}"; done
 
 .build:windows: &build_windows
   stage: build
