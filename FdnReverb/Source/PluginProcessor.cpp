@@ -50,7 +50,7 @@ FdnReverbAudioProcessor::FdnReverbAudioProcessor()
                                       nullptr);
 
     parameters.createAndAddParameter ("lowCutoff", "Lows Cutoff Frequency", "Hz",
-                                      NormalisableRange<float> (20.f, 20000.f, 1.f), 100.f,
+                                      NormalisableRange<float> (20.f, 20000.f, 1.f, 0.2f), 100.f,
                                       [](float value) {return String (value, 0);},
                                       nullptr);
     parameters.createAndAddParameter ("lowQ", "Lows Q Factor", "",
@@ -64,7 +64,7 @@ FdnReverbAudioProcessor::FdnReverbAudioProcessor()
                                       nullptr);
 
     parameters.createAndAddParameter ("highCutoff", "Highs Cutoff Frequency", "Hz",
-                                      NormalisableRange<float> (20.f, 20000.f, 1.f), 2000.f,
+                                      NormalisableRange<float> (20.f, 20000.f, 1.f, 0.2f), 2000.f,
                                       [](float value) {return String (value, 0);},
                                       nullptr);
     parameters.createAndAddParameter ("highQ", "Highs Q Factor", "",
