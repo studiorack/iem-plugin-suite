@@ -233,11 +233,9 @@ listenerElement(*valueTreeState.getParameter("listenerX"), valueTreeState.getPar
 
     addAndMakeVisible(&slLowShelfFreq);
     slLowShelfFreqAttachment = new SliderAttachment(valueTreeState,"lowShelfFreq", slLowShelfFreq);
-    slLowShelfFreq.setSkewFactorFromMidPoint(2000.0);
     slLowShelfFreq.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slLowShelfFreq.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slLowShelfFreq.setColour (Slider::rotarySliderOutlineColourId, Colours::cyan);
-    slLowShelfFreq.setTextValueSuffix(" Hz");
     slLowShelfFreq.setTooltip("low shelf freq");
 
 
@@ -251,11 +249,9 @@ listenerElement(*valueTreeState.getParameter("listenerX"), valueTreeState.getPar
 
     addAndMakeVisible(&slHighShelfFreq);
     slHighShelfFreqAttachment = new SliderAttachment(valueTreeState,"highShelfFreq", slHighShelfFreq);
-    slHighShelfFreq.setSkewFactorFromMidPoint(2000.0);
     slHighShelfFreq.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slHighShelfFreq.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slHighShelfFreq.setColour (Slider::rotarySliderOutlineColourId, Colours::orangered);
-    slHighShelfFreq.setTextValueSuffix(" Hz");
     slHighShelfFreq.setTooltip("high shelf freq");
 
     addAndMakeVisible(&slHighShelfGain);
