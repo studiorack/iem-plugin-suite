@@ -79,7 +79,6 @@ FdnReverbAudioProcessorEditor::FdnReverbAudioProcessorEditor (FdnReverbAudioProc
     revTimeSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     revTimeSlider.setColour (Slider::rotarySliderOutlineColourId, Colours::white);
     revTimeSlider.setTooltip("Reverberation Time");
-    //revTimeSlider.setSkewFactorFromMidPoint(10.f);
     revTimeSlider.addListener(this);
 
     addAndMakeVisible (&dryWetSlider);
@@ -91,7 +90,6 @@ FdnReverbAudioProcessorEditor::FdnReverbAudioProcessorEditor (FdnReverbAudioProc
 
     addAndMakeVisible (&lowCutoffSlider);
     lowCutoffAttachment = new SliderAttachment (valueTreeState, "lowCutoff", lowCutoffSlider);
-    lowCutoffSlider.setSkewFactorFromMidPoint (2000.f);
     lowCutoffSlider.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     lowCutoffSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     lowCutoffSlider.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[3]);
@@ -116,7 +114,6 @@ FdnReverbAudioProcessorEditor::FdnReverbAudioProcessorEditor (FdnReverbAudioProc
 
     addAndMakeVisible (&highCutoffSlider);
     highCutoffAttachment = new SliderAttachment (valueTreeState, "highCutoff", highCutoffSlider);
-    highCutoffSlider.setSkewFactorFromMidPoint (2000.f);
     highCutoffSlider.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     highCutoffSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     highCutoffSlider.setColour (Slider::rotarySliderOutlineColourId,
