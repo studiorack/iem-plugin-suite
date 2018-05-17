@@ -117,20 +117,29 @@ public:
     {
         if (active.get())
         {
-            if (activeChannel != -1 && buffer.getNumChannels() >= activeChannel)
+            if (activeChannel != -1)
             {
-                const int bufferSize = buffer.getNumSamples();
-                const int copyL = jmin(bufferSize, resampledL - currentPosition);
+                if (buffer.getNumChannels() >= activeChannel)
+                {
+                    const int bufferSize = buffer.getNumSamples();
+                    const int copyL = jmin(bufferSize, resampledL - currentPosition);
 
-                FloatVectorOperations::add(buffer.getWritePointer(activeChannel - 1), resampledNoise.getReadPointer(0, currentPosition), copyL);
+                    FloatVectorOperations::add(buffer.getWritePointer(activeChannel - 1), resampledNoise.getReadPointer(0, currentPosition), copyL);
 
-                currentPosition += copyL;
-                if (currentPosition >= resampledL)
+                    currentPosition += copyL;
+                    if (currentPosition >= resampledL)
+                    {
+                        active = false;
+                        activeChannel = -1;
+                    }
+                }
+                else
                 {
                     active = false;
                     activeChannel = -1;
                 }
             }
+
         }
     }
 
