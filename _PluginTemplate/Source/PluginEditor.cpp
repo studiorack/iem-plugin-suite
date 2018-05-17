@@ -31,7 +31,7 @@ PluginTemplateAudioProcessorEditor::PluginTemplateAudioProcessorEditor (PluginTe
     // ============== BEGIN: essentials ======================
     // set GUI size and lookAndFeel
     //setSize(500, 300); // use this to create a fixed-size GUI
-    setResizeLimits(500, 300, 800, 500); // use this to create a resizeable GUI
+    setResizeLimits(500, 300, 800, 500); // use this to create a resizable GUI
     setLookAndFeel (&globalLaF);
 
     // make title and footer visible, and set the PluginName
@@ -89,7 +89,7 @@ void PluginTemplateAudioProcessorEditor::resized()
 
 
     // try to not use explicit coordinates to position your GUI components
-    // the removeFrom...() methods are quite handy to create scaleable areas
+    // the removeFrom...() methods are quite handy to create scalable areas
     // best practice would be the use of flexBoxes...
     // the following is medium level practice ;-)
     Rectangle<int> sliderRow = area.removeFromTop(50);

@@ -214,8 +214,7 @@ void EnergyVisualizerAudioProcessor::processBlock (AudioSampleBuffer& buffer, Mi
     {
         pRms[i] = timeConstant * pRms[i] + oneMinusTimeConstant * ((Decibels::gainToDecibels(sampledSignals.getRMSLevel(i, 0, L)) - *peakLevel) / 35.0f + 1.0f);
     }
-
-    FloatVectorOperations::clip(rms.getRawDataPointer(), rms.getRawDataPointer(), 0.0f, 1.0f, nSamplePoints);
+    FloatVectorOperations::clip(pRms, rms.getRawDataPointer(), 0.0f, 1.0f, nSamplePoints);
 }
 
 //==============================================================================

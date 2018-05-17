@@ -167,9 +167,12 @@ public:
         // elevation labels
         for (int ele = -60; ele <= 60; ele += 30)
         {
-            textPos = anglesToPoint(0, -ele);
-            textPos.applyTransform(toArea);
-            g.drawText(String(ele) + String(CharPointer_UTF8 ("\xc2\xb0")), textPos.x, textPos.y - 12, 20, 12, Justification::centred);
+            if (ele != 0)
+            {
+                textPos = anglesToPoint(0, -ele);
+                textPos.applyTransform(toArea);
+                g.drawText(String(ele) + String(CharPointer_UTF8 ("\xc2\xb0")), textPos.x, textPos.y - 12, 20, 12, Justification::centred);
+            }
         }
 
     }

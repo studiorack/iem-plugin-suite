@@ -30,7 +30,7 @@ MatrixMultiplierAudioProcessorEditor::MatrixMultiplierAudioProcessorEditor (Matr
 {
     // ============== BEGIN: essentials ======================
     // set GUI size and lookAndFeel
-    setResizeLimits(500, 200, 800, 500); // use this to create a resizeable GUI
+    setResizeLimits(500, 200, 800, 500); // use this to create a resizable GUI
     setLookAndFeel (&globalLaF);
 
     // make title and footer visible, and set the PluginName

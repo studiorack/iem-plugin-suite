@@ -28,14 +28,14 @@
 //==============================================================================
 AllRADecoderAudioProcessor::AllRADecoderAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
-     : AudioProcessor (BusesProperties()
-                     #if ! JucePlugin_IsMidiEffect
-                      #if ! JucePlugin_IsSynth
-                       .withInput  ("Input",  AudioChannelSet::discreteChannels(64), true)
-                      #endif
-                       .withOutput ("Output", AudioChannelSet::discreteChannels(64), true)
-                     #endif
-                       ),
+: AudioProcessor (BusesProperties()
+#if ! JucePlugin_IsMidiEffect
+#if ! JucePlugin_IsSynth
+                  .withInput  ("Input",  AudioChannelSet::discreteChannels(64), true)
+#endif
+                  .withOutput ("Output", AudioChannelSet::discreteChannels(64), true)
+#endif
+                  ),
 #endif
 energyDistribution(Image::PixelFormat::ARGB, 200, 100, true), rEVector(Image::PixelFormat::ARGB, 200, 100, true), parameters(*this, nullptr)
 {
@@ -121,25 +121,25 @@ energyDistribution(Image::PixelFormat::ARGB, 200, 100, true), rEVector(Image::Pi
     loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (1.0f, 45.0f, 0.0f), 2, true), &undoManager);
     undoManager.beginNewTransaction();
     loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (1.0f, 90.0f, 0.0f), 3), &undoManager);
-        undoManager.beginNewTransaction();
-        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(1.0f, 135.0f, 0.0f), 4), &undoManager);
-        undoManager.beginNewTransaction();
-        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(1.0f, 180.0f, 0.0f), 5), &undoManager);
-        undoManager.beginNewTransaction();
-        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(1.0f, -135.0f, 0.0f), 6), &undoManager);
-        undoManager.beginNewTransaction();
+    undoManager.beginNewTransaction();
+    loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(1.0f, 135.0f, 0.0f), 4), &undoManager);
+    undoManager.beginNewTransaction();
+    loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(1.0f, 180.0f, 0.0f), 5), &undoManager);
+    undoManager.beginNewTransaction();
+    loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(1.0f, -135.0f, 0.0f), 6), &undoManager);
+    undoManager.beginNewTransaction();
     loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (1.0f, -90.0f, 0.0f), 7), &undoManager);
     undoManager.beginNewTransaction();
     loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (1.0f, -45.0f, 0.0f), 8), &undoManager);
-        undoManager.beginNewTransaction();
-        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(1.0f, 22.5f, 40.0f), 9), &undoManager);
-        undoManager.beginNewTransaction();
-        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(1.0f, 142.5f, 40.0f), 10), &undoManager);
-        undoManager.beginNewTransaction();
-        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(1.0f, -97.5f, 40.0f), 11), &undoManager);
+    undoManager.beginNewTransaction();
+    loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(1.0f, 22.5f, 40.0f), 9), &undoManager);
+    undoManager.beginNewTransaction();
+    loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(1.0f, 142.5f, 40.0f), 10), &undoManager);
+    undoManager.beginNewTransaction();
+    loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(1.0f, -97.5f, 40.0f), 11), &undoManager);
 
-        undoManager.beginNewTransaction();
-        loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(1.0f, 0.0f, -90.0f), 12), &undoManager);
+    undoManager.beginNewTransaction();
+    loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float>(1.0f, 0.0f, -90.0f), 12), &undoManager);
 
     loudspeakers.addListener(this);
     prepareLayout();
@@ -157,29 +157,29 @@ const String AllRADecoderAudioProcessor::getName() const
 
 bool AllRADecoderAudioProcessor::acceptsMidi() const
 {
-   #if JucePlugin_WantsMidiInput
+#if JucePlugin_WantsMidiInput
     return true;
-   #else
+#else
     return false;
-   #endif
+#endif
 }
 
 bool AllRADecoderAudioProcessor::producesMidi() const
 {
-   #if JucePlugin_ProducesMidiOutput
+#if JucePlugin_ProducesMidiOutput
     return true;
-   #else
+#else
     return false;
-   #endif
+#endif
 }
 
 bool AllRADecoderAudioProcessor::isMidiEffect() const
 {
-   #if JucePlugin_IsMidiEffect
+#if JucePlugin_IsMidiEffect
     return true;
-   #else
+#else
     return false;
-   #endif
+#endif
 }
 
 double AllRADecoderAudioProcessor::getTailLengthSeconds() const
@@ -190,7 +190,7 @@ double AllRADecoderAudioProcessor::getTailLengthSeconds() const
 int AllRADecoderAudioProcessor::getNumPrograms()
 {
     return 2;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
-                // so this should be at least 1, even if you're not really implementing programs.
+    // so this should be at least 1, even if you're not really implementing programs.
 }
 
 int AllRADecoderAudioProcessor::getCurrentProgram()
@@ -263,6 +263,7 @@ void AllRADecoderAudioProcessor::prepareToPlay (double sampleRate, int samplesPe
     specs.numChannels = 64;
 
     decoder.prepare(specs);
+    noiseBurst.prepare(specs);
 }
 
 void AllRADecoderAudioProcessor::releaseResources()
@@ -288,26 +289,29 @@ void AllRADecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBu
     if (decoder.getCurrentDecoder() == nullptr)
     {
         buffer.clear();
-        return;
     }
-    // ==============================================================
+    else
+    {
 
-    const int nChIn = jmin(decoder.getCurrentDecoder()->getNumInputChannels(), buffer.getNumChannels(), input.getNumberOfChannels());
-    const int nChOut = jmin(decoder.getCurrentDecoder()->getNumOutputChannels(), buffer.getNumChannels());
+        const int nChIn = jmin(decoder.getCurrentDecoder()->getNumInputChannels(), buffer.getNumChannels(), input.getNumberOfChannels());
+        const int nChOut = jmin(decoder.getCurrentDecoder()->getNumOutputChannels(), buffer.getNumChannels());
 
-    for (int ch = jmax(nChIn, nChOut); ch < buffer.getNumChannels(); ++ch) // clear all not needed channels
-        buffer.clear(ch, 0, buffer.getNumSamples());
+        for (int ch = jmax(nChIn, nChOut); ch < buffer.getNumChannels(); ++ch) // clear all not needed channels
+            buffer.clear(ch, 0, buffer.getNumSamples());
 
-    decoder.setInputNormalization(*useSN3D >= 0.5f ? ReferenceCountedDecoder::Normalization::sn3d : ReferenceCountedDecoder::Normalization::n3d);
+        decoder.setInputNormalization(*useSN3D >= 0.5f ? ReferenceCountedDecoder::Normalization::sn3d : ReferenceCountedDecoder::Normalization::n3d);
 
-    const int L = buffer.getNumSamples();
-    AudioBlock<float> inputAudioBlock = AudioBlock<float>(buffer.getArrayOfWritePointers(), nChIn, L);
-    AudioBlock<float> outputAudioBlock = AudioBlock<float>(buffer.getArrayOfWritePointers(), nChOut, L);
-    ProcessContextNonReplacing<float> decoderContext (inputAudioBlock, outputAudioBlock);
-    decoder.process(decoderContext);
+        const int L = buffer.getNumSamples();
+        AudioBlock<float> inputAudioBlock = AudioBlock<float>(buffer.getArrayOfWritePointers(), nChIn, L);
+        AudioBlock<float> outputAudioBlock = AudioBlock<float>(buffer.getArrayOfWritePointers(), nChOut, L);
+        ProcessContextNonReplacing<float> decoderContext (inputAudioBlock, outputAudioBlock);
+        decoder.process(decoderContext);
 
-    for (int ch = nChOut; ch < nChIn; ++ch) // clear all not needed channels
-        buffer.clear(ch, 0, buffer.getNumSamples());
+        for (int ch = nChOut; ch < nChIn; ++ch) // clear all not needed channels
+            buffer.clear(ch, 0, buffer.getNumSamples());
+
+    }
+    noiseBurst.processBuffer(buffer);
 }
 
 //==============================================================================
@@ -468,7 +472,7 @@ Result AllRADecoderAudioProcessor::verifyLoudspeakers()
 
 Result AllRADecoderAudioProcessor::calculateTris()
 {
-        return Result::ok();
+    return Result::ok();
 }
 
 ValueTree AllRADecoderAudioProcessor::createLoudspeakerFromCartesian (Vector3D<float> cartCoordinates, int channel, bool isImaginary, float gain)
@@ -510,6 +514,17 @@ Vector3D<float> AllRADecoderAudioProcessor::sphericalInRadiansToCartesian(Vector
                            sphervect.x * cos(sphervect.z) * sin(sphervect.y),
                            sphervect.x * sin(sphervect.z)
                            );
+}
+
+void AllRADecoderAudioProcessor::playNoiseBurst (const int channel)
+{
+    noiseBurst.setChannel(channel);
+}
+
+void AllRADecoderAudioProcessor::addImaginaryLoudspeakerBelow()
+{
+    undoManager.beginNewTransaction();
+    loudspeakers.appendChild(createLoudspeakerFromCartesian(Vector3D<float>(0.0f, 0.0f, -1.0f), highestChannelNumber + 1, true, 0.0f), &undoManager);
 }
 
 void AllRADecoderAudioProcessor::addRandomPoint()
@@ -628,7 +643,7 @@ Result AllRADecoderAudioProcessor::checkLayout()
     const int result = NewtonApple_hull_3D(points, triangles);
     if (result != 1)
     {
-        return Result::fail("ERROR: An error occured! The layout might be broken somehow.");
+        return Result::fail("ERROR: An error occurred! The layout might be broken somehow.");
     }
 
     // normalise normal vectors
@@ -858,7 +873,7 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
     const float wHalf = w / 2;
     const int h = energyDistribution.getHeight();
     const float hHalf = h / 2;
-    float maxSumOfSuares = 0.0f;
+    float maxSumOfSquares = 0.0f;
     float minLvl = 0.0f;
     float maxLvl = 0.0f;
     for (int y = 0; y < h; ++y)
@@ -899,8 +914,8 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
             rEVector.setPixelAt(x, y, rEPixelColour);
             energyDistribution.setPixelAt(x, y, pixelColour);
 
-            if (sumOfSquares > maxSumOfSuares)
-                maxSumOfSuares = sumOfSquares;
+            if (sumOfSquares > maxSumOfSquares)
+                maxSumOfSquares = sumOfSquares;
         }
 
 
@@ -1131,7 +1146,7 @@ void AllRADecoderAudioProcessor::loadConfiguration (const File& configFile)
 
 //==============================================================================
 pointer_sized_int AllRADecoderAudioProcessor::handleVstPluginCanDo (int32 index,
-                                                                     pointer_sized_int value, void* ptr, float opt)
+                                                                    pointer_sized_int value, void* ptr, float opt)
 {
     auto text = (const char*) ptr;
     auto matches = [=](const char* s) { return strcmp (text, s) == 0; };

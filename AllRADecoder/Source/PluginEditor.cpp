@@ -26,12 +26,12 @@
 
 //==============================================================================
 AllRADecoderAudioProcessorEditor::AllRADecoderAudioProcessorEditor (AllRADecoderAudioProcessor& p, AudioProcessorValueTreeState& vts)
-    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts), lv(processor.points, processor.triangles, processor.normals, processor.imaginaryFlags), lspList(processor.getLoudspeakersValueTree(), lv, grid, processor.undoManager), grid(processor.points, processor.imaginaryFlags, processor.energyDistribution, processor.rEVector)
+    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts), lv(processor.points, processor.triangles, processor.normals, processor.imaginaryFlags), lspList(processor.getLoudspeakersValueTree(), lv, grid, processor.undoManager, processor), grid(processor.points, processor.imaginaryFlags, processor.energyDistribution, processor.rEVector)
 {
     // ============== BEGIN: essentials ======================
     // set GUI size and lookAndFeel
     //setSize(500, 300); // use this to create a fixed-size GUI
-    setResizeLimits(1000, 600, 1200, 900); // use this to create a resizeable GUI
+    setResizeLimits(1000, 600, 1200, 900); // use this to create a resizable GUI
     setLookAndFeel (&globalLaF);
 
     // make title and footer visible, and set the PluginName
@@ -152,11 +152,11 @@ void AllRADecoderAudioProcessorEditor::resized()
 
 
     // try to not use explicit coordinates to position your GUI components
-    // the removeFrom...() methods are quite handy to create scaleable areas
+    // the removeFrom...() methods are quite handy to create scalable areas
     // best practice would be the use of flexBoxes...
     // the following is medium level practice ;-)
 
-    Rectangle<int> rightArea = area.removeFromRight(400);
+    Rectangle<int> rightArea = area.removeFromRight(420);
     Rectangle<int> bottomRight = rightArea.removeFromBottom(100);
 
     rightArea.removeFromBottom(25);
@@ -181,7 +181,7 @@ void AllRADecoderAudioProcessorEditor::resized()
     rightArea.removeFromBottom(5);
     lspList.setBounds(rightArea);
 
-    Rectangle<int> decoderArea = bottomRight.removeFromLeft(130);
+    Rectangle<int> decoderArea = bottomRight.removeFromLeft(150);
     bottomRight.removeFromLeft(20);
     Rectangle<int> exportArea = bottomRight;
 
@@ -254,7 +254,11 @@ void AllRADecoderAudioProcessorEditor::buttonClicked (Button* button)
 {
     if (button == &tbAddSpeakers)
     {
-        processor.addRandomPoint();
+        const auto& modifiers = ModifierKeys::getCurrentModifiers();
+        if (modifiers.isAltDown())
+            processor.addImaginaryLoudspeakerBelow();
+        else
+            processor.addRandomPoint();
     }
     else if (button == &tbCalculateDecoder)
     {

@@ -23,6 +23,7 @@
 #pragma once
 
 #include "../JuceLibraryCode/JuceHeader.h"
+#include "../../resources/viridis_cropped.h"
 
 
 //==============================================================================
@@ -92,16 +93,13 @@ public:
 
         if (firstRun)
         {
-            PixelARGB colormapData[8];
-            colormapData[0] = Colours::skyblue.withMultipliedAlpha(0.0f).getPixelARGB();
-            colormapData[1] = Colours::skyblue.withMultipliedAlpha(0.2f).getPixelARGB();
-            colormapData[2] = Colours::skyblue.withMultipliedAlpha(0.3f).getPixelARGB();
-            colormapData[3] = Colour::fromFloatRGBA(0.167f, 0.620f, 0.077f, 6.0f).getPixelARGB();
-            colormapData[4] = Colour::fromFloatRGBA(0.167f, 0.620f, 0.077f, 7.0f).getPixelARGB();
-            colormapData[5] = Colour::fromFloatRGBA(0.8f, 0.620f, 0.077f, 0.8f).getPixelARGB();
-            colormapData[6] = Colour::fromFloatRGBA(0.8f, 0.620f, 0.077f, 1.0f).getPixelARGB();
-            colormapData[7] = Colours::red.getPixelARGB();
-            texture.loadARGB(colormapData,8,1);
+            PixelARGB colormapData[256];
+            for (int i = 0; i < 256; ++i)
+            {
+                const float alpha = jlimit(0.0f, 1.0f, (float) i / 50.0f);
+                colormapData[i] = Colour::fromFloatRGBA(viridis_cropped[i][0], viridis_cropped[i][1], viridis_cropped[i][2], alpha).getPixelARGB();
+            }
+            texture.loadARGB(colormapData, 256, 1);
 
             firstRun = false;
             openGLContext.extensions.glGenBuffers(1, &vertexBuffer);
