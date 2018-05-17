@@ -171,6 +171,7 @@ public:
                 noiseButton = new NoiseButton (*this);
 
             noiseButton->setRowAndColumn (rowNumber, columnId);
+            noiseButton->setEnabled(! data.getChild(rowNumber).getProperty("Imaginary"));
             return noiseButton;
         }
 
@@ -309,7 +310,13 @@ private:
                 if ((columnId == 4 || columnId == 7) && ! owner.data.getChild(row).getProperty("Imaginary"))
                     g.setColour (Colours::white.withMultipliedAlpha(0.4f));
                 else
-                    g.setColour (Colours::white);
+                {
+                    if (columnId == 5 && owner.data.getChild(row).getProperty("Imaginary"))
+                        g.setColour (Colours::white.withMultipliedAlpha(0.4f));
+                    else
+                        g.setColour (Colours::white);
+                }
+
 
                 g.setFont (getLookAndFeel().getTypefaceForFont(Font(12.0f)));
                 g.setFont (13.f);
