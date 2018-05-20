@@ -403,6 +403,7 @@ void BinauralDecoderAudioProcessor::updateBuffers()
 
     AudioBuffer<float> resampledIRs;
     bool useResampled = false;
+    irLength = 236;
 
     if (sampleRate != irsSampleRate) // do resampling!
     {
