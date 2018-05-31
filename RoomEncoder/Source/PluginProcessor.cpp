@@ -157,6 +157,13 @@ parameters (*this, nullptr)
                                           else return "NO"; },
                                       nullptr);
 
+    parameters.createAndAddParameter ("renderDirectPath", "Render Direct Path", "",
+                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
+                                      [](float value) {
+                                          if (value >= 0.5f) return "YES";
+                                          else return "NO"; },
+                                      nullptr);
+
 
     parameters.state = ValueTree (Identifier ("RoomEncoder"));
 
@@ -182,6 +189,8 @@ parameters (*this, nullptr)
     syncRoomSize = parameters.getRawParameterValue ("syncRoomSize");
     syncReflection = parameters.getRawParameterValue ("syncReflection");
     syncListener = parameters.getRawParameterValue ("syncListener");
+
+    renderDirectPath = parameters.getRawParameterValue ("renderDirectPath");
 
     lowShelfFreq = parameters.getRawParameterValue ("lowShelfFreq");
     lowShelfGain = parameters.getRawParameterValue ("lowShelfGain");
@@ -681,6 +690,11 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
             FloatVectorOperations::clear(SHcoeffs, 64);
 
         float gain = powReflCoeff[reflList[q][3]]/mRadius[q];
+
+        // direct path rendering
+        if (q == 0 && *renderDirectPath < 0.5f)
+            gain = 0.0f;
+
         allGains[q] = gain; // for reflectionVisualizer
 
         FloatVectorOperations::multiply(SHcoeffs, gain, maxNChOut);
