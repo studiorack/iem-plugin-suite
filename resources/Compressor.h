@@ -63,14 +63,29 @@ public:
         kneeHalf = knee / 2.0f;
     }
 
+    const float getKnee ()
+    {
+        return knee;
+    }
+
     void setThreshold (float thresholdInDecibels)
     {
         threshold = thresholdInDecibels;
     }
 
+    const float getTreshold ()
+    {
+        return threshold;
+    }
+
     void setMakeUpGain (float makeUpGainInDecibels)
     {
         makeUpGain = makeUpGainInDecibels;
+    }
+
+    const float getMakeUpGain()
+    {
+        return makeUpGain;
     }
 
     void setRatio (float ratio)
@@ -84,6 +99,16 @@ public:
     }
 
 
+    void applyCharacteristicToOverShoot (float &overShoot)
+    {
+        if (overShoot <= -kneeHalf)
+            overShoot = 0.0f; //y_G = levelInDecibels;
+        else if (overShoot > -kneeHalf && overShoot <= kneeHalf)
+            overShoot = 0.5f * slope * square(overShoot + kneeHalf) / knee; //y_G = levelInDecibels + 0.5f * slope * square(overShoot + kneeHalf) / knee;
+        else
+            overShoot = slope * overShoot;
+    }
+
     void getGainFromSidechainSignal (const float* sideChainSignal, float* destination, const int numSamples)
     {
         maxLevel = -INFINITY;
@@ -95,12 +120,7 @@ public:
                 maxLevel = levelInDecibels;
             // calculate overshoot and apply knee and ratio
             float overShoot = levelInDecibels - threshold;
-            if (overShoot <= -kneeHalf)
-                overShoot = 0.0f; //y_G = levelInDecibels;
-            else if (overShoot > -kneeHalf && overShoot <= kneeHalf)
-                overShoot = 0.5f * slope * square(overShoot + kneeHalf) / knee; //y_G = levelInDecibels + 0.5f * slope * square(overShoot + kneeHalf) / knee;
-            else
-                overShoot = slope * overShoot; //y_G = levelInDecibels + slope * overShoot;
+            applyCharacteristicToOverShoot(overShoot); //y_G = levelInDecibels + slope * overShoot;
 
             // ballistics
             const float diff = overShoot - state;
@@ -112,6 +132,22 @@ public:
             destination[i] = Decibels::decibelsToGain(state + makeUpGain);
         }
     }
+
+    void getCharacteristic (float* inputLevels, float* dest, const int numSamples)
+    {
+        for (int i = 0; i < numSamples; ++i)
+        {
+            dest[i] =  getCharacteristicSample (inputLevels[i]);
+        }
+    }
+
+    inline float getCharacteristicSample (float inputLevel)
+    {
+        float overShoot = inputLevel - threshold;
+        applyCharacteristicToOverShoot(overShoot);
+        return overShoot + inputLevel + makeUpGain;
+    }
+
 
 
 private:
