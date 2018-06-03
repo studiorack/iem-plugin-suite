@@ -52,7 +52,8 @@ public:
         alphaRelease = 1.0 - timeToGain(releaseTime);
     }
 
-    double timeToGain (float timeInSeconds) {
+    double timeToGain (float timeInSeconds)
+    {
         return exp(-1.0/(sampleRate * timeInSeconds));
     }
 
@@ -77,13 +78,13 @@ public:
         slope = 1.0f / ratio - 1.0f;
     }
 
-    float getMaxLevelInDecibels()
+    const float getMaxLevelInDecibels()
     {
         return maxLevel;
     }
 
 
-    void getGainFromSidechainSignal(const float* sideChainSignal, float* destination, const int numSamples)
+    void getGainFromSidechainSignal (const float* sideChainSignal, float* destination, const int numSamples)
     {
         maxLevel = -INFINITY;
         for (int i = 0; i < numSamples; ++i)
@@ -124,7 +125,7 @@ private:
     float slope {0.0f};
     float makeUpGain {0.0f};
 
-    float maxLevel;
+    float maxLevel {-INFINITY};
 
     //state variable
     float state {0.0f};
