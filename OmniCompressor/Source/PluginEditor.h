@@ -29,6 +29,7 @@
 #include "../../resources/customComponents/TitleBar.h"
 #include "../../resources/customComponents/SimpleLabel.h"
 #include "../../resources/customComponents/LevelMeter.h"
+#include "../../resources/customComponents/CompressorVisualizer.h"
 
 typedef ReverseSlider::SliderAttachment SliderAttachment;
 typedef AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
@@ -71,7 +72,7 @@ private:
     ScopedPointer<SliderAttachment> RTAttachment;
     ScopedPointer<SliderAttachment> MGAttachment;
 
-
+    CompressorVisualizer characteristic;
     LevelMeter inpMeter, dbGRmeter;
 
     SimpleLabel lbKnee, lbThreshold, lbOutGain, lbRatio, lbAttack, lbRelease;

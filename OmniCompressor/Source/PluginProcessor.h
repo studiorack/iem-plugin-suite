@@ -82,15 +82,15 @@ public:
                                             void* ptr, float opt) override;
     //==============================================================================
 
-
     float maxRMS;
     float maxGR;
+    Compressor compressor;
 
 private:
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OmniCompressorAudioProcessor)
 
-    Compressor compressor;
+
     AudioProcessorValueTreeState parameters;
 
     Array<float> RMS, gains, allGR;
