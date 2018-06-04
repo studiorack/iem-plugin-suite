@@ -64,7 +64,7 @@ parameters (*this, nullptr)
                                      [](float value) {return String(value, 1);}, nullptr);
 
     parameters.createAndAddParameter("knee", "Knee", "dB",
-                                     NormalisableRange<float> (0.0f, 10.0f, 0.1f), 0.0f,
+                                     NormalisableRange<float> (0.0f, 30.0f, 0.1f), 0.0f,
                                      [](float value) {return String(value, 1);}, nullptr);
 
     parameters.createAndAddParameter("attack", "Attack Time", "ms",
