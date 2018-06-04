@@ -64,7 +64,6 @@ class CompressorVisualizer    : public Component
 
         void paint (Graphics& g) override
         {
-
             g.setColour (Colours::steelblue.withMultipliedAlpha (0.8f));
             g.strokePath (grid, PathStrokeType (0.5f), contentTransform);
 
@@ -78,15 +77,42 @@ class CompressorVisualizer    : public Component
             dashLengths[1] = 2.0f;
             g.drawDashedLine(unity, dashLengths, 2, 0.5f);
 
+
+            g.setColour(Colours::white);
+            g.setFont(getLookAndFeel().getTypefaceForFont (Font(12.0f, 2)));
+            g.setFont(12.0f);
+
+            const float step = 10.0f;
+            float xPos = 0.0f;
+            float yPos = 0.0f;
+            contentTransform.transformPoint(xPos, yPos);
+
+            g.drawText ("0 dB", xPos + 1, yPos - 12, 18, 12.0f, Justification::left, false);
+
+            for (int val = - step; val >= minDecibels; val -= step)
+            {
+                // vertical labels
+                float xPos = 0.0f;
+                float yPos = val;
+                contentTransform.transformPoint(xPos, yPos);
+                g.drawText (String(val), xPos + 4, yPos - 6, 18, 12.0f, Justification::left, false);
+
+
+                // horizontal labels
+                xPos = val;
+                yPos = 0.0f;
+                contentTransform.transformPoint(xPos, yPos);
+                g.drawText (String(val), xPos - 9, yPos - 12, 18, 12.0f, Justification::centred, false);
+            }
         }
 
         void resized() override
         {
             auto bounds = getLocalBounds();
-            bounds.removeFromTop(20);
-            bounds.removeFromRight(50);
+            bounds.removeFromTop(12);
+            bounds.removeFromRight(22);
             bounds.removeFromLeft(10);
-            bounds.removeFromBottom(5);
+            bounds.removeFromBottom(8);
             contentBounds = bounds;
 
             contentTransform = AffineTransform::fromTargetPoints(Point<int>(minDecibels, minDecibels), contentBounds.getBottomLeft(), Point<int>(0, 0), contentBounds.getTopRight(), Point<int>(0, minDecibels), contentBounds.getBottomRight());
@@ -222,10 +248,6 @@ public:
 
     void paintOverChildren (Graphics& g) override
     {
-        g.setColour (Colours::grey);
-        g.drawRect (getLocalBounds(), 1);   // draw an outline around the component
-
-
         Rectangle<float> circle (0.0f, 0.0f, 10.0f, 10.0f);
 
         float x = inLevel;
