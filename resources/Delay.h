@@ -75,7 +75,7 @@ public:
             auto abIn = context.getInputBlock();
             auto abOut = context.getOutputBlock();
             auto L = abIn.getNumSamples();
-            auto nCh = abIn.getNumChannels();
+            auto nCh = jmin((int) spec.numChannels, (int) abIn.getNumChannels());
 
             int startIndex, blockSize1, blockSize2;
 
