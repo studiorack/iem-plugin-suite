@@ -133,6 +133,30 @@ public:
         }
     }
 
+    void getGainFromSidechainSignalInDecibelsWithoutMakeUpGain (const float* sideChainSignal, float* destination, const int numSamples)
+    {
+        maxLevel = -INFINITY;
+        for (int i = 0; i < numSamples; ++i)
+        {
+            // convert sample to decibels
+            float levelInDecibels =  Decibels::gainToDecibels(abs(sideChainSignal[i]));
+            if (levelInDecibels > maxLevel)
+                maxLevel = levelInDecibels;
+            // calculate overshoot and apply knee and ratio
+            float overShoot = levelInDecibels - threshold;
+            applyCharacteristicToOverShoot(overShoot); //y_G = levelInDecibels + slope * overShoot;
+
+            // ballistics
+            const float diff = overShoot - state;
+            if (diff < 0.0f)
+                state += alphaAttack * diff;
+            else
+                state += alphaRelease * diff;
+
+            destination[i] = state;
+        }
+    }
+
     void getCharacteristic (float* inputLevels, float* dest, const int numSamples)
     {
         for (int i = 0; i < numSamples; ++i)
