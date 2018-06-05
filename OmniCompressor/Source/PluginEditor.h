@@ -33,6 +33,7 @@
 
 typedef ReverseSlider::SliderAttachment SliderAttachment;
 typedef AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
+typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 
 //==============================================================================
 /**
@@ -71,6 +72,9 @@ private:
     ScopedPointer<SliderAttachment> ATAttachment;
     ScopedPointer<SliderAttachment> RTAttachment;
     ScopedPointer<SliderAttachment> MGAttachment;
+
+    ToggleButton tbLookAhead;
+    ScopedPointer<ButtonAttachment> tbLookAheadAttachment;
 
     CompressorVisualizer characteristic;
     LevelMeter inpMeter, dbGRmeter;

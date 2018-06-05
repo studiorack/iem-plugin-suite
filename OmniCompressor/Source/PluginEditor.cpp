@@ -28,7 +28,7 @@
 OmniCompressorAudioProcessorEditor::OmniCompressorAudioProcessorEditor (OmniCompressorAudioProcessor& p, AudioProcessorValueTreeState& vts)
     : AudioProcessorEditor (&p), processor (p), valueTreeState(vts), characteristic(processor.compressor)
 {
-    setSize (330, 480);
+    setSize (330, 500);
     setLookAndFeel(&globalLaF);
 
     addAndMakeVisible(&title);
@@ -37,6 +37,11 @@ OmniCompressorAudioProcessorEditor::OmniCompressorAudioProcessorEditor (OmniComp
     addAndMakeVisible(&footer);
 
     addAndMakeVisible(characteristic);
+
+    addAndMakeVisible(&tbLookAhead);
+    tbLookAheadAttachment = new ButtonAttachment(valueTreeState, "lookAhead", tbLookAhead);
+    tbLookAhead.setButtonText("Look ahead (5ms)");
+    tbLookAhead.setColour (ToggleButton::tickColourId, globalLaF.ClWidgetColours[0]);
 
     addAndMakeVisible(&sliderKnee);
     KnAttachment = new SliderAttachment(valueTreeState,"knee", sliderKnee);
@@ -218,6 +223,8 @@ void OmniCompressorAudioProcessorEditor::resized()
     sliderRow.removeFromLeft(sliderSpacing);
     lbRelease.setBounds(sliderRow.removeFromLeft(sliderWidth));
 
+    area.removeFromBottom(10);
+    tbLookAhead.setBounds(area.removeFromBottom(20));
     area.removeFromBottom(10);
     characteristic.setBounds(area);
 
