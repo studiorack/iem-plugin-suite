@@ -90,7 +90,7 @@ parameters (*this, nullptr)
 
     parameters.createAndAddParameter("lookAhead", "LookAhead", "",
                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
-                                     [](float value) {return value >= 0.5f ? "ON (10ms)" : "OFF";}, nullptr);
+                                     [](float value) {return value >= 0.5f ? "ON (5ms)" : "OFF";}, nullptr);
 
     parameters.state = ValueTree (Identifier ("OmniCompressor"));
 
@@ -107,8 +107,8 @@ parameters (*this, nullptr)
     lookAhead = parameters.getRawParameterValue ("lookAhead");
     GR = 0.0f;
 
-    delay.setDelayTime (0.01f);
-    grProcessing.setDelayTime (0.01f);
+    delay.setDelayTime (0.005f);
+    grProcessing.setDelayTime (0.005f);
 }
 
 
@@ -195,6 +195,10 @@ void OmniCompressorAudioProcessor::prepareToPlay (double sampleRate, int samples
     spec.numChannels = getTotalNumInputChannels();
     delay.prepare (spec);
 
+    if (*lookAhead >= 0.5f)
+        setLatencySamples(delay.getDelayInSamples());
+    else
+        setLatencySamples(0);
 }
 
 void OmniCompressorAudioProcessor::releaseResources()
@@ -231,10 +235,7 @@ void OmniCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer, Midi
 
     compressor.setKnee(*knee);
 
-//    if (useLookAhead)
-//        compressor.setAttackTime(0.0f);
-//    else
-        compressor.setAttackTime(*attack * 0.001f);
+    compressor.setAttackTime(*attack * 0.001f);
 
     compressor.setReleaseTime(*release * 0.001f);
     compressor.setThreshold(*threshold);
@@ -242,9 +243,6 @@ void OmniCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer, Midi
 
     for (int i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
-
-
-
 
     if (useLookAhead)
     {
@@ -267,8 +265,6 @@ void OmniCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer, Midi
         {
             gains.setSample(0, i, Decibels::decibelsToGain(gains.getSample(0, i) + *outGain));
         }
-
-
     }
     else
     {
