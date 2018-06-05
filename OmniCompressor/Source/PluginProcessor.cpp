@@ -88,6 +88,10 @@ parameters (*this, nullptr)
                                      NormalisableRange<float> (-10.0f, 20.0f, 0.1f), 0.0,
                                      [](float value) {return String(value, 1);}, nullptr);
 
+    parameters.createAndAddParameter("lookAhead", "LookAhead", "",
+                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
+                                     [](float value) {return value >= 0.5f ? "ON (10ms)" : "OFF";}, nullptr);
+
     parameters.state = ValueTree (Identifier ("OmniCompressor"));
 
     parameters.addParameterListener("orderSetting", this);
@@ -100,7 +104,11 @@ parameters (*this, nullptr)
     ratio = parameters.getRawParameterValue ("ratio");
     attack = parameters.getRawParameterValue ("attack");
     release = parameters.getRawParameterValue ("release");
+    lookAhead = parameters.getRawParameterValue ("lookAhead");
     GR = 0.0f;
+
+    delay.setDelayTime (0.01f);
+    grProcessing.setDelayTime (0.01f);
 }
 
 
@@ -173,8 +181,9 @@ void OmniCompressorAudioProcessor::prepareToPlay (double sampleRate, int samples
     checkInputAndOutput(this, *orderSetting, *orderSetting, true);
 
     RMS.resize(samplesPerBlock);
-    gains.resize(samplesPerBlock);
     allGR.resize(samplesPerBlock);
+
+    gains.setSize(1, samplesPerBlock);
 
     dsp::ProcessSpec spec;
     spec.sampleRate = sampleRate;
@@ -182,6 +191,10 @@ void OmniCompressorAudioProcessor::prepareToPlay (double sampleRate, int samples
     spec.maximumBlockSize = samplesPerBlock;
 
     compressor.prepare(spec);
+    grProcessing.prepare (spec);
+    spec.numChannels = getTotalNumInputChannels();
+    delay.prepare (spec);
+
 }
 
 void OmniCompressorAudioProcessor::releaseResources()
@@ -209,6 +222,8 @@ void OmniCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer, Midi
     //const int ambisonicOrder = jmin(input.getOrder(), output.getOrder());
     const float* bufferReadPtr = buffer.getReadPointer(0);
 
+    const bool useLookAhead = *lookAhead >= 0.5f;
+
     if (*ratio > 15.9f)
         compressor.setRatio(INFINITY);
     else
@@ -216,7 +231,11 @@ void OmniCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer, Midi
 
     compressor.setKnee(*knee);
 
-    compressor.setAttackTime(*attack * 0.001f);
+//    if (useLookAhead)
+//        compressor.setAttackTime(0.0f);
+//    else
+        compressor.setAttackTime(*attack * 0.001f);
+
     compressor.setReleaseTime(*release * 0.001f);
     compressor.setThreshold(*threshold);
     compressor.setMakeUpGain(*outGain);
@@ -224,16 +243,48 @@ void OmniCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer, Midi
     for (int i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    compressor.getGainFromSidechainSignal(bufferReadPtr, gains.getRawDataPointer(), bufferSize);
-    maxRMS = compressor.getMaxLevelInDecibels();
 
-    maxGR = Decibels::gainToDecibels(FloatVectorOperations::findMinimum(gains.getRawDataPointer(), bufferSize)) - *outGain;
+
+
+    if (useLookAhead)
+    {
+        compressor.getGainFromSidechainSignalInDecibelsWithoutMakeUpGain (bufferReadPtr, gains.getWritePointer(0), bufferSize);
+        maxGR = FloatVectorOperations::findMinimum(gains.getWritePointer(0), bufferSize);
+
+        // delay input signal
+        {
+            AudioBlock<float> ab (buffer);
+            ProcessContextReplacing<float> context (ab);
+            delay.process (context);
+        }
+
+        grProcessing.pushSamples (gains.getReadPointer(0), bufferSize);
+        grProcessing.process();
+        grProcessing.readSamples (gains.getWritePointer(0), bufferSize);
+
+        // convert from decibels to gain values
+        for (int i = 0; i < bufferSize; ++i)
+        {
+            gains.setSample(0, i, Decibels::decibelsToGain(gains.getSample(0, i) + *outGain));
+        }
+
+
+    }
+    else
+    {
+        compressor.getGainFromSidechainSignal(bufferReadPtr, gains.getWritePointer(0), bufferSize);
+        maxGR = Decibels::gainToDecibels(FloatVectorOperations::findMinimum(gains.getWritePointer(0), bufferSize)) - *outGain;
+    }
+
+    maxRMS = compressor.getMaxLevelInDecibels();
 
     for (int channel = 0; channel < numCh; ++channel)
     {
         float* channelData = buffer.getWritePointer (channel);
-        FloatVectorOperations::multiply(channelData, gains.getRawDataPointer(), bufferSize);
+        FloatVectorOperations::multiply(channelData, gains.getWritePointer(0), bufferSize);
     }
+
+
 }
 
 //==============================================================================

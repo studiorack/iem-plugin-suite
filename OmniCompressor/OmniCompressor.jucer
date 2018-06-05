@@ -4,7 +4,7 @@
               splashScreenColour="Dark" projectType="audioplug" version="1.2.0"
               bundleIdentifier="at.iem.OmniCompressor" includeBinaryInAppConfig="1"
               buildVST="1" buildVST3="0" buildAU="0" buildAUv3="0" buildRTAS="0"
-              buildAAX="0" buildStandalone="1" enableIAA="0" pluginName="OmniCompressor"
+              buildAAX="0" buildStandalone="1" enableIAA="0" pluginName="OmniCompressorLookAhead"
               pluginDesc="OmniCompressor" pluginManufacturer="IEM" pluginManufacturerCode="IEMA"
               pluginCode="OmCo" pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
@@ -35,13 +35,14 @@
     </GROUP>
     <FILE id="mitKn8" name="CompressorVisualizer.h" compile="0" resource="0"
           file="../resources/customComponents/CompressorVisualizer.h"/>
+    <FILE id="EvZHak" name="Delay.h" compile="0" resource="0" file="../resources/Delay.h"/>
   </MAINGROUP>
   <EXPORTFORMATS>
     <XCODE_MAC targetFolder="Builds/MacOSX">
       <CONFIGURATIONS>
-        <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="OmniCompressor"
+        <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="OmniCompressorLookAhead"
                        enablePluginBinaryCopyStep="1" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"/>
-        <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="OmniCompressor"
+        <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="OmniCompressorLookAhead"
                        linkTimeOptimisation="1" enablePluginBinaryCopyStep="1" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"
                        osxCompatibility="10.9 SDK"/>
       </CONFIGURATIONS>
