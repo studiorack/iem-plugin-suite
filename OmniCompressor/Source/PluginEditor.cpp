@@ -224,7 +224,7 @@ void OmniCompressorAudioProcessorEditor::resized()
     lbRelease.setBounds(sliderRow.removeFromLeft(sliderWidth));
 
     area.removeFromBottom(10);
-    tbLookAhead.setBounds(area.removeFromBottom(20));
+    tbLookAhead.setBounds(area.removeFromBottom(20).removeFromLeft(130));
     area.removeFromBottom(10);
     characteristic.setBounds(area);
 
