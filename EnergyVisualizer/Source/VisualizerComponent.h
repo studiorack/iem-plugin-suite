@@ -24,7 +24,7 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "../../resources/viridis_cropped.h"
-
+#include "../../resources/heatmap.h"
 
 //==============================================================================
 /*
@@ -36,7 +36,6 @@ public:
     {
         // In your constructor, you should add any child components, and
         // initialise any special settings that your component needs.
-
 
         openGLContext.setComponentPaintingEnabled(true);
         openGLContext.setContinuousRepainting(false);
@@ -93,13 +92,14 @@ public:
 
         if (firstRun)
         {
-            PixelARGB colormapData[256];
+            PixelARGB colormapData[512];
             for (int i = 0; i < 256; ++i)
             {
                 const float alpha = jlimit(0.0f, 1.0f, (float) i / 50.0f);
                 colormapData[i] = Colour::fromFloatRGBA(viridis_cropped[i][0], viridis_cropped[i][1], viridis_cropped[i][2], alpha).getPixelARGB();
+                colormapData[256 + i] = Colour::fromFloatRGBA(heatmap[i][0], heatmap[i][1], heatmap[i][2], heatmap[i][3]).getPixelARGB();
             }
-            texture.loadARGB(colormapData, 256, 1);
+            texture.loadARGB(colormapData, 256, 2);
 
             firstRun = false;
             openGLContext.extensions.glGenBuffers(1, &vertexBuffer);
@@ -123,6 +123,8 @@ public:
         openGLContext.extensions.glBindBuffer(GL_ARRAY_BUFFER, colorBuffer);
         openGLContext.extensions.glBufferData(GL_ARRAY_BUFFER, sizeof(g_colorMap_data), g_colorMap_data, GL_STATIC_DRAW);
 
+        if (colormapChooser != nullptr)
+            colormapChooser->set(usePerceptualColormap ? 0.0f : 1.0f);
 
         GLint attributeID;
         GLint programID = shader->getProgramID();
@@ -217,6 +219,8 @@ public:
         vertexShader =
         "attribute vec2 position;\n"
         "attribute float colormapDepthIn;\n"
+        "uniform float colormapChooser;\n"
+        "varying float colormapChooserOut;\n"
         "varying float colormapDepthOut;\n"
         "void main()\n"
         "{\n"
@@ -224,15 +228,17 @@ public:
         "   gl_Position.z = 0.0;\n"
         "   gl_Position.w = 1.0;\n"
         "   colormapDepthOut = colormapDepthIn;\n"
+        "   colormapChooserOut = colormapChooser;\n"
         "}";
 
         fragmentShader =
         "varying float colormapDepthOut;\n"
+        "varying float colormapChooserOut;\n"
         "uniform sampler2D tex0;\n"
         "void main()\n"
         "{\n"
         //"      gl_FragColor = fragmentColor;\n"
-        "      gl_FragColor = texture2D(tex0, vec2(colormapDepthOut, 0));\n"
+        "      gl_FragColor = texture2D(tex0, vec2(colormapDepthOut, colormapChooserOut));\n"
         "}";
 
         ScopedPointer<OpenGLShaderProgram> newShader (new OpenGLShaderProgram (openGLContext));
@@ -244,6 +250,8 @@ public:
         {
             shader = newShader;
             shader->use();
+
+            colormapChooser = createUniform (openGLContext, *shader, "colormapChooser");
             statusText = "GLSL: v" + String (OpenGLShaderProgram::getLanguageVersion(), 2);
         }
         else
@@ -253,6 +261,11 @@ public:
 
     }
 
+    void setColormap (bool shouldUsePerceptualColormap)
+    {
+        usePerceptualColormap = shouldUsePerceptualColormap;
+    }
+
 
 private:
     HammerAitovGrid hammerAitovGrid;
@@ -260,7 +273,15 @@ private:
     const char* vertexShader;
     const char* fragmentShader;
     ScopedPointer<OpenGLShaderProgram> shader;
+    ScopedPointer<OpenGLShaderProgram::Uniform> colormapChooser;
+    bool usePerceptualColormap = true;
 
+    static OpenGLShaderProgram::Uniform* createUniform (OpenGLContext& openGLContext, OpenGLShaderProgram& shaderProgram, const char* uniformName)
+    {
+        if (openGLContext.extensions.glGetUniformLocation (shaderProgram.getProgramID(), uniformName) < 0)
+            return nullptr; // Return if error
+        return new OpenGLShaderProgram::Uniform (shaderProgram, uniformName);
+    }
 
     OpenGLTexture texture;
 

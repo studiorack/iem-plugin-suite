@@ -24,6 +24,7 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "../../resources/viridis_cropped.h"
+#include "../../resources/heatmap.h"
 
 //==============================================================================
 /*
@@ -45,11 +46,17 @@ public:
     void paint (Graphics& g) override
     {
         Colour colormapData[256];
-        for (int i = 0; i < 256; ++i)
-        {
-            const float alpha = jlimit(0.0f, 1.0f, (float) i / 50.0f);
-            colormapData[i] = Colour::fromFloatRGBA(viridis_cropped[i][0], viridis_cropped[i][1], viridis_cropped[i][2], alpha);
-        }
+        if (usePerceptualColormap)
+            for (int i = 0; i < 256; ++i)
+            {
+                const float alpha = jlimit(0.0f, 1.0f, (float) i / 50.0f);
+                colormapData[i] = Colour::fromFloatRGBA(viridis_cropped[i][0], viridis_cropped[i][1], viridis_cropped[i][2], alpha);
+            }
+        else
+            for (int i = 0; i < 256; ++i)
+            {
+                colormapData[i] = Colour::fromFloatRGBA(heatmap[i][0], heatmap[i][1], heatmap[i][2], heatmap[i][3]);
+            }
 
         Rectangle<int> colormapArea(getLocalBounds());
         colormapArea.removeFromTop(12);
@@ -91,11 +98,32 @@ public:
         repaint();
     }
 
+    void mouseDown (const MouseEvent& event) override
+    {
+        usePerceptualColormap = ! usePerceptualColormap;
+        repaint();
+    }
+
+    void setColormap (bool shouldUsePerceptualColormap)
+    {
+        if (usePerceptualColormap != shouldUsePerceptualColormap)
+        {
+            usePerceptualColormap = shouldUsePerceptualColormap;
+            repaint();
+        }
+    }
+
+    bool getColormap ()
+    {
+        return usePerceptualColormap;
+    }
+
     void resized() override
     {
     }
 
 private:
+    bool usePerceptualColormap = true;
     float maxLevel = 0.0f;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (VisualizerColormap)
 };
