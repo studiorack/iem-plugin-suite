@@ -153,6 +153,7 @@ DirectionalCompressorAudioProcessorEditor::DirectionalCompressorAudioProcessorEd
     slC1Knee.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slC1Knee.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slC1Knee.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
+    slC1Knee.setEnabled(isOn);
 
     addAndMakeVisible(&slC1Ratio);
     slC1RatioAttachment = new SliderAttachment(valueTreeState,"c1Ratio", slC1Ratio);
@@ -195,6 +196,30 @@ DirectionalCompressorAudioProcessorEditor::DirectionalCompressorAudioProcessorEd
     dbC1RMSmeter.setColour(Colours::green.withMultipliedAlpha(0.8f));
     dbC1RMSmeter.setGainReductionMeter(false);
     dbC1RMSmeter.setEnabled(isOn);
+
+    addAndMakeVisible(&lbC1Threshold);
+    lbC1Threshold.setText("Threshold");
+    lbC1Threshold.setEnabled(isOn);
+
+    addAndMakeVisible(&lbC1Knee);
+    lbC1Knee.setText("Knee");
+    lbC1Knee.setEnabled(isOn);
+
+    addAndMakeVisible(&lbC1Ratio);
+    lbC1Ratio.setText("Ratio");
+    lbC1Ratio.setEnabled(isOn);
+
+    addAndMakeVisible(&lbC1Attack);
+    lbC1Attack.setText("Attack");
+    lbC1Attack.setEnabled(isOn);
+
+    addAndMakeVisible(&lbC1Release);
+    lbC1Release.setText("Release");
+    lbC1Release.setEnabled(isOn);
+
+    addAndMakeVisible(&lbC1Makeup);
+    lbC1Makeup.setText("MakeUp");
+    lbC1Makeup.setEnabled(isOn);
 
     // ======== compressor 2 components ===========
     isOn = *valueTreeState.getRawParameterValue("c2Enabled");
@@ -246,6 +271,7 @@ DirectionalCompressorAudioProcessorEditor::DirectionalCompressorAudioProcessorEd
     slC2Knee.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slC2Knee.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slC2Knee.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
+    slC2Knee.setEnabled(isOn);
 
     addAndMakeVisible(&slC2Ratio);
     slC2RatioAttachment = new SliderAttachment(valueTreeState,"c2Ratio", slC2Ratio);
@@ -291,6 +317,30 @@ DirectionalCompressorAudioProcessorEditor::DirectionalCompressorAudioProcessorEd
     dbC2RMSmeter.setGainReductionMeter(false);
     dbC2RMSmeter.setEnabled(isOn);
 
+    addAndMakeVisible(&lbC2Threshold);
+    lbC2Threshold.setText("Threshold");
+    lbC2Threshold.setEnabled(isOn);
+
+    addAndMakeVisible(&lbC2Knee);
+    lbC2Knee.setText("Knee");
+    lbC2Knee.setEnabled(isOn);
+
+    addAndMakeVisible(&lbC2Ratio);
+    lbC2Ratio.setText("Ratio");
+    lbC2Ratio.setEnabled(isOn);
+
+    addAndMakeVisible(&lbC2Attack);
+    lbC2Attack.setText("Attack");
+    lbC2Attack.setEnabled(isOn);
+
+    addAndMakeVisible(&lbC2Release);
+    lbC2Release.setText("Release");
+    lbC2Release.setEnabled(isOn);
+
+    addAndMakeVisible(&lbC2Makeup);
+    lbC2Makeup.setText("MakeUp");
+    lbC2Makeup.setEnabled(isOn);
+
     // ===== LABELS =====
     addAndMakeVisible(&lbPreGain);
     lbPreGain.setText("Pre Gain");
@@ -301,31 +351,6 @@ DirectionalCompressorAudioProcessorEditor::DirectionalCompressorAudioProcessorEd
     addAndMakeVisible(&lbWidth);
     lbWidth.setText("Width");
 
-    addAndMakeVisible(&lbC1Threshold);
-    lbC1Threshold.setText("Threshold");
-    addAndMakeVisible(&lbC1Knee);
-    lbC1Knee.setText("Knee");
-    addAndMakeVisible(&lbC1Ratio);
-    lbC1Ratio.setText("Ratio");
-    addAndMakeVisible(&lbC1Attack);
-    lbC1Attack.setText("Attack");
-    addAndMakeVisible(&lbC1Release);
-    lbC1Release.setText("Release");
-    addAndMakeVisible(&lbC1Makeup);
-    lbC1Makeup.setText("MakeUp");
-
-    addAndMakeVisible(&lbC2Threshold);
-    lbC2Threshold.setText("Threshold");
-    addAndMakeVisible(&lbC2Knee);
-    lbC2Knee.setText("Knee");
-    addAndMakeVisible(&lbC2Ratio);
-    lbC2Ratio.setText("Ratio");
-    addAndMakeVisible(&lbC2Attack);
-    lbC2Attack.setText("Attack");
-    addAndMakeVisible(&lbC2Release);
-    lbC2Release.setText("Release");
-    addAndMakeVisible(&lbC2Makeup);
-    lbC2Makeup.setText("MakeUp");
 
     startTimer(50);
 }
