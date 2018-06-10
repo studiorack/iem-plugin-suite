@@ -34,7 +34,7 @@
 #include "../../resources/efficientSHvanilla.h"
 #include "../../resources/ReferenceCountedDecoder.h"
 #include "../../resources/AmbisonicDecoder.h"
-#include "../../resources/decoderHelper.h"
+#include "../../resources/DecoderHelper.h"
 #include "../../resources/ambisonicTools.h"
 #include "../../resources/HammerAitov.h"
 #include "NoiseBurst.h"

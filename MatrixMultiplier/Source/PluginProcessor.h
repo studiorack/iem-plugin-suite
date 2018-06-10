@@ -25,7 +25,7 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "../../resources/IOHelper.h"
 #include "../../resources/MatrixMultiplication.h"
-#include "../../resources/decoderHelper.h"
+#include "../../resources/DecoderHelper.h"
 
 
 //==============================================================================
