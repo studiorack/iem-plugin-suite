@@ -32,7 +32,7 @@ DistanceCompensatorAudioProcessorEditor::DistanceCompensatorAudioProcessorEditor
 
     // make title and footer visible, and set the PluginName
     addAndMakeVisible (&title);
-    title.setTitle (String ("Gain"), String ("Delay"));
+    title.setTitle (String ("Distance"), String ("Compensator"));
     title.setFont (globalLaF.robotoBold, globalLaF.robotoLight);
     addAndMakeVisible (&footer);
     // ============= END: essentials ========================
@@ -86,7 +86,7 @@ DistanceCompensatorAudioProcessorEditor::DistanceCompensatorAudioProcessorEditor
     }
 
 
-    setResizeLimits (550, 800, 800, 800); // use this to create a resizable GUI
+    setResizeLimits (550, 620, 550, 620); // use this to create a resizable GUI
 
     // start timer after everything is set up properly
     startTimer (20);
@@ -122,7 +122,7 @@ void DistanceCompensatorAudioProcessorEditor::resized()
     area.removeFromBottom (5);
     // =========== END: header and footer =================
 
-    Rectangle<int> controls = area.removeFromTop (150);
+    Rectangle<int> controls = area.removeFromTop (120);
     auto compensationArea = controls.removeFromLeft(150);
     gcCompensation.setBounds(compensationArea);
     compensationArea.removeFromTop(25);
@@ -134,6 +134,8 @@ void DistanceCompensatorAudioProcessorEditor::resized()
 
     gcLayout.setBounds (controls);
     controls.removeFromTop (25);
+    auto buttonArea = controls.removeFromTop(21).removeFromLeft(130);
+    btLoadFile.setBounds(buttonArea);
 
     gcDistances.setBounds (area.removeFromTop(25));
 
