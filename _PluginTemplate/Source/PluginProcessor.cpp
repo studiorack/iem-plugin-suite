@@ -38,7 +38,7 @@ PluginTemplateAudioProcessor::PluginTemplateAudioProcessor()
 #endif
 parameters(*this, nullptr)
 {
-    parameters.createAndAddParameter("inputChannelsSetting", "Number of input channels ", "",
+    parameters.createAndAddParameter ("inputChannelsSetting", "Number of input channels ", "",
                                      NormalisableRange<float> (0.0f, 10.0f, 1.0f), 0.0f,
                                      [](float value) {return value < 0.5f ? "Auto" : String(value);}, nullptr);
 
@@ -55,18 +55,18 @@ parameters(*this, nullptr)
                                           else if (value >= 7.5f) return "7th";
                                           else return "Auto";},
                                       nullptr);
-    parameters.createAndAddParameter("useSN3D", "Normalization", "",
+    parameters.createAndAddParameter ("useSN3D", "Normalization", "",
                                      NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value) {
                                          if (value >= 0.5f) return "SN3D";
                                          else return "N3D";
                                      }, nullptr);
 
-    parameters.createAndAddParameter("param1", "Parameter 1", "",
+    parameters.createAndAddParameter ("param1", "Parameter 1", "",
                                      NormalisableRange<float> (-10.0f, 10.0f, 0.1f), 0.0,
                                      [](float value) {return String(value);}, nullptr);
 
-    parameters.createAndAddParameter("param2", "Parameter 2", "dB",
+    parameters.createAndAddParameter ("param2", "Parameter 2", "dB",
                                      NormalisableRange<float> (-50.0f, 0.0f, 0.1f), -10.0,
                                      [](float value) {return String(value, 1);}, nullptr);
 
@@ -76,7 +76,7 @@ parameters(*this, nullptr)
 
 
     // get pointers to the parameters
-    inputChannelsSetting = parameters.getRawParameterValue("inputChannelsSetting");
+    inputChannelsSetting = parameters.getRawParameterValue ("inputChannelsSetting");
     outputOrderSetting = parameters.getRawParameterValue ("outputOrderSetting");
     useSN3D = parameters.getRawParameterValue ("useSN3D");
     param1 = parameters.getRawParameterValue ("param1");
@@ -89,8 +89,6 @@ parameters(*this, nullptr)
     parameters.addParameterListener ("useSN3D", this);
     parameters.addParameterListener ("param1", this);
     parameters.addParameterListener ("param2", this);
-
-
 
 
 }
