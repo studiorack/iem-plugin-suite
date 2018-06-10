@@ -37,7 +37,7 @@ public:
     void setGainLinear (const int channel, FloatType newGain) noexcept
     {
         if (channel < gains.size())
-            gains[channel].setValue (newGain);
+            gains.getUnchecked (channel)->setValue (newGain);
     }
 
     /** Applies a new gain as a decibel value. */
@@ -63,7 +63,7 @@ public:
     bool isSmoothing (const int channel)
     {
         jassert(channel < gains.size());
-        return gains[channel].isSmoothing();
+        return gains.getUnchecked (channel).isSmoothing();
     }
 
     //==============================================================================
@@ -71,7 +71,10 @@ public:
     void prepare (const ProcessSpec& spec) noexcept
     {
         sampleRate = spec.sampleRate;
-        gains.resize (spec.numChannels);
+        gains.clear();
+        for (int ch = 0; ch < spec.numChannels; ++ch)
+            gains.add(new LinearSmoothedValue<float> ());
+
         reset();
     }
 
@@ -80,7 +83,7 @@ public:
     {
         if (sampleRate > 0)
             for (int i = 0; i < gains.size(); ++i)
-                gains[i].reset (sampleRate, rampDurationSeconds);
+                gains.getUnchecked (i)->reset (sampleRate, rampDurationSeconds);
     }
 
 
@@ -102,7 +105,7 @@ public:
         if (context.isBypassed)
         {
             for (int i = 0; i < gains.size(); ++i)
-                gains[i].skip (static_cast<int> (len));
+                gains.getUnchecked(i)->skip (static_cast<int> (len));
 
             if (context.usesSeparateInputAndOutputBlocks())
                 outBlock.copy (inBlock);
@@ -114,19 +117,19 @@ public:
         {
             auto* src = inBlock.getChannelPointer (ch);
             auto* dst = outBlock.getChannelPointer (ch);
-
+            DBG(gains.getUnchecked(ch)->getTargetValue());
             for (size_t i = 0; i < len; ++i)
-                dst[i] = src[i] * gains[ch].getNextValue();
+                dst[i] = src[i] * gains.getUnchecked(ch)->getNextValue();
         }
 
-        for (int i = numChannels; i < gains.size(); ++i)
+        for (int ch = numChannels; ch < gains.size(); ++ch)
         {
-            gains[i].skip (static_cast<int> (len));
+            gains.getUnchecked (ch)->skip (static_cast<int> (len));
         }
     }
 
 private:
-    Array<LinearSmoothedValue<FloatType>> gains;
+    OwnedArray<LinearSmoothedValue<FloatType>> gains;
     double sampleRate = 0, rampDurationSeconds = 0;
 };
 
