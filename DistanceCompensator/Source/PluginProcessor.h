@@ -27,6 +27,7 @@
 #include "../../resources/customComponents/MailBox.h"
 #include "../../resources/DecoderHelper.h"
 #include "../../resources/MultiChannelGain.h"
+#include "../../resources/MultiChannelDelay.h"
 
 
 //==============================================================================
@@ -98,6 +99,7 @@ public:
     void loadConfiguration (const File& presetFile);
 
     float distanceToGainInDecibels (const float distance);
+    float distanceToDelayInSeconds (const float distance);
 
     bool updateMessage = false;
 private:
@@ -121,6 +123,7 @@ private:
 
     // processors
     MultiChannelGain<float> gain;
+    MultiChannelDelay<float> delay;
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DistanceCompensatorAudioProcessor)
 };

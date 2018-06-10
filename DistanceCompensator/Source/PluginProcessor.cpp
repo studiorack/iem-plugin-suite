@@ -122,6 +122,14 @@ float DistanceCompensatorAudioProcessor::distanceToGainInDecibels (const float d
     return gainInDecibels;
 }
 
+float DistanceCompensatorAudioProcessor::distanceToDelayInSeconds (const float distance)
+{
+    jassert(distance >= 1.0f);
+    const float delayInSeconds = distance / *speedOfSound;
+    DBG("delay: " << delayInSeconds);
+    return delayInSeconds;
+}
+
 void DistanceCompensatorAudioProcessor::setLastDir(File newLastDir)
 {
     lastDir = newLastDir;
@@ -219,10 +227,12 @@ void DistanceCompensatorAudioProcessor::prepareToPlay (double sampleRate, int sa
     specs.numChannels = 64;
 
     gain.prepare (specs);
+    delay.prepare (specs);
 
     for (int i = 0; i < 64; ++i)
     {
-        gain.setGainDecibels(i, - 1.0f * distanceToGainInDecibels(*distance[i]));
+        gain.setGainDecibels (i, - 1.0f * distanceToGainInDecibels (*distance[i]));
+        delay.setDelayTime (i, distanceToDelayInSeconds (*distance[i]));
     }
 
 }
@@ -254,7 +264,8 @@ void DistanceCompensatorAudioProcessor::processBlock (AudioSampleBuffer& buffer,
     AudioBlock<float> ab (buffer);
     ProcessContextReplacing<float> context (ab);
 
-    gain.process (context);
+    //gain.process (context);
+    delay.process (context);
 }
 
 //==============================================================================
@@ -303,6 +314,7 @@ void DistanceCompensatorAudioProcessor::parameterChanged (const String &paramete
         const int id = parameterID.substring(8).getIntValue();
         DBG("ID:" << id);
         gain.setGainDecibels (id, - 1.0f * distanceToGainInDecibels (*distance[id]));
+        delay.setDelayTime (id, distanceToDelayInSeconds (*distance[id]));
     }
 }
 
