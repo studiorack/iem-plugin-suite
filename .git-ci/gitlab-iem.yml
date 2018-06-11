@@ -49,8 +49,8 @@ variables:
     - apt-get install -y --no-install-recommends libjack-dev libfftw3-dev
     - .git-ci/getjuce.sh "${JUCEVERSION}-linux" ~/JUCE
 # run the actual build
-    - make system V=1 CONFIG=${CONFIG} CPPFLAGS=-DJUCE_JACK=1 CFLAGS="$(pkg-config --cflags ${PKGLIBS})" LDFLAGS="$(pkg-config --libs ${PKGLIBS})" PROJUCER=~/JUCE/Projucer PARALLEL=$(nproc)
-    - xvfb-run -a make V=1 CONFIG=${CONFIG} CPPFLAGS=-DJUCE_JACK=1 CFLAGS="$(pkg-config --cflags ${PKGLIBS})" LDFLAGS="$(pkg-config --libs ${PKGLIBS})" PROJUCER=~/JUCE/Projucer PARALLEL=$(nproc)
+    - make system V=1 CONFIG=${CONFIG} CPPFLAGS=-DJUCE_JACK=1 CFLAGS="$(pkg-config --cflags ${PKGLIBS})" LDFLAGS="$(pkg-config --libs ${PKGLIBS})" PROJUCER=~/JUCE/Projucer PARALLEL=$(nproc) TARGET_ARCH=-march=pentium4
+    - xvfb-run -a make V=1 CONFIG=${CONFIG} CPPFLAGS=-DJUCE_JACK=1 CFLAGS="$(pkg-config --cflags ${PKGLIBS})" LDFLAGS="$(pkg-config --libs ${PKGLIBS})" PROJUCER=~/JUCE/Projucer PARALLEL=$(nproc) TARGET_ARCH=-march=pentium4
 # collect binaries for artifacts
     - mkdir -p IEM/standalone/
     - cp */Builds/*/build/*.so IEM/
