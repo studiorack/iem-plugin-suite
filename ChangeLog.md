@@ -10,6 +10,9 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
 - plug-in specific changes
     - **Room**Encoder
         - added parameter to disable direct path
+    - **Omni**Compressor
+        - added visualization of the compressor's characteristic
+        - added look-ahead feature to avoid distortion artifacts when brickwall-limiting
         
 ## v1.3.1
 - plug-in specific changes
