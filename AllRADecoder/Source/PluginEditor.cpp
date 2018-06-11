@@ -110,6 +110,11 @@ AllRADecoderAudioProcessorEditor::AllRADecoderAudioProcessorEditor (AllRADecoder
     tbRedo.setColour(TextButton::buttonColourId, Colours::orangered);
     tbRedo.onClick = [this] () { processor.redo(); };
 
+    addAndMakeVisible(tbRotate);
+    tbRotate.setButtonText("ROTATE");
+    tbRotate.setColour(TextButton::buttonColourId, Colours::cornflowerblue);
+    tbRotate.onClick = [this] () { openRotateWindow(); };
+
     addAndMakeVisible(lv);
 
     addAndMakeVisible(lspList);
@@ -169,10 +174,13 @@ void AllRADecoderAudioProcessorEditor::resized()
     ctrlsAndDisplay.removeFromTop(5);
     tbAddSpeakers.setBounds(lspCtrlArea.removeFromLeft(120));
     lspCtrlArea.removeFromLeft(5);
+    tbRotate.setBounds(lspCtrlArea.removeFromLeft(55));
+    lspCtrlArea.removeFromLeft(5);
     tbUndo.setBounds(lspCtrlArea.removeFromLeft(55));
     lspCtrlArea.removeFromLeft(5);
     tbRedo.setBounds(lspCtrlArea.removeFromLeft(55));
     lspCtrlArea.removeFromLeft(5);
+
     tbImport.setBounds(lspCtrlArea.removeFromRight(80));
     messageDisplay.setBounds(ctrlsAndDisplay);
 
@@ -310,3 +318,16 @@ void AllRADecoderAudioProcessorEditor::updateChannelCount ()
 };
 
 void AllRADecoderAudioProcessorEditor::buttonStateChanged (Button* button) {};
+
+void AllRADecoderAudioProcessorEditor::openRotateWindow()
+{
+    auto* rotateWindow = new RotateWindow (processor);
+
+//    colourSelector->setName ("background");
+//    colourSelector->setCurrentColour (findColour (TextButton::buttonColourId));
+//    colourSelector->setColour (ColourSelector::backgroundColourId, Colours::transparentBlack);
+    rotateWindow->setSize (120, 35);
+
+    CallOutBox& myBox = CallOutBox::launchAsynchronously (rotateWindow, tbRotate.getScreenBounds(), nullptr);
+    myBox.setLookAndFeel(&globalLaF);
+}

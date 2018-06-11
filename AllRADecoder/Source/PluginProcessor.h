@@ -117,6 +117,8 @@ public:
     void undo() { undoManager.undo(); }
     void redo() { undoManager.redo(); }
 
+    void rotate (const float degreesAddedToAzimuth);
+
     void saveConfigurationToFile (File destination);
     void loadConfiguration (const File& presetFile);
 

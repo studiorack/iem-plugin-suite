@@ -8,6 +8,8 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
     - all plug-ins now make use of methods which save/recall the plug-in states (necessary for some DAWs)
 
 - plug-in specific changes
+    - **AllRA**Decoder
+        - rotate feature added: rotates the whole layout by any arbitrary angle around the z-axis
     - **Room**Encoder
         - added parameter to disable direct path
     - **Omni**Compressor

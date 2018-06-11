@@ -1144,6 +1144,29 @@ void AllRADecoderAudioProcessor::loadConfiguration (const File& configFile)
     }
 }
 
+void AllRADecoderAudioProcessor::rotate (const float degreesAddedToAzimuth)
+{
+    loudspeakers.removeListener (this);
+    undoManager.beginNewTransaction();
+
+    bool amountIsPositive = degreesAddedToAzimuth > 0;
+    const int nLsps = loudspeakers.getNumChildren();
+    for (int i = 0; i < nLsps; ++i)
+    {
+        auto lsp = loudspeakers.getChild (i);
+        float val = lsp.getProperty ("Azimuth");
+        val += degreesAddedToAzimuth;
+        if (amountIsPositive && val > 360.0f)
+            val -= 360.0f;
+        else if (! amountIsPositive && val < 360.0f)
+            val += 360.0f;
+        lsp.setProperty ("Azimuth", val, &undoManager);
+    }
+    loudspeakers.addListener (this);
+    prepareLayout();
+    updateTable = true;
+}
+
 //==============================================================================
 pointer_sized_int AllRADecoderAudioProcessor::handleVstPluginCanDo (int32 index,
                                                                     pointer_sized_int value, void* ptr, float opt)
@@ -1155,3 +1178,4 @@ pointer_sized_int AllRADecoderAudioProcessor::handleVstPluginCanDo (int32 index,
         return 1;
     return 0;
 }
+
