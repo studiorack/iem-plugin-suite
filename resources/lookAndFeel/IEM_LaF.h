@@ -922,5 +922,24 @@ public:
         }
     }
 
+    void drawCallOutBoxBackground (CallOutBox& box, Graphics& g,
+                                                   const Path& path, Image& cachedImage) override
+    {
+        if (cachedImage.isNull())
+        {
+            cachedImage = { Image::ARGB, box.getWidth(), box.getHeight(), true };
+            Graphics g2 (cachedImage);
 
+            DropShadow (Colours::black.withAlpha (0.7f), 8, { 0, 2 }).drawForPath (g2, path);
+        }
+
+        g.setColour (Colours::black);
+        g.drawImageAt (cachedImage, 0, 0);
+
+        g.setColour (ClBackground.withAlpha(0.8f));
+        g.fillPath (path);
+
+        g.setColour (Colours::white.withAlpha(0.8f));
+        g.strokePath (path, PathStrokeType (1.0f));
+    }
 };
