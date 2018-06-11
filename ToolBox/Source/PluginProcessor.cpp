@@ -335,25 +335,19 @@ AudioProcessorEditor* ToolBoxAudioProcessor::createEditor()
 }
 
 //==============================================================================
-void ToolBoxAudioProcessor::getStateInformation (MemoryBlock& destData)
+void ToolBoxAudioProcessor::getStateInformation (MemoryBlock &destData)
 {
-    // You should use this method to store your parameters in the memory block.
-    // You could do that either as raw data, or use the XML or ValueTree classes
-    // as intermediaries to make it easy to save and load complex data.
-    ScopedPointer<XmlElement> xml (parameters.state.createXml());
+    auto state = parameters.copyState();
+    std::unique_ptr<XmlElement> xml (state.createXml());
     copyXmlToBinary (*xml, destData);
 }
 
-
-
-void ToolBoxAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
+void ToolBoxAudioProcessor::setStateInformation (const void *data, int sizeInBytes)
 {
-    // You should use this method to restore your parameters from this memory block,
-    // whose contents will have been created by the getStateInformation() call.
-    ScopedPointer<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
-    if (xmlState != nullptr)
+    std::unique_ptr<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
+    if (xmlState.get() != nullptr)
         if (xmlState->hasTagName (parameters.state.getType()))
-            parameters.state = ValueTree::fromXml (*xmlState);
+            parameters.replaceState (ValueTree::fromXml (*xmlState));
 }
 
 //==============================================================================

@@ -346,7 +346,7 @@ void AllRADecoderAudioProcessor::setStateInformation (const void* data, int size
     if (xmlState != nullptr)
     {
         if (xmlState->hasTagName (parameters.state.getType()))
-            parameters.state = ValueTree::fromXml (*xmlState);
+            parameters.replaceState (ValueTree::fromXml (*xmlState));
 
         XmlElement* lsps (xmlState->getChildByName("Loudspeakers"));
         if (lsps != nullptr)
@@ -1131,7 +1131,7 @@ void AllRADecoderAudioProcessor::loadConfiguration (const File& configFile)
     undoManager.beginNewTransaction();
     loudspeakers.removeAllChildren(&undoManager);
 
-    Result result = DecoderHelper::parseFileForLoudspeakerLayout (configFile, loudspeakers, undoManager);
+    Result result = DecoderHelper::parseFileForLoudspeakerLayout (configFile, loudspeakers, &undoManager);
     if (!result.wasOk())
     {
         DBG("Configuration could not be loaded.");
