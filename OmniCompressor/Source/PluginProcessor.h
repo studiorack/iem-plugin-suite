@@ -27,6 +27,8 @@
 #include "../../resources/ambisonicTools.h"
 #include "../../resources/IOHelper.h"
 #include "../../resources/Compressor.h"
+#include "../../resources/Delay.h"
+#include "LookAheadGainReduction.h"
 
 //==============================================================================
 /**
@@ -82,18 +84,20 @@ public:
                                             void* ptr, float opt) override;
     //==============================================================================
 
-
     float maxRMS;
     float maxGR;
+    Compressor compressor;
 
 private:
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OmniCompressorAudioProcessor)
 
-    Compressor compressor;
+    Delay delay;
+    LookAheadGainReduction grProcessing;
     AudioProcessorValueTreeState parameters;
 
-    Array<float> RMS, gains, allGR;
+    Array<float> RMS, allGR;
+    AudioBuffer<float> gains;
 
     float GR;
     float *orderSetting;
@@ -103,4 +107,5 @@ private:
     float *attack;
     float *release;
     float *knee;
+    float *lookAhead;
 };

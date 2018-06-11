@@ -33,6 +33,9 @@
             file="Source/PluginEditor.cpp"/>
       <FILE id="riSGoa" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
     </GROUP>
+    <FILE id="mitKn8" name="CompressorVisualizer.h" compile="0" resource="0"
+          file="../resources/customComponents/CompressorVisualizer.h"/>
+    <FILE id="EvZHak" name="Delay.h" compile="0" resource="0" file="../resources/Delay.h"/>
   </MAINGROUP>
   <EXPORTFORMATS>
     <XCODE_MAC targetFolder="Builds/MacOSX">
