@@ -1158,7 +1158,7 @@ void AllRADecoderAudioProcessor::rotate (const float degreesAddedToAzimuth)
         val += degreesAddedToAzimuth;
         if (amountIsPositive && val > 360.0f)
             val -= 360.0f;
-        else if (! amountIsPositive && val < 360.0f)
+        else if (! amountIsPositive && val < -360.0f)
             val += 360.0f;
         lsp.setProperty ("Azimuth", val, &undoManager);
     }
