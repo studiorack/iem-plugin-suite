@@ -57,7 +57,7 @@ variables:
 #  generate all the Makefiles, then install 'libcurl4-dev' to run the build
     - apt-get install -y --no-install-recommends libcurl3
     - for p in ${PROJECTS}; do xvfb-run -a make ${p}/Builds/LinuxMakefile/Makefile PROJUCER=~/JUCE/Projucer; done
-    - apt-get install -y --no-install-recomends libcurl4-gnutls-dev
+    - apt-get install -y --no-install-recommends libcurl4-gnutls-dev
     # debugging printout
     - make system V=1 CONFIG=${CONFIG} CPPFLAGS=-DJUCE_JACK=1 CFLAGS="$(pkg-config --cflags ${PKGLIBS})" LDFLAGS="$(pkg-config --libs ${PKGLIBS})" PROJUCER=~/JUCE/Projucer PARALLEL=$(nproc) TARGET_ARCH=-march=pentium4
     # the actual build
