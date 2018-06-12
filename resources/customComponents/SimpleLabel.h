@@ -72,7 +72,7 @@ public:
             repaint();
         }
     }
-    
+
     void enablementChanged() override
     {
         repaint();

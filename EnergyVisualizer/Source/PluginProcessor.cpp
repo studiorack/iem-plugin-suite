@@ -203,7 +203,7 @@ void EnergyVisualizerAudioProcessor::processBlock (AudioSampleBuffer& buffer, Mi
     {
         FloatVectorOperations::multiply(&maxReWeights.diagonal()[0], n3d2sn3d, 64);
     }
-    
+
     workingMatrix = YH * maxReWeights;
     //workingMatrix = YH; // * maxReWeights;
     outMatrix = workingMatrix.block(0, 0, nSamplePoints, nCh) * inpMatrix;

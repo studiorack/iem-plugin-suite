@@ -99,7 +99,7 @@ public:
                 float yPos = dBToY(gainDb);
                 g.drawLine(xPos, yPos, xPos, mT + plotHeight, 2.0f);
             }
-            
+
             g.setColour(Colours::white.withMultipliedAlpha(0.5f));
 
             for (int i = 1; i <= numRef; ++i)

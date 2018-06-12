@@ -431,5 +431,3 @@ pointer_sized_int StereoEncoderAudioProcessor::handleVstPluginCanDo (int32 index
 AudioProcessor *JUCE_CALLTYPE createPluginFilter() {
     return new StereoEncoderAudioProcessor();
 }
-
-

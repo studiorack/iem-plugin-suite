@@ -356,7 +356,7 @@ void DirectivityShaperAudioProcessor::processBlock (AudioSampleBuffer& buffer, M
             temp += shTemp[i] * probeSH[i];
             buffer.addFromWithRamp(i, 0, filteredBuffer.getReadPointer(b), numSamples, shOld[b][i], shTemp[i]);
         }
-        
+
         probeGains[b] = std::abs(temp);
 
         if (probeChanged)
@@ -367,8 +367,8 @@ void DirectivityShaperAudioProcessor::processBlock (AudioSampleBuffer& buffer, M
         }
         FloatVectorOperations::copy(shOld[b], shTemp, 64);
     }
-    
-    
+
+
     if (changeWeights)
     {
         changeWeights = false;

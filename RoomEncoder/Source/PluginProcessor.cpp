@@ -587,7 +587,7 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
 
         if (doInputSn3dToN3dConversion)
             FloatVectorOperations::multiply((float *) SHsample, sn3d2n3d, maxNChIn);
-        
+
         Array<IIRfloat*> interleavedDataPtr;
         interleavedDataPtr.resize(nSIMDFilters);
         IIRfloat** intrlvdDataArrayPtr = interleavedDataPtr.getRawDataPointer();

@@ -154,11 +154,11 @@ void ProbeDecoderAudioProcessor::processBlock(AudioSampleBuffer &buffer, MidiBuf
     const int nChannels = jmin(buffer.getNumChannels(), input.getNumberOfChannels());
 
     Vector3D<float> xyz = Conversions<float>::sphericalToCartesian(degreesToRadians(*azimuth), degreesToRadians(*elevation));
-    
+
     float sh[64];
 
     SHEval(ambisonicOrder, xyz, sh, false);
-    
+
     const int nCh = jmin(buffer.getNumChannels(), nChannels);
     const int numSamples = buffer.getNumSamples();
 

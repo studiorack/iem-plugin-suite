@@ -348,13 +348,13 @@ void DirectionalCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffe
     const int totalNumOutputChannels = getTotalNumOutputChannels();
     const int bufferSize = buffer.getNumSamples();
     //const int ambisonicOrder = input.getOrder();
-    
+
     // Compressor 1 settings
     if (*c1Ratio > 15.9f)
         compressor1.setRatio(INFINITY);
     else
         compressor1.setRatio(*c1Ratio);
-    
+
     compressor1.setKnee(*c1Knee);
     compressor1.setAttackTime(*c1Attack / 1000.0f);
     compressor1.setReleaseTime(*c1Release / 1000.0f);
@@ -366,7 +366,7 @@ void DirectionalCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffe
         compressor2.setRatio(INFINITY);
     else
         compressor2.setRatio(*c2Ratio);
-    
+
     compressor2.setKnee(*c2Knee);
     compressor2.setAttackTime(*c2Attack / 1000.0f);
     compressor2.setReleaseTime(*c2Release / 1000.0f);

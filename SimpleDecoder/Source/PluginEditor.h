@@ -90,7 +90,7 @@ private:
     bool updateChannelsInWidget = false;
     bool enableSubwooferChannelControls;
     bool changeEnablement = false;
-    
+
     GroupComponent gcFilter, gcSw, gcConfiguration;
 
     // Filter slider

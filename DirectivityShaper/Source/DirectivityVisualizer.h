@@ -48,16 +48,16 @@ public:
     {
         // 0th
         lookUpTables.add(new LookupTableTransform<float>([this] (float phi) { return scale * (0.25f / (float) M_PI); }, -M_PI, M_PI, nLookUpSamples));
-        
+
         // 1st
         lookUpTables.add(new LookupTableTransform<float>([this] (float phi) { return scale * (0.75f / M_PI) * std::cos (phi); }, -M_PI, M_PI, nLookUpSamples));
-        
+
         // 2nd
         lookUpTables.add(new LookupTableTransform<float>([this] (float phi) { return scale * 2.0f*(5.0f /16.0f / M_PI) * (3 * std::cos (phi) * std::cos (phi) - 1.0f); }, -M_PI, M_PI, nLookUpSamples));
-        
+
         // 3rd
         lookUpTables.add(new LookupTableTransform<float>([this] (float phi) { return scale * (7.0f / M_PI) / 8.0f * (5 * pow(std::cos (phi), 3) - 3.0f * std::cos (phi));}, -M_PI, M_PI, nLookUpSamples));
-        
+
         // 4th
         lookUpTables.add(new LookupTableTransform<float>([this] (float phi) { return scale * 9.0f / 32.0f / M_PI * (35 * pow(std::cos (phi),4) - 30* pow(std::cos (phi), 2) + 3.0f); }, -M_PI, M_PI, nLookUpSamples));
 

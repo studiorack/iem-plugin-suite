@@ -1178,4 +1178,3 @@ pointer_sized_int AllRADecoderAudioProcessor::handleVstPluginCanDo (int32 index,
         return 1;
     return 0;
 }
-

@@ -35,29 +35,29 @@ class AmbisonicDecoder
 {
 public:
     AmbisonicDecoder() {}
-    
+
     ~AmbisonicDecoder() {}
-    
+
     void prepare (const ProcessSpec& newSpec)
     {
         spec = newSpec;
         matMult.prepare(newSpec);
-        
+
         checkIfNewDecoderAvailable();
     }
-    
+
     void setInputNormalization(ReferenceCountedDecoder::Normalization newNormalization)
     {
         inputNormalization = newNormalization;
     }
-    
+
     void process (const ProcessContextNonReplacing<float>& context)
     {
         ScopedNoDenormals noDenormals;
         checkIfNewDecoderAvailable();
-        
+
         ReferenceCountedDecoder::Ptr retainedDecoder = currentDecoder;
-        
+
         if (retainedDecoder != nullptr) // if decoder is available, do the pre-processing
         {
             AudioBlock<float> inputBlock = context.getInputBlock();
@@ -67,38 +67,38 @@ public:
             float weights[64];
             const float correction = sqrt((static_cast<float>(retainedDecoder->getOrder()) + 1) / (static_cast<float>(order) + 1));
             FloatVectorOperations::fill(weights, correction, chAmbi);
-            
+
             if (retainedDecoder->getSettings().weights == ReferenceCountedDecoder::Weights::maxrE)
                 multiplyMaxRE(order, weights);
             else if (retainedDecoder->getSettings().weights == ReferenceCountedDecoder::Weights::inPhase)
                 multiplyInPhase(order, weights);
-            
+
             if (retainedDecoder->getSettings().expectedNormalization != inputNormalization)
             {
                 const float* conversionPtr (inputNormalization == ReferenceCountedDecoder::Normalization::sn3d ? sn3d2n3d : n3d2sn3d);
                 FloatVectorOperations::multiply(weights, conversionPtr, chAmbi);
             }
-            
+
             for (int ch = 0; ch < chAmbi; ++ch)
                 FloatVectorOperations::multiply(inputBlock.getChannelPointer(ch), weights[ch], (int) inputBlock.getNumSamples());
-            
+
         }
-        
+
         //can be called even if there's no decoder available (will clear context then)
         matMult.process(context);
     }
-    
+
     const bool checkIfNewDecoderAvailable()
     {
         if (newDecoderAvailable)
         {
             currentDecoder = newDecoder;
-            
+
             if (currentDecoder != nullptr)
                 currentDecoder->processAppliedWeights();
 
             matMult.setMatrix(currentDecoder, true);
-            
+
             newDecoder = nullptr;
             newDecoderAvailable = false;
             return true;
@@ -113,29 +113,29 @@ public:
         newDecoder = newDecoderToUse;
         newDecoderAvailable = true;
     }
-    
+
     ReferenceCountedDecoder::Ptr getCurrentDecoder()
     {
         return currentDecoder;
     }
-    
+
     /** Checks if a new decoder waiting to be used.
      */
     const bool isNewDecoderWaiting()
     {
         return newDecoderAvailable;
     }
-    
+
 private:
     //==============================================================================
     ProcessSpec spec = {-1, 0, 0};
     ReferenceCountedDecoder::Ptr currentDecoder {nullptr};
     ReferenceCountedDecoder::Ptr newDecoder {nullptr};
     bool newDecoderAvailable {false};
-    
+
     ReferenceCountedDecoder::Normalization inputNormalization {ReferenceCountedDecoder::Normalization:: sn3d};
-    
+
     MatrixMultiplication matMult;
-    
-    
+
+
 };
