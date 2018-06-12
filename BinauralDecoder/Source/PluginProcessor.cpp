@@ -38,7 +38,6 @@ BinauralDecoderAudioProcessor::BinauralDecoderAudioProcessor()
 #endif
 parameters(*this, nullptr)
 {
-
     parameters.createAndAddParameter ("inputOrderSetting", "Ambisonic Order", "",
                                       NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
                                       [](float value) {
@@ -240,53 +239,53 @@ void BinauralDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, Mid
     FloatVectorOperations::clear((float*) accumMid, fftLength + 2);
     FloatVectorOperations::clear((float*) accumSide, fftLength + 2);
 
-	const int nZeros = fftLength - L;
+    const int nZeros = fftLength - L;
 
-	//compute mid signal in frequency domain
-	for (int midix = 0; midix < nMidCh; ++midix)
-	{
-		int ch = mix2cix[midix];
+    //compute mid signal in frequency domain
+    for (int midix = 0; midix < nMidCh; ++midix)
+    {
+      int ch = mix2cix[midix];
 
-		FloatVectorOperations::clear(&in[L], nZeros); // TODO: only last part
-		FloatVectorOperations::copy(in, buffer.getReadPointer(ch), L);
-		fftwf_execute(fftForward);
+      FloatVectorOperations::clear(&in[L], nZeros); // TODO: only last part
+      FloatVectorOperations::copy(in, buffer.getReadPointer(ch), L);
+      fftwf_execute(fftForward);
 
-		fftwf_complex* tfMid = (fftwf_complex*) irsFrequencyDomain.getReadPointer(ch);
+      fftwf_complex* tfMid = (fftwf_complex*) irsFrequencyDomain.getReadPointer(ch);
 
-		for (int i = 0; i < fftLength / 2 + 1; ++i)
-		{
-		    accumMid[i][0]  += out[i][0] *  tfMid[i][0] - out[i][1] *  tfMid[i][1]; //real part
-		    accumMid[i][1]  += out[i][1] *  tfMid[i][0] + out[i][0] *  tfMid[i][1]; //imag part
-		}
-	}
+      for (int i = 0; i < fftLength / 2 + 1; ++i)
+      {
+        accumMid[i][0]  += out[i][0] *  tfMid[i][0] - out[i][1] *  tfMid[i][1]; //real part
+        accumMid[i][1]  += out[i][1] *  tfMid[i][0] + out[i][0] *  tfMid[i][1]; //imag part
+      }
+    }
 
-	//compute side signal in frequency domain
-	for (int sidix = 0; sidix < nSideCh; ++sidix)
-	{
-		int ch = six2cix[sidix];
+    //compute side signal in frequency domain
+    for (int sidix = 0; sidix < nSideCh; ++sidix)
+    {
+        int ch = six2cix[sidix];
 
-		FloatVectorOperations::clear(&in[L], nZeros); // TODO: only last part
-		FloatVectorOperations::copy(in, buffer.getReadPointer(ch), L);
-		fftwf_execute(fftForward);
+        FloatVectorOperations::clear(&in[L], nZeros); // TODO: only last part
+        FloatVectorOperations::copy(in, buffer.getReadPointer(ch), L);
+        fftwf_execute(fftForward);
 
-		fftwf_complex* tfSide = (fftwf_complex*)irsFrequencyDomain.getReadPointer(ch);
+        fftwf_complex* tfSide = (fftwf_complex*)irsFrequencyDomain.getReadPointer(ch);
 
-		for (int i = 0; i < fftLength / 2 + 1; ++i)
-		{
-			accumSide[i][0] += out[i][0] * tfSide[i][0] - out[i][1] * tfSide[i][1];
-			accumSide[i][1] += out[i][1] * tfSide[i][0] + out[i][0] * tfSide[i][1];
-		}
-	}
+        for (int i = 0; i < fftLength / 2 + 1; ++i)
+        {
+            accumSide[i][0] += out[i][0] * tfSide[i][0] - out[i][1] * tfSide[i][1];
+            accumSide[i][1] += out[i][1] * tfSide[i][0] + out[i][0] * tfSide[i][1];
+        }
+    }
 
     fftwf_execute(fftBackwardMid);
     fftwf_execute(fftBackwardSide);
 
 
-	///* MS -> LR  */
-	FloatVectorOperations::copy(buffer.getWritePointer(0), ifftOutputMid, L);
-	FloatVectorOperations::copy(buffer.getWritePointer(1), ifftOutputMid, L);
-	FloatVectorOperations::add(buffer.getWritePointer(0), ifftOutputSide, L);
-	FloatVectorOperations::subtract(buffer.getWritePointer(1), ifftOutputSide, L);
+    ///* MS -> LR  */
+    FloatVectorOperations::copy(buffer.getWritePointer(0), ifftOutputMid, L);
+    FloatVectorOperations::copy(buffer.getWritePointer(1), ifftOutputMid, L);
+    FloatVectorOperations::add(buffer.getWritePointer(0), ifftOutputSide, L);
+    FloatVectorOperations::subtract(buffer.getWritePointer(1), ifftOutputSide, L);
 
     FloatVectorOperations::add (buffer.getWritePointer(0), overlapBuffer.getWritePointer(0), copyL);
     FloatVectorOperations::add (buffer.getWritePointer(1), overlapBuffer.getWritePointer(1), copyL);
@@ -295,27 +294,27 @@ void BinauralDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, Mid
     {
         const int howManyAreLeft = overlap - L;
 
-		//shift the overlap buffer to the left
+                //shift the overlap buffer to the left
         FloatVectorOperations::copy(overlapBuffer.getWritePointer(0), overlapBuffer.getReadPointer(0, L), howManyAreLeft);
         FloatVectorOperations::copy(overlapBuffer.getWritePointer(1), overlapBuffer.getReadPointer(1, L), howManyAreLeft);
 
-		//clear the tail
+                //clear the tail
         FloatVectorOperations::clear(overlapBuffer.getWritePointer(0, howManyAreLeft), ergL - howManyAreLeft);
         FloatVectorOperations::clear(overlapBuffer.getWritePointer(1, howManyAreLeft), ergL - howManyAreLeft);
 
-		/* MS -> LR  */
-		FloatVectorOperations::add(overlapBuffer.getWritePointer(0), &ifftOutputMid[L], irLengthMinusOne);
-		FloatVectorOperations::add(overlapBuffer.getWritePointer(1), &ifftOutputMid[L], irLengthMinusOne);
-		FloatVectorOperations::add(overlapBuffer.getWritePointer(0), &ifftOutputSide[L], irLengthMinusOne);
-		FloatVectorOperations::subtract(overlapBuffer.getWritePointer(1), &ifftOutputSide[L], irLengthMinusOne);
+                /* MS -> LR  */
+        FloatVectorOperations::add(overlapBuffer.getWritePointer(0), &ifftOutputMid[L], irLengthMinusOne);
+        FloatVectorOperations::add(overlapBuffer.getWritePointer(1), &ifftOutputMid[L], irLengthMinusOne);
+        FloatVectorOperations::add(overlapBuffer.getWritePointer(0), &ifftOutputSide[L], irLengthMinusOne);
+        FloatVectorOperations::subtract(overlapBuffer.getWritePointer(1), &ifftOutputSide[L], irLengthMinusOne);
     }
     else
     {
-		/* MS -> LR  */
-		FloatVectorOperations::copy(overlapBuffer.getWritePointer(0), &ifftOutputMid[L], irLengthMinusOne);
-		FloatVectorOperations::copy(overlapBuffer.getWritePointer(1), &ifftOutputMid[L], irLengthMinusOne);
-		FloatVectorOperations::add(overlapBuffer.getWritePointer(0), &ifftOutputSide[L], irLengthMinusOne);
-		FloatVectorOperations::subtract(overlapBuffer.getWritePointer(1), &ifftOutputSide[L], irLengthMinusOne);
+                /* MS -> LR  */
+        FloatVectorOperations::copy(overlapBuffer.getWritePointer(0), &ifftOutputMid[L], irLengthMinusOne);
+        FloatVectorOperations::copy(overlapBuffer.getWritePointer(1), &ifftOutputMid[L], irLengthMinusOne);
+        FloatVectorOperations::add(overlapBuffer.getWritePointer(0), &ifftOutputSide[L], irLengthMinusOne);
+        FloatVectorOperations::subtract(overlapBuffer.getWritePointer(1), &ifftOutputSide[L], irLengthMinusOne);
     }
 
     if (*applyHeadphoneEq >= 0.5f)
@@ -391,10 +390,10 @@ void BinauralDecoderAudioProcessor::updateBuffers()
     DBG("order: " << order);
     DBG("nCh: " << nCh);
 
-	int tmpOrder = sqrt(nCh) - 1;
-	if (tmpOrder < order) {
-		order = tmpOrder;
-	}
+        int tmpOrder = sqrt(nCh) - 1;
+        if (tmpOrder < order) {
+            order = tmpOrder;
+        }
 
     AudioBuffer<float> resampledIRs;
     bool useResampled = false;
@@ -473,19 +472,16 @@ void BinauralDecoderAudioProcessor::updateBuffers()
 
     for (int i = 0; i < nCh; ++i)
     {
-		{
-			const float* src = useResampled ? resampledIRs.getReadPointer(i) : irs[order - 1].getReadPointer(i);
-			FloatVectorOperations::multiply((float*)in, src, 1.0 / fftLength, irLength);
-			FloatVectorOperations::clear(&in[irLength], fftLength - irLength); // zero padding
-			fftwf_execute(fftForward);
-			FloatVectorOperations::copy(irsFrequencyDomain.getWritePointer(i), (float*)out, 2 * (fftLength / 2 + 1));
-		}
-
+        const float* src = useResampled ? resampledIRs.getReadPointer(i) : irs[order - 1].getReadPointer(i);
+        FloatVectorOperations::multiply((float*)in, src, 1.0 / fftLength, irLength);
+        FloatVectorOperations::clear(&in[irLength], fftLength - irLength); // zero padding
+        fftwf_execute(fftForward);
+        FloatVectorOperations::copy(irsFrequencyDomain.getWritePointer(i), (float*)out, 2 * (fftLength / 2 + 1));
     }
 
-	//get number of mid- and side-channels
-	nSideCh = order * (order + 1) / 2;
-	nMidCh = square(order + 1) - nSideCh; 	//nMidCh = nCh - nSideCh; //nCh should be equalt to (order+1)^2
+    //get number of mid- and side-channels
+    nSideCh = order * (order + 1) / 2;
+    nMidCh = square(order + 1) - nSideCh;   //nMidCh = nCh - nSideCh; //nCh should be equalt to (order+1)^2
 }
 
 //==============================================================================
