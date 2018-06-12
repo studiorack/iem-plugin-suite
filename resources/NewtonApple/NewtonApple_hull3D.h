@@ -111,7 +111,7 @@ struct R3
 };
 
 
-// sort into descending order (for use in corner responce ranking).
+// sort into descending order (for use in corner response ranking).
 inline bool operator<(const R3 &a, const R3 &b) 
 { 
   if( a.z == b.z){
@@ -146,7 +146,7 @@ struct Snork
 };
 
 
-// sort into descending order (for use in corner responce ranking).
+// sort into descending order (for use in corner response ranking).
 inline bool operator<(const Snork &a, const Snork &b) 
 { 
   if( a.a == b.a ){
