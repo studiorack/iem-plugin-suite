@@ -20,7 +20,7 @@ All you need for compiling the IEM Plug-in Suite is the latest version of JUCE, 
 - Build
 - Enjoy ;-)
 
-Instead of building each plug-in seperately, you can also use the provided shell-scripts to start a batch processing.
+Instead of building each plug-in separately, you can also use the provided shell-scripts to start a batch processing.
 **For Windows:** The .jucer projects have to opened and saved first, to create the exporters. Then the 'Developer Command Prompt' has to execute the win_compileAll.bat script. 
 
 ## Known issues
