@@ -25,7 +25,7 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "../../resources/IOHelper.h"
 #include "../../resources/AmbisonicDecoder.h"
-#include "../../resources/decoderHelper.h"
+#include "../../resources/DecoderHelper.h"
 #include "../../resources/ReferenceCountedDecoder.h"
 #include "../../resources/FilterVisualizerHelper.h"
 
