@@ -32,6 +32,7 @@ for b in ${bits}; do
     outdir="${outdirbase}/win${b}"
     machine=x86
   fi
+  rm -rf "${outdir}"
   mkdir -p "${outdir}"
 
   url="ftp://ftp.fftw.org/pub/fftw/${fftw}"
