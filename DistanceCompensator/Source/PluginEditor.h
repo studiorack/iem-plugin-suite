@@ -33,6 +33,8 @@
 #include "../../resources/customComponents/ReverseSlider.h"
 #include "../../resources/customComponents/SimpleLabel.h"
 #include "../../resources/customComponents/MailBox.h"
+#include "../../resources/customComponents/RoundButton.h"
+
 
 
 typedef ReverseSlider::SliderAttachment SliderAttachment; // all ReverseSliders will make use of the parameters' valueToText() function
@@ -70,6 +72,7 @@ private:
     ScopedPointer<ComboBoxAttachment> cbInputChannelsSettingAttachment;
 
 
+    RoundButton tbDelay;
 
     // load
     GroupComponent gcLayout;
@@ -79,7 +82,6 @@ private:
     GroupComponent gcCompensation;
     ToggleButton tbEnableGains;
     ToggleButton tbEnableDelays;
-    ToggleButton tbEnableFilters;
     ScopedPointer<ButtonAttachment> tbEnableGainsAttachment;
     ScopedPointer<ButtonAttachment> tbEnableDelaysAttachment;
     ScopedPointer<ButtonAttachment> tbEnableFiltersAttachment;

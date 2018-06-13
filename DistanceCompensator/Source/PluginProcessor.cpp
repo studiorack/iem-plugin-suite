@@ -56,14 +56,6 @@ parameters(*this, nullptr)
                                           else return "No";
                                       }, nullptr);
 
-    parameters.createAndAddParameter ("enableFilters", "Enable NFC Filter", "",
-                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
-                                      [](float value) {
-                                          if (value >= 0.5f) return "Yes";
-                                          else return "No";
-                                      }, nullptr);
-
-
     parameters.createAndAddParameter ("speedOfSound", "Speed of Sound", "m/s",
                                      NormalisableRange<float> (330.0, 350.0, 0.1f), 334.2f,
                                      [](float value) {return String(value);}, nullptr);

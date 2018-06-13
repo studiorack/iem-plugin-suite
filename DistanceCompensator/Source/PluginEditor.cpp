@@ -62,11 +62,9 @@ DistanceCompensatorAudioProcessorEditor::DistanceCompensatorAudioProcessorEditor
     tbEnableDelays.setButtonText("Delay compensation");
     tbEnableDelays.setColour(ToggleButton::tickColourId, Colours::orange);
 
-    addAndMakeVisible(tbEnableFilters);
-    tbEnableFiltersAttachment = new ButtonAttachment(valueTreeState, "enableFilters", tbEnableFilters);
-    tbEnableFilters.setButtonText("NFC compensation");
-    tbEnableFilters.setColour(ToggleButton::tickColourId, Colours::cornflowerblue);
-
+    addAndMakeVisible(tbDelay);
+    tbDelay.setColour(ToggleButton::tickColourId, Colours::limegreen);
+    tbDelay.setButtonText("G");
 
     addAndMakeVisible (gcDistances);
     gcDistances.setText ("Loudspeaker Distances");
@@ -128,7 +126,6 @@ void DistanceCompensatorAudioProcessorEditor::resized()
     compensationArea.removeFromTop(25);
     tbEnableGains.setBounds(compensationArea.removeFromTop(20));
     tbEnableDelays.setBounds(compensationArea.removeFromTop(20));
-    tbEnableFilters.setBounds(compensationArea.removeFromTop(20));
 
     controls.removeFromLeft(20);
 
@@ -159,6 +156,7 @@ void DistanceCompensatorAudioProcessorEditor::resized()
             area.removeFromLeft(20);
 
     }
+    tbDelay.setBounds(150, 150, 20, 20);
 }
 
 void DistanceCompensatorAudioProcessorEditor::timerCallback()

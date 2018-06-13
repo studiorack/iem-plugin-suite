@@ -111,7 +111,6 @@ private:
     float *speedOfSound;
     float *enableGains;
     float *enableDelays;
-    float *enableFilters;
     
     float *distance[64];
 
