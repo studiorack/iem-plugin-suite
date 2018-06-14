@@ -62,6 +62,13 @@ parameters(*this, nullptr)
 
     for (int i = 0; i < 64; ++i)
     {
+        parameters.createAndAddParameter("enableCompensation" + String(i), "Enable Compensation of loudspeaker " + String(i + 1), "",
+                                         NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
+                                         [](float value) {
+                                             if (value >= 0.5f) return "ON";
+                                             else return "OFF";
+                                         }, nullptr);
+
         parameters.createAndAddParameter("distance" + String(i), "Distance of loudspeaker " + String(i + 1), "m",
                                          NormalisableRange<float> (1.0f, 50.0f, 0.01f), 1.0f,
                                          [](float value) {return String(value, 2);}, nullptr);
@@ -84,6 +91,9 @@ parameters(*this, nullptr)
 
     for (int i = 0; i < 64; ++i)
     {
+        enableCompensation[i] = parameters.getRawParameterValue ("enableCompensation" + String(i));
+        parameters.addParameterListener ("enableCompensation" + String(i), this);
+
         distance[i] = parameters.getRawParameterValue ("distance" + String(i));
         parameters.addParameterListener ("distance" + String(i), this);
     }
@@ -99,6 +109,7 @@ parameters(*this, nullptr)
     properties = new PropertiesFile (options);
     lastDir = File (properties->getValue("presetFolder"));
 
+    tempValues.resize(64);
 }
 
 DistanceCompensatorAudioProcessor::~DistanceCompensatorAudioProcessor()
@@ -110,7 +121,6 @@ float DistanceCompensatorAudioProcessor::distanceToGainInDecibels (const float d
 {
     jassert(distance >= 1.0f);
     const float gainInDecibels = Decibels::gainToDecibels (1.0f / distance);
-    DBG("gain: " << gainInDecibels);
     return gainInDecibels;
 }
 
@@ -118,7 +128,6 @@ float DistanceCompensatorAudioProcessor::distanceToDelayInSeconds (const float d
 {
     jassert(distance >= 1.0f);
     const float delayInSeconds = distance / *speedOfSound;
-    DBG("delay: " << delayInSeconds);
     return delayInSeconds;
 }
 
@@ -304,9 +313,65 @@ void DistanceCompensatorAudioProcessor::parameterChanged (const String &paramete
     if (parameterID.startsWith("distance"))
     {
         const int id = parameterID.substring(8).getIntValue();
-        DBG("ID:" << id);
-        gain.setGainDecibels (id, - 1.0f * distanceToGainInDecibels (*distance[id]));
-        delay.setDelayTime (id, distanceToDelayInSeconds (*distance[id]));
+
+        updateDelays();
+        updateGains();
+    }
+
+    else if (parameterID.startsWith("enableCompensation"))
+    {
+        updateDelays();
+        updateGains();
+    }
+}
+
+void DistanceCompensatorAudioProcessor::updateDelays()
+{
+    tempValues.clear();
+
+
+    for (int i = 0; i < 64; ++i)
+    {
+        if (*enableCompensation[i] >= 0.5f)
+            tempValues.add (distanceToDelayInSeconds (*distance[i]));
+    }
+    const int nActive = tempValues.size();
+    DBG("aktiv: " << nActive);
+    const float maxDelay = FloatVectorOperations::findMaximum (tempValues.getRawDataPointer(), nActive);
+    DBG("max : " << maxDelay);
+    const float minDelay = FloatVectorOperations::findMinimum (tempValues.getRawDataPointer(), nActive);
+    DBG("max : " << minDelay);
+
+    for (int i = 0; i < 64; ++i)
+    {
+        if (*enableCompensation[i] >= 0.5f)
+            delay.setDelayTime(i, maxDelay - distanceToDelayInSeconds (*distance[i]));
+        else
+            delay.setDelayTime(i, 0.0f);
+    }
+}
+
+void DistanceCompensatorAudioProcessor::updateGains()
+{
+    tempValues.clear();
+
+    for (int i = 0; i < 64; ++i)
+    {
+        if (*enableCompensation[i] >= 0.5f)
+            tempValues.add (distanceToGainInDecibels (*distance[i]));
+    }
+    const int nActive = tempValues.size();
+    const float maxGain = FloatVectorOperations::findMaximum (tempValues.getRawDataPointer(), nActive);
+    const float minGain = FloatVectorOperations::findMinimum (tempValues.getRawDataPointer(), nActive);
+    const float mean = 0.5f * (maxGain + minGain);
+
+
+    for (int i = 0; i < 64; ++i)
+    {
+        if (*enableCompensation[i] >= 0.5f)
+            gain.setGainDecibels (i, mean - distanceToGainInDecibels (*distance[i]));
+        else
+            gain.setGainDecibels (i, 0.0f);
     }
 }
 

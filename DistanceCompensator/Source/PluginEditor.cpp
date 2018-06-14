@@ -62,29 +62,38 @@ DistanceCompensatorAudioProcessorEditor::DistanceCompensatorAudioProcessorEditor
     tbEnableDelays.setButtonText("Delay compensation");
     tbEnableDelays.setColour(ToggleButton::tickColourId, Colours::orange);
 
-    addAndMakeVisible(tbDelay);
-    tbDelay.setColour(ToggleButton::tickColourId, Colours::limegreen);
-    tbDelay.setButtonText("G");
-
     addAndMakeVisible (gcDistances);
     gcDistances.setText ("Loudspeaker Distances");
 
     for (int i = 0; i < 64; ++i)
     {
+        {
+            auto handle = tbEnableCompensation.add (new RoundButton());
+            addAndMakeVisible (handle);
+            handle->setColour (ToggleButton::tickColourId, Colours::cornflowerblue);
+            handle->setButtonText ("C");
+            tbEnableCompensationAttachment.add (new ButtonAttachment (valueTreeState, "enableCompensation" + String(i), *handle));
+        }
+
+
         auto handle = slDistance.add(new ReverseSlider());
         addAndMakeVisible(handle);
         handle->setSliderStyle(Slider::IncDecButtons);
         handle->setIncDecButtonsMode(Slider::incDecButtonsDraggable_Vertical);
-
         slDistanceAttachment.add(new SliderAttachment(valueTreeState, "distance" + String(i), *handle));
 
         auto lbHandle = lbDistance.add(new SimpleLabel());
         addAndMakeVisible(lbHandle);
         lbHandle->setText(String(i + 1), true, Justification::right);
+
+
+
+
+
     }
 
 
-    setResizeLimits (550, 620, 550, 620); // use this to create a resizable GUI
+    setResizeLimits (580, 620, 580, 620); // use this to create a resizable GUI
 
     // start timer after everything is set up properly
     startTimer (20);
@@ -141,13 +150,15 @@ void DistanceCompensatorAudioProcessorEditor::resized()
     for (int i = 0; i < 64; ++i)
     {
         if (i % 16 == 0)
-            sliderCol = area.removeFromLeft(100);
+            sliderCol = area.removeFromLeft(110);
         else if (i % 8 == 0)
             sliderCol.removeFromTop(15);
 
-        auto sliderRow = sliderCol.removeFromTop(20);
+        auto sliderRow = sliderCol.removeFromTop(18);
         lbDistance.getUnchecked(i)->setBounds (sliderRow.removeFromLeft (20));
         sliderRow.removeFromLeft (8);
+        tbEnableCompensation.getUnchecked(i)->setBounds (sliderRow.removeFromLeft (18));
+        sliderRow.removeFromLeft (2);
         slDistance.getUnchecked (i)->setBounds (sliderRow);
 
         sliderCol.removeFromTop(2);
@@ -156,7 +167,6 @@ void DistanceCompensatorAudioProcessorEditor::resized()
             area.removeFromLeft(20);
 
     }
-    tbDelay.setBounds(150, 150, 20, 20);
 }
 
 void DistanceCompensatorAudioProcessorEditor::timerCallback()

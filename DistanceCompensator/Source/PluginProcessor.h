@@ -101,7 +101,11 @@ public:
     float distanceToGainInDecibels (const float distance);
     float distanceToDelayInSeconds (const float distance);
 
+    void updateDelays();
+    void updateGains();
+
     bool updateMessage = false;
+
 private:
     // ====== parameters
     AudioProcessorValueTreeState parameters;
@@ -111,7 +115,8 @@ private:
     float *speedOfSound;
     float *enableGains;
     float *enableDelays;
-    
+
+    float *enableCompensation[64];
     float *distance[64];
 
     // ===== last directory loaded from
@@ -119,6 +124,8 @@ private:
     ScopedPointer<PropertiesFile> properties;
 
     MailBox::Message messageToEditor;
+
+    Array<float> tempValues;
 
     // processors
     MultiChannelGain<float> gain;

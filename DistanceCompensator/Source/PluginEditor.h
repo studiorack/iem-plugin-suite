@@ -72,7 +72,6 @@ private:
     ScopedPointer<ComboBoxAttachment> cbInputChannelsSettingAttachment;
 
 
-    RoundButton tbDelay;
 
     // load
     GroupComponent gcLayout;
@@ -89,6 +88,10 @@ private:
 
     // distances
     GroupComponent gcDistances;
+
+    OwnedArray<RoundButton> tbEnableCompensation;
+    OwnedArray<ButtonAttachment> tbEnableCompensationAttachment;
+
     OwnedArray<ReverseSlider> slDistance;
     OwnedArray<SliderAttachment> slDistanceAttachment;
     OwnedArray<SimpleLabel> lbDistance;
