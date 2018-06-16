@@ -41,6 +41,52 @@ DistanceCompensatorAudioProcessorEditor::DistanceCompensatorAudioProcessorEditor
     // create the connection between title component's comboBoxes and parameters
     cbInputChannelsSettingAttachment = new ComboBoxAttachment (valueTreeState, "inputChannelsSetting", *title.getInputWidgetPtr()->getChannelsCbPointer());
 
+    addAndMakeVisible (lbSpeedOfSound);
+    lbSpeedOfSound.setEditable (true);
+    lbSpeedOfSound.setJustificationType(Justification::centred);
+    lbSpeedOfSoundAttachment = new LabelAttachment (valueTreeState, "speedOfSound", lbSpeedOfSound);
+
+    addAndMakeVisible (slbSpeedOfSound);
+    slbSpeedOfSound.setText ("Speed of sound");
+    slbSpeedOfSound.setJustification(Justification::left);
+
+    addAndMakeVisible (lbDistanceExponent);
+    lbDistanceExponent.setEditable (true);
+    lbDistanceExponent.setJustificationType(Justification::centred);
+    lbDistanceExponentAttachment = new LabelAttachment (valueTreeState, "distanceExponent", lbDistanceExponent);
+
+    addAndMakeVisible (slbDistanceExponent);
+    slbDistanceExponent.setText ("Distance-Gain exponent");
+    slbDistanceExponent.setJustification (Justification::left);
+
+    addAndMakeVisible (lbReferenceX);
+    lbReferenceX.setEditable (true);
+    lbReferenceX.setJustificationType(Justification::centred);
+    lbReferenceXAttachment = new LabelAttachment (valueTreeState, "referenceX", lbReferenceX);
+
+    addAndMakeVisible (lbReferenceY);
+    lbReferenceY.setEditable (true);
+    lbReferenceY.setJustificationType(Justification::centred);
+    lbReferenceYAttachment = new LabelAttachment (valueTreeState, "referenceY", lbReferenceY);
+
+    addAndMakeVisible (lbReferenceZ);
+    lbReferenceZ.setEditable (true);
+    lbReferenceZ.setJustificationType(Justification::centred);
+    lbReferenceZAttachment = new LabelAttachment (valueTreeState, "referenceZ", lbReferenceZ);
+
+    addAndMakeVisible (slbReferenceX);
+    slbReferenceX.setText ("Reference X");
+    slbReferenceX.setJustification (Justification::left);
+
+    addAndMakeVisible (slbReferenceY);
+    slbReferenceY.setText ("Reference Y");
+    slbReferenceY.setJustification (Justification::left);
+
+    addAndMakeVisible (slbReferenceZ);
+    slbReferenceZ.setText ("Reference Z");
+    slbReferenceZ.setJustification (Justification::left);
+
+
     addAndMakeVisible (gcLayout);
     gcLayout.setText ("Load from loudspeaker layout");
 
@@ -76,20 +122,15 @@ DistanceCompensatorAudioProcessorEditor::DistanceCompensatorAudioProcessorEditor
         }
 
 
-        auto handle = slDistance.add(new ReverseSlider());
-        addAndMakeVisible(handle);
-        handle->setSliderStyle(Slider::IncDecButtons);
-        handle->setIncDecButtonsMode(Slider::incDecButtonsDraggable_Vertical);
-        slDistanceAttachment.add(new SliderAttachment(valueTreeState, "distance" + String(i), *handle));
+        auto handle = slDistance.add (new Label());
+        addAndMakeVisible (handle);
+        handle->setJustificationType(Justification::centred);
+        handle->setEditable (true);
+        slDistanceAttachment.add(new LabelAttachment (valueTreeState, "distance" + String(i), *handle));
 
         auto lbHandle = lbDistance.add(new SimpleLabel());
         addAndMakeVisible(lbHandle);
         lbHandle->setText(String(i + 1), true, Justification::right);
-
-
-
-
-
     }
 
 
@@ -136,13 +177,38 @@ void DistanceCompensatorAudioProcessorEditor::resized()
     tbEnableGains.setBounds(compensationArea.removeFromTop(20));
     tbEnableDelays.setBounds(compensationArea.removeFromTop(20));
 
+    compensationArea.removeFromTop (5);
+    auto rowSpeed (compensationArea.removeFromTop(20));
+    lbSpeedOfSound.setBounds (rowSpeed.removeFromLeft (50));
+    rowSpeed.removeFromLeft(5);
+    slbSpeedOfSound.setBounds (rowSpeed);
+
+    compensationArea.removeFromTop (5);
+    auto rowDistanceGain (compensationArea.removeFromTop(20));
+    lbDistanceExponent.setBounds (rowDistanceGain.removeFromLeft (25));
+    rowDistanceGain.removeFromLeft(5);
+    slbDistanceExponent.setBounds (rowDistanceGain);
+
     controls.removeFromLeft(20);
 
     gcLayout.setBounds (controls);
     controls.removeFromTop (25);
     auto buttonArea = controls.removeFromTop(21).removeFromLeft(130);
     btLoadFile.setBounds(buttonArea);
+    controls.removeFromTop(5);
+    auto xArea (controls.removeFromTop(20));
+    slbReferenceX.setBounds(xArea.removeFromLeft (60));
+    lbReferenceX.setBounds(xArea.removeFromLeft (50));
+    controls.removeFromTop(5);
+    auto yArea (controls.removeFromTop(20));
+    slbReferenceY.setBounds(yArea.removeFromLeft (60));
+    lbReferenceY.setBounds(yArea.removeFromLeft (50));
+    controls.removeFromTop(5);
+    auto zArea (controls.removeFromTop(20));
+    slbReferenceZ.setBounds(zArea.removeFromLeft (60));
+    lbReferenceZ.setBounds(zArea.removeFromLeft (50));
 
+    area.removeFromTop (10);
     gcDistances.setBounds (area.removeFromTop(25));
 
     Rectangle<int> sliderCol;
@@ -150,7 +216,7 @@ void DistanceCompensatorAudioProcessorEditor::resized()
     for (int i = 0; i < 64; ++i)
     {
         if (i % 16 == 0)
-            sliderCol = area.removeFromLeft(110);
+            sliderCol = area.removeFromLeft(100);
         else if (i % 8 == 0)
             sliderCol.removeFromTop(15);
 

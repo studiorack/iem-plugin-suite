@@ -27,20 +27,20 @@
 //==============================================================================
 DistanceCompensatorAudioProcessor::DistanceCompensatorAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
-     : AudioProcessor (BusesProperties()
-                     #if ! JucePlugin_IsMidiEffect
-                      #if ! JucePlugin_IsSynth
-                       .withInput  ("Input",  AudioChannelSet::discreteChannels(10), true)
-                      #endif
-                       .withOutput ("Output", AudioChannelSet::discreteChannels(64), true)
-                     #endif
-                       ),
+: AudioProcessor (BusesProperties()
+#if ! JucePlugin_IsMidiEffect
+#if ! JucePlugin_IsSynth
+                  .withInput  ("Input",  AudioChannelSet::discreteChannels(10), true)
+#endif
+                  .withOutput ("Output", AudioChannelSet::discreteChannels(64), true)
+#endif
+                  ),
 #endif
 parameters(*this, nullptr)
 {
     parameters.createAndAddParameter ("inputChannelsSetting", "Number of input channels ", "",
-                                     NormalisableRange<float> (0.0f, 64.0f, 1.0f), 0.0f,
-                                     [](float value) {return value < 0.5f ? "Auto" : String(value);}, nullptr);
+                                      NormalisableRange<float> (0.0f, 64.0f, 1.0f), 0.0f,
+                                      [](float value) {return value < 0.5f ? "Auto" : String(value);}, nullptr);
 
     parameters.createAndAddParameter ("enableGains", "Enable Gain", "",
                                       NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
@@ -57,8 +57,24 @@ parameters(*this, nullptr)
                                       }, nullptr);
 
     parameters.createAndAddParameter ("speedOfSound", "Speed of Sound", "m/s",
-                                     NormalisableRange<float> (330.0, 350.0, 0.1f), 334.2f,
-                                     [](float value) {return String(value);}, nullptr);
+                                      NormalisableRange<float> (330.0, 350.0, 0.1f), 334.2f,
+                                      [](float value) {return String(value, 1);}, nullptr);
+
+    parameters.createAndAddParameter ("distanceExponent", "Distance-Gain Exponent", "",
+                                      NormalisableRange<float> (0.5f, 1.5f, 0.05f), 1.0f,
+                                      [](float value) {return String(value, 2);}, nullptr);
+
+    parameters.createAndAddParameter ("referenceX", "Reference position x", "m",
+                                      NormalisableRange<float> (-20.0f, 20.0f, 0.01f), 0.0f,
+                                      [](float value) {return String(value, 2);}, nullptr);
+
+    parameters.createAndAddParameter ("referenceY", "Reference position x", "m",
+                                      NormalisableRange<float> (-20.0f, 20.0f, 0.01f), 0.0f,
+                                      [](float value) {return String(value, 2);}, nullptr);
+
+    parameters.createAndAddParameter ("referenceZ", "Reference position x", "m",
+                                      NormalisableRange<float> (-20.0f, 20.0f, 0.01f), 0.0f,
+                                      [](float value) {return String(value, 2);}, nullptr);
 
     for (int i = 0; i < 64; ++i)
     {
@@ -82,8 +98,12 @@ parameters(*this, nullptr)
     // get pointers to the parameters
     inputChannelsSetting = parameters.getRawParameterValue ("inputChannelsSetting");
     speedOfSound = parameters.getRawParameterValue ("speedOfSound");
-    
+    distanceExponent = parameters.getRawParameterValue ("distanceExponent");
+    referenceX = parameters.getRawParameterValue ("referenceX");
+    referenceY = parameters.getRawParameterValue ("referenceY");
+    referenceZ = parameters.getRawParameterValue ("referenceZ");
 
+    
 
     // add listeners to parameter changes
     parameters.addParameterListener ("inputChannelsSetting", this);
@@ -120,7 +140,7 @@ DistanceCompensatorAudioProcessor::~DistanceCompensatorAudioProcessor()
 float DistanceCompensatorAudioProcessor::distanceToGainInDecibels (const float distance)
 {
     jassert(distance >= 1.0f);
-    const float gainInDecibels = Decibels::gainToDecibels (1.0f / distance);
+    const float gainInDecibels = Decibels::gainToDecibels (1.0f / pow(distance, *distanceExponent));
     return gainInDecibels;
 }
 
@@ -149,9 +169,38 @@ void DistanceCompensatorAudioProcessor::loadConfiguration (const File& configFil
         MailBox::Message newMessage;
         newMessage.messageColour = Colours::red;
         newMessage.headline = "Error loading configuration";
-        newMessage.text = result.getErrorMessage() ;
+        newMessage.text = result.getErrorMessage();
         messageToEditor = newMessage;
         updateMessage = true;
+        DBG(result.getErrorMessage());
+    }
+    else
+    {
+
+        const int nLsp = loudspeakers.getNumChildren();
+
+        loadedLoudspeakerPositions.clear();
+
+        for (int i = 0; i < nLsp; ++i)
+        {
+            auto lsp = loudspeakers.getChild(i);
+            const bool isImaginary = lsp.getProperty("Imaginary");
+            if (isImaginary)
+            continue;
+
+
+            const float radius = lsp.getProperty("Radius");
+            const float azimuth = lsp.getProperty("Azimuth");
+            const float elevation = lsp.getProperty("Elevation");
+            const int channel = lsp.getProperty("Channel");
+
+            const Vector3D<float> cart = Conversions<float>::sphericalToCartesian(degreesToRadians(azimuth), degreesToRadians(elevation), radius);
+            loadedLoudspeakerPositions.add({cart, channel});
+        }
+
+        DBG("num lsps: " << loadedLoudspeakerPositions.size());
+
+        updateParameters ();
     }
 }
 
@@ -163,29 +212,29 @@ const String DistanceCompensatorAudioProcessor::getName() const
 
 bool DistanceCompensatorAudioProcessor::acceptsMidi() const
 {
-   #if JucePlugin_WantsMidiInput
+#if JucePlugin_WantsMidiInput
     return true;
-   #else
+#else
     return false;
-   #endif
+#endif
 }
 
 bool DistanceCompensatorAudioProcessor::producesMidi() const
 {
-   #if JucePlugin_ProducesMidiOutput
+#if JucePlugin_ProducesMidiOutput
     return true;
-   #else
+#else
     return false;
-   #endif
+#endif
 }
 
 bool DistanceCompensatorAudioProcessor::isMidiEffect() const
 {
-   #if JucePlugin_IsMidiEffect
+#if JucePlugin_IsMidiEffect
     return true;
-   #else
+#else
     return false;
-   #endif
+#endif
 }
 
 double DistanceCompensatorAudioProcessor::getTailLengthSeconds() const
@@ -196,7 +245,7 @@ double DistanceCompensatorAudioProcessor::getTailLengthSeconds() const
 int DistanceCompensatorAudioProcessor::getNumPrograms()
 {
     return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
-                // so this should be at least 1, even if you're not really implementing programs.
+    // so this should be at least 1, even if you're not really implementing programs.
 }
 
 int DistanceCompensatorAudioProcessor::getCurrentProgram()
@@ -260,7 +309,7 @@ void DistanceCompensatorAudioProcessor::processBlock (AudioSampleBuffer& buffer,
     const int totalNumOutputChannels = getTotalNumOutputChannels();
 
     for (int i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-        buffer.clear (i, 0, buffer.getNumSamples());
+    buffer.clear (i, 0, buffer.getNumSamples());
 
     AudioBlock<float> ab (buffer);
     ProcessContextReplacing<float> context (ab);
@@ -298,8 +347,8 @@ void DistanceCompensatorAudioProcessor::setStateInformation (const void* data, i
     // whose contents will have been created by the getStateInformation() call.
     ScopedPointer<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
     if (xmlState != nullptr)
-        if (xmlState->hasTagName (parameters.state.getType()))
-            parameters.state = ValueTree::fromXml (*xmlState);
+    if (xmlState->hasTagName (parameters.state.getType()))
+    parameters.state = ValueTree::fromXml (*xmlState);
 }
 
 //==============================================================================
@@ -312,7 +361,7 @@ void DistanceCompensatorAudioProcessor::parameterChanged (const String &paramete
 
     if (parameterID.startsWith("distance"))
     {
-        const int id = parameterID.substring(8).getIntValue();
+        //const int id = parameterID.substring(8).getIntValue();
 
         updateDelays();
         updateGains();
@@ -327,13 +376,16 @@ void DistanceCompensatorAudioProcessor::parameterChanged (const String &paramete
 
 void DistanceCompensatorAudioProcessor::updateDelays()
 {
+    if (updatingParameters.get())
+        return;
+
     tempValues.clear();
 
 
     for (int i = 0; i < 64; ++i)
     {
         if (*enableCompensation[i] >= 0.5f)
-            tempValues.add (distanceToDelayInSeconds (*distance[i]));
+        tempValues.add (distanceToDelayInSeconds (*distance[i]));
     }
     const int nActive = tempValues.size();
     DBG("aktiv: " << nActive);
@@ -345,20 +397,22 @@ void DistanceCompensatorAudioProcessor::updateDelays()
     for (int i = 0; i < 64; ++i)
     {
         if (*enableCompensation[i] >= 0.5f)
-            delay.setDelayTime(i, maxDelay - distanceToDelayInSeconds (*distance[i]));
+        delay.setDelayTime(i, maxDelay - distanceToDelayInSeconds (*distance[i]));
         else
-            delay.setDelayTime(i, 0.0f);
+        delay.setDelayTime(i, 0.0f);
     }
 }
 
 void DistanceCompensatorAudioProcessor::updateGains()
 {
+    if (updatingParameters.get())
+        return;
     tempValues.clear();
 
     for (int i = 0; i < 64; ++i)
     {
         if (*enableCompensation[i] >= 0.5f)
-            tempValues.add (distanceToGainInDecibels (*distance[i]));
+        tempValues.add (distanceToGainInDecibels (*distance[i]));
     }
     const int nActive = tempValues.size();
     const float maxGain = FloatVectorOperations::findMaximum (tempValues.getRawDataPointer(), nActive);
@@ -369,27 +423,55 @@ void DistanceCompensatorAudioProcessor::updateGains()
     for (int i = 0; i < 64; ++i)
     {
         if (*enableCompensation[i] >= 0.5f)
-            gain.setGainDecibels (i, mean - distanceToGainInDecibels (*distance[i]));
+        gain.setGainDecibels (i, mean - distanceToGainInDecibels (*distance[i]));
         else
-            gain.setGainDecibels (i, 0.0f);
+        gain.setGainDecibels (i, 0.0f);
     }
+}
+
+void DistanceCompensatorAudioProcessor::updateParameters()
+{
+    updatingParameters = true;
+
+    for (int i = 0; i < 64; ++i)
+    {
+        parameters.getParameter("enableCompensation" + String(i))->setValue(0.0f);
+        parameters.getParameter("distance" + String(i))->setValue(0.0f);
+    }
+
+    const Vector3D<float> reference {*referenceX, *referenceY, *referenceZ};
+    const int nLsp = loadedLoudspeakerPositions.size();
+    for (int i = 0; i < nLsp; ++i)
+    {
+        auto lsp = loadedLoudspeakerPositions.getReference(i);
+        const float radius = jmax(1.0f, (lsp.position - reference).length());
+
+        parameters.getParameter("enableCompensation" + String(lsp.channel - 1))->setValue(1.0f);
+        parameters.getParameter("distance" + String(lsp.channel - 1))->setValue(parameters.getParameterRange("distance" + String(lsp.channel - 1)).convertTo0to1(radius));
+    }
+
+
+    updatingParameters = false;
+
+    updateDelays();
+    updateGains();
 }
 
 void DistanceCompensatorAudioProcessor::updateBuffers()
 {
     DBG("IOHelper:  input size: " << input.getSize());
-    DBG("IOHelper: output size: " << output.getSize());    
+    DBG("IOHelper: output size: " << output.getSize());
 }
 
 //==============================================================================
 pointer_sized_int DistanceCompensatorAudioProcessor::handleVstPluginCanDo (int32 index,
-                                                                     pointer_sized_int value, void* ptr, float opt)
+                                                                           pointer_sized_int value, void* ptr, float opt)
 {
     auto text = (const char*) ptr;
     auto matches = [=](const char* s) { return strcmp (text, s) == 0; };
 
     if (matches ("wantsChannelCountNotifications"))
-        return 1;
+    return 1;
     return 0;
 }
 

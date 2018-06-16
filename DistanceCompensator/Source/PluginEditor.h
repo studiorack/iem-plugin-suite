@@ -34,6 +34,7 @@
 #include "../../resources/customComponents/SimpleLabel.h"
 #include "../../resources/customComponents/MailBox.h"
 #include "../../resources/customComponents/RoundButton.h"
+#include "../../resources/LabelAttachment.h"
 
 
 
@@ -72,6 +73,19 @@ private:
     ScopedPointer<ComboBoxAttachment> cbInputChannelsSettingAttachment;
 
 
+    Label lbSpeedOfSound;
+    ScopedPointer<LabelAttachment> lbSpeedOfSoundAttachment;
+    SimpleLabel slbSpeedOfSound;
+
+    Label lbDistanceExponent;
+    ScopedPointer<LabelAttachment> lbDistanceExponentAttachment;
+    SimpleLabel slbDistanceExponent;
+
+    Label lbReferenceX, lbReferenceY, lbReferenceZ;
+    ScopedPointer<LabelAttachment> lbReferenceXAttachment, lbReferenceYAttachment, lbReferenceZAttachment;
+    SimpleLabel slbReferenceX, slbReferenceY, slbReferenceZ;
+
+
 
     // load
     GroupComponent gcLayout;
@@ -92,8 +106,8 @@ private:
     OwnedArray<RoundButton> tbEnableCompensation;
     OwnedArray<ButtonAttachment> tbEnableCompensationAttachment;
 
-    OwnedArray<ReverseSlider> slDistance;
-    OwnedArray<SliderAttachment> slDistanceAttachment;
+    OwnedArray<Label> slDistance;
+    OwnedArray<LabelAttachment> slDistanceAttachment;
     OwnedArray<SimpleLabel> lbDistance;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DistanceCompensatorAudioProcessorEditor)

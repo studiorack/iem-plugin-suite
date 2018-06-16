@@ -26,6 +26,7 @@
 #include "../../resources/IOHelper.h"
 #include "../../resources/customComponents/MailBox.h"
 #include "../../resources/DecoderHelper.h"
+#include "../../resources/Conversions.h"
 #include "../../resources/MultiChannelGain.h"
 #include "../../resources/MultiChannelDelay.h"
 
@@ -43,6 +44,12 @@ class DistanceCompensatorAudioProcessor  : public AudioProcessor,
                                         public IOHelper<IOTypes::AudioChannels<64>, IOTypes::AudioChannels<64>>,
                                         public VSTCallbackHandler
 {
+    struct PositionAndChannel
+    {
+        Vector3D<float> position;
+        int channel;
+    };
+
 public:
     //==============================================================================
     DistanceCompensatorAudioProcessor();
@@ -103,6 +110,7 @@ public:
 
     void updateDelays();
     void updateGains();
+    void updateParameters();
 
     bool updateMessage = false;
 
@@ -110,9 +118,15 @@ private:
     // ====== parameters
     AudioProcessorValueTreeState parameters;
 
+    Atomic<bool> updatingParameters = false;
+
     // list of used audio parameters
     float *inputChannelsSetting;
     float *speedOfSound;
+    float *distanceExponent;
+    float *referenceX;
+    float *referenceY;
+    float *referenceZ;
     float *enableGains;
     float *enableDelays;
 
@@ -126,6 +140,8 @@ private:
     MailBox::Message messageToEditor;
 
     Array<float> tempValues;
+
+    Array<PositionAndChannel> loadedLoudspeakerPositions;
 
     // processors
     MultiChannelGain<float> gain;
