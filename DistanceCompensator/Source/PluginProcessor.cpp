@@ -435,6 +435,10 @@ void DistanceCompensatorAudioProcessor::updateGains()
 
 void DistanceCompensatorAudioProcessor::updateParameters()
 {
+    const int nLsp = loadedLoudspeakerPositions.size();
+    if (nLsp == 0)
+        return;
+
     updatingParameters = true;
 
     for (int i = 0; i < 64; ++i)
@@ -444,7 +448,7 @@ void DistanceCompensatorAudioProcessor::updateParameters()
     }
 
     const Vector3D<float> reference {*referenceX, *referenceY, *referenceZ};
-    const int nLsp = loadedLoudspeakerPositions.size();
+
     for (int i = 0; i < nLsp; ++i)
     {
         auto lsp = loadedLoudspeakerPositions.getReference(i);

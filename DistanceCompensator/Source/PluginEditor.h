@@ -83,13 +83,15 @@ private:
 
     Label lbReferenceX, lbReferenceY, lbReferenceZ;
     ScopedPointer<LabelAttachment> lbReferenceXAttachment, lbReferenceYAttachment, lbReferenceZAttachment;
-    SimpleLabel slbReferenceX, slbReferenceY, slbReferenceZ;
+    SimpleLabel slbReference, slbReferenceX, slbReferenceY, slbReferenceZ;
 
 
-
+    TooltipWindow toolTipWin;
+    
     // load
     GroupComponent gcLayout;
     TextButton btLoadFile;
+    TextButton btReference;
 
     // buttons
     GroupComponent gcCompensation;

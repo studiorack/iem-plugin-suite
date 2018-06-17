@@ -74,29 +74,38 @@ DistanceCompensatorAudioProcessorEditor::DistanceCompensatorAudioProcessorEditor
     lbReferenceZ.setJustificationType(Justification::centred);
     lbReferenceZAttachment = new LabelAttachment (valueTreeState, "referenceZ", lbReferenceZ);
 
+
+    addAndMakeVisible (slbReference);
+    slbReference.setText ("Reference listener position", true);
+    slbReference.setJustification (Justification::left);
+
     addAndMakeVisible (slbReferenceX);
-    slbReferenceX.setText ("Reference X");
-    slbReferenceX.setJustification (Justification::left);
+    slbReferenceX.setText ("x");
+    slbReferenceX.setJustification (Justification::centred);
 
     addAndMakeVisible (slbReferenceY);
-    slbReferenceY.setText ("Reference Y");
-    slbReferenceY.setJustification (Justification::left);
+    slbReferenceY.setText ("y");
+    slbReferenceY.setJustification (Justification::centred);
 
     addAndMakeVisible (slbReferenceZ);
-    slbReferenceZ.setText ("Reference Z");
-    slbReferenceZ.setJustification (Justification::left);
-
+    slbReferenceZ.setText ("z");
+    slbReferenceZ.setJustification (Justification::centred);
 
     addAndMakeVisible (gcLayout);
-    gcLayout.setText ("Load from loudspeaker layout");
+    gcLayout.setText ("From loudspeaker layout");
 
     addAndMakeVisible(btLoadFile);
-    btLoadFile.setButtonText("Load configuration");
+    btLoadFile.setButtonText("LOAD LAYOUT");
     btLoadFile.addListener(this);
     btLoadFile.setColour(TextButton::buttonColourId, Colours::orange);
 
+    addAndMakeVisible(btReference);
+    btReference.setButtonText("UPDATE REFERENCE");
+    btReference.addListener(this);
+    btReference.setColour(TextButton::buttonColourId, Colours::cornflowerblue);
+
     addAndMakeVisible (gcCompensation);
-    gcCompensation.setText ("Compensation");
+    gcCompensation.setText ("Settings");
 
     addAndMakeVisible(tbEnableGains);
     tbEnableGainsAttachment = new ButtonAttachment(valueTreeState, "enableGains", tbEnableGains);
@@ -118,6 +127,7 @@ DistanceCompensatorAudioProcessorEditor::DistanceCompensatorAudioProcessorEditor
             addAndMakeVisible (handle);
             handle->setColour (ToggleButton::tickColourId, Colours::cornflowerblue);
             handle->setButtonText ("C");
+            handle->setTooltip("Enable compensation and \n factoring in the distance in gain/delay-calculation.");
             tbEnableCompensationAttachment.add (new ButtonAttachment (valueTreeState, "enableCompensation" + String(i), *handle));
         }
 
@@ -126,6 +136,7 @@ DistanceCompensatorAudioProcessorEditor::DistanceCompensatorAudioProcessorEditor
         addAndMakeVisible (handle);
         handle->setJustificationType(Justification::centred);
         handle->setEditable (true);
+        handle->setExplicitFocusOrder(i + 1);
         slDistanceAttachment.add(new LabelAttachment (valueTreeState, "distance" + String(i), *handle));
 
         auto lbHandle = lbDistance.add(new SimpleLabel());
@@ -134,8 +145,8 @@ DistanceCompensatorAudioProcessorEditor::DistanceCompensatorAudioProcessorEditor
     }
 
 
-    setResizeLimits (580, 620, 580, 620); // use this to create a resizable GUI
-
+    setResizeLimits (540, 620, 540, 620); // use this to create a resizable GUI
+    toolTipWin.setMillisecondsBeforeTipAppears (500);
     // start timer after everything is set up properly
     startTimer (20);
 }
@@ -171,42 +182,58 @@ void DistanceCompensatorAudioProcessorEditor::resized()
     // =========== END: header and footer =================
 
     Rectangle<int> controls = area.removeFromTop (120);
-    auto compensationArea = controls.removeFromLeft(150);
-    gcCompensation.setBounds(compensationArea);
-    compensationArea.removeFromTop(25);
-    tbEnableGains.setBounds(compensationArea.removeFromTop(20));
-    tbEnableDelays.setBounds(compensationArea.removeFromTop(20));
+    auto settingsArea = controls.removeFromLeft(170);
+    gcCompensation.setBounds(settingsArea);
+    settingsArea.removeFromTop(25);
+    tbEnableGains.setBounds(settingsArea.removeFromTop(20));
+    settingsArea.removeFromTop (3);
 
-    compensationArea.removeFromTop (5);
-    auto rowSpeed (compensationArea.removeFromTop(20));
+    auto rowDistanceGain (settingsArea.removeFromTop (18));
+    rowDistanceGain.removeFromLeft(20);
+    lbDistanceExponent.setBounds (rowDistanceGain.removeFromLeft (25));
+    rowDistanceGain.removeFromLeft(5);
+    slbDistanceExponent.setBounds (rowDistanceGain);
+    settingsArea.removeFromTop (5);
+
+    tbEnableDelays.setBounds(settingsArea.removeFromTop(20));
+    settingsArea.removeFromTop (5);
+    auto rowSpeed (settingsArea.removeFromTop (18));
+    rowSpeed.removeFromLeft(20);
     lbSpeedOfSound.setBounds (rowSpeed.removeFromLeft (50));
     rowSpeed.removeFromLeft(5);
     slbSpeedOfSound.setBounds (rowSpeed);
 
-    compensationArea.removeFromTop (5);
-    auto rowDistanceGain (compensationArea.removeFromTop(20));
-    lbDistanceExponent.setBounds (rowDistanceGain.removeFromLeft (25));
-    rowDistanceGain.removeFromLeft(5);
-    slbDistanceExponent.setBounds (rowDistanceGain);
 
     controls.removeFromLeft(20);
 
     gcLayout.setBounds (controls);
     controls.removeFromTop (25);
-    auto buttonArea = controls.removeFromTop(21).removeFromLeft(130);
+    auto buttonArea = controls.removeFromTop(21).removeFromRight(130);
     btLoadFile.setBounds(buttonArea);
-    controls.removeFromTop(5);
-    auto xArea (controls.removeFromTop(20));
-    slbReferenceX.setBounds(xArea.removeFromLeft (60));
-    lbReferenceX.setBounds(xArea.removeFromLeft (50));
-    controls.removeFromTop(5);
-    auto yArea (controls.removeFromTop(20));
-    slbReferenceY.setBounds(yArea.removeFromLeft (60));
-    lbReferenceY.setBounds(yArea.removeFromLeft (50));
-    controls.removeFromTop(5);
-    auto zArea (controls.removeFromTop(20));
-    slbReferenceZ.setBounds(zArea.removeFromLeft (60));
-    lbReferenceZ.setBounds(zArea.removeFromLeft (50));
+
+    controls.removeFromTop (15);
+
+    auto referenceArea = controls.removeFromTop (60);
+    slbReference.setBounds (referenceArea.removeFromTop (18));
+    referenceArea.removeFromTop (5);
+
+    auto buttonAreaReference (referenceArea.removeFromRight(130));
+    referenceArea.removeFromRight(5);
+    btReference.setBounds(buttonAreaReference.removeFromTop(21));
+
+    auto labelArea (referenceArea.removeFromTop(18));
+    lbReferenceX.setBounds(labelArea.removeFromLeft (50));
+    labelArea.removeFromLeft(5);
+    lbReferenceY.setBounds(labelArea.removeFromLeft (50));
+    labelArea.removeFromLeft(5);
+    lbReferenceZ.setBounds(labelArea.removeFromLeft (50));
+    labelArea = referenceArea.removeFromTop (12);
+    slbReferenceX.setBounds(labelArea.removeFromLeft (50));
+    labelArea.removeFromLeft(5);
+    slbReferenceY.setBounds(labelArea.removeFromLeft (50));
+    labelArea.removeFromLeft(5);
+    slbReferenceZ.setBounds(labelArea.removeFromLeft (50));
+
 
     area.removeFromTop (10);
     gcDistances.setBounds (area.removeFromTop(25));
@@ -251,7 +278,7 @@ void DistanceCompensatorAudioProcessorEditor::buttonClicked(Button* button)
 {
     if (button == &btLoadFile)
     {
-        FileChooser myChooser ("Load configuration...",
+        FileChooser myChooser ("Load loudspeaker layout...",
                                processor.getLastDir().exists() ? processor.getLastDir() : File::getSpecialLocation (File::userHomeDirectory),
                                "*.json");
         if (myChooser.browseForFileToOpen())
@@ -260,6 +287,10 @@ void DistanceCompensatorAudioProcessorEditor::buttonClicked(Button* button)
             processor.setLastDir(configFile.getParentDirectory());
             processor.loadConfiguration (configFile);
         }
+    }
+    else if (button == &btReference)
+    {
+        processor.updateParameters();
     }
 }
 
