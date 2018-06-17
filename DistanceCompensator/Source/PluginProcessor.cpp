@@ -97,6 +97,8 @@ parameters(*this, nullptr)
 
     // get pointers to the parameters
     inputChannelsSetting = parameters.getRawParameterValue ("inputChannelsSetting");
+    enableGains = parameters.getRawParameterValue ("enableGains");
+    enableDelays = parameters.getRawParameterValue ("enableDelays");
     speedOfSound = parameters.getRawParameterValue ("speedOfSound");
     distanceExponent = parameters.getRawParameterValue ("distanceExponent");
     referenceX = parameters.getRawParameterValue ("referenceX");
@@ -314,7 +316,9 @@ void DistanceCompensatorAudioProcessor::processBlock (AudioSampleBuffer& buffer,
     AudioBlock<float> ab (buffer);
     ProcessContextReplacing<float> context (ab);
 
-    //gain.process (context);
+    if (*enableGains > 0.5f)
+        gain.process (context);
+    if (*enableDelays > 0.5f)
     delay.process (context);
 }
 
