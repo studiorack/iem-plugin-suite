@@ -61,8 +61,8 @@ parameters(*this, nullptr)
                                       [](float value) {return String(value, 1);}, nullptr);
 
     parameters.createAndAddParameter ("distanceExponent", "Distance-Gain Exponent", "",
-                                      NormalisableRange<float> (0.5f, 1.5f, 0.05f), 1.0f,
-                                      [](float value) {return String(value, 2);}, nullptr);
+                                      NormalisableRange<float> (0.5f, 1.5f, 0.1f), 1.0f,
+                                      [](float value) {return String(value, 1);}, nullptr);
 
     parameters.createAndAddParameter ("referenceX", "Reference position x", "m",
                                       NormalisableRange<float> (-20.0f, 20.0f, 0.01f), 0.0f,
@@ -319,7 +319,7 @@ void DistanceCompensatorAudioProcessor::processBlock (AudioSampleBuffer& buffer,
     if (*enableGains > 0.5f)
         gain.process (context);
     if (*enableDelays > 0.5f)
-    delay.process (context);
+        delay.process (context);
 }
 
 //==============================================================================
