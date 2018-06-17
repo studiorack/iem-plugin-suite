@@ -117,12 +117,11 @@ public:
         {
             auto* src = inBlock.getChannelPointer (ch);
             auto* dst = outBlock.getChannelPointer (ch);
-            DBG(gains.getUnchecked(ch)->getTargetValue());
             for (size_t i = 0; i < len; ++i)
                 dst[i] = src[i] * gains.getUnchecked(ch)->getNextValue();
         }
 
-        for (int ch = numChannels; ch < gains.size(); ++ch)
+        for (int ch = (int) numChannels; ch < gains.size(); ++ch)
         {
             gains.getUnchecked (ch)->skip (static_cast<int> (len));
         }

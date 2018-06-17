@@ -24,7 +24,7 @@
 #pragma once
 #include "../JuceLibraryCode/JuceHeader.h"
 
-//using namespace dsp;
+using namespace dsp;
 
 template <typename FloatType>
 class MultiChannelDelay : private ProcessorBase
@@ -88,9 +88,6 @@ public:
         auto abOut = context.getOutputBlock();
         auto L = abIn.getNumSamples();
         auto nCh = abIn.getNumChannels();
-
-
-
 
         // write in delay line
         int startIndex, blockSize1, blockSize2;
