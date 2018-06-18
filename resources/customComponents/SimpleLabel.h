@@ -88,7 +88,7 @@ public:
     {
         g.setColour (colour.withMultipliedAlpha(this->isEnabled() ? 1.0f : 0.4f));
         g.setFont (bounds.getHeight());
-        g.setFont(getLookAndFeel().getTypefaceForFont(Font(bounds.getHeight())));
+        g.setFont(getLookAndFeel().getTypefaceForFont(Font(bounds.getHeight(), isBold ? 1 : 0)));
         g.drawText (text, bounds,
                     justification, true);
     }
