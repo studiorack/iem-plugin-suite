@@ -7,6 +7,10 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
 - general changes
     - all plug-ins now make use of methods which save/recall the plug-in states (necessary for some DAWs)
 
+- new plug-ins:
+    - **Distance**Compensator
+        - a plug-in which compensates gain and delay for loudspeaker arrays with different distances to the listener
+
 - plug-in specific changes
     - **AllRA**Decoder
         - rotate feature added: rotates the whole layout by any arbitrary angle around the z-axis
