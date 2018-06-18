@@ -35,14 +35,14 @@
 /**
  Use the IOHelper to detect which amount of channels or which Ambisonic order is possible with the current bus layout.
  The available IOTypes are:
-    - AudioChannels<maxChannelCount>
-    - Ambisonics<maxOrder> (can also be used for directivity signals)
+ - AudioChannels<maxChannelCount>
+ - Ambisonics<maxOrder> (can also be used for directivity signals)
  You can leave `maxChannelCount` and `maxOrder` empty for default values (64 channels and 7th order)
-*/
+ */
 class DistanceCompensatorAudioProcessor  : public AudioProcessor,
-                                        public AudioProcessorValueTreeState::Listener,
-                                        public IOHelper<IOTypes::AudioChannels<64>, IOTypes::AudioChannels<64>>,
-                                        public VSTCallbackHandler
+public AudioProcessorValueTreeState::Listener,
+public IOHelper<IOTypes::AudioChannels<64>, IOTypes::AudioChannels<64>>,
+public VSTCallbackHandler
 {
     struct PositionAndChannel
     {
@@ -59,9 +59,9 @@ public:
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;
 
-   #ifndef JucePlugin_PreferredChannelConfigurations
+#ifndef JucePlugin_PreferredChannelConfigurations
     bool isBusesLayoutSupported (const BusesLayout& layouts) const override;
-   #endif
+#endif
 
     void processBlock (AudioSampleBuffer&, MidiBuffer&) override;
 
@@ -117,7 +117,7 @@ public:
 private:
     // ====== parameters
     AudioProcessorValueTreeState parameters;
-
+    
     Atomic<bool> updatingParameters = false;
 
     // list of used audio parameters
