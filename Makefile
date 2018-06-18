@@ -93,6 +93,10 @@ ifneq ($(strip $(buildflags)),)
 	@echo "xflags: $(buildflags)"
 endif
 
+.PHONY: showprojects
+showprojects:
+	@echo $(PROJECTS)
+
 # generic rules
 .PHONY: distclean clean all
 
