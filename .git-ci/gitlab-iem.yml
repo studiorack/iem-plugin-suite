@@ -1,7 +1,8 @@
 # gitlab-ci configuration for the IEM Plugin Suite
 
 variables:
-  PROJECTS: AllRADecoder BinauralDecoder DirectionalCompressor DirectivityShaper DualDelay EnergyVisualizer FdnReverb MatrixMultiplier MultiEncoder OmniCompressor ProbeDecoder RoomEncoder SimpleDecoder StereoEncoder ToolBox
+  PROJECTS: AllRADecoder BinauralDecoder DirectionalCompressor DirectivityShaper DistanceCompensator DualDelay EnergyVisualizer FdnReverb MatrixMultiplier MultiEncoder OmniCompressor ProbeDecoder RoomEncoder SimpleDecoder StereoEncoder ToolBox
+
   CONFIG: Release
   JUCEVERSION: 5.3.2
 
