@@ -64,6 +64,13 @@ parameters(*this, nullptr)
                                       NormalisableRange<float> (0.5f, 1.5f, 0.1f), 1.0f,
                                       [](float value) {return String(value, 1);}, nullptr);
 
+    parameters.createAndAddParameter ("gainNormalization", "Gain Normalization", "",
+                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
+                                      [](float value) {
+                                          if (value >= 0.5f) return "Zero-mean";
+                                          else return "Attenuation only";
+                                      }, nullptr);
+
     parameters.createAndAddParameter ("referenceX", "Reference position x", "m",
                                       NormalisableRange<float> (-20.0f, 20.0f, 0.01f), 0.0f,
                                       [](float value) {return String(value, 2);}, nullptr);
@@ -101,6 +108,7 @@ parameters(*this, nullptr)
     enableDelays = parameters.getRawParameterValue ("enableDelays");
     speedOfSound = parameters.getRawParameterValue ("speedOfSound");
     distanceExponent = parameters.getRawParameterValue ("distanceExponent");
+    gainNormalization = parameters.getRawParameterValue ("gainNormalization");
     referenceX = parameters.getRawParameterValue ("referenceX");
     referenceY = parameters.getRawParameterValue ("referenceY");
     referenceZ = parameters.getRawParameterValue ("referenceZ");
@@ -111,6 +119,7 @@ parameters(*this, nullptr)
     parameters.addParameterListener ("inputChannelsSetting", this);
     parameters.addParameterListener ("speedOfSound", this);
     parameters.addParameterListener ("distanceExponent", this);
+    parameters.addParameterListener ("gainNormalization", this);
 
     for (int i = 0; i < 64; ++i)
     {
@@ -182,14 +191,13 @@ void DistanceCompensatorAudioProcessor::loadConfiguration (const File& configFil
         const int nLsp = loudspeakers.getNumChildren();
 
         loadedLoudspeakerPositions.clear();
-
+        int maxChannel = 0;
         for (int i = 0; i < nLsp; ++i)
         {
             auto lsp = loudspeakers.getChild(i);
             const bool isImaginary = lsp.getProperty("Imaginary");
             if (isImaginary)
                 continue;
-
 
             const float radius = lsp.getProperty("Radius");
             const float azimuth = lsp.getProperty("Azimuth");
@@ -198,10 +206,13 @@ void DistanceCompensatorAudioProcessor::loadConfiguration (const File& configFil
 
             const Vector3D<float> cart = Conversions<float>::sphericalToCartesian(degreesToRadians(azimuth), degreesToRadians(elevation), radius);
             loadedLoudspeakerPositions.add({cart, channel});
+            if (channel > maxChannel)
+                maxChannel = channel;
         }
 
         DBG("num lsps: " << loadedLoudspeakerPositions.size());
-
+        if (maxChannel > 0)
+            parameters.getParameter("inputChannelsSetting")->setValue(parameters.getParameterRange("inputChannelsSetting" ).convertTo0to1(maxChannel));
         updateParameters ();
     }
 }
@@ -360,8 +371,10 @@ void DistanceCompensatorAudioProcessor::parameterChanged (const String &paramete
 {
     DBG("Parameter with ID " << parameterID << " has changed. New value: " << newValue);
 
-    if (parameterID == "inputChannelsSetting" || parameterID == "outputOrderSetting" )
+    if (parameterID == "inputChannelsSetting")
+    {
         userChangedIOSettings = true;
+    }
     else if (parameterID == "speedOfSound")
     {
         updateDelays();
@@ -370,10 +383,12 @@ void DistanceCompensatorAudioProcessor::parameterChanged (const String &paramete
     {
         updateGains();
     }
+    else if (parameterID == "gainNormalization")
+    {
+        updateGains();
+    }
     else if (parameterID.startsWith("distance"))
     {
-        //const int id = parameterID.substring(8).getIntValue();
-
         updateDelays();
         updateGains();
     }
@@ -391,8 +406,14 @@ void DistanceCompensatorAudioProcessor::updateDelays()
 
     tempValues.clear();
 
+    const int selected = roundToInt(*inputChannelsSetting);
+    int nCh;
+    if (selected > 0)
+        nCh = selected;
+    else
+        nCh = input.getSize();
 
-    for (int i = 0; i < 64; ++i)
+    for (int i = 0; i < nCh; ++i)
     {
         if (*enableCompensation[i] >= 0.5f)
             tempValues.add (distanceToDelayInSeconds (*distance[i]));
@@ -404,7 +425,7 @@ void DistanceCompensatorAudioProcessor::updateDelays()
     const float minDelay = FloatVectorOperations::findMinimum (tempValues.getRawDataPointer(), nActive);
     DBG("Delay max : " << minDelay);
 
-    for (int i = 0; i < 64; ++i)
+    for (int i = 0; i < nCh; ++i)
     {
         if (*enableCompensation[i] >= 0.5f)
             delay.setDelayTime(i, maxDelay - distanceToDelayInSeconds (*distance[i]));
@@ -419,23 +440,48 @@ void DistanceCompensatorAudioProcessor::updateGains()
         return;
     tempValues.clear();
 
-    for (int i = 0; i < 64; ++i)
+
+    const int selected = roundToInt(*inputChannelsSetting);
+    int nCh;
+    if (selected > 0)
+        nCh = selected;
+    else
+        nCh = input.getSize();
+
+    for (int i = 0; i < nCh; ++i)
     {
         if (*enableCompensation[i] >= 0.5f)
             tempValues.add (distanceToGainInDecibels (*distance[i]));
     }
     const int nActive = tempValues.size();
+
     const float maxGain = FloatVectorOperations::findMaximum (tempValues.getRawDataPointer(), nActive);
     const float minGain = FloatVectorOperations::findMinimum (tempValues.getRawDataPointer(), nActive);
-    const float mean = 0.5f * (maxGain + minGain);
+    DBG("Gain max: " << minGain);
+    DBG("Gain min: " << maxGain);
 
-    DBG("Gain max : " << mean - minGain);
-    DBG("Gain min : " << mean - maxGain);
+    float ref = 0.0f;
+    if (*gainNormalization >= 0.5f) // zero mean
+    {
+        for (int i = 0; i < nActive; ++i)
+            ref += tempValues.getUnchecked(i);
+        ref /= nActive;
+    }
+    else
+    {
+        ref = minGain;
+    }
 
-    for (int i = 0; i < 64; ++i)
+
+    DBG("Gain ref: " << ref);
+
+    for (int i = 0; i < nCh; ++i)
     {
         if (*enableCompensation[i] >= 0.5f)
-            gain.setGainDecibels (i, mean - distanceToGainInDecibels (*distance[i]));
+        {
+            gain.setGainDecibels (i, ref - distanceToGainInDecibels (*distance[i]));
+            DBG(i << ": " << ref - distanceToGainInDecibels (*distance[i]));
+        }
         else
             gain.setGainDecibels (i, 0.0f);
     }
@@ -465,7 +511,7 @@ void DistanceCompensatorAudioProcessor::updateParameters()
         parameters.getParameter("enableCompensation" + String(lsp.channel - 1))->setValue(1.0f);
         parameters.getParameter("distance" + String(lsp.channel - 1))->setValue(parameters.getParameterRange("distance" + String(lsp.channel - 1)).convertTo0to1(radius));
     }
-    
+
 
     updatingParameters = false;
 
@@ -477,6 +523,9 @@ void DistanceCompensatorAudioProcessor::updateBuffers()
 {
     DBG("IOHelper:  input size: " << input.getSize());
     DBG("IOHelper: output size: " << output.getSize());
+
+    updateDelays();
+    updateGains();
 }
 
 //==============================================================================

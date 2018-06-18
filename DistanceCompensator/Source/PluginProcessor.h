@@ -114,6 +114,7 @@ public:
 
     bool updateMessage = false;
 
+    MailBox::Message messageToEditor;
 private:
     // ====== parameters
     AudioProcessorValueTreeState parameters;
@@ -124,6 +125,7 @@ private:
     float *inputChannelsSetting;
     float *speedOfSound;
     float *distanceExponent;
+    float *gainNormalization;
     float *referenceX;
     float *referenceY;
     float *referenceZ;
@@ -137,7 +139,7 @@ private:
     File lastDir;
     ScopedPointer<PropertiesFile> properties;
 
-    MailBox::Message messageToEditor;
+
 
     Array<float> tempValues;
 

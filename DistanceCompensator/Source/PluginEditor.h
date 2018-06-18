@@ -69,6 +69,10 @@ private:
     TitleBar<AudioChannelsIOWidget<64, true>, NoIOWidget> title;
     Footer footer;
     // ====================== end essentials ====================
+
+
+    void updateEnableSetting (const int ch);
+    void showControls (const int nCh);
     
     ScopedPointer<ComboBoxAttachment> cbInputChannelsSettingAttachment;
     
@@ -80,6 +84,10 @@ private:
     Label lbDistanceExponent;
     ScopedPointer<LabelAttachment> lbDistanceExponentAttachment;
     SimpleLabel slbDistanceExponent;
+
+    ComboBox cbGainNormalization;
+    SimpleLabel slbGainNormalization;
+    ScopedPointer<ComboBoxAttachment> cbGainNormalizationAttachment;
     
     Label lbReferenceX, lbReferenceY, lbReferenceZ;
     ScopedPointer<LabelAttachment> lbReferenceXAttachment, lbReferenceYAttachment, lbReferenceZAttachment;
@@ -101,6 +109,8 @@ private:
     ScopedPointer<ButtonAttachment> tbEnableDelaysAttachment;
     ScopedPointer<ButtonAttachment> tbEnableFiltersAttachment;
     
+    int maxNumInputs = -1;
+    int lastSetNumChIn = -1;
     
     // distances
     GroupComponent gcDistances;
