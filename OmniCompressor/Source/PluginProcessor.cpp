@@ -92,6 +92,13 @@ parameters (*this, nullptr)
                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
                                      [](float value) {return value >= 0.5f ? "ON (5ms)" : "OFF";}, nullptr);
 
+    parameters.createAndAddParameter ("reportLatency", "Report Latency to DAW", "",
+                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
+                                      [](float value) {
+                                          if (value >= 0.5f) return "Yes";
+                                          else return "No";
+                                      }, nullptr);
+
     parameters.state = ValueTree (Identifier ("OmniCompressor"));
 
     parameters.addParameterListener("orderSetting", this);
@@ -105,6 +112,7 @@ parameters (*this, nullptr)
     attack = parameters.getRawParameterValue ("attack");
     release = parameters.getRawParameterValue ("release");
     lookAhead = parameters.getRawParameterValue ("lookAhead");
+    reportLatency = parameters.getRawParameterValue("reportLatency");
     GR = 0.0f;
 
     delay.setDelayTime (0.005f);
@@ -195,7 +203,7 @@ void OmniCompressorAudioProcessor::prepareToPlay (double sampleRate, int samples
     spec.numChannels = getTotalNumInputChannels();
     delay.prepare (spec);
 
-    if (*lookAhead >= 0.5f)
+    if (*reportLatency >= 0.5f && *lookAhead >= 0.5f)
         setLatencySamples(delay.getDelayInSamples());
     else
         setLatencySamples(0);

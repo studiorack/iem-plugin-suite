@@ -108,4 +108,5 @@ private:
     float *release;
     float *knee;
     float *lookAhead;
+    float *reportLatency;
 };
