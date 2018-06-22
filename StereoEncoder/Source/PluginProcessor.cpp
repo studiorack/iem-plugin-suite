@@ -397,17 +397,19 @@ void StereoEncoderAudioProcessor::parameterChanged(const String &parameterID, fl
 
 
 //==============================================================================
-void StereoEncoderAudioProcessor::getStateInformation(MemoryBlock &destData) {
-    //MemoryOutputStream (destData, true).writeFloat (*qw);
-    // You should use this method to store your parameters in the memory block.
-    // You could do that either as raw data, or use the XML or ValueTree classes
-    // as intermediaries to make it easy to save and load complex data.
+void StereoEncoderAudioProcessor::getStateInformation (MemoryBlock &destData)
+{
+    auto state = parameters.copyState();
+    std::unique_ptr<XmlElement> xml (state.createXml());
+    copyXmlToBinary (*xml, destData);
 }
 
-void StereoEncoderAudioProcessor::setStateInformation(const void *data, int sizeInBytes) {
-    //*qw = MemoryInputStream (data, static_cast<size_t> (sizeInBytes), false).readFloat();
-    // You should use this method to restore your parameters from this memory block,
-    // whose contents will have been created by the getStateInformation() call.
+void StereoEncoderAudioProcessor::setStateInformation (const void *data, int sizeInBytes)
+{
+    std::unique_ptr<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
+    if (xmlState.get() != nullptr)
+        if (xmlState->hasTagName (parameters.state.getType()))
+            parameters.replaceState (ValueTree::fromXml (*xmlState));
 }
 
 
@@ -429,5 +431,3 @@ pointer_sized_int StereoEncoderAudioProcessor::handleVstPluginCanDo (int32 index
 AudioProcessor *JUCE_CALLTYPE createPluginFilter() {
     return new StereoEncoderAudioProcessor();
 }
-
-

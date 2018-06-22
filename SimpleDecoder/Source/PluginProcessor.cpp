@@ -259,6 +259,15 @@ void SimpleDecoderAudioProcessor::prepareToPlay (double sampleRate, int samplesP
     ReferenceCountedDecoder::Ptr currentDecoder = decoder.getCurrentDecoder();
     if (currentDecoder != nullptr) {
         highPassSpecs.numChannels = currentDecoder->getNumInputChannels();
+
+        // calculate mean omni-signal-gain
+        Matrix<float>& decoderMatrix = currentDecoder->getMatrix();
+        const int nLsps = (int) decoderMatrix.getNumRows();
+        float sumGains = 0.0f;
+        for (int i = 0; i < nLsps; ++i)
+            sumGains += decoderMatrix(i, 0);
+
+        omniGain = sumGains / nLsps;
     }
 
     highPassSpecs.sampleRate = sampleRate;
@@ -349,7 +358,7 @@ void SimpleDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiB
             correction *= sqrt((float) nChOut); // correction for only one subwoofer instead of nChOut loudspeakers
 
         swBuffer.applyGain(omniGain * correction);
-
+        DBG(swBuffer.getRMSLevel(0, 0, swBuffer.getNumSamples()));
         // low pass filtering
         AudioBlock<float> lowPassAudioBlock = AudioBlock<float>(swBuffer);
         ProcessContextReplacing<float> lowPassContext(lowPassAudioBlock);
@@ -374,7 +383,7 @@ void SimpleDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiB
 
 
     // =================== subwoofer processing ==================================
-    if (swProcessing == 1 && nChOut < buffer.getNumChannels())
+    if (swProcessing == 1)
     {
         const int swCh = ((int)*swChannel) - 1;
         if (swCh < buffer.getNumChannels())

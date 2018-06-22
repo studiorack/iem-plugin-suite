@@ -348,13 +348,13 @@ void DirectionalCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffe
     const int totalNumOutputChannels = getTotalNumOutputChannels();
     const int bufferSize = buffer.getNumSamples();
     //const int ambisonicOrder = input.getOrder();
-    
+
     // Compressor 1 settings
     if (*c1Ratio > 15.9f)
         compressor1.setRatio(INFINITY);
     else
         compressor1.setRatio(*c1Ratio);
-    
+
     compressor1.setKnee(*c1Knee);
     compressor1.setAttackTime(*c1Attack / 1000.0f);
     compressor1.setReleaseTime(*c1Release / 1000.0f);
@@ -366,7 +366,7 @@ void DirectionalCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffe
         compressor2.setRatio(INFINITY);
     else
         compressor2.setRatio(*c2Ratio);
-    
+
     compressor2.setKnee(*c2Knee);
     compressor2.setAttackTime(*c2Attack / 1000.0f);
     compressor2.setReleaseTime(*c2Release / 1000.0f);
@@ -573,17 +573,19 @@ AudioProcessorEditor* DirectionalCompressorAudioProcessor::createEditor()
 }
 
 //==============================================================================
-void DirectionalCompressorAudioProcessor::getStateInformation (MemoryBlock& destData)
+void DirectionalCompressorAudioProcessor::getStateInformation (MemoryBlock &destData)
 {
-    // You should use this method to store your parameters in the memory block.
-    // You could do that either as raw data, or use the XML or ValueTree classes
-    // as intermediaries to make it easy to save and load complex data.
+    auto state = parameters.copyState();
+    std::unique_ptr<XmlElement> xml (state.createXml());
+    copyXmlToBinary (*xml, destData);
 }
 
-void DirectionalCompressorAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
+void DirectionalCompressorAudioProcessor::setStateInformation (const void *data, int sizeInBytes)
 {
-    // You should use this method to restore your parameters from this memory block,
-    // whose contents will have been created by the getStateInformation() call.
+    std::unique_ptr<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
+    if (xmlState.get() != nullptr)
+        if (xmlState->hasTagName (parameters.state.getType()))
+            parameters.replaceState (ValueTree::fromXml (*xmlState));
 }
 
 void DirectionalCompressorAudioProcessor::updateBuffers()

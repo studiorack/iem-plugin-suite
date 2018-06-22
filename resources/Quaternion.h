@@ -123,7 +123,7 @@ namespace iem
             //CONVERSION FROM QUATERNION DATA TO TAIT-BRYAN ANGLES yaw, pitch and roll
             //IMPORTANT: rotation order: yaw, pitch, roll (intrinsic rotation: z-y'-x'') !!
             //MNEMONIC: swivel on your swivel chair, look up/down, then tilt your head left/right...
-            //           ... thats how we yaw, pitch'n'roll.
+            //           ... that's how we yaw, pitch'n'roll.
             Type ysqr = y * y;
 
             // yaw (z-axis rotation)
@@ -147,7 +147,7 @@ namespace iem
             //CONVERSION FROM TAIT-BRYAN ANGLES DATA TO QUATERNION
             //IMPORTANT: rotation order: yaw, pitch, roll (intrinsic rotation: z-y'-x'') !!
             //MNEMONIC: swivel on your swivel chair, look up/down, then tilt your head left/right...
-            //           ... thats how we yaw, pitch'n'roll.
+            //           ... that's how we yaw, pitch'n'roll.
             Type t0 = cos(ypr[0] * Type(0.5));
             Type t1 = sin(ypr[0] * Type(0.5));
             Type t2 = cos(ypr[2] * Type(0.5));

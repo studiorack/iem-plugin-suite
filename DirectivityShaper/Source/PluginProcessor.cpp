@@ -356,7 +356,7 @@ void DirectivityShaperAudioProcessor::processBlock (AudioSampleBuffer& buffer, M
             temp += shTemp[i] * probeSH[i];
             buffer.addFromWithRamp(i, 0, filteredBuffer.getReadPointer(b), numSamples, shOld[b][i], shTemp[i]);
         }
-        
+
         probeGains[b] = std::abs(temp);
 
         if (probeChanged)
@@ -367,8 +367,8 @@ void DirectivityShaperAudioProcessor::processBlock (AudioSampleBuffer& buffer, M
         }
         FloatVectorOperations::copy(shOld[b], shTemp, 64);
     }
-    
-    
+
+
     if (changeWeights)
     {
         changeWeights = false;
@@ -391,17 +391,19 @@ AudioProcessorEditor* DirectivityShaperAudioProcessor::createEditor()
 }
 
 //==============================================================================
-void DirectivityShaperAudioProcessor::getStateInformation (MemoryBlock& destData)
+void DirectivityShaperAudioProcessor::getStateInformation (MemoryBlock &destData)
 {
-    // You should use this method to store your parameters in the memory block.
-    // You could do that either as raw data, or use the XML or ValueTree classes
-    // as intermediaries to make it easy to save and load complex data.
+    auto state = parameters.copyState();
+    std::unique_ptr<XmlElement> xml (state.createXml());
+    copyXmlToBinary (*xml, destData);
 }
 
-void DirectivityShaperAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
+void DirectivityShaperAudioProcessor::setStateInformation (const void *data, int sizeInBytes)
 {
-    // You should use this method to restore your parameters from this memory block,
-    // whose contents will have been created by the getStateInformation() call.
+    std::unique_ptr<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
+    if (xmlState.get() != nullptr)
+        if (xmlState->hasTagName (parameters.state.getType()))
+            parameters.replaceState (ValueTree::fromXml (*xmlState));
 }
 
 //==============================================================================

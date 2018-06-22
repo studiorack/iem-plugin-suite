@@ -3,6 +3,25 @@ For a list of all changes and bugfixes see the git log.
 
 Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They might lead to an unexpected behaviour and might not be compatible with your previous projects without making some adaptions. See the [Breaking changes article](https://plugins.iem.at/docs/breakingchanges/) for more information.
 
+## v1.4.0
+- general changes
+    - all plug-ins now make use of methods which save/recall the plug-in states (necessary for some DAWs)
+
+- new plug-ins:
+    - **Distance**Compensator
+        - a plug-in which compensates gain and delay for loudspeaker arrays with different distances to the listener
+
+- plug-in specific changes
+    - **AllRA**Decoder
+        - rotate feature added: rotates the whole layout by any arbitrary angle around the z-axis
+    - **Energy**Visualizer
+        - colormaps now switchable by clicking on the colormap
+    - **Room**Encoder
+        - added parameter to disable direct path
+    - **Omni**Compressor
+        - added visualization of the compressor's characteristic
+        - added look-ahead feature to avoid distortion artifacts when brickwall-limiting
+        
 ## v1.3.1
 - plug-in specific changes
     - **Energy**Visualizer

@@ -82,7 +82,7 @@ public:
                                                      void* ptr, float opt) override { return 0; };
     pointer_sized_int handleVstPluginCanDo (int32 index, pointer_sized_int value,
                                             void* ptr, float opt) override;
-  
+
     //==============================================================================
     void parameterChanged (const String &parameterID, float newValue) override;
     AudioProcessorValueTreeState parameters;
@@ -114,7 +114,7 @@ private:
     bool moving = false;
 
     float shOld[numberOfBands][64];
-    
+
     // parameters
     float *orderSetting;
     float *useSN3D;

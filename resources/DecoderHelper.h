@@ -255,7 +255,7 @@ public:
         return Result::ok();
     }
 
-    static Result parseFileForLoudspeakerLayout (const File& fileToParse, ValueTree& loudspeakers, UndoManager& undoManager)
+    static Result parseFileForLoudspeakerLayout (const File& fileToParse, ValueTree& loudspeakers, UndoManager* undoManager)
     {
         // parse configuration file
         var parsedJson;
@@ -281,7 +281,7 @@ public:
         return Result::ok();
     }
 
-    static Result addLoudspeakersToValueTree (var& loudspeakerArray, ValueTree& loudspeakers, UndoManager& undoManager)
+    static Result addLoudspeakersToValueTree (var& loudspeakerArray, ValueTree& loudspeakers, UndoManager* undoManager)
     {
         if (! loudspeakerArray.isArray())
             return Result::fail("'Loudspeakers' is not an array.");
@@ -343,7 +343,7 @@ public:
             else
                 return Result::fail("Wrong datatype for attribute 'IsImaginary' for loudspeaker #" + String(i+1) + ".");
 
-            loudspeakers.appendChild(createLoudspeaker(azimuth, elevation, radius, channel, isImaginary, gain), &undoManager);
+            loudspeakers.appendChild(createLoudspeaker(azimuth, elevation, radius, channel, isImaginary, gain), undoManager);
         }
 
         return Result::ok();

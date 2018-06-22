@@ -68,8 +68,7 @@ public:
 
     static Vector3D<Type> sphericalToCartesian (const Type azimuthInRadians, const Type elevationInRadians, const Type radius)
     {
-
-        return radius * sphericalToCartesian (azimuthInRadians, elevationInRadians);
+        return sphericalToCartesian (azimuthInRadians, elevationInRadians) * radius;
     }
 
     static void sphericalToCartesian (const Type azimuthInRadians, const Type elevationInRadians, const Type radius, Type& x, Type& y, Type& z)

@@ -38,7 +38,7 @@ PluginTemplateAudioProcessor::PluginTemplateAudioProcessor()
 #endif
 parameters(*this, nullptr)
 {
-    parameters.createAndAddParameter("inputChannelsSetting", "Number of input channels ", "",
+    parameters.createAndAddParameter ("inputChannelsSetting", "Number of input channels ", "",
                                      NormalisableRange<float> (0.0f, 10.0f, 1.0f), 0.0f,
                                      [](float value) {return value < 0.5f ? "Auto" : String(value);}, nullptr);
 
@@ -55,18 +55,18 @@ parameters(*this, nullptr)
                                           else if (value >= 7.5f) return "7th";
                                           else return "Auto";},
                                       nullptr);
-    parameters.createAndAddParameter("useSN3D", "Normalization", "",
+    parameters.createAndAddParameter ("useSN3D", "Normalization", "",
                                      NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value) {
                                          if (value >= 0.5f) return "SN3D";
                                          else return "N3D";
                                      }, nullptr);
 
-    parameters.createAndAddParameter("param1", "Parameter 1", "",
+    parameters.createAndAddParameter ("param1", "Parameter 1", "",
                                      NormalisableRange<float> (-10.0f, 10.0f, 0.1f), 0.0,
                                      [](float value) {return String(value);}, nullptr);
 
-    parameters.createAndAddParameter("param2", "Parameter 2", "dB",
+    parameters.createAndAddParameter ("param2", "Parameter 2", "dB",
                                      NormalisableRange<float> (-50.0f, 0.0f, 0.1f), -10.0,
                                      [](float value) {return String(value, 1);}, nullptr);
 
@@ -76,7 +76,7 @@ parameters(*this, nullptr)
 
 
     // get pointers to the parameters
-    inputChannelsSetting = parameters.getRawParameterValue("inputChannelsSetting");
+    inputChannelsSetting = parameters.getRawParameterValue ("inputChannelsSetting");
     outputOrderSetting = parameters.getRawParameterValue ("outputOrderSetting");
     useSN3D = parameters.getRawParameterValue ("useSN3D");
     param1 = parameters.getRawParameterValue ("param1");
@@ -89,8 +89,6 @@ parameters(*this, nullptr)
     parameters.addParameterListener ("useSN3D", this);
     parameters.addParameterListener ("param1", this);
     parameters.addParameterListener ("param2", this);
-
-
 
 
 }
@@ -230,20 +228,20 @@ void PluginTemplateAudioProcessor::getStateInformation (MemoryBlock& destData)
     // You should use this method to store your parameters in the memory block.
     // You could do that either as raw data, or use the XML or ValueTree classes
     // as intermediaries to make it easy to save and load complex data.
-    ScopedPointer<XmlElement> xml (parameters.state.createXml());
+    auto state = parameters.copyState();
+    std::unique_ptr<XmlElement> xml (state.createXml());
     copyXmlToBinary (*xml, destData);
 }
-
 
 
 void PluginTemplateAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
-    ScopedPointer<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
-    if (xmlState != nullptr)
+    std::unique_ptr<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
+    if (xmlState.get() != nullptr)
         if (xmlState->hasTagName (parameters.state.getType()))
-            parameters.state = ValueTree::fromXml (*xmlState);
+            parameters.replaceState (ValueTree::fromXml (*xmlState));
 }
 
 //==============================================================================

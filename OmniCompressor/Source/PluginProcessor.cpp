@@ -64,7 +64,7 @@ parameters (*this, nullptr)
                                      [](float value) {return String(value, 1);}, nullptr);
 
     parameters.createAndAddParameter("knee", "Knee", "dB",
-                                     NormalisableRange<float> (0.0f, 10.0f, 0.1f), 0.0f,
+                                     NormalisableRange<float> (0.0f, 30.0f, 0.1f), 0.0f,
                                      [](float value) {return String(value, 1);}, nullptr);
 
     parameters.createAndAddParameter("attack", "Attack Time", "ms",
@@ -88,6 +88,17 @@ parameters (*this, nullptr)
                                      NormalisableRange<float> (-10.0f, 20.0f, 0.1f), 0.0,
                                      [](float value) {return String(value, 1);}, nullptr);
 
+    parameters.createAndAddParameter("lookAhead", "LookAhead", "",
+                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
+                                     [](float value) {return value >= 0.5f ? "ON (5ms)" : "OFF";}, nullptr);
+
+    parameters.createAndAddParameter ("reportLatency", "Report Latency to DAW", "",
+                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
+                                      [](float value) {
+                                          if (value >= 0.5f) return "Yes";
+                                          else return "No";
+                                      }, nullptr);
+
     parameters.state = ValueTree (Identifier ("OmniCompressor"));
 
     parameters.addParameterListener("orderSetting", this);
@@ -100,7 +111,12 @@ parameters (*this, nullptr)
     ratio = parameters.getRawParameterValue ("ratio");
     attack = parameters.getRawParameterValue ("attack");
     release = parameters.getRawParameterValue ("release");
+    lookAhead = parameters.getRawParameterValue ("lookAhead");
+    reportLatency = parameters.getRawParameterValue("reportLatency");
     GR = 0.0f;
+
+    delay.setDelayTime (0.005f);
+    grProcessing.setDelayTime (0.005f);
 }
 
 
@@ -173,8 +189,9 @@ void OmniCompressorAudioProcessor::prepareToPlay (double sampleRate, int samples
     checkInputAndOutput(this, *orderSetting, *orderSetting, true);
 
     RMS.resize(samplesPerBlock);
-    gains.resize(samplesPerBlock);
     allGR.resize(samplesPerBlock);
+
+    gains.setSize(1, samplesPerBlock);
 
     dsp::ProcessSpec spec;
     spec.sampleRate = sampleRate;
@@ -182,6 +199,14 @@ void OmniCompressorAudioProcessor::prepareToPlay (double sampleRate, int samples
     spec.maximumBlockSize = samplesPerBlock;
 
     compressor.prepare(spec);
+    grProcessing.prepare (spec);
+    spec.numChannels = getTotalNumInputChannels();
+    delay.prepare (spec);
+
+    if (*reportLatency >= 0.5f && *lookAhead >= 0.5f)
+        setLatencySamples(delay.getDelayInSamples());
+    else
+        setLatencySamples(0);
 }
 
 void OmniCompressorAudioProcessor::releaseResources()
@@ -209,6 +234,8 @@ void OmniCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer, Midi
     //const int ambisonicOrder = jmin(input.getOrder(), output.getOrder());
     const float* bufferReadPtr = buffer.getReadPointer(0);
 
+    const bool useLookAhead = *lookAhead >= 0.5f;
+
     if (*ratio > 15.9f)
         compressor.setRatio(INFINITY);
     else
@@ -217,6 +244,7 @@ void OmniCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer, Midi
     compressor.setKnee(*knee);
 
     compressor.setAttackTime(*attack * 0.001f);
+
     compressor.setReleaseTime(*release * 0.001f);
     compressor.setThreshold(*threshold);
     compressor.setMakeUpGain(*outGain);
@@ -224,16 +252,43 @@ void OmniCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer, Midi
     for (int i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    compressor.getGainFromSidechainSignal(bufferReadPtr, gains.getRawDataPointer(), bufferSize);
-    maxRMS = compressor.getMaxLevelInDecibels();
+    if (useLookAhead)
+    {
+        compressor.getGainFromSidechainSignalInDecibelsWithoutMakeUpGain (bufferReadPtr, gains.getWritePointer(0), bufferSize);
+        maxGR = FloatVectorOperations::findMinimum(gains.getWritePointer(0), bufferSize);
 
-    maxGR = Decibels::gainToDecibels(FloatVectorOperations::findMinimum(gains.getRawDataPointer(), bufferSize)) - *outGain;
+        // delay input signal
+        {
+            AudioBlock<float> ab (buffer);
+            ProcessContextReplacing<float> context (ab);
+            delay.process (context);
+        }
+
+        grProcessing.pushSamples (gains.getReadPointer(0), bufferSize);
+        grProcessing.process();
+        grProcessing.readSamples (gains.getWritePointer(0), bufferSize);
+
+        // convert from decibels to gain values
+        for (int i = 0; i < bufferSize; ++i)
+        {
+            gains.setSample(0, i, Decibels::decibelsToGain(gains.getSample(0, i) + *outGain));
+        }
+    }
+    else
+    {
+        compressor.getGainFromSidechainSignal(bufferReadPtr, gains.getWritePointer(0), bufferSize);
+        maxGR = Decibels::gainToDecibels(FloatVectorOperations::findMinimum(gains.getWritePointer(0), bufferSize)) - *outGain;
+    }
+
+    maxRMS = compressor.getMaxLevelInDecibels();
 
     for (int channel = 0; channel < numCh; ++channel)
     {
         float* channelData = buffer.getWritePointer (channel);
-        FloatVectorOperations::multiply(channelData, gains.getRawDataPointer(), bufferSize);
+        FloatVectorOperations::multiply(channelData, gains.getWritePointer(0), bufferSize);
     }
+
+
 }
 
 //==============================================================================
@@ -248,17 +303,19 @@ AudioProcessorEditor* OmniCompressorAudioProcessor::createEditor()
 }
 
 //==============================================================================
-void OmniCompressorAudioProcessor::getStateInformation (MemoryBlock& destData)
+void OmniCompressorAudioProcessor::getStateInformation (MemoryBlock &destData)
 {
-    // You should use this method to store your parameters in the memory block.
-    // You could do that either as raw data, or use the XML or ValueTree classes
-    // as intermediaries to make it easy to save and load complex data.
+    auto state = parameters.copyState();
+    std::unique_ptr<XmlElement> xml (state.createXml());
+    copyXmlToBinary (*xml, destData);
 }
 
-void OmniCompressorAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
+void OmniCompressorAudioProcessor::setStateInformation (const void *data, int sizeInBytes)
 {
-    // You should use this method to restore your parameters from this memory block,
-    // whose contents will have been created by the getStateInformation() call.
+    std::unique_ptr<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
+    if (xmlState.get() != nullptr)
+        if (xmlState->hasTagName (parameters.state.getType()))
+            parameters.replaceState (ValueTree::fromXml (*xmlState));
 }
 
 //==============================================================================
@@ -279,5 +336,3 @@ AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new OmniCompressorAudioProcessor();
 }
-
-

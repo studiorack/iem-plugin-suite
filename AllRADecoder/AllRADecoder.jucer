@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <JUCERPROJECT id="mbpAgi" name="AllRADecoder" displaySplashScreen="0" reportAppUsage="0"
-              splashScreenColour="Dark" projectType="audioplug" version="0.3.0"
+              splashScreenColour="Dark" projectType="audioplug" version="0.4.0"
               bundleIdentifier="at.iem.AllRADecoder" includeBinaryInAppConfig="1"
               cppLanguageStandard="14" buildVST="1" buildVST3="0" buildAU="0"
               buildAUv3="0" buildRTAS="0" buildAAX="0" buildStandalone="1"
@@ -25,6 +25,7 @@
             file="../resources/lookAndFeel/Roboto-Regular.ttf"/>
     </GROUP>
     <GROUP id="{508CBC88-3E2D-B197-3051-B94590C10F68}" name="Source">
+      <FILE id="NlkXJG" name="RotateWindow.h" compile="0" resource="0" file="Source/RotateWindow.h"/>
       <FILE id="SLgq9s" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
       <FILE id="Jc4gSH" name="PluginProcessor.h" compile="0" resource="0"
@@ -33,7 +34,7 @@
             file="Source/PluginEditor.cpp"/>
       <FILE id="Ur0OCo" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
     </GROUP>
-    <FILE id="noq7Zw" name="decoderHelper.h" compile="0" resource="0" file="../resources/decoderHelper.h"/>
+    <FILE id="noq7Zw" name="DecoderHelper.h" compile="0" resource="0" file="../resources/DecoderHelper.h"/>
     <FILE id="yk1Otq" name="efficientSHvanilla.cpp" compile="1" resource="0"
           file="../resources/efficientSHvanilla.cpp"/>
     <FILE id="uoAzFj" name="EnergyDistributionVisualizer.h" compile="0"
@@ -149,5 +150,6 @@
                JUCE_USE_OGGVORBIS="0" JUCE_USE_LAME_AUDIO_FORMAT="0"/>
   <LIVE_SETTINGS>
     <OSX/>
+    <LINUX/>
   </LIVE_SETTINGS>
 </JUCERPROJECT>

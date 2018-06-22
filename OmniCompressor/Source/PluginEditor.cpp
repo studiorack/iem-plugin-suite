@@ -25,16 +25,23 @@
 
 
 //==============================================================================
-OmniCompressorAudioProcessorEditor::OmniCompressorAudioProcessorEditor (OmniCompressorAudioProcessor& p,AudioProcessorValueTreeState& vts)
-    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts)
+OmniCompressorAudioProcessorEditor::OmniCompressorAudioProcessorEditor (OmniCompressorAudioProcessor& p, AudioProcessorValueTreeState& vts)
+    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts), characteristic(processor.compressor)
 {
-    setSize (330, 280);
+    setSize (330, 500);
     setLookAndFeel(&globalLaF);
 
     addAndMakeVisible(&title);
     title.setTitle(String("Omni"),String("Compressor"));
     title.setFont(globalLaF.robotoBold,globalLaF.robotoLight);
     addAndMakeVisible(&footer);
+
+    addAndMakeVisible(characteristic);
+
+    addAndMakeVisible(&tbLookAhead);
+    tbLookAheadAttachment = new ButtonAttachment(valueTreeState, "lookAhead", tbLookAhead);
+    tbLookAhead.setButtonText("Look ahead (5ms)");
+    tbLookAhead.setColour (ToggleButton::tickColourId, globalLaF.ClWidgetColours[0]);
 
     addAndMakeVisible(&sliderKnee);
     KnAttachment = new SliderAttachment(valueTreeState,"knee", sliderKnee);
@@ -128,12 +135,14 @@ void OmniCompressorAudioProcessorEditor::paint (Graphics& g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
     g.fillAll (globalLaF.ClBackground);
-
-
 }
 
 void OmniCompressorAudioProcessorEditor::timerCallback()
 {
+    characteristic.setMarkerLevels(processor.maxRMS, processor.maxGR);
+    characteristic.updateCharacteristic();
+    characteristic.repaint();
+
     inpMeter.setLevel(processor.maxRMS);
     dbGRmeter.setLevel(processor.maxGR);
 
@@ -168,7 +177,7 @@ void OmniCompressorAudioProcessorEditor::resized()
 
 
 
-    Rectangle<int> ctrlPlane = area.removeFromTop(180);
+    Rectangle<int> ctrlPlane = area.removeFromBottom(180);
     ctrlPlane.setWidth(270);
     ctrlPlane.setCentre(area.getCentreX(), ctrlPlane.getCentreY());
 
@@ -212,6 +221,10 @@ void OmniCompressorAudioProcessorEditor::resized()
     sliderRow.removeFromLeft(sliderSpacing);
     lbRelease.setBounds(sliderRow.removeFromLeft(sliderWidth));
 
+    area.removeFromBottom(10);
+    tbLookAhead.setBounds(area.removeFromBottom(20).removeFromLeft(130));
+    area.removeFromBottom(10);
+    characteristic.setBounds(area);
 
 
 }

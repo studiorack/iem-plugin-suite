@@ -34,7 +34,7 @@
 #include "../../resources/efficientSHvanilla.h"
 #include "../../resources/ReferenceCountedDecoder.h"
 #include "../../resources/AmbisonicDecoder.h"
-#include "../../resources/decoderHelper.h"
+#include "../../resources/DecoderHelper.h"
 #include "../../resources/ambisonicTools.h"
 #include "../../resources/HammerAitov.h"
 #include "NoiseBurst.h"
@@ -113,9 +113,11 @@ public:
     void playNoiseBurst (const int channel);
     void addRandomPoint();
     void addImaginaryLoudspeakerBelow();
-    
+
     void undo() { undoManager.undo(); }
     void redo() { undoManager.redo(); }
+
+    void rotate (const float degreesAddedToAzimuth);
 
     void saveConfigurationToFile (File destination);
     void loadConfiguration (const File& presetFile);

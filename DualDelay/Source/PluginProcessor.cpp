@@ -577,18 +577,19 @@ AudioProcessorEditor* DualDelayAudioProcessor::createEditor()
 }
 
 //==============================================================================
-void DualDelayAudioProcessor::getStateInformation (MemoryBlock& destData)
+void DualDelayAudioProcessor::getStateInformation (MemoryBlock &destData)
 {
-    ScopedPointer<XmlElement> xml (parameters.state.createXml());
+    auto state = parameters.copyState();
+    std::unique_ptr<XmlElement> xml (state.createXml());
     copyXmlToBinary (*xml, destData);
 }
 
-void DualDelayAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
+void DualDelayAudioProcessor::setStateInformation (const void *data, int sizeInBytes)
 {
-    ScopedPointer<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
-    if (xmlState != nullptr)
+    std::unique_ptr<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
+    if (xmlState.get() != nullptr)
         if (xmlState->hasTagName (parameters.state.getType()))
-            parameters.state = ValueTree::fromXml (*xmlState);
+            parameters.replaceState (ValueTree::fromXml (*xmlState));
 }
 
 //==============================================================================

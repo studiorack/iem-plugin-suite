@@ -118,6 +118,6 @@ private:
     ScopedPointer<SliderAttachment> slParam1Attachment, slParam2Attachment, slParam3Attachment;
     ScopedPointer<ComboBoxAttachment> cbOrderSettingAttachment;
     ScopedPointer<ComboBoxAttachment> cbNormalizationAttachment; // n3d, sn3d
-    
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DirectivityShaperAudioProcessorEditor)
 };

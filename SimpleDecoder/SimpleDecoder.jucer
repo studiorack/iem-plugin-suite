@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <JUCERPROJECT id="mbpAgi" name="SimpleDecoder" displaySplashScreen="0" reportAppUsage="0"
-              splashScreenColour="Dark" projectType="audioplug" version="0.2.0"
+              splashScreenColour="Dark" projectType="audioplug" version="0.2.1"
               bundleIdentifier="at.iem.SimpleDecoder" includeBinaryInAppConfig="1"
               cppLanguageStandard="14" buildVST="1" buildVST3="0" buildAU="0"
               buildAUv3="0" buildRTAS="0" buildAAX="0" buildStandalone="1"
@@ -35,7 +35,7 @@
     </GROUP>
     <FILE id="A8M9Gu" name="AmbisonicDecoder.h" compile="0" resource="0"
           file="../resources/AmbisonicDecoder.h"/>
-    <FILE id="rvZfyU" name="decoderHelper.h" compile="0" resource="0" file="../resources/decoderHelper.h"/>
+    <FILE id="rvZfyU" name="DecoderHelper.h" compile="0" resource="0" file="../resources/DecoderHelper.h"/>
     <FILE id="p41txy" name="DecoderInfoBox.h" compile="0" resource="0"
           file="../resources/customComponents/DecoderInfoBox.h"/>
     <FILE id="CRfF6w" name="efficientSHvanilla.cpp" compile="1" resource="0"
@@ -149,5 +149,6 @@
                JUCE_USE_FLAC="0"/>
   <LIVE_SETTINGS>
     <OSX/>
+    <LINUX/>
   </LIVE_SETTINGS>
 </JUCERPROJECT>

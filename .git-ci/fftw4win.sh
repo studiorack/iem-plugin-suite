@@ -14,6 +14,10 @@ def2lib() {
  for f3 in libfftw3*.*; do
    f=$(echo libfftw${f3#libfftw3} | sed -e 's|-|-3.|')
    mv -v "${f3}" "${f}"
+   def=${f%.def}
+   if [ "${f}" != "${def}" ]; then
+     sed -e "1s/LIBRARY ${f3%.def}.dll/LIBRARY ${f%.def}.dll/" -i "${f}"
+   fi
  done
  for def in libfftw*.def; do
   "${libexe}" -machine:${machine} -def:"${def}"
@@ -28,6 +32,7 @@ for b in ${bits}; do
     outdir="${outdirbase}/win${b}"
     machine=x86
   fi
+  rm -rf "${outdir}"
   mkdir -p "${outdir}"
 
   url="ftp://ftp.fftw.org/pub/fftw/${fftw}"

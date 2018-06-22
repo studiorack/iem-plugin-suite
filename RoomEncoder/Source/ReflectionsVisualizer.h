@@ -93,11 +93,12 @@ public:
             int numRef = roundToInt(*numReflPtr);
 
             float gainDb = Decibels::gainToDecibels(gainPtr[0]);
-
-            float xPos = timeToX(radiusPtr[0]*xFactor);
-            float yPos = dBToY(gainDb);
-
-            g.drawLine(xPos, yPos, xPos, mT + plotHeight, 2.0f);
+            if (gainDb > -60.0f)
+            {
+                float xPos = timeToX(radiusPtr[0]*xFactor);
+                float yPos = dBToY(gainDb);
+                g.drawLine(xPos, yPos, xPos, mT + plotHeight, 2.0f);
+            }
 
             g.setColour(Colours::white.withMultipliedAlpha(0.5f));
 

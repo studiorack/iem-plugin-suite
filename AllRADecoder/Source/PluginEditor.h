@@ -36,6 +36,7 @@
 #include "LoudspeakerVisualizer.h"
 #include "EnergyDistributionVisualizer.h"
 #include "LoudspeakerTableComponent.h"
+#include "RotateWindow.h"
 
 
 
@@ -63,6 +64,7 @@ public:
     void buttonStateChanged (Button* button) override;
 
     void updateChannelCount();
+    void openRotateWindow();
 
 private:
     // ====================== begin essentials ==================
@@ -106,6 +108,7 @@ private:
     TextButton tbAddSpeakers;
     TextButton tbUndo;
     TextButton tbRedo;
+    TextButton tbRotate;
     TextButton tbImport;
     TextButton tbJson;
     LoudspeakerVisualizer lv;

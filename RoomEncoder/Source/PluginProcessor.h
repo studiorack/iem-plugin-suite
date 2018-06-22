@@ -188,6 +188,8 @@ private:
     float* syncReflection;
     float* syncListener;
 
+    float* renderDirectPath;
+
     int _numRefl;
 
     SharedResourcePointer<SharedParams> sharedParams;

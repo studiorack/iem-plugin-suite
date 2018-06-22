@@ -131,4 +131,6 @@ void EnergyVisualizerAudioProcessorEditor::timerCallback()
     processor.getMaxSize(maxInSize, maxOutSize);
     title.setMaxSize(maxInSize, maxOutSize);
     // ==========================================
+
+    visualizer.setColormap(colormap.getColormap());
 }

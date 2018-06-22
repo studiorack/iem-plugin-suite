@@ -157,6 +157,13 @@ parameters (*this, nullptr)
                                           else return "NO"; },
                                       nullptr);
 
+    parameters.createAndAddParameter ("renderDirectPath", "Render Direct Path", "",
+                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
+                                      [](float value) {
+                                          if (value >= 0.5f) return "YES";
+                                          else return "NO"; },
+                                      nullptr);
+
 
     parameters.state = ValueTree (Identifier ("RoomEncoder"));
 
@@ -182,6 +189,8 @@ parameters (*this, nullptr)
     syncRoomSize = parameters.getRawParameterValue ("syncRoomSize");
     syncReflection = parameters.getRawParameterValue ("syncReflection");
     syncListener = parameters.getRawParameterValue ("syncListener");
+
+    renderDirectPath = parameters.getRawParameterValue ("renderDirectPath");
 
     lowShelfFreq = parameters.getRawParameterValue ("lowShelfFreq");
     lowShelfGain = parameters.getRawParameterValue ("lowShelfGain");
@@ -578,7 +587,7 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
 
         if (doInputSn3dToN3dConversion)
             FloatVectorOperations::multiply((float *) SHsample, sn3d2n3d, maxNChIn);
-        
+
         Array<IIRfloat*> interleavedDataPtr;
         interleavedDataPtr.resize(nSIMDFilters);
         IIRfloat** intrlvdDataArrayPtr = interleavedDataPtr.getRawDataPointer();
@@ -681,6 +690,11 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
             FloatVectorOperations::clear(SHcoeffs, 64);
 
         float gain = powReflCoeff[reflList[q][3]]/mRadius[q];
+
+        // direct path rendering
+        if (q == 0 && *renderDirectPath < 0.5f)
+            gain = 0.0f;
+
         allGains[q] = gain; // for reflectionVisualizer
 
         FloatVectorOperations::multiply(SHcoeffs, gain, maxNChOut);
@@ -797,17 +811,19 @@ AudioProcessorEditor* RoomEncoderAudioProcessor::createEditor()
 }
 
 //==============================================================================
-void RoomEncoderAudioProcessor::getStateInformation (MemoryBlock& destData)
+void RoomEncoderAudioProcessor::getStateInformation (MemoryBlock &destData)
 {
-    // You should use this method to store your parameters in the memory block.
-    // You could do that either as raw data, or use the XML or ValueTree classes
-    // as intermediaries to make it easy to save and load complex data.
+    auto state = parameters.copyState();
+    std::unique_ptr<XmlElement> xml (state.createXml());
+    copyXmlToBinary (*xml, destData);
 }
 
-void RoomEncoderAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
+void RoomEncoderAudioProcessor::setStateInformation (const void *data, int sizeInBytes)
 {
-    // You should use this method to restore your parameters from this memory block,
-    // whose contents will have been created by the getStateInformation() call.
+    std::unique_ptr<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
+    if (xmlState.get() != nullptr)
+        if (xmlState->hasTagName (parameters.state.getType()))
+            parameters.replaceState (ValueTree::fromXml (*xmlState));
 }
 
 void RoomEncoderAudioProcessor::timerCallback()

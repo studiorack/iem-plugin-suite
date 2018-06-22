@@ -1,7 +1,9 @@
 # gitlab-ci configuration for the IEM Plugin Suite
 
 variables:
-  PROJECTS: AllRADecoder BinauralDecoder DirectionalCompressor DirectivityShaper DualDelay EnergyVisualizer FdnReverb MatrixMultiplicator MultiEncoder OmniCompressor ProbeDecoder RoomEncoder SimpleDecoder StereoEncoder ToolBox
+## leave this uncommented to build all projects (except _PluginTemplate)
+#  PROJECTS: AllRADecoder BinauralDecoder DirectionalCompressor DirectivityShaper DistanceCompensator DualDelay EnergyVisualizer FdnReverb MatrixMultiplier MultiEncoder OmniCompressor ProbeDecoder RoomEncoder SimpleDecoder StereoEncoder ToolBox
+
   CONFIG: Release
   JUCEVERSION: 5.3.2
 
@@ -45,12 +47,32 @@ variables:
     - apt update -y
     - apt dist-upgrade -y
     - apt-get install -y --no-install-recommends xvfb xauth curl unzip build-essential ca-certificates
-    - apt-get install -y --no-install-recommends libwebkit2gtk-4.0-dev libasound2-dev libfreetype6-dev libcurl4-gnutls-dev libgl1-mesa-dev libx11-dev libxext-dev libxinerama-dev libxrandr-dev libgtk-3-dev
+    - apt-get install -y --no-install-recommends libwebkit2gtk-4.0-dev libasound2-dev libfreetype6-dev libcurl4-openssl-dev libgl1-mesa-dev libx11-dev libxext-dev libxinerama-dev libxrandr-dev libgtk-3-dev
     - apt-get install -y --no-install-recommends libjack-dev libfftw3-dev
     - .git-ci/getjuce.sh "${JUCEVERSION}-linux" ~/JUCE
-# run the actual build
-    - make system V=1 CONFIG=${CONFIG} CPPFLAGS=-DJUCE_JACK=1 CFLAGS="$(pkg-config --cflags ${PKGLIBS})" LDFLAGS="$(pkg-config --libs ${PKGLIBS})" PROJUCER=~/JUCE/Projucer PARALLEL=$(nproc)
-    - xvfb-run -a make V=1 CONFIG=${CONFIG} CPPFLAGS=-DJUCE_JACK=1 CFLAGS="$(pkg-config --cflags ${PKGLIBS})" LDFLAGS="$(pkg-config --libs ${PKGLIBS})" PROJUCER=~/JUCE/Projucer PARALLEL=$(nproc)
+# urgh, this is a hack {
+#  Roli's Projucer binaries link against an old version of libcurl,
+#  so we need to install libcurl3 in order to run it.
+#  but to run the actual compilation (make), we need to install the libcurl*-dev
+#  package, which conflicts with libcurl3.
+#  the solution is to download juce with 'curl', then install 'libcurl3' to
+#  generate all the Makefiles, then install 'libcurl4-dev' to run the build
+    - apt-get install -y --no-install-recommends libcurl3
+    - test -z "${PROJECTS}" && PROJECTS=$(make showprojects)
+    - for p in ${PROJECTS}; do xvfb-run -a make ${p}/Builds/LinuxMakefile/Makefile PROJUCER=~/JUCE/Projucer; done
+    - apt-get install -y --no-install-recommends libcurl4-gnutls-dev
+    # debugging printout
+    - make system V=1 CONFIG=${CONFIG} CPPFLAGS=-DJUCE_JACK=1 CFLAGS="$(pkg-config --cflags ${PKGLIBS})" LDFLAGS="$(pkg-config --libs ${PKGLIBS})" PROJUCER=~/JUCE/Projucer PARALLEL=$(nproc) TARGET_ARCH=-march=core2
+    # the actual build
+    - make V=1 CONFIG=${CONFIG} CPPFLAGS=-DJUCE_JACK=1 CFLAGS="$(pkg-config --cflags ${PKGLIBS})" LDFLAGS="$(pkg-config --libs ${PKGLIBS})" PARALLEL=$(nproc) TARGET_ARCH=-march=core2 PROJECTS="${PROJECTS}"
+# } hack end.
+# clean version {
+## run the actual build
+#    - make system V=1 CONFIG=${CONFIG} CPPFLAGS=-DJUCE_JACK=1 CFLAGS="$(pkg-config --cflags ${PKGLIBS})" LDFLAGS="$(pkg-config --libs ${PKGLIBS})" PROJUCER=~/JUCE/Projucer PARALLEL=$(nproc) TARGET_ARCH=-march=core2
+## this is the only line required if Projucer were linked against a recent libcurl
+#    - xvfb-run -a make V=1 CONFIG=${CONFIG} CPPFLAGS=-DJUCE_JACK=1 CFLAGS="$(pkg-config --cflags ${PKGLIBS})" LDFLAGS="$(pkg-config --libs ${PKGLIBS})" PROJUCER=~/JUCE/Projucer PARALLEL=$(nproc) TARGET_ARCH=-march=core2
+# } clean end
+
 # collect binaries for artifacts
     - mkdir -p IEM/standalone/
     - cp */Builds/*/build/*.so IEM/
@@ -65,8 +87,9 @@ variables:
     - brew install fftw
     - .git-ci/getjuce.sh "${JUCEVERSION}-osx" ~/JUCE
 # run the actual build
+    - test -z "${PROJECTS}" && PROJECTS=$(make showprojects)
     - make system CONFIG=$CONFIG PROJUCER="~/JUCE/Projucer.app/Contents/MacOS/Projucer"
-    - make CONFIG=$CONFIG PROJUCER="~/JUCE/Projucer.app/Contents/MacOS/Projucer"
+    - make CONFIG=$CONFIG PROJUCER="~/JUCE/Projucer.app/Contents/MacOS/Projucer" PROJECTS="${PROJECTS}"
 # collect binaries for artifacts
     - mkdir -p IEM/standalone
     - cp -R -H */Builds/*/build/${CONFIG}/*.vst IEM/
@@ -87,8 +110,9 @@ variables:
     - .git-ci/getjuce.sh "${JUCEVERSION}-windows" /c/JUCE
     - .git-ci/fftw4win.sh $BITS
 # run the actual build
+    - test -z "${PROJECTS}" && PROJECTS=$(make showprojects)
     - make system CONFIG=$CONFIG BITS=$BITS PROJUCER="/c/JUCE/Projucer.exe"
-    - make CONFIG=$CONFIG BITS=$BITS PROJUCER="/c/JUCE/Projucer.exe"
+    - make CONFIG=$CONFIG BITS=$BITS PROJUCER="/c/JUCE/Projucer.exe" PROJECTS="${PROJECTS}"
 # collect binaries for artifacts
     - mkdir -p IEM/standalone
     - cp */Builds/*/*/*/VST/*.dll IEM/

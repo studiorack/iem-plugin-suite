@@ -89,7 +89,7 @@ public:
     pointer_sized_int handleVstPluginCanDo (int32 index, pointer_sized_int value,
                                             void* ptr, float opt) override;
     //==============================================================================
-    
+
     const StringArray headphoneEQs = {
         "AKG-K141MK2", "AKG-K240DF", "AKG-K240MK2", "AKG-K271MK2", "AKG-K271STUDIO", "AKG-K601", "AKG-K701", "AKG-K702", "AKG-K1000-Closed", "AKG-K1000-Open", "AudioTechnica-ATH-M50", "Beyerdynamic-DT250", "Beyerdynamic-DT770PRO-250Ohms", "Beyerdynamic-DT880", "Beyerdynamic-DT990PRO", "Presonus-HD7", "Sennheiser-HD430", "Sennheiser-HD480", "Sennheiser-HD560ovationII", "Sennheiser-HD565ovation", "Sennheiser-HD600", "Sennheiser-HD650", "SHURE-SRH940"
     };
@@ -106,7 +106,7 @@ private:
     Convolution EQ;
 
     int fftLength = -1;
-	int irLength = 236;
+    int irLength = 236;
     int irLengthMinusOne = irLength-1;
     float* in = nullptr;
     float* ifftOutputMid = nullptr;
@@ -124,12 +124,12 @@ private:
 
     AudioBuffer<float> irsFrequencyDomain;
     double irsSampleRate = 44100.0;
-	//mapping between mid-channel index and channel index
-	int mix2cix[36] = { 0, 2, 3, 6, 7, 8, 12, 13, 14, 15, 20, 21, 22, 23, 24, 30, 31, 32, 33, 34, 35, 42, 43, 44, 45, 46, 47, 48, 56, 57, 58, 59, 60, 61, 62, 63 };
-	//mapping between side-channel index and channel index
-	int six2cix[28] = { 1, 4, 5, 9, 10, 11, 16, 17, 18, 19, 25, 26, 27, 28, 29, 36, 37, 38, 39, 40, 41, 49, 50, 51, 52, 53, 54, 55 };
-	int nMidCh;
-	int nSideCh;
+    //mapping between mid-channel index and channel index
+    int mix2cix[36] = { 0, 2, 3, 6, 7, 8, 12, 13, 14, 15, 20, 21, 22, 23, 24, 30, 31, 32, 33, 34, 35, 42, 43, 44, 45, 46, 47, 48, 56, 57, 58, 59, 60, 61, 62, 63 };
+    //mapping between side-channel index and channel index
+    int six2cix[28] = { 1, 4, 5, 9, 10, 11, 16, 17, 18, 19, 25, 26, 27, 28, 29, 36, 37, 38, 39, 40, 41, 49, 50, 51, 52, 53, 54, 55 };
+    int nMidCh;
+    int nSideCh;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BinauralDecoderAudioProcessor)

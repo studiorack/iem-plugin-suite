@@ -178,11 +178,9 @@ AudioProcessorEditor* MatrixMultiplierAudioProcessor::createEditor()
 //==============================================================================
 void MatrixMultiplierAudioProcessor::getStateInformation (MemoryBlock& destData)
 {
-    // You should use this method to store your parameters in the memory block.
-    // You could do that either as raw data, or use the XML or ValueTree classes
-    // as intermediaries to make it easy to save and load complex data.
-    parameters.state.setProperty("lastOpenedConfigurationFile", var(lastFile.getFullPathName()), nullptr);
-    ScopedPointer<XmlElement> xml (parameters.state.createXml());
+    auto state = parameters.copyState();
+    state.setProperty("lastOpenedConfigurationFile", var(lastFile.getFullPathName()), nullptr);
+    std::unique_ptr<XmlElement> xml (state.createXml());
     copyXmlToBinary (*xml, destData);
 }
 
@@ -190,20 +188,18 @@ void MatrixMultiplierAudioProcessor::getStateInformation (MemoryBlock& destData)
 
 void MatrixMultiplierAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
-    // You should use this method to restore your parameters from this memory block,
-    // whose contents will have been created by the getStateInformation() call.
-    ScopedPointer<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
+    std::unique_ptr<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
     if (xmlState != nullptr)
         if (xmlState->hasTagName (parameters.state.getType()))
         {
-            parameters.state = ValueTree::fromXml (*xmlState);
-            if (parameters.state.hasProperty("lastOpenedConfigurationFile"))
+            parameters.replaceState (ValueTree::fromXml (*xmlState));
+            if (parameters.state.hasProperty ("lastOpenedConfigurationFile"))
             {
-                Value val = parameters.state.getPropertyAsValue("lastOpenedConfigurationFile", nullptr);
+                Value val = parameters.state.getPropertyAsValue ("lastOpenedConfigurationFile", nullptr);
                 if (val.getValue().toString() != "")
                 {
                     const File f (val.getValue().toString());
-                    loadConfiguration(f);
+                    loadConfiguration (f);
                 }
             }
 

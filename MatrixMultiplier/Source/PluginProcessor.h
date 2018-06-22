@@ -25,7 +25,7 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "../../resources/IOHelper.h"
 #include "../../resources/MatrixMultiplication.h"
-#include "../../resources/decoderHelper.h"
+#include "../../resources/DecoderHelper.h"
 
 
 //==============================================================================
@@ -89,7 +89,7 @@ public:
     pointer_sized_int handleVstPluginCanDo (int32 index, pointer_sized_int value,
                                             void* ptr, float opt) override;
     //==============================================================================
-    
+
     void setMatrix(ReferenceCountedMatrix::Ptr newMatrixToUse) {
         matTrans.setMatrix(newMatrixToUse);
     }

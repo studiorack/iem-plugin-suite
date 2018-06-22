@@ -13,26 +13,26 @@
 /* copyright 2017 Dr David Sinclair
  david@newtonapples.net
  all rights reserved.
- 
- 
+
+
  version of 22-mar-2017.
- 
- 
+
+
  this code is released under GPL3,
  a copy of the license can be found at
  http://www.gnu.org/licenses/gpl-3.0.html
- 
+
  you can purchase a un-restricted license from
  http://newtonapples.net
- 
+
  where algorithm details are explained.
- 
+
  If you do choose to purchase a license you might also like
  Newton Apple Chocolates!,
  the cleverest chocolates on the Internet.
- 
- 
- 
+
+
+
  */
 
 
@@ -86,7 +86,7 @@ struct R3
     bool isImaginary;
     float gain;
     int channel = -1;
-    
+
   R3() {};
   R3(float xc, float yc, float zc) : id(-1), x(xc), y(yc), z(zc)  {};
   R3(const R3 &p) : id(p.id), lspNum(p.lspNum), realLspNum(p.realLspNum), x(p.x), y(p.y), z(p.z), azimuth(p.azimuth), elevation(p.elevation), radius(p.radius), isImaginary(p.isImaginary), gain(p.gain), channel(p.channel) {};
@@ -111,9 +111,9 @@ struct R3
 };
 
 
-// sort into descending order (for use in corner responce ranking).
-inline bool operator<(const R3 &a, const R3 &b) 
-{ 
+// sort into descending order (for use in corner response ranking).
+inline bool operator<(const R3 &a, const R3 &b)
+{
   if( a.z == b.z){
     if( a.x == b.x ){
       return a.y < b.y;
@@ -146,14 +146,14 @@ struct Snork
 };
 
 
-// sort into descending order (for use in corner responce ranking).
-inline bool operator<(const Snork &a, const Snork &b) 
-{ 
+// sort into descending order (for use in corner response ranking).
+inline bool operator<(const Snork &a, const Snork &b)
+{
   if( a.a == b.a ){
     return a.b < b.b;
   }
   return a.a < b.a;
-  
+
 };
 
 
