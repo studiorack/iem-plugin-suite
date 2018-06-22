@@ -3,7 +3,7 @@ For a list of all changes and bugfixes see the git log.
 
 Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They might lead to an unexpected behaviour and might not be compatible with your previous projects without making some adaptions. See the [Breaking changes article](https://plugins.iem.at/docs/breakingchanges/) for more information.
 
-## untagged changes
+## v1.4.0
 - general changes
     - all plug-ins now make use of methods which save/recall the plug-in states (necessary for some DAWs)
 
