@@ -57,7 +57,7 @@ parameters(*this, nullptr)
                                       }, nullptr);
 
     parameters.createAndAddParameter ("speedOfSound", "Speed of Sound", "m/s",
-                                      NormalisableRange<float> (330.0, 350.0, 0.1f), 334.2f,
+                                      NormalisableRange<float> (330.0, 350.0, 0.1f), 343.2f,
                                       [](float value) {return String(value, 1);}, nullptr);
 
     parameters.createAndAddParameter ("distanceExponent", "Distance-Gain Exponent", "",
