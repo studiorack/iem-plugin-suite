@@ -34,7 +34,7 @@ public:
     RotateWindow (AllRADecoderAudioProcessor& p) : processor (p)
     {
         addAndMakeVisible (headline);
-        headline.setText ("Add to all Azimuth angles", true, Justification::centred);
+        headline.setText ("Add to Azimuth angles", true, Justification::centred);
 
         addAndMakeVisible (lbValue);
         lbValue.setText("0", NotificationType::dontSendNotification);
