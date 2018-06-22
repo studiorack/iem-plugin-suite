@@ -93,7 +93,7 @@ parameters(*this, nullptr)
                                          }, nullptr);
 
         parameters.createAndAddParameter("distance" + String(i), "Distance of loudspeaker " + String(i + 1), "m",
-                                         NormalisableRange<float> (1.0f, 50.0f, 0.01f), 1.0f,
+                                         NormalisableRange<float> (1.0f, 50.0f, 0.01f), 5.0f,
                                          [](float value) {return String(value, 2);}, nullptr);
     }
 
