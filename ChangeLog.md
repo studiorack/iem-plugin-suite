@@ -14,6 +14,8 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
 - plug-in specific changes
     - **AllRA**Decoder
         - rotate feature added: rotates the whole layout by any arbitrary angle around the z-axis
+    - **Energy**Visualizer
+        - colormaps now switchable by clicking on the colormap
     - **Room**Encoder
         - added parameter to disable direct path
     - **Omni**Compressor
