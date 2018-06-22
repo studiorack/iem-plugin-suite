@@ -322,10 +322,6 @@ void AllRADecoderAudioProcessorEditor::buttonStateChanged (Button* button) {};
 void AllRADecoderAudioProcessorEditor::openRotateWindow()
 {
     auto* rotateWindow = new RotateWindow (processor);
-
-//    colourSelector->setName ("background");
-//    colourSelector->setCurrentColour (findColour (TextButton::buttonColourId));
-//    colourSelector->setColour (ColourSelector::backgroundColourId, Colours::transparentBlack);
     rotateWindow->setSize (120, 35);
 
     CallOutBox& myBox = CallOutBox::launchAsynchronously (rotateWindow, tbRotate.getScreenBounds(), nullptr);
