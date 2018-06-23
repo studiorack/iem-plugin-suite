@@ -123,6 +123,8 @@ public:
             var weights (decoderObject.getProperty("Weights", var()));
             if (weights.toString().equalsIgnoreCase("maxrE"))
                 settings.weights = ReferenceCountedDecoder::Weights::maxrE;
+            else if (weights.toString().equalsIgnoreCase("inPhase"))
+                settings.weights = ReferenceCountedDecoder::Weights::inPhase;
             else if (weights.toString().equalsIgnoreCase("none"))
                 settings.weights = ReferenceCountedDecoder::Weights::none;
             else
