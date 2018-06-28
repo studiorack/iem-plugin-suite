@@ -292,12 +292,8 @@ void DistanceCompensatorAudioProcessor::prepareToPlay (double sampleRate, int sa
     gain.prepare (specs);
     delay.prepare (specs);
 
-    for (int i = 0; i < 64; ++i)
-    {
-        gain.setGainDecibels (i, - 1.0f * distanceToGainInDecibels (*distance[i]));
-        delay.setDelayTime (i, distanceToDelayInSeconds (*distance[i]));
-    }
-
+    updateDelays();
+    updateGains();
 }
 
 void DistanceCompensatorAudioProcessor::releaseResources()
