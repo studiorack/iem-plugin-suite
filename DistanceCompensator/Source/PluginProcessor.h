@@ -139,8 +139,6 @@ private:
     File lastDir;
     ScopedPointer<PropertiesFile> properties;
 
-
-
     Array<float> tempValues;
 
     Array<PositionAndChannel> loadedLoudspeakerPositions;

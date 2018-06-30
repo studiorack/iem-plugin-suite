@@ -187,7 +187,6 @@ void DistanceCompensatorAudioProcessor::loadConfiguration (const File& configFil
     }
     else
     {
-
         const int nLsp = loudspeakers.getNumChildren();
 
         loadedLoudspeakerPositions.clear();
