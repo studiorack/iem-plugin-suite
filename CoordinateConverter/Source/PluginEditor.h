@@ -78,7 +78,7 @@ private:
     // =============== end essentials ============
 
     // === Spherical
-    GroupComponent gcSpherical, gcCartesian, gcRange;
+    GroupComponent gcSpherical, gcCartesian, gcRange, gcReference;
 
     SpherePanner sphere;
     SpherePanner::AziumuthElevationParameterElement panner;
@@ -94,6 +94,10 @@ private:
     ReverseSlider slXPos, slYPos, slZPos;
     ScopedPointer<SliderAttachment> slXPosAttachment, slYPosAttachment, slZPosAttachment;
     SimpleLabel lbXPos, lbYPos, lbZPos;
+
+    Label slXReference, slYReference, slZReference;
+    ScopedPointer<LabelAttachment> slXReferenceAttachment, slYReferenceAttachment, slZReferenceAttachment;
+    SimpleLabel lbXReference, lbYReference, lbZReference;
 
     // === Range Settings
     Label slRadiusRange;

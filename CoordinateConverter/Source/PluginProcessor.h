@@ -95,13 +95,13 @@ public:
 
     Atomic<bool> repaintSphere = true;
     Atomic<bool> repaintPositionPlanes = true;
-    Atomic<bool> updatePlaneDimensions = true;
 
 private:
     // ====== parameters
     AudioProcessorValueTreeState parameters;
 
     Atomic<bool> updatingParams = false;
+    bool cartesianWasLastUpdated = true;
 
     // list of used audio parameters
     float *azimuth;
@@ -110,6 +110,9 @@ private:
     float *xPos;
     float *yPos;
     float *zPos;
+    float *xReference;
+    float *yReference;
+    float *zReference;
     float *radiusRange;
     float *xRange;
     float *yRange;

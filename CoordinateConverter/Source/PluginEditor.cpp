@@ -35,7 +35,7 @@ CoordinateConverterAudioProcessorEditor::CoordinateConverterAudioProcessorEditor
     // ============== BEGIN: essentials ======================
     // set GUI size and lookAndFeel
     //setSize(500, 300); // use this to create a fixed-size GUI
-    setResizeLimits (450, 550, 800, 650); // use this to create a resizable GUI
+    setResizeLimits (470, 570, 800, 650); // use this to create a resizable GUI
     setLookAndFeel (&globalLaF);
 
     // make title and footer visible, and set the PluginName
@@ -53,12 +53,14 @@ CoordinateConverterAudioProcessorEditor::CoordinateConverterAudioProcessorEditor
     gcCartesian.setText ("Cartesian Coordinates");
 
     addAndMakeVisible (gcRange);
-    gcRange.setText ("Normalization Settings");
+    gcRange.setText ("Normalization / Range Settings");
+
+    addAndMakeVisible (gcReference);
+    gcReference.setText ("Reference Position");
 
     addAndMakeVisible (sphere);
     panner.setColour (Colours::white);
     sphere.addElement (&panner);
-
 
     // ============== BEGIN: SPHERICAL COORDINATES ============
 
@@ -118,7 +120,6 @@ CoordinateConverterAudioProcessorEditor::CoordinateConverterAudioProcessorEditor
     slXPos.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slXPos.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
     slXPos.setTooltip ("x coordinate (normalized)");
-    //slXPos.addListener(this);
 
     addAndMakeVisible (slYPos);
     slYPosAttachment = new SliderAttachment(valueTreeState, "yPos", slYPos);
@@ -126,7 +127,6 @@ CoordinateConverterAudioProcessorEditor::CoordinateConverterAudioProcessorEditor
     slYPos.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slYPos.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
     slYPos.setTooltip ("y coordinate (normalized)");
-    //slSourceY.addListener(this);
 
     addAndMakeVisible (slZPos);
     slZPosAttachment = new SliderAttachment(valueTreeState, "zPos", slZPos);
@@ -134,17 +134,43 @@ CoordinateConverterAudioProcessorEditor::CoordinateConverterAudioProcessorEditor
     slZPos.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slZPos.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
     slZPos.setTooltip ("z coordinate (normalized)");
-    //slSourceZ.addListener(this);
 
 
     addAndMakeVisible (lbXPos);
-    lbXPos.setText ("x");
+    lbXPos.setText ("X");
 
     addAndMakeVisible (lbYPos);
-    lbYPos.setText ("y");
+    lbYPos.setText ("Y");
 
     addAndMakeVisible (lbZPos);
-    lbZPos.setText ("z");
+    lbZPos.setText ("Z");
+
+
+    addAndMakeVisible (slXReference);
+    slXReference.setJustificationType(Justification::centred);
+    slXReference.setEditable (true);
+    slXReferenceAttachment = new LabelAttachment (valueTreeState, "xReference", slXReference);
+
+    addAndMakeVisible (slYReference);
+    slYReference.setJustificationType(Justification::centred);
+    slYReference.setEditable (true);
+    slYReferenceAttachment = new LabelAttachment (valueTreeState, "yReference", slYReference);
+
+    addAndMakeVisible (slZReference);
+    slZReference.setJustificationType(Justification::centred);
+    slZReference.setEditable (true);
+    slZReferenceAttachment = new LabelAttachment (valueTreeState, "zReference", slZReference);
+
+
+    addAndMakeVisible (lbXReference);
+    lbXReference.setText ("x Ref");
+
+    addAndMakeVisible (lbYReference);
+    lbYReference.setText ("y Ref");
+
+    addAndMakeVisible (lbZReference);
+    lbZReference.setText ("z Ref");
+
 
     // ============== END: CARTESIAN COORDINATES ============
 
@@ -211,6 +237,8 @@ void CoordinateConverterAudioProcessorEditor::resized()
     const int rotSliderSpacing = 17;
     const int rotSliderWidth = 40;
 
+    const int sphericalWidth = 240;
+
     Rectangle<int> area (getLocalBounds());
 
     Rectangle<int> footerArea (area.removeFromBottom (footerHeight));
@@ -227,39 +255,64 @@ void CoordinateConverterAudioProcessorEditor::resized()
 
     // ===== RANGE SETTINGS
     auto settingsArea = area.removeFromBottom (60);
-    gcRange.setBounds (settingsArea);
-    settingsArea.removeFromTop (25);
+    auto rangeArea = settingsArea.removeFromLeft (sphericalWidth);
+    gcRange.setBounds (rangeArea);
+    rangeArea.removeFromTop (25);
 
     {
-        auto sliderRow = settingsArea.removeFromTop (18);
-        lbRadiusRange.setBounds (sliderRow.removeFromLeft (40));
-        sliderRow.removeFromLeft (5);
+        auto sliderRow = rangeArea.removeFromTop (18);
+
         slRadiusRange.setBounds (sliderRow.removeFromLeft (50));
+        sliderRow.removeFromLeft (20);
 
-        sliderRow.removeFromLeft (5);
-
-        lbXRange.setBounds (sliderRow.removeFromLeft (35));
-        sliderRow.removeFromLeft (5);
         slXRange.setBounds (sliderRow.removeFromLeft (50));
-
-        sliderRow.removeFromLeft (5);
-
-        lbYRange.setBounds (sliderRow.removeFromLeft (35));
         sliderRow.removeFromLeft (5);
         slYRange.setBounds (sliderRow.removeFromLeft (50));
-
-        sliderRow.removeFromLeft (5);
-
-        lbZRange.setBounds (sliderRow.removeFromLeft (35));
         sliderRow.removeFromLeft (5);
         slZRange.setBounds (sliderRow.removeFromLeft (50));
+
+
+        sliderRow = rangeArea.removeFromTop (18);
+
+        lbRadiusRange.setBounds (sliderRow.removeFromLeft (50));
+        sliderRow.removeFromLeft (20);
+
+        lbXRange.setBounds (sliderRow.removeFromLeft (50));
+        sliderRow.removeFromLeft (5);
+        lbYRange.setBounds (sliderRow.removeFromLeft (50));
+        sliderRow.removeFromLeft (5);
+        lbZRange.setBounds (sliderRow.removeFromLeft (50));
+    }
+
+    settingsArea.removeFromLeft (20);
+
+    auto referenceArea = settingsArea;
+    {
+        gcReference.setBounds (referenceArea);
+        referenceArea.removeFromTop (25);
+
+        auto sliderRow = referenceArea.removeFromTop (18);
+
+        slXReference.setBounds (sliderRow.removeFromLeft (45));
+        sliderRow.removeFromLeft (5);
+        slYReference.setBounds (sliderRow.removeFromLeft (45));
+        sliderRow.removeFromLeft (5);
+        slZReference.setBounds (sliderRow.removeFromLeft (45));
+
+        sliderRow = referenceArea.removeFromTop (12);
+
+        lbXReference.setBounds (sliderRow.removeFromLeft (45));
+        sliderRow.removeFromLeft (5);
+        lbYReference.setBounds (sliderRow.removeFromLeft (45));
+        sliderRow.removeFromLeft (5);
+        lbZReference.setBounds (sliderRow.removeFromLeft (45));
     }
 
     area.removeFromBottom (10);
     
     // ===== SPHERICAL
 
-    const int sphericalWidth = 220;
+
     auto sphericalArea = area.removeFromLeft (sphericalWidth);
     gcSpherical.setBounds (sphericalArea);
     sphericalArea.removeFromTop (25);
@@ -305,16 +358,16 @@ void CoordinateConverterAudioProcessorEditor::resized()
 
         auto sliderRow = sliderArea.removeFromTop (rotSliderHeight);
         slXPos.setBounds (sliderRow.removeFromLeft (rotSliderWidth));
-        sliderRow.removeFromLeft(rotSliderSpacing);
+        sliderRow.removeFromLeft (rotSliderSpacing - 2);
         slYPos.setBounds (sliderRow.removeFromLeft (rotSliderWidth));
-        sliderRow.removeFromLeft (rotSliderSpacing);
+        sliderRow.removeFromLeft (rotSliderSpacing - 2);
         slZPos.setBounds (sliderRow.removeFromLeft (rotSliderWidth));
 
         sliderRow = sliderArea.removeFromTop (12);
         lbXPos.setBounds (sliderRow.removeFromLeft (rotSliderWidth));
-        sliderRow.removeFromLeft(rotSliderSpacing);
+        sliderRow.removeFromLeft (rotSliderSpacing - 2);
         lbYPos.setBounds (sliderRow.removeFromLeft (rotSliderWidth));
-        sliderRow.removeFromLeft (rotSliderSpacing);
+        sliderRow.removeFromLeft (rotSliderSpacing - 2);
         lbZPos.setBounds (sliderRow.removeFromLeft (rotSliderWidth));
 
         const int sphereHeight = sphere.getHeight();
@@ -322,7 +375,7 @@ void CoordinateConverterAudioProcessorEditor::resized()
 
         auto planeArea = cartesianArea.removeFromLeft (planeHeight);
         xyPlane.setBounds (planeArea.removeFromTop (planeHeight));
-        planeArea.removeFromTop (11);
+        planeArea.removeFromTop (6); // 5 left
         zyPlane.setBounds (planeArea.removeFromTop (planeHeight));
 
     }
@@ -342,11 +395,4 @@ void CoordinateConverterAudioProcessorEditor::timerCallback()
         processor.repaintSphere = false;
         sphere.repaint();
     }
-
-    if (processor.updatePlaneDimensions.get())
-    {
-        processor.repaintSphere = false;
-
-    }
-
 }

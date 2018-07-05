@@ -52,16 +52,28 @@ parameters(*this, nullptr)
                                      [](float value) { return String(value, 3); }, nullptr);
 
     parameters.createAndAddParameter ("xPos", "X Coordinate", "",
-                                     NormalisableRange<float>(-1.0f, 1.0f, 0.001f), 0.0,
-                                     [](float value) { return String(value, 3); }, nullptr);
+                                     NormalisableRange<float>(-1.0f, 1.0f, 0.0001f), 0.0,
+                                     [](float value) { return String(value, 4); }, nullptr);
 
     parameters.createAndAddParameter ("yPos", "Y Coordinate", "",
-                                     NormalisableRange<float>(-1.0f, 1.0f, 0.001f), 0.0,
-                                     [](float value) { return String(value, 3); }, nullptr);
+                                     NormalisableRange<float>(-1.0f, 1.0f, 0.0001f), 0.0,
+                                     [](float value) { return String(value, 4); }, nullptr);
 
     parameters.createAndAddParameter ("zPos", "Z Coordinate", "",
-                                     NormalisableRange<float>(-1.0f, 1.0f, 0.001f), 0.0,
-                                     [](float value) { return String(value, 3); }, nullptr);
+                                     NormalisableRange<float>(-1.0f, 1.0f, 0.0001f), 0.0,
+                                     [](float value) { return String(value, 4); }, nullptr);
+
+    parameters.createAndAddParameter ("xReference", "X Reference", "m",
+                                      NormalisableRange<float>(-50.0f, 50.0f, 0.001f), 0.0,
+                                      [](float value) { return String(value, 3); }, nullptr);
+
+    parameters.createAndAddParameter ("yReference", "Y Reference", "m",
+                                      NormalisableRange<float>(-50.0f, 50.0f, 0.001f), 0.0,
+                                      [](float value) { return String(value, 3); }, nullptr);
+
+    parameters.createAndAddParameter ("zReference", "Z Reference", "m",
+                                      NormalisableRange<float>(-50.0f, 50.0f, 0.001f), 0.0,
+                                      [](float value) { return String(value, 3); }, nullptr);
 
     parameters.createAndAddParameter ("radiusRange", "Radius Range", "m",
                                      NormalisableRange<float>(0.1f, 50.0f, 0.01f), 1.0,
@@ -92,6 +104,9 @@ parameters(*this, nullptr)
     xPos = parameters.getRawParameterValue ("xPos");
     yPos = parameters.getRawParameterValue ("yPos");
     zPos = parameters.getRawParameterValue ("zPos");
+    xReference = parameters.getRawParameterValue ("xReference");
+    yReference = parameters.getRawParameterValue ("yReference");
+    zReference = parameters.getRawParameterValue ("zReference");
     radiusRange = parameters.getRawParameterValue ("radiusRange");
     xRange = parameters.getRawParameterValue ("xRange");
     yRange = parameters.getRawParameterValue ("yRange");
@@ -105,6 +120,9 @@ parameters(*this, nullptr)
     parameters.addParameterListener ("xPos", this);
     parameters.addParameterListener ("yPos", this);
     parameters.addParameterListener ("zPos", this);
+    parameters.addParameterListener ("xReference", this);
+    parameters.addParameterListener ("yReference", this);
+    parameters.addParameterListener ("zReference", this);
     parameters.addParameterListener ("radiusRange", this);
     parameters.addParameterListener ("xRange", this);
     parameters.addParameterListener ("yRange", this);
@@ -247,6 +265,7 @@ void CoordinateConverterAudioProcessor::parameterChanged (const String &paramete
         if (! updatingParams.get())
             updateCartesianCoordinates();
     }
+
     else if (parameterID == "xPos" || parameterID == "yPos" || parameterID == "zPos")
     {
         repaintPositionPlanes = true;
@@ -254,12 +273,19 @@ void CoordinateConverterAudioProcessor::parameterChanged (const String &paramete
         if (! updatingParams.get())
             updateSphericalCoordinates();
     }
-    else if (parameterID == "xRange" || parameterID == "yRange" || parameterID == "zRange")
+
+    else if (parameterID == "xReference" || parameterID == "yReference" || parameterID == "zReference")
     {
-        updatePlaneDimensions = true;
+        if (cartesianWasLastUpdated)
+        {
+            updateCartesianCoordinates();
+        }
+        else
+        {
+            updateSphericalCoordinates();
+        }
 
     }
-
 }
 
 void CoordinateConverterAudioProcessor::updateCartesianCoordinates()
@@ -268,6 +294,7 @@ void CoordinateConverterAudioProcessor::updateCartesianCoordinates()
 
     auto cartesian = Conversions<float>::sphericalToCartesian (degreesToRadians (*azimuth), degreesToRadians (*elevation), *radius * *radiusRange);
 
+    cartesian += {*xReference, *yReference, *zReference};
     cartesian.x /= *xRange;
     cartesian.y /= *yRange;
     cartesian.z /= *zRange;
@@ -277,6 +304,7 @@ void CoordinateConverterAudioProcessor::updateCartesianCoordinates()
     parameters.getParameter ("zPos")->setValue (parameters.getParameterRange ("zPos").convertTo0to1 (cartesian.z));
     repaintPositionPlanes = true;
 
+    cartesianWasLastUpdated = true;
     updatingParams = false;
 }
 
@@ -284,8 +312,11 @@ void CoordinateConverterAudioProcessor::updateSphericalCoordinates()
 {
     updatingParams = true;
 
-    auto cartesian = Vector3D<float> (*xPos * *xRange / *radiusRange, *yPos * *yRange / *radiusRange, *zPos * *zRange / *radiusRange);
+    auto cartesian = Vector3D<float> (*xPos * *xRange , *yPos * *yRange , *zPos * *zRange );
+    cartesian -= {*xReference, *yReference, *zReference};
     auto spherical = Conversions<float>::cartesianToSpherical (cartesian);
+
+    spherical.x /= *radiusRange; // radius component
 
     if (spherical.x >= 1.0f)
         spherical.x = 1;
@@ -295,6 +326,7 @@ void CoordinateConverterAudioProcessor::updateSphericalCoordinates()
     parameters.getParameter ("elevation")->setValue (parameters.getParameterRange ("elevation").convertTo0to1(spherical.z));
     repaintPositionPlanes = true;
 
+    cartesianWasLastUpdated = false;
     updatingParams = false;
 }
 
