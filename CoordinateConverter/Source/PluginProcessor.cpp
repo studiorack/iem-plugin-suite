@@ -258,7 +258,7 @@ void CoordinateConverterAudioProcessor::parameterChanged (const String &paramete
 {
     DBG("Parameter with ID " << parameterID << " has changed. New value: " << newValue);
 
-    if (parameterID == "azimuth" || parameterID == "elevation" || parameterID == "radius" || parameterID == "radiusRange")
+    if (parameterID == "azimuth" || parameterID == "elevation" || parameterID == "radius")
     {
         repaintSphere = true;
 
@@ -274,7 +274,8 @@ void CoordinateConverterAudioProcessor::parameterChanged (const String &paramete
             updateSphericalCoordinates();
     }
 
-    else if (parameterID == "xReference" || parameterID == "yReference" || parameterID == "zReference")
+    else if (parameterID == "xReference" || parameterID == "yReference" || parameterID == "zReference" ||
+             parameterID == "xRange" || parameterID == "yRange" || parameterID == "zRange" || parameterID == "radiusRange")
     {
         if (cartesianWasLastUpdated)
         {
