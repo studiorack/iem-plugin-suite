@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<JUCERPROJECT id="mbpAgi" name="SimpleDecoder" displaySplashScreen="0" reportAppUsage="0"
-              splashScreenColour="Dark" projectType="audioplug" version="0.2.2"
-              bundleIdentifier="at.iem.SimpleDecoder" includeBinaryInAppConfig="1"
-              cppLanguageStandard="14" buildVST="1" buildVST3="0" buildAU="0"
-              buildAUv3="0" buildRTAS="0" buildAAX="0" buildStandalone="1"
-              enableIAA="0" pluginName="SimpleDecoder" pluginDesc="SimpleDecoder"
-              pluginManufacturer="IEM" pluginManufacturerCode="IEMA" pluginCode="SiDe"
-              pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
+<JUCERPROJECT id="mbpAgi" name="CoordinateConverter" displaySplashScreen="0"
+              reportAppUsage="0" splashScreenColour="Dark" projectType="audioplug"
+              version="0.1.0" bundleIdentifier="at.iem.CoordinateConverter"
+              includeBinaryInAppConfig="1" cppLanguageStandard="14" buildVST="1"
+              buildVST3="0" buildAU="0" buildAUv3="0" buildRTAS="0" buildAAX="0"
+              buildStandalone="1" enableIAA="0" pluginName="CoordinateConverter"
+              pluginDesc="CoordinateConverter" pluginManufacturer="IEM" pluginManufacturerCode="IEMA"
+              pluginCode="CoCo" pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
-              pluginAUExportPrefix="SimpleDecoderAU" aaxIdentifier="at.iem.SimpleDecoder"
+              pluginAUExportPrefix="CoordinateConverterAU" aaxIdentifier="at.iem.CoordinateConverter"
               pluginAAXCategory="2" jucerVersion="5.3.2" companyCopyright="IEM - Daniel Rudrich"
               companyName="IEM" companyWebsite="iem.at" headerPath="../../../resources/"
               pluginFormats="buildVST,buildStandalone">
-  <MAINGROUP id="LpzrV9" name="SimpleDecoder">
+  <MAINGROUP id="LpzrV9" name="CoordinateConverter">
     <GROUP id="{1B6BB8E4-E576-FBC7-B6B6-8603D2CEBF9D}" name="lookAndFeel">
       <FILE id="AVFaGo" name="IEM_LaF.h" compile="0" resource="0" file="../resources/lookAndFeel/IEM_LaF.h"/>
       <FILE id="zmzhlf" name="Roboto-Bold.ttf" compile="0" resource="1" file="../resources/lookAndFeel/Roboto-Bold.ttf"/>
@@ -33,26 +33,13 @@
             file="Source/PluginEditor.cpp"/>
       <FILE id="Ur0OCo" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
     </GROUP>
-    <FILE id="A8M9Gu" name="AmbisonicDecoder.h" compile="0" resource="0"
-          file="../resources/AmbisonicDecoder.h"/>
-    <FILE id="rvZfyU" name="DecoderHelper.h" compile="0" resource="0" file="../resources/DecoderHelper.h"/>
-    <FILE id="p41txy" name="DecoderInfoBox.h" compile="0" resource="0"
-          file="../resources/customComponents/DecoderInfoBox.h"/>
-    <FILE id="CRfF6w" name="efficientSHvanilla.cpp" compile="1" resource="0"
-          file="../resources/efficientSHvanilla.cpp"/>
-    <FILE id="gPm6rV" name="MatrixMultiplication.h" compile="0" resource="0"
-          file="../resources/MatrixMultiplication.h"/>
-    <FILE id="KsWY1t" name="ReferenceCountedDecoder.h" compile="0" resource="0"
-          file="../resources/ReferenceCountedDecoder.h"/>
-    <FILE id="VoXzxV" name="ReferenceCountedMatrix.h" compile="0" resource="0"
-          file="../resources/ReferenceCountedMatrix.h"/>
   </MAINGROUP>
   <EXPORTFORMATS>
     <XCODE_MAC targetFolder="Builds/MacOSX">
       <CONFIGURATIONS>
-        <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="SimpleDecoder"
+        <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="CoordinateConverter"
                        enablePluginBinaryCopyStep="1" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"/>
-        <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="SimpleDecoder"
+        <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="CoordinateConverter"
                        enablePluginBinaryCopyStep="1" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"
                        osxCompatibility="10.9 SDK"/>
       </CONFIGURATIONS>
@@ -76,14 +63,14 @@
     <VS2017 targetFolder="Builds/VisualStudio2017">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" winWarningLevel="4" generateManifest="1" winArchitecture="x64"
-                       isDebug="1" optimisation="1" targetName="SimpleDecoder" debugInformationFormat="ProgramDatabase"
-                       enablePluginBinaryCopyStep="0"/>
+                       isDebug="1" optimisation="1" targetName="CoordinateConverter"
+                       debugInformationFormat="ProgramDatabase" enablePluginBinaryCopyStep="0"/>
         <CONFIGURATION name="Release 64bit" winWarningLevel="4" generateManifest="1"
-                       winArchitecture="x64" isDebug="0" optimisation="3" targetName="SimpleDecoder_x64"
+                       winArchitecture="x64" isDebug="0" optimisation="3" targetName="CoordinateConverter_x64"
                        debugInformationFormat="ProgramDatabase" enablePluginBinaryCopyStep="0"
                        linkTimeOptimisation="1"/>
         <CONFIGURATION name="Release 32bit" winWarningLevel="4" generateManifest="1"
-                       winArchitecture="Win32" isDebug="0" optimisation="3" targetName="SimpleDecoder_win32"
+                       winArchitecture="Win32" isDebug="0" optimisation="3" targetName="CoordinateConverter_win32"
                        debugInformationFormat="ProgramDatabase" enablePluginBinaryCopyStep="0"
                        linkTimeOptimisation="1"/>
       </CONFIGURATIONS>
@@ -106,8 +93,8 @@
     </VS2017>
     <LINUX_MAKE targetFolder="Builds/LinuxMakefile">
       <CONFIGURATIONS>
-        <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="SimpleDecoder"/>
-        <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="SimpleDecoder"/>
+        <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="CoordinateConverter"/>
+        <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="CoordinateConverter"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_core" path="../../../../../Applications/JUCE/modules"/>
@@ -144,9 +131,9 @@
     <MODULE id="juce_gui_extra" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_opengl" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
   </MODULES>
-  <JUCEOPTIONS JUCE_QUICKTIME="disabled" JUCE_WEB_BROWSER="0" JUCE_USE_WINDOWS_MEDIA_FORMAT="0"
-               JUCE_USE_LAME_AUDIO_FORMAT="0" JUCE_USE_MP3AUDIOFORMAT="0" JUCE_USE_OGGVORBIS="0"
-               JUCE_USE_FLAC="0"/>
+  <JUCEOPTIONS JUCE_QUICKTIME="disabled" JUCE_WEB_BROWSER="0" JUCE_USE_FLAC="0"
+               JUCE_USE_OGGVORBIS="0" JUCE_USE_MP3AUDIOFORMAT="0" JUCE_USE_LAME_AUDIO_FORMAT="0"
+               JUCE_USE_WINDOWS_MEDIA_FORMAT="0"/>
   <LIVE_SETTINGS>
     <OSX/>
     <LINUX/>

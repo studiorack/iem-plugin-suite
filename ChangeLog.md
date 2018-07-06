@@ -3,6 +3,20 @@ For a list of all changes and bugfixes see the git log.
 
 Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They might lead to an unexpected behaviour and might not be compatible with your previous projects without making some adaptions. See the [Breaking changes article](https://plugins.iem.at/docs/breakingchanges/) for more information.
 
+## v1.5.0
+- general changes
+    - decoders (e.g. SimpleDecoder) can handle `inPhase` weights now
+
+- new plug-ins:
+    - **Coordinate**Converter
+        - a plug-in which converts spherical to cartesian coordinates and vice versa, e.g. for converting automations
+
+- plug-in specific changes
+    - **Distance**Compensator
+        - fixes wrong initialization of gains and delays
+        - adds error message when no loudspeaker layout has been loaded
+
+
 ## v1.4.0
 - general changes
     - all plug-ins now make use of methods which save/recall the plug-in states (necessary for some DAWs)

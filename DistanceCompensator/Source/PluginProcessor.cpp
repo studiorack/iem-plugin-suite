@@ -187,7 +187,6 @@ void DistanceCompensatorAudioProcessor::loadConfiguration (const File& configFil
     }
     else
     {
-
         const int nLsp = loudspeakers.getNumChildren();
 
         loadedLoudspeakerPositions.clear();
@@ -292,12 +291,8 @@ void DistanceCompensatorAudioProcessor::prepareToPlay (double sampleRate, int sa
     gain.prepare (specs);
     delay.prepare (specs);
 
-    for (int i = 0; i < 64; ++i)
-    {
-        gain.setGainDecibels (i, - 1.0f * distanceToGainInDecibels (*distance[i]));
-        delay.setDelayTime (i, distanceToDelayInSeconds (*distance[i]));
-    }
-
+    updateDelays();
+    updateGains();
 }
 
 void DistanceCompensatorAudioProcessor::releaseResources()
@@ -363,7 +358,11 @@ void DistanceCompensatorAudioProcessor::setStateInformation (const void* data, i
     ScopedPointer<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
     if (xmlState != nullptr)
         if (xmlState->hasTagName (parameters.state.getType()))
+        {
             parameters.state = ValueTree::fromXml (*xmlState);
+            loadedLoudspeakerPositions.clear();
+        }
+
 }
 
 //==============================================================================
@@ -491,7 +490,16 @@ void DistanceCompensatorAudioProcessor::updateParameters()
 {
     const int nLsp = loadedLoudspeakerPositions.size();
     if (nLsp == 0)
+    {
+        DBG("No loudspeakers loaded.");
+        MailBox::Message newMessage;
+        newMessage.messageColour = Colours::red;
+        newMessage.headline = "Can't update reference position.";
+        newMessage.text = "The reference position can only be updated, if a loudspeaker layout has been loaded. An already loaded layout will vanish every time the session is reloaded.";
+        messageToEditor = newMessage;
+        updateMessage = true;
         return;
+    }
 
     updatingParameters = true;
 

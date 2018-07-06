@@ -328,8 +328,10 @@ void DistanceCompensatorAudioProcessorEditor::timerCallback()
     if (processor.updateMessage)
     {
         processor.updateMessage = false;
-        AlertWindow::showMessageBoxAsync (AlertWindow::NoIcon, processor.messageToEditor.headline,
-                                          processor.messageToEditor.text);
+        AlertWindow alert (processor.messageToEditor.headline, processor.messageToEditor.text, AlertWindow::NoIcon);
+        alert.setLookAndFeel (&globalLaF);
+        alert.addButton ("OK",     1, KeyPress (KeyPress::returnKey, 0, 0));
+        alert.runModalLoop();
     }
 }
 

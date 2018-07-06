@@ -103,6 +103,13 @@ public:
         return font;
     }
 
+    Font getAlertWindowMessageFont() override
+    {
+        Font font(robotoRegular);
+        font.setHeight(14.0f);
+        return font;
+    }
+
     Slider::SliderLayout getSliderLayout (Slider& slider) override
     {
 

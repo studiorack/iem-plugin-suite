@@ -2,7 +2,7 @@
  ==============================================================================
  This file is part of the IEM plug-in suite.
  Author: Daniel Rudrich
- Copyright (c) 2018 - Institute of Electronic Music and Acoustics (IEM)
+ Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
 
  The IEM plug-in suite is free software: you can redistribute it and/or modify
@@ -24,44 +24,33 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "../../resources/IOHelper.h"
-#include "../../resources/customComponents/MailBox.h"
-#include "../../resources/DecoderHelper.h"
 #include "../../resources/Conversions.h"
-#include "../../resources/MultiChannelGain.h"
-#include "../../resources/MultiChannelDelay.h"
-
 
 //==============================================================================
 /**
  Use the IOHelper to detect which amount of channels or which Ambisonic order is possible with the current bus layout.
  The available IOTypes are:
- - AudioChannels<maxChannelCount>
- - Ambisonics<maxOrder> (can also be used for directivity signals)
+    - AudioChannels<maxChannelCount>
+    - Ambisonics<maxOrder> (can also be used for directivity signals)
  You can leave `maxChannelCount` and `maxOrder` empty for default values (64 channels and 7th order)
- */
-class DistanceCompensatorAudioProcessor  : public AudioProcessor,
-public AudioProcessorValueTreeState::Listener,
-public IOHelper<IOTypes::AudioChannels<64>, IOTypes::AudioChannels<64>>,
-public VSTCallbackHandler
+*/
+class CoordinateConverterAudioProcessor  : public AudioProcessor,
+                                        public AudioProcessorValueTreeState::Listener,
+                                        public IOHelper<IOTypes::AudioChannels<64>, IOTypes::Ambisonics<64>>,
+                                        public VSTCallbackHandler
 {
-    struct PositionAndChannel
-    {
-        Vector3D<float> position;
-        int channel;
-    };
-
 public:
     //==============================================================================
-    DistanceCompensatorAudioProcessor();
-    ~DistanceCompensatorAudioProcessor();
+    CoordinateConverterAudioProcessor();
+    ~CoordinateConverterAudioProcessor();
 
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;
 
-#ifndef JucePlugin_PreferredChannelConfigurations
+   #ifndef JucePlugin_PreferredChannelConfigurations
     bool isBusesLayoutSupported (const BusesLayout& layouts) const override;
-#endif
+   #endif
 
     void processBlock (AudioSampleBuffer&, MidiBuffer&) override;
 
@@ -100,52 +89,36 @@ public:
                                             void* ptr, float opt) override;
     //==============================================================================
 
-    void setLastDir (File newLastDir);
-    File getLastDir() {return lastDir;};
+    void updateCartesianCoordinates();
+    void updateSphericalCoordinates();
 
-    void loadConfiguration (const File& presetFile);
 
-    float distanceToGainInDecibels (const float distance);
-    float distanceToDelayInSeconds (const float distance);
+    Atomic<bool> repaintSphere = true;
+    Atomic<bool> repaintPositionPlanes = true;
 
-    void updateDelays();
-    void updateGains();
-    void updateParameters();
-
-    bool updateMessage = false;
-
-    MailBox::Message messageToEditor;
 private:
     // ====== parameters
     AudioProcessorValueTreeState parameters;
-    
-    Atomic<bool> updatingParameters = false;
+
+    Atomic<bool> updatingParams = false;
+    bool cartesianWasLastUpdated = true;
 
     // list of used audio parameters
-    float *inputChannelsSetting;
-    float *speedOfSound;
-    float *distanceExponent;
-    float *gainNormalization;
-    float *referenceX;
-    float *referenceY;
-    float *referenceZ;
-    float *enableGains;
-    float *enableDelays;
+    float *azimuth;
+    float *elevation;
+    float *radius;
+    float *xPos;
+    float *yPos;
+    float *zPos;
+    float *xReference;
+    float *yReference;
+    float *zReference;
+    float *radiusRange;
+    float *xRange;
+    float *yRange;
+    float *zRange;
 
-    float *enableCompensation[64];
-    float *distance[64];
 
-    // ===== last directory loaded from
-    File lastDir;
-    ScopedPointer<PropertiesFile> properties;
-
-    Array<float> tempValues;
-
-    Array<PositionAndChannel> loadedLoudspeakerPositions;
-
-    // processors
-    MultiChannelGain<float> gain;
-    MultiChannelDelay<float> delay;
     //==============================================================================
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DistanceCompensatorAudioProcessor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (CoordinateConverterAudioProcessor)
 };
