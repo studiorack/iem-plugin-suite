@@ -264,6 +264,7 @@ void AllRADecoderAudioProcessor::prepareToPlay (double sampleRate, int samplesPe
 
     decoder.prepare(specs);
     noiseBurst.prepare(specs);
+    ambisonicNoiseBurst.prepare(specs);
 }
 
 void AllRADecoderAudioProcessor::releaseResources()
@@ -292,6 +293,7 @@ void AllRADecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBu
     }
     else
     {
+        ambisonicNoiseBurst.processBuffer (buffer);
 
         const int nChIn = jmin(decoder.getCurrentDecoder()->getNumInputChannels(), buffer.getNumChannels(), input.getNumberOfChannels());
         const int nChOut = jmin(decoder.getCurrentDecoder()->getNumOutputChannels(), buffer.getNumChannels());
@@ -311,7 +313,7 @@ void AllRADecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBu
             buffer.clear(ch, 0, buffer.getNumSamples());
 
     }
-    noiseBurst.processBuffer(buffer);
+    noiseBurst.processBuffer (buffer);
 }
 
 //==============================================================================
@@ -520,6 +522,18 @@ void AllRADecoderAudioProcessor::playNoiseBurst (const int channel)
 {
     noiseBurst.setChannel(channel);
 }
+
+void AllRADecoderAudioProcessor::playAmbisonicNoiseBurst (const float azimuth, const float elevation)
+{
+    auto dec = decoder.getCurrentDecoder();
+    if (dec != nullptr)
+    {
+        ambisonicNoiseBurst.setOrder (decoder.getCurrentDecoder()->getOrder());
+        ambisonicNoiseBurst.setNormalization (*useSN3D >= 0.5f);
+        ambisonicNoiseBurst.play (azimuth, elevation);
+    }
+}
+
 
 void AllRADecoderAudioProcessor::addImaginaryLoudspeakerBelow()
 {

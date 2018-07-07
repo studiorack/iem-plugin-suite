@@ -38,6 +38,7 @@
 #include "../../resources/ambisonicTools.h"
 #include "../../resources/HammerAitov.h"
 #include "NoiseBurst.h"
+#include "AmbisonicNoiseBurst.h"
 
 //==============================================================================
 /**
@@ -111,6 +112,7 @@ public:
     void valueTreeParentChanged (ValueTree &treeWhoseParentHasChanged) override;
 
     void playNoiseBurst (const int channel);
+    void playAmbisonicNoiseBurst (const float azimuth, const float elevation);
     void addRandomPoint();
     void addImaginaryLoudspeakerBelow();
 
@@ -188,6 +190,7 @@ private:
     Vector3D<float> sphericalInRadiansToCartesian (Vector3D<float> sphervect);
 
     NoiseBurst noiseBurst;
+    AmbisonicNoiseBurst ambisonicNoiseBurst;
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AllRADecoderAudioProcessor)
 };

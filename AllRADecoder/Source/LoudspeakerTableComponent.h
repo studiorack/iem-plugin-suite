@@ -63,10 +63,20 @@ public:
 
     void playNoise (const int row)
     {
-        if (! data.getChild(row).getProperty("Imaginary"))
+        const auto& modifiers = ModifierKeys::getCurrentModifiers();
+        if (modifiers.isAltDown())
         {
-            const int ch = (int) data.getChild(row).getProperty("Channel");
-            processor.playNoiseBurst(ch);
+            const float azimuth = (float) data.getChild (row).getProperty ("Azimuth");
+            const float elevation = (float) data.getChild (row).getProperty ("Elevation");
+            processor.playAmbisonicNoiseBurst (azimuth, elevation);
+        }
+        else
+        {
+            if (! data.getChild(row).getProperty("Imaginary"))
+            {
+                const int ch = (int) data.getChild(row).getProperty("Channel");
+                processor.playNoiseBurst (ch);
+            }
         }
     }
 

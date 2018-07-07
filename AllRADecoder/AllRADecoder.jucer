@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <JUCERPROJECT id="mbpAgi" name="AllRADecoder" displaySplashScreen="0" reportAppUsage="0"
-              splashScreenColour="Dark" projectType="audioplug" version="0.4.0"
+              splashScreenColour="Dark" projectType="audioplug" version="0.5.0"
               bundleIdentifier="at.iem.AllRADecoder" includeBinaryInAppConfig="1"
               cppLanguageStandard="14" buildVST="1" buildVST3="0" buildAU="0"
               buildAUv3="0" buildRTAS="0" buildAAX="0" buildStandalone="1"
@@ -34,6 +34,8 @@
             file="Source/PluginEditor.cpp"/>
       <FILE id="Ur0OCo" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
     </GROUP>
+    <FILE id="MOuiwE" name="AmbisonicNoiseBurst.h" compile="0" resource="0"
+          file="Source/AmbisonicNoiseBurst.h"/>
     <FILE id="noq7Zw" name="ConfigurationHelper.h" compile="0" resource="0"
           file="../resources/ConfigurationHelper.h"/>
     <FILE id="yk1Otq" name="efficientSHvanilla.cpp" compile="1" resource="0"
