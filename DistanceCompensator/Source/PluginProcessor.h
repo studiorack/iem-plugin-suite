@@ -25,7 +25,7 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "../../resources/IOHelper.h"
 #include "../../resources/customComponents/MailBox.h"
-#include "../../resources/DecoderHelper.h"
+#include "../../resources/ConfigurationHelper.h"
 #include "../../resources/Conversions.h"
 #include "../../resources/MultiChannelGain.h"
 #include "../../resources/MultiChannelDelay.h"

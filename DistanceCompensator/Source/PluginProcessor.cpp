@@ -173,7 +173,7 @@ void DistanceCompensatorAudioProcessor::loadConfiguration (const File& configFil
 {
     ValueTree loudspeakers {"Loudspeakers"};
 
-    Result result = DecoderHelper::parseFileForLoudspeakerLayout (configFile, loudspeakers, nullptr);
+    Result result = ConfigurationHelper::parseFileForLoudspeakerLayout (configFile, loudspeakers, nullptr);
     if (!result.wasOk())
     {
         DBG("Configuration could not be loaded.");
