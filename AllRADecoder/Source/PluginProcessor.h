@@ -34,7 +34,7 @@
 #include "../../resources/efficientSHvanilla.h"
 #include "../../resources/ReferenceCountedDecoder.h"
 #include "../../resources/AmbisonicDecoder.h"
-#include "../../resources/DecoderHelper.h"
+#include "../../resources/ConfigurationHelper.h"
 #include "../../resources/ambisonicTools.h"
 #include "../../resources/HammerAitov.h"
 #include "NoiseBurst.h"
@@ -177,7 +177,6 @@ private:
     Result verifyLoudspeakers();
     Result calculateTris();
     void convertLoudspeakersToArray();
-    var convertLoudspeakersToVar();
 
     float getKappa(float gIm, float gRe1, float gRe2, int N);
     Matrix<float> getInverse(Matrix<float> A);

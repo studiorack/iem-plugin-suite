@@ -35,7 +35,6 @@
     </GROUP>
     <FILE id="A8M9Gu" name="AmbisonicDecoder.h" compile="0" resource="0"
           file="../resources/AmbisonicDecoder.h"/>
-    <FILE id="rvZfyU" name="DecoderHelper.h" compile="0" resource="0" file="../resources/DecoderHelper.h"/>
     <FILE id="p41txy" name="DecoderInfoBox.h" compile="0" resource="0"
           file="../resources/customComponents/DecoderInfoBox.h"/>
     <FILE id="CRfF6w" name="efficientSHvanilla.cpp" compile="1" resource="0"

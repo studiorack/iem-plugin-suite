@@ -231,7 +231,7 @@ void MatrixMultiplierAudioProcessor::loadConfiguration(const File& configuration
 {
     ReferenceCountedMatrix::Ptr tempMatrix = nullptr;
 
-    Result result = DecoderHelper::parseFileForTransformationMatrix(configurationFile, &tempMatrix);
+    Result result = ConfigurationHelper::parseFileForTransformationMatrix(configurationFile, &tempMatrix);
     if (!result.wasOk()) {
         messageForEditor = result.getErrorMessage();
         return;

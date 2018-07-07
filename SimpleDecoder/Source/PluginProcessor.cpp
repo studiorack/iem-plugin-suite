@@ -481,7 +481,7 @@ void SimpleDecoderAudioProcessor::loadPreset(const File& presetFile)
 {
     ReferenceCountedDecoder::Ptr tempDecoder = nullptr;
 
-    Result result = DecoderHelper::parseFileForDecoder(presetFile, &tempDecoder);
+    Result result = ConfigurationHelper::parseFileForDecoder (presetFile, &tempDecoder);
     if (!result.wasOk()) {
         messageForEditor = result.getErrorMessage();
     }

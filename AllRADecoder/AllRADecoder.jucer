@@ -34,7 +34,8 @@
             file="Source/PluginEditor.cpp"/>
       <FILE id="Ur0OCo" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
     </GROUP>
-    <FILE id="noq7Zw" name="DecoderHelper.h" compile="0" resource="0" file="../resources/DecoderHelper.h"/>
+    <FILE id="noq7Zw" name="ConfigurationHelper.h" compile="0" resource="0"
+          file="../resources/ConfigurationHelper.h"/>
     <FILE id="yk1Otq" name="efficientSHvanilla.cpp" compile="1" resource="0"
           file="../resources/efficientSHvanilla.cpp"/>
     <FILE id="uoAzFj" name="EnergyDistributionVisualizer.h" compile="0"

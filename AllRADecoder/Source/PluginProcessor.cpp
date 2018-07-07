@@ -483,7 +483,7 @@ ValueTree AllRADecoderAudioProcessor::createLoudspeakerFromCartesian (Vector3D<f
 
 ValueTree AllRADecoderAudioProcessor::createLoudspeakerFromSpherical (Vector3D<float> sphericalCoordinates, int channel, bool isImaginary, float gain)
 {
-    return DecoderHelper::createLoudspeaker(sphericalCoordinates.y, sphericalCoordinates.z, sphericalCoordinates.x, channel, isImaginary, gain);
+    return ConfigurationHelper::createLoudspeaker (sphericalCoordinates.y, sphericalCoordinates.z, sphericalCoordinates.x, channel, isImaginary, gain);
 }
 
 Vector3D<float> AllRADecoderAudioProcessor::cartesianToSpherical(Vector3D<float> cartvect)
@@ -1002,7 +1002,7 @@ Matrix<float> AllRADecoderAudioProcessor::getInverse(Matrix<float> A)
     return inverse;
 }
 
-void AllRADecoderAudioProcessor::saveConfigurationToFile(File destination)
+void AllRADecoderAudioProcessor::saveConfigurationToFile (File destination)
 {
     if (*exportDecoder < 0.5f && *exportLayout < 0.5f)
     {
@@ -1026,7 +1026,7 @@ void AllRADecoderAudioProcessor::saveConfigurationToFile(File destination)
     if (*exportDecoder >= 0.5f)
     {
         if (decoderConfig != nullptr)
-            jsonObj->setProperty("Decoder", DecoderHelper::convertDecoderToVar(decoderConfig));
+            jsonObj->setProperty ("Decoder", ConfigurationHelper::convertDecoderToVar (decoderConfig));
         else
         {
             DBG("No decoder available");
@@ -1041,11 +1041,10 @@ void AllRADecoderAudioProcessor::saveConfigurationToFile(File destination)
 
     }
     if (*exportLayout >= 0.5f)
-        jsonObj->setProperty("LoudspeakerLayout", convertLoudspeakersToVar());
+        jsonObj->setProperty ("LoudspeakerLayout", ConfigurationHelper::convertLoudspeakersToVar (loudspeakers, "A loudspeaker layout"));
 
-    String jsonString = JSON::toString(var(jsonObj));
-    DBG(jsonString);
-    if (destination.replaceWithText(jsonString))
+    Result result = ConfigurationHelper::writeConfigurationToFile (destination, var (jsonObj));
+    if (result.wasOk())
     {
         DBG("Configuration successfully written to file.");
         MailBox::Message newMessage;
@@ -1098,40 +1097,12 @@ void AllRADecoderAudioProcessor::valueTreeParentChanged (ValueTree &treeWhosePar
     DBG("valueTreeParentChanged");
 }
 
-var AllRADecoderAudioProcessor::convertLoudspeakersToVar ()
-{
-    DynamicObject* obj = new DynamicObject(); // loudspeaker layout object
-    obj->setProperty("Name", "a loudspeaker layout");
-    obj->setProperty("Description", "description");
-
-    var loudspeakerArray;
-
-    const int nLsp = (int) points.size();
-    for (int i = 0; i < nLsp; ++i)
-    {
-        R3 lsp = points[i];
-        DynamicObject* loudspeaker = new DynamicObject(); // loudspeaker which get's added to the loudspeakerArray var
-
-        loudspeaker->setProperty("Azimuth", lsp.azimuth);
-        loudspeaker->setProperty("Elevation", lsp.elevation);
-        loudspeaker->setProperty("Radius", lsp.radius);
-        loudspeaker->setProperty("IsImaginary", lsp.isImaginary);
-        loudspeaker->setProperty("Channel", lsp.channel);
-        loudspeaker->setProperty("Gain", lsp.gain);
-
-        loudspeakerArray.append(var(loudspeaker));
-    }
-
-    obj->setProperty("Loudspeakers", loudspeakerArray);
-    return var(obj);
-}
-
 void AllRADecoderAudioProcessor::loadConfiguration (const File& configFile)
 {
     undoManager.beginNewTransaction();
     loudspeakers.removeAllChildren(&undoManager);
 
-    Result result = DecoderHelper::parseFileForLoudspeakerLayout (configFile, loudspeakers, &undoManager);
+    Result result = ConfigurationHelper::parseFileForLoudspeakerLayout (configFile, loudspeakers, &undoManager);
     if (!result.wasOk())
     {
         DBG("Configuration could not be loaded.");
