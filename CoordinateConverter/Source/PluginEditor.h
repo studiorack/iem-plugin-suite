@@ -95,6 +95,9 @@ private:
     ScopedPointer<SliderAttachment> slXPosAttachment, slYPosAttachment, slZPosAttachment;
     SimpleLabel lbXPos, lbYPos, lbZPos;
 
+    ToggleButton tbAzimuthFlip, tbElevationFlip, tbRadiusFlip, tbXFlip, tbYFlip, tbZFlip;
+    ScopedPointer<ButtonAttachment> tbAzimuthFlipAttachment, tbElevationFlipAttachment, tbRadiusFlipAttachment, tbXFlipAttachment, tbYFlipAttachment, tbZFlipAttachment;
+
     Label slXReference, slYReference, slZReference;
     ScopedPointer<LabelAttachment> slXReferenceAttachment, slYReferenceAttachment, slZReferenceAttachment;
     SimpleLabel lbXReference, lbYReference, lbZReference;

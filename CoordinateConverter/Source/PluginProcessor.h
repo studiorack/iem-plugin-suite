@@ -117,7 +117,20 @@ private:
     float *xRange;
     float *yRange;
     float *zRange;
+    float *azimuthFlip;
+    float *elevationFlip;
+    float *radiusFlip;
+    float *xFlip;
+    float *yFlip;
+    float *zFlip;
 
+    float azimuthFlipFactor = 1.0f;
+    float elevationFlipFactor = 1.0f;
+    float radiusFlipFactor = 1.0f;
+
+    float xFlipFactor = 1.0f;
+    float yFlipFactor = 1.0f;
+    float zFlipFactor = 1.0f;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (CoordinateConverterAudioProcessor)
