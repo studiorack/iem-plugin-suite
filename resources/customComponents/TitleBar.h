@@ -24,6 +24,7 @@
 
 #include "TitleBarPaths.h"
 #include "../ambisonicTools.h"
+
 #ifdef JUCE_OSC_H_INCLUDED
 #include "OSCStatus.h"
 #endif
