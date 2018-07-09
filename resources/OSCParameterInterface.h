@@ -60,15 +60,13 @@ public:
     }
 
     /**
-     Checks whether the OSCAdressPattern of the OSCMessage matches one of the ParameterID's and changes the parameter on success. Returns true, if there is a match.
+     Checks whether the OSCAdressPattern of the OSCMessage matches one of the ParameterID's and changes the parameter on success. Returns true, if there is a match. Make sure the plugin-name-prefix was trimmed.
      */
     bool processOSCMessage (OSCMessage oscMessage)
     {
-        String address = oscMessage.getAddressPattern().toString().substring (numCharsToSkip);
-        DBG("parameterID to look for: " << address);
+        String address = oscMessage.getAddressPattern().toString().substring(1); // trimming forward slash
         if (parameterIDs.contains (address))
         {
-            DBG("match!");
             if (oscMessage.size() > 0)
             {
                 auto arg = oscMessage[0];
@@ -97,6 +95,5 @@ public:
 private:
     AudioProcessorValueTreeState &parameters;
     StringArray parameterIDs;
-    const int numCharsToSkip = String(JucePlugin_Name).length() + 2;
 
 };
