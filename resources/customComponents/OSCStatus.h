@@ -22,8 +22,8 @@
 
 #pragma once
 
-#include "../../StereoEncoder/JuceLibraryCode/JuceHeader.h"
 #include "SimpleLabel.h"
+#include "../OSCReceiverPlus.h"
 
 class OSCDialogWindow  : public Component, private Timer
 {
