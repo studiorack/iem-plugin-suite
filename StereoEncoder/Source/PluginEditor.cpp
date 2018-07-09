@@ -29,7 +29,7 @@
 
 //==============================================================================
 StereoEncoderAudioProcessorEditor::StereoEncoderAudioProcessorEditor (StereoEncoderAudioProcessor& p, AudioProcessorValueTreeState& vts)
-: AudioProcessorEditor (&p), processor (p), valueTreeState(vts),
+: AudioProcessorEditor (&p), processor (p), footer (p.getOSCReceiver()), valueTreeState(vts),
     centerElement(*valueTreeState.getParameter("azimuth"), valueTreeState.getParameterRange("azimuth"), *valueTreeState.getParameter("elevation"), valueTreeState.getParameterRange("elevation")),
     leftElement(centerElement, *valueTreeState.getParameter("roll"), valueTreeState.getParameterRange("roll"), *valueTreeState.getParameter("width"), valueTreeState.getParameterRange("width")),
     rightElement(centerElement, *valueTreeState.getParameter("roll"), valueTreeState.getParameterRange("roll"), *valueTreeState.getParameter("width"), valueTreeState.getParameterRange("width"))
@@ -56,7 +56,6 @@ StereoEncoderAudioProcessorEditor::StereoEncoderAudioProcessorEditor (StereoEnco
     sphere.addElement(&centerElement);
     centerElement.setGrabPriority(1);
     // ======================================
-
 
     addAndMakeVisible(&title);
     title.setTitle(String("Stereo"),String("Encoder"));
@@ -231,7 +230,6 @@ void StereoEncoderAudioProcessorEditor::timerCallback()
 
 void StereoEncoderAudioProcessorEditor::resized()
 {
-
     const int leftRightMargin = 30;
     const int headerHeight = 60;
     const int footerHeight = 25;
@@ -247,7 +245,6 @@ void StereoEncoderAudioProcessorEditor::resized()
     area.removeFromTop(10);
 
     Rectangle<int> sliderRow;
-
 
     // ============== SIDEBAR RIGHT ====================
     // =================================================

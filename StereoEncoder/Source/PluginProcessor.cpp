@@ -133,7 +133,6 @@ oscParameterInterface (parameters)
 
     sphericalInput = true; //input from ypr
 
-    oscReceiver.connect (9002);
     oscReceiver.addListener (this);
 
     FloatVectorOperations::clear(SHL, 64);
@@ -411,6 +410,7 @@ void StereoEncoderAudioProcessor::parameterChanged(const String &parameterID, fl
 void StereoEncoderAudioProcessor::getStateInformation (MemoryBlock &destData)
 {
     auto state = parameters.copyState();
+    state.setProperty ("OSCPort", var(oscReceiver.getPortNumber()), nullptr);
     std::unique_ptr<XmlElement> xml (state.createXml());
     copyXmlToBinary (*xml, destData);
 }
@@ -420,7 +420,13 @@ void StereoEncoderAudioProcessor::setStateInformation (const void *data, int siz
     std::unique_ptr<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
     if (xmlState.get() != nullptr)
         if (xmlState->hasTagName (parameters.state.getType()))
+        {
             parameters.replaceState (ValueTree::fromXml (*xmlState));
+            if (parameters.state.hasProperty ("OSCPort"))
+            {
+                oscReceiver.connect (parameters.state.getProperty ("OSCPort", var(-1)));
+            }
+        }
 }
 
 
@@ -442,7 +448,10 @@ void StereoEncoderAudioProcessor::oscMessageReceived (const OSCMessage &message)
     if (! pattern.matches(OSCAddress(message.getAddressPattern().toString())))
         return;
 
-    oscParameterInterface.processOSCMessage (message);
+    OSCMessage msg (message);
+    msg.setAddressPattern (message.getAddressPattern().toString().substring(String(JucePlugin_Name).length() + 1));
+
+    oscParameterInterface.processOSCMessage (msg);
 }
 
 //==============================================================================

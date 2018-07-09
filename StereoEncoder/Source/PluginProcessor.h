@@ -29,6 +29,7 @@
 #include "../../resources/IOHelper.h"
 #include "../../resources/Conversions.h"
 #include "../../resources/OSCParameterInterface.h"
+#include "../../resources/OSCReceiverPlus.h"
 
 //==============================================================================
 /**
@@ -84,9 +85,8 @@ public:
     //==============================================================================
 
     // ====== OSC ======
-
     void oscMessageReceived (const OSCMessage &message) override;
-    
+    OSCReceiverPlus& getOSCReceiver () { return oscReceiver; }
     // =================
 
     Vector3D<float> posC, posL, posR;
@@ -113,11 +113,11 @@ public:
 
 private:
     //==============================================================================
-    OSCReceiver oscReceiver;
-
     bool processorUpdatingParams;
-    OSCParameterInterface oscParameterInterface;
+
     AudioProcessorValueTreeState parameters;
+    OSCParameterInterface oscParameterInterface;
+    OSCReceiverPlus oscReceiver;
 
     float SHL[64];
     float SHR[64];

@@ -37,6 +37,7 @@
           file="../resources/efficientSHvanilla.cpp"/>
     <FILE id="AG2M1I" name="OSCParameterInterface.h" compile="0" resource="0"
           file="../resources/OSCParameterInterface.h"/>
+    <FILE id="IXrAWH" name="OSCStatus.h" compile="0" resource="0" file="../resources/customComponents/OSCStatus.h"/>
     <FILE id="KzVW9N" name="SpherePanner.h" compile="0" resource="0" file="../resources/customComponents/SpherePanner.h"/>
   </MAINGROUP>
   <EXPORTFORMATS>
