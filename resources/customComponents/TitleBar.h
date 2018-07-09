@@ -24,6 +24,9 @@
 
 #include "TitleBarPaths.h"
 #include "../ambisonicTools.h"
+#ifdef JUCE_OSC_H_INCLUDED
+#include "OSCStatus.h"
+#endif
 
 class  AlertSymbol :  public Component
 {
@@ -468,6 +471,8 @@ public:
     void paint (Graphics& g) override
     {
         Rectangle<int> bounds = getLocalBounds();
+        bounds.removeFromBottom (3);
+        bounds.removeFromLeft (1);
         IEMPath.applyTransform(IEMPath.getTransformToScaleToFit(bounds.reduced(2, 2).toFloat(), true, Justification::bottomLeft));
 
         if (isMouseOver())
@@ -506,7 +511,8 @@ private:
 class  Footer :  public Component
 {
 public:
-    Footer() : Component() {
+    Footer() : Component()
+    {
         addAndMakeVisible(&iemLogo);
     };
     ~Footer() {};
@@ -524,14 +530,43 @@ public:
     #endif
         versionString.append(JucePlugin_VersionString, 6);
 
-        g.drawText(versionString, 0, 0, bounds.getWidth()-8,bounds.getHeight()-2, Justification::bottomRight);
+        g.drawText(versionString, 0, 0, bounds.getWidth() - 8,bounds.getHeight()-2, Justification::bottomRight);
     };
 
     void resized () override
     {
         iemLogo.setBounds(0, 0, 40, getHeight());
+
     }
 
 private:
     IEMLogo iemLogo;
 };
+
+#ifdef JUCE_OSC_H_INCLUDED
+class  OSCFooter :  public Component
+{
+public:
+    OSCFooter (OSCReceiverPlus& oscReceiver) : oscStatus (oscReceiver)
+    {
+        addAndMakeVisible (footer);
+        addAndMakeVisible (oscStatus);
+    };
+    ~OSCFooter() {};
+
+    void resized () override
+    {
+        auto bounds = getLocalBounds();
+        footer.setBounds (bounds);
+
+        bounds.removeFromBottom (2);
+        bounds = bounds.removeFromBottom (16);
+        bounds.removeFromLeft (50);
+        oscStatus.setBounds (bounds.removeFromLeft (80));
+    }
+
+private:
+    OSCStatus oscStatus;
+    Footer footer;
+};
+#endif
