@@ -36,9 +36,9 @@ EnergyVisualizerAudioProcessor::EnergyVisualizerAudioProcessor()
                      #endif
                        ),
 #endif
-parameters(*this, nullptr)
+parameters(*this, nullptr), oscParams (parameters)
 {
-    parameters.createAndAddParameter ("orderSetting", "Ambisonics Order", "",
+    oscParams.createAndAddParameter ("orderSetting", "Ambisonics Order", "",
                                       NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
                                       [](float value)
                                       {
@@ -53,7 +53,7 @@ parameters(*this, nullptr)
                                           else return "Auto";
                                       }, nullptr);
 
-    parameters.createAndAddParameter ("useSN3D", "Normalization", "",
+    oscParams.createAndAddParameter ("useSN3D", "Normalization", "",
                                       NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                       [](float value)
                                       {
@@ -61,7 +61,7 @@ parameters(*this, nullptr)
                                           else return "N3D";
                                       }, nullptr);
 
-    parameters.createAndAddParameter("peakLevel", "Peak level", "dB",
+    oscParams.createAndAddParameter("peakLevel", "Peak level", "dB",
                                      NormalisableRange<float> (-50.0f, 10.0f, 0.1f), 0.0,
                                      [](float value) {return String(value, 1);}, nullptr);
 
@@ -86,6 +86,8 @@ parameters(*this, nullptr)
 
 //    DBG(hammerAitovSampleX[218] << " - " << hammerAitovSampleY[218] << " - " << hammerAitovSampleZ[218]);
     rms.resize(nSamplePoints);
+
+    oscReceiver.addListener (this);
 }
 
 EnergyVisualizerAudioProcessor::~EnergyVisualizerAudioProcessor()
@@ -234,12 +236,19 @@ void EnergyVisualizerAudioProcessor::setStateInformation (const void *data, int 
     std::unique_ptr<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
     if (xmlState.get() != nullptr)
         if (xmlState->hasTagName (parameters.state.getType()))
+        {
             parameters.replaceState (ValueTree::fromXml (*xmlState));
+            if (parameters.state.hasProperty ("OSCPort"))
+            {
+                oscReceiver.connect (parameters.state.getProperty ("OSCPort", var (-1)));
+            }
+        }
 }
 
 void EnergyVisualizerAudioProcessor::getStateInformation (MemoryBlock &destData)
 {
     auto state = parameters.copyState();
+    state.setProperty ("OSCPort", var(oscReceiver.getPortNumber()), nullptr);
     std::unique_ptr<XmlElement> xml (state.createXml());
     copyXmlToBinary (*xml, destData);
 }
@@ -260,6 +269,19 @@ pointer_sized_int EnergyVisualizerAudioProcessor::handleVstPluginCanDo (int32 in
     if (matches ("wantsChannelCountNotifications"))
         return 1;
     return 0;
+}
+
+//==============================================================================
+void EnergyVisualizerAudioProcessor::oscMessageReceived (const OSCMessage &message)
+{
+    OSCAddressPattern pattern ("/" + String(JucePlugin_Name) + "/*");
+    if (! pattern.matches(OSCAddress(message.getAddressPattern().toString())))
+        return;
+
+    OSCMessage msg (message);
+    msg.setAddressPattern (message.getAddressPattern().toString().substring(String(JucePlugin_Name).length() + 1));
+
+    oscParams.processOSCMessage (msg);
 }
 
 //==============================================================================

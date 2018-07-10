@@ -26,7 +26,7 @@
 
 //==============================================================================
 EnergyVisualizerAudioProcessorEditor::EnergyVisualizerAudioProcessorEditor (EnergyVisualizerAudioProcessor& p, AudioProcessorValueTreeState& vts)
-    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts)
+    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts), footer (p.getOSCReceiver())
 {
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.

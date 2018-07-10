@@ -76,7 +76,7 @@ private:
         - DirectivitiyIOWidget
      */
     TitleBar<AudioChannelsIOWidget<0,false>, AudioChannelsIOWidget<0,false>> title;
-    Footer footer;
+    OSCFooter footer;
     // =============== end essentials ============
 
     // Attachments to create a connection between IOWidgets comboboxes

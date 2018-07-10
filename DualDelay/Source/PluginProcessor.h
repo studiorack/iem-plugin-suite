@@ -30,12 +30,18 @@
 #include "../../resources/interpLagrangeWeights.h"
 #include "../../resources/IOHelper.h"
 
+// ===== OSC ====
+#include "../../resources/OSCParameterInterface.h"
+#include "../../resources/OSCReceiverPlus.h"
+
 //==============================================================================
 /**
 */
 class DualDelayAudioProcessor  : public AudioProcessor,
-                                        public AudioProcessorValueTreeState::Listener,
-public IOHelper<IOTypes::Ambisonics<>, IOTypes::Ambisonics<>, true>, public VSTCallbackHandler
+                                public AudioProcessorValueTreeState::Listener,
+                                public IOHelper<IOTypes::Ambisonics<>, IOTypes::Ambisonics<>, true>,
+                                public VSTCallbackHandler,
+                                private OSCReceiver::Listener<OSCReceiver::RealtimeCallback>
 {
 public:
     //==============================================================================
@@ -83,6 +89,12 @@ public:
                                             void* ptr, float opt) override;
     //==============================================================================
 
+    //======== OSC =================================================================
+    void oscMessageReceived (const OSCMessage &message) override;
+    OSCReceiverPlus& getOSCReceiver () { return oscReceiver; }
+    //==============================================================================
+
+
     float getleftLPValue() {return *LPcutOffL;}
     void updateBuffers() override;
 private:
@@ -90,6 +102,9 @@ private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DualDelayAudioProcessor)
 
     AudioProcessorValueTreeState parameters;
+    OSCParameterInterface oscParams;
+    OSCReceiverPlus oscReceiver;
+    
     // parameters
     float* dryGain;
     float* wetGainL;

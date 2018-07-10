@@ -56,7 +56,7 @@ private:
     AudioProcessorValueTreeState& valueTreeState;
 
     TitleBar<AmbisonicIOWidget<>, NoIOWidget> title;
-    Footer footer;
+    OSCFooter footer;
 
 
     void timerCallback() override;

@@ -37,41 +37,40 @@ FdnReverbAudioProcessor::FdnReverbAudioProcessor()
                  ),
 #endif
 
-    parameters (*this, nullptr)
-
+parameters (*this, nullptr), oscParams (parameters)
 {
-    parameters.createAndAddParameter ("delayLength", "Room Size", "",
+    oscParams.createAndAddParameter ("delayLength", "Room Size", "",
                                       NormalisableRange<float> (1.0f, 30.0f, 1.0f), 20.0f,
                                       [](float value) {return String (value, 0);},
                                       nullptr);
-    parameters.createAndAddParameter ("revTime", "Reverberation Time", "s",
+    oscParams.createAndAddParameter ("revTime", "Reverberation Time", "s",
                                       NormalisableRange<float> (0.1f, 9.0f, 0.1f), 5.f,
                                       [](float value) {return String (value, 1);},
                                       nullptr);
 
-    parameters.createAndAddParameter ("lowCutoff", "Lows Cutoff Frequency", "Hz",
+    oscParams.createAndAddParameter ("lowCutoff", "Lows Cutoff Frequency", "Hz",
                                       NormalisableRange<float> (20.f, 20000.f, 1.f, 0.2f), 100.f,
                                       [](float value) {return String (value, 0);},
                                       nullptr);
-    parameters.createAndAddParameter ("lowQ", "Lows Q Factor", "",
+    oscParams.createAndAddParameter ("lowQ", "Lows Q Factor", "",
                                       NormalisableRange<float> (0.01f, 0.9f, 0.01f), 0.5f,
                                       [](float value) {return String (value, 2);},
                                       nullptr);
-    parameters.createAndAddParameter ("lowGain",
+    oscParams.createAndAddParameter ("lowGain",
                                       "Lows Gain", "dB/s",
                                       NormalisableRange<float> (-80.0f, 6.0, 0.1f), 1.f,
                                       [](float value) {return String (value, 1);},
                                       nullptr);
 
-    parameters.createAndAddParameter ("highCutoff", "Highs Cutoff Frequency", "Hz",
+    oscParams.createAndAddParameter ("highCutoff", "Highs Cutoff Frequency", "Hz",
                                       NormalisableRange<float> (20.f, 20000.f, 1.f, 0.2f), 2000.f,
                                       [](float value) {return String (value, 0);},
                                       nullptr);
-    parameters.createAndAddParameter ("highQ", "Highs Q Factor", "",
+    oscParams.createAndAddParameter ("highQ", "Highs Q Factor", "",
                                       NormalisableRange<float> (0.01f, 0.9f, 0.01f), 0.5f,
                                       [](float value) {return String (value, 2);},
                                       nullptr);
-    parameters.createAndAddParameter ("highGain",
+    oscParams.createAndAddParameter ("highGain",
                                       "Highs Gain", "dB/s",
                                       NormalisableRange<float> (-80.0f, 4.0f, 0.1f), -10.f,
                                       [](float value) {return String (value, 1);},
@@ -83,7 +82,7 @@ FdnReverbAudioProcessor::FdnReverbAudioProcessor()
 //                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
 //                                      [](float value) {return value >= 0.5f ? "big" : "small";},
 //                                      nullptr);
-    parameters.createAndAddParameter ("dryWet", "Dry/Wet", "",
+    oscParams.createAndAddParameter ("dryWet", "Dry/Wet", "",
                                       NormalisableRange<float> (0.f, 1.f, 0.01f), 0.5f,
                                       [](float value) {return String (value, 2);},
                                       nullptr);
@@ -114,6 +113,8 @@ FdnReverbAudioProcessor::FdnReverbAudioProcessor()
     wet = parameters.getRawParameterValue("dryWet");
 
     fdn.setFdnSize(FeedbackDelayNetwork::big);
+
+    oscReceiver.addListener (this);
 }
 
 FdnReverbAudioProcessor::~FdnReverbAudioProcessor()
@@ -283,6 +284,7 @@ AudioProcessorEditor* FdnReverbAudioProcessor::createEditor()
 void FdnReverbAudioProcessor::getStateInformation (MemoryBlock &destData)
 {
     auto state = parameters.copyState();
+    state.setProperty ("OSCPort", var(oscReceiver.getPortNumber()), nullptr);
     std::unique_ptr<XmlElement> xml (state.createXml());
     copyXmlToBinary (*xml, destData);
 }
@@ -292,7 +294,13 @@ void FdnReverbAudioProcessor::setStateInformation (const void *data, int sizeInB
     std::unique_ptr<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
     if (xmlState.get() != nullptr)
         if (xmlState->hasTagName (parameters.state.getType()))
+        {
             parameters.replaceState (ValueTree::fromXml (*xmlState));
+            if (parameters.state.hasProperty ("OSCPort"))
+            {
+                oscReceiver.connect (parameters.state.getProperty ("OSCPort", var (-1)));
+            }
+        }
 }
 
 
@@ -306,6 +314,19 @@ pointer_sized_int FdnReverbAudioProcessor::handleVstPluginCanDo (int32 index,
     if (matches ("wantsChannelCountNotifications"))
         return 1;
     return 0;
+}
+
+//==============================================================================
+void FdnReverbAudioProcessor::oscMessageReceived (const OSCMessage &message)
+{
+    OSCAddressPattern pattern ("/" + String(JucePlugin_Name) + "/*");
+    if (! pattern.matches(OSCAddress(message.getAddressPattern().toString())))
+        return;
+
+    OSCMessage msg (message);
+    msg.setAddressPattern (message.getAddressPattern().toString().substring(String(JucePlugin_Name).length() + 1));
+
+    oscParams.processOSCMessage (msg);
 }
 
 //==============================================================================

@@ -26,7 +26,7 @@
 
 //==============================================================================
 OmniCompressorAudioProcessorEditor::OmniCompressorAudioProcessorEditor (OmniCompressorAudioProcessor& p, AudioProcessorValueTreeState& vts)
-    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts), characteristic(processor.compressor)
+    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts), footer (p.getOSCReceiver()), characteristic(processor.compressor)
 {
     setSize (330, 500);
     setLookAndFeel(&globalLaF);
