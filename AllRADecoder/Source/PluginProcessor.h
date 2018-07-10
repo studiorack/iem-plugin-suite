@@ -40,6 +40,11 @@
 #include "NoiseBurst.h"
 #include "AmbisonicNoiseBurst.h"
 
+// ==== OSC
+#include "../../resources/OSCParameterInterface.h"
+#include "../../resources/OSCReceiverPlus.h"
+
+
 //==============================================================================
 /**
  Use the IOHelper to detect which amount of channels or which Ambisonic order is possible with the current bus layout.
@@ -53,7 +58,8 @@ using namespace dsp;
 class AllRADecoderAudioProcessor  : public AudioProcessor,
                                         public AudioProcessorValueTreeState::Listener,
                                         public IOHelper<IOTypes::Ambisonics<7>, IOTypes::AudioChannels<64>>,
-                                        public ValueTree::Listener, public VSTCallbackHandler
+                                        public ValueTree::Listener, public VSTCallbackHandler,
+                                        private OSCReceiver::Listener<OSCReceiver::RealtimeCallback>
 {
 public:
     //==============================================================================
@@ -151,9 +157,17 @@ public:
 
     MailBox::Message messageToEditor;
 
+    //======== OSC =================================================================
+    void oscMessageReceived (const OSCMessage &message) override;
+    OSCReceiverPlus& getOSCReceiver () { return oscReceiver; }
+    //==============================================================================
+
 private:
-    // ====== parameters
+    // ====== parameters and osc
     AudioProcessorValueTreeState parameters;
+    OSCParameterInterface oscParams;
+    OSCReceiverPlus oscReceiver;
+
     // list of used audio parameters
     float* inputOrderSetting;
     float* useSN3D;
