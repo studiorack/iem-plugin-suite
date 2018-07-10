@@ -25,6 +25,10 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "../../resources/IOHelper.h"
 
+// ===== OSC ====
+#include "../../resources/OSCParameterInterface.h"
+#include "../../resources/OSCReceiverPlus.h"
+
 
 //==============================================================================
 /**
@@ -37,7 +41,8 @@
 class PluginTemplateAudioProcessor  : public AudioProcessor,
                                         public AudioProcessorValueTreeState::Listener,
                                         public IOHelper<IOTypes::AudioChannels<10>, IOTypes::Ambisonics<7>>,
-                                        public VSTCallbackHandler
+                                        public VSTCallbackHandler,
+                                        private OSCReceiver::Listener<OSCReceiver::RealtimeCallback>
 {
 public:
     //==============================================================================
@@ -89,10 +94,19 @@ public:
                                             void* ptr, float opt) override;
     //==============================================================================
 
+
+    //======== OSC =================================================================
+    void oscMessageReceived (const OSCMessage &message) override;
+    OSCReceiverPlus& getOSCReceiver () { return oscReceiver; }
+    //==============================================================================
+
+
 private:
     // ====== parameters
     AudioProcessorValueTreeState parameters;
-
+    OSCParameterInterface oscParams;
+    OSCReceiverPlus oscReceiver;
+    
     // list of used audio parameters
     float *inputChannelsSetting, *outputOrderSetting, *useSN3D, *param1, *param2;
 

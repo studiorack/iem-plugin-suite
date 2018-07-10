@@ -26,7 +26,7 @@
 
 //==============================================================================
 DistanceCompensatorAudioProcessorEditor::DistanceCompensatorAudioProcessorEditor (DistanceCompensatorAudioProcessor& p, AudioProcessorValueTreeState& vts)
-: AudioProcessorEditor (&p), processor (p), valueTreeState(vts)
+: AudioProcessorEditor (&p), processor (p), valueTreeState(vts), footer (p.getOSCReceiver())
 {
     setLookAndFeel (&globalLaF);
     

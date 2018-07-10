@@ -67,7 +67,7 @@ private:
     AudioProcessorValueTreeState& valueTreeState;
     
     TitleBar<AudioChannelsIOWidget<64, true>, NoIOWidget> title;
-    Footer footer;
+    OSCFooter footer;
     // ====================== end essentials ====================
 
 

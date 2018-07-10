@@ -29,18 +29,10 @@
 
 //==============================================================================
 MultiEncoderAudioProcessorEditor::MultiEncoderAudioProcessorEditor (MultiEncoderAudioProcessor& p, AudioProcessorValueTreeState& vts)
-: AudioProcessorEditor (&p), processor (p), valueTreeState(vts), encoderList(p, sphere, &vts),
+: AudioProcessorEditor (&p), processor (p), valueTreeState(vts), footer (p.getOSCReceiver()), encoderList(p, sphere, &vts),
 masterElement(*valueTreeState.getParameter("masterAzimuth"), valueTreeState.getParameterRange("masterAzimuth"), *valueTreeState.getParameter("masterElevation"), valueTreeState.getParameterRange("masterElevation"))
 {
     setLookAndFeel (&globalLaF);
-
-    for (int i = 0; i < maxNumberOfInputs; ++i)
-    {
-        valueTreeState.addParameterListener("azimuth"+String(i), this);
-        valueTreeState.addParameterListener("elevation"+String(i), this);
-    }
-    valueTreeState.addParameterListener("masterAzimuth", this);
-    valueTreeState.addParameterListener("masterElevation", this);
 
     // ==== SPHERE AND ELEMENTS ===============
     addAndMakeVisible(&sphere);
@@ -138,20 +130,13 @@ masterElement(*valueTreeState.getParameter("masterAzimuth"), valueTreeState.getP
     lbMasterRoll.setText("Roll");
 
     setResizeLimits(590, 455, 800, 1200);
-    startTimer(40);
+    startTimer (40);
 }
 
 
 MultiEncoderAudioProcessorEditor::~MultiEncoderAudioProcessorEditor()
 {
     setLookAndFeel(nullptr);
-    for (int i = 0; i < maxNumberOfInputs; ++i)
-    {
-        valueTreeState.removeParameterListener("azimuth"+String(i), this);
-        valueTreeState.removeParameterListener("elevation"+String(i), this);
-    }
-    valueTreeState.removeParameterListener("masterAzimuth", this);
-    valueTreeState.removeParameterListener("masterElevation", this);
 }
 
 //==============================================================================
@@ -167,8 +152,6 @@ void MultiEncoderAudioProcessorEditor::timerCallback()
     processor.getMaxSize(maxInSize, maxOutSize);
     title.setMaxSize(maxInSize, maxOutSize);
     // ==========================================
-
-
 
     const int nChIn = processor.input.getSize();
     if (nChIn != lastSetNumChIn)
@@ -203,6 +186,11 @@ void MultiEncoderAudioProcessorEditor::timerCallback()
         encoderList.updateColours();
         sphere.repaint();
     }
+    if (processor.updateSphere)
+    {
+        processor.updateSphere = false;
+        sphere.repaint();
+    }
 }
 
 void MultiEncoderAudioProcessorEditor::mouseWheelOnSpherePannerMoved (SpherePanner* sphere, const MouseEvent &event, const MouseWheelDetails &wheel)
@@ -214,11 +202,6 @@ void MultiEncoderAudioProcessorEditor::mouseWheelOnSpherePannerMoved (SpherePann
     else if (event.mods.isCommandDown())
         slMasterAzimuth.mouseWheelMove(event, wheel);
 }
-void MultiEncoderAudioProcessorEditor::parameterChanged (const String &parameterID, float newValue)
-{
-    sphere.repaint();
-}
-
 
 void MultiEncoderAudioProcessorEditor::resized()
 {

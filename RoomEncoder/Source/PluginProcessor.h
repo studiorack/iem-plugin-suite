@@ -33,6 +33,9 @@
 #include "../../resources/IOHelper.h"
 #include "../../resources/customComponents/FilterVisualizer.h"
 
+// ===== OSC ====
+#include "../../resources/OSCParameterInterface.h"
+#include "../../resources/OSCReceiverPlus.h"
 
 #ifdef JUCE_MAC
 #define VIMAGE_H // avoid namespace clashes
@@ -77,7 +80,8 @@ class RoomEncoderAudioProcessor  :  public AudioProcessor,
                                     public AudioProcessorValueTreeState::Listener,
                                     private Timer,
                                     public IOHelper<IOTypes::Ambisonics<>, IOTypes::Ambisonics<>>,
-                                    public VSTCallbackHandler
+                                    public VSTCallbackHandler,
+                                    private OSCReceiver::Listener<OSCReceiver::RealtimeCallback>
 {
 public:
     //==============================================================================
@@ -125,6 +129,11 @@ public:
                                             void* ptr, float opt) override;
     //==============================================================================
 
+    //======== OSC =================================================================
+    void oscMessageReceived (const OSCMessage &message) override;
+    OSCReceiverPlus& getOSCReceiver () { return oscReceiver; }
+    //==============================================================================
+
     double oldDelay[nImgSrc];
     //float oldRGain[nImgSrc];
     float allGains[nImgSrc];
@@ -152,7 +161,9 @@ public:
 private:
     //==============================================================================
     AudioProcessorValueTreeState parameters;
-
+    OSCParameterInterface oscParams;
+    OSCReceiverPlus oscReceiver;
+    
     bool readingSharedParams = false;;
 
     double phi;

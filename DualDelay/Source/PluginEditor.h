@@ -53,8 +53,11 @@ private:
 
     void timerCallback() override;
 
+    DualDelayAudioProcessor& processor;
+    AudioProcessorValueTreeState& valueTreeState;
+
     TitleBar<AmbisonicIOWidget<>, NoIOWidget> title;
-    Footer footer;
+    OSCFooter footer;
 
     ScopedPointer<ComboBoxAttachment> cbNormalizationAtachement;
     ScopedPointer<ComboBoxAttachment> cbOrderAtachement;
@@ -88,11 +91,6 @@ private:
     TripleLabel lbLfoL, lbLfoR, lbFilterL, lbFilterR;
 
     GroupComponent gcRotDelL, gcRotDelR, gcFiltL, gcFiltR, gcFbL, gcFbR, gcOutput;
-
-
-
-    DualDelayAudioProcessor& processor;
-    AudioProcessorValueTreeState& valueTreeState;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DualDelayAudioProcessorEditor)
 };

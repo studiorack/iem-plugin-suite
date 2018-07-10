@@ -69,7 +69,7 @@ private:
     void timerCallback() override;
 
     TitleBar<AudioChannelsIOWidget<1,false>, DirectivityIOWidget> title;
-    Footer footer;
+    OSCFooter footer;
 
     int maxPossibleOrder = -1;
     int ambisonicOrder = -1;

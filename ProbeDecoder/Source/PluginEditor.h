@@ -52,7 +52,7 @@ private:
     LaF globalLaF;
 
     TitleBar<AmbisonicIOWidget<>, AudioChannelsIOWidget<1,false>> title;
-    Footer footer;
+    OSCFooter footer;
 
     void timerCallback() override;
 

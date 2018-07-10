@@ -44,9 +44,10 @@ posC(1.0f, 0.0f, 0.0f),
 posL(1.0f, 0.0f, 0.0f),
 posR(1.0f, 0.0f, 0.0f),
 updatedPositionData(true),
-parameters(*this, nullptr)
+parameters(*this, nullptr),
+oscParameterInterface (parameters)
 {
-    parameters.createAndAddParameter("orderSetting", "Ambisonics Order", "",
+    oscParameterInterface.createAndAddParameter ("orderSetting", "Ambisonics Order", "",
                                      NormalisableRange<float>(0.0f, 8.0f, 1.0f), 0.0f,
                                      [](float value) {
                                          if (value >= 0.5f && value < 1.5f) return "0th";
@@ -59,39 +60,47 @@ parameters(*this, nullptr)
                                          else if (value >= 7.5f) return "7th";
                                          else return "Auto";
                                      }, nullptr);
-    parameters.createAndAddParameter("useSN3D", "Normalization", "",
+
+    oscParameterInterface.createAndAddParameter ("useSN3D", "Normalization", "",
                                      NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value) {
                                          if (value >= 0.5f) return "SN3D";
                                          else return "N3D";
                                      }, nullptr);
 
-    parameters.createAndAddParameter("qw", "Quaternion W", "",
+    oscParameterInterface.createAndAddParameter ("qw", "Quaternion W", "",
                                      NormalisableRange<float>(-1.0f, 1.0f, 0.001f), 1.0,
                                      [](float value) { return String(value, 2); }, nullptr);
-    parameters.createAndAddParameter("qx", "Quaternion X", "",
+
+    oscParameterInterface.createAndAddParameter ("qx", "Quaternion X", "",
                                      NormalisableRange<float>(-1.0f, 1.0f, 0.001f), 0.0,
                                      [](float value) { return String(value, 2); }, nullptr);
-    parameters.createAndAddParameter("qy", "Quaternion Y", "",
+
+    oscParameterInterface.createAndAddParameter ("qy", "Quaternion Y", "",
                                      NormalisableRange<float>(-1.0f, 1.0f, 0.001f), 0.0,
                                      [](float value) { return String(value, 2); }, nullptr);
-    parameters.createAndAddParameter("qz", "Quaternion Z", "",
+
+    oscParameterInterface.createAndAddParameter ("qz", "Quaternion Z", "",
                                      NormalisableRange<float>(-1.0f, 1.0f, 0.001f), 0.0,
                                      [](float value) { return String(value, 2); }, nullptr);
-    parameters.createAndAddParameter("azimuth", "Azimuth Angle", CharPointer_UTF8 (R"(°)"),
+
+    oscParameterInterface.createAndAddParameter ("azimuth", "Azimuth Angle", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
                                      [](float value) { return String(value, 2); }, nullptr);
-    parameters.createAndAddParameter("elevation", "Elevation Angle", CharPointer_UTF8 (R"(°)"),
+
+    oscParameterInterface.createAndAddParameter ("elevation", "Elevation Angle", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
                                      [](float value) { return String(value, 2); }, nullptr);
-    parameters.createAndAddParameter("roll", "Roll Angle", CharPointer_UTF8 (R"(°)"),
+
+    oscParameterInterface.createAndAddParameter ("roll", "Roll Angle", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
                                      [](float value) { return String(value, 2); }, nullptr);
-    parameters.createAndAddParameter("width", "Stereo Width", CharPointer_UTF8 (R"(°)"),
+    
+    oscParameterInterface.createAndAddParameter ("width", "Stereo Width", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float>(-360.0f, 360.0f, 0.01f), 0.0,
                                      [](float value) { return String(value, 2); }, nullptr);
 
-    parameters.createAndAddParameter("highQuality", "Sample-wise Panning", "",
+    oscParameterInterface.createAndAddParameter ("highQuality", "Sample-wise Panning", "",
                                      NormalisableRange<float>(0.0f, 1.0f, 1.0f), 0.0f,
                                      [](float value) { return value < 0.5f ? "OFF" : "ON"; }, nullptr);
 
@@ -124,6 +133,7 @@ parameters(*this, nullptr)
 
     sphericalInput = true; //input from ypr
 
+    oscReceiver.addListener (this);
 
     FloatVectorOperations::clear(SHL, 64);
     FloatVectorOperations::clear(SHR, 64);
@@ -400,6 +410,7 @@ void StereoEncoderAudioProcessor::parameterChanged(const String &parameterID, fl
 void StereoEncoderAudioProcessor::getStateInformation (MemoryBlock &destData)
 {
     auto state = parameters.copyState();
+    state.setProperty ("OSCPort", var(oscReceiver.getPortNumber()), nullptr);
     std::unique_ptr<XmlElement> xml (state.createXml());
     copyXmlToBinary (*xml, destData);
 }
@@ -409,7 +420,13 @@ void StereoEncoderAudioProcessor::setStateInformation (const void *data, int siz
     std::unique_ptr<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
     if (xmlState.get() != nullptr)
         if (xmlState->hasTagName (parameters.state.getType()))
+        {
             parameters.replaceState (ValueTree::fromXml (*xmlState));
+            if (parameters.state.hasProperty ("OSCPort"))
+            {
+                oscReceiver.connect (parameters.state.getProperty ("OSCPort", var(-1)));
+            }
+        }
 }
 
 
@@ -425,6 +442,17 @@ pointer_sized_int StereoEncoderAudioProcessor::handleVstPluginCanDo (int32 index
     return 0;
 }
 
+void StereoEncoderAudioProcessor::oscMessageReceived (const OSCMessage &message)
+{
+    OSCAddressPattern pattern ("/" + String(JucePlugin_Name) + "/*");
+    if (! pattern.matches(OSCAddress(message.getAddressPattern().toString())))
+        return;
+
+    OSCMessage msg (message);
+    msg.setAddressPattern (message.getAddressPattern().toString().substring(String(JucePlugin_Name).length() + 1));
+
+    oscParameterInterface.processOSCMessage (msg);
+}
 
 //==============================================================================
 // This creates new instances of the plugin..

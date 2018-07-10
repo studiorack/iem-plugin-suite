@@ -27,6 +27,9 @@
 #include "../../resources/MatrixMultiplication.h"
 #include "../../resources/ConfigurationHelper.h"
 
+// ===== OSC ====
+#include "../../resources/OSCParameterInterface.h"
+#include "../../resources/OSCReceiverPlus.h"
 
 //==============================================================================
 /**
@@ -39,7 +42,8 @@
 class MatrixMultiplierAudioProcessor  : public AudioProcessor,
                                         public AudioProcessorValueTreeState::Listener,
                                         public IOHelper<IOTypes::AudioChannels<64>, IOTypes::AudioChannels<64>>,
-                                        public VSTCallbackHandler
+                                        public VSTCallbackHandler,
+                                        private OSCReceiver::Listener<OSCReceiver::RealtimeCallback>
 {
 public:
     //==============================================================================
@@ -90,7 +94,13 @@ public:
                                             void* ptr, float opt) override;
     //==============================================================================
 
-    void setMatrix(ReferenceCountedMatrix::Ptr newMatrixToUse) {
+    //======== OSC =================================================================
+    void oscMessageReceived (const OSCMessage &message) override;
+    OSCReceiverPlus& getOSCReceiver () { return oscReceiver; }
+    //==============================================================================
+
+    void setMatrix(ReferenceCountedMatrix::Ptr newMatrixToUse)
+    {
         matTrans.setMatrix(newMatrixToUse);
     }
 
@@ -106,7 +116,9 @@ public:
 private:
     // ====== parameters
     AudioProcessorValueTreeState parameters;
-
+    OSCParameterInterface oscParams;
+    OSCReceiverPlus oscReceiver;
+    
     // list of used audio parameters
 //    float *inputChannelsSetting, *outputChannelsSetting;
 

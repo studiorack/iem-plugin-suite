@@ -67,7 +67,7 @@ private:
     void timerCallback() override;
 
     TitleBar<AmbisonicIOWidget<>, NoIOWidget> title;
-    Footer footer;
+    OSCFooter footer;
 
     ReverseSlider slPeakLevel;
     SimpleLabel lbPeakLevel;

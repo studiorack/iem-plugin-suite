@@ -34,7 +34,9 @@
 #include "../../resources/IOHelper.h"
 #include "../../resources/MaxRE.h"
 
-
+// ===== OSC ====
+#include "../../resources/OSCParameterInterface.h"
+#include "../../resources/OSCReceiverPlus.h"
 
 //==============================================================================
 /**
@@ -42,7 +44,8 @@
 class EnergyVisualizerAudioProcessor  : public AudioProcessor,
                                         public AudioProcessorValueTreeState::Listener,
                                         public IOHelper<IOTypes::Ambisonics<>, IOTypes::Nothing>,
-                                        public VSTCallbackHandler
+                                        public VSTCallbackHandler,
+                                        private OSCReceiver::Listener<OSCReceiver::RealtimeCallback>
 {
 public:
     //==============================================================================
@@ -92,12 +95,17 @@ public:
                                             void* ptr, float opt) override;
     //==============================================================================
 
-    AudioProcessorValueTreeState parameters;
+    //======== OSC =================================================================
+    void oscMessageReceived (const OSCMessage &message) override;
+    OSCReceiverPlus& getOSCReceiver () { return oscReceiver; }
+    //==============================================================================
 
     Array<float> rms;
 
 private:
-
+    AudioProcessorValueTreeState parameters;
+    OSCParameterInterface oscParams;
+    OSCReceiverPlus oscReceiver;
 
     Eigen::DiagonalMatrix<float, 64> maxReWeights;
 

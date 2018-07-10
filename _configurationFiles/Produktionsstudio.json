@@ -7,6 +7,7 @@
     "ExpectedInputNormalization": "n3d",
     "Weights": "maxrE",
     "WeightsAlreadyApplied": false,
+    "SubwooferChannel" : 4,
     "Matrix": [
       [
         0.07179858535528182983,

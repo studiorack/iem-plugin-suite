@@ -59,7 +59,7 @@ private:
     AudioProcessorValueTreeState& valueTreeState;
 
     TitleBar<AmbisonicIOWidget<>, NoIOWidget> title;
-    Footer footer;
+    OSCFooter footer;
 
     SpherePanner sphere;
     SpherePanner::AziumuthElevationParameterElement sphereElem;

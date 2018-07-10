@@ -78,7 +78,7 @@ private:
      */
 
     TitleBar<AmbisonicIOWidget<0>, AudioChannelsIOWidget<0,false>> title;
-    Footer footer;
+    OSCFooter footer;
     // =============== end essentials ============
 
     // Attachments to create a connection between IOWidgets comboboxes

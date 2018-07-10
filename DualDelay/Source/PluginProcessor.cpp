@@ -35,9 +35,9 @@ DualDelayAudioProcessor::DualDelayAudioProcessor()
 #endif
                   ),
 #endif
-parameters(*this,nullptr), LFOLeft([] (float phi) { return std::sin(phi); }), LFORight([] (float phi) { return std::sin(phi); })
+parameters(*this,nullptr), oscParams (parameters), LFOLeft([] (float phi) { return std::sin(phi); }), LFORight([] (float phi) { return std::sin(phi); })
 {
-    parameters.createAndAddParameter("orderSetting", "Ambisonics Order", "",
+    oscParams.createAndAddParameter("orderSetting", "Ambisonics Order", "",
                                      NormalisableRange<float>(0.0f, 8.0f, 1.0f), 0.0f,
                                      [](float value) {
                                          if (value >= 0.5f && value < 1.5f) return "0th";
@@ -51,7 +51,7 @@ parameters(*this,nullptr), LFOLeft([] (float phi) { return std::sin(phi); }), LF
                                          else return "Auto";
                                      }, nullptr);
 
-    parameters.createAndAddParameter ("useSN3D", "Normalization", "",
+    oscParams.createAndAddParameter ("useSN3D", "Normalization", "",
                                       NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                       [](float value)
                                       {
@@ -60,71 +60,71 @@ parameters(*this,nullptr), LFOLeft([] (float phi) { return std::sin(phi); }), LF
                                       }, nullptr);
 
 
-    parameters.createAndAddParameter("dryGain", "Dry amount", "dB",
+    oscParams.createAndAddParameter("dryGain", "Dry amount", "dB",
                                      NormalisableRange<float> (-60.0f, 0.0f, 0.1f), 0.0f,
                                      [](float value) { return (value >= -59.9f) ? String(value, 1) : "-inf"; }, nullptr);
-    parameters.createAndAddParameter("wetGainL", "Wet amount left", "dB",
+    oscParams.createAndAddParameter("wetGainL", "Wet amount left", "dB",
                                      NormalisableRange<float> (-60.0f, 0.0f, 0.1f), -6.0f,
                                      [](float value) { return (value >= -59.9f) ? String(value, 1) : "-inf"; }, nullptr);
-    parameters.createAndAddParameter("wetGainR", "Wet amount right", "dB",
+    oscParams.createAndAddParameter("wetGainR", "Wet amount right", "dB",
                                      NormalisableRange<float> (-60.0f, 0.0f, 0.1f), -6.0f,
                                      [](float value) { return (value >= -59.9f) ? String(value, 1) : "-inf"; }, nullptr);
 
-    parameters.createAndAddParameter("delayTimeL", "delay time left", "ms",
+    oscParams.createAndAddParameter("delayTimeL", "delay time left", "ms",
                                      NormalisableRange<float> (10.0f, 500.0f, 0.1f), 500.0f,
                                      [](float value) { return String(value, 1); }, nullptr);
-    parameters.createAndAddParameter("delayTimeR", "delay time right", "ms",
+    oscParams.createAndAddParameter("delayTimeR", "delay time right", "ms",
                                      NormalisableRange<float> (10.0f, 500.0f, 0.1f), 375.0f,
                                      [](float value) { return String(value, 1); }, nullptr);
 
-    parameters.createAndAddParameter("rotationL", "rotation left", CharPointer_UTF8 (R"(°)"),
+    oscParams.createAndAddParameter("rotationL", "rotation left", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float> (-180.0f, 180.0f, 0.1f), 10.0f,
                                      [](float value) { return String(value, 1); }, nullptr);
-    parameters.createAndAddParameter("rotationR", "rotation right", CharPointer_UTF8 (R"(°)"),
+    oscParams.createAndAddParameter("rotationR", "rotation right", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float> (-180.0f, 180.0f, 0.1f), -7.5f,
                                      [](float value) { return String(value, 1); }, nullptr);
 
 
-    parameters.createAndAddParameter("LPcutOffL", "lowpass frequency left", "Hz",
+    oscParams.createAndAddParameter("LPcutOffL", "lowpass frequency left", "Hz",
                                      NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.2), 100.0f,
                                      [](float value) { return String(value, 1); }, nullptr);
-    parameters.createAndAddParameter("LPcutOffR", "lowpass frequency right", "Hz",
+    oscParams.createAndAddParameter("LPcutOffR", "lowpass frequency right", "Hz",
                                      NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.2), 100.0f,
                                      [](float value) { return String(value, 1); }, nullptr);
 
-    parameters.createAndAddParameter("HPcutOffL", "highpass frequency left", "Hz",
+    oscParams.createAndAddParameter("HPcutOffL", "highpass frequency left", "Hz",
                                      NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.2), 20000.0f,
                                      [](float value) { return String(value, 1); }, nullptr);
-    parameters.createAndAddParameter("HPcutOffR", "highpass frequency right", "Hz",
+    oscParams.createAndAddParameter("HPcutOffR", "highpass frequency right", "Hz",
                                      NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.2), 20000.0f,
                                      [](float value) { return String(value, 1); }, nullptr);
 
 
-    parameters.createAndAddParameter("feedbackL", "feedback left", "dB",
+    oscParams.createAndAddParameter("feedbackL", "feedback left", "dB",
                                      NormalisableRange<float> (-60.0f, 0.0f, 0.1f), -8.0f,
                                      [](float value) { return (value >= -59.9f) ? String(value, 1) : "-inf"; }, nullptr);
-    parameters.createAndAddParameter("feedbackR", "feedback right", "dB",
+    oscParams.createAndAddParameter("feedbackR", "feedback right", "dB",
                                      NormalisableRange<float> (-60.0f, 0.0f, 0.1f), -8.0f,
                                      [](float value) { return (value >= -59.9f) ? String(value, 1) : "-inf"; }, nullptr);
 
-    parameters.createAndAddParameter("xfeedbackL", "cross feedback left", "dB",
+    oscParams.createAndAddParameter("xfeedbackL", "cross feedback left", "dB",
                                      NormalisableRange<float> (-60.0f, 0.0f, 0.1f), -20.0f,
                                      [](float value) { return (value >= -59.9f) ? String(value, 1) : "-inf"; }, nullptr);
-    parameters.createAndAddParameter("xfeedbackR", "cross feedback right", "dB",
+    oscParams.createAndAddParameter("xfeedbackR", "cross feedback right", "dB",
                                      NormalisableRange<float> (-60.0f, 0.0f, 0.1f), -20.0f,
                                      [](float value) { return (value >= -59.9f) ? String(value, 1) : "-inf"; }, nullptr);
 
-    parameters.createAndAddParameter("lfoRateL", "LFO left rate", "Hz",
+    oscParams.createAndAddParameter("lfoRateL", "LFO left rate", "Hz",
                                      NormalisableRange<float> (0.0f, 10.0f, 0.01f), 0.0f,
                                      [](float value) { return String(value, 2); }, nullptr);
-    parameters.createAndAddParameter("lfoRateR", "LFO right rate", "Hz",
+    oscParams.createAndAddParameter("lfoRateR", "LFO right rate", "Hz",
                                      NormalisableRange<float> (0.0f, 10.0f, 0.01f), 0.0f,
                                      [](float value) { return String(value, 2); }, nullptr);
 
-    parameters.createAndAddParameter("lfoDepthL", "LFO left depth", "ms",
+    oscParams.createAndAddParameter("lfoDepthL", "LFO left depth", "ms",
                                      NormalisableRange<float> (0.0f, 1.0f, 0.01f), 0.0f,
                                      [](float value) { return String(value, 2); }, nullptr);
-    parameters.createAndAddParameter("lfoDepthR", "LFO right depth", "ms",
+    oscParams.createAndAddParameter("lfoDepthR", "LFO right depth", "ms",
                                      NormalisableRange<float> (0.0f, 1.0f, 0.01f), 0.0f,
                                      [](float value) { return String(value, 2); }, nullptr);
 
@@ -155,13 +155,12 @@ parameters(*this,nullptr), LFOLeft([] (float phi) { return std::sin(phi); }), LF
     orderSetting = parameters.getRawParameterValue("orderSetting");
     parameters.addParameterListener("orderSetting", this);
 
-
-
-
     cos_z.resize(8);
     sin_z.resize(8);
     cos_z.set(0, 1.f);
     sin_z.set(0, 0.f);
+
+    oscReceiver.addListener (this);
 }
 
 DualDelayAudioProcessor::~DualDelayAudioProcessor()
@@ -580,6 +579,7 @@ AudioProcessorEditor* DualDelayAudioProcessor::createEditor()
 void DualDelayAudioProcessor::getStateInformation (MemoryBlock &destData)
 {
     auto state = parameters.copyState();
+    state.setProperty ("OSCPort", var(oscReceiver.getPortNumber()), nullptr);
     std::unique_ptr<XmlElement> xml (state.createXml());
     copyXmlToBinary (*xml, destData);
 }
@@ -589,7 +589,13 @@ void DualDelayAudioProcessor::setStateInformation (const void *data, int sizeInB
     std::unique_ptr<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
     if (xmlState.get() != nullptr)
         if (xmlState->hasTagName (parameters.state.getType()))
+        {
             parameters.replaceState (ValueTree::fromXml (*xmlState));
+            if (parameters.state.hasProperty ("OSCPort"))
+            {
+                oscReceiver.connect (parameters.state.getProperty ("OSCPort", var (-1)));
+            }
+        }
 }
 
 //==============================================================================
@@ -729,4 +735,17 @@ pointer_sized_int DualDelayAudioProcessor::handleVstPluginCanDo (int32 index,
     if (matches ("wantsChannelCountNotifications"))
         return 1;
     return 0;
+}
+
+//==============================================================================
+void DualDelayAudioProcessor::oscMessageReceived (const OSCMessage &message)
+{
+    OSCAddressPattern pattern ("/" + String(JucePlugin_Name) + "/*");
+    if (! pattern.matches(OSCAddress(message.getAddressPattern().toString())))
+        return;
+
+    OSCMessage msg (message);
+    msg.setAddressPattern (message.getAddressPattern().toString().substring(String(JucePlugin_Name).length() + 1));
+
+    oscParams.processOSCMessage (msg);
 }

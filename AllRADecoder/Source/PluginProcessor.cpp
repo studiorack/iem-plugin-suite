@@ -37,10 +37,10 @@ AllRADecoderAudioProcessor::AllRADecoderAudioProcessor()
 #endif
                   ),
 #endif
-energyDistribution(Image::PixelFormat::ARGB, 200, 100, true), rEVector(Image::PixelFormat::ARGB, 200, 100, true), parameters(*this, nullptr)
+energyDistribution(Image::PixelFormat::ARGB, 200, 100, true), rEVector(Image::PixelFormat::ARGB, 200, 100, true), parameters(*this, nullptr), oscParams (parameters)
 {
 
-    parameters.createAndAddParameter ("inputOrderSetting", "Ambisonic Order", "",
+    oscParams.createAndAddParameter ("inputOrderSetting", "Ambisonic Order", "",
                                       NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
                                       [](float value) {
                                           if (value >= 0.5f && value < 1.5f) return "0th";
@@ -54,14 +54,14 @@ energyDistribution(Image::PixelFormat::ARGB, 200, 100, true), rEVector(Image::Pi
                                           else return "Auto";},
                                       nullptr);
 
-    parameters.createAndAddParameter("useSN3D", "Normalization", "",
+    oscParams.createAndAddParameter("useSN3D", "Normalization", "",
                                      NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value) {
                                          if (value >= 0.5f) return "SN3D";
                                          else return "N3D";
                                      }, nullptr);
 
-    parameters.createAndAddParameter ("decoderOrder", "Decoder Order", "",
+    oscParams.createAndAddParameter ("decoderOrder", "Decoder Order", "",
                                       NormalisableRange<float> (0.0f, 6.0f, 1.0f), 0.0f,
                                       [](float value) {
                                           if (value >= 0.5f && value < 1.5f) return "2nd";
@@ -73,20 +73,19 @@ energyDistribution(Image::PixelFormat::ARGB, 200, 100, true), rEVector(Image::Pi
                                           else return "1st";},
                                       nullptr);
 
-    parameters.createAndAddParameter ("exportDecoder", "Export Decoder", "",
+    oscParams.createAndAddParameter ("exportDecoder", "Export Decoder", "",
                                       NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                       [](float value) {
                                           if (value >= 0.5f) return "Yes";
                                           else return "No";
                                       }, nullptr);
 
-    parameters.createAndAddParameter ("exportLayout", "Export Layout", "",
+    oscParams.createAndAddParameter ("exportLayout", "Export Layout", "",
                                       NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                       [](float value) {
                                           if (value >= 0.5f) return "Yes";
                                           else return "No";
                                       }, nullptr);
-
 
 
     // this must be initialised after all calls to createAndAddParameter().
@@ -143,6 +142,8 @@ energyDistribution(Image::PixelFormat::ARGB, 200, 100, true), rEVector(Image::Pi
 
     loudspeakers.addListener(this);
     prepareLayout();
+
+    oscReceiver.addListener (this);
 }
 
 AllRADecoderAudioProcessor::~AllRADecoderAudioProcessor()
@@ -336,6 +337,8 @@ void AllRADecoderAudioProcessor::getStateInformation (MemoryBlock& destData)
     }
     parameters.state.appendChild(loudspeakers, nullptr);
 
+    parameters.state.setProperty ("OSCPort", var(oscReceiver.getPortNumber()), nullptr);
+
     ScopedPointer<XmlElement> xml (parameters.state.createXml());
     copyXmlToBinary (*xml, destData);
 }
@@ -348,7 +351,13 @@ void AllRADecoderAudioProcessor::setStateInformation (const void* data, int size
     if (xmlState != nullptr)
     {
         if (xmlState->hasTagName (parameters.state.getType()))
+        {
             parameters.replaceState (ValueTree::fromXml (*xmlState));
+            if (parameters.state.hasProperty ("OSCPort"))
+            {
+                oscReceiver.connect (parameters.state.getProperty ("OSCPort", var(-1)));
+            }
+        }
 
         XmlElement* lsps (xmlState->getChildByName("Loudspeakers"));
         if (lsps != nullptr)
@@ -1162,4 +1171,58 @@ pointer_sized_int AllRADecoderAudioProcessor::handleVstPluginCanDo (int32 index,
     if (matches ("wantsChannelCountNotifications"))
         return 1;
     return 0;
+}
+
+//==============================================================================
+void AllRADecoderAudioProcessor::oscMessageReceived (const OSCMessage &message)
+{
+    OSCAddressPattern pattern ("/" + String(JucePlugin_Name) + "/*");
+    if (! pattern.matches(OSCAddress(message.getAddressPattern().toString())))
+        return;
+
+    OSCMessage msg (message);
+    msg.setAddressPattern (message.getAddressPattern().toString().substring(String(JucePlugin_Name).length() + 1));
+
+    if (msg.getAddressPattern().toString().equalsIgnoreCase("/decoderOrder") && msg.size() >= 1)
+    {
+        if (msg[0].isInt32())
+        {
+            auto value = msg[0].getInt32() - 1;
+            msg.clear();
+            msg.addInt32 (value);
+        }
+        else if (msg[0].isFloat32())
+        {
+            auto value = msg[0].getFloat32() - 1;
+            msg.clear();
+            msg.addFloat32 (value);
+        }
+
+    }
+
+    if (! oscParams.processOSCMessage (msg))
+    {
+        // Load configuration file
+        if (msg.getAddressPattern().toString().equalsIgnoreCase("/loadFile") && msg.size() >= 1)
+        {
+            if (msg[0].isString())
+            {
+                File fileToLoad (msg[0].getString());
+                loadConfiguration (fileToLoad);
+            }
+        }
+        else if (msg.getAddressPattern().toString().equalsIgnoreCase("/calculate") ||
+                 msg.getAddressPattern().toString().equalsIgnoreCase("/calculateDecoder"))
+        {
+            calculateDecoder();
+        }
+        else if (msg.getAddressPattern().toString().equalsIgnoreCase("/export") && msg.size() >= 1)
+        {
+            if (msg[0].isString())
+            {
+                File file (msg[0].getString());
+                saveConfigurationToFile (file);
+            }
+        }
+    }
 }

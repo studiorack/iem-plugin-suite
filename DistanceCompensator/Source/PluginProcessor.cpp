@@ -36,63 +36,63 @@ DistanceCompensatorAudioProcessor::DistanceCompensatorAudioProcessor()
 #endif
                   ),
 #endif
-parameters(*this, nullptr)
+parameters(*this, nullptr), oscParams (parameters)
 {
-    parameters.createAndAddParameter ("inputChannelsSetting", "Number of input channels ", "",
+    oscParams.createAndAddParameter ("inputChannelsSetting", "Number of input channels ", "",
                                       NormalisableRange<float> (0.0f, 64.0f, 1.0f), 0.0f,
                                       [](float value) {return value < 0.5f ? "Auto" : String(value);}, nullptr);
 
-    parameters.createAndAddParameter ("enableGains", "Enable Gain", "",
+    oscParams.createAndAddParameter ("enableGains", "Enable Gain", "",
                                       NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                       [](float value) {
                                           if (value >= 0.5f) return "Yes";
                                           else return "No";
                                       }, nullptr);
 
-    parameters.createAndAddParameter ("enableDelays", "Enable Delay", "",
+    oscParams.createAndAddParameter ("enableDelays", "Enable Delay", "",
                                       NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                       [](float value) {
                                           if (value >= 0.5f) return "Yes";
                                           else return "No";
                                       }, nullptr);
 
-    parameters.createAndAddParameter ("speedOfSound", "Speed of Sound", "m/s",
+    oscParams.createAndAddParameter ("speedOfSound", "Speed of Sound", "m/s",
                                       NormalisableRange<float> (330.0, 350.0, 0.1f), 343.2f,
                                       [](float value) {return String(value, 1);}, nullptr);
 
-    parameters.createAndAddParameter ("distanceExponent", "Distance-Gain Exponent", "",
+    oscParams.createAndAddParameter ("distanceExponent", "Distance-Gain Exponent", "",
                                       NormalisableRange<float> (0.5f, 1.5f, 0.1f), 1.0f,
                                       [](float value) {return String(value, 1);}, nullptr);
 
-    parameters.createAndAddParameter ("gainNormalization", "Gain Normalization", "",
+    oscParams.createAndAddParameter ("gainNormalization", "Gain Normalization", "",
                                       NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
                                       [](float value) {
                                           if (value >= 0.5f) return "Zero-mean";
                                           else return "Attenuation only";
                                       }, nullptr);
 
-    parameters.createAndAddParameter ("referenceX", "Reference position x", "m",
+    oscParams.createAndAddParameter ("referenceX", "Reference position x", "m",
                                       NormalisableRange<float> (-20.0f, 20.0f, 0.01f), 0.0f,
                                       [](float value) {return String(value, 2);}, nullptr);
 
-    parameters.createAndAddParameter ("referenceY", "Reference position x", "m",
+    oscParams.createAndAddParameter ("referenceY", "Reference position x", "m",
                                       NormalisableRange<float> (-20.0f, 20.0f, 0.01f), 0.0f,
                                       [](float value) {return String(value, 2);}, nullptr);
 
-    parameters.createAndAddParameter ("referenceZ", "Reference position x", "m",
+    oscParams.createAndAddParameter ("referenceZ", "Reference position x", "m",
                                       NormalisableRange<float> (-20.0f, 20.0f, 0.01f), 0.0f,
                                       [](float value) {return String(value, 2);}, nullptr);
 
     for (int i = 0; i < 64; ++i)
     {
-        parameters.createAndAddParameter("enableCompensation" + String(i), "Enable Compensation of loudspeaker " + String(i + 1), "",
+        oscParams.createAndAddParameter("enableCompensation" + String(i), "Enable Compensation of loudspeaker " + String(i + 1), "",
                                          NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                          [](float value) {
                                              if (value >= 0.5f) return "ON";
                                              else return "OFF";
                                          }, nullptr);
 
-        parameters.createAndAddParameter("distance" + String(i), "Distance of loudspeaker " + String(i + 1), "m",
+        oscParams.createAndAddParameter("distance" + String(i), "Distance of loudspeaker " + String(i + 1), "m",
                                          NormalisableRange<float> (1.0f, 50.0f, 0.01f), 5.0f,
                                          [](float value) {return String(value, 2);}, nullptr);
     }
@@ -141,6 +141,8 @@ parameters(*this, nullptr)
     lastDir = File (properties->getValue("presetFolder"));
 
     tempValues.resize(64);
+
+    oscReceiver.addListener (this);
 }
 
 DistanceCompensatorAudioProcessor::~DistanceCompensatorAudioProcessor()
@@ -345,7 +347,9 @@ void DistanceCompensatorAudioProcessor::getStateInformation (MemoryBlock& destDa
     // You should use this method to store your parameters in the memory block.
     // You could do that either as raw data, or use the XML or ValueTree classes
     // as intermediaries to make it easy to save and load complex data.
-    ScopedPointer<XmlElement> xml (parameters.state.createXml());
+    auto state = parameters.copyState();
+    state.setProperty ("OSCPort", var(oscReceiver.getPortNumber()), nullptr);
+    std::unique_ptr<XmlElement> xml (state.createXml());
     copyXmlToBinary (*xml, destData);
 }
 
@@ -355,12 +359,16 @@ void DistanceCompensatorAudioProcessor::setStateInformation (const void* data, i
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
-    ScopedPointer<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
+    std::unique_ptr<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
     if (xmlState != nullptr)
         if (xmlState->hasTagName (parameters.state.getType()))
         {
             parameters.state = ValueTree::fromXml (*xmlState);
             loadedLoudspeakerPositions.clear();
+            if (parameters.state.hasProperty ("OSCPort"))
+            {
+                oscReceiver.connect (parameters.state.getProperty ("OSCPort", var (-1)));
+            }
         }
 
 }
@@ -546,6 +554,34 @@ pointer_sized_int DistanceCompensatorAudioProcessor::handleVstPluginCanDo (int32
     if (matches ("wantsChannelCountNotifications"))
         return 1;
     return 0;
+}
+
+//==============================================================================
+void DistanceCompensatorAudioProcessor::oscMessageReceived (const OSCMessage &message)
+{
+    OSCAddressPattern pattern ("/" + String(JucePlugin_Name) + "/*");
+    if (! pattern.matches(OSCAddress(message.getAddressPattern().toString())))
+        return;
+
+    OSCMessage msg (message);
+    msg.setAddressPattern (message.getAddressPattern().toString().substring(String(JucePlugin_Name).length() + 1));
+
+    if (! oscParams.processOSCMessage (msg))
+    {
+        // Load configuration file
+        if (msg.getAddressPattern().toString().equalsIgnoreCase("/loadFile") && msg.size() >= 1)
+        {
+            if (msg[0].isString())
+            {
+                File fileToLoad (msg[0].getString());
+                loadConfiguration (fileToLoad);
+            }
+        }
+        else if (msg.getAddressPattern().toString().equalsIgnoreCase("/updateReference"))
+        {
+            updateParameters();
+        }
+    }
 }
 
 //==============================================================================

@@ -56,7 +56,7 @@ public:
 private:
     LaF globalLaF;
     TitleBar<DirectivityIOWidget, AmbisonicIOWidget<>> title;
-    Footer footer;
+    OSCFooter footer;
 
     void timerCallback() override;
 

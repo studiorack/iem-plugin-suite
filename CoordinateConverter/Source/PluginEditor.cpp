@@ -26,7 +26,7 @@
 
 //==============================================================================
 CoordinateConverterAudioProcessorEditor::CoordinateConverterAudioProcessorEditor (CoordinateConverterAudioProcessor& p, AudioProcessorValueTreeState& vts)
-    : AudioProcessorEditor (&p), processor (p), valueTreeState (vts),
+    : AudioProcessorEditor (&p), processor (p), valueTreeState (vts), footer (p.getOSCReceiver()),
       panner (*valueTreeState.getParameter("azimuth"), valueTreeState.getParameterRange("azimuth"), *valueTreeState.getParameter("elevation"), valueTreeState.getParameterRange("elevation")),
       xyzPanner (*valueTreeState.getParameter("xPos"), valueTreeState.getParameterRange("xPos"),
               *valueTreeState.getParameter("yPos"), valueTreeState.getParameterRange("yPos"),

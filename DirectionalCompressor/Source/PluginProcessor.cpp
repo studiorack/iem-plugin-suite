@@ -35,9 +35,9 @@ DirectionalCompressorAudioProcessor::DirectionalCompressorAudioProcessor()
 #endif
                   ),
 #endif
-parameters (*this, nullptr)
+parameters (*this, nullptr), oscParams (parameters)
 {
-    parameters.createAndAddParameter("orderSetting", "Ambisonics Order", "",
+    oscParams.createAndAddParameter("orderSetting", "Ambisonics Order", "",
                                      NormalisableRange<float>(0.0f, 8.0f, 1.0f), 0.0f,
                                      [](float value) {
                                          if (value >= 0.5f && value < 1.5f) return "0th";
@@ -50,19 +50,19 @@ parameters (*this, nullptr)
                                          else if (value >= 7.5f) return "7th";
                                          else return "Auto";
                                      }, nullptr);
-    parameters.createAndAddParameter("useSN3D", "Normalization", "",
+    oscParams.createAndAddParameter("useSN3D", "Normalization", "",
                                      NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value) {
                                          if (value >= 0.5f) return "SN3D";
                                          else return "N3D";
                                      }, nullptr);
 
-    parameters.createAndAddParameter("preGain", "Input Gain ", "dB",
+    oscParams.createAndAddParameter("preGain", "Input Gain ", "dB",
                                      NormalisableRange<float> (-10.0f, 10.0f, 0.1f), 0.0f,
                                      [](float value) {return String(value, 1);}, nullptr);
 
     // compressor 1
-    parameters.createAndAddParameter("c1Enabled", "Compressor 1", "",
+    oscParams.createAndAddParameter("c1Enabled", "Compressor 1", "",
                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0,
                                      [](float value)
                                      {
@@ -70,7 +70,7 @@ parameters (*this, nullptr)
                                          else return "OFF";
                                      }, nullptr);
 
-    parameters.createAndAddParameter("c1DrivingSignal", "Compressor 1 Driving Signal", "",
+    oscParams.createAndAddParameter("c1DrivingSignal", "Compressor 1 Driving Signal", "",
                                      NormalisableRange<float> (0.0f, 2.0f, 1.0f), 1.0,
                                      [](float value)
                                      {
@@ -78,7 +78,7 @@ parameters (*this, nullptr)
                                          else if (value >= 1.5f) return "Unmasked";
                                          else return "Full";
                                      }, nullptr);
-    parameters.createAndAddParameter("c1Apply", "Apply compression 1 to", "",
+    oscParams.createAndAddParameter("c1Apply", "Apply compression 1 to", "",
                                      NormalisableRange<float> (0.0f, 2.0f, 1.0f), 1.0,
                                      [](float value)
                                      {
@@ -86,20 +86,20 @@ parameters (*this, nullptr)
                                          else if (value >= 1.5f) return "Unmasked";
                                          else return "Full";
                                      }, nullptr);
-    parameters.createAndAddParameter("c1Threshold", "Threshold 1", "dB",
+    oscParams.createAndAddParameter("c1Threshold", "Threshold 1", "dB",
                                      NormalisableRange<float> (-50.0f, 10.0f, 0.1f), -10.0,
                                      [](float value) {return String(value, 1);}, nullptr);
-    parameters.createAndAddParameter("c1Knee", "Knee", "dB",
+    oscParams.createAndAddParameter("c1Knee", "Knee", "dB",
                                      NormalisableRange<float> (0.0f, 10.0f, 0.1f), 0.0f,
                                      [](float value) {return String(value, 1);}, nullptr);
 
-    parameters.createAndAddParameter("c1Attack", "Attack Time 1", "ms",
+    oscParams.createAndAddParameter("c1Attack", "Attack Time 1", "ms",
                                      NormalisableRange<float> (0.0f, 100.0f, 0.1f), 30.0,
                                      [](float value) {return String(value, 1);}, nullptr);
-    parameters.createAndAddParameter("c1Release", "Release Time 1", "ms",
+    oscParams.createAndAddParameter("c1Release", "Release Time 1", "ms",
                                      NormalisableRange<float> (0.0f, 500.0f, 0.1f), 150.0,
                                      [](float value) {return String(value, 1);}, nullptr);
-    parameters.createAndAddParameter("c1Ratio", "Ratio", " : 1",
+    oscParams.createAndAddParameter("c1Ratio", "Ratio", " : 1",
                                      NormalisableRange<float> (1.0f, 16.0f, .2f), 4.0,
                                      [](float value) {
                                          if (value > 15.9f)
@@ -107,19 +107,19 @@ parameters (*this, nullptr)
                                          return String(value, 1);
 
                                      }, nullptr);
-    parameters.createAndAddParameter("c1Makeup", "MakeUp Gain 1", "dB",
+    oscParams.createAndAddParameter("c1Makeup", "MakeUp Gain 1", "dB",
                                      NormalisableRange<float> (-10.0f, 20.0f, 0.10f), 0.0,
                                      [](float value) {return String(value, 1);}, nullptr);
 
     // compressor 2
-    parameters.createAndAddParameter("c2Enabled", "Compressor 2", "",
+    oscParams.createAndAddParameter("c2Enabled", "Compressor 2", "",
                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0,
                                      [](float value)
                                      {
                                          if (value >= 0.5f) return "ON";
                                          else return "OFF";
                                      }, nullptr);
-    parameters.createAndAddParameter("c2DrivingSignal", "Compressor 2 Driving Signal", "",
+    oscParams.createAndAddParameter("c2DrivingSignal", "Compressor 2 Driving Signal", "",
                                      NormalisableRange<float> (0.0f, 2.0f, 1.0f), 1.0,
                                      [](float value)
                                      {
@@ -127,7 +127,7 @@ parameters (*this, nullptr)
                                          else if (value >= 1.5f) return "Unmasked";
                                          else return "Full";
                                      }, nullptr);
-    parameters.createAndAddParameter("c2Apply", "Apply compression 2 to", "",
+    oscParams.createAndAddParameter("c2Apply", "Apply compression 2 to", "",
                                      NormalisableRange<float> (0.0f, 2.0f, 1.0f), 1.0,
                                      [](float value)
                                      {
@@ -135,20 +135,20 @@ parameters (*this, nullptr)
                                          else if (value >= 1.5f) return "Unmasked";
                                          else return "Full";
                                      }, nullptr);
-    parameters.createAndAddParameter("c2Threshold", "Threshold 2", "dB",
+    oscParams.createAndAddParameter("c2Threshold", "Threshold 2", "dB",
                                      NormalisableRange<float> (-50.0f, 10.0f, 0.1f), -10.0,
                                      [](float value) {return String(value, 1);}, nullptr);
-    parameters.createAndAddParameter("c2Knee", "Knee", "dB",
+    oscParams.createAndAddParameter("c2Knee", "Knee", "dB",
                                      NormalisableRange<float> (0.0f, 10.0f, 0.1f), 0.0f,
                                      [](float value) {return String(value, 1);}, nullptr);
 
-    parameters.createAndAddParameter("c2Attack", "Attack Time 2", "ms",
+    oscParams.createAndAddParameter("c2Attack", "Attack Time 2", "ms",
                                      NormalisableRange<float> (0.0f, 100.0f, 0.1f), 30.0,
                                      [](float value) {return String(value, 1);}, nullptr);
-    parameters.createAndAddParameter("c2Release", "Release Time 2", "ms",
+    oscParams.createAndAddParameter("c2Release", "Release Time 2", "ms",
                                      NormalisableRange<float> (0.0f, 500.0f, 0.1f), 150.0,
                                      [](float value) {return String(value, 1);}, nullptr);
-    parameters.createAndAddParameter("c2Ratio", "Ratio", " : 1",
+    oscParams.createAndAddParameter("c2Ratio", "Ratio", " : 1",
                                      NormalisableRange<float> (1.0f, 16.0f, .2f), 4.0,
                                      [](float value) {
                                          if (value > 15.9f)
@@ -156,23 +156,23 @@ parameters (*this, nullptr)
                                          return String(value, 1);
 
                                      }, nullptr);
-    parameters.createAndAddParameter("c2Makeup", "MakeUp Gain 2", "dB",
+    oscParams.createAndAddParameter("c2Makeup", "MakeUp Gain 2", "dB",
                                      NormalisableRange<float> (-10.0f, 20.0f, 0.10f), 0.0,
                                      [](float value) { return String(value, 1); }, nullptr);
 
 
 
-    parameters.createAndAddParameter("azimuth", "Azimuth of mask", CharPointer_UTF8 (R"(°)"),
+    oscParams.createAndAddParameter("azimuth", "Azimuth of mask", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
                                      [](float value) { return String(value, 2); }, nullptr);
-    parameters.createAndAddParameter("elevation", "Elevation of mask", CharPointer_UTF8 (R"(°)"),
+    oscParams.createAndAddParameter("elevation", "Elevation of mask", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
                                      [](float value) { return String(value, 2); }, nullptr);
-    parameters.createAndAddParameter("width", "Width of mask", CharPointer_UTF8 (R"(°)"),
+    oscParams.createAndAddParameter("width", "Width of mask", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float> (10.0f, 180.0f, 0.01f), 40.0f,
                                      [](float value) { return String(value, 2); }, nullptr);
 
-    parameters.createAndAddParameter("listen", "Listen to", "",
+    oscParams.createAndAddParameter("listen", "Listen to", "",
                                      NormalisableRange<float> (0.0f, 2.0f, 1.0f), 0.0,
                                      [](float value)
                                      {
@@ -233,6 +233,8 @@ parameters (*this, nullptr)
 
     Y *= sqrt(4 * M_PI / tDesignN) / decodeCorrection(7); // reverting 7th order correction
     YH = Y.transpose();
+
+    oscReceiver.addListener (this);
 }
 
 
@@ -576,6 +578,7 @@ AudioProcessorEditor* DirectionalCompressorAudioProcessor::createEditor()
 void DirectionalCompressorAudioProcessor::getStateInformation (MemoryBlock &destData)
 {
     auto state = parameters.copyState();
+    state.setProperty ("OSCPort", var(oscReceiver.getPortNumber()), nullptr);
     std::unique_ptr<XmlElement> xml (state.createXml());
     copyXmlToBinary (*xml, destData);
 }
@@ -585,7 +588,13 @@ void DirectionalCompressorAudioProcessor::setStateInformation (const void *data,
     std::unique_ptr<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
     if (xmlState.get() != nullptr)
         if (xmlState->hasTagName (parameters.state.getType()))
+        {
             parameters.replaceState (ValueTree::fromXml (*xmlState));
+            if (parameters.state.hasProperty ("OSCPort"))
+            {
+                oscReceiver.connect (parameters.state.getProperty ("OSCPort", var (-1)));
+            }
+        }
 }
 
 void DirectionalCompressorAudioProcessor::updateBuffers()
@@ -606,6 +615,19 @@ pointer_sized_int DirectionalCompressorAudioProcessor::handleVstPluginCanDo (int
     if (matches ("wantsChannelCountNotifications"))
         return 1;
     return 0;
+}
+
+//==============================================================================
+void DirectionalCompressorAudioProcessor::oscMessageReceived (const OSCMessage &message)
+{
+    OSCAddressPattern pattern ("/" + String(JucePlugin_Name) + "/*");
+    if (! pattern.matches(OSCAddress(message.getAddressPattern().toString())))
+        return;
+
+    OSCMessage msg (message);
+    msg.setAddressPattern (message.getAddressPattern().toString().substring(String(JucePlugin_Name).length() + 1));
+
+    oscParams.processOSCMessage (msg);
 }
 
 //==============================================================================

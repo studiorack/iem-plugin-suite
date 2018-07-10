@@ -39,9 +39,9 @@ DirectivityShaperAudioProcessor::DirectivityShaperAudioProcessor()
 #endif
                   ),
 #endif
-parameters(*this, nullptr)
+parameters(*this, nullptr), oscParams (parameters)
 {
-    parameters.createAndAddParameter ("orderSetting", "Directivity Order", "",
+    oscParams.createAndAddParameter ("orderSetting", "Directivity Order", "",
                                       NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
                                       [](float value) {
                                           if (value >= 0.5f && value < 1.5f) return "0th";
@@ -54,25 +54,25 @@ parameters(*this, nullptr)
                                           else if (value >= 7.5f) return "7th";
                                           else return "Auto";},
                                       nullptr);
-    parameters.createAndAddParameter ("useSN3D", "Directivity Normalization", "",
+    oscParams.createAndAddParameter ("useSN3D", "Directivity Normalization", "",
                                       NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                       [](float value) { if (value >= 0.5f ) return "SN3D";
                                           else return "N3D"; },
                                       nullptr);
 
-    parameters.createAndAddParameter("probeAzimuth", "probe Azimuth", CharPointer_UTF8 (R"(°)"),
+    oscParams.createAndAddParameter("probeAzimuth", "probe Azimuth", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
                                      [](float value) {return String(value, 2);}, nullptr);
-    parameters.createAndAddParameter("probeElevation", "probe Elevation", CharPointer_UTF8 (R"(°)"),
+    oscParams.createAndAddParameter("probeElevation", "probe Elevation", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
                                      [](float value) {return String(value, 2);}, nullptr);
-    parameters.createAndAddParameter("probeRoll", "probe Roll", CharPointer_UTF8 (R"(°)"),
+    oscParams.createAndAddParameter("probeRoll", "probe Roll", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
                                      [](float value) {return String(value, 2);}, nullptr);
-    parameters.createAndAddParameter("probeLock", "Lock Directions", "",
+    oscParams.createAndAddParameter("probeLock", "Lock Directions", "",
                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
                                      [](float value) {return (value >= 0.5f) ? "locked" : "not locked";}, nullptr);
-    parameters.createAndAddParameter("normalization", "Directivity Normalization", "",
+    oscParams.createAndAddParameter("normalization", "Directivity Normalization", "",
                                      NormalisableRange<float> (0.0f, 2.0f, 1.0f), 1.0,
                                      [](float value) {
                                          if (value >= 0.5f && value < 1.5f) return "on axis";
@@ -82,7 +82,7 @@ parameters(*this, nullptr)
 
     for (int i = 0; i < numberOfBands; ++i)
     {
-        parameters.createAndAddParameter("filterType" + String(i), "Filter Type " + String(i+1), "",
+        oscParams.createAndAddParameter("filterType" + String(i), "Filter Type " + String(i+1), "",
                                          NormalisableRange<float> (0.0f, 3.0f, 1.0f),  filterTypePresets[i],
                                          [](float value) {
                                              if (value >= 0.5f && value < 1.5f) return "Low-pass";
@@ -91,27 +91,27 @@ parameters(*this, nullptr)
                                              else return "All-pass";},
                                          nullptr);
 
-        parameters.createAndAddParameter("filterFrequency" + String(i), "Filter Frequency " + String(i+1), "Hz",
+        oscParams.createAndAddParameter("filterFrequency" + String(i), "Filter Frequency " + String(i+1), "Hz",
                                          NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.4f), filterFrequencyPresets[i],
                                          [](float value) { return String((int) value); }, nullptr);
-        parameters.createAndAddParameter("filterQ" + String(i), "Filter Q " + String(i+1), "",
+        oscParams.createAndAddParameter("filterQ" + String(i), "Filter Q " + String(i+1), "",
                                          NormalisableRange<float> (0.05f, 10.0f, 0.05f), 0.5f,
                                          [](float value) { return String(value, 2); },
                                          nullptr);
-        parameters.createAndAddParameter("filterGain" + String(i), "Filter Gain " + String(i+1), "dB",
+        oscParams.createAndAddParameter("filterGain" + String(i), "Filter Gain " + String(i+1), "dB",
                                          NormalisableRange<float> (-60.0f, 10.0f, 0.1f), 0.0f,
                                          [](float value) { return (value >= -59.9f) ? String(value, 1) : "-inf"; },
                                          nullptr);
-        parameters.createAndAddParameter("order" + String(i), "Order Band " + String(i+1), "",
+        oscParams.createAndAddParameter("order" + String(i), "Order Band " + String(i+1), "",
                                          NormalisableRange<float> (0.0f, 7.0f, 0.01f), 0.0,
                                          [](float value) { return String(value, 2); }, nullptr);
-        parameters.createAndAddParameter("shape" + String(i), "Shape Band " + String(i+1), "",
+        oscParams.createAndAddParameter("shape" + String(i), "Shape Band " + String(i+1), "",
                                          NormalisableRange<float> (0.0f, 1.0f, 0.01f), 0.0,
                                          [](float value) { return String(value, 2); }, nullptr);
-        parameters.createAndAddParameter("azimuth" + String(i), "Azimuth Band " + String(i+1), CharPointer_UTF8 (R"(°)"),
+        oscParams.createAndAddParameter("azimuth" + String(i), "Azimuth Band " + String(i+1), CharPointer_UTF8 (R"(°)"),
                                          NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
                                          [](float value) { return String(value, 2); }, nullptr);
-        parameters.createAndAddParameter("elevation" + String(i), "Elevation Band " + String(i+1), CharPointer_UTF8 (R"(°)"),
+        oscParams.createAndAddParameter("elevation" + String(i), "Elevation Band " + String(i+1), CharPointer_UTF8 (R"(°)"),
                                          NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
                                          [](float value) {return String(value, 2);}, nullptr);
     }
@@ -167,6 +167,7 @@ parameters(*this, nullptr)
         filter[i].coefficients = createFilterCoefficients(roundToInt(*filterType[i]), 44100, *filterFrequency[i], *filterQ[i]);
     }
 
+    oscReceiver.addListener (this);
 }
 
 inline dsp::IIR::Coefficients<float>::Ptr DirectivityShaperAudioProcessor::createFilterCoefficients(int type, double sampleRate, double frequency, double Q)
@@ -394,6 +395,7 @@ AudioProcessorEditor* DirectivityShaperAudioProcessor::createEditor()
 void DirectivityShaperAudioProcessor::getStateInformation (MemoryBlock &destData)
 {
     auto state = parameters.copyState();
+    state.setProperty ("OSCPort", var(oscReceiver.getPortNumber()), nullptr);
     std::unique_ptr<XmlElement> xml (state.createXml());
     copyXmlToBinary (*xml, destData);
 }
@@ -403,7 +405,13 @@ void DirectivityShaperAudioProcessor::setStateInformation (const void *data, int
     std::unique_ptr<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
     if (xmlState.get() != nullptr)
         if (xmlState->hasTagName (parameters.state.getType()))
+        {
             parameters.replaceState (ValueTree::fromXml (*xmlState));
+            if (parameters.state.hasProperty ("OSCPort"))
+            {
+                oscReceiver.connect (parameters.state.getProperty ("OSCPort", var (-1)));
+            }
+        }
 }
 
 //==============================================================================
@@ -521,6 +529,18 @@ pointer_sized_int DirectivityShaperAudioProcessor::handleVstPluginCanDo (int32 i
     return 0;
 }
 
+//==============================================================================
+void DirectivityShaperAudioProcessor::oscMessageReceived (const OSCMessage &message)
+{
+    OSCAddressPattern pattern ("/" + String(JucePlugin_Name) + "/*");
+    if (! pattern.matches(OSCAddress(message.getAddressPattern().toString())))
+        return;
+    
+    OSCMessage msg (message);
+    msg.setAddressPattern (message.getAddressPattern().toString().substring(String(JucePlugin_Name).length() + 1));
+    
+    oscParams.processOSCMessage (msg);
+}
 
 //==============================================================================
 // This creates new instances of the plugin..

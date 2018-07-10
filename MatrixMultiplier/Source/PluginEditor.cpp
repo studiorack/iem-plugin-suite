@@ -26,7 +26,7 @@
 
 //==============================================================================
 MatrixMultiplierAudioProcessorEditor::MatrixMultiplierAudioProcessorEditor (MatrixMultiplierAudioProcessor& p, AudioProcessorValueTreeState& vts)
-    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts)
+    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts), footer (p.getOSCReceiver())
 {
     // ============== BEGIN: essentials ======================
     // set GUI size and lookAndFeel

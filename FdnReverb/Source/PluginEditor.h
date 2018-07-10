@@ -38,7 +38,10 @@ typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 
 //==============================================================================
 
-class FdnReverbAudioProcessorEditor  : public AudioProcessorEditor, private Timer, private Button::Listener, private Slider::Listener
+class FdnReverbAudioProcessorEditor  : public AudioProcessorEditor,
+                                        private Timer,
+                                        private Button::Listener,
+                                        private Slider::Listener
 {
 public:
     FdnReverbAudioProcessorEditor (FdnReverbAudioProcessor&, AudioProcessorValueTreeState&);
@@ -59,7 +62,7 @@ private:
 
     // Layout stuff (footers, headers, logos, etc.)
     TitleBar<NoIOWidget, NoIOWidget> title;
-    Footer footer;
+    OSCFooter footer;
 
     void timerCallback() override;
 
