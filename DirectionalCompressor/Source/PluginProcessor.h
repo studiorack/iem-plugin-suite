@@ -35,12 +35,18 @@
 #include "../../resources/Compressor.h"
 #include "../../resources/Conversions.h"
 
+// ===== OSC ====
+#include "../../resources/OSCParameterInterface.h"
+#include "../../resources/OSCReceiverPlus.h"
+
 //==============================================================================
 /**
 */
 class DirectionalCompressorAudioProcessor  : public AudioProcessor,
                                             public AudioProcessorValueTreeState::Listener,
-public IOHelper<IOTypes::Ambisonics<>, IOTypes::Ambisonics<>>, public VSTCallbackHandler
+                                            public IOHelper<IOTypes::Ambisonics<>, IOTypes::Ambisonics<>>,
+                                            public VSTCallbackHandler,
+                                            private OSCReceiver::Listener<OSCReceiver::RealtimeCallback>
 {
 public:
     //==============================================================================
@@ -86,6 +92,11 @@ public:
                                             void* ptr, float opt) override;
     //==============================================================================
 
+    //======== OSC =================================================================
+    void oscMessageReceived (const OSCMessage &message) override;
+    OSCReceiverPlus& getOSCReceiver () { return oscReceiver; }
+    //==============================================================================
+
     void parameterChanged (const String &parameterID, float newValue) override;
 
     float c1MaxRMS;
@@ -97,8 +108,12 @@ public:
     void calcParams();
     Atomic<bool> updatedPositionData;
 
+
 private:
     //==============================================================================
+    OSCParameterInterface oscParams;
+    OSCReceiverPlus oscReceiver;
+    
     void updateBuffers() override;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DirectionalCompressorAudioProcessor)
