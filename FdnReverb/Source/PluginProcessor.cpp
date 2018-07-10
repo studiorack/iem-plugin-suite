@@ -77,7 +77,7 @@ parameters (*this, nullptr), oscParams (parameters)
                                       nullptr);
 
 
-//    parameters.createAndAddParameter ("fdnSize",
+//    oscParams.createAndAddParameter ("fdnSize",
 //                                      "FDN size", "",
 //                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
 //                                      [](float value) {return value >= 0.5f ? "big" : "small";},
