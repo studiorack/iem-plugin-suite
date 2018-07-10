@@ -91,7 +91,6 @@ parameters(*this, nullptr), oscParams (parameters)
     parameters.addParameterListener ("param2", this);
 
     oscReceiver.addListener (this);
-
 }
 
 PluginTemplateAudioProcessor::~PluginTemplateAudioProcessor()
@@ -247,7 +246,7 @@ void PluginTemplateAudioProcessor::setStateInformation (const void* data, int si
             parameters.replaceState (ValueTree::fromXml (*xmlState));
             if (parameters.state.hasProperty ("OSCPort"))
             {
-                oscReceiver.connect (parameters.state.getProperty ("OSCPort", var(-1)));
+                oscReceiver.connect (parameters.state.getProperty ("OSCPort", var (-1)));
             }
         }
 }

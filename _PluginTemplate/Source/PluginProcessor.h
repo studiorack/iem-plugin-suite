@@ -24,6 +24,8 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "../../resources/IOHelper.h"
+
+// ===== OSC ====
 #include "../../resources/OSCParameterInterface.h"
 #include "../../resources/OSCReceiverPlus.h"
 
