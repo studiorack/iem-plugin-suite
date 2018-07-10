@@ -53,10 +53,14 @@ public:
                                                  bool isBoolean = false)
     {
         parameterIDs.add (parameterID);
+#ifdef DEBUG_PARAMETERS_FOR_DOCUMENTATION
+        DBG ("| " << parameterID << " | " << valueRange.getRange().getStart() << " : " << valueRange.getRange().getEnd() <<  " | " << parameterName <<" | |");
+#endif
         return parameters.createAndAddParameter (parameterID, parameterName, labelText, valueRange, defaultValue,
                                           valueToTextFunction, textToValueFunction,
                                           isMetaParameter, isAutomatableParameter, isDiscrete,
                                                  category, isBoolean);
+
     }
 
     /**
