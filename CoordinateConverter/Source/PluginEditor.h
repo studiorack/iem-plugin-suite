@@ -74,7 +74,7 @@ private:
         - DirectivitiyIOWidget
      */
     TitleBar<NoIOWidget, NoIOWidget> title;
-    Footer footer;
+    OSCFooter footer;
     // =============== end essentials ============
 
     // === Spherical

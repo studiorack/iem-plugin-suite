@@ -26,6 +26,11 @@
 #include "../../resources/IOHelper.h"
 #include "../../resources/Conversions.h"
 
+// ===== OSC ====
+#include "../../resources/OSCParameterInterface.h"
+#include "../../resources/OSCReceiverPlus.h"
+
+
 //==============================================================================
 /**
  Use the IOHelper to detect which amount of channels or which Ambisonic order is possible with the current bus layout.
@@ -37,7 +42,8 @@
 class CoordinateConverterAudioProcessor  : public AudioProcessor,
                                         public AudioProcessorValueTreeState::Listener,
                                         public IOHelper<IOTypes::AudioChannels<64>, IOTypes::Ambisonics<64>>,
-                                        public VSTCallbackHandler
+                                        public VSTCallbackHandler,
+                                        private OSCReceiver::Listener<OSCReceiver::RealtimeCallback>
 {
 public:
     //==============================================================================
@@ -89,6 +95,11 @@ public:
                                             void* ptr, float opt) override;
     //==============================================================================
 
+    //======== OSC =================================================================
+    void oscMessageReceived (const OSCMessage &message) override;
+    OSCReceiverPlus& getOSCReceiver () { return oscReceiver; }
+    //==============================================================================
+
     void updateCartesianCoordinates();
     void updateSphericalCoordinates();
 
@@ -99,7 +110,9 @@ public:
 private:
     // ====== parameters
     AudioProcessorValueTreeState parameters;
-
+    OSCParameterInterface oscParams;
+    OSCReceiverPlus oscReceiver;
+    
     Atomic<bool> updatingParams = false;
     bool cartesianWasLastUpdated = true;
 
