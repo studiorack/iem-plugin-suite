@@ -102,7 +102,7 @@ public:
 private:
     // ====== parameters
     AudioProcessorValueTreeState parameters;
-    OSCParameterInterface oscParameterInterface;
+    OSCParameterInterface oscParams;
     OSCReceiverPlus oscReceiver;
     
     // list of used audio parameters
