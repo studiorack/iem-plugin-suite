@@ -91,7 +91,7 @@ public:
             {
                 if (! receiver.connect (v))
                 {
-                    AlertWindow alert ("Connection could ne be established!", "Make sure the desired port is available and not already occupied by other clients.", AlertWindow::NoIcon);
+                    AlertWindow alert ("Connection could not be established!", "Make sure the desired port is available and not already occupied by other clients.", AlertWindow::NoIcon);
                     alert.setLookAndFeel (&getLookAndFeel());
                     alert.addButton ("OK", 1, KeyPress (KeyPress::returnKey, 0, 0));
                     alert.runModalLoop();
