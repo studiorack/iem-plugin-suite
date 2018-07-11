@@ -359,7 +359,7 @@ void SimpleDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiB
             correction *= sqrt((float) nChOut); // correction for only one subwoofer instead of nChOut loudspeakers
 
         swBuffer.applyGain(omniGain * correction);
-        DBG(swBuffer.getRMSLevel(0, 0, swBuffer.getNumSamples()));
+
         // low pass filtering
         AudioBlock<float> lowPassAudioBlock = AudioBlock<float>(swBuffer);
         ProcessContextReplacing<float> lowPassContext(lowPassAudioBlock);
