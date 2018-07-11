@@ -451,7 +451,23 @@ void StereoEncoderAudioProcessor::oscMessageReceived (const OSCMessage &message)
     OSCMessage msg (message);
     msg.setAddressPattern (message.getAddressPattern().toString().substring(String(JucePlugin_Name).length() + 1));
 
-    oscParameterInterface.processOSCMessage (msg);
+    if (! oscParameterInterface.processOSCMessage (msg))
+    {
+        if (msg.getAddressPattern().toString().equalsIgnoreCase("/quaternions") && msg.size() == 4)
+        {
+            float qs[4];
+            for (int i = 0; i < 4; ++i)
+            if (msg[i].isFloat32())
+                qs[i] = msg[i].getFloat32();
+            else if (msg[i].isInt32())
+                qs[i] = msg[i].getInt32();
+
+            oscParameterInterface.setValue("qw", qs[0]);
+            oscParameterInterface.setValue("qx", qs[1]);
+            oscParameterInterface.setValue("qy", qs[2]);
+            oscParameterInterface.setValue("qz", qs[3]);
+        }
+    }
 }
 
 //==============================================================================
