@@ -115,10 +115,10 @@ public:
             return false;
     }
 
-    void setValue ( String paramID, float value)
+    void setValue (String paramID, float value)
     {
         auto range (parameters.getParameterRange (paramID));
-        parameters.getParameter(paramID)->setValueNotifyingHost (range.convertTo0to1 (value));
+        parameters.getParameter (paramID)->setValueNotifyingHost (range.convertTo0to1 (value));
     }
 
 private:
