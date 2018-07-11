@@ -95,7 +95,7 @@ oscParameterInterface (parameters)
     oscParameterInterface.createAndAddParameter ("roll", "Roll Angle", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
                                      [](float value) { return String(value, 2); }, nullptr);
-    
+
     oscParameterInterface.createAndAddParameter ("width", "Stereo Width", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float>(-360.0f, 360.0f, 0.01f), 0.0,
                                      [](float value) { return String(value, 2); }, nullptr);
@@ -444,8 +444,8 @@ pointer_sized_int StereoEncoderAudioProcessor::handleVstPluginCanDo (int32 index
 
 void StereoEncoderAudioProcessor::oscMessageReceived (const OSCMessage &message)
 {
-    OSCAddressPattern pattern ("/" + String(JucePlugin_Name) + "/*");
-    if (! pattern.matches(OSCAddress(message.getAddressPattern().toString())))
+    String prefix ("/" + String(JucePlugin_Name));
+    if (! message.getAddressPattern().toString().startsWith (prefix))
         return;
 
     OSCMessage msg (message);

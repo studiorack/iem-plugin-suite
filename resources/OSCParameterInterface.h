@@ -68,6 +68,31 @@ public:
      */
     bool processOSCMessage (OSCMessage oscMessage)
     {
+        auto pattern = oscMessage.getAddressPattern();
+        if (pattern.containsWildcards())
+        {
+            for (int i = 0; i < parameterIDs.size(); ++i)
+            {
+                String address = parameterIDs.getReference(i);
+                if (pattern.matches(OSCAddress("/" + address)))
+                {
+                    if (oscMessage.size() > 0)
+                    {
+                        auto arg = oscMessage[0];
+                        float value = 0.0f;
+                        if (arg.isInt32())
+                            value = arg.getInt32();
+                        else if (arg.isFloat32())
+                            value = arg.getFloat32();
+                        else
+                            return true;
+
+                        setValue (address, value);
+                    }
+                }
+            }
+        }
+
         String address = oscMessage.getAddressPattern().toString().substring(1); // trimming forward slash
         if (parameterIDs.contains (address))
         {
@@ -93,11 +118,10 @@ public:
     void setValue ( String paramID, float value)
     {
         auto range (parameters.getParameterRange (paramID));
-        parameters.getParameter(paramID)->setValue (range.convertTo0to1 (value));
+        parameters.getParameter(paramID)->setValueNotifyingHost (range.convertTo0to1 (value));
     }
 
 private:
     AudioProcessorValueTreeState &parameters;
     StringArray parameterIDs;
-
 };

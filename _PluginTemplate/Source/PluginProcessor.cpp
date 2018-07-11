@@ -281,8 +281,8 @@ pointer_sized_int PluginTemplateAudioProcessor::handleVstPluginCanDo (int32 inde
 //==============================================================================
 void PluginTemplateAudioProcessor::oscMessageReceived (const OSCMessage &message)
 {
-    OSCAddressPattern pattern ("/" + String(JucePlugin_Name) + "/*");
-    if (! pattern.matches(OSCAddress(message.getAddressPattern().toString())))
+    String prefix ("/" + String(JucePlugin_Name));
+    if (! message.getAddressPattern().toString().startsWith (prefix))
         return;
 
     OSCMessage msg (message);

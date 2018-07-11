@@ -376,7 +376,7 @@ void CoordinateConverterAudioProcessor::updateSphericalCoordinates()
     spherical.x = 0.5f - radiusFlipFactor * (0.5 - spherical.x);
     spherical.y *= azimuthFlipFactor;
     spherical.z *= elevationFlipFactor;
-    
+
     parameters.getParameter ("radius")->setValue (parameters.getParameterRange ("radius").convertTo0to1 (spherical.x));
     parameters.getParameter ("azimuth")->setValue (parameters.getParameterRange ("azimuth").convertTo0to1  (spherical.y));
     parameters.getParameter ("elevation")->setValue (parameters.getParameterRange ("elevation").convertTo0to1 (spherical.z));
@@ -407,8 +407,8 @@ pointer_sized_int CoordinateConverterAudioProcessor::handleVstPluginCanDo (int32
 //==============================================================================
 void CoordinateConverterAudioProcessor::oscMessageReceived (const OSCMessage &message)
 {
-    OSCAddressPattern pattern ("/" + String(JucePlugin_Name) + "/*");
-    if (! pattern.matches(OSCAddress(message.getAddressPattern().toString())))
+    String prefix ("/" + String(JucePlugin_Name));
+    if (! message.getAddressPattern().toString().startsWith (prefix))
         return;
 
     OSCMessage msg (message);

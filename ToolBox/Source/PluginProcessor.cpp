@@ -394,8 +394,8 @@ pointer_sized_int ToolBoxAudioProcessor::handleVstPluginCanDo (int32 index,
 //==============================================================================
 void ToolBoxAudioProcessor::oscMessageReceived (const OSCMessage &message)
 {
-    OSCAddressPattern pattern ("/" + String(JucePlugin_Name) + "/*");
-    if (! pattern.matches(OSCAddress(message.getAddressPattern().toString())))
+    String prefix ("/" + String(JucePlugin_Name));
+    if (! message.getAddressPattern().toString().startsWith (prefix))
         return;
 
     OSCMessage msg (message);
