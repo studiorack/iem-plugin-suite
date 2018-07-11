@@ -42,14 +42,14 @@ parameters(*this, nullptr), oscParams (parameters)
                                       NormalisableRange<float> (0.0f, 64.0f, 1.0f), 0.0f,
                                       [](float value) {return value < 0.5f ? "Auto" : String(value);}, nullptr);
 
-    oscParams.createAndAddParameter ("enableGains", "Enable Gain", "",
+    oscParams.createAndAddParameter ("enableGains", "Enable Gain Compensation", "",
                                       NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                       [](float value) {
                                           if (value >= 0.5f) return "Yes";
                                           else return "No";
                                       }, nullptr);
 
-    oscParams.createAndAddParameter ("enableDelays", "Enable Delay", "",
+    oscParams.createAndAddParameter ("enableDelays", "Enable Delay Compensation", "",
                                       NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                       [](float value) {
                                           if (value >= 0.5f) return "Yes";
@@ -113,7 +113,7 @@ parameters(*this, nullptr), oscParams (parameters)
     referenceY = parameters.getRawParameterValue ("referenceY");
     referenceZ = parameters.getRawParameterValue ("referenceZ");
 
-    
+
 
     // add listeners to parameter changes
     parameters.addParameterListener ("inputChannelsSetting", this);
@@ -129,7 +129,7 @@ parameters(*this, nullptr), oscParams (parameters)
         distance[i] = parameters.getRawParameterValue ("distance" + String(i));
         parameters.addParameterListener ("distance" + String(i), this);
     }
-    
+
     // global properties
     PropertiesFile::Options options;
     options.applicationName     = "DistanceCompensator";
