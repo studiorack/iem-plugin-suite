@@ -84,21 +84,21 @@ parameters (*this, nullptr), oscParams (parameters)
 
     for (int i = 0; i < maxNumberOfInputs; ++i)
     {
-        oscParams.createAndAddParameter("azimuth" + String(i), "Azimuth angle " + String(i), CharPointer_UTF8 (R"(°)"),
+        oscParams.createAndAddParameter("azimuth" + String(i), "Azimuth angle " + String(i + 1), CharPointer_UTF8 (R"(°)"),
                                          NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
                                          [](float value) {return String(value, 2);}, nullptr);
-        oscParams.createAndAddParameter("elevation" + String(i), "Elevation angle " + String(i), CharPointer_UTF8 (R"(°)"),
+        oscParams.createAndAddParameter("elevation" + String(i), "Elevation angle " + String(i + 1), CharPointer_UTF8 (R"(°)"),
                                          NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
                                          [](float value) {return String(value, 2);}, nullptr);
-        oscParams.createAndAddParameter("gain" + String(i), "Gain " + String(i), "dB",
+        oscParams.createAndAddParameter("gain" + String(i), "Gain " + String(i + 1), "dB",
                                          NormalisableRange<float> (-60.0f, 10.0f, 0.1f), 0.0f,
                                          [](float value) {return (value >= -59.9f) ? String(value, 1) : "-inf";},
                                          nullptr);
-        oscParams.createAndAddParameter("mute" + String(i), "Mute input " + String(i), "",
+        oscParams.createAndAddParameter("mute" + String(i), "Mute input " + String(i + 1), "",
                                          NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
                                          [](float value) {return (value >= 0.5f) ? "muted" : "not muted";}, nullptr);
 
-        oscParams.createAndAddParameter("solo" + String(i), "Solo input " + String(i), "",
+        oscParams.createAndAddParameter("solo" + String(i), "Solo input " + String(i + 1), "",
                                          NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
                                          [](float value) {return (value >= 0.5f) ? "soloed" : "not soloed";}, nullptr);
     }

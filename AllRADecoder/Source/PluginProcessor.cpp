@@ -40,7 +40,7 @@ AllRADecoderAudioProcessor::AllRADecoderAudioProcessor()
 energyDistribution(Image::PixelFormat::ARGB, 200, 100, true), rEVector(Image::PixelFormat::ARGB, 200, 100, true), parameters(*this, nullptr), oscParams (parameters)
 {
 
-    oscParams.createAndAddParameter ("inputOrderSetting", "Ambisonic Order", "",
+    oscParams.createAndAddParameter ("inputOrderSetting", "Input Ambisonic Order", "",
                                       NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
                                       [](float value) {
                                           if (value >= 0.5f && value < 1.5f) return "0th";
@@ -54,7 +54,7 @@ energyDistribution(Image::PixelFormat::ARGB, 200, 100, true), rEVector(Image::Pi
                                           else return "Auto";},
                                       nullptr);
 
-    oscParams.createAndAddParameter("useSN3D", "Normalization", "",
+    oscParams.createAndAddParameter("useSN3D", "Input Normalization", "",
                                      NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value) {
                                          if (value >= 0.5f) return "SN3D";

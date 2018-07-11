@@ -62,7 +62,7 @@ parameters (*this, nullptr), oscParams (parameters)
                                      [](float value) {return String(value, 1);}, nullptr);
 
     // compressor 1
-    oscParams.createAndAddParameter("c1Enabled", "Compressor 1", "",
+    oscParams.createAndAddParameter("c1Enabled", "Enable Compressor 1", "",
                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0,
                                      [](float value)
                                      {
@@ -89,7 +89,7 @@ parameters (*this, nullptr), oscParams (parameters)
     oscParams.createAndAddParameter("c1Threshold", "Threshold 1", "dB",
                                      NormalisableRange<float> (-50.0f, 10.0f, 0.1f), -10.0,
                                      [](float value) {return String(value, 1);}, nullptr);
-    oscParams.createAndAddParameter("c1Knee", "Knee", "dB",
+    oscParams.createAndAddParameter("c1Knee", "Knee 1", "dB",
                                      NormalisableRange<float> (0.0f, 10.0f, 0.1f), 0.0f,
                                      [](float value) {return String(value, 1);}, nullptr);
 
@@ -99,7 +99,7 @@ parameters (*this, nullptr), oscParams (parameters)
     oscParams.createAndAddParameter("c1Release", "Release Time 1", "ms",
                                      NormalisableRange<float> (0.0f, 500.0f, 0.1f), 150.0,
                                      [](float value) {return String(value, 1);}, nullptr);
-    oscParams.createAndAddParameter("c1Ratio", "Ratio", " : 1",
+    oscParams.createAndAddParameter("c1Ratio", "Ratio 1", " : 1",
                                      NormalisableRange<float> (1.0f, 16.0f, .2f), 4.0,
                                      [](float value) {
                                          if (value > 15.9f)
@@ -112,7 +112,7 @@ parameters (*this, nullptr), oscParams (parameters)
                                      [](float value) {return String(value, 1);}, nullptr);
 
     // compressor 2
-    oscParams.createAndAddParameter("c2Enabled", "Compressor 2", "",
+    oscParams.createAndAddParameter("c2Enabled", "Enable Compressor 2", "",
                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0,
                                      [](float value)
                                      {
@@ -138,7 +138,7 @@ parameters (*this, nullptr), oscParams (parameters)
     oscParams.createAndAddParameter("c2Threshold", "Threshold 2", "dB",
                                      NormalisableRange<float> (-50.0f, 10.0f, 0.1f), -10.0,
                                      [](float value) {return String(value, 1);}, nullptr);
-    oscParams.createAndAddParameter("c2Knee", "Knee", "dB",
+    oscParams.createAndAddParameter("c2Knee", "Knee 2", "dB",
                                      NormalisableRange<float> (0.0f, 10.0f, 0.1f), 0.0f,
                                      [](float value) {return String(value, 1);}, nullptr);
 
@@ -148,7 +148,7 @@ parameters (*this, nullptr), oscParams (parameters)
     oscParams.createAndAddParameter("c2Release", "Release Time 2", "ms",
                                      NormalisableRange<float> (0.0f, 500.0f, 0.1f), 150.0,
                                      [](float value) {return String(value, 1);}, nullptr);
-    oscParams.createAndAddParameter("c2Ratio", "Ratio", " : 1",
+    oscParams.createAndAddParameter("c2Ratio", "Ratio 2", " : 1",
                                      NormalisableRange<float> (1.0f, 16.0f, .2f), 4.0,
                                      [](float value) {
                                          if (value > 15.9f)
