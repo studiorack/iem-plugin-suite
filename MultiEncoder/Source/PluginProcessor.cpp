@@ -369,7 +369,7 @@ void MultiEncoderAudioProcessor::parameterChanged (const String &parameterID, fl
         moving = false;
         updateSphere = true;
     }
-    else if (locked && !moving &&  (parameterID.startsWith("azimuth") || parameterID.startsWith("elevation")))
+    else if (locked && !moving && (parameterID.startsWith("azimuth") || parameterID.startsWith("elevation")))
     {
         float ypr[3];
         ypr[2] = 0.0f;
@@ -389,6 +389,10 @@ void MultiEncoderAudioProcessor::parameterChanged (const String &parameterID, fl
             quats[i].fromYPR(ypr);
             quats[i] = masterQuat*quats[i];
         }
+        updateSphere = true;
+    }
+    else if (parameterID.startsWith("azimuth") || parameterID.startsWith("elevation"))
+    {
         updateSphere = true;
     }
 }
