@@ -323,7 +323,6 @@ void MultiEncoderAudioProcessor::parameterChanged (const String &parameterID, fl
     {
         if (newValue >= 0.5f && !locked)
         {
-            DBG("toggled");
             const int nChIn = input.getSize();
             float ypr[3];
             ypr[2] = 0.0f;
@@ -349,7 +348,6 @@ void MultiEncoderAudioProcessor::parameterChanged (const String &parameterID, fl
     }
     else if (locked && ((parameterID == "masterAzimuth") ||  (parameterID == "masterElevation") ||  (parameterID == "masterRoll")))
     {
-        DBG("moving");
         moving = true;
         iem::Quaternion<float> masterQuat;
         float ypr[3];
@@ -391,7 +389,7 @@ void MultiEncoderAudioProcessor::parameterChanged (const String &parameterID, fl
         }
         updateSphere = true;
     }
-    else if (parameterID.startsWith("azimuth") || parameterID.startsWith("elevation"))
+    else if (parameterID.startsWith("azimuth") || parameterID.startsWith("elevation") || (parameterID == "masterAzimuth") ||  (parameterID == "masterElevation"))
     {
         updateSphere = true;
     }
