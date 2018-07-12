@@ -53,7 +53,7 @@ public:
         virtual ~Element () {}
 
         virtual void startMovement() {};
-        virtual void moveElement (const MouseEvent &event, const Point<float> centre, const float scale, Planes plane, PositionPlane* positionPlane) = 0;
+        virtual void moveElement (const MouseEvent &event, const Point<float> centre, const float scale, Planes plane, PositionPlane* positionPlane, int xFactor = 1, int yFactor = 1, int zFactor = 1) = 0;
         virtual void stopMovement() { };
 
 
@@ -115,7 +115,7 @@ public:
             z.beginChangeGesture();
         };
 
-        void moveElement (const MouseEvent &event, const Point<float> centre, const float scale, Planes plane, PositionPlane* positionPlane) override
+        void moveElement (const MouseEvent &event, const Point<float> centre, const float scale, Planes plane, PositionPlane* positionPlane, int xFactor = 1, int yFactor = 1, int zFactor = 1) override
         {
             Point<float> mousePos = event.getPosition().toFloat();
             mousePos.x -= centre.x;
@@ -128,8 +128,8 @@ public:
             switch(plane)
             {
                 case xy:
-                    pos.x = -mousePos.y;
-                    pos.y = -mousePos.x;
+                    pos.x = -mousePos.y * xFactor;
+                    pos.y = -mousePos.x * yFactor;
                     pos.x = Range<float>(- 0.5 * roomDims.x, 0.5 * roomDims.x).clipValue(pos.x);
                     pos.y = Range<float>(- 0.5 * roomDims.y, 0.5 * roomDims.y).clipValue(pos.y);
                     x.setValueNotifyingHost(xRange.convertTo0to1(pos.x));
@@ -137,16 +137,16 @@ public:
 
                     break;
                 case zy:
-                    pos.z = -mousePos.y;
-                    pos.y = -mousePos.x;
+                    pos.z = -mousePos.y * zFactor;
+                    pos.y = -mousePos.x * yFactor;
                     pos.z = Range<float>(- 0.5* roomDims.z, 0.5* roomDims.z).clipValue(pos.z);
                     pos.y = Range<float>(- 0.5 * roomDims.y, 0.5 * roomDims.y).clipValue(pos.y);
                     z.setValueNotifyingHost(zRange.convertTo0to1(pos.z));
                     y.setValueNotifyingHost(yRange.convertTo0to1(pos.y));
                     break;
                 case zx:
-                    pos.z = -mousePos.y;
-                    pos.x = mousePos.x;
+                    pos.z = -mousePos.y * zFactor;
+                    pos.x = mousePos.x * xFactor;
                     pos.z = Range<float>(- 0.5* roomDims.z, 0.5* roomDims.z).clipValue(pos.z);
                     pos.x = Range<float>(- 0.5 * roomDims.x, 0.5 * roomDims.x).clipValue(pos.x);
                     z.setValueNotifyingHost(zRange.convertTo0to1(pos.z));
@@ -209,6 +209,10 @@ public:
         float drawH;
         float drawW;
 
+        const int xFactor = xFlip ? -1 : 1;
+        const int yFactor = yFlip ? -1 : 1;
+        const int zFactor = zFlip ? -1 : 1;
+
         switch(drawPlane)
         {
             case xy:
@@ -253,22 +257,22 @@ public:
         switch(drawPlane)
         {
             case xy:
-                g.drawArrow(Line<float>(centreX, centreY, centreX, centreY - 20.0f), 1.0f, 4.0f, 4.0f);
-                g.drawArrow(Line<float>(centreX, centreY, centreX - 20.0f, centreY), 1.0f, 4.0f, 4.0f);
-                g.drawSingleLineText("x", centreX + 2.0f, centreY - 7.0f);
-                g.drawSingleLineText("y", centreX - 12.0f, centreY + 7.0f);
+                g.drawArrow(Line<float>(centreX, centreY, centreX, centreY - 20.0f * xFactor), 1.0f, 4.0f, 4.0f);
+                g.drawArrow(Line<float>(centreX, centreY, centreX - 20.0f * yFactor, centreY), 1.0f, 4.0f, 4.0f);
+                g.drawSingleLineText("x", centreX + 2.0f, centreY + 2.0f - 9.0f * xFactor);
+                g.drawSingleLineText("y", centreX - 2.0f  - 10.0f * yFactor, centreY + 7.0f);
                 break;
             case zy:
-                g.drawArrow(Line<float>(centreX, centreY, centreX, centreY - 20.0f), 1.0f, 4.0f, 4.0f);
-                g.drawArrow(Line<float>(centreX, centreY, centreX - 20.0f, centreY), 1.0f, 4.0f, 4.0f);
-                g.drawSingleLineText("z", centreX + 2.0f, centreY - 7.0f);
-                g.drawSingleLineText("y", centreX - 12.0f, centreY + 7.0f);
+                g.drawArrow(Line<float>(centreX, centreY, centreX, centreY - 20.0f * zFactor), 1.0f, 4.0f, 4.0f);
+                g.drawArrow(Line<float>(centreX, centreY, centreX - 20.0f * yFactor, centreY), 1.0f, 4.0f, 4.0f);
+                g.drawSingleLineText("z", centreX + 2.0f, centreY + 2.0f - 9.0f * zFactor);
+                g.drawSingleLineText("y", centreX - 2.0f  - 10.0f * yFactor, centreY + 7.0f);;
                 break;
             case zx:
-                g.drawArrow(Line<float>(centreX, centreY, centreX, centreY - 20.0f), 1.0f, 4.0f, 4.0f);
-                g.drawArrow(Line<float>(centreX, centreY, centreX + 20.0f, centreY), 1.0f, 4.0f, 4.0f);
-                g.drawSingleLineText("z", centreX + 2.0f, centreY - 7.0f);
-                g.drawSingleLineText("x", centreX + 7.0f, centreY + 7.0f);
+                g.drawArrow(Line<float>(centreX, centreY, centreX, centreY - 20.0f * zFactor), 1.0f, 4.0f, 4.0f);
+                g.drawArrow(Line<float>(centreX, centreY, centreX + 20.0f * xFactor, centreY), 1.0f, 4.0f, 4.0f);
+                g.drawSingleLineText("z", centreX + 2.0f, centreY + 2.0f - 9.0f * zFactor);
+                g.drawSingleLineText("x", centreX + 2.0f, centreY + 2.0f - 9.0f * xFactor);
                 break;
         }
 
@@ -292,25 +296,21 @@ public:
             switch(drawPlane)
             {
                 case xy:
-                    posH = position.x;
-                    posW = position.y;
+                    posH = position.x * xFactor;
+                    posW = position.y * yFactor;
                     break;
                 case zy:
-                    posH = position.z;
-                    posW = position.y;
+                    posH = position.z * zFactor;
+                    posW = position.y * yFactor;
                     break;
                 case zx:
-                    posH = position.z;
-                    posW = -position.x;
+                    posH = position.z * zFactor;
+                    posW = -position.x * xFactor;
                     break;
             }
             Rectangle<float> temp(centreX-posW * scale-10/2,centreY-posH * scale-10/2,11,11);
             path.addEllipse(temp);
-            //            g.strokePath(panPos,PathStrokeType(1.0f));
-            //            g.setColour((handle->isActive() ? handle->getColour() : Colours::grey).withMultipliedAlpha(handle->getZ()>=-0.0f ? 1.0f : 0.4f));
             g.fillPath(path);
-            //            g.setColour(Colours::white);
-            //            g.drawFittedText(handle->getLabel(), temp.toNearestInt(), Justification::centred, 1);
         }
 
 
@@ -381,7 +381,12 @@ public:
         int nElem = elements.size();
         activeElem = -1;
         float activeDSquared = 80.0f; //dummy value
-        if (nElem > 0) {
+        if (nElem > 0)
+        {
+            const int xFactor = xFlip ? -1 : 1;
+            const int yFactor = yFlip ? -1 : 1;
+            const int zFactor = zFlip ? -1 : 1;
+
             Point<int> pos = event.getPosition();
 
             float mouseX = (centreY-pos.getY());
@@ -394,19 +399,19 @@ public:
 
                 float posH, posW;
                 Vector3D<float> position = handle->getPosition();
-                switch(drawPlane)
+                switch (drawPlane)
                 {
                     case xy:
-                        posH = position.x;
-                        posW = position.y;
+                        posH = position.x * xFactor;
+                        posW = position.y * yFactor;
                         break;
                     case zy:
-                        posH = position.z;
-                        posW = position.y;
+                        posH = position.z * zFactor;
+                        posW = position.y * yFactor;
                         break;
                     case zx:
-                        posH = position.z;
-                        posW = position.x;
+                        posH = position.z * zFactor;
+                        posW = position.x * xFactor;
                         break;
                 }
 
@@ -429,10 +434,13 @@ public:
     {
         Rectangle<float> bounds = getLocalBounds().toType<float>();
         const Point<float> centre = bounds.getCentre();
+        const int xFactor = xFlip ? -1 : 1;
+        const int yFactor = yFlip ? -1 : 1;
+        const int zFactor = zFlip ? -1 : 1;
 
         if (activeElem != -1) {
             Element* handle = elements.getUnchecked (activeElem);
-            handle->moveElement(event, centre, scale, drawPlane, this);
+            handle->moveElement(event, centre, scale, drawPlane, this, xFactor, yFactor, zFactor);
             handle->repaintAllPlanesImIn();
             sendChanges(handle);
         }
@@ -492,9 +500,40 @@ public:
         return index;
     }
 
+    void setXFlip (const bool flipped)
+    {
+        if (xFlip != flipped)
+        {
+            xFlip = flipped;
+            repaint();
+        }
+    }
+
+    void setYFlip (const bool flipped)
+    {
+        if (yFlip != flipped)
+        {
+            yFlip = flipped;
+            repaint();
+        }
+    }
+
+    void setZFlip (const bool flipped)
+    {
+        if (zFlip != flipped)
+        {
+            zFlip = flipped;
+            repaint();
+        }
+    }
+
 private:
     Planes drawPlane;
     String suffix;
+
+    bool xFlip = false;
+    bool yFlip = false;
+    bool zFlip = false;
 
     bool autoScale;
     Vector3D<float> dimensions;
