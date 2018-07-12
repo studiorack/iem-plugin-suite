@@ -10,6 +10,7 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
 - plug-in specific changes
     - **AllRA**Decoder
         - alt+clicking the Noise button, will encode the test-signal to the loudspeaker's direction
+        - tooltips added to some buttons (noise, import, export, rotate, add loudspeakers)
 
 
 
