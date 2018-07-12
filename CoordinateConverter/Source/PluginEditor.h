@@ -43,7 +43,7 @@ typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 //==============================================================================
 /**
 */
-class CoordinateConverterAudioProcessorEditor  : public AudioProcessorEditor, private Timer
+class CoordinateConverterAudioProcessorEditor  : public AudioProcessorEditor, private Timer, private Button::Listener
 {
 public:
     CoordinateConverterAudioProcessorEditor (CoordinateConverterAudioProcessor&, AudioProcessorValueTreeState&);
@@ -55,6 +55,10 @@ public:
 
 
     void timerCallback() override;
+
+    void buttonClicked (Button* button) override {};
+
+    void buttonStateChanged (Button* button) override;
 
 private:
     // ====================== begin essentials ==================

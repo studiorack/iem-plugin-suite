@@ -164,17 +164,24 @@ CoordinateConverterAudioProcessorEditor::CoordinateConverterAudioProcessorEditor
     tbXFlipAttachment = new ButtonAttachment (valueTreeState, "xFlip", tbXFlip);
     tbXFlip.setColour (ToggleButton::ColourIds::tickColourId, globalLaF.ClWidgetColours[0]);
     tbXFlip.setButtonText ("Flip");
+    tbXFlip.addListener (this);
 
     addAndMakeVisible (tbYFlip);
     tbYFlipAttachment = new ButtonAttachment (valueTreeState, "yFlip", tbYFlip);
     tbYFlip.setColour (ToggleButton::ColourIds::tickColourId, globalLaF.ClWidgetColours[1]);
     tbYFlip.setButtonText ("Flip");
+    tbYFlip.addListener (this);
 
     addAndMakeVisible (tbZFlip);
     tbZFlipAttachment = new ButtonAttachment (valueTreeState, "zFlip", tbZFlip);
     tbZFlip.setColour (ToggleButton::ColourIds::tickColourId, globalLaF.ClWidgetColours[2]);
     tbZFlip.setButtonText ("Flip");
+    tbZFlip.addListener (this);
 
+    xyPlane.setXFlip (tbXFlip.getToggleState());
+    xyPlane.setYFlip (tbYFlip.getToggleState());
+    zyPlane.setYFlip (tbYFlip.getToggleState());
+    zyPlane.setZFlip (tbZFlip.getToggleState());
 
     addAndMakeVisible (slXReference);
     slXReference.setJustificationType(Justification::centred);
@@ -442,5 +449,22 @@ void CoordinateConverterAudioProcessorEditor::timerCallback()
     {
         processor.repaintSphere = false;
         sphere.repaint();
+    }
+}
+
+void CoordinateConverterAudioProcessorEditor::buttonStateChanged (Button* button)
+{
+    if (button == &tbXFlip)
+    {
+        xyPlane.setXFlip (tbXFlip.getToggleState());
+    }
+    else if (button == &tbYFlip)
+    {
+        xyPlane.setYFlip (tbYFlip.getToggleState());
+        zyPlane.setYFlip (tbYFlip.getToggleState());
+    }
+    else if (button == &tbZFlip)
+    {
+        zyPlane.setZFlip (tbZFlip.getToggleState());
     }
 }
