@@ -88,16 +88,19 @@ AllRADecoderAudioProcessorEditor::AllRADecoderAudioProcessorEditor (AllRADecoder
     addAndMakeVisible(tbAddSpeakers);
     tbAddSpeakers.setButtonText("ADD LOUDSPEAKER");
     tbAddSpeakers.setColour(TextButton::buttonColourId, Colours::limegreen);
+    tbAddSpeakers.setTooltip ("Adds a new loudspeaker with random position. \n Alt+click: adds an imaginary loudspeaker to the nadir position.");
     tbAddSpeakers.addListener(this);
 
     addAndMakeVisible(tbJson);
     tbJson.setButtonText("EXPORT");
     tbJson.setColour(TextButton::buttonColourId, Colours::orange);
+    tbJson.setTooltip ("Stores the decoder and/or loudspeaker layout to a configuration file.");
     tbJson.addListener(this);
 
     addAndMakeVisible(tbImport);
     tbImport.setButtonText("IMPORT");
     tbImport.setColour(TextButton::buttonColourId, Colours::orange);
+    tbImport.setTooltip ("Imports loudspeakers from a configuration file.");
     tbImport.addListener(this);
 
     addAndMakeVisible(tbUndo);
@@ -113,6 +116,7 @@ AllRADecoderAudioProcessorEditor::AllRADecoderAudioProcessorEditor (AllRADecoder
     addAndMakeVisible(tbRotate);
     tbRotate.setButtonText("ROTATE");
     tbRotate.setColour(TextButton::buttonColourId, Colours::cornflowerblue);
+    tbRotate.setTooltip ("Rotates all loudspeakers by a desired amount around the z-axis.");
     tbRotate.onClick = [this] () { openRotateWindow(); };
 
     addAndMakeVisible(lv);
@@ -123,6 +127,7 @@ AllRADecoderAudioProcessorEditor::AllRADecoderAudioProcessorEditor (AllRADecoder
 
     // start timer after everything is set up properly
     startTimer(50);
+    tooltip.setMillisecondsBeforeTipAppears (800);
 }
 
 AllRADecoderAudioProcessorEditor::~AllRADecoderAudioProcessorEditor()

@@ -181,6 +181,7 @@ public:
                 noiseButton = new NoiseButton (*this);
 
             noiseButton->setRowAndColumn (rowNumber, columnId);
+            noiseButton->setTooltip ("Sends a short noise burst to that loudspeaker. \n Alt+click: Encodes a noise burst to the loudspeaker's position and decodes it with the current decoder.");
             noiseButton->setEnabled(! data.getChild(rowNumber).getProperty("Imaginary"));
             return noiseButton;
         }

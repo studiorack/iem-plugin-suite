@@ -47,7 +47,7 @@ typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 //==============================================================================
 /**
 */
-class AllRADecoderAudioProcessorEditor  : public AudioProcessorEditor, private Timer, public Button::Listener
+class AllRADecoderAudioProcessorEditor  : public AudioProcessorEditor, private juce::Timer, public Button::Listener
 {
 public:
     AllRADecoderAudioProcessorEditor (AllRADecoderAudioProcessor&, AudioProcessorValueTreeState&);
@@ -87,6 +87,8 @@ private:
     OSCFooter footer;
     // =============== end essentials ============
 
+    TooltipWindow tooltip;
+    
     // Attachments to create a connection between IOWidgets comboboxes
     // and the associated parameters
     ScopedPointer<ComboBoxAttachment> cbOrderSettingAttachment;
