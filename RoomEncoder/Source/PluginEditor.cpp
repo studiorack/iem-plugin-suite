@@ -43,6 +43,7 @@ listenerElement(*valueTreeState.getParameter("listenerX"), valueTreeState.getPar
     setSize (800, 600);
     setLookAndFeel (&globalLaF);
     toolTipWin.setMillisecondsBeforeTipAppears(500);
+    toolTipWin.setOpaque (false);
 
     addAndMakeVisible(&title);
     title.setTitle(String("Room"),String("Encoder"));

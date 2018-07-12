@@ -56,6 +56,7 @@ probe(*valueTreeState.getParameter("azimuth"), valueTreeState.getParameterRange(
     addAndMakeVisible(&footer);
 
     toolTipWin.setMillisecondsBeforeTipAppears(500);
+    toolTipWin.setOpaque (false);
 
 
     cbNormalizationAtachement = new ComboBoxAttachment(valueTreeState,"useSN3D", *title.getInputWidgetPtr()->getNormCbPointer());

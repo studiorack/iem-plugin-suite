@@ -64,6 +64,7 @@ StereoEncoderAudioProcessorEditor::StereoEncoderAudioProcessorEditor (StereoEnco
     addAndMakeVisible(&footer);
 
     toolTipWin.setMillisecondsBeforeTipAppears(500);
+    toolTipWin.setOpaque (false);
 
 
     cbNormalizationAtachement = new ComboBoxAttachment(valueTreeState,"useSN3D", *title.getOutputWidgetPtr()->getNormCbPointer());

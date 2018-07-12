@@ -54,6 +54,7 @@ encoderList(p, sphere, &vts)
     addAndMakeVisible(&footer);
 
     toolTipWin.setMillisecondsBeforeTipAppears(500);
+    toolTipWin.setOpaque (false);
 
     addAndMakeVisible(&viewport);
     viewport.setViewedComponent(&encoderList);

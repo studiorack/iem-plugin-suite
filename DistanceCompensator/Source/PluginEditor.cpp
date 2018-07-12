@@ -4,17 +4,17 @@
  Author: Daniel Rudrich
  Copyright (c) 2018 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
- 
+
  The IEM plug-in suite is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
- 
+
  The IEM plug-in suite is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
@@ -29,32 +29,32 @@ DistanceCompensatorAudioProcessorEditor::DistanceCompensatorAudioProcessorEditor
 : AudioProcessorEditor (&p), processor (p), valueTreeState(vts), footer (p.getOSCReceiver())
 {
     setLookAndFeel (&globalLaF);
-    
+
     // make title and footer visible, and set the PluginName
     addAndMakeVisible (&title);
     title.setTitle (String ("Distance"), String ("Compensator"));
     title.setFont (globalLaF.robotoBold, globalLaF.robotoLight);
     addAndMakeVisible (&footer);
     // ============= END: essentials ========================
-    
-    
+
+
     // create the connection between title component's comboBoxes and parameters
     cbInputChannelsSettingAttachment = new ComboBoxAttachment (valueTreeState, "inputChannelsSetting", *title.getInputWidgetPtr()->getChannelsCbPointer());
-    
+
     addAndMakeVisible (lbSpeedOfSound);
     lbSpeedOfSound.setEditable (true);
     lbSpeedOfSound.setJustificationType(Justification::centred);
     lbSpeedOfSoundAttachment = new LabelAttachment (valueTreeState, "speedOfSound", lbSpeedOfSound);
-    
+
     addAndMakeVisible (slbSpeedOfSound);
     slbSpeedOfSound.setText ("Speed of sound");
     slbSpeedOfSound.setJustification(Justification::left);
-    
+
     addAndMakeVisible (lbDistanceExponent);
     lbDistanceExponent.setEditable (true);
     lbDistanceExponent.setJustificationType(Justification::centred);
     lbDistanceExponentAttachment = new LabelAttachment (valueTreeState, "distanceExponent", lbDistanceExponent);
-    
+
     addAndMakeVisible (slbDistanceExponent);
     slbDistanceExponent.setText ("Distance-Gain exponent");
     slbDistanceExponent.setJustification (Justification::left);
@@ -69,67 +69,67 @@ DistanceCompensatorAudioProcessorEditor::DistanceCompensatorAudioProcessorEditor
     addAndMakeVisible(slbGainNormalization);
     slbGainNormalization.setText ("Normalization");
     slbGainNormalization.setJustification (Justification::left);
-    
+
     addAndMakeVisible (lbReferenceX);
     lbReferenceX.setEditable (true);
     lbReferenceX.setJustificationType(Justification::centred);
     lbReferenceXAttachment = new LabelAttachment (valueTreeState, "referenceX", lbReferenceX);
-    
+
     addAndMakeVisible (lbReferenceY);
     lbReferenceY.setEditable (true);
     lbReferenceY.setJustificationType(Justification::centred);
     lbReferenceYAttachment = new LabelAttachment (valueTreeState, "referenceY", lbReferenceY);
-    
+
     addAndMakeVisible (lbReferenceZ);
     lbReferenceZ.setEditable (true);
     lbReferenceZ.setJustificationType(Justification::centred);
     lbReferenceZAttachment = new LabelAttachment (valueTreeState, "referenceZ", lbReferenceZ);
-    
+
     addAndMakeVisible (slbReference);
     slbReference.setText ("Reference position", true);
     slbReference.setJustification (Justification::left);
-    
+
     addAndMakeVisible (slbReferenceX);
     slbReferenceX.setText ("x");
     slbReferenceX.setJustification (Justification::centred);
-    
+
     addAndMakeVisible (slbReferenceY);
     slbReferenceY.setText ("y");
     slbReferenceY.setJustification (Justification::centred);
-    
+
     addAndMakeVisible (slbReferenceZ);
     slbReferenceZ.setText ("z");
     slbReferenceZ.setJustification (Justification::centred);
-    
+
     addAndMakeVisible (gcLayout);
     gcLayout.setText ("From loudspeaker layout");
-    
+
     addAndMakeVisible(btLoadFile);
     btLoadFile.setButtonText("LOAD LAYOUT");
     btLoadFile.addListener(this);
     btLoadFile.setColour(TextButton::buttonColourId, Colours::orange);
-    
+
     addAndMakeVisible(btReference);
     btReference.setButtonText("UPDATE REFERENCE");
     btReference.addListener(this);
     btReference.setColour(TextButton::buttonColourId, Colours::cornflowerblue);
-    
+
     addAndMakeVisible (gcCompensation);
     gcCompensation.setText ("Settings");
-    
+
     addAndMakeVisible(tbEnableGains);
     tbEnableGainsAttachment = new ButtonAttachment(valueTreeState, "enableGains", tbEnableGains);
     tbEnableGains.setButtonText("Gain compensation");
     tbEnableGains.setColour(ToggleButton::tickColourId, Colours::limegreen);
-    
+
     addAndMakeVisible(tbEnableDelays);
     tbEnableDelaysAttachment = new ButtonAttachment(valueTreeState, "enableDelays", tbEnableDelays);
     tbEnableDelays.setButtonText("Delay compensation");
     tbEnableDelays.setColour(ToggleButton::tickColourId, Colours::orange);
-    
+
     addAndMakeVisible (gcDistances);
     gcDistances.setText ("Loudspeaker Distances");
-    
+
     for (int i = 0; i < 64; ++i)
     {
 
@@ -150,16 +150,17 @@ DistanceCompensatorAudioProcessorEditor::DistanceCompensatorAudioProcessorEditor
         handle->setEnabled (isOn);
         handle->setExplicitFocusOrder(i + 1);
         slDistanceAttachment.add(new LabelAttachment (valueTreeState, "distance" + String(i), *handle));
-        
+
         auto lbHandle = lbDistance.add(new SimpleLabel());
         addAndMakeVisible(lbHandle);
         lbHandle->setEnabled (isOn);
         lbHandle->setText(String(i + 1), true, Justification::right);
     }
-    
-    
+
+
     setResizeLimits (500, 650, 500, 650); // use this to create a resizable GUI
     toolTipWin.setMillisecondsBeforeTipAppears (500);
+    toolTipWin.setOpaque (false);
     // start timer after everything is set up properly
     startTimer (20);
 }
@@ -206,10 +207,10 @@ void DistanceCompensatorAudioProcessorEditor::resized()
     const int headerHeight = 60;
     const int footerHeight = 25;
     Rectangle<int> area (getLocalBounds());
-    
+
     Rectangle<int> footerArea (area.removeFromBottom (footerHeight));
     footer.setBounds (footerArea);
-    
+
     area.removeFromLeft (leftRightMargin);
     area.removeFromRight (leftRightMargin);
     Rectangle<int> headerArea = area.removeFromTop (headerHeight);
@@ -217,14 +218,14 @@ void DistanceCompensatorAudioProcessorEditor::resized()
     area.removeFromTop (10);
     area.removeFromBottom (5);
     // =========== END: header and footer =================
-    
+
     Rectangle<int> controls = area.removeFromTop (150);
     auto settingsArea = controls.removeFromLeft(200);
     gcCompensation.setBounds(settingsArea);
     settingsArea.removeFromTop(25);
     tbEnableGains.setBounds(settingsArea.removeFromTop(20));
     settingsArea.removeFromTop (3);
-    
+
     auto rowDistanceGain (settingsArea.removeFromTop (18));
     rowDistanceGain.removeFromLeft(26);
     slbDistanceExponent.setBounds (rowDistanceGain.removeFromLeft(120));
@@ -238,7 +239,7 @@ void DistanceCompensatorAudioProcessorEditor::resized()
     rowNormalization.removeFromLeft (5);
     cbGainNormalization.setBounds (rowNormalization);
     settingsArea.removeFromTop (8);
-    
+
     tbEnableDelays.setBounds(settingsArea.removeFromTop(20));
     settingsArea.removeFromTop (5);
     auto rowSpeed (settingsArea.removeFromTop (18));
@@ -246,19 +247,19 @@ void DistanceCompensatorAudioProcessorEditor::resized()
     slbSpeedOfSound.setBounds (rowSpeed.removeFromLeft (80));
     rowSpeed.removeFromLeft(5);
     lbSpeedOfSound.setBounds (rowSpeed.removeFromLeft (60));
-    
-    
+
+
     controls.removeFromLeft (50);
-    
+
     gcLayout.setBounds (controls);
     controls.removeFromTop (25);
     auto col = controls.removeFromLeft(130);
     btLoadFile.setBounds(col.removeFromTop(21));
-    
+
     col.removeFromTop (20);
 
     slbReference.setBounds (col.removeFromTop (18));
-    
+
     auto labelArea (col.removeFromTop(18));
     lbReferenceX.setBounds(labelArea.removeFromLeft (40));
     labelArea.removeFromLeft(5);
@@ -274,31 +275,31 @@ void DistanceCompensatorAudioProcessorEditor::resized()
 
     col.removeFromTop (5);
     btReference.setBounds(col.removeFromTop (21));
-    
+
     area.removeFromTop (10);
     gcDistances.setBounds (area.removeFromTop(25));
-    
+
     Rectangle<int> sliderCol;
-    
+
     for (int i = 0; i < 64; ++i)
     {
         if (i % 16 == 0)
             sliderCol = area.removeFromLeft(100);
         else if (i % 8 == 0)
             sliderCol.removeFromTop(15);
-        
+
         auto sliderRow = sliderCol.removeFromTop(18);
         lbDistance.getUnchecked(i)->setBounds (sliderRow.removeFromLeft (20));
         sliderRow.removeFromLeft (8);
         tbEnableCompensation.getUnchecked(i)->setBounds (sliderRow.removeFromLeft (18));
         sliderRow.removeFromLeft (2);
         slDistance.getUnchecked (i)->setBounds (sliderRow);
-        
+
         sliderCol.removeFromTop(2);
-        
+
         if ((i - 1) % 16 == 0)
             area.removeFromLeft(10);
-        
+
     }
 }
 
@@ -309,7 +310,7 @@ void DistanceCompensatorAudioProcessorEditor::timerCallback()
     processor.getMaxSize (maxInSize, maxOutSize);
     title.setMaxSize (maxInSize, maxOutSize);
     // ==========================================
-    
+
     // insert stuff you want to do be done at every timer callback
 
     const int selected = title.getInputWidgetPtr()->getChannelsCbPointer()->getSelectedId();
@@ -358,5 +359,5 @@ void DistanceCompensatorAudioProcessorEditor::buttonClicked(Button* button)
 
 void DistanceCompensatorAudioProcessorEditor::buttonStateChanged(juce::Button *button)
 {
-    
+
 }
