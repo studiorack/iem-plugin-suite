@@ -1,6 +1,7 @@
 #!/bin/sh
 cd ${0%/*}
 mkdir -p _compiledPlugins/macOS/IEM
+mkdir -p _compiledPlugins/macOS/Standalone
 for d in */*.jucer; do
   open -W -n ${PWD}/${d} --args --resave ${PWD}/${d}
   d=${d%/*}
