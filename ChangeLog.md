@@ -6,6 +6,7 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
 ## untagged changes
 - general changes
     - OSC support: every plug-in is now controllable via OSC
+    - SpherePanner will only change azimuth when right-clicked and dragged
 
 - plug-in specific changes
     - **AllRA**Decoder
