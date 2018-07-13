@@ -52,7 +52,7 @@ parameters(*this, nullptr), oscParams (parameters)
                                      [](float value) { return String(value, 3); }, nullptr);
 
     oscParams.createAndAddParameter ("xPos", "X Coordinate", "",
-                                     NormalisableRange<float>(-1.0f, 1.0f, 0.0001f), 0.0,
+                                     NormalisableRange<float>(-1.0f, 1.0f, 0.0001f), 1.0,
                                      [](float value) { return String(value, 4); }, nullptr);
 
     oscParams.createAndAddParameter ("yPos", "Y Coordinate", "",
