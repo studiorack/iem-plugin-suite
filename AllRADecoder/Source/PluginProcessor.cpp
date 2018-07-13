@@ -532,17 +532,16 @@ void AllRADecoderAudioProcessor::playNoiseBurst (const int channel)
     noiseBurst.setChannel(channel);
 }
 
-void AllRADecoderAudioProcessor::playAmbisonicNoiseBurst (const float azimuth, const float elevation)
+void AllRADecoderAudioProcessor::playAmbisonicNoiseBurst (const float azimuthInDegrees, const float elevationInDegrees)
 {
     auto dec = decoder.getCurrentDecoder();
     if (dec != nullptr)
     {
         ambisonicNoiseBurst.setOrder (decoder.getCurrentDecoder()->getOrder());
         ambisonicNoiseBurst.setNormalization (*useSN3D >= 0.5f);
-        ambisonicNoiseBurst.play (azimuth, elevation);
+        ambisonicNoiseBurst.play (azimuthInDegrees, elevationInDegrees);
     }
 }
-
 
 void AllRADecoderAudioProcessor::addImaginaryLoudspeakerBelow()
 {
@@ -1223,6 +1222,36 @@ void AllRADecoderAudioProcessor::oscMessageReceived (const OSCMessage &message)
                 File file (msg[0].getString());
                 saveConfigurationToFile (file);
             }
+        }
+        else if (msg.getAddressPattern().toString().equalsIgnoreCase ("/playNoise") && msg.size() >= 1)
+        {
+            if (msg[0].isInt32())
+            {
+                const int channel = msg[0].getInt32();
+                if (channel <= 64)
+                    playNoiseBurst (channel);
+            }
+        }
+        else if (msg.getAddressPattern().toString().equalsIgnoreCase ("/playEncodedNoise") && msg.size() >= 2)
+        {
+            float azimuth = 0.0f;
+            float elevation = 0.0f;
+
+            if (msg[0].isInt32())
+                azimuth = msg[0].getInt32();
+            else if (msg[0].isFloat32())
+                azimuth = msg[0].getFloat32();
+            else
+                return;
+
+            if (msg[1].isInt32())
+                elevation = msg[1].getInt32();
+            else if (msg[1].isFloat32())
+                elevation = msg[1].getFloat32();
+            else
+                return;
+
+            playAmbisonicNoiseBurst (azimuth, elevation);
         }
     }
 }
