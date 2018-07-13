@@ -90,8 +90,8 @@ private:
 
 
     SpherePanner sphere;
-    ScopedPointer<SpherePanner::AziumuthElevationParameterElement> sphereElements[numberOfBands];
-    SpherePanner::AziumuthElevationParameterElement probeElement;
+    ScopedPointer<SpherePanner::AzimuthElevationParameterElement> sphereElements[numberOfBands];
+    SpherePanner::AzimuthElevationParameterElement probeElement;
 
     SimpleLabel lbAzimuth, lvElevation, lbOrder, lbShape;
     SimpleLabel lbProbeAzimuth, lbProbeElevation, lbProbeRoll;

@@ -219,7 +219,7 @@ fv(20.0f, 20000.0f, -50.0f, 10.0f, 10.0f)
     addAndMakeVisible(&sphere);
     for (int i = 0; i < numberOfBands; ++i)
     {
-        sphereElements[i] = new SpherePanner::AziumuthElevationParameterElement(*valueTreeState.getParameter("azimuth" + String(i)), valueTreeState.getParameterRange("azimuth" + String(i)), *valueTreeState.getParameter("elevation" + String(i)), valueTreeState.getParameterRange("elevation" + String(i)));
+        sphereElements[i] = new SpherePanner::AzimuthElevationParameterElement(*valueTreeState.getParameter("azimuth" + String(i)), valueTreeState.getParameterRange("azimuth" + String(i)), *valueTreeState.getParameter("elevation" + String(i)), valueTreeState.getParameterRange("elevation" + String(i)));
         sphereElements[i]->setColour(colours[i]);
         sphere.addElement(sphereElements[i]);
     }

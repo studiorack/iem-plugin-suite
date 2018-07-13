@@ -71,7 +71,7 @@ private:
     ComboBox inputChooser;
 
     SpherePanner sphere;
-    SpherePanner::AziumuthElevationParameterElement centerElement;
+    SpherePanner::AzimuthElevationParameterElement centerElement;
     SpherePanner::RollWidthParameterElement leftElement;
     SpherePanner::RollWidthParameterElement rightElement;
 

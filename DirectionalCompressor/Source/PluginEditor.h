@@ -62,7 +62,7 @@ private:
     OSCFooter footer;
 
     SpherePanner sphere;
-    SpherePanner::AziumuthElevationParameterElement sphereElem;
+    SpherePanner::AzimuthElevationParameterElement sphereElem;
 
     int maxPossibleOrder = -1;
     ScopedPointer<ComboBoxAttachment> cbNormalizationAtachement;

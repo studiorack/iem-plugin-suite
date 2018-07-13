@@ -85,7 +85,7 @@ private:
     GroupComponent gcSpherical, gcCartesian, gcRange, gcReference;
 
     SpherePanner sphere;
-    SpherePanner::AziumuthElevationParameterElement panner;
+    SpherePanner::AzimuthElevationParameterElement panner;
 
     ReverseSlider slAzimuth, slElevation, slRadius;
     ScopedPointer<SliderAttachment> slAzimuthAttachment, slElevationAttachment, slRadiusAttachment;

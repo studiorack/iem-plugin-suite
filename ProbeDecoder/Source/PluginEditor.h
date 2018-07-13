@@ -65,7 +65,7 @@ private:
     ReverseSlider slAzimuth, slElevation;
 
     SpherePanner sphere;
-    SpherePanner::AziumuthElevationParameterElement probe;
+    SpherePanner::AzimuthElevationParameterElement probe;
 
     ScopedPointer<SliderAttachment> slAzimuthAttachment;
     ScopedPointer<SliderAttachment> slElevationAttachment;

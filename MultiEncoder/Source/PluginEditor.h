@@ -72,7 +72,7 @@ private:
     ComboBox inputChooser;
 
     SpherePanner sphere;
-    SpherePanner::AziumuthElevationParameterElement masterElement;
+    SpherePanner::AzimuthElevationParameterElement masterElement;
 
     ScopedPointer<SliderAttachment> slMasterAzimuthAttachment;
     ScopedPointer<SliderAttachment> slMasterElevationAttachment;

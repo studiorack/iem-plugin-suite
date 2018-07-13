@@ -126,7 +126,7 @@ public:
         {
             for (int i = nElements; i < nCh; ++i)
             {
-                sphereElementArray.add(new SpherePanner::AziumuthElevationParameterElement(
+                sphereElementArray.add(new SpherePanner::AzimuthElevationParameterElement(
                                                                                            *pVts->getParameter("azimuth" + String(i)),
                                                                                            pVts->getParameterRange("azimuth" + String(i)),
                                                                                            *pVts->getParameter("elevation" + String(i)),
@@ -243,7 +243,7 @@ public:
 
         repaint();
     }
-    OwnedArray<SpherePanner::AziumuthElevationParameterElement> sphereElementArray;
+    OwnedArray<SpherePanner::AzimuthElevationParameterElement> sphereElementArray;
 
 private:
     MultiEncoderAudioProcessor& processor;
