@@ -36,60 +36,84 @@ CoordinateConverterAudioProcessor::CoordinateConverterAudioProcessor()
                      #endif
                        ),
 #endif
-parameters(*this, nullptr)
+parameters(*this, nullptr), oscParams (parameters)
 {
 
-    parameters.createAndAddParameter ("azimuth", "Azimuth Angle", CharPointer_UTF8 (R"(°)"),
+    oscParams.createAndAddParameter ("azimuth", "Azimuth Angle", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
                                      [](float value) { return String(value, 2); }, nullptr);
 
-    parameters.createAndAddParameter ("elevation", "Elevation Angle", CharPointer_UTF8 (R"(°)"),
+    oscParams.createAndAddParameter ("elevation", "Elevation Angle", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
                                      [](float value) { return String(value, 2); }, nullptr);
 
-    parameters.createAndAddParameter ("radius", "Radius", "",
+    oscParams.createAndAddParameter ("radius", "Radius", "",
                                      NormalisableRange<float>(0.0f, 1.0f, 0.001f), 1.0,
                                      [](float value) { return String(value, 3); }, nullptr);
 
-    parameters.createAndAddParameter ("xPos", "X Coordinate", "",
+    oscParams.createAndAddParameter ("xPos", "X Coordinate", "",
+                                     NormalisableRange<float>(-1.0f, 1.0f, 0.0001f), 1.0,
+                                     [](float value) { return String(value, 4); }, nullptr);
+
+    oscParams.createAndAddParameter ("yPos", "Y Coordinate", "",
                                      NormalisableRange<float>(-1.0f, 1.0f, 0.0001f), 0.0,
                                      [](float value) { return String(value, 4); }, nullptr);
 
-    parameters.createAndAddParameter ("yPos", "Y Coordinate", "",
+    oscParams.createAndAddParameter ("zPos", "Z Coordinate", "",
                                      NormalisableRange<float>(-1.0f, 1.0f, 0.0001f), 0.0,
                                      [](float value) { return String(value, 4); }, nullptr);
 
-    parameters.createAndAddParameter ("zPos", "Z Coordinate", "",
-                                     NormalisableRange<float>(-1.0f, 1.0f, 0.0001f), 0.0,
-                                     [](float value) { return String(value, 4); }, nullptr);
-
-    parameters.createAndAddParameter ("xReference", "X Reference", "m",
+    oscParams.createAndAddParameter ("xReference", "X Reference", "m",
                                       NormalisableRange<float>(-50.0f, 50.0f, 0.001f), 0.0,
                                       [](float value) { return String(value, 3); }, nullptr);
 
-    parameters.createAndAddParameter ("yReference", "Y Reference", "m",
+    oscParams.createAndAddParameter ("yReference", "Y Reference", "m",
                                       NormalisableRange<float>(-50.0f, 50.0f, 0.001f), 0.0,
                                       [](float value) { return String(value, 3); }, nullptr);
 
-    parameters.createAndAddParameter ("zReference", "Z Reference", "m",
+    oscParams.createAndAddParameter ("zReference", "Z Reference", "m",
                                       NormalisableRange<float>(-50.0f, 50.0f, 0.001f), 0.0,
                                       [](float value) { return String(value, 3); }, nullptr);
 
-    parameters.createAndAddParameter ("radiusRange", "Radius Range", "m",
+    oscParams.createAndAddParameter ("radiusRange", "Radius Range", "m",
                                      NormalisableRange<float>(0.1f, 50.0f, 0.01f), 1.0,
                                      [](float value) { return String(value, 2); }, nullptr);
 
-    parameters.createAndAddParameter ("xRange", "X Range", "m",
+    oscParams.createAndAddParameter ("xRange", "X Range", "m",
                                      NormalisableRange<float>(0.1f, 50.0f, 0.01f), 1.0,
                                      [](float value) { return String(value, 2); }, nullptr);
 
-    parameters.createAndAddParameter ("yRange", "Y Range", "m",
+    oscParams.createAndAddParameter ("yRange", "Y Range", "m",
                                      NormalisableRange<float>(0.1f, 50.0f, 0.01f), 1.0,
                                      [](float value) { return String(value, 2); }, nullptr);
 
-    parameters.createAndAddParameter ("zRange", "Z Range", "m",
+    oscParams.createAndAddParameter ("zRange", "Z Range", "m",
                                      NormalisableRange<float>(0.1f, 50.0f, 0.01f), 1.0,
                                      [](float value) { return String(value, 2); }, nullptr);
+
+    oscParams.createAndAddParameter ("azimuthFlip", "Invert Azimuth", "",
+                                      NormalisableRange<float>(0.0f, 1.0f, 1.0f), 0.0,
+                                      [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr);
+
+    oscParams.createAndAddParameter ("elevationFlip", "Invert Elevation", "",
+                                      NormalisableRange<float>(0.0f, 1.0f, 1.0f), 0.0,
+                                      [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr);
+
+    oscParams.createAndAddParameter ("radiusFlip", "Invert Radius Axis", "",
+                                      NormalisableRange<float>(0.0f, 1.0f, 1.0f), 0.0,
+                                      [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr);
+
+    oscParams.createAndAddParameter ("xFlip", "Invert X Axis", "",
+                                      NormalisableRange<float>(0.0f, 1.0f, 1.0f), 0.0,
+                                      [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr);
+
+    oscParams.createAndAddParameter ("yFlip", "Invert Y Axis", "",
+                                      NormalisableRange<float>(0.0f, 1.0f, 1.0f), 0.0,
+                                      [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr);
+
+    oscParams.createAndAddParameter ("zFlip", "Invert Z Axis", "",
+                                      NormalisableRange<float>(0.0f, 1.0f, 1.0f), 0.0,
+                                      [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr);
 
 
     // this must be initialised after all calls to createAndAddParameter().
@@ -111,6 +135,12 @@ parameters(*this, nullptr)
     xRange = parameters.getRawParameterValue ("xRange");
     yRange = parameters.getRawParameterValue ("yRange");
     zRange = parameters.getRawParameterValue ("zRange");
+    azimuthFlip = parameters.getRawParameterValue ("azimuthFlip");
+    elevationFlip = parameters.getRawParameterValue ("elevationFlip");
+    radiusFlip = parameters.getRawParameterValue ("radiusFlip");
+    xFlip = parameters.getRawParameterValue ("xFlip");
+    yFlip = parameters.getRawParameterValue ("yFlip");
+    zFlip = parameters.getRawParameterValue ("zFlip");
 
 
     // add listeners to parameter changes
@@ -127,8 +157,14 @@ parameters(*this, nullptr)
     parameters.addParameterListener ("xRange", this);
     parameters.addParameterListener ("yRange", this);
     parameters.addParameterListener ("zRange", this);
+    parameters.addParameterListener ("azimuthFlip", this);
+    parameters.addParameterListener ("elevationFlip", this);
+    parameters.addParameterListener ("radiusFlip", this);
+    parameters.addParameterListener ("xFlip", this);
+    parameters.addParameterListener ("yFlip", this);
+    parameters.addParameterListener ("zFlip", this);
 
-
+    oscReceiver.addListener (this);
 }
 
 CoordinateConverterAudioProcessor::~CoordinateConverterAudioProcessor()
@@ -264,6 +300,7 @@ void CoordinateConverterAudioProcessor::parameterChanged (const String &paramete
 
         if (! updatingParams.get())
             updateCartesianCoordinates();
+        return;
     }
 
     else if (parameterID == "xPos" || parameterID == "yPos" || parameterID == "zPos")
@@ -272,33 +309,44 @@ void CoordinateConverterAudioProcessor::parameterChanged (const String &paramete
 
         if (! updatingParams.get())
             updateSphericalCoordinates();
+        return;
     }
 
     else if (parameterID == "xReference" || parameterID == "yReference" || parameterID == "zReference" ||
              parameterID == "xRange" || parameterID == "yRange" || parameterID == "zRange" || parameterID == "radiusRange")
     {
         if (cartesianWasLastUpdated)
-        {
             updateCartesianCoordinates();
-        }
         else
-        {
             updateSphericalCoordinates();
-        }
-
+        return;
     }
+
+    else if (parameterID == "azimuthFlip") azimuthFlipFactor = newValue >= 0.5f ? -1.0f : 1.0f;
+    else if (parameterID == "elevationFlip") elevationFlipFactor = newValue >= 0.5f ? -1.0f : 1.0f;
+    else if (parameterID == "radiusFlip") radiusFlipFactor = newValue >= 0.5f ? -1.0f : 1.0f;
+    else if (parameterID == "xFlip") xFlipFactor = newValue >= 0.5f ? -1.0f : 1.0f;
+    else if (parameterID == "yFlip") yFlipFactor = newValue >= 0.5f ? -1.0f : 1.0f;
+    else if (parameterID == "zFlip") zFlipFactor = newValue >= 0.5f ? -1.0f : 1.0f;
+
+    if (cartesianWasLastUpdated)
+        updateCartesianCoordinates();
+    else
+        updateSphericalCoordinates();
 }
 
 void CoordinateConverterAudioProcessor::updateCartesianCoordinates()
 {
     updatingParams = true;
 
-    auto cartesian = Conversions<float>::sphericalToCartesian (degreesToRadians (*azimuth), degreesToRadians (*elevation), *radius * *radiusRange);
+    auto cartesian = Conversions<float>::sphericalToCartesian (degreesToRadians (*azimuth) * azimuthFlipFactor,
+                                                               degreesToRadians (*elevation) * elevationFlipFactor,
+                                                               (0.5f - radiusFlipFactor * (0.5f - *radius)) * *radiusRange);
 
     cartesian += {*xReference, *yReference, *zReference};
-    cartesian.x /= *xRange;
-    cartesian.y /= *yRange;
-    cartesian.z /= *zRange;
+    cartesian.x /= *xRange * xFlipFactor;
+    cartesian.y /= *yRange * yFlipFactor;
+    cartesian.z /= *zRange * zFlipFactor;
 
     parameters.getParameter ("xPos")->setValue (parameters.getParameterRange ("xPos").convertTo0to1 (cartesian.x));
     parameters.getParameter ("yPos")->setValue (parameters.getParameterRange ("yPos").convertTo0to1 (cartesian.y));
@@ -313,18 +361,25 @@ void CoordinateConverterAudioProcessor::updateSphericalCoordinates()
 {
     updatingParams = true;
 
-    auto cartesian = Vector3D<float> (*xPos * *xRange , *yPos * *yRange , *zPos * *zRange );
+    auto cartesian = Vector3D<float> (*xPos * *xRange * xFlipFactor,
+                                      *yPos * *yRange * yFlipFactor,
+                                      *zPos * *zRange * zFlipFactor);
+
     cartesian -= {*xReference, *yReference, *zReference};
     auto spherical = Conversions<float>::cartesianToSpherical (cartesian);
 
     spherical.x /= *radiusRange; // radius component
 
     if (spherical.x >= 1.0f)
-        spherical.x = 1;
-    
+        spherical.x = 1.0f;
+
+    spherical.x = 0.5f - radiusFlipFactor * (0.5 - spherical.x);
+    spherical.y *= azimuthFlipFactor;
+    spherical.z *= elevationFlipFactor;
+
     parameters.getParameter ("radius")->setValue (parameters.getParameterRange ("radius").convertTo0to1 (spherical.x));
     parameters.getParameter ("azimuth")->setValue (parameters.getParameterRange ("azimuth").convertTo0to1  (spherical.y));
-    parameters.getParameter ("elevation")->setValue (parameters.getParameterRange ("elevation").convertTo0to1(spherical.z));
+    parameters.getParameter ("elevation")->setValue (parameters.getParameterRange ("elevation").convertTo0to1 (spherical.z));
     repaintPositionPlanes = true;
 
     cartesianWasLastUpdated = false;
@@ -347,6 +402,19 @@ pointer_sized_int CoordinateConverterAudioProcessor::handleVstPluginCanDo (int32
     if (matches ("wantsChannelCountNotifications"))
         return 1;
     return 0;
+}
+
+//==============================================================================
+void CoordinateConverterAudioProcessor::oscMessageReceived (const OSCMessage &message)
+{
+    String prefix ("/" + String(JucePlugin_Name));
+    if (! message.getAddressPattern().toString().startsWith (prefix))
+        return;
+
+    OSCMessage msg (message);
+    msg.setAddressPattern (message.getAddressPattern().toString().substring(String(JucePlugin_Name).length() + 1));
+
+    oscParams.processOSCMessage (msg);
 }
 
 //==============================================================================

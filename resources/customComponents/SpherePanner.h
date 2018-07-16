@@ -131,7 +131,7 @@ public:
         virtual ~Element() {}
 
         virtual void startMovement() { };
-        virtual void moveElement (const MouseEvent &event, Point<int> centre, float radius, bool upBeforeDrag,  bool linearElevation) = 0;
+        virtual void moveElement (const MouseEvent &event, Point<int> centre, float radius, bool upBeforeDrag,  bool linearElevation, bool rightClick = false) = 0;
         virtual void stopMovement() { };
 
         /**
@@ -174,7 +174,7 @@ public:
     public:
         StandardElement() : Element() {}
 
-        void moveElement (const MouseEvent &event, Point<int> centre, float radius, bool upBeforeDrag, bool linearElevation) override
+        void moveElement (const MouseEvent &event, Point<int> centre, float radius, bool upBeforeDrag, bool linearElevation, bool rightClick) override
         {
             Point<int> pos = event.getPosition();
             const float azimuth = -1.0f * centre.getAngleToPoint(pos);
@@ -216,10 +216,10 @@ public:
         Vector3D<float> position;
     };
 
-    class AziumuthElevationParameterElement : public Element
+    class AzimuthElevationParameterElement : public Element
     {
     public:
-        AziumuthElevationParameterElement(AudioProcessorParameter& azimuthParameter, NormalisableRange<float> azimuthParameterRange, AudioProcessorParameter& elevationParameter, NormalisableRange<float> elevationParameterRange) : Element(), azimuth(azimuthParameter), azimuthRange(azimuthParameterRange), elevation(elevationParameter), elevationRange(elevationParameterRange) {}
+        AzimuthElevationParameterElement(AudioProcessorParameter& azimuthParameter, NormalisableRange<float> azimuthParameterRange, AudioProcessorParameter& elevationParameter, NormalisableRange<float> elevationParameterRange) : Element(), azimuth(azimuthParameter), azimuthRange(azimuthParameterRange), elevation(elevationParameter), elevationRange(elevationParameterRange) {}
 
         void startMovement() override
         {
@@ -227,28 +227,33 @@ public:
             elevation.beginChangeGesture();
         };
 
-        void moveElement (const MouseEvent &event, Point<int> centre, float radius, bool upBeforeDrag,  bool linearElevation) override
+        void moveElement (const MouseEvent &event, Point<int> centre, float radius, bool upBeforeDrag,  bool linearElevation, bool rightClick) override
         {
             Point<int> pos = event.getPosition();
             const float azi = -1.0f * centre.getAngleToPoint(pos);
-            float r = centre.getDistanceFrom(pos) / radius;
+            const float azimuthInDegrees { Conversions<float>::radiansToDegrees(azi) };
 
-            if (r > 1.0f) {
-                r = 1.0f / r;
-                upBeforeDrag = !upBeforeDrag;
+            if (! rightClick)
+            {
+                float r = centre.getDistanceFrom(pos) / radius;
+
+                if (r > 1.0f)
+                {
+                    r = 1.0f / r;
+                    upBeforeDrag = !upBeforeDrag;
+                }
+
+                if (linearElevation)
+                    r = std::sin(r * 1.570796327f);
+                float ele = std::acos(r);
+                if (! upBeforeDrag) ele *= -1.0f;
+
+                const float elevationInDegrees { Conversions<float>::radiansToDegrees(ele) };
+
+                elevation.setValueNotifyingHost(elevationRange.convertTo0to1(elevationInDegrees));
             }
 
-            if (linearElevation)
-                r = std::sin(r * 1.570796327f);
-
-            float ele = std::acos(r);
-            if (! upBeforeDrag) ele *= -1.0f;
-
-            const float azimuthInDegrees { Conversions<float>::radiansToDegrees(azi) };
-            const float elevationInDegrees { Conversions<float>::radiansToDegrees(ele) };
-
             azimuth.setValueNotifyingHost(azimuthRange.convertTo0to1(azimuthInDegrees));
-            elevation.setValueNotifyingHost(elevationRange.convertTo0to1(elevationInDegrees));
         }
 
         void stopMovement() override
@@ -287,7 +292,7 @@ public:
     class RollWidthParameterElement : public Element
     {
     public:
-        RollWidthParameterElement(AziumuthElevationParameterElement& center, AudioProcessorParameter& rollParameter, NormalisableRange<float> rollParameterRange, AudioProcessorParameter& widthParameter, NormalisableRange<float> widthParameterRange) : Element(), centerElement(center), roll(rollParameter), rollRange(rollParameterRange), width(widthParameter), widthRange(widthParameterRange) {}
+        RollWidthParameterElement(AzimuthElevationParameterElement& center, AudioProcessorParameter& rollParameter, NormalisableRange<float> rollParameterRange, AudioProcessorParameter& widthParameter, NormalisableRange<float> widthParameterRange) : Element(), centerElement(center), roll(rollParameter), rollRange(rollParameterRange), width(widthParameter), widthRange(widthParameterRange) {}
 
         void startMovement() override
         {
@@ -295,7 +300,7 @@ public:
             width.beginChangeGesture();
         };
 
-        void moveElement (const MouseEvent &event, Point<int> centre, float radius, bool upBeforeDrag, bool linearElevation) override
+        void moveElement (const MouseEvent &event, Point<int> centre, float radius, bool upBeforeDrag, bool linearElevation, bool rightClick) override
         {
             Point<int> pos = event.getPosition();
             const float azi = -1.0f * centre.getAngleToPoint(pos);
@@ -378,7 +383,7 @@ public:
         void setMirrored (bool mirrored) { isMirrored = mirrored; }
 
     private:
-        AziumuthElevationParameterElement& centerElement;
+        AzimuthElevationParameterElement& centerElement;
         AudioProcessorParameter& roll;
         NormalisableRange<float> rollRange;
         AudioProcessorParameter& width;
@@ -492,8 +497,11 @@ public:
     }
     void mouseDrag (const MouseEvent &event) override
     {
-        if (activeElem != -1) {
-            elements.getUnchecked(activeElem)->moveElement(event, centre, radius, activeElemWasUpBeforeDrag, linearElevation);
+        const bool rightClick = event.mods.isRightButtonDown();
+        if (activeElem != -1)
+        {
+
+            elements.getUnchecked (activeElem)->moveElement (event, centre, radius, activeElemWasUpBeforeDrag, linearElevation, rightClick);
             repaint();
         }
     }

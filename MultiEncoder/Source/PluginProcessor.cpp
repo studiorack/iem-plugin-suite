@@ -41,13 +41,13 @@ MultiEncoderAudioProcessor::MultiEncoderAudioProcessor()
 #endif
                  ),
 #endif
-parameters (*this, nullptr)
+parameters (*this, nullptr), oscParams (parameters)
 
 {
-    parameters.createAndAddParameter("inputSetting", "Number of input channels ", "",
+    oscParams.createAndAddParameter("inputSetting", "Number of input channels ", "",
                                      NormalisableRange<float> (0.0f, maxNumberOfInputs, 1.0f), startNnumberOfInputs,
                                      [](float value) {return String(value);}, nullptr);
-    parameters.createAndAddParameter ("orderSetting", "Ambisonics Order", "",
+    oscParams.createAndAddParameter ("orderSetting", "Ambisonics Order", "",
                                       NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
                                       [](float value) {
                                           if (value >= 0.5f && value < 1.5f) return "0th";
@@ -60,7 +60,7 @@ parameters (*this, nullptr)
                                           else if (value >= 7.5f) return "7th";
                                           else return "Auto";},
                                       nullptr);
-    parameters.createAndAddParameter ("useSN3D", "Normalization", "",
+    oscParams.createAndAddParameter ("useSN3D", "Normalization", "",
                                       NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                       [](float value)
                                       {
@@ -68,37 +68,37 @@ parameters (*this, nullptr)
                                           else return "N3D";
                                       }, nullptr);
 
-    parameters.createAndAddParameter("masterAzimuth", "Master azimuth angle", CharPointer_UTF8 (R"(°)"),
+    oscParams.createAndAddParameter("masterAzimuth", "Master azimuth angle", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0f,
                                      [](float value) {return String(value, 2);}, nullptr);
-    parameters.createAndAddParameter("masterElevation", "Master elevation angle", CharPointer_UTF8 (R"(°)"),
+    oscParams.createAndAddParameter("masterElevation", "Master elevation angle", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0f,
                                      [](float value) {return String(value, 2);}, nullptr);
-    parameters.createAndAddParameter("masterRoll", "Master roll angle", CharPointer_UTF8 (R"(°)"),
+    oscParams.createAndAddParameter("masterRoll", "Master roll angle", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0f,
                                      [](float value) {return String(value, 2);}, nullptr);
 
-    parameters.createAndAddParameter("lockedToMaster", "Lock Directions relative to Master", "",
+    oscParams.createAndAddParameter("lockedToMaster", "Lock Directions relative to Master", "",
                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
                                      [](float value) {return (value >= 0.5f) ? "locked" : "not locked";}, nullptr);
 
     for (int i = 0; i < maxNumberOfInputs; ++i)
     {
-        parameters.createAndAddParameter("azimuth" + String(i), "Azimuth angle " + String(i), CharPointer_UTF8 (R"(°)"),
+        oscParams.createAndAddParameter("azimuth" + String(i), "Azimuth angle " + String(i + 1), CharPointer_UTF8 (R"(°)"),
                                          NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
                                          [](float value) {return String(value, 2);}, nullptr);
-        parameters.createAndAddParameter("elevation" + String(i), "Elevation angle " + String(i), CharPointer_UTF8 (R"(°)"),
+        oscParams.createAndAddParameter("elevation" + String(i), "Elevation angle " + String(i + 1), CharPointer_UTF8 (R"(°)"),
                                          NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
                                          [](float value) {return String(value, 2);}, nullptr);
-        parameters.createAndAddParameter("gain" + String(i), "Gain " + String(i), "dB",
+        oscParams.createAndAddParameter("gain" + String(i), "Gain " + String(i + 1), "dB",
                                          NormalisableRange<float> (-60.0f, 10.0f, 0.1f), 0.0f,
                                          [](float value) {return (value >= -59.9f) ? String(value, 1) : "-inf";},
                                          nullptr);
-        parameters.createAndAddParameter("mute" + String(i), "Mute input " + String(i), "",
+        oscParams.createAndAddParameter("mute" + String(i), "Mute input " + String(i + 1), "",
                                          NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
                                          [](float value) {return (value >= 0.5f) ? "muted" : "not muted";}, nullptr);
 
-        parameters.createAndAddParameter("solo" + String(i), "Solo input " + String(i), "",
+        oscParams.createAndAddParameter("solo" + String(i), "Solo input " + String(i + 1), "",
                                          NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
                                          [](float value) {return (value >= 0.5f) ? "soloed" : "not soloed";}, nullptr);
     }
@@ -160,10 +160,9 @@ parameters (*this, nullptr)
         elementColours[i] = Colours::cyan;
     }
 
-
     updateQuaternions();
 
-
+    oscReceiver.addListener (this);
 }
 
 MultiEncoderAudioProcessor::~MultiEncoderAudioProcessor()
@@ -324,7 +323,6 @@ void MultiEncoderAudioProcessor::parameterChanged (const String &parameterID, fl
     {
         if (newValue >= 0.5f && !locked)
         {
-            DBG("toggled");
             const int nChIn = input.getSize();
             float ypr[3];
             ypr[2] = 0.0f;
@@ -350,7 +348,6 @@ void MultiEncoderAudioProcessor::parameterChanged (const String &parameterID, fl
     }
     else if (locked && ((parameterID == "masterAzimuth") ||  (parameterID == "masterElevation") ||  (parameterID == "masterRoll")))
     {
-        DBG("moving");
         moving = true;
         iem::Quaternion<float> masterQuat;
         float ypr[3];
@@ -368,8 +365,9 @@ void MultiEncoderAudioProcessor::parameterChanged (const String &parameterID, fl
             parameters.getParameterAsValue("elevation" + String(i)).setValue(radiansToDegrees(ypr[1]));
         }
         moving = false;
+        updateSphere = true;
     }
-    else if (locked && !moving &&  (parameterID.startsWith("azimuth") || parameterID.startsWith("elevation")))
+    else if (locked && !moving && (parameterID.startsWith("azimuth") || parameterID.startsWith("elevation")))
     {
         float ypr[3];
         ypr[2] = 0.0f;
@@ -389,6 +387,11 @@ void MultiEncoderAudioProcessor::parameterChanged (const String &parameterID, fl
             quats[i].fromYPR(ypr);
             quats[i] = masterQuat*quats[i];
         }
+        updateSphere = true;
+    }
+    else if (parameterID.startsWith("azimuth") || parameterID.startsWith("elevation") || (parameterID == "masterAzimuth") ||  (parameterID == "masterElevation"))
+    {
+        updateSphere = true;
     }
 }
 
@@ -398,7 +401,7 @@ void MultiEncoderAudioProcessor::getStateInformation (MemoryBlock& destData)
 {
     for (int i = 0; i < maxNumberOfInputs; ++i)
         parameters.state.setProperty("colour" + String(i), elementColours[i].toString(), nullptr);
-
+    parameters.state.setProperty ("OSCPort", var(oscReceiver.getPortNumber()), nullptr);
     ScopedPointer<XmlElement> xml (parameters.state.createXml());
     copyXmlToBinary (*xml, destData);
 }
@@ -416,6 +419,11 @@ void MultiEncoderAudioProcessor::setStateInformation (const void* data, int size
                     elementColours[i] = Colour::fromString(parameters.state.getProperty("colour" + String(i)).toString());
                 else elementColours[i] = Colours::cyan;
             updateColours = true;
+
+            if (parameters.state.hasProperty ("OSCPort"))
+            {
+                oscReceiver.connect (parameters.state.getProperty ("OSCPort", var (-1)));
+            }
         }
 }
 
@@ -476,4 +484,16 @@ pointer_sized_int MultiEncoderAudioProcessor::handleVstPluginCanDo (int32 index,
     if (matches ("wantsChannelCountNotifications"))
         return 1;
     return 0;
+}
+
+//==============================================================================
+void MultiEncoderAudioProcessor::oscMessageReceived (const OSCMessage &message)
+{
+    String prefix ("/" + String(JucePlugin_Name));
+    if (! message.getAddressPattern().toString().startsWith (prefix))
+        return;
+
+    OSCMessage msg (message);
+    msg.setAddressPattern (message.getAddressPattern().toString().substring(String(JucePlugin_Name).length() + 1));
+    oscParams.processOSCMessage (msg);
 }

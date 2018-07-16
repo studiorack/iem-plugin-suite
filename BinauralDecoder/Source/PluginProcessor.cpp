@@ -36,9 +36,9 @@ BinauralDecoderAudioProcessor::BinauralDecoderAudioProcessor()
 #endif
                   ),
 #endif
-parameters(*this, nullptr)
+parameters(*this, nullptr), oscParams (parameters)
 {
-    parameters.createAndAddParameter ("inputOrderSetting", "Ambisonic Order", "",
+    oscParams.createAndAddParameter ("inputOrderSetting", "Input Ambisonic Order", "",
                                       NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
                                       [](float value) {
                                           if (value >= 0.5f && value < 1.5f) return "0th";
@@ -51,14 +51,15 @@ parameters(*this, nullptr)
                                           else if (value >= 7.5f) return "7th";
                                           else return "Auto";},
                                       nullptr);
-    parameters.createAndAddParameter("useSN3D", "Normalization", "",
+
+    oscParams.createAndAddParameter ("useSN3D", "Input Normalization", "",
                                      NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value) {
                                          if (value >= 0.5f) return "SN3D";
                                          else return "N3D";
                                      }, nullptr);
 
-    parameters.createAndAddParameter("applyHeadphoneEq", "Headphone Equalization", "",
+    oscParams.createAndAddParameter ("applyHeadphoneEq", "Headphone Equalization", "",
                                      NormalisableRange<float>(0.0f, float(headphoneEQs.size()), 1.0f), 0.0f,
                                      [this](float value) {
                                          if (value < 0.5f) return String("OFF");
@@ -101,6 +102,7 @@ parameters(*this, nullptr)
         reader->read(&irs[i], 0, irLength, 0, true, false);
     }
 
+    oscReceiver.addListener (this);
 }
 
 BinauralDecoderAudioProcessor::~BinauralDecoderAudioProcessor()
@@ -344,6 +346,7 @@ AudioProcessorEditor* BinauralDecoderAudioProcessor::createEditor()
 void BinauralDecoderAudioProcessor::getStateInformation (MemoryBlock& destData)
 {
     auto state = parameters.copyState();
+    state.setProperty ("OSCPort", var(oscReceiver.getPortNumber()), nullptr);
     std::unique_ptr<XmlElement> xml (state.createXml());
     copyXmlToBinary (*xml, destData);
 }
@@ -354,7 +357,13 @@ void BinauralDecoderAudioProcessor::setStateInformation (const void* data, int s
     std::unique_ptr<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
     if (xmlState.get() != nullptr)
         if (xmlState->hasTagName (parameters.state.getType()))
+        {
             parameters.replaceState (ValueTree::fromXml (*xmlState));
+            if (parameters.state.hasProperty ("OSCPort"))
+            {
+                oscReceiver.connect (parameters.state.getProperty ("OSCPort", var (-1)));
+            }
+        }
 }
 
 //==============================================================================
@@ -501,4 +510,17 @@ pointer_sized_int BinauralDecoderAudioProcessor::handleVstPluginCanDo (int32 ind
     if (matches ("wantsChannelCountNotifications"))
         return 1;
     return 0;
+}
+
+//==============================================================================
+void BinauralDecoderAudioProcessor::oscMessageReceived (const OSCMessage &message)
+{
+    String prefix ("/" + String(JucePlugin_Name));
+    if (! message.getAddressPattern().toString().startsWith (prefix))
+        return;
+
+    OSCMessage msg (message);
+    msg.setAddressPattern (message.getAddressPattern().toString().substring(String(JucePlugin_Name).length() + 1));
+
+    oscParams.processOSCMessage (msg);
 }

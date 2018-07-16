@@ -28,6 +28,9 @@
 #include "../../resources/inPhase.h"
 #include "../../resources/MaxRE.h"
 
+// ===== OSC ====
+#include "../../resources/OSCParameterInterface.h"
+#include "../../resources/OSCReceiverPlus.h"
 
 //==============================================================================
 /**
@@ -40,7 +43,8 @@
 class ToolBoxAudioProcessor  :  public AudioProcessor,
                                 public AudioProcessorValueTreeState::Listener,
                                 public IOHelper<IOTypes::Ambisonics<7>, IOTypes::Ambisonics<7>>,
-                                public VSTCallbackHandler
+                                public VSTCallbackHandler,
+                                private OSCReceiver::Listener<OSCReceiver::RealtimeCallback>
 {
 public:
     //==============================================================================
@@ -91,10 +95,18 @@ public:
                                             void* ptr, float opt) override;
     //==============================================================================
 
+    //======== OSC =================================================================
+    void oscMessageReceived (const OSCMessage &message) override;
+    OSCReceiverPlus& getOSCReceiver () { return oscReceiver; }
+    //==============================================================================
+
+
 private:
     // ====== parameters
     AudioProcessorValueTreeState parameters;
-
+    OSCParameterInterface oscParams;
+    OSCReceiverPlus oscReceiver;
+    
     // list of used audio parameters
     float* inputOrderSetting;
     float* outputOrderSetting;

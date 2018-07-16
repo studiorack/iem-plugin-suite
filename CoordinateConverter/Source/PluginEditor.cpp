@@ -26,7 +26,7 @@
 
 //==============================================================================
 CoordinateConverterAudioProcessorEditor::CoordinateConverterAudioProcessorEditor (CoordinateConverterAudioProcessor& p, AudioProcessorValueTreeState& vts)
-    : AudioProcessorEditor (&p), processor (p), valueTreeState (vts),
+    : AudioProcessorEditor (&p), processor (p), valueTreeState (vts), footer (p.getOSCReceiver()),
       panner (*valueTreeState.getParameter("azimuth"), valueTreeState.getParameterRange("azimuth"), *valueTreeState.getParameter("elevation"), valueTreeState.getParameterRange("elevation")),
       xyzPanner (*valueTreeState.getParameter("xPos"), valueTreeState.getParameterRange("xPos"),
               *valueTreeState.getParameter("yPos"), valueTreeState.getParameterRange("yPos"),
@@ -35,7 +35,7 @@ CoordinateConverterAudioProcessorEditor::CoordinateConverterAudioProcessorEditor
     // ============== BEGIN: essentials ======================
     // set GUI size and lookAndFeel
     //setSize(500, 300); // use this to create a fixed-size GUI
-    setResizeLimits (470, 570, 800, 650); // use this to create a resizable GUI
+    setResizeLimits (470, 590, 800, 650); // use this to create a resizable GUI
     setLookAndFeel (&globalLaF);
 
     // make title and footer visible, and set the PluginName
@@ -98,6 +98,21 @@ CoordinateConverterAudioProcessorEditor::CoordinateConverterAudioProcessorEditor
     addAndMakeVisible (lbRadius);
     lbRadius.setText ("Radius");
 
+    addAndMakeVisible (tbAzimuthFlip);
+    tbAzimuthFlipAttachment = new ButtonAttachment (valueTreeState, "azimuthFlip", tbAzimuthFlip);
+    tbAzimuthFlip.setColour (ToggleButton::ColourIds::tickColourId, globalLaF.ClWidgetColours[0]);
+    tbAzimuthFlip.setButtonText ("Flip");
+
+    addAndMakeVisible (tbElevationFlip);
+    tbElevationFlipAttachment = new ButtonAttachment (valueTreeState, "elevationFlip", tbElevationFlip);
+    tbElevationFlip.setColour (ToggleButton::ColourIds::tickColourId, globalLaF.ClWidgetColours[1]);
+    tbElevationFlip.setButtonText ("Flip");
+
+    addAndMakeVisible (tbRadiusFlip);
+    tbRadiusFlipAttachment = new ButtonAttachment (valueTreeState, "radiusFlip", tbRadiusFlip);
+    tbRadiusFlip.setColour (ToggleButton::ColourIds::tickColourId, globalLaF.ClWidgetColours[2]);
+    tbRadiusFlip.setButtonText ("Flip");
+
     // ============== END: SPHERICAL COORDINATES ============
 
     // ============== BEGIN: CARTESIAN COORDINATES ============
@@ -118,14 +133,14 @@ CoordinateConverterAudioProcessorEditor::CoordinateConverterAudioProcessorEditor
     slXPosAttachment = new SliderAttachment(valueTreeState, "xPos", slXPos);
     slXPos.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slXPos.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slXPos.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
+    slXPos.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
     slXPos.setTooltip ("x coordinate (normalized)");
 
     addAndMakeVisible (slYPos);
     slYPosAttachment = new SliderAttachment(valueTreeState, "yPos", slYPos);
     slYPos.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slYPos.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slYPos.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
+    slYPos.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
     slYPos.setTooltip ("y coordinate (normalized)");
 
     addAndMakeVisible (slZPos);
@@ -145,6 +160,28 @@ CoordinateConverterAudioProcessorEditor::CoordinateConverterAudioProcessorEditor
     addAndMakeVisible (lbZPos);
     lbZPos.setText ("Z");
 
+    addAndMakeVisible (tbXFlip);
+    tbXFlipAttachment = new ButtonAttachment (valueTreeState, "xFlip", tbXFlip);
+    tbXFlip.setColour (ToggleButton::ColourIds::tickColourId, globalLaF.ClWidgetColours[0]);
+    tbXFlip.setButtonText ("Flip");
+    tbXFlip.addListener (this);
+
+    addAndMakeVisible (tbYFlip);
+    tbYFlipAttachment = new ButtonAttachment (valueTreeState, "yFlip", tbYFlip);
+    tbYFlip.setColour (ToggleButton::ColourIds::tickColourId, globalLaF.ClWidgetColours[1]);
+    tbYFlip.setButtonText ("Flip");
+    tbYFlip.addListener (this);
+
+    addAndMakeVisible (tbZFlip);
+    tbZFlipAttachment = new ButtonAttachment (valueTreeState, "zFlip", tbZFlip);
+    tbZFlip.setColour (ToggleButton::ColourIds::tickColourId, globalLaF.ClWidgetColours[2]);
+    tbZFlip.setButtonText ("Flip");
+    tbZFlip.addListener (this);
+
+    xyPlane.setXFlip (tbXFlip.getToggleState());
+    xyPlane.setYFlip (tbYFlip.getToggleState());
+    zyPlane.setYFlip (tbYFlip.getToggleState());
+    zyPlane.setZFlip (tbZFlip.getToggleState());
 
     addAndMakeVisible (slXReference);
     slXReference.setJustificationType(Justification::centred);
@@ -317,7 +354,7 @@ void CoordinateConverterAudioProcessorEditor::resized()
     gcSpherical.setBounds (sphericalArea);
     sphericalArea.removeFromTop (25);
 
-    auto sliderArea = sphericalArea.removeFromBottom (rotSliderHeight + 12 + 5); // slider + spacing + label
+    auto sliderArea = sphericalArea.removeFromBottom (rotSliderHeight + 12 + 5 + 20); // slider + spacing + label
     const int w = sphericalArea.getWidth();
     const int leftMargin = 0.5f * (w - 3 * rotSliderWidth - 2 * rotSliderSpacing);
     auto sliderRow = sliderArea.removeFromTop (rotSliderHeight);
@@ -338,6 +375,14 @@ void CoordinateConverterAudioProcessorEditor::resized()
     sliderRow.removeFromLeft (rotSliderSpacing - 5);
     lbRadius.setBounds (sliderRow.removeFromLeft (rotSliderWidth));
 
+    sliderRow = sliderArea.removeFromTop (20);
+    sliderRow.removeFromLeft (leftMargin);
+    tbAzimuthFlip.setBounds (sliderRow.removeFromLeft (rotSliderWidth));
+    sliderRow.removeFromLeft (rotSliderSpacing);
+    tbElevationFlip.setBounds (sliderRow.removeFromLeft (rotSliderWidth));
+    sliderRow.removeFromLeft (rotSliderSpacing);
+    tbRadiusFlip.setBounds (sliderRow.removeFromLeft (rotSliderWidth));
+
     sphere.setBounds (sphericalArea);
 
 
@@ -350,7 +395,7 @@ void CoordinateConverterAudioProcessorEditor::resized()
     cartesianArea.removeFromTop (25);
 
     {
-        auto sliderArea = cartesianArea.removeFromBottom (rotSliderHeight + 12 + 5); // slider + spacing + label
+        auto sliderArea = cartesianArea.removeFromBottom (rotSliderHeight + 12 + 5 + 20); // slider + spacing + label
         const int w = cartesianArea.getWidth();
         const int leftMargin = 0.5f * (w - 3 * rotSliderWidth - 2 * rotSliderSpacing);
 
@@ -369,6 +414,16 @@ void CoordinateConverterAudioProcessorEditor::resized()
         lbYPos.setBounds (sliderRow.removeFromLeft (rotSliderWidth));
         sliderRow.removeFromLeft (rotSliderSpacing - 2);
         lbZPos.setBounds (sliderRow.removeFromLeft (rotSliderWidth));
+
+        sliderRow = sliderArea.removeFromTop (20);
+        sliderRow.removeFromLeft (leftMargin);
+        tbXFlip.setBounds (sliderRow.removeFromLeft (rotSliderWidth));
+        sliderRow.removeFromLeft (rotSliderSpacing);
+        tbYFlip.setBounds (sliderRow.removeFromLeft (rotSliderWidth));
+        sliderRow.removeFromLeft (rotSliderSpacing);
+        tbZFlip.setBounds (sliderRow.removeFromLeft (rotSliderWidth));
+
+
 
         const int sphereHeight = sphere.getHeight();
         const int planeHeight = (sphereHeight - 11) / 2;
@@ -394,5 +449,22 @@ void CoordinateConverterAudioProcessorEditor::timerCallback()
     {
         processor.repaintSphere = false;
         sphere.repaint();
+    }
+}
+
+void CoordinateConverterAudioProcessorEditor::buttonStateChanged (Button* button)
+{
+    if (button == &tbXFlip)
+    {
+        xyPlane.setXFlip (tbXFlip.getToggleState());
+    }
+    else if (button == &tbYFlip)
+    {
+        xyPlane.setYFlip (tbYFlip.getToggleState());
+        zyPlane.setYFlip (tbYFlip.getToggleState());
+    }
+    else if (button == &tbZFlip)
+    {
+        zyPlane.setZFlip (tbZFlip.getToggleState());
     }
 }

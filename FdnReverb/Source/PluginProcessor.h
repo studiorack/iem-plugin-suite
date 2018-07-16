@@ -25,10 +25,17 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "../../resources/FeedbackDelayNetwork.h"
 
+// ===== OSC ====
+#include "../../resources/OSCParameterInterface.h"
+#include "../../resources/OSCReceiverPlus.h"
+
 //==============================================================================
 /**
 */
-class FdnReverbAudioProcessor  : public AudioProcessor, public AudioProcessorValueTreeState::Listener, public VSTCallbackHandler
+class FdnReverbAudioProcessor  : public AudioProcessor,
+                                public AudioProcessorValueTreeState::Listener,
+                                public VSTCallbackHandler,
+                                private OSCReceiver::Listener<OSCReceiver::RealtimeCallback>
 {
 public:
 //==============================================================================
@@ -77,6 +84,12 @@ public:
                                             void* ptr, float opt) override;
     //==============================================================================
 
+    //======== OSC =================================================================
+    void oscMessageReceived (const OSCMessage &message) override;
+    OSCReceiverPlus& getOSCReceiver () { return oscReceiver; }
+    //==============================================================================
+
+
 //==============================================================================
     // parameters/functions for interfacing with GUI
     AudioProcessorValueTreeState parameters;
@@ -92,7 +105,9 @@ public:
 private:
 //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (FdnReverbAudioProcessor)
-
+    
+    OSCParameterInterface oscParams;
+    OSCReceiverPlus oscReceiver;
 
     // parameters (from GUI)
     float *revTime;

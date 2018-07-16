@@ -40,8 +40,9 @@ ProbeDecoderAudioProcessor::ProbeDecoderAudioProcessor()
 #endif
                   ),
 #endif
-parameters(*this, nullptr) {
-    parameters.createAndAddParameter("orderSetting", "Ambisonics Order", "",
+parameters(*this, nullptr), oscParams (parameters)
+{
+    oscParams.createAndAddParameter ("orderSetting", "Ambisonics Order", "",
                                      NormalisableRange<float>(0.0f, 8.0f, 1.0f), 0.0f,
                                      [](float value) {
                                          if (value >= 0.5f && value < 1.5f) return "0th";
@@ -54,17 +55,17 @@ parameters(*this, nullptr) {
                                          else if (value >= 7.5f) return "7th";
                                          else return "Auto";
                                      }, nullptr);
-    parameters.createAndAddParameter("useSN3D", "Normalization", "",
+    oscParams.createAndAddParameter ("useSN3D", "Normalization", "",
                                      NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value) {
                                          if (value >= 0.5f) return "SN3D";
                                          else return "N3D";
                                      }, nullptr);
 
-    parameters.createAndAddParameter("azimuth", "Azimuth angle", CharPointer_UTF8 (R"(°)"),
+    oscParams.createAndAddParameter ("azimuth", "Azimuth angle", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
                                      [](float value) { return String(value, 2); }, nullptr);
-    parameters.createAndAddParameter("elevation", "Elevation angle", CharPointer_UTF8 (R"(°)"),
+    oscParams.createAndAddParameter ("elevation", "Elevation angle", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
                                      [](float value) { return String(value, 2); }, nullptr);
 
@@ -81,6 +82,8 @@ parameters(*this, nullptr) {
     parameters.addParameterListener("elevation", this);
 
     FloatVectorOperations::clear(previousSH, 64);
+
+    oscReceiver.addListener (this);
 }
 
 ProbeDecoderAudioProcessor::~ProbeDecoderAudioProcessor()
@@ -199,6 +202,7 @@ void ProbeDecoderAudioProcessor::parameterChanged(const String &parameterID, flo
 void ProbeDecoderAudioProcessor::getStateInformation (MemoryBlock &destData)
 {
     auto state = parameters.copyState();
+    state.setProperty ("OSCPort", var(oscReceiver.getPortNumber()), nullptr);
     std::unique_ptr<XmlElement> xml (state.createXml());
     copyXmlToBinary (*xml, destData);
 }
@@ -208,7 +212,13 @@ void ProbeDecoderAudioProcessor::setStateInformation (const void *data, int size
     std::unique_ptr<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
     if (xmlState.get() != nullptr)
         if (xmlState->hasTagName (parameters.state.getType()))
+        {
             parameters.replaceState (ValueTree::fromXml (*xmlState));
+            if (parameters.state.hasProperty ("OSCPort"))
+            {
+                oscReceiver.connect (parameters.state.getProperty ("OSCPort", var (-1)));
+            }
+        }
 }
 
 //==============================================================================
@@ -221,6 +231,19 @@ pointer_sized_int ProbeDecoderAudioProcessor::handleVstPluginCanDo (int32 index,
     if (matches ("wantsChannelCountNotifications"))
         return 1;
     return 0;
+}
+
+//==============================================================================
+void ProbeDecoderAudioProcessor::oscMessageReceived (const OSCMessage &message)
+{
+    String prefix ("/" + String(JucePlugin_Name));
+    if (! message.getAddressPattern().toString().startsWith (prefix))
+        return;
+
+    OSCMessage msg (message);
+    msg.setAddressPattern (message.getAddressPattern().toString().substring(String(JucePlugin_Name).length() + 1));
+
+    oscParams.processOSCMessage (msg);
 }
 
 //==============================================================================

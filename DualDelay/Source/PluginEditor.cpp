@@ -26,12 +26,9 @@
 
 //==============================================================================
 DualDelayAudioProcessorEditor::DualDelayAudioProcessorEditor (DualDelayAudioProcessor& p, AudioProcessorValueTreeState& vts)
-    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts)
+    : AudioProcessorEditor (&p), processor (p), footer (p.getOSCReceiver()), valueTreeState(vts)
 {
-
-
     setLookAndFeel (&globalLaF);
-
 
     addAndMakeVisible(&title);
     title.setTitle(String("Dual"),String("Delay"));
@@ -40,7 +37,6 @@ DualDelayAudioProcessorEditor::DualDelayAudioProcessorEditor (DualDelayAudioProc
 
     cbNormalizationAtachement = new ComboBoxAttachment(valueTreeState,"useSN3D", *title.getInputWidgetPtr()->getNormCbPointer());
     cbOrderAtachement = new ComboBoxAttachment(valueTreeState,"orderSetting", *title.getInputWidgetPtr()->getOrderCbPointer());
-
 
     addAndMakeVisible(&SlDryGain);
     SlDryGainAttachment = new SliderAttachment(valueTreeState, "dryGain", SlDryGain);

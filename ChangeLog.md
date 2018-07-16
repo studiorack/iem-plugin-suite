@@ -3,9 +3,23 @@ For a list of all changes and bugfixes see the git log.
 
 Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They might lead to an unexpected behaviour and might not be compatible with your previous projects without making some adaptions. See the [Breaking changes article](https://plugins.iem.at/docs/breakingchanges/) for more information.
 
+## v1.6.0
+- general changes
+    - OSC support: every plug-in is now controllable via OSC
+    - SpherePanner will change only azimuth when right-clicked and dragged
+
+- plug-in specific changes
+    - **AllRA**Decoder
+        - alt+clicking the Noise button, will encode the test-signal to the loudspeaker's direction
+        - tooltips added to some buttons (noise, import, export, rotate, add loudspeakers)
+    - **Coordinate**Converter
+        - added flip toggles for each in- and output parameter
+
+
+
 ## v1.5.0
 - general changes
-    - decoders (e.g. SimpleDecoder) can handle `inPhase` weights now
+    - decoders (e.g. SimpleDecoder) can handle inPhase weights now
 
 - new plug-ins:
     - **Coordinate**Converter

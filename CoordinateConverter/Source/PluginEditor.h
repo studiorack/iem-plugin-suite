@@ -43,7 +43,7 @@ typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 //==============================================================================
 /**
 */
-class CoordinateConverterAudioProcessorEditor  : public AudioProcessorEditor, private Timer
+class CoordinateConverterAudioProcessorEditor  : public AudioProcessorEditor, private Timer, private Button::Listener
 {
 public:
     CoordinateConverterAudioProcessorEditor (CoordinateConverterAudioProcessor&, AudioProcessorValueTreeState&);
@@ -55,6 +55,10 @@ public:
 
 
     void timerCallback() override;
+
+    void buttonClicked (Button* button) override {};
+
+    void buttonStateChanged (Button* button) override;
 
 private:
     // ====================== begin essentials ==================
@@ -74,14 +78,14 @@ private:
         - DirectivitiyIOWidget
      */
     TitleBar<NoIOWidget, NoIOWidget> title;
-    Footer footer;
+    OSCFooter footer;
     // =============== end essentials ============
 
     // === Spherical
     GroupComponent gcSpherical, gcCartesian, gcRange, gcReference;
 
     SpherePanner sphere;
-    SpherePanner::AziumuthElevationParameterElement panner;
+    SpherePanner::AzimuthElevationParameterElement panner;
 
     ReverseSlider slAzimuth, slElevation, slRadius;
     ScopedPointer<SliderAttachment> slAzimuthAttachment, slElevationAttachment, slRadiusAttachment;
@@ -94,6 +98,9 @@ private:
     ReverseSlider slXPos, slYPos, slZPos;
     ScopedPointer<SliderAttachment> slXPosAttachment, slYPosAttachment, slZPosAttachment;
     SimpleLabel lbXPos, lbYPos, lbZPos;
+
+    ToggleButton tbAzimuthFlip, tbElevationFlip, tbRadiusFlip, tbXFlip, tbYFlip, tbZFlip;
+    ScopedPointer<ButtonAttachment> tbAzimuthFlipAttachment, tbElevationFlipAttachment, tbRadiusFlipAttachment, tbXFlipAttachment, tbYFlipAttachment, tbZFlipAttachment;
 
     Label slXReference, slYReference, slZReference;
     ScopedPointer<LabelAttachment> slXReferenceAttachment, slYReferenceAttachment, slZReferenceAttachment;

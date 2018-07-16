@@ -25,9 +25,13 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "../../resources/IOHelper.h"
 #include "../../resources/AmbisonicDecoder.h"
-#include "../../resources/DecoderHelper.h"
+#include "../../resources/ConfigurationHelper.h"
 #include "../../resources/ReferenceCountedDecoder.h"
 #include "../../resources/FilterVisualizerHelper.h"
+
+// ===== OSC ====
+#include "../../resources/OSCParameterInterface.h"
+#include "../../resources/OSCReceiverPlus.h"
 
 using namespace dsp;
 //==============================================================================
@@ -41,7 +45,8 @@ using namespace dsp;
 class SimpleDecoderAudioProcessor  :    public AudioProcessor,
                                         public AudioProcessorValueTreeState::Listener,
                                         public IOHelper<IOTypes::Ambisonics<>, IOTypes::AudioChannels<>>,
-                                        public VSTCallbackHandler
+                                        public VSTCallbackHandler,
+                                        private OSCReceiver::Listener<OSCReceiver::RealtimeCallback>
 {
 public:
     //==============================================================================
@@ -92,10 +97,16 @@ public:
                                             void* ptr, float opt) override;
     //==============================================================================
 
+    //======== OSC =================================================================
+    void oscMessageReceived (const OSCMessage &message) override;
+    OSCReceiverPlus& getOSCReceiver () { return oscReceiver; }
+    //==============================================================================
+
     File getLastDir() {return lastDir;}
     void setLastDir(File newLastDir);
-    void loadPreset(const File& presetFile);
+    void loadConfiguration(const File& presetFile);
 
+    bool updateDecoderInfo = true;
     bool messageChanged {true};
     String getMessageForEditor() {return messageForEditor;}
 
@@ -110,8 +121,11 @@ public:
 private:
     void updateLowPassCoefficients (double sampleRate, float frequency);
     void updateHighPassCoefficients (double sampleRate, float frequency);
+    
     // ====== parameters
     AudioProcessorValueTreeState parameters;
+    OSCParameterInterface oscParams;
+    OSCReceiverPlus oscReceiver;
 
     // list of used audio parameters
     float *inputOrderSetting, *useSN3D;

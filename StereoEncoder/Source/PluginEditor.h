@@ -57,7 +57,7 @@ private:
     LaF globalLaF;
 
     TitleBar<AudioChannelsIOWidget<2,false>, AmbisonicIOWidget<>> title;
-    Footer footer;
+    OSCFooter footer;
 
     void timerCallback() override;
 
@@ -71,7 +71,7 @@ private:
     ComboBox inputChooser;
 
     SpherePanner sphere;
-    SpherePanner::AziumuthElevationParameterElement centerElement;
+    SpherePanner::AzimuthElevationParameterElement centerElement;
     SpherePanner::RollWidthParameterElement leftElement;
     SpherePanner::RollWidthParameterElement rightElement;
 

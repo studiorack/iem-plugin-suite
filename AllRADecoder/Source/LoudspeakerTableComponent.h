@@ -63,10 +63,20 @@ public:
 
     void playNoise (const int row)
     {
-        if (! data.getChild(row).getProperty("Imaginary"))
+        const auto& modifiers = ModifierKeys::getCurrentModifiers();
+        if (modifiers.isAltDown())
         {
-            const int ch = (int) data.getChild(row).getProperty("Channel");
-            processor.playNoiseBurst(ch);
+            const float azimuth = (float) data.getChild (row).getProperty ("Azimuth");
+            const float elevation = (float) data.getChild (row).getProperty ("Elevation");
+            processor.playAmbisonicNoiseBurst (azimuth, elevation);
+        }
+        else
+        {
+            if (! data.getChild(row).getProperty("Imaginary"))
+            {
+                const int ch = (int) data.getChild(row).getProperty("Channel");
+                processor.playNoiseBurst (ch);
+            }
         }
     }
 
@@ -171,6 +181,7 @@ public:
                 noiseButton = new NoiseButton (*this);
 
             noiseButton->setRowAndColumn (rowNumber, columnId);
+            noiseButton->setTooltip ("Sends a short noise burst to that loudspeaker. \n Alt+click: Encodes a noise burst to the loudspeaker's position and decodes it with the current decoder.");
             noiseButton->setEnabled(! data.getChild(rowNumber).getProperty("Imaginary"));
             return noiseButton;
         }

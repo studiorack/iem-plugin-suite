@@ -36,9 +36,9 @@ ToolBoxAudioProcessor::ToolBoxAudioProcessor()
                      #endif
                        ),
 #endif
-parameters(*this, nullptr), flipXMask(int64(0)), flipYMask(int64(0)), flipZMask(int64(0))
+parameters(*this, nullptr), oscParams (parameters), flipXMask(int64(0)), flipYMask(int64(0)), flipZMask(int64(0))
 {
-    parameters.createAndAddParameter ("inputOrderSetting", "Input Ambisonic Order", "",
+    oscParams.createAndAddParameter ("inputOrderSetting", "Input Ambisonic Order", "",
                                       NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
                                       [](float value) {
                                           if (value >= 0.5f && value < 1.5f) return "0th";
@@ -52,14 +52,14 @@ parameters(*this, nullptr), flipXMask(int64(0)), flipYMask(int64(0)), flipZMask(
                                           else return "Auto";},
                                       nullptr);
 
-    parameters.createAndAddParameter("useSn3dInput", "Input Normalization", "",
+    oscParams.createAndAddParameter ("useSn3dInput", "Input Normalization", "",
                                      NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value) {
                                          if (value >= 0.5f) return "SN3D";
                                          else return "N3D";
                                      }, nullptr);
 
-    parameters.createAndAddParameter ("outputOrderSetting", "Output Ambisonic Order", "",
+    oscParams.createAndAddParameter ("outputOrderSetting", "Output Ambisonic Order", "",
                                       NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
                                       [](float value) {
                                           if (value >= 0.5f && value < 1.5f) return "0th";
@@ -73,29 +73,29 @@ parameters(*this, nullptr), flipXMask(int64(0)), flipYMask(int64(0)), flipZMask(
                                           else return "Auto";},
                                       nullptr);
 
-    parameters.createAndAddParameter("useSn3dOutput", "Output Normalization", "",
+    oscParams.createAndAddParameter ("useSn3dOutput", "Output Normalization", "",
                                      NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value) {
                                          if (value >= 0.5f) return "SN3D";
                                          else return "N3D";
                                      }, nullptr);
 
-    parameters.createAndAddParameter("flipX", "Flip X axis", "",
+    oscParams.createAndAddParameter ("flipX", "Flip X axis", "",
                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
                                      [](float value) {if (value >= 0.5f) return "ON";
                                          else return "OFF";}, nullptr);
 
-    parameters.createAndAddParameter("flipY", "Flip Y axis", "",
+    oscParams.createAndAddParameter ("flipY", "Flip Y axis", "",
                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
                                      [](float value) {if (value >= 0.5f) return "ON";
                                          else return "OFF";}, nullptr);
 
-    parameters.createAndAddParameter("flipZ", "Flip Z axis", "",
+    oscParams.createAndAddParameter ("flipZ", "Flip Z axis", "",
                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
                                      [](float value) {if (value >= 0.5f) return "ON";
                                          else return "OFF";}, nullptr);
 
-    parameters.createAndAddParameter ("loaWeights", "Lower Order Ambisonic Weighting", "",
+    oscParams.createAndAddParameter ("loaWeights", "Lower Order Ambisonic Weighting", "",
                                       NormalisableRange<float> (0.0f, 2.0f, 1.0f), 0.0f,
                                       [](float value) {
                                           if (value >= 0.5f && value < 1.5f) return "maxrE";
@@ -146,7 +146,7 @@ parameters(*this, nullptr), flipXMask(int64(0)), flipYMask(int64(0)), flipZMask(
             flipZMask.setBit(ch);
     }
 
-
+    oscReceiver.addListener (this);
 }
 
 ToolBoxAudioProcessor::~ToolBoxAudioProcessor()
@@ -338,6 +338,7 @@ AudioProcessorEditor* ToolBoxAudioProcessor::createEditor()
 void ToolBoxAudioProcessor::getStateInformation (MemoryBlock &destData)
 {
     auto state = parameters.copyState();
+    state.setProperty ("OSCPort", var(oscReceiver.getPortNumber()), nullptr);
     std::unique_ptr<XmlElement> xml (state.createXml());
     copyXmlToBinary (*xml, destData);
 }
@@ -347,7 +348,13 @@ void ToolBoxAudioProcessor::setStateInformation (const void *data, int sizeInByt
     std::unique_ptr<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
     if (xmlState.get() != nullptr)
         if (xmlState->hasTagName (parameters.state.getType()))
+        {
             parameters.replaceState (ValueTree::fromXml (*xmlState));
+            if (parameters.state.hasProperty ("OSCPort"))
+            {
+                oscReceiver.connect (parameters.state.getProperty ("OSCPort", var (-1)));
+            }
+        }
 }
 
 //==============================================================================
@@ -382,6 +389,19 @@ pointer_sized_int ToolBoxAudioProcessor::handleVstPluginCanDo (int32 index,
     if (matches ("wantsChannelCountNotifications"))
         return 1;
     return 0;
+}
+
+//==============================================================================
+void ToolBoxAudioProcessor::oscMessageReceived (const OSCMessage &message)
+{
+    String prefix ("/" + String(JucePlugin_Name));
+    if (! message.getAddressPattern().toString().startsWith (prefix))
+        return;
+
+    OSCMessage msg (message);
+    msg.setAddressPattern (message.getAddressPattern().toString().substring(String(JucePlugin_Name).length() + 1));
+
+    oscParams.processOSCMessage (msg);
 }
 
 //==============================================================================

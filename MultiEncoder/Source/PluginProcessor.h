@@ -36,6 +36,10 @@
 #include "../../resources/IOHelper.h"
 #include "../../resources/Conversions.h"
 
+// ===== OSC ====
+#include "../../resources/OSCParameterInterface.h"
+#include "../../resources/OSCReceiverPlus.h"
+
 
 //==============================================================================
 /**
@@ -43,7 +47,8 @@
 class MultiEncoderAudioProcessor  : public AudioProcessor,
                                     public AudioProcessorValueTreeState::Listener,
                                     public IOHelper<IOTypes::AudioChannels<maxNumberOfInputs>, IOTypes::Ambisonics<>>,
-                                    public VSTCallbackHandler
+                                    public VSTCallbackHandler,
+                                    private OSCReceiver::Listener<OSCReceiver::RealtimeCallback>
 {
 public:
     //==============================================================================
@@ -91,6 +96,11 @@ public:
                                             void* ptr, float opt) override;
     //==============================================================================
 
+    //======== OSC =================================================================
+    void oscMessageReceived (const OSCMessage &message) override;
+    OSCReceiverPlus& getOSCReceiver () { return oscReceiver; }
+    //==============================================================================
+
 
     float xyzGrab[3];
     float xyz[maxNumberOfInputs][3];
@@ -118,6 +128,7 @@ public:
     double phi, theta;
 
     bool updateColours = false;
+    bool updateSphere = true;
     bool soloMuteChanged = true;
 
     Colour elementColours[maxNumberOfInputs];
@@ -131,6 +142,9 @@ private:
 
     bool processorUpdatingParams;
     AudioProcessorValueTreeState parameters;
+    OSCParameterInterface oscParams;
+    OSCReceiverPlus oscReceiver;
+    
     float masterYpr[3];
 
     iem::Quaternion<float> quats[maxNumberOfInputs];

@@ -30,13 +30,18 @@
 #include "../../resources/Delay.h"
 #include "LookAheadGainReduction.h"
 
+// ===== OSC ====
+#include "../../resources/OSCParameterInterface.h"
+#include "../../resources/OSCReceiverPlus.h"
+
 //==============================================================================
 /**
 */
 class OmniCompressorAudioProcessor  :   public AudioProcessor,
                                         public AudioProcessorValueTreeState::Listener,
                                         public IOHelper<IOTypes::Ambisonics<>, IOTypes:: Ambisonics<>>,
-                                        public VSTCallbackHandler
+                                        public VSTCallbackHandler,
+                                        private OSCReceiver::Listener<OSCReceiver::RealtimeCallback>
 
 {
 public:
@@ -84,6 +89,11 @@ public:
                                             void* ptr, float opt) override;
     //==============================================================================
 
+    //======== OSC =================================================================
+    void oscMessageReceived (const OSCMessage &message) override;
+    OSCReceiverPlus& getOSCReceiver () { return oscReceiver; }
+    //==============================================================================
+
     float maxRMS;
     float maxGR;
     Compressor compressor;
@@ -95,6 +105,8 @@ private:
     Delay delay;
     LookAheadGainReduction grProcessing;
     AudioProcessorValueTreeState parameters;
+    OSCParameterInterface oscParams;
+    OSCReceiverPlus oscReceiver;
 
     Array<float> RMS, allGR;
     AudioBuffer<float> gains;

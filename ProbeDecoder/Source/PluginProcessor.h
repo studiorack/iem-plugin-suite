@@ -28,6 +28,9 @@
 #include "../../resources/IOHelper.h"
 #include "../../resources/Conversions.h"
 
+// ===== OSC ====
+#include "../../resources/OSCParameterInterface.h"
+#include "../../resources/OSCReceiverPlus.h"
 
 //==============================================================================
 /**
@@ -35,7 +38,8 @@
 class ProbeDecoderAudioProcessor  : public AudioProcessor,
                                     public AudioProcessorValueTreeState::Listener,
                                     public IOHelper<IOTypes::Ambisonics<>, IOTypes::AudioChannels<1>>,
-                                    public VSTCallbackHandler
+                                    public VSTCallbackHandler,
+                                    private OSCReceiver::Listener<OSCReceiver::RealtimeCallback>
 {
 public:
     //==============================================================================
@@ -83,6 +87,11 @@ public:
                                             void* ptr, float opt) override;
     //==============================================================================
 
+    //======== OSC =================================================================
+    void oscMessageReceived (const OSCMessage &message) override;
+    OSCReceiverPlus& getOSCReceiver () { return oscReceiver; }
+    //==============================================================================
+
     float *orderSetting;
     float *useSN3D;
 
@@ -92,6 +101,9 @@ private:
     //==============================================================================
 
     AudioProcessorValueTreeState parameters;
+    OSCParameterInterface oscParams;
+    OSCReceiverPlus oscReceiver;
+    
     float *azimuth;
     float *elevation;
 

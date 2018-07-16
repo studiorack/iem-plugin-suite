@@ -69,7 +69,7 @@ private:
     void timerCallback() override;
 
     TitleBar<AudioChannelsIOWidget<1,false>, DirectivityIOWidget> title;
-    Footer footer;
+    OSCFooter footer;
 
     int maxPossibleOrder = -1;
     int ambisonicOrder = -1;
@@ -90,8 +90,8 @@ private:
 
 
     SpherePanner sphere;
-    ScopedPointer<SpherePanner::AziumuthElevationParameterElement> sphereElements[numberOfBands];
-    SpherePanner::AziumuthElevationParameterElement probeElement;
+    ScopedPointer<SpherePanner::AzimuthElevationParameterElement> sphereElements[numberOfBands];
+    SpherePanner::AzimuthElevationParameterElement probeElement;
 
     SimpleLabel lbAzimuth, lvElevation, lbOrder, lbShape;
     SimpleLabel lbProbeAzimuth, lbProbeElevation, lbProbeRoll;

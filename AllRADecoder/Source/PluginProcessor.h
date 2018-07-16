@@ -34,10 +34,16 @@
 #include "../../resources/efficientSHvanilla.h"
 #include "../../resources/ReferenceCountedDecoder.h"
 #include "../../resources/AmbisonicDecoder.h"
-#include "../../resources/DecoderHelper.h"
+#include "../../resources/ConfigurationHelper.h"
 #include "../../resources/ambisonicTools.h"
 #include "../../resources/HammerAitov.h"
 #include "NoiseBurst.h"
+#include "AmbisonicNoiseBurst.h"
+
+// ==== OSC
+#include "../../resources/OSCParameterInterface.h"
+#include "../../resources/OSCReceiverPlus.h"
+
 
 //==============================================================================
 /**
@@ -52,7 +58,8 @@ using namespace dsp;
 class AllRADecoderAudioProcessor  : public AudioProcessor,
                                         public AudioProcessorValueTreeState::Listener,
                                         public IOHelper<IOTypes::Ambisonics<7>, IOTypes::AudioChannels<64>>,
-                                        public ValueTree::Listener, public VSTCallbackHandler
+                                        public ValueTree::Listener, public VSTCallbackHandler,
+                                        private OSCReceiver::Listener<OSCReceiver::RealtimeCallback>
 {
 public:
     //==============================================================================
@@ -111,6 +118,7 @@ public:
     void valueTreeParentChanged (ValueTree &treeWhoseParentHasChanged) override;
 
     void playNoiseBurst (const int channel);
+    void playAmbisonicNoiseBurst (const float azimuth, const float elevation);
     void addRandomPoint();
     void addImaginaryLoudspeakerBelow();
 
@@ -149,9 +157,17 @@ public:
 
     MailBox::Message messageToEditor;
 
+    //======== OSC =================================================================
+    void oscMessageReceived (const OSCMessage &message) override;
+    OSCReceiverPlus& getOSCReceiver () { return oscReceiver; }
+    //==============================================================================
+
 private:
-    // ====== parameters
+    // ====== parameters and osc
     AudioProcessorValueTreeState parameters;
+    OSCParameterInterface oscParams;
+    OSCReceiverPlus oscReceiver;
+
     // list of used audio parameters
     float* inputOrderSetting;
     float* useSN3D;
@@ -177,7 +193,6 @@ private:
     Result verifyLoudspeakers();
     Result calculateTris();
     void convertLoudspeakersToArray();
-    var convertLoudspeakersToVar();
 
     float getKappa(float gIm, float gRe1, float gRe2, int N);
     Matrix<float> getInverse(Matrix<float> A);
@@ -189,6 +204,7 @@ private:
     Vector3D<float> sphericalInRadiansToCartesian (Vector3D<float> sphervect);
 
     NoiseBurst noiseBurst;
+    AmbisonicNoiseBurst ambisonicNoiseBurst;
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AllRADecoderAudioProcessor)
 };

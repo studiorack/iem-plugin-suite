@@ -28,13 +28,15 @@
 #include "../../resources/ambisonicTools.h"
 #include "../../resources/IOHelper.h"
 #include "../../resources/Conversions.h"
+#include "../../resources/OSCParameterInterface.h"
+#include "../../resources/OSCReceiverPlus.h"
 
 //==============================================================================
 /**
 */
 class StereoEncoderAudioProcessor  : public AudioProcessor,
                                                 public AudioProcessorValueTreeState::Listener,
-public IOHelper<IOTypes::AudioChannels<2>, IOTypes::Ambisonics<>>, public VSTCallbackHandler
+public IOHelper<IOTypes::AudioChannels<2>, IOTypes::Ambisonics<>>, public VSTCallbackHandler, private OSCReceiver::Listener<OSCReceiver::RealtimeCallback>
 {
 public:
     //==============================================================================
@@ -82,6 +84,10 @@ public:
                                             void* ptr, float opt) override;
     //==============================================================================
 
+    // ====== OSC ======
+    void oscMessageReceived (const OSCMessage &message) override;
+    OSCReceiverPlus& getOSCReceiver () { return oscReceiver; }
+    // =================
 
     Vector3D<float> posC, posL, posR;
 
@@ -107,10 +113,11 @@ public:
 
 private:
     //==============================================================================
-
-
     bool processorUpdatingParams;
+
     AudioProcessorValueTreeState parameters;
+    OSCParameterInterface oscParameterInterface;
+    OSCReceiverPlus oscReceiver;
 
     float SHL[64];
     float SHR[64];

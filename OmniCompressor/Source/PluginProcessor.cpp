@@ -36,9 +36,9 @@ OmniCompressorAudioProcessor::OmniCompressorAudioProcessor()
 #endif
                   ),
 #endif
-parameters (*this, nullptr)
+parameters (*this, nullptr), oscParams (parameters)
 {
-    parameters.createAndAddParameter("orderSetting", "Ambisonics Order", "",
+    oscParams.createAndAddParameter ("orderSetting", "Ambisonics Order", "",
                                      NormalisableRange<float>(0.0f, 8.0f, 1.0f), 0.0f,
                                      [](float value) {
                                          if (value >= 0.5f && value < 1.5f) return "0th";
@@ -52,30 +52,30 @@ parameters (*this, nullptr)
                                          else return "Auto";
                                      }, nullptr);
 
-    parameters.createAndAddParameter("useSN3D", "Normalization", "",
+    oscParams.createAndAddParameter ("useSN3D", "Normalization", "",
                                      NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value) {
                                          if (value >= 0.5f) return "SN3D";
                                          else return "N3D";
                                      }, nullptr);
 
-    parameters.createAndAddParameter("threshold", "Threshold", "dB",
+    oscParams.createAndAddParameter ("threshold", "Threshold", "dB",
                                      NormalisableRange<float> (-50.0f, 10.0f, 0.1f), -10.0,
                                      [](float value) {return String(value, 1);}, nullptr);
 
-    parameters.createAndAddParameter("knee", "Knee", "dB",
+    oscParams.createAndAddParameter ("knee", "Knee", "dB",
                                      NormalisableRange<float> (0.0f, 30.0f, 0.1f), 0.0f,
                                      [](float value) {return String(value, 1);}, nullptr);
 
-    parameters.createAndAddParameter("attack", "Attack Time", "ms",
+    oscParams.createAndAddParameter ("attack", "Attack Time", "ms",
                                      NormalisableRange<float> (0.0f, 100.0f, 0.1f), 30.0,
                                      [](float value) {return String(value, 1);}, nullptr);
 
-    parameters.createAndAddParameter("release", "Release Time", "ms",
+    oscParams.createAndAddParameter ("release", "Release Time", "ms",
                                      NormalisableRange<float> (0.0f, 500.0f, 0.1f), 150.0,
                                      [](float value) {return String(value, 1);}, nullptr);
 
-    parameters.createAndAddParameter("ratio", "Ratio", " : 1",
+    oscParams.createAndAddParameter ("ratio", "Ratio", " : 1",
                                      NormalisableRange<float> (1.0f, 16.0f, .2f), 4.0,
                                      [](float value) {
                                          if (value > 15.9f)
@@ -84,15 +84,15 @@ parameters (*this, nullptr)
 
                                      }, nullptr);
 
-    parameters.createAndAddParameter("outGain", "MakeUp Gain", "dB",
+    oscParams.createAndAddParameter ("outGain", "MakeUp Gain", "dB",
                                      NormalisableRange<float> (-10.0f, 20.0f, 0.1f), 0.0,
                                      [](float value) {return String(value, 1);}, nullptr);
 
-    parameters.createAndAddParameter("lookAhead", "LookAhead", "",
+    oscParams.createAndAddParameter ("lookAhead", "LookAhead", "",
                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
                                      [](float value) {return value >= 0.5f ? "ON (5ms)" : "OFF";}, nullptr);
 
-    parameters.createAndAddParameter ("reportLatency", "Report Latency to DAW", "",
+    oscParams.createAndAddParameter ("reportLatency", "Report Latency to DAW", "",
                                       NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                       [](float value) {
                                           if (value >= 0.5f) return "Yes";
@@ -117,6 +117,8 @@ parameters (*this, nullptr)
 
     delay.setDelayTime (0.005f);
     grProcessing.setDelayTime (0.005f);
+
+    oscReceiver.addListener (this);
 }
 
 
@@ -306,6 +308,7 @@ AudioProcessorEditor* OmniCompressorAudioProcessor::createEditor()
 void OmniCompressorAudioProcessor::getStateInformation (MemoryBlock &destData)
 {
     auto state = parameters.copyState();
+    state.setProperty ("OSCPort", var(oscReceiver.getPortNumber()), nullptr);
     std::unique_ptr<XmlElement> xml (state.createXml());
     copyXmlToBinary (*xml, destData);
 }
@@ -315,7 +318,13 @@ void OmniCompressorAudioProcessor::setStateInformation (const void *data, int si
     std::unique_ptr<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
     if (xmlState.get() != nullptr)
         if (xmlState->hasTagName (parameters.state.getType()))
+        {
             parameters.replaceState (ValueTree::fromXml (*xmlState));
+            if (parameters.state.hasProperty ("OSCPort"))
+            {
+                oscReceiver.connect (parameters.state.getProperty ("OSCPort", var (-1)));
+            }
+        }
 }
 
 //==============================================================================
@@ -328,6 +337,19 @@ pointer_sized_int OmniCompressorAudioProcessor::handleVstPluginCanDo (int32 inde
     if (matches ("wantsChannelCountNotifications"))
         return 1;
     return 0;
+}
+
+//==============================================================================
+void OmniCompressorAudioProcessor::oscMessageReceived (const OSCMessage &message)
+{
+    String prefix ("/" + String(JucePlugin_Name));
+    if (! message.getAddressPattern().toString().startsWith (prefix))
+        return;
+
+    OSCMessage msg (message);
+    msg.setAddressPattern (message.getAddressPattern().toString().substring(String(JucePlugin_Name).length() + 1));
+
+    oscParams.processOSCMessage (msg);
 }
 
 //==============================================================================

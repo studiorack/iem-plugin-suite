@@ -1,6 +1,7 @@
 #!/bin/sh
 cd ${0%/*}
 mkdir -p _compiledPlugins/macOS/IEM
+mkdir -p _compiledPlugins/macOS/Standalone
 for d in */*.jucer; do
   open -W -n ${PWD}/${d} --args --resave ${PWD}/${d}
   d=${d%/*}
@@ -11,6 +12,7 @@ for d in */*.jucer; do
         echo "done..."
         popd
         cp -R -H "${d}/Builds/MacOSX/build/Release/${d}.vst" "_compiledPlugins/macOS/IEM/"
+        cp -R -H "${d}/Builds/MacOSX/build/Release/${d}.app" "_compiledPlugins/macOS/Standalone/"
     else
         echo "no xcode project found, moving on..."
     fi

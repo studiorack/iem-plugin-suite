@@ -2,7 +2,7 @@
 
 <JUCERPROJECT id="PASmMZ" name="DirectionalCompressor" displaySplashScreen="0"
               reportAppUsage="0" splashScreenColour="Dark" projectType="audioplug"
-              version="1.1.0" bundleIdentifier="at.iem.DirectionalCompressor"
+              version="1.2.0" bundleIdentifier="at.iem.DirectionalCompressor"
               includeBinaryInAppConfig="1" buildVST="1" buildVST3="0" buildAU="0"
               buildAUv3="0" buildRTAS="0" buildAAX="0" buildStandalone="1"
               enableIAA="0" pluginName="DirectionalCompressor" pluginDesc="DirectionalCompressor"
@@ -60,6 +60,7 @@
         <MODULEPATH id="juce_audio_utils" path="../../../../../Applications/JUCE/modules"/>
         <MODULEPATH id="juce_dsp" path="../../../../../Applications/JUCE/modules"/>
         <MODULEPATH id="juce_opengl" path="../../../../../Applications/JUCE/modules"/>
+        <MODULEPATH id="juce_osc" path="../../../../../Applications/JUCE/modules"/>
       </MODULEPATHS>
     </XCODE_MAC>
     <VS2017 targetFolder="Builds/VisualStudio2017">
@@ -91,6 +92,7 @@
         <MODULEPATH id="juce_audio_devices" path="C:\JUCE\modules"/>
         <MODULEPATH id="juce_audio_basics" path="C:\JUCE\modules"/>
         <MODULEPATH id="juce_opengl" path="../../../../../Applications/JUCE/modules"/>
+        <MODULEPATH id="juce_osc" path="../../../../../Applications/JUCE/modules"/>
       </MODULEPATHS>
     </VS2017>
     <LINUX_MAKE targetFolder="Builds/LinuxMakefile">
@@ -115,6 +117,7 @@
         <MODULEPATH id="juce_audio_devices" path="../../../../../Applications/JUCE/modules"/>
         <MODULEPATH id="juce_audio_basics" path="../../../../../Applications/JUCE/modules"/>
         <MODULEPATH id="juce_opengl" path="../../../../../Applications/JUCE/modules"/>
+        <MODULEPATH id="juce_osc" path="../../../../../Applications/JUCE/modules"/>
       </MODULEPATHS>
     </LINUX_MAKE>
   </EXPORTFORMATS>
@@ -134,6 +137,7 @@
     <MODULE id="juce_gui_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_gui_extra" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_opengl" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_osc" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
   </MODULES>
   <JUCEOPTIONS JUCE_QUICKTIME="disabled" JUCE_WEB_BROWSER="0" JUCE_USE_FLAC="0"
                JUCE_USE_OGGVORBIS="0" JUCE_USE_MP3AUDIOFORMAT="0" JUCE_USE_LAME_AUDIO_FORMAT="0"

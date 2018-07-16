@@ -25,10 +25,14 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "../../resources/IOHelper.h"
 #include "../../resources/customComponents/MailBox.h"
-#include "../../resources/DecoderHelper.h"
+#include "../../resources/ConfigurationHelper.h"
 #include "../../resources/Conversions.h"
 #include "../../resources/MultiChannelGain.h"
 #include "../../resources/MultiChannelDelay.h"
+
+// ===== OSC ====
+#include "../../resources/OSCParameterInterface.h"
+#include "../../resources/OSCReceiverPlus.h"
 
 
 //==============================================================================
@@ -40,9 +44,10 @@
  You can leave `maxChannelCount` and `maxOrder` empty for default values (64 channels and 7th order)
  */
 class DistanceCompensatorAudioProcessor  : public AudioProcessor,
-public AudioProcessorValueTreeState::Listener,
-public IOHelper<IOTypes::AudioChannels<64>, IOTypes::AudioChannels<64>>,
-public VSTCallbackHandler
+                                            public AudioProcessorValueTreeState::Listener,
+                                            public IOHelper<IOTypes::AudioChannels<64>, IOTypes::AudioChannels<64>>,
+                                            public VSTCallbackHandler,
+                                            private OSCReceiver::Listener<OSCReceiver::RealtimeCallback>
 {
     struct PositionAndChannel
     {
@@ -100,6 +105,11 @@ public:
                                             void* ptr, float opt) override;
     //==============================================================================
 
+    //======== OSC =================================================================
+    void oscMessageReceived (const OSCMessage &message) override;
+    OSCReceiverPlus& getOSCReceiver () { return oscReceiver; }
+    //==============================================================================
+
     void setLastDir (File newLastDir);
     File getLastDir() {return lastDir;};
 
@@ -118,6 +128,8 @@ public:
 private:
     // ====== parameters
     AudioProcessorValueTreeState parameters;
+    OSCParameterInterface oscParams;
+    OSCReceiverPlus oscReceiver;
     
     Atomic<bool> updatingParameters = false;
 

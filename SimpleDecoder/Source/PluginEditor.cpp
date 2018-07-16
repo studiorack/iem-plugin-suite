@@ -26,7 +26,7 @@
 
 //==============================================================================
 SimpleDecoderAudioProcessorEditor::SimpleDecoderAudioProcessorEditor (SimpleDecoderAudioProcessor& p, AudioProcessorValueTreeState& vts)
-: AudioProcessorEditor (&p), processor (p), valueTreeState(vts), fv(20, 20000, -20, 10, 5)
+: AudioProcessorEditor (&p), processor (p), valueTreeState(vts), fv(20, 20000, -20, 10, 5), footer (p.getOSCReceiver())
 {
     // ============== BEGIN: essentials ======================
     // set GUI size and lookAndFeel
@@ -259,6 +259,13 @@ void SimpleDecoderAudioProcessorEditor::timerCallback()
         processor.messageChanged = false;
     }
 
+    if (processor.updateDecoderInfo)
+    {
+        dcInfoBox.setDecoderConfig (processor.getCurrentDecoderConfig());
+        processor.updateDecoderInfo = false;
+    }
+
+
     ReferenceCountedDecoder::Ptr currentDecoder = processor.getCurrentDecoderConfig();
     const int swMode = *valueTreeState.getRawParameterValue("swMode");
     if (lastDecoder != currentDecoder)
@@ -342,9 +349,9 @@ void SimpleDecoderAudioProcessorEditor::loadPresetFile()
     {
         File presetFile (myChooser.getResult());
         processor.setLastDir(presetFile.getParentDirectory());
-        processor.loadPreset (presetFile);
+        processor.loadConfiguration (presetFile);
 
-        dcInfoBox.setDecoderConfig(processor.getCurrentDecoderConfig());
+        dcInfoBox.setDecoderConfig (processor.getCurrentDecoderConfig());
     }
 }
 

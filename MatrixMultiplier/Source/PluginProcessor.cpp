@@ -36,7 +36,7 @@ MatrixMultiplierAudioProcessor::MatrixMultiplierAudioProcessor()
                      #endif
                        ),
 #endif
-parameters(*this, nullptr)
+parameters(*this, nullptr), oscParams (parameters)
 {
     // this must be initialised after all calls to createAndAddParameter().
     parameters.state = ValueTree (Identifier ("MatrixMultiplier"));
@@ -50,6 +50,8 @@ parameters(*this, nullptr)
 
     properties = new PropertiesFile(options);
     lastDir = File(properties->getValue("configurationFolder"));
+
+    oscReceiver.addListener (this);
 }
 
 MatrixMultiplierAudioProcessor::~MatrixMultiplierAudioProcessor()
@@ -180,6 +182,7 @@ void MatrixMultiplierAudioProcessor::getStateInformation (MemoryBlock& destData)
 {
     auto state = parameters.copyState();
     state.setProperty("lastOpenedConfigurationFile", var(lastFile.getFullPathName()), nullptr);
+    state.setProperty ("OSCPort", var(oscReceiver.getPortNumber()), nullptr);
     std::unique_ptr<XmlElement> xml (state.createXml());
     copyXmlToBinary (*xml, destData);
 }
@@ -201,6 +204,10 @@ void MatrixMultiplierAudioProcessor::setStateInformation (const void* data, int 
                     const File f (val.getValue().toString());
                     loadConfiguration (f);
                 }
+            }
+            if (parameters.state.hasProperty ("OSCPort"))
+            {
+                oscReceiver.connect (parameters.state.getProperty ("OSCPort", var (-1)));
             }
 
 
@@ -231,7 +238,7 @@ void MatrixMultiplierAudioProcessor::loadConfiguration(const File& configuration
 {
     ReferenceCountedMatrix::Ptr tempMatrix = nullptr;
 
-    Result result = DecoderHelper::parseFileForTransformationMatrix(configurationFile, &tempMatrix);
+    Result result = ConfigurationHelper::parseFileForTransformationMatrix(configurationFile, &tempMatrix);
     if (!result.wasOk()) {
         messageForEditor = result.getErrorMessage();
         return;
@@ -266,4 +273,28 @@ pointer_sized_int MatrixMultiplierAudioProcessor::handleVstPluginCanDo (int32 in
     if (matches ("wantsChannelCountNotifications"))
         return 1;
     return 0;
+}
+
+//==============================================================================
+void MatrixMultiplierAudioProcessor::oscMessageReceived (const OSCMessage &message)
+{
+    String prefix ("/" + String(JucePlugin_Name));
+    if (! message.getAddressPattern().toString().startsWith (prefix))
+        return;
+
+    OSCMessage msg (message);
+    msg.setAddressPattern (message.getAddressPattern().toString().substring(String(JucePlugin_Name).length() + 1));
+
+    if (! oscParams.processOSCMessage (msg))
+    {
+        // Load configuration file
+        if (msg.getAddressPattern().toString().equalsIgnoreCase("/loadFile") && msg.size() >= 1)
+        {
+            if (msg[0].isString())
+            {
+                File fileToLoad (msg[0].getString());
+                loadConfiguration (fileToLoad);
+            }
+        }
+    }
 }

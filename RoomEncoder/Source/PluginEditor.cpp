@@ -30,8 +30,7 @@
 //==============================================================================
 RoomEncoderAudioProcessorEditor::RoomEncoderAudioProcessorEditor (RoomEncoderAudioProcessor& p, AudioProcessorValueTreeState& vts)
 : AudioProcessorEditor (&p),
-processor (p),
-valueTreeState(vts),
+processor (p), valueTreeState(vts), footer (p.getOSCReceiver()),
 sourceElement(*valueTreeState.getParameter("sourceX"), valueTreeState.getParameterRange("sourceX"),
               *valueTreeState.getParameter("sourceY"), valueTreeState.getParameterRange("sourceY"),
               *valueTreeState.getParameter("sourceZ"), valueTreeState.getParameterRange("sourceZ")),
@@ -44,6 +43,7 @@ listenerElement(*valueTreeState.getParameter("listenerX"), valueTreeState.getPar
     setSize (800, 600);
     setLookAndFeel (&globalLaF);
     toolTipWin.setMillisecondsBeforeTipAppears(500);
+    toolTipWin.setOpaque (false);
 
     addAndMakeVisible(&title);
     title.setTitle(String("Room"),String("Encoder"));

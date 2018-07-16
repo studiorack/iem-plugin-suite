@@ -28,6 +28,11 @@
 #include "../../resources/Quaternion.h"
 #include "../../resources/IOHelper.h"
 #include "../../resources/Weights.h"
+
+// ===== OSC ====
+#include "../../resources/OSCParameterInterface.h"
+#include "../../resources/OSCReceiverPlus.h"
+
 #define numberOfBands 4
 using namespace juce::dsp;
 
@@ -37,7 +42,8 @@ using namespace juce::dsp;
 class DirectivityShaperAudioProcessor  : public AudioProcessor,
                                         public AudioProcessorValueTreeState::Listener,
                                         public IOHelper<IOTypes::AudioChannels<1>, IOTypes::Ambisonics<>>,
-                                        public VSTCallbackHandler
+                                        public VSTCallbackHandler,
+                                        private OSCReceiver::Listener<OSCReceiver::RealtimeCallback>
 {
 public:
     //==============================================================================
@@ -84,6 +90,13 @@ public:
                                             void* ptr, float opt) override;
 
     //==============================================================================
+
+    //======== OSC =================================================================
+    void oscMessageReceived (const OSCMessage &message) override;
+    OSCReceiverPlus& getOSCReceiver () { return oscReceiver; }
+    //==============================================================================
+
+
     void parameterChanged (const String &parameterID, float newValue) override;
     AudioProcessorValueTreeState parameters;
     float weights[numberOfBands][8];
@@ -103,6 +116,9 @@ public:
     void updateBuffers() override { repaintXY = true; };
 
 private:
+    OSCParameterInterface oscParams;
+    OSCReceiverPlus oscReceiver;
+
     AudioSampleBuffer filteredBuffer;
 
     iem::Quaternion<float> quats[numberOfBands];

@@ -37,10 +37,10 @@ AllRADecoderAudioProcessor::AllRADecoderAudioProcessor()
 #endif
                   ),
 #endif
-energyDistribution(Image::PixelFormat::ARGB, 200, 100, true), rEVector(Image::PixelFormat::ARGB, 200, 100, true), parameters(*this, nullptr)
+energyDistribution(Image::PixelFormat::ARGB, 200, 100, true), rEVector(Image::PixelFormat::ARGB, 200, 100, true), parameters(*this, nullptr), oscParams (parameters)
 {
 
-    parameters.createAndAddParameter ("inputOrderSetting", "Ambisonic Order", "",
+    oscParams.createAndAddParameter ("inputOrderSetting", "Input Ambisonic Order", "",
                                       NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
                                       [](float value) {
                                           if (value >= 0.5f && value < 1.5f) return "0th";
@@ -54,14 +54,14 @@ energyDistribution(Image::PixelFormat::ARGB, 200, 100, true), rEVector(Image::Pi
                                           else return "Auto";},
                                       nullptr);
 
-    parameters.createAndAddParameter("useSN3D", "Normalization", "",
+    oscParams.createAndAddParameter("useSN3D", "Input Normalization", "",
                                      NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value) {
                                          if (value >= 0.5f) return "SN3D";
                                          else return "N3D";
                                      }, nullptr);
 
-    parameters.createAndAddParameter ("decoderOrder", "Decoder Order", "",
+    oscParams.createAndAddParameter ("decoderOrder", "Decoder Order", "",
                                       NormalisableRange<float> (0.0f, 6.0f, 1.0f), 0.0f,
                                       [](float value) {
                                           if (value >= 0.5f && value < 1.5f) return "2nd";
@@ -73,20 +73,19 @@ energyDistribution(Image::PixelFormat::ARGB, 200, 100, true), rEVector(Image::Pi
                                           else return "1st";},
                                       nullptr);
 
-    parameters.createAndAddParameter ("exportDecoder", "Export Decoder", "",
+    oscParams.createAndAddParameter ("exportDecoder", "Export Decoder", "",
                                       NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                       [](float value) {
                                           if (value >= 0.5f) return "Yes";
                                           else return "No";
                                       }, nullptr);
 
-    parameters.createAndAddParameter ("exportLayout", "Export Layout", "",
+    oscParams.createAndAddParameter ("exportLayout", "Export Layout", "",
                                       NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                       [](float value) {
                                           if (value >= 0.5f) return "Yes";
                                           else return "No";
                                       }, nullptr);
-
 
 
     // this must be initialised after all calls to createAndAddParameter().
@@ -143,6 +142,8 @@ energyDistribution(Image::PixelFormat::ARGB, 200, 100, true), rEVector(Image::Pi
 
     loudspeakers.addListener(this);
     prepareLayout();
+
+    oscReceiver.addListener (this);
 }
 
 AllRADecoderAudioProcessor::~AllRADecoderAudioProcessor()
@@ -264,6 +265,7 @@ void AllRADecoderAudioProcessor::prepareToPlay (double sampleRate, int samplesPe
 
     decoder.prepare(specs);
     noiseBurst.prepare(specs);
+    ambisonicNoiseBurst.prepare(specs);
 }
 
 void AllRADecoderAudioProcessor::releaseResources()
@@ -292,6 +294,7 @@ void AllRADecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBu
     }
     else
     {
+        ambisonicNoiseBurst.processBuffer (buffer);
 
         const int nChIn = jmin(decoder.getCurrentDecoder()->getNumInputChannels(), buffer.getNumChannels(), input.getNumberOfChannels());
         const int nChOut = jmin(decoder.getCurrentDecoder()->getNumOutputChannels(), buffer.getNumChannels());
@@ -311,7 +314,7 @@ void AllRADecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBu
             buffer.clear(ch, 0, buffer.getNumSamples());
 
     }
-    noiseBurst.processBuffer(buffer);
+    noiseBurst.processBuffer (buffer);
 }
 
 //==============================================================================
@@ -334,6 +337,8 @@ void AllRADecoderAudioProcessor::getStateInformation (MemoryBlock& destData)
     }
     parameters.state.appendChild(loudspeakers, nullptr);
 
+    parameters.state.setProperty ("OSCPort", var(oscReceiver.getPortNumber()), nullptr);
+
     ScopedPointer<XmlElement> xml (parameters.state.createXml());
     copyXmlToBinary (*xml, destData);
 }
@@ -346,7 +351,13 @@ void AllRADecoderAudioProcessor::setStateInformation (const void* data, int size
     if (xmlState != nullptr)
     {
         if (xmlState->hasTagName (parameters.state.getType()))
+        {
             parameters.replaceState (ValueTree::fromXml (*xmlState));
+            if (parameters.state.hasProperty ("OSCPort"))
+            {
+                oscReceiver.connect (parameters.state.getProperty ("OSCPort", var(-1)));
+            }
+        }
 
         XmlElement* lsps (xmlState->getChildByName("Loudspeakers"));
         if (lsps != nullptr)
@@ -483,7 +494,7 @@ ValueTree AllRADecoderAudioProcessor::createLoudspeakerFromCartesian (Vector3D<f
 
 ValueTree AllRADecoderAudioProcessor::createLoudspeakerFromSpherical (Vector3D<float> sphericalCoordinates, int channel, bool isImaginary, float gain)
 {
-    return DecoderHelper::createLoudspeaker(sphericalCoordinates.y, sphericalCoordinates.z, sphericalCoordinates.x, channel, isImaginary, gain);
+    return ConfigurationHelper::createLoudspeaker (sphericalCoordinates.y, sphericalCoordinates.z, sphericalCoordinates.x, channel, isImaginary, gain);
 }
 
 Vector3D<float> AllRADecoderAudioProcessor::cartesianToSpherical(Vector3D<float> cartvect)
@@ -519,6 +530,17 @@ Vector3D<float> AllRADecoderAudioProcessor::sphericalInRadiansToCartesian(Vector
 void AllRADecoderAudioProcessor::playNoiseBurst (const int channel)
 {
     noiseBurst.setChannel(channel);
+}
+
+void AllRADecoderAudioProcessor::playAmbisonicNoiseBurst (const float azimuthInDegrees, const float elevationInDegrees)
+{
+    auto dec = decoder.getCurrentDecoder();
+    if (dec != nullptr)
+    {
+        ambisonicNoiseBurst.setOrder (decoder.getCurrentDecoder()->getOrder());
+        ambisonicNoiseBurst.setNormalization (*useSN3D >= 0.5f);
+        ambisonicNoiseBurst.play (azimuthInDegrees, elevationInDegrees);
+    }
 }
 
 void AllRADecoderAudioProcessor::addImaginaryLoudspeakerBelow()
@@ -1002,7 +1024,7 @@ Matrix<float> AllRADecoderAudioProcessor::getInverse(Matrix<float> A)
     return inverse;
 }
 
-void AllRADecoderAudioProcessor::saveConfigurationToFile(File destination)
+void AllRADecoderAudioProcessor::saveConfigurationToFile (File destination)
 {
     if (*exportDecoder < 0.5f && *exportLayout < 0.5f)
     {
@@ -1026,7 +1048,7 @@ void AllRADecoderAudioProcessor::saveConfigurationToFile(File destination)
     if (*exportDecoder >= 0.5f)
     {
         if (decoderConfig != nullptr)
-            jsonObj->setProperty("Decoder", DecoderHelper::convertDecoderToVar(decoderConfig));
+            jsonObj->setProperty ("Decoder", ConfigurationHelper::convertDecoderToVar (decoderConfig));
         else
         {
             DBG("No decoder available");
@@ -1041,11 +1063,10 @@ void AllRADecoderAudioProcessor::saveConfigurationToFile(File destination)
 
     }
     if (*exportLayout >= 0.5f)
-        jsonObj->setProperty("LoudspeakerLayout", convertLoudspeakersToVar());
+        jsonObj->setProperty ("LoudspeakerLayout", ConfigurationHelper::convertLoudspeakersToVar (loudspeakers, "A loudspeaker layout"));
 
-    String jsonString = JSON::toString(var(jsonObj));
-    DBG(jsonString);
-    if (destination.replaceWithText(jsonString))
+    Result result = ConfigurationHelper::writeConfigurationToFile (destination, var (jsonObj));
+    if (result.wasOk())
     {
         DBG("Configuration successfully written to file.");
         MailBox::Message newMessage;
@@ -1098,40 +1119,12 @@ void AllRADecoderAudioProcessor::valueTreeParentChanged (ValueTree &treeWhosePar
     DBG("valueTreeParentChanged");
 }
 
-var AllRADecoderAudioProcessor::convertLoudspeakersToVar ()
-{
-    DynamicObject* obj = new DynamicObject(); // loudspeaker layout object
-    obj->setProperty("Name", "a loudspeaker layout");
-    obj->setProperty("Description", "description");
-
-    var loudspeakerArray;
-
-    const int nLsp = (int) points.size();
-    for (int i = 0; i < nLsp; ++i)
-    {
-        R3 lsp = points[i];
-        DynamicObject* loudspeaker = new DynamicObject(); // loudspeaker which get's added to the loudspeakerArray var
-
-        loudspeaker->setProperty("Azimuth", lsp.azimuth);
-        loudspeaker->setProperty("Elevation", lsp.elevation);
-        loudspeaker->setProperty("Radius", lsp.radius);
-        loudspeaker->setProperty("IsImaginary", lsp.isImaginary);
-        loudspeaker->setProperty("Channel", lsp.channel);
-        loudspeaker->setProperty("Gain", lsp.gain);
-
-        loudspeakerArray.append(var(loudspeaker));
-    }
-
-    obj->setProperty("Loudspeakers", loudspeakerArray);
-    return var(obj);
-}
-
 void AllRADecoderAudioProcessor::loadConfiguration (const File& configFile)
 {
     undoManager.beginNewTransaction();
     loudspeakers.removeAllChildren(&undoManager);
 
-    Result result = DecoderHelper::parseFileForLoudspeakerLayout (configFile, loudspeakers, &undoManager);
+    Result result = ConfigurationHelper::parseFileForLoudspeakerLayout (configFile, loudspeakers, &undoManager);
     if (!result.wasOk())
     {
         DBG("Configuration could not be loaded.");
@@ -1177,4 +1170,88 @@ pointer_sized_int AllRADecoderAudioProcessor::handleVstPluginCanDo (int32 index,
     if (matches ("wantsChannelCountNotifications"))
         return 1;
     return 0;
+}
+
+//==============================================================================
+void AllRADecoderAudioProcessor::oscMessageReceived (const OSCMessage &message)
+{
+    String prefix ("/" + String(JucePlugin_Name));
+    if (! message.getAddressPattern().toString().startsWith (prefix))
+        return;
+
+    OSCMessage msg (message);
+    msg.setAddressPattern (message.getAddressPattern().toString().substring(String(JucePlugin_Name).length() + 1));
+
+    if (msg.getAddressPattern().toString().equalsIgnoreCase("/decoderOrder") && msg.size() >= 1)
+    {
+        if (msg[0].isInt32())
+        {
+            auto value = msg[0].getInt32() - 1;
+            msg.clear();
+            msg.addInt32 (value);
+        }
+        else if (msg[0].isFloat32())
+        {
+            auto value = msg[0].getFloat32() - 1;
+            msg.clear();
+            msg.addFloat32 (value);
+        }
+
+    }
+
+    if (! oscParams.processOSCMessage (msg))
+    {
+        // Load configuration file
+        if (msg.getAddressPattern().toString().equalsIgnoreCase("/loadFile") && msg.size() >= 1)
+        {
+            if (msg[0].isString())
+            {
+                File fileToLoad (msg[0].getString());
+                loadConfiguration (fileToLoad);
+            }
+        }
+        else if (msg.getAddressPattern().toString().equalsIgnoreCase("/calculate") ||
+                 msg.getAddressPattern().toString().equalsIgnoreCase("/calculateDecoder"))
+        {
+            calculateDecoder();
+        }
+        else if (msg.getAddressPattern().toString().equalsIgnoreCase("/export") && msg.size() >= 1)
+        {
+            if (msg[0].isString())
+            {
+                File file (msg[0].getString());
+                saveConfigurationToFile (file);
+            }
+        }
+        else if (msg.getAddressPattern().toString().equalsIgnoreCase ("/playNoise") && msg.size() >= 1)
+        {
+            if (msg[0].isInt32())
+            {
+                const int channel = msg[0].getInt32();
+                if (channel <= 64)
+                    playNoiseBurst (channel);
+            }
+        }
+        else if (msg.getAddressPattern().toString().equalsIgnoreCase ("/playEncodedNoise") && msg.size() >= 2)
+        {
+            float azimuth = 0.0f;
+            float elevation = 0.0f;
+
+            if (msg[0].isInt32())
+                azimuth = msg[0].getInt32();
+            else if (msg[0].isFloat32())
+                azimuth = msg[0].getFloat32();
+            else
+                return;
+
+            if (msg[1].isInt32())
+                elevation = msg[1].getInt32();
+            else if (msg[1].isFloat32())
+                elevation = msg[1].getFloat32();
+            else
+                return;
+
+            playAmbisonicNoiseBurst (azimuth, elevation);
+        }
+    }
 }

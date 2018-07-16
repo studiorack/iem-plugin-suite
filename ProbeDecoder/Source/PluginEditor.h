@@ -52,7 +52,7 @@ private:
     LaF globalLaF;
 
     TitleBar<AmbisonicIOWidget<>, AudioChannelsIOWidget<1,false>> title;
-    Footer footer;
+    OSCFooter footer;
 
     void timerCallback() override;
 
@@ -65,7 +65,7 @@ private:
     ReverseSlider slAzimuth, slElevation;
 
     SpherePanner sphere;
-    SpherePanner::AziumuthElevationParameterElement probe;
+    SpherePanner::AzimuthElevationParameterElement probe;
 
     ScopedPointer<SliderAttachment> slAzimuthAttachment;
     ScopedPointer<SliderAttachment> slElevationAttachment;

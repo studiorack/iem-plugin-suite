@@ -36,7 +36,7 @@ SimpleDecoderAudioProcessor::SimpleDecoderAudioProcessor()
 #endif
                   ),
 #endif
-parameters(*this, nullptr)
+parameters(*this, nullptr), oscParams (parameters)
 {
     // dummy values
     cascadedLowPassCoeffs = IIR::Coefficients<double>::makeLowPass(48000.0, 100.0f);
@@ -45,7 +45,7 @@ parameters(*this, nullptr)
     lowPassCoeffs = IIR::Coefficients<float>::makeHighPass(48000.0, 100.0f);
     highPassCoeffs = IIR::Coefficients<float>::makeFirstOrderHighPass(48000.0, 100.0f);
 
-    parameters.createAndAddParameter ("inputOrderSetting", "Ambisonic Order", "",
+    oscParams.createAndAddParameter ("inputOrderSetting", "Ambisonic Order", "",
                                       NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
                                       [](float value) {
                                           if (value >= 0.5f && value < 1.5f) return "0th";
@@ -59,35 +59,35 @@ parameters(*this, nullptr)
                                           else return "Auto";},
                                       nullptr);
 
-    parameters.createAndAddParameter("useSN3D", "Normalization", "",
+    oscParams.createAndAddParameter("useSN3D", "Normalization", "",
                                      NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value) {
                                          if (value >= 0.5f) return "SN3D";
                                          else return "N3D";
                                      }, nullptr);
 
-    parameters.createAndAddParameter ("lowPassFrequency", "LowPass Cutoff Frequency", "Hz",
+    oscParams.createAndAddParameter ("lowPassFrequency", "LowPass Cutoff Frequency", "Hz",
                                       NormalisableRange<float> (20.f, 300.f, 1.0f), 80.f,
                                       [](float value) {return String ((int) value);},
                                       nullptr);
-    parameters.createAndAddParameter ("lowPassGain", "LowPass Gain", "dB",
+    oscParams.createAndAddParameter ("lowPassGain", "LowPass Gain", "dB",
                                       NormalisableRange<float> (-20.0f, 10.0, 0.1f), 0.0f,
                                       [](float value) {return String (value, 1);},
                                       nullptr);
 
-    parameters.createAndAddParameter ("highPassFrequency", "HighPass Cutoff Frequency", "Hz",
+    oscParams.createAndAddParameter ("highPassFrequency", "HighPass Cutoff Frequency", "Hz",
                                       NormalisableRange<float> (20.f, 300.f, 1.f), 80.f,
                                       [](float value) {return String ((int) value);},
                                       nullptr);
 
-    parameters.createAndAddParameter ("swMode", "Subwoofer Mode", "",
+    oscParams.createAndAddParameter ("swMode", "Subwoofer Mode", "",
                                      NormalisableRange<float> (0.0f, 2.0f, 1.0f), 0.0f,
                                      [](float value) {
                                          if (value < 0.5f) return "none";
                                          else if (value >= 0.5f && value < 1.5f) return "Discrete SW";
                                          else return "Virtual SW";}, nullptr);
 
-    parameters.createAndAddParameter ("swChannel", "SW Channel Number", "",
+    oscParams.createAndAddParameter ("swChannel", "SW Channel Number", "",
                                       NormalisableRange<float> (1.0f, 64.0f, 1.0f), 1.0f,
                                       [](float value) { return String ((int) value);}, nullptr);
 
@@ -136,12 +136,13 @@ parameters(*this, nullptr)
 
 
     // filters
-
     highPass1.state = highPassCoeffs;
     highPass2.state = highPassCoeffs;
 
     lowPass1 = new IIR::Filter<float>(lowPassCoeffs);
     lowPass2 = new IIR::Filter<float>(lowPassCoeffs);
+
+    oscReceiver.addListener (this);
 }
 
 SimpleDecoderAudioProcessor::~SimpleDecoderAudioProcessor()
@@ -358,7 +359,7 @@ void SimpleDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiB
             correction *= sqrt((float) nChOut); // correction for only one subwoofer instead of nChOut loudspeakers
 
         swBuffer.applyGain(omniGain * correction);
-        DBG(swBuffer.getRMSLevel(0, 0, swBuffer.getNumSamples()));
+
         // low pass filtering
         AudioBlock<float> lowPassAudioBlock = AudioBlock<float>(swBuffer);
         ProcessContextReplacing<float> lowPassContext(lowPassAudioBlock);
@@ -421,6 +422,7 @@ void SimpleDecoderAudioProcessor::getStateInformation (MemoryBlock& destData)
     // You could do that either as raw data, or use the XML or ValueTree classes
     // as intermediaries to make it easy to save and load complex data.
     parameters.state.setProperty("lastOpenedPresetFile", var(lastFile.getFullPathName()), nullptr);
+    parameters.state.setProperty ("OSCPort", var(oscReceiver.getPortNumber()), nullptr);
     ScopedPointer<XmlElement> xml (parameters.state.createXml());
     copyXmlToBinary (*xml, destData);
 }
@@ -441,7 +443,11 @@ void SimpleDecoderAudioProcessor::setStateInformation (const void* data, int siz
         if (val.getValue().toString() != "")
         {
             const File f (val.getValue().toString());
-            loadPreset(f);
+            loadConfiguration(f);
+        }
+        if (parameters.state.hasProperty ("OSCPort"))
+        {
+            oscReceiver.connect (parameters.state.getProperty ("OSCPort", var (-1)));
         }
     }
 }
@@ -477,11 +483,11 @@ void SimpleDecoderAudioProcessor::updateBuffers()
     DBG("IOHelper: output size: " << output.getSize());
 }
 
-void SimpleDecoderAudioProcessor::loadPreset(const File& presetFile)
+void SimpleDecoderAudioProcessor::loadConfiguration (const File& presetFile)
 {
     ReferenceCountedDecoder::Ptr tempDecoder = nullptr;
 
-    Result result = DecoderHelper::parseFileForDecoder(presetFile, &tempDecoder);
+    Result result = ConfigurationHelper::parseFileForDecoder (presetFile, &tempDecoder);
     if (!result.wasOk()) {
         messageForEditor = result.getErrorMessage();
     }
@@ -495,6 +501,7 @@ void SimpleDecoderAudioProcessor::loadPreset(const File& presetFile)
     decoder.setDecoder(tempDecoder);
     decoderConfig = tempDecoder;
 
+    updateDecoderInfo = true;
     messageChanged = true;
 }
 
@@ -510,6 +517,29 @@ pointer_sized_int SimpleDecoderAudioProcessor::handleVstPluginCanDo (int32 index
     return 0;
 }
 
+//==============================================================================
+void SimpleDecoderAudioProcessor::oscMessageReceived (const OSCMessage &message)
+{
+    String prefix ("/" + String(JucePlugin_Name));
+    if (! message.getAddressPattern().toString().startsWith (prefix))
+        return;
+
+    OSCMessage msg (message);
+    msg.setAddressPattern (message.getAddressPattern().toString().substring(String(JucePlugin_Name).length() + 1));
+
+    if (! oscParams.processOSCMessage (msg))
+    {
+        // Load configuration file
+        if (msg.getAddressPattern().toString().equalsIgnoreCase("/loadFile") && msg.size() >= 1)
+        {
+            if (msg[0].isString())
+            {
+                File fileToLoad (msg[0].getString());
+                loadConfiguration (fileToLoad);
+            }
+        }
+    }
+}
 //==============================================================================
 // This creates new instances of the plugin..
 AudioProcessor* JUCE_CALLTYPE createPluginFilter()
