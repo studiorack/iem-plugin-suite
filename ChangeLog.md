@@ -3,6 +3,10 @@ For a list of all changes and bugfixes see the git log.
 
 Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They might lead to an unexpected behaviour and might not be compatible with your previous projects without making some adaptions. See the [Breaking changes article](https://plugins.iem.at/docs/breakingchanges/) for more information.
 
+## untagged changes
+- general changes
+    - OSC 'connect/disconnect' buttons replaced by  'open/close' buttons
+
 ## v1.6.0
 - general changes
     - OSC support: every plug-in is now controllable via OSC
