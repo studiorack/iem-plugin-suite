@@ -23,9 +23,14 @@
 #pragma once
 
 #include "../JuceLibraryCode/JuceHeader.h"
+using namespace juce::dsp;
+
 #include "../../resources/IOHelper.h"
 #include "../../resources/customComponents/MailBox.h"
+
+#define CONFIGURATIONHELPER_ENABLE_LOUDSPEAKERLAYOUT_METHODS 1
 #include "../../resources/ConfigurationHelper.h"
+
 #include "../../resources/Conversions.h"
 #include "../../resources/MultiChannelGain.h"
 #include "../../resources/MultiChannelDelay.h"

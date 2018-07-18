@@ -24,7 +24,7 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "../../resources/efficientSHvanilla.h"
-#include "../../resources/ambisonicTools.h"
+//#include "../../resources/ambisonicTools.h"
 #include "../../resources/Quaternion.h"
 #include "../../resources/IOHelper.h"
 #include "../../resources/Weights.h"

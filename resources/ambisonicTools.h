@@ -122,7 +122,7 @@ inline const String getOrderString(int order)
     return String(order) + String("th");
 }
 
-const float sn3d2n3d[64]= {
+const float sn3d2n3d[64] = {
     1.0000000000000000e+00f,
     1.7320508075688772e+00f,
     1.7320508075688772e+00f,

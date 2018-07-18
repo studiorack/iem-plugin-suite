@@ -41,7 +41,6 @@ void SHEval7(const float fX, const float fY, const float fZ, float *SHcoeffs);
 // encoding and decoding with same direction and order yields the same encoded signal
 // normalization is done at the decoding stage
 constexpr float decodeCorrection (const int N) { return sqrt4PI / (N + 1) / (N + 1); };
-constexpr float decodeCorrection (const float N) { return sqrt4PI / (N + 1.0f) / (N + 1.0f); };
 
 inline void SHEval(const int N, const float fX, const float fY, const float fZ, float *SHcoeffs, const bool doEncode = true)
 {
