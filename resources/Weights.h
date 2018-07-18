@@ -128,7 +128,7 @@ public:
 
         if (useSN3D) // apply SN3D normalization
         {
-            FloatVectorOperations::multiply(weights, n3d2sn3d_short, decodeOrder);
+            FloatVectorOperations::multiply(weights, Weights::n3d2sn3d, decodeOrder + 1);
         }
     }
 
