@@ -99,6 +99,7 @@ public:
 
     //======== OSC =================================================================
     void oscMessageReceived (const OSCMessage &message) override;
+    void oscBundleReceived (const OSCBundle &bundle) override;
     OSCReceiverPlus& getOSCReceiver () { return oscReceiver; }
     //==============================================================================
 

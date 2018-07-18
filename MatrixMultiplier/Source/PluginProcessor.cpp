@@ -298,3 +298,15 @@ void MatrixMultiplierAudioProcessor::oscMessageReceived (const OSCMessage &messa
         }
     }
 }
+
+void MatrixMultiplierAudioProcessor::oscBundleReceived (const OSCBundle &bundle)
+{
+    for (int i = 0; i < bundle.size(); ++i)
+    {
+        auto elem = bundle[i];
+        if (elem.isMessage())
+            oscMessageReceived (elem.getMessage());
+        else if (elem.isBundle())
+            oscBundleReceived (elem.getBundle());
+    }
+}

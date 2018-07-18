@@ -497,3 +497,16 @@ void MultiEncoderAudioProcessor::oscMessageReceived (const OSCMessage &message)
     msg.setAddressPattern (message.getAddressPattern().toString().substring(String(JucePlugin_Name).length() + 1));
     oscParams.processOSCMessage (msg);
 }
+
+void MultiEncoderAudioProcessor::oscBundleReceived (const OSCBundle &bundle)
+{
+    for (int i = 0; i < bundle.size(); ++i)
+    {
+        auto elem = bundle[i];
+        if (elem.isMessage())
+            oscMessageReceived (elem.getMessage());
+        else if (elem.isBundle())
+            oscBundleReceived (elem.getBundle());
+    }
+}
+
