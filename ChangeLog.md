@@ -6,6 +6,7 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
 ## untagged changes
 - general changes
     - OSC 'connect/disconnect' buttons replaced by  'open/close' buttons
+    - support for OSC bundles
 
 ## v1.6.0
 - general changes
