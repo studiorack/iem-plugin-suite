@@ -112,6 +112,7 @@ private:
 
     // parameters (from GUI)
     float *revTime;
+	float *fadeInTime;
     float *delayLength;
 
     float *highCutoff;
@@ -124,5 +125,5 @@ private:
     float *wet;
 
 
-    FeedbackDelayNetwork fdn;
+    FeedbackDelayNetwork fdn, fdnFade;
 };

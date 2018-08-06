@@ -81,6 +81,13 @@ FdnReverbAudioProcessorEditor::FdnReverbAudioProcessorEditor (FdnReverbAudioProc
     revTimeSlider.setTooltip("Reverberation Time");
     revTimeSlider.addListener(this);
 
+	addAndMakeVisible(&fdnTimeSlider);
+	fdnAttachment = new SliderAttachment(valueTreeState, "fadeInTime", fdnTimeSlider);
+	fdnTimeSlider.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
+	fdnTimeSlider.setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
+	fdnTimeSlider.setColour(Slider::rotarySliderOutlineColourId, Colours::white);
+	fdnTimeSlider.setTooltip("FadeIn Time");
+
     addAndMakeVisible (&dryWetSlider);
     dryWetAttachment = new SliderAttachment (valueTreeState, "dryWet", dryWetSlider);
     dryWetSlider.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
@@ -168,6 +175,9 @@ FdnReverbAudioProcessorEditor::FdnReverbAudioProcessorEditor (FdnReverbAudioProc
     addAndMakeVisible(&lbLowGain);
     lbLowGain.setText("Gain");
 
+	addAndMakeVisible(&fdnLbTime);
+	fdnLbTime.setText("Fdn. Time");
+
     // left side
     addAndMakeVisible(&tv);
     lowpassCoeffs = IIR::Coefficients<float>::makeLowShelf(48000,
@@ -182,6 +192,9 @@ FdnReverbAudioProcessorEditor::FdnReverbAudioProcessorEditor (FdnReverbAudioProc
 
         float gain = pow(10.0, -3.0 / revTimeSlider.getValue());
         tv.setOverallGain(gain);
+
+		float fdnGain = pow(10.0, -3.0 / fdnTimeSlider.getValue());
+		tv.setOverallGain(fdnGain);
 
     tv.repaint();
 
@@ -302,6 +315,7 @@ void FdnReverbAudioProcessorEditor::resized()
         delayLengthSlider.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
         sliderRow.removeFromLeft(rotSliderSpacing);
         revTimeSlider.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
+		fdnTimeSlider.setBounds(sliderRow.removeFromLeft(rotSliderWidth));
         sliderRow.removeFromLeft(rotSliderSpacing);
         dryWetSlider.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
         //sliderRow.removeFromLeft(3);
@@ -314,6 +328,8 @@ void FdnReverbAudioProcessorEditor::resized()
         sliderRow.removeFromLeft(rotSliderSpacing);
         lbTime.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
         sliderRow.removeFromLeft(rotSliderSpacing);
+		fdnLbTime.setBounds(sliderRow.removeFromLeft(rotSliderWidth));
+		sliderRow.removeFromLeft(rotSliderSpacing);
         lbDryWet.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
         //delayArea.removeFromLeft(3);
         // freezeMode.setBounds (delayArea.removeFromLeft(70));

@@ -67,16 +67,16 @@ private:
     void timerCallback() override;
 
     SimpleLabel lbDelay, lbTime, lbDryWet, lbHighCutoff, lbHighQ, lbHighGain, lbLowCutoff, lbLowQ, lbLowGain;
-
+	SimpleLabel fdnLbTime;
     // Functional stuff (sliders, Indicators, OpenGL Voodoo magic, etc.)
     // Groups
     GroupComponent delayGroup, filterGroup, t60Group;
 
     // Sliders
-    ReverseSlider delayLengthSlider, revTimeSlider, dryWetSlider, highCutoffSlider, highQSlider, highGainSlider, lowCutoffSlider, lowQSlider, lowGainSlider;
+    ReverseSlider delayLengthSlider, revTimeSlider, fdnTimeSlider, dryWetSlider, highCutoffSlider, highQSlider, highGainSlider, lowCutoffSlider, lowQSlider, lowGainSlider;
 
     // Pointers for value tree state
-    ScopedPointer<SliderAttachment> delayAttachment, feedbackAttachment, dryWetAttachment, highCutoffAttachment, highQAttachment, highGainAttachment, lowCutoffAttachment, lowQAttachment, lowGainAttachment;
+    ScopedPointer<SliderAttachment> delayAttachment, feedbackAttachment, fdnAttachment, dryWetAttachment, highCutoffAttachment, highQAttachment, highGainAttachment, lowCutoffAttachment, lowQAttachment, lowGainAttachment;
 
     // Buttons
     ToggleButton networkOrder, freezeMode;

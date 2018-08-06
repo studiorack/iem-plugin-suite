@@ -86,12 +86,17 @@ parameters (*this, nullptr), oscParams (parameters)
                                       NormalisableRange<float> (0.f, 1.f, 0.01f), 0.5f,
                                       [](float value) {return String (value, 2);},
                                       nullptr);
-
+	//fdn fdnFade
+	oscParams.createAndAddParameter("fadeInTime", "Fdn Time", "s",
+		NormalisableRange<float>(0.1f, 9.0f, 0.1f), 5.f,
+		[](float value) {return String(value, 1); },
+		nullptr);
 
     parameters.state = ValueTree (Identifier ("FdnReverb"));
 
     parameters.addParameterListener ("delayLength", this);
     parameters.addParameterListener ("revTime", this);
+	parameters.addParameterListener("fadeInTime", this);
     parameters.addParameterListener ("highCutoff", this);
     parameters.addParameterListener ("highQ", this);
     parameters.addParameterListener ("highGain", this);
@@ -103,6 +108,7 @@ parameters (*this, nullptr), oscParams (parameters)
 
     delayLength = parameters.getRawParameterValue ("delayLength");
     revTime = parameters.getRawParameterValue ("revTime");
+	fadeInTime = parameters.getRawParameterValue("fadeInTime");
     highCutoff = parameters.getRawParameterValue ("highCutoff");
     highQ = parameters.getRawParameterValue ("highQ");
     highGain = parameters.getRawParameterValue ("highGain");
@@ -113,6 +119,8 @@ parameters (*this, nullptr), oscParams (parameters)
     wet = parameters.getRawParameterValue("dryWet");
 
     fdn.setFdnSize(FeedbackDelayNetwork::big);
+	fdnFade.setFdnSize(FeedbackDelayNetwork::big);
+	fdnFade.setDryWet(1.0f);
 
     oscReceiver.addListener (this);
 }
@@ -176,10 +184,16 @@ void FdnReverbAudioProcessor::changeProgramName (int index, const String& newNam
 
 void FdnReverbAudioProcessor::parameterChanged (const String & parameterID, float newValue)
 {
-    if (parameterID == "delayLength")
-        fdn.setDelayLength (*delayLength);
-    else if (parameterID == "revTime")
+	if (parameterID == "delayLength")
+	{
+		fdn.setDelayLength(*delayLength);
+		fdnFade.setDelayLength(*delayLength);
+
+	}
+	else if (parameterID == "revTime")
         fdn.setT60InSeconds (*revTime);
+	else if (parameterID == "fadeInTime")
+		fdnFade.setT60InSeconds(*fadeInTime);
     else if (parameterID == "dryWet")
         fdn.setDryWet (*wet);
 //    else if (parameterID == "fdnSize")
