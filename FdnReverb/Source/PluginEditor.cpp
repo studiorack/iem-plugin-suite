@@ -315,7 +315,6 @@ void FdnReverbAudioProcessorEditor::resized()
         delayLengthSlider.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
         sliderRow.removeFromLeft(rotSliderSpacing);
         revTimeSlider.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
-		fdnTimeSlider.setBounds(sliderRow.removeFromLeft(rotSliderWidth));
         sliderRow.removeFromLeft(rotSliderSpacing);
         dryWetSlider.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
         //sliderRow.removeFromLeft(3);
@@ -328,11 +327,19 @@ void FdnReverbAudioProcessorEditor::resized()
         sliderRow.removeFromLeft(rotSliderSpacing);
         lbTime.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
         sliderRow.removeFromLeft(rotSliderSpacing);
-		fdnLbTime.setBounds(sliderRow.removeFromLeft(rotSliderWidth));
 		sliderRow.removeFromLeft(rotSliderSpacing);
         lbDryWet.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
         //delayArea.removeFromLeft(3);
         // freezeMode.setBounds (delayArea.removeFromLeft(70));
+
+		sliderRow = settingsArea.removeFromTop(rotSliderHeight);
+		sliderRow.removeFromLeft(rotSliderWidth + rotSliderSpacing);
+		fdnTimeSlider.setBounds(sliderRow.removeFromLeft(rotSliderWidth));
+		
+		sliderRow = settingsArea.removeFromTop(labelHeight);
+		sliderRow.removeFromLeft(rotSliderWidth + rotSliderSpacing);
+
+		fdnLbTime.setBounds(sliderRow.removeFromLeft(rotSliderWidth));
     }
 
     area.removeFromRight(10); //spacing
