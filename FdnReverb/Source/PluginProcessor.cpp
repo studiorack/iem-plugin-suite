@@ -88,7 +88,7 @@ parameters (*this, nullptr), oscParams (parameters)
                                       nullptr);
 	//fdn fdnFade
 	oscParams.createAndAddParameter("fadeInTime", "Fdn Time", "s",
-		NormalisableRange<float>(0.1f, 9.0f, 0.1f), 5.f,
+		NormalisableRange<float>(0.0f, 9.0f, 0.1f), 0.f,
 		[](float value) {return String(value, 1); },
 		nullptr);
 
@@ -218,18 +218,24 @@ void FdnReverbAudioProcessor::updateFilterParameters()
     highShelf.linearGain = Decibels::decibelsToGain(*highGain);
 
     fdn.setFilterParameter (lowShelf, highShelf);
+	fdnFade.setFilterParameter(lowShelf, highShelf);
 }
 //==============================================================================
 void FdnReverbAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     updateFilterParameters();
 
+	copyBuffer.setSize(64, samplesPerBlock);
+	copyBuffer.clear();
+
     ProcessSpec spec;
     spec.sampleRate = sampleRate;
     spec.maximumBlockSize = samplesPerBlock;
     spec.numChannels = 64;
     fdn.prepare (spec);
-    maxPossibleChannels = getTotalNumInputChannels();
+	fdnFade.prepare(spec);
+
+	maxPossibleChannels = getTotalNumInputChannels();
 }
 
 //------------------------------------------------------------------------------
@@ -243,6 +249,7 @@ void FdnReverbAudioProcessor::releaseResources()
 void FdnReverbAudioProcessor::reset()
 {
     fdn.reset();
+	fdnFade.reset();
 }
 
 //------------------------------------------------------------------------------
@@ -256,8 +263,30 @@ bool FdnReverbAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts
 //------------------------------------------------------------------------------
 void FdnReverbAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& midiMessages)
 {
-    dsp::AudioBlock<float> block (buffer);
+	const int nChannels = buffer.getNumChannels();
+	const int nSamples = buffer.getNumSamples();
+	
+	// make copy of input data
+	if (*fadeInTime != 0.0f)
+	{
+		for (int i = 0; i < nChannels; i++)
+		{
+			copyBuffer.copyFrom(i, 0, buffer, i, 0, nSamples);
+		}
+
+		dsp::AudioBlock<float> blockFade(copyBuffer.getArrayOfWritePointers(), nChannels, nSamples);
+		fdnFade.process(dsp::ProcessContextReplacing<float>(blockFade));
+	}
+	dsp::AudioBlock<float> block (buffer);
     fdn.process (dsp::ProcessContextReplacing<float> (block));
+
+	if (*fadeInTime != 0.0f)
+	{
+		for (int i = 0; i < nChannels; i++)
+		{
+			buffer.addFrom(i, 0, copyBuffer, i, 0, nSamples, -*wet);
+		}
+	}
 }
 
 //------------------------------------------------------------------------------

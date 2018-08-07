@@ -110,6 +110,8 @@ private:
     OSCParameterInterface oscParams;
     OSCReceiverPlus oscReceiver;
 
+	AudioBuffer<float> copyBuffer;
+
     // parameters (from GUI)
     float *revTime;
 	float *fadeInTime;
