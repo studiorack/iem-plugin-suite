@@ -75,44 +75,43 @@ parameters (*this, nullptr), oscParams (parameters)
                                       NormalisableRange<float> (-80.0f, 4.0f, 0.1f), -10.f,
                                       [](float value) {return String (value, 1);},
                                       nullptr);
-
-
-//    oscParams.createAndAddParameter ("fdnSize",
-//                                      "FDN size", "",
-//                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
-//                                      [](float value) {return value >= 0.5f ? "big" : "small";},
-//                                      nullptr);
     oscParams.createAndAddParameter ("dryWet", "Dry/Wet", "",
                                       NormalisableRange<float> (0.f, 1.f, 0.01f), 0.5f,
                                       [](float value) {return String (value, 2);},
                                       nullptr);
-
+	//fdn fdnFade
+	oscParams.createAndAddParameter("fadeInTime", "Fdn Time", "s",
+		NormalisableRange<float>(0.0f, 9.0f, 0.1f), 0.f,
+		[](float value) {return String(value, 1); },
+		nullptr);
 
     parameters.state = ValueTree (Identifier ("FdnReverb"));
 
     parameters.addParameterListener ("delayLength", this);
     parameters.addParameterListener ("revTime", this);
+	parameters.addParameterListener("fadeInTime", this);
     parameters.addParameterListener ("highCutoff", this);
     parameters.addParameterListener ("highQ", this);
     parameters.addParameterListener ("highGain", this);
     parameters.addParameterListener ("lowCutoff", this);
     parameters.addParameterListener ("lowQ", this);
     parameters.addParameterListener ("lowGain", this);
-//    parameters.addParameterListener ("fdnSize", this);
     parameters.addParameterListener ("dryWet", this);
 
     delayLength = parameters.getRawParameterValue ("delayLength");
     revTime = parameters.getRawParameterValue ("revTime");
+	fadeInTime = parameters.getRawParameterValue("fadeInTime");
     highCutoff = parameters.getRawParameterValue ("highCutoff");
     highQ = parameters.getRawParameterValue ("highQ");
     highGain = parameters.getRawParameterValue ("highGain");
     lowCutoff = parameters.getRawParameterValue ("lowCutoff");
     lowQ = parameters.getRawParameterValue ("lowQ");
     lowGain = parameters.getRawParameterValue ("lowGain");
-//    fdnSize = parameters.getRawParameterValue("fdnSize");
     wet = parameters.getRawParameterValue("dryWet");
 
     fdn.setFdnSize(FeedbackDelayNetwork::big);
+	fdnFade.setFdnSize(FeedbackDelayNetwork::big);
+	fdnFade.setDryWet(1.0f);
 
     oscReceiver.addListener (this);
 }
@@ -176,14 +175,18 @@ void FdnReverbAudioProcessor::changeProgramName (int index, const String& newNam
 
 void FdnReverbAudioProcessor::parameterChanged (const String & parameterID, float newValue)
 {
-    if (parameterID == "delayLength")
-        fdn.setDelayLength (*delayLength);
-    else if (parameterID == "revTime")
+	if (parameterID == "delayLength")
+	{
+		fdn.setDelayLength(*delayLength);
+		fdnFade.setDelayLength(*delayLength);
+
+	}
+	else if (parameterID == "revTime")
         fdn.setT60InSeconds (*revTime);
+	else if (parameterID == "fadeInTime")
+		fdnFade.setT60InSeconds(*fadeInTime);
     else if (parameterID == "dryWet")
         fdn.setDryWet (*wet);
-//    else if (parameterID == "fdnSize")
-//        fdn.setFdnSize(*fdnSize >= 0.5f ? FeedbackDelayNetwork::big : FeedbackDelayNetwork::small);
     else
         {
             updateFilterParameters();
@@ -204,18 +207,24 @@ void FdnReverbAudioProcessor::updateFilterParameters()
     highShelf.linearGain = Decibels::decibelsToGain(*highGain);
 
     fdn.setFilterParameter (lowShelf, highShelf);
+	fdnFade.setFilterParameter(lowShelf, highShelf);
 }
 //==============================================================================
 void FdnReverbAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     updateFilterParameters();
 
+	copyBuffer.setSize(64, samplesPerBlock);
+	copyBuffer.clear();
+
     ProcessSpec spec;
     spec.sampleRate = sampleRate;
     spec.maximumBlockSize = samplesPerBlock;
     spec.numChannels = 64;
     fdn.prepare (spec);
-    maxPossibleChannels = getTotalNumInputChannels();
+	fdnFade.prepare(spec);
+
+	maxPossibleChannels = getTotalNumInputChannels();
 }
 
 //------------------------------------------------------------------------------
@@ -229,6 +238,7 @@ void FdnReverbAudioProcessor::releaseResources()
 void FdnReverbAudioProcessor::reset()
 {
     fdn.reset();
+	fdnFade.reset();
 }
 
 //------------------------------------------------------------------------------
@@ -242,21 +252,33 @@ bool FdnReverbAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts
 //------------------------------------------------------------------------------
 void FdnReverbAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& midiMessages)
 {
-    dsp::AudioBlock<float> block (buffer);
+	const int nChannels = buffer.getNumChannels();
+	const int nSamples = buffer.getNumSamples();
+	
+	// make copy of input data
+	if (*fadeInTime != 0.0f)
+	{
+		for (int i = 0; i < nChannels; i++)
+		{
+			copyBuffer.copyFrom(i, 0, buffer, i, 0, nSamples);
+		}
+
+		dsp::AudioBlock<float> blockFade(copyBuffer.getArrayOfWritePointers(), nChannels, nSamples);
+		fdnFade.process(dsp::ProcessContextReplacing<float>(blockFade));
+	}
+	dsp::AudioBlock<float> block (buffer);
     fdn.process (dsp::ProcessContextReplacing<float> (block));
+
+	if (*fadeInTime != 0.0f)
+	{
+		for (int i = 0; i < nChannels; i++)
+		{
+			buffer.addFrom(i, 0, copyBuffer, i, 0, nSamples, -*wet);
+		}
+	}
 }
 
-//------------------------------------------------------------------------------
-void FdnReverbAudioProcessor::setNetworkOrder (int order)
-{
-//    FeedbackDelayNetwork::FdnSize size;
-//    if (order == 64)
-//        size = FeedbackDelayNetwork::FdnSize::big;
-//    else
-//        size = FeedbackDelayNetwork::FdnSize::small;
-//
-//    fdn.setFdnSize (size);
-}
+
 
 //------------------------------------------------------------------------------
 void FdnReverbAudioProcessor::setFreezeMode (bool freezeState)

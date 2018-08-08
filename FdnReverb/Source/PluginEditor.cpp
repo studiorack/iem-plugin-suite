@@ -35,15 +35,13 @@ FdnReverbAudioProcessorEditor::FdnReverbAudioProcessorEditor (FdnReverbAudioProc
     setResizeLimits(600, 480, 1000, 950);
     setLookAndFeel (&globalLaF);
 
-    //networkOrder.addListener (this);
-    freezeMode.addListener (this);
+	freezeMode.addListener (this);
 
     addAndMakeVisible (&title);
     title.setTitle (String("FDN"), String("Reverb"));
     title.setFont (globalLaF.robotoBold, globalLaF.robotoLight);
 
     addAndMakeVisible(&footer);
-
     addAndMakeVisible(&delayGroup);
     delayGroup.setText("General Settings");
     delayGroup.setTextLabelPosition (Justification::centredLeft);
@@ -53,12 +51,6 @@ FdnReverbAudioProcessorEditor::FdnReverbAudioProcessorEditor (FdnReverbAudioProc
 
     addAndMakeVisible(&filterGroup);
     filterGroup.setText("Filter Settings");
-//    highsGroup.setTextLabelPosition (Justification::centredLeft);
-//    highsGroup.setColour (GroupComponent::outlineColourId, globalLaF.ClSeperator);
-//    highsGroup.setColour (GroupComponent::textColourId, Colours::blue);
-//    highsGroup.setVisible(true);
-
-
     addAndMakeVisible(&t60Group);
     t60Group.setText("Reverberation Time");
     t60Group.setTextLabelPosition (Justification::centredLeft);
@@ -80,6 +72,13 @@ FdnReverbAudioProcessorEditor::FdnReverbAudioProcessorEditor (FdnReverbAudioProc
     revTimeSlider.setColour (Slider::rotarySliderOutlineColourId, Colours::white);
     revTimeSlider.setTooltip("Reverberation Time");
     revTimeSlider.addListener(this);
+
+	addAndMakeVisible(&fdnTimeSlider);
+	fdnAttachment = new SliderAttachment(valueTreeState, "fadeInTime", fdnTimeSlider);
+	fdnTimeSlider.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
+	fdnTimeSlider.setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
+	fdnTimeSlider.setColour(Slider::rotarySliderOutlineColourId, Colours::white);
+	fdnTimeSlider.setTooltip("FadeIn Time");
 
     addAndMakeVisible (&dryWetSlider);
     dryWetAttachment = new SliderAttachment (valueTreeState, "dryWet", dryWetSlider);
@@ -139,16 +138,8 @@ FdnReverbAudioProcessorEditor::FdnReverbAudioProcessorEditor (FdnReverbAudioProc
     highGainSlider.setTooltip("High Shelf Gain");
     highGainSlider.addListener(this);
 
-    //addAndMakeVisible (&networkOrder);
-    //networkOrder.setButtonText ("big FDN");
-    //networkOrderAttachment = new ButtonAttachment(valueTreeState, "fdnSize", networkOrder);
-//    networkOrder.triggerClick();
-
     addAndMakeVisible (&freezeMode);
     freezeMode.setButtonText ("Freeze");
-
-    //startTimer(50);
-
     addAndMakeVisible(&lbDelay);
     lbDelay.setText("Room Size");
     addAndMakeVisible(&lbTime);
@@ -168,6 +159,9 @@ FdnReverbAudioProcessorEditor::FdnReverbAudioProcessorEditor (FdnReverbAudioProc
     addAndMakeVisible(&lbLowGain);
     lbLowGain.setText("Gain");
 
+	addAndMakeVisible(&fdnLbTime);
+	fdnLbTime.setText("Fdn. Time");
+
     // left side
     addAndMakeVisible(&tv);
     lowpassCoeffs = IIR::Coefficients<float>::makeLowShelf(48000,
@@ -182,6 +176,9 @@ FdnReverbAudioProcessorEditor::FdnReverbAudioProcessorEditor (FdnReverbAudioProc
 
         float gain = pow(10.0, -3.0 / revTimeSlider.getValue());
         tv.setOverallGain(gain);
+
+		float fdnGain = pow(10.0, -3.0 / fdnTimeSlider.getValue());
+		tv.setOverallGain(fdnGain);
 
     tv.repaint();
 
@@ -212,14 +209,6 @@ void FdnReverbAudioProcessorEditor::timerCallback()
 
 void FdnReverbAudioProcessorEditor::buttonClicked (Button* button)
 {
-//    if (button == &networkOrder)
-//    {
-//        if (networkOrder.getToggleState())
-//            processor.setNetworkOrder(64);
-//        else
-//            processor.setNetworkOrder(32);
-//    }
-
     if (button == &freezeMode)
     {
         if (freezeMode.getToggleState())
@@ -269,16 +258,12 @@ void FdnReverbAudioProcessorEditor::resized()
     const int leftRightMargin = 30;
     const int headerHeight = 60;
     const int footerHeight = 25;
-    //const int sliderHeight = 15;
     const int rotSliderHeight = 55;
     const int rotSliderSpacing = 10;
-    //const int sliderSpacing = 3;
     const int rotSliderWidth = 40;
     const int labelHeight = 20;
-    //const int labelWidth = 20;
 
     Rectangle<int> area (getLocalBounds());
-
     Rectangle<int> footerArea (area.removeFromBottom (footerHeight));
     footer.setBounds(footerArea);
 
@@ -304,19 +289,21 @@ void FdnReverbAudioProcessorEditor::resized()
         revTimeSlider.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
         sliderRow.removeFromLeft(rotSliderSpacing);
         dryWetSlider.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
-        //sliderRow.removeFromLeft(3);
-        //networkOrder.setBounds (sliderRow.removeFromLeft(70));
-        //sliderRow.removeFromLeft(rotSliderSpacing);
-
         sliderRow = settingsArea.removeFromTop(labelHeight);
 
         lbDelay.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
         sliderRow.removeFromLeft(rotSliderSpacing);
         lbTime.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
         sliderRow.removeFromLeft(rotSliderSpacing);
+		sliderRow.removeFromLeft(rotSliderSpacing);
         lbDryWet.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
-        //delayArea.removeFromLeft(3);
-        // freezeMode.setBounds (delayArea.removeFromLeft(70));
+		sliderRow = settingsArea.removeFromTop(rotSliderHeight);
+		sliderRow.removeFromLeft(rotSliderWidth + rotSliderSpacing);
+		fdnTimeSlider.setBounds(sliderRow.removeFromLeft(rotSliderWidth));
+		sliderRow = settingsArea.removeFromTop(labelHeight);
+		sliderRow.removeFromLeft(rotSliderWidth + rotSliderSpacing);
+
+		fdnLbTime.setBounds(sliderRow.removeFromLeft(rotSliderWidth));
     }
 
     area.removeFromRight(10); //spacing
@@ -368,8 +355,4 @@ void FdnReverbAudioProcessorEditor::resized()
 
         fv.setBounds(filterArea);
     }
-
-
-
-
 }
