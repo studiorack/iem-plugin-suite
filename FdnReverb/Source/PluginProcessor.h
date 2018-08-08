@@ -94,9 +94,6 @@ public:
 //==============================================================================
     // parameters/functions for interfacing with GUI
     AudioProcessorValueTreeState parameters;
-
-    void setNetworkOrder (int order);
-
     int maxPossibleChannels = 64;
 
     void setFreezeMode (bool freezeState);
@@ -123,7 +120,6 @@ private:
     float *lowCutoff;
     float *lowQ;
     float *lowGain;
-    //float *fdnSize;
     float *wet;
 
 

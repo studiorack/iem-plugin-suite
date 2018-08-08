@@ -75,13 +75,6 @@ parameters (*this, nullptr), oscParams (parameters)
                                       NormalisableRange<float> (-80.0f, 4.0f, 0.1f), -10.f,
                                       [](float value) {return String (value, 1);},
                                       nullptr);
-
-
-//    oscParams.createAndAddParameter ("fdnSize",
-//                                      "FDN size", "",
-//                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
-//                                      [](float value) {return value >= 0.5f ? "big" : "small";},
-//                                      nullptr);
     oscParams.createAndAddParameter ("dryWet", "Dry/Wet", "",
                                       NormalisableRange<float> (0.f, 1.f, 0.01f), 0.5f,
                                       [](float value) {return String (value, 2);},
@@ -103,7 +96,6 @@ parameters (*this, nullptr), oscParams (parameters)
     parameters.addParameterListener ("lowCutoff", this);
     parameters.addParameterListener ("lowQ", this);
     parameters.addParameterListener ("lowGain", this);
-//    parameters.addParameterListener ("fdnSize", this);
     parameters.addParameterListener ("dryWet", this);
 
     delayLength = parameters.getRawParameterValue ("delayLength");
@@ -115,7 +107,6 @@ parameters (*this, nullptr), oscParams (parameters)
     lowCutoff = parameters.getRawParameterValue ("lowCutoff");
     lowQ = parameters.getRawParameterValue ("lowQ");
     lowGain = parameters.getRawParameterValue ("lowGain");
-//    fdnSize = parameters.getRawParameterValue("fdnSize");
     wet = parameters.getRawParameterValue("dryWet");
 
     fdn.setFdnSize(FeedbackDelayNetwork::big);
@@ -196,8 +187,6 @@ void FdnReverbAudioProcessor::parameterChanged (const String & parameterID, floa
 		fdnFade.setT60InSeconds(*fadeInTime);
     else if (parameterID == "dryWet")
         fdn.setDryWet (*wet);
-//    else if (parameterID == "fdnSize")
-//        fdn.setFdnSize(*fdnSize >= 0.5f ? FeedbackDelayNetwork::big : FeedbackDelayNetwork::small);
     else
         {
             updateFilterParameters();
@@ -289,17 +278,7 @@ void FdnReverbAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuff
 	}
 }
 
-//------------------------------------------------------------------------------
-void FdnReverbAudioProcessor::setNetworkOrder (int order)
-{
-//    FeedbackDelayNetwork::FdnSize size;
-//    if (order == 64)
-//        size = FeedbackDelayNetwork::FdnSize::big;
-//    else
-//        size = FeedbackDelayNetwork::FdnSize::small;
-//
-//    fdn.setFdnSize (size);
-}
+
 
 //------------------------------------------------------------------------------
 void FdnReverbAudioProcessor::setFreezeMode (bool freezeState)
