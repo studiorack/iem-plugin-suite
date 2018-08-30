@@ -79,11 +79,11 @@ parameters (*this, nullptr), oscParams (parameters)
                                       NormalisableRange<float> (0.f, 1.f, 0.01f), 0.5f,
                                       [](float value) {return String (value, 2);},
                                       nullptr);
-	//fdn fdnFade
-	oscParams.createAndAddParameter("fadeInTime", "Fdn Time", "s",
-		NormalisableRange<float>(0.0f, 9.0f, 0.1f), 0.f,
-		[](float value) {return String(value, 1); },
-		nullptr);
+
+	oscParams.createAndAddParameter ("fadeInTime", "Fdn Time", "s",
+                                      NormalisableRange<float>(0.0f, 9.0f, 0.01f), 0.f,
+                                      [](float value) {return String(value, 1);},
+                                      nullptr);
 
     parameters.state = ValueTree (Identifier ("FdnReverb"));
 
