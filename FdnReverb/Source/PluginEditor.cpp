@@ -73,12 +73,12 @@ FdnReverbAudioProcessorEditor::FdnReverbAudioProcessorEditor (FdnReverbAudioProc
     revTimeSlider.setTooltip("Reverberation Time");
     revTimeSlider.addListener(this);
 
-	addAndMakeVisible(&fdnTimeSlider);
-	fdnAttachment = new SliderAttachment(valueTreeState, "fadeInTime", fdnTimeSlider);
-	fdnTimeSlider.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
-	fdnTimeSlider.setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
-	fdnTimeSlider.setColour(Slider::rotarySliderOutlineColourId, Colours::white);
-	fdnTimeSlider.setTooltip("FadeIn Time");
+	addAndMakeVisible(&fadeInSlider);
+	fadeInAttachment = new SliderAttachment(valueTreeState, "fadeInTime", fadeInSlider);
+	fadeInSlider.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
+	fadeInSlider.setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
+	fadeInSlider.setColour(Slider::rotarySliderOutlineColourId, Colours::white);
+	fadeInSlider.setTooltip("FadeIn Time");
 
     addAndMakeVisible (&dryWetSlider);
     dryWetAttachment = new SliderAttachment (valueTreeState, "dryWet", dryWetSlider);
@@ -138,6 +138,14 @@ FdnReverbAudioProcessorEditor::FdnReverbAudioProcessorEditor (FdnReverbAudioProc
     highGainSlider.setTooltip("High Shelf Gain");
     highGainSlider.addListener(this);
 
+    addAndMakeVisible (cbFdnSize);
+    cbFdnSize.addSectionHeading ("Fdn Size");
+    cbFdnSize.addItem ("16", 1);
+    cbFdnSize.addItem ("32", 2);
+    cbFdnSize.addItem ("64", 3);
+    cbFdnSize.setJustificationType (Justification::centred);
+    cbFdnSizeAttachment = new ComboBoxAttachment (valueTreeState, "fdnSize", cbFdnSize);
+
     addAndMakeVisible (&freezeMode);
     freezeMode.setButtonText ("Freeze");
     addAndMakeVisible(&lbDelay);
@@ -158,9 +166,10 @@ FdnReverbAudioProcessorEditor::FdnReverbAudioProcessorEditor (FdnReverbAudioProc
     lbLowQ.setText("Q");
     addAndMakeVisible(&lbLowGain);
     lbLowGain.setText("Gain");
-
+    addAndMakeVisible(fdnSize);
+    fdnSize.setText("Fdn Size");
 	addAndMakeVisible(&fdnLbTime);
-	fdnLbTime.setText("Fdn. Time");
+	fdnLbTime.setText("Fade In");
 
     // left side
     addAndMakeVisible(&tv);
@@ -177,7 +186,7 @@ FdnReverbAudioProcessorEditor::FdnReverbAudioProcessorEditor (FdnReverbAudioProc
         float gain = pow(10.0, -3.0 / revTimeSlider.getValue());
         tv.setOverallGain(gain);
 
-		float fdnGain = pow(10.0, -3.0 / fdnTimeSlider.getValue());
+		float fdnGain = pow(10.0, -3.0 / fadeInSlider.getValue());
 		tv.setOverallGain(fdnGain);
 
     tv.repaint();
@@ -289,20 +298,23 @@ void FdnReverbAudioProcessorEditor::resized()
         revTimeSlider.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
         sliderRow.removeFromLeft(rotSliderSpacing);
         dryWetSlider.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
-        sliderRow = settingsArea.removeFromTop(labelHeight);
 
+        sliderRow = settingsArea.removeFromTop(labelHeight);
         lbDelay.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
         sliderRow.removeFromLeft(rotSliderSpacing);
         lbTime.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
         sliderRow.removeFromLeft(rotSliderSpacing);
 		sliderRow.removeFromLeft(rotSliderSpacing);
         lbDryWet.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
-		sliderRow = settingsArea.removeFromTop(rotSliderHeight);
-		sliderRow.removeFromLeft(rotSliderWidth + rotSliderSpacing);
-		fdnTimeSlider.setBounds(sliderRow.removeFromLeft(rotSliderWidth));
-		sliderRow = settingsArea.removeFromTop(labelHeight);
-		sliderRow.removeFromLeft(rotSliderWidth + rotSliderSpacing);
 
+		sliderRow = settingsArea.removeFromTop(rotSliderHeight);
+        cbFdnSize.setBounds (sliderRow.removeFromLeft (rotSliderWidth).removeFromBottom (18));
+		sliderRow.removeFromLeft(rotSliderSpacing);
+		fadeInSlider.setBounds(sliderRow.removeFromLeft(rotSliderWidth));
+
+		sliderRow = settingsArea.removeFromTop(labelHeight);
+        fdnSize.setBounds (sliderRow.removeFromLeft (rotSliderWidth));
+		sliderRow.removeFromLeft(rotSliderSpacing);
 		fdnLbTime.setBounds(sliderRow.removeFromLeft(rotSliderWidth));
     }
 

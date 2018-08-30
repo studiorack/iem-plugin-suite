@@ -81,15 +81,27 @@ parameters (*this, nullptr), oscParams (parameters)
                                       nullptr);
 
 	oscParams.createAndAddParameter ("fadeInTime", "Fdn Time", "s",
-                                      NormalisableRange<float>(0.0f, 9.0f, 0.01f), 0.f,
-                                      [](float value) {return String(value, 1);},
+                                      NormalisableRange<float> (0.0f, 9.0f, 0.01f), 0.f,
+                                      [](float value) {return String(value, 2);},
                                       nullptr);
+
+    oscParams.createAndAddParameter ("fdnSize", "Fdn Size", "",
+                                     NormalisableRange<float> (0.0f, 2.0f, 1.0f), 2.0f,
+                                     [](float value) {
+                                         if (value == 0.0f)
+                                             return "16";
+                                         else if (value == 1.0f)
+                                             return "32";
+                                         else
+                                             return "64";
+                                     },
+                                     nullptr);
 
     parameters.state = ValueTree (Identifier ("FdnReverb"));
 
     parameters.addParameterListener ("delayLength", this);
     parameters.addParameterListener ("revTime", this);
-	parameters.addParameterListener("fadeInTime", this);
+	parameters.addParameterListener ("fadeInTime", this);
     parameters.addParameterListener ("highCutoff", this);
     parameters.addParameterListener ("highQ", this);
     parameters.addParameterListener ("highGain", this);
@@ -97,6 +109,7 @@ parameters (*this, nullptr), oscParams (parameters)
     parameters.addParameterListener ("lowQ", this);
     parameters.addParameterListener ("lowGain", this);
     parameters.addParameterListener ("dryWet", this);
+    parameters.addParameterListener ("fdnSize", this);
 
     delayLength = parameters.getRawParameterValue ("delayLength");
     revTime = parameters.getRawParameterValue ("revTime");
@@ -187,6 +200,25 @@ void FdnReverbAudioProcessor::parameterChanged (const String & parameterID, floa
 		fdnFade.setT60InSeconds(*fadeInTime);
     else if (parameterID == "dryWet")
         fdn.setDryWet (*wet);
+    else if (parameterID == "fdnSize")
+    {
+        FeedbackDelayNetwork::FdnSize size {FeedbackDelayNetwork::FdnSize::big};
+        if (newValue == 0.0f)
+            size = FeedbackDelayNetwork::FdnSize::tiny;
+        else if (newValue == 1.0f)
+            size = FeedbackDelayNetwork::FdnSize::small;
+
+        fdn.setFdnSize (size);
+        fdnFade.setFdnSize (size);
+
+        ProcessSpec spec;
+        spec.sampleRate = getSampleRate();
+        spec.maximumBlockSize = getBlockSize();
+        spec.numChannels = 64;
+        fdn.prepare (spec);
+        fdnFade.prepare(spec);
+
+    }
     else
         {
             updateFilterParameters();
@@ -276,6 +308,13 @@ void FdnReverbAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuff
 			buffer.addFrom(i, 0, copyBuffer, i, 0, nSamples, -*wet);
 		}
 	}
+
+    auto fdnSize = fdn.getFdnSize();
+    if (fdnSize < nChannels)
+    {
+        for (int ch = fdnSize; ch < nChannels; ++ch)
+            buffer.clear (ch, 0, nSamples);
+    }
 }
 
 

@@ -133,25 +133,25 @@ public:
 
         // if more channels than network order, mix pairs of high order channels
         // until order == number of channels
-        if (nChannels > fdnSize)
-        {
-            int diff = nChannels - fdnSize;
-            int start_index = nChannels - diff * 2;
-
-            for (int num = 0; num < diff; ++num)
-            {
-                int idx = start_index + num;
-
-                float* writeIn = buffer.getChannelPointer (idx);
-                const float* writeOut1 = buffer.getChannelPointer (idx + num);
-                const float* writeOut2 = buffer.getChannelPointer (idx + num + 1);
-
-                for (int i = 0; i < numSamples; ++i)
-                {
-                    writeIn[i] = (writeOut1[i] + writeOut2[i]) / sqrt(2.f);
-                }
-            }
-        }
+//        if (nChannels > fdnSize)
+//        {
+//            int diff = nChannels - fdnSize;
+//            int start_index = nChannels - diff * 2;
+//
+//            for (int num = 0; num < diff; ++num)
+//            {
+//                int idx = start_index + num;
+//
+//                float* writeIn = buffer.getChannelPointer (idx);
+//                const float* writeOut1 = buffer.getChannelPointer (idx + num);
+//                const float* writeOut2 = buffer.getChannelPointer (idx + num + 1);
+//
+//                for (int i = 0; i < numSamples; ++i)
+//                {
+//                    writeIn[i] = (writeOut1[i] + writeOut2[i]) / sqrt(2.f);
+//                }
+//            }
+//        }
 
         float dryGain;
         if (freeze)
@@ -217,25 +217,25 @@ public:
         }
         // if more channels than network order, mix pairs of high order channels
         // until order == number of channels
-        if (nChannels > fdnSize)
-        {
-            int diff = nChannels - fdnSize;
-            int start_index = nChannels - diff * 2;
-
-            for (int num = diff - 1; num < 0; --num)
-            {
-                int idx = start_index + num;
-                float *const writeOut = buffer.getChannelPointer (idx);
-                float *const writeIn1 = buffer.getChannelPointer (idx + num);
-                float *const writeIn2 = buffer.getChannelPointer (idx + num + 1);
-
-                for (int i = 0; i < numSamples; ++i)
-                {
-                    writeIn1[i] = writeOut[i] / sqrt(2.f);
-                    writeIn2[i] = writeIn1[i];
-                }
-            }
-        }
+//        if (nChannels > fdnSize)
+//        {
+//            int diff = nChannels - fdnSize;
+//            int start_index = nChannels - diff * 2;
+//
+//            for (int num = diff - 1; num < 0; --num)
+//            {
+//                int idx = start_index + num;
+//                float *const writeOut = buffer.getChannelPointer (idx);
+//                float *const writeIn1 = buffer.getChannelPointer (idx + num);
+//                float *const writeIn2 = buffer.getChannelPointer (idx + num + 1);
+//
+//                for (int i = 0; i < numSamples; ++i)
+//                {
+//                    writeIn1[i] = writeOut[i] / sqrt(2.f);
+//                    writeIn2[i] = writeIn1[i];
+//                }
+//            }
+//        }
     }
 
     void setDelayLength (float newDelayLength)
@@ -300,6 +300,11 @@ public:
             params.newNetworkSize = size;
             params.networkSizeChanged = true;
         }
+    }
+
+    const FdnSize getFdnSize()
+    {
+        return params.newNetworkSize;
     }
 
 private:
@@ -418,7 +423,7 @@ private:
     //------------------------------------------------------------------------------
     inline void updateParameterSettings ()
     {
-        //indices = indexGen (fdnSize, int (*delayLength / 10.f), int (*delayLength));
+        indices = indexGen (fdnSize, delayLength);
 
         for (int channel = 0; channel < fdnSize; ++channel)
         {
