@@ -44,10 +44,10 @@ variables:
     PKGLIBS: jack fftw3f
   script:
 # install dependencies
-    - apt update -y
-    - apt dist-upgrade -y
+    - apt-get update -y
+    - apt-get dist-upgrade -y
     - apt-get install -y --no-install-recommends xvfb xauth curl unzip build-essential ca-certificates
-    - apt-get install -y --no-install-recommends libwebkit2gtk-4.0-dev libasound2-dev libfreetype6-dev libcurl4-openssl-dev libgl1-mesa-dev libx11-dev libxext-dev libxinerama-dev libxrandr-dev libgtk-3-dev libcurl4-gnutls-dev
+    - apt-get install -y --no-install-recommends libwebkit2gtk-4.0-dev libasound2-dev libfreetype6-dev libcurl4-gnutls-dev libgl1-mesa-dev libx11-dev libxext-dev libxinerama-dev libxrandr-dev libgtk-3-dev
     - apt-get install -y --no-install-recommends libjack-dev libfftw3-dev
 # we use Debian's Projucer, but upstream's JUCE module sources
 # because Roli's Projucer binaries link against an old version of libcurl,
