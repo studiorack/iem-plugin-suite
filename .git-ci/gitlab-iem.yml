@@ -55,6 +55,8 @@ variables:
 # cheers to proprietary software!
     - apt-get install -y --no-install-recommends juce-tools
     - .git-ci/getjuce.sh "${JUCEVERSION}-linux" ~/JUCE
+# re-configure Projucer to use the user-provided JUCE modules
+    - xvfb-run -a Projucer --set-global-search-path linux defaultJuceModulePath ~/JUCE/modules/
 # run the actual build
     - make system V=1 CONFIG=${CONFIG} CPPFLAGS=-DJUCE_JACK=1 CFLAGS="$(pkg-config --cflags ${PKGLIBS})" LDFLAGS="$(pkg-config --libs ${PKGLIBS})" PARALLEL=$(nproc) TARGET_ARCH=-march=core2
     - xvfb-run -a make V=1 CONFIG=${CONFIG} CPPFLAGS=-DJUCE_JACK=1 CFLAGS="$(pkg-config --cflags ${PKGLIBS})" LDFLAGS="$(pkg-config --libs ${PKGLIBS})" PARALLEL=$(nproc) TARGET_ARCH=-march=core2
