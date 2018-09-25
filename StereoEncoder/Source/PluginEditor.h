@@ -41,7 +41,8 @@ typedef AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
 */
 class StereoEncoderAudioProcessorEditor  : public AudioProcessorEditor,
 private Timer,
-public SpherePanner::Listener
+public SpherePanner::Listener,
+private KeyListener
 {
 public:
 
@@ -53,6 +54,9 @@ public:
     void resized() override;
 
     void mouseWheelOnSpherePannerMoved (SpherePanner* sphere, const MouseEvent &event, const MouseWheelDetails &wheel) override;
+
+    bool keyPressed (const KeyPress &key, Component *originatingComponent) override;
+
 private:
     LaF globalLaF;
 

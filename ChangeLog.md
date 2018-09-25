@@ -11,6 +11,8 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
     - **Fdn**Reverb
         - fade-in functionality for more diffuseness at the beginning
         - internal fdn size now switchable (for different sounds and lower cpu usage)
+    - **Stereo**Encoder
+        -   adds shortcuts for panning positions (e.g. shift+f for front, ...)
 
 ## v1.6.0
 - general changes
