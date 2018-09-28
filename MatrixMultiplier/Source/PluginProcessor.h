@@ -25,7 +25,10 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "../../resources/IOHelper.h"
 #include "../../resources/MatrixMultiplication.h"
+
+#define CONFIGURATIONHELPER_ENABLE_MATRIX_METHODS 1
 #include "../../resources/ConfigurationHelper.h"
+
 
 // ===== OSC ====
 #include "../../resources/OSCParameterInterface.h"
@@ -96,6 +99,7 @@ public:
 
     //======== OSC =================================================================
     void oscMessageReceived (const OSCMessage &message) override;
+    void oscBundleReceived (const OSCBundle &bundle) override;
     OSCReceiverPlus& getOSCReceiver () { return oscReceiver; }
     //==============================================================================
 

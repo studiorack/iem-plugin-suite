@@ -34,7 +34,7 @@ public:
         previousPort = receiver.getPortNumber();
 
         addAndMakeVisible (headline);
-        headline.setText ("OSC Receiver Port Number", false, Justification::centred);
+        headline.setText ("OSC Receiver Port", false, Justification::centred);
 
         addAndMakeVisible (lbPort);
         const int port = receiver.getPortNumber();
@@ -42,10 +42,10 @@ public:
         lbPort.setEditable (true);
         lbPort.setJustificationType (Justification::centred);
 
-        addAndMakeVisible (tbConnect);
-        tbConnect.setButtonText (isConnected ? "DISCONNECT" : "CONNECT");
-        tbConnect.setColour(TextButton::buttonColourId, isConnected ? Colours::orangered : Colours::limegreen);
-        tbConnect.onClick =  [this] () { checkPortAndConnect(); };
+        addAndMakeVisible (tbOpenPort);
+        tbOpenPort.setButtonText (isConnected ? "CLOSE" : "OPEN");
+        tbOpenPort.setColour(TextButton::buttonColourId, isConnected ? Colours::orangered : Colours::limegreen);
+        tbOpenPort.onClick =  [this] () { checkPortAndConnect(); };
 
         startTimer (500);
     }
@@ -60,8 +60,8 @@ public:
         if (isConnected != shouldBeConnected)
         {
             isConnected = shouldBeConnected;
-            tbConnect.setButtonText (isConnected ? "DISCONNECT" : "CONNECT");
-            tbConnect.setColour(TextButton::buttonColourId, isConnected ? Colours::orangered : Colours::limegreen);
+            tbOpenPort.setButtonText (isConnected ? "CLOSE" : "OPEN");
+            tbOpenPort.setColour(TextButton::buttonColourId, isConnected ? Colours::orangered : Colours::limegreen);
             repaint();
         }
     }
@@ -116,7 +116,7 @@ public:
         lbPort.setBounds (row.removeFromLeft (50));
 
         row.removeFromLeft (8);
-        tbConnect.setBounds(row);
+        tbOpenPort.setBounds(row);
     }
 
 private:
@@ -125,7 +125,7 @@ private:
     int previousPort = -1;
     SimpleLabel headline;
     Label lbPort;
-    TextButton tbConnect;
+    TextButton tbOpenPort;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OSCDialogWindow)
 };
 
@@ -139,7 +139,7 @@ class OSCStatus : public Component, private Timer
 public:
     OSCStatus(OSCReceiverPlus& receiver) : oscReceiver (receiver)
     {
-        isConnected = oscReceiver.isConnected();
+        isOpen = oscReceiver.isConnected();
         startTimer(500);
     }
 
@@ -151,10 +151,10 @@ public:
     {
         const int port = oscReceiver.getPortNumber();
         bool shouldBeConnected = oscReceiver.isConnected();
-        if (isConnected != shouldBeConnected || lastPort != port)
+        if (isOpen != shouldBeConnected || lastPort != port)
         {
             lastPort = port;
-            isConnected = shouldBeConnected;
+            isOpen = shouldBeConnected;
             repaint();
         }
     }
@@ -172,7 +172,7 @@ public:
     void mouseUp (const MouseEvent &event) override
     {
         auto* dialogWindow = new OSCDialogWindow (oscReceiver);
-        dialogWindow->setSize (130, 38);
+        dialogWindow->setSize (110, 38);
 
         CallOutBox& myBox = CallOutBox::launchAsynchronously (dialogWindow, getScreenBounds().removeFromLeft(14), nullptr);
         myBox.setLookAndFeel(&getLookAndFeel());
@@ -214,7 +214,7 @@ public:
 
 private:
     OSCReceiverPlus& oscReceiver;
-    bool isConnected = false;
+    bool isOpen = false;
     bool lastPort = -1;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OSCStatus)

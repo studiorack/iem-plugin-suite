@@ -26,7 +26,7 @@
 
 //==============================================================================
 PluginTemplateAudioProcessorEditor::PluginTemplateAudioProcessorEditor (PluginTemplateAudioProcessor& p, AudioProcessorValueTreeState& vts)
-    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts), footer (p.getOSCReceiver())
+    : AudioProcessorEditor (&p), processor (p), valueTreeState (vts), footer (p.getOSCReceiver())
 {
     // ============== BEGIN: essentials ======================
     // set GUI size and lookAndFeel
@@ -49,7 +49,7 @@ PluginTemplateAudioProcessorEditor::PluginTemplateAudioProcessorEditor (PluginTe
 
     addAndMakeVisible (slParam1);
     slParam1Attachment = new SliderAttachment (valueTreeState, "param1", slParam1);
-    addAndMakeVisible(slParam2);
+    addAndMakeVisible (slParam2);
     slParam2Attachment = new SliderAttachment (valueTreeState, "param2", slParam2);
 
 
@@ -59,7 +59,7 @@ PluginTemplateAudioProcessorEditor::PluginTemplateAudioProcessorEditor (PluginTe
 
 PluginTemplateAudioProcessorEditor::~PluginTemplateAudioProcessorEditor()
 {
-    setLookAndFeel(nullptr);
+    setLookAndFeel (nullptr);
 }
 
 //==============================================================================

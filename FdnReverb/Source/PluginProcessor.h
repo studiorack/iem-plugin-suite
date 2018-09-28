@@ -86,6 +86,7 @@ public:
 
     //======== OSC =================================================================
     void oscMessageReceived (const OSCMessage &message) override;
+    void oscBundleReceived (const OSCBundle &bundle) override;
     OSCReceiverPlus& getOSCReceiver () { return oscReceiver; }
     //==============================================================================
 
@@ -93,9 +94,6 @@ public:
 //==============================================================================
     // parameters/functions for interfacing with GUI
     AudioProcessorValueTreeState parameters;
-
-    void setNetworkOrder (int order);
-
     int maxPossibleChannels = 64;
 
     void setFreezeMode (bool freezeState);
@@ -109,8 +107,11 @@ private:
     OSCParameterInterface oscParams;
     OSCReceiverPlus oscReceiver;
 
+	AudioBuffer<float> copyBuffer;
+
     // parameters (from GUI)
     float *revTime;
+	float *fadeInTime;
     float *delayLength;
 
     float *highCutoff;
@@ -119,9 +120,8 @@ private:
     float *lowCutoff;
     float *lowQ;
     float *lowGain;
-    //float *fdnSize;
     float *wet;
 
 
-    FeedbackDelayNetwork fdn;
+    FeedbackDelayNetwork fdn, fdnFade;
 };

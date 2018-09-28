@@ -22,9 +22,46 @@
 
 #pragma once
 
-#include "ReferenceCountedMatrix.h"
-#include "ReferenceCountedDecoder.h"
+#ifndef CONFIGURATIONHELPER_ENABLE_MATRIX_METHODS
+    #define CONFIGURATIONHELPER_ENABLE_MATRIX_METHODS 0
+#endif
 
+#ifndef CONFIGURATIONHELPER_ENABLE_DECODER_METHODS
+    #define CONFIGURATIONHELPER_ENABLE_DECODER_METHODS 0
+#endif
+
+#ifndef CONFIGURATIONHELPER_ENABLE_LOUDSPEAKERLAYOUT_METHODS
+    #define CONFIGURATIONHELPER_ENABLE_LOUDSPEAKERLAYOUT_METHODS 0
+#endif
+
+#ifndef CONFIGURATIONHELPER_ENABLE_ALL_METHODS
+    #define CONFIGURATIONHELPER_ENABLE_ALL_METHODS 0
+#endif
+
+
+#if CONFIGURATIONHELPER_ENABLE_DECODER_METHODS
+    #undef CONFIGURATIONHELPER_ENABLE_MATRIX_METHODS
+    #define CONFIGURATIONHELPER_ENABLE_MATRIX_METHODS 1
+#endif
+
+#if CONFIGURATIONHELPER_ENABLE_ALL_METHODS
+    #undef CONFIGURATIONHELPER_ENABLE_MATRIX_METHODS
+    #define CONFIGURATIONHELPER_ENABLE_MATRIX_METHODS 1
+
+    #undef CONFIGURATIONHELPER_ENABLE_DECODER_METHODS
+    #define CONFIGURATIONHELPER_ENABLE_DECODER_METHODS 1
+
+    #undef CONFIGURATIONHELPER_ENABLE_LOUDSPEAKERLAYOUT_METHODS
+    #define CONFIGURATIONHELPER_ENABLE_LOUDSPEAKERLAYOUT_METHODS 1
+#endif
+
+#if CONFIGURATIONHELPER_ENABLE_MATRIX_METHODS
+    #include "ReferenceCountedMatrix.h"
+#endif
+
+#if CONFIGURATIONHELPER_ENABLE_DECODER_METHODS
+    #include "ReferenceCountedDecoder.h"
+#endif
 //==============================================================================
 /**
  This class contains some helper-functions for loading / storing Decoders, Matrices and LoudspeakerLayouts from / as JSON configuration files.
@@ -52,6 +89,7 @@ public:
         return Result::ok();
     }
 
+#if CONFIGURATIONHELPER_ENABLE_MATRIX_METHODS
     /**
      Loads a JSON-file (fileToParse) and tries to parse for a TransformationMatrix object. If successful, writes the matrix into the destination (dest).
      */
@@ -108,6 +146,48 @@ public:
         return Result::ok();
     }
 
+    /**
+     Converts a 'Matrix' var object to a Matrix<float> object.
+     */
+    static Result getMatrix (var&  matrixData, const int rows, const int cols, Matrix<float>& dest)
+    {
+        for (int r = 0; r < rows; ++r)
+        {
+            var rowVar = matrixData.getArray()->getUnchecked(r);
+            if (rowVar.size() != cols)
+                return Result::fail("Matrix row " + String(r+1) + " has wrong length (should be " + String(cols) + ").");
+
+            for (int c = 0; c < cols; ++c)
+            {
+                var colVar = rowVar.getArray()->getUnchecked(c);
+                if (colVar.isDouble() || colVar.isInt())
+                {
+                    dest(r, c) = colVar;
+                }
+                else
+                    return Result::fail("Datatype of matrix element (" + String(r+1) + "," + String(c+1) + ") could not be parsed.");
+            }
+
+        }
+        return Result::ok();
+    }
+
+    /**
+     Extracts the number of rows and columns out of a 'Matrix' var object.
+     */
+    static Result getMatrixDataSize (var& matrixData, int& rows, int& cols)
+    {
+        rows = matrixData.size();
+        cols = matrixData.getArray()->getUnchecked(0).size();
+
+        return Result::ok();
+    }
+
+    
+
+#endif // #if CONFIGURATIONHELPER_ENABLE_MATRIX_METHODS
+
+#if CONFIGURATIONHELPER_ENABLE_DECODER_METHODS
     /**
      Converts a Decoder var object (decoderVar) to a ReferenceCountedDecoder (decoder).
      */
@@ -206,42 +286,7 @@ public:
         *decoder = newDecoder;
         return Result::ok();
     }
-    /**
-     Extracts the number of rows and columns out of a 'Matrix' var object.
-     */
-    static Result getMatrixDataSize (var& matrixData, int& rows, int& cols)
-    {
-        rows = matrixData.size();
-        cols = matrixData.getArray()->getUnchecked(0).size();
 
-        return Result::ok();
-    }
-
-    /**
-     Converts a 'Matrix' var object to a Matrix<float> object.
-     */
-    static Result getMatrix (var&  matrixData, const int rows, const int cols, Matrix<float>& dest)
-    {
-        for (int r = 0; r < rows; ++r)
-        {
-            var rowVar = matrixData.getArray()->getUnchecked(r);
-            if (rowVar.size() != cols)
-                return Result::fail("Matrix row " + String(r+1) + " has wrong length (should be " + String(cols) + ").");
-
-            for (int c = 0; c < cols; ++c)
-            {
-                var colVar = rowVar.getArray()->getUnchecked(c);
-                if (colVar.isDouble() || colVar.isInt())
-                {
-                    dest(r, c) = colVar;
-                }
-                else
-                    return Result::fail("Datatype of matrix element (" + String(r+1) + "," + String(c+1) + ") could not be parsed.");
-            }
-
-        }
-        return Result::ok();
-    }
 
     /**
      Extracts the routing array from a 'Routing' Var object and writes it to the ReferenceCountedMatrix object.
@@ -293,6 +338,9 @@ public:
         return Result::ok();
     }
 
+#endif //#if CONFIGURATIONHELPER_ENABLE_DECODER_METHODS
+
+#if CONFIGURATIONHELPER_ENABLE_LOUDSPEAKERLAYOUT_METHODS
     /**
      Loads a JSON-file (fileToParse) and tries to parse for a 'LoudspeakerLayout' object. If successful, writes the loudspeakers into a ValeTree object (loudspeakers). Set 'undoManager' to nullptr in case you don't want to use a undoManager.
      */
@@ -410,7 +458,9 @@ public:
         return newLoudspeaker;
     }
 
+#endif // #if CONFIGURATIONHELPER_ENABLE_LOUDSPEAKERLAYOUT_METHODS
 
+#if CONFIGURATIONHELPER_ENABLE_DECODER_METHODS
     // =============== EXPORT ======================================================
     /**
      Converts a ReferenceCountedDecoder object to a var object. Useful for writing the Decoder to a configuration file.
@@ -450,6 +500,9 @@ public:
         return var(obj);
     }
 
+#endif // #if CONFIGURATIONHELPER_ENABLE_DECODER_METHODS
+
+#if CONFIGURATIONHELPER_ENABLE_MATRIX_METHODS
     /**
      Converts a Matrix<float> object to a var object.
      */
@@ -486,8 +539,9 @@ public:
         return var(obj);
     }
 
+#endif // #if CONFIGURATIONHELPER_ENABLE_MATRIX_METHODS
 
-
+#if CONFIGURATIONHELPER_ENABLE_LOUDSPEAKERLAYOUT_METHODS
     /**
      Converts a loudspeakers ValueTree object to a var object. Useful for writing the loudspeakers to a configuration file ('LoudspeakerLayout'). Make sure the ValueTree contains valid loudspeakers.
      */
@@ -519,6 +573,8 @@ public:
         return var(obj);
     }
 
+#endif //#if CONFIGURATIONHELPER_ENABLE_LOUDSPEAKERLAYOUTS_METHODS
+    
     /**
      Writes a configuration var to a JSON file.
      Example use-case:

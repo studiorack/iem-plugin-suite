@@ -30,17 +30,17 @@ PluginTemplateAudioProcessor::PluginTemplateAudioProcessor()
      : AudioProcessor (BusesProperties()
                      #if ! JucePlugin_IsMidiEffect
                       #if ! JucePlugin_IsSynth
-                       .withInput  ("Input",  AudioChannelSet::discreteChannels(10), true)
+                       .withInput  ("Input",  AudioChannelSet::discreteChannels (10), true)
                       #endif
-                       .withOutput ("Output", AudioChannelSet::discreteChannels(64), true)
+                       .withOutput ("Output", AudioChannelSet::discreteChannels (64), true)
                      #endif
                        ),
 #endif
-parameters(*this, nullptr), oscParams (parameters)
+parameters (*this, nullptr), oscParams (parameters)
 {
     oscParams.createAndAddParameter ("inputChannelsSetting", "Number of input channels ", "",
                                      NormalisableRange<float> (0.0f, 10.0f, 1.0f), 0.0f,
-                                     [](float value) {return value < 0.5f ? "Auto" : String(value);}, nullptr);
+                                     [](float value) {return value < 0.5f ? "Auto" : String (value);}, nullptr);
 
     oscParams.createAndAddParameter ("outputOrderSetting", "Ambisonic Order", "",
                                       NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
@@ -64,11 +64,11 @@ parameters(*this, nullptr), oscParams (parameters)
 
     oscParams.createAndAddParameter ("param1", "Parameter 1", "",
                                      NormalisableRange<float> (-10.0f, 10.0f, 0.1f), 0.0,
-                                     [](float value) {return String(value);}, nullptr);
+                                     [](float value) {return String (value);}, nullptr);
 
     oscParams.createAndAddParameter ("param2", "Parameter 2", "dB",
                                      NormalisableRange<float> (-50.0f, 0.0f, 0.1f), -10.0,
-                                     [](float value) {return String(value, 1);}, nullptr);
+                                     [](float value) {return String (value, 1);}, nullptr);
 
     // this must be initialised after all calls to createAndAddParameter().
     parameters.state = ValueTree (Identifier ("PluginTemplate"));
@@ -162,7 +162,7 @@ void PluginTemplateAudioProcessor::changeProgramName (int index, const String& n
 //==============================================================================
 void PluginTemplateAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    checkInputAndOutput(this, *inputChannelsSetting, *outputOrderSetting, true);
+    checkInputAndOutput (this, *inputChannelsSetting, *outputOrderSetting, true);
 
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
@@ -186,7 +186,7 @@ bool PluginTemplateAudioProcessor::isBusesLayoutSupported (const BusesLayout& la
 
 void PluginTemplateAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
-    checkInputAndOutput(this, *inputChannelsSetting, *outputOrderSetting, false);
+    checkInputAndOutput (this, *inputChannelsSetting, *outputOrderSetting, false);
     ScopedNoDenormals noDenormals;
 
     const int totalNumInputChannels  = getTotalNumInputChannels();
@@ -229,7 +229,7 @@ void PluginTemplateAudioProcessor::getStateInformation (MemoryBlock& destData)
     // You could do that either as raw data, or use the XML or ValueTree classes
     // as intermediaries to make it easy to save and load complex data.
     auto state = parameters.copyState();
-    state.setProperty ("OSCPort", var(oscReceiver.getPortNumber()), nullptr);
+    state.setProperty ("OSCPort", var (oscReceiver.getPortNumber()), nullptr);
     std::unique_ptr<XmlElement> xml (state.createXml());
     copyXmlToBinary (*xml, destData);
 }
@@ -254,7 +254,7 @@ void PluginTemplateAudioProcessor::setStateInformation (const void* data, int si
 //==============================================================================
 void PluginTemplateAudioProcessor::parameterChanged (const String &parameterID, float newValue)
 {
-    DBG("Parameter with ID " << parameterID << " has changed. New value: " << newValue);
+    DBG ("Parameter with ID " << parameterID << " has changed. New value: " << newValue);
 
     if (parameterID == "inputChannelsSetting" || parameterID == "outputOrderSetting" )
         userChangedIOSettings = true;
@@ -262,8 +262,8 @@ void PluginTemplateAudioProcessor::parameterChanged (const String &parameterID, 
 
 void PluginTemplateAudioProcessor::updateBuffers()
 {
-    DBG("IOHelper:  input size: " << input.getSize());
-    DBG("IOHelper: output size: " << output.getSize());
+    DBG ("IOHelper:  input size: " << input.getSize());
+    DBG ("IOHelper: output size: " << output.getSize());
 }
 
 //==============================================================================
@@ -281,14 +281,26 @@ pointer_sized_int PluginTemplateAudioProcessor::handleVstPluginCanDo (int32 inde
 //==============================================================================
 void PluginTemplateAudioProcessor::oscMessageReceived (const OSCMessage &message)
 {
-    String prefix ("/" + String(JucePlugin_Name));
+    String prefix ("/" + String (JucePlugin_Name));
     if (! message.getAddressPattern().toString().startsWith (prefix))
         return;
 
     OSCMessage msg (message);
-    msg.setAddressPattern (message.getAddressPattern().toString().substring(String(JucePlugin_Name).length() + 1));
+    msg.setAddressPattern (message.getAddressPattern().toString().substring (String (JucePlugin_Name).length() + 1));
 
     oscParams.processOSCMessage (msg);
+}
+
+void PluginTemplateAudioProcessor::oscBundleReceived (const OSCBundle &bundle)
+{
+    for (int i = 0; i < bundle.size(); ++i)
+    {
+        auto elem = bundle[i];
+        if (elem.isMessage())
+            oscMessageReceived (elem.getMessage());
+        else if (elem.isBundle())
+            oscBundleReceived (elem.getBundle());
+    }
 }
 
 //==============================================================================

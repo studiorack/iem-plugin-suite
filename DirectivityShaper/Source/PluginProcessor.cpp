@@ -315,19 +315,19 @@ void DirectivityShaperAudioProcessor::processBlock (AudioSampleBuffer& buffer, M
         }
     }
 
-    Weights::Normalization norm;
+    WeightsHelper::Normalization norm;
     if (*normalization < 0.5f)
-        norm = Weights::Normalization::BasicDecode;
+        norm = WeightsHelper::Normalization::BasicDecode;
     else if (*normalization >= 0.5f && *normalization < 1.5f)
-        norm = Weights::Normalization::OnAxis;
+        norm = WeightsHelper::Normalization::OnAxis;
     else
-        norm = Weights::Normalization::ConstantEnergy;
+        norm = WeightsHelper::Normalization::ConstantEnergy;
 
 
     for (int b = 0; b < numberOfBands; ++b)
     {
         float tempWeights[8];
-        const int nWeights = Weights::getWeights(*order[b], *shape[b], tempWeights);
+        const int nWeights = WeightsHelper::getWeights(*order[b], *shape[b], tempWeights);
 
         // fill higher orders with zeros
         for (int i = nWeights; i < 8; ++i)
@@ -338,11 +338,11 @@ void DirectivityShaperAudioProcessor::processBlock (AudioSampleBuffer& buffer, M
         FloatVectorOperations::copy(weights[b], tempWeights, 8);
 
         // normalize weights for GUI (7th order decode)
-        Weights::applyNormalization(weights[b], *order[b], 7, norm);
+        WeightsHelper::applyNormalization(weights[b], *order[b], 7, norm);
         // ============================================
 
         // normalize weights for audio
-        Weights::applyNormalization(tempWeights, *order[b], orderToWorkWith, norm, applySN3D);
+        WeightsHelper::applyNormalization(tempWeights, *order[b], orderToWorkWith, norm, applySN3D);
 
 
         Vector3D<float> pos = Conversions<float>::sphericalToCartesian(degreesToRadians(*azimuth[b]), degreesToRadians(*elevation[b]));
@@ -540,6 +540,18 @@ void DirectivityShaperAudioProcessor::oscMessageReceived (const OSCMessage &mess
     msg.setAddressPattern (message.getAddressPattern().toString().substring(String(JucePlugin_Name).length() + 1));
 
     oscParams.processOSCMessage (msg);
+}
+
+void DirectivityShaperAudioProcessor::oscBundleReceived (const OSCBundle &bundle)
+{
+    for (int i = 0; i < bundle.size(); ++i)
+    {
+        auto elem = bundle[i];
+        if (elem.isMessage())
+            oscMessageReceived (elem.getMessage());
+        else if (elem.isBundle())
+            oscBundleReceived (elem.getBundle());
+    }
 }
 
 //==============================================================================

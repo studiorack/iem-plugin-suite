@@ -24,7 +24,7 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "../../resources/efficientSHvanilla.h"
-#include "../../resources/ambisonicTools.h"
+//#include "../../resources/ambisonicTools.h"
 #include "../../resources/Quaternion.h"
 #include "../../resources/IOHelper.h"
 #include "../../resources/Weights.h"
@@ -93,6 +93,7 @@ public:
 
     //======== OSC =================================================================
     void oscMessageReceived (const OSCMessage &message) override;
+    void oscBundleReceived (const OSCBundle &bundle) override;
     OSCReceiverPlus& getOSCReceiver () { return oscReceiver; }
     //==============================================================================
 

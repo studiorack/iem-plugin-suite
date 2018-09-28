@@ -25,7 +25,10 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "../../resources/IOHelper.h"
 #include "../../resources/AmbisonicDecoder.h"
+
+#define CONFIGURATIONHELPER_ENABLE_DECODER_METHODS 1
 #include "../../resources/ConfigurationHelper.h"
+
 #include "../../resources/ReferenceCountedDecoder.h"
 #include "../../resources/FilterVisualizerHelper.h"
 
@@ -99,6 +102,7 @@ public:
 
     //======== OSC =================================================================
     void oscMessageReceived (const OSCMessage &message) override;
+    void oscBundleReceived (const OSCBundle &bundle) override;
     OSCReceiverPlus& getOSCReceiver () { return oscReceiver; }
     //==============================================================================
 

@@ -187,6 +187,10 @@ StereoEncoderAudioProcessorEditor::StereoEncoderAudioProcessorEditor (StereoEnco
     addAndMakeVisible(&lbZ);
     lbZ.setText("Z");
 
+
+    // KeyListener
+    addKeyListener (this);
+
     startTimer(20);
 }
 
@@ -315,4 +319,54 @@ void StereoEncoderAudioProcessorEditor::resized()
     sphere.setBounds(area.getX(), area.getY(),area.getWidth()-20,area.getWidth()-20);
 
 
+}
+
+bool StereoEncoderAudioProcessorEditor::keyPressed (const KeyPress &key, Component *originatingComponent)
+{
+    DBG("Key pressed: " << key.getKeyCode());
+
+    if (key.getModifiers().isShiftDown())
+    {
+        switch (key.getKeyCode())
+        {
+            case 90: // zenith
+            case 84: // top
+            case 85: // up
+                azimuthSlider.setValue (0.0);
+                elevationSlider.setValue (90.0);
+                break;
+
+            case 68: // down
+            case 78: // nadir
+                azimuthSlider.setValue (0.0);
+                elevationSlider.setValue (-90.0);
+                break;
+
+            case 70: // front
+                azimuthSlider.setValue (0.0);
+                elevationSlider.setValue (0.0);
+                break;
+
+            case 66: // back
+                azimuthSlider.setValue (-180.0);
+                elevationSlider.setValue (0.0);
+                break;
+
+            case 76: // left
+                azimuthSlider.setValue (90.0);
+                elevationSlider.setValue (0.0);
+                break;
+
+            case 82: // right
+                azimuthSlider.setValue (-90.0);
+                elevationSlider.setValue (0.0);
+                break;
+
+            default:
+                return false;
+        }
+        return true;
+    }
+
+    return false;
 }

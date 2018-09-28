@@ -470,6 +470,18 @@ void StereoEncoderAudioProcessor::oscMessageReceived (const OSCMessage &message)
     }
 }
 
+void StereoEncoderAudioProcessor::oscBundleReceived (const OSCBundle &bundle)
+{
+    for (int i = 0; i < bundle.size(); ++i)
+    {
+        auto elem = bundle[i];
+        if (elem.isMessage())
+            oscMessageReceived (elem.getMessage());
+        else if (elem.isBundle())
+            oscBundleReceived (elem.getBundle());
+    }
+}
+
 //==============================================================================
 // This creates new instances of the plugin..
 AudioProcessor *JUCE_CALLTYPE createPluginFilter() {

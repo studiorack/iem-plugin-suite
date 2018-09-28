@@ -34,6 +34,7 @@
 using namespace juce::dsp;
 
 typedef ReverseSlider::SliderAttachment SliderAttachment;
+typedef AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
 typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 
 //==============================================================================
@@ -67,16 +68,20 @@ private:
     void timerCallback() override;
 
     SimpleLabel lbDelay, lbTime, lbDryWet, lbHighCutoff, lbHighQ, lbHighGain, lbLowCutoff, lbLowQ, lbLowGain;
-
+    SimpleLabel fdnLbTime, fdnSize;
     // Functional stuff (sliders, Indicators, OpenGL Voodoo magic, etc.)
     // Groups
     GroupComponent delayGroup, filterGroup, t60Group;
 
     // Sliders
-    ReverseSlider delayLengthSlider, revTimeSlider, dryWetSlider, highCutoffSlider, highQSlider, highGainSlider, lowCutoffSlider, lowQSlider, lowGainSlider;
+    ReverseSlider delayLengthSlider, revTimeSlider, fadeInSlider, dryWetSlider, highCutoffSlider, highQSlider, highGainSlider, lowCutoffSlider, lowQSlider, lowGainSlider;
+
+    // ComboBox
+    ComboBox cbFdnSize;
 
     // Pointers for value tree state
-    ScopedPointer<SliderAttachment> delayAttachment, feedbackAttachment, dryWetAttachment, highCutoffAttachment, highQAttachment, highGainAttachment, lowCutoffAttachment, lowQAttachment, lowGainAttachment;
+    ScopedPointer<SliderAttachment> delayAttachment, feedbackAttachment, fadeInAttachment, dryWetAttachment, highCutoffAttachment, highQAttachment, highGainAttachment, lowCutoffAttachment, lowQAttachment, lowGainAttachment;
+    ScopedPointer<ComboBoxAttachment> cbFdnSizeAttachment;
 
     // Buttons
     ToggleButton networkOrder, freezeMode;
