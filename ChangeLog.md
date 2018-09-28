@@ -7,6 +7,7 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
 - general changes
     - OSC 'connect/disconnect' buttons replaced by  'open/close' buttons
     - support for OSC bundles
+    
 - plug-in specific changes
     - **Fdn**Reverb
         - fade-in functionality for more diffuseness at the beginning
