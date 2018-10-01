@@ -799,7 +799,6 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
     const int numLeft = L - blockSize1;
     if (numLeft > 0)
     {
-        const int blockSize2 = numLeft <= 0 ? 0 : numLeft;
         for (int channel = 0; channel < maxNChOut; ++channel)
         {
             buffer.copyFrom(channel, 0, delayBufferWritePtrArray[channel], numLeft);
