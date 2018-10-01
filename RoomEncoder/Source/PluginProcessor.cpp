@@ -785,19 +785,32 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
     for (int q = workingNumRefl + 1; q < nImgSrc; ++q)
         oldDelay[q] = mRadius[q]*dist2smpls;
 
-    // Read from buffer
+    // ======= Read from delayBuffer and clear read content ==============
     buffer.clear();
+
+    const int blockSize1 = jmin (bufferSize - readOffset, L);
+
     for (int channel = 0; channel < maxNChOut; ++channel)
     {
-        buffer.copyFrom(channel, 0, delayBufferWritePtrArray[channel] + readOffset, L);
+        buffer.copyFrom(channel, 0, delayBufferWritePtrArray[channel] + readOffset, blockSize1);
+        delayBuffer.clear(channel, readOffset, blockSize1);
+    }
 
-        delayBuffer.clear(channel, readOffset, L);
+    const int numLeft = L - blockSize1;
+    if (numLeft > 0)
+    {
+        const int blockSize2 = numLeft <= 0 ? 0 : numLeft;
+        for (int channel = 0; channel < maxNChOut; ++channel)
+        {
+            buffer.copyFrom(channel, 0, delayBufferWritePtrArray[channel], numLeft);
+            delayBuffer.clear(channel, 0, numLeft);
+        }
     }
 
     _numRefl = currNumRefl;
 
     readOffset += L;
-    if (readOffset >= bufferSize) readOffset = 0;
+    if (readOffset >= bufferSize) readOffset -= bufferSize;
 
 }
 
