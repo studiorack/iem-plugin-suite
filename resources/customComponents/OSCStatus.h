@@ -140,7 +140,7 @@ public:
     OSCStatus(OSCReceiverPlus& receiver) : oscReceiver (receiver)
     {
         isOpen = oscReceiver.isConnected();
-        startTimer(500);
+        startTimer (500);
     }
 
     ~OSCStatus()
@@ -158,6 +158,7 @@ public:
             repaint();
         }
     }
+
     void mouseEnter (const MouseEvent &event) override
     {
         setMouseCursor (MouseCursor::PointingHandCursor);
@@ -215,7 +216,7 @@ public:
 private:
     OSCReceiverPlus& oscReceiver;
     bool isOpen = false;
-    bool lastPort = -1;
+    int lastPort = -1;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OSCStatus)
 };
