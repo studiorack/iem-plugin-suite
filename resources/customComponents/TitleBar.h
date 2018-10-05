@@ -133,10 +133,26 @@ public:
 
     const int getComponentSize() override { return selectable ? 110 : 75; }
 
+    void updateDisplayTextIfNotSelectable()
+    {
+        if (availableChannels < channelSizeIfNotSelectable)
+        {
+            displayTextIfNotSelectable = String(channelSizeIfNotSelectable) + " (bus too small)";
+            setBusTooSmall(true);
+        }
+        else
+        {
+            displayTextIfNotSelectable = String(channelSizeIfNotSelectable);
+            setBusTooSmall(false);
+        }
+        repaint();
+    }
+
     void setMaxSize (int maxPossibleNumberOfChannels) override
     {
         if (availableChannels != maxPossibleNumberOfChannels)
         {
+            availableChannels = maxPossibleNumberOfChannels;
             if (selectable)
             {
                 if (maxPossibleNumberOfChannels > 0) cbChannels->changeItemText(1, "Auto (" + String(maxPossibleNumberOfChannels) + ")");
@@ -161,19 +177,8 @@ public:
             }
             else
             {
-                if (maxPossibleNumberOfChannels < channelSizeIfNotSelectable)
-                {
-                    displayTextIfNotSelectable = String(channelSizeIfNotSelectable) + " (bus too small)";
-                    setBusTooSmall(true);
-                }
-                else
-                {
-                    displayTextIfNotSelectable = String(channelSizeIfNotSelectable);
-                    setBusTooSmall(false);
-                }
-                repaint();
+                updateDisplayTextIfNotSelectable();
             }
-            availableChannels = maxPossibleNumberOfChannels;
         }
     }
 
@@ -182,8 +187,7 @@ public:
         if (! selectable)
         {
             channelSizeIfNotSelectable = newSize;
-            setMaxSize(availableChannels);
-            repaint();
+            updateDisplayTextIfNotSelectable();
         }
     }
 
