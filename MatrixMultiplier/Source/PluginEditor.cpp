@@ -122,6 +122,11 @@ void MatrixMultiplierAudioProcessorEditor::timerCallback()
         title.getOutputWidgetPtr()->setSizeIfUnselectable(currentMatrix->getNumOutputChannels());
         title.getInputWidgetPtr()->setSizeIfUnselectable(currentMatrix->getNumInputChannels());
     }
+    else
+    {
+        title.getOutputWidgetPtr()->setSizeIfUnselectable (0);
+        title.getInputWidgetPtr()->setSizeIfUnselectable (0);
+    }
 }
 
 void MatrixMultiplierAudioProcessorEditor::buttonClicked(Button* button)

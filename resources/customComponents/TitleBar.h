@@ -184,7 +184,7 @@ public:
 
     void setSizeIfUnselectable (int newSize)
     {
-        if (! selectable)
+        if (! selectable && channelSizeIfNotSelectable != newSize)
         {
             channelSizeIfNotSelectable = newSize;
             updateDisplayTextIfNotSelectable();
