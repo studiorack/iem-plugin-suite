@@ -6,12 +6,15 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
 ## untagged changes
 - general changes
     - smaller GUI re-draw improvements (OSC bug fixed)
+    - support for GenericLayout in configuration files
     
  - plug-in specific changes
     - **Room**Encoder
         - fixes possible crashs when host's buffersize is smaller than reported (can happens with loops) 
     - **Stereo**Encoder
         - performance improvements
+    - **Matrix**Multiplier
+        - fixes wrong displayed number of in/out channels
 
 ## v1.7.0
 - general changes
