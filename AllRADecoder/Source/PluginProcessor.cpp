@@ -494,7 +494,7 @@ ValueTree AllRADecoderAudioProcessor::createLoudspeakerFromCartesian (Vector3D<f
 
 ValueTree AllRADecoderAudioProcessor::createLoudspeakerFromSpherical (Vector3D<float> sphericalCoordinates, int channel, bool isImaginary, float gain)
 {
-    return ConfigurationHelper::createLoudspeaker (sphericalCoordinates.y, sphericalCoordinates.z, sphericalCoordinates.x, channel, isImaginary, gain);
+    return ConfigurationHelper::createElement (sphericalCoordinates.y, sphericalCoordinates.z, sphericalCoordinates.x, channel, isImaginary, gain);
 }
 
 Vector3D<float> AllRADecoderAudioProcessor::cartesianToSpherical(Vector3D<float> cartvect)
