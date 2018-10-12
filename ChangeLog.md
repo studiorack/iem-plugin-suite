@@ -3,14 +3,14 @@ For a list of all changes and bugfixes see the git log.
 
 Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They might lead to an unexpected behaviour and might not be compatible with your previous projects without making some adaptions. See the [Breaking changes article](https://plugins.iem.at/docs/breakingchanges/) for more information.
 
-## untagged changes
+## v1.7.1
 - general changes
-    - smaller GUI re-draw improvements (OSC bug fixed)
+    - smaller GUI re-draw improvements
     - support for GenericLayout in configuration files
     
  - plug-in specific changes
     - **Room**Encoder
-        - fixes possible crashs when host's buffersize is smaller than reported (can happens with loops) 
+        - fixes possible crashs when host's buffersize is smaller than reported (can happen with loops) 
     - **Stereo**Encoder
         - performance improvements
     - **Matrix**Multiplier
