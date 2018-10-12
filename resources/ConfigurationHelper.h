@@ -1,7 +1,7 @@
 /*
  ==============================================================================
  This file is part of the IEM plug-in suite.
- Author: Daniel Rudrich
+ Author: Daniel Rudrich, Leo McCormack
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
 
@@ -32,6 +32,13 @@
 
 #ifndef CONFIGURATIONHELPER_ENABLE_LOUDSPEAKERLAYOUT_METHODS
     #define CONFIGURATIONHELPER_ENABLE_LOUDSPEAKERLAYOUT_METHODS 0
+#else
+    #undef CONFIGURATIONHELPER_ENABLE_GENERICLAYOUT_METHODS
+    #define CONFIGURATIONHELPER_ENABLE_GENERICLAYOUT_METHODS 1
+#endif
+
+#ifndef CONFIGURATIONHELPER_ENABLE_GENERICLAYOUT_METHODS
+    #define CONFIGURATIONHELPER_ENABLE_GENERICLAYOUT_METHODS 0
 #endif
 
 #ifndef CONFIGURATIONHELPER_ENABLE_ALL_METHODS
@@ -53,6 +60,9 @@
 
     #undef CONFIGURATIONHELPER_ENABLE_LOUDSPEAKERLAYOUT_METHODS
     #define CONFIGURATIONHELPER_ENABLE_LOUDSPEAKERLAYOUT_METHODS 1
+
+    #undef CONFIGURATIONHELPER_ENABLE_GENERICLAYOUT_METHODS
+    #define CONFIGURATIONHELPER_ENABLE_GENERICLAYOUT_METHODS 1
 #endif
 
 #if CONFIGURATIONHELPER_ENABLE_MATRIX_METHODS
@@ -108,7 +118,7 @@ public:
         // looking for a 'TransformationMatrix' object
         var tmVar = parsedJson.getProperty("TransformationMatrix", parsedJson);
         Result result = convertTransformationMatrixVarToMatrix (tmVar, dest,
-                                                         parsedJson.getProperty("Name", var("")), parsedJson.getProperty("Description", var("")));
+                                                                parsedJson.getProperty("Name", var("")), parsedJson.getProperty("Description", var("")));
 
         if (! result.wasOk())
             return Result::fail (result.getErrorMessage());
@@ -183,7 +193,7 @@ public:
         return Result::ok();
     }
 
-    
+
 
 #endif // #if CONFIGURATIONHELPER_ENABLE_MATRIX_METHODS
 
@@ -330,7 +340,7 @@ public:
 
         var decoderObject = parsedJson.getProperty ("Decoder", parsedJson);
         result = DecoderVar (decoderObject, decoder,
-                                         parsedJson.getProperty ("Name", var("")), parsedJson.getProperty ("Description", var("")));
+                             parsedJson.getProperty ("Name", var("")), parsedJson.getProperty ("Description", var("")));
 
         if (! result.wasOk())
             return Result::fail (result.getErrorMessage());
@@ -342,9 +352,20 @@ public:
 
 #if CONFIGURATIONHELPER_ENABLE_LOUDSPEAKERLAYOUT_METHODS
     /**
-     Loads a JSON-file (fileToParse) and tries to parse for a 'LoudspeakerLayout' object. If successful, writes the loudspeakers into a ValeTree object (loudspeakers). Set 'undoManager' to nullptr in case you don't want to use a undoManager.
+     Loads a JSON-file (fileToParse) and tries to parse for a 'LoudspeakerLayout' object. If successful, writes the loudspeakers (named 'elements') into a ValeTree object (loudspeakers). Set 'undoManager' to nullptr in case you don't want to use a undoManager.
      */
     static Result parseFileForLoudspeakerLayout (const File& fileToParse, ValueTree& loudspeakers, UndoManager* undoManager)
+    {
+        return parseFileForGenericLayout(fileToParse, loudspeakers, undoManager);
+    }
+
+#endif // #if CONFIGURATIONHELPER_ENABLE_LOUDSPEAKERLAYOUT_METHODS
+
+#if CONFIGURATIONHELPER_ENABLE_GENERICLAYOUT_METHODS
+    /**
+     Loads a JSON-file (fileToParse) and tries to parse for a 'LoudspeakerLayout' or 'GenericLayout' object. If successful, writes the generic object into a ValueTree object (elements). Set 'undoManager' to nullptr in case you don't want to use a undoManager.
+     */
+    static Result parseFileForGenericLayout (const File& fileToParse, ValueTree& elements, UndoManager* undoManager)
     {
         // parse configuration file
         var parsedJson;
@@ -352,17 +373,25 @@ public:
         if (! result.wasOk())
             return Result::fail (result.getErrorMessage());
 
+        // looks for a 'GenericLayout' or 'LoudspeakerLayout' object
+        var genericLayout;
+        if (parsedJson.hasProperty ("GenericLayout"))
+            genericLayout = parsedJson.getProperty ("GenericLayout", var());
+        else if (parsedJson.hasProperty ("LoudspeakerLayout"))
+            genericLayout = parsedJson.getProperty ("LoudspeakerLayout", var());
+        else
+            return Result::fail ("No 'GenericLayout' or 'LoudspeakerLayout' object found in the configuration file.");
 
-        // looks for 'Decoder' object
-        if (! parsedJson.hasProperty ("LoudspeakerLayout"))
-            return Result::fail ("No 'LoudspeakerLayout' object found in the configuration file.");
+        // looks for a 'GenericLayout' or 'LoudspeakerLayout' object
+        var elementArray;
+        if (genericLayout.hasProperty ("Elements"))
+            elementArray = genericLayout.getProperty ("Elements", var());
+        else if (genericLayout.hasProperty ("Loudspeakers"))
+            elementArray = genericLayout.getProperty ("Loudspeakers", var());
+        else
+            return Result::fail ("No 'Elements' or 'Loudspeakers' attribute found within the 'GenericLayout' or 'LoudspeakerLayout' object.");
 
-        var loudspeakerLayout = parsedJson.getProperty ("LoudspeakerLayout", var());
-        if (! loudspeakerLayout.hasProperty ("Loudspeakers"))
-            return Result::fail ("No 'Loudspeakers' object found within the 'LoudspeakerLayout' attribute.");
-
-        var loudspeakerArray = loudspeakerLayout.getProperty ("Loudspeakers", var());
-        result = addLoudspeakersToValueTree (loudspeakerArray, loudspeakers, undoManager);
+        result = addElementsToValueTree (elementArray, elements, undoManager);
 
         if (! result.wasOk())
             return Result::fail (result.getErrorMessage());
@@ -371,94 +400,94 @@ public:
     }
 
     /**
-     Appends all loudspeakers within the loudspeakerArray to the loudspeakers ValueTree.
+     Appends all elements within the GenericLayout to the elements ValueTree.
      */
-    static Result addLoudspeakersToValueTree (var& loudspeakerArray, ValueTree& loudspeakers, UndoManager* undoManager)
+    static Result addElementsToValueTree (var& elementArray, ValueTree& elements, UndoManager* undoManager)
     {
-        if (! loudspeakerArray.isArray())
-            return Result::fail ("'Loudspeakers' is not an array.");
+        if (! elementArray.isArray())
+            return Result::fail ("'elementArray' is not an array.");
 
-        const int nLsps = loudspeakerArray.size();
+        const int nElements = elementArray.size();
 
-        for (int i = 0; i < nLsps; ++i)
+        for (int i = 0; i < nElements; ++i)
         {
-            var& loudspeaker = loudspeakerArray[i];
+            var& element = elementArray[i];
             float azimuth, elevation, radius, gain;
             int channel;
             bool isImaginary;
 
-            if (! loudspeaker.hasProperty ("Azimuth"))
-                return Result::fail ("No 'Azimuth' attribute for loudspeaker #" + String (i+1) + ".");
-            var azi = loudspeaker.getProperty ("Azimuth", var());
+            if (! element.hasProperty ("Azimuth"))
+                return Result::fail ("No 'Azimuth' attribute for element #" + String (i+1) + ".");
+            var azi = element.getProperty ("Azimuth", var());
             if (azi.isDouble() || azi.isInt())
                 azimuth = azi;
             else
-                return Result::fail ("Wrong datatype for attribute 'Azimuth' for loudspeaker #" + String (i+1) + ".");
+                return Result::fail ("Wrong datatype for attribute 'Azimuth' for element #" + String (i+1) + ".");
 
-            if (! loudspeaker.hasProperty ("Elevation"))
-                return Result::fail ("No 'Elevation' attribute for loudspeaker #" + String (i+1) + ".");
-            var ele = loudspeaker.getProperty ("Elevation", var());
+            if (! element.hasProperty ("Elevation"))
+                return Result::fail ("No 'Elevation' attribute for element #" + String (i+1) + ".");
+            var ele = element.getProperty ("Elevation", var());
             if (ele.isDouble() || ele.isInt())
                 elevation = ele;
             else
-                return Result::fail ("Wrong datatype for attribute 'Elevation' for loudspeaker #" + String (i+1) + ".");
+                return Result::fail ("Wrong datatype for attribute 'Elevation' for element #" + String (i+1) + ".");
 
-            if (! loudspeaker.hasProperty ("Radius"))
-                return Result::fail ("No 'Radius' attribute for loudspeaker #" + String (i+1) + ".");
-            var rad = loudspeaker.getProperty ("Radius", var());
+            if (! element.hasProperty ("Radius"))
+                return Result::fail ("No 'Radius' attribute for element #" + String (i+1) + ".");
+            var rad = element.getProperty ("Radius", var());
             if (rad.isDouble() || rad.isInt())
                 radius = rad;
             else
-                return Result::fail("Wrong datatype for attribute 'Radius' for loudspeaker #" + String (i+1) + ".");
+                return Result::fail("Wrong datatype for attribute 'Radius' for element #" + String (i+1) + ".");
 
-            if (! loudspeaker.hasProperty ("Gain"))
-                return Result::fail ("No 'Gain' attribute for loudspeaker #" + String (i+1) + ".");
-            var g = loudspeaker.getProperty ("Gain", var());
+            if (! element.hasProperty ("Gain"))
+                return Result::fail ("No 'Gain' attribute for element #" + String (i+1) + ".");
+            var g = element.getProperty ("Gain", var());
             if (g.isDouble() || g.isInt())
                 gain = g;
             else
-                return Result::fail ("Wrong datatype for attribute 'Gain' for loudspeaker #" + String (i+1) + ".");
+                return Result::fail ("Wrong datatype for attribute 'Gain' for element #" + String (i+1) + ".");
 
-            if (! loudspeaker.hasProperty ("Channel"))
-                return Result::fail ("No 'Channel' attribute for loudspeaker #" + String (i+1) + ".");
-            var ch = loudspeaker.getProperty ("Channel", var());
+            if (! element.hasProperty ("Channel"))
+                return Result::fail ("No 'Channel' attribute for element #" + String (i+1) + ".");
+            var ch = element.getProperty ("Channel", var());
             if (ch.isInt())
                 channel = ch;
             else
-                return Result::fail ("Wrong datatype for attribute 'Channel' for loudspeaker #" + String (i+1) + ".");
+                return Result::fail ("Wrong datatype for attribute 'Channel' for element #" + String (i+1) + ".");
 
-            if (! loudspeaker.hasProperty ("IsImaginary"))
-                return Result::fail ("No 'IsImaginary' attribute for loudspeaker #" + String(i+1) + ".");
-            var im = loudspeaker.getProperty ("IsImaginary", var());
+            if (! element.hasProperty ("IsImaginary"))
+                return Result::fail ("No 'IsImaginary' attribute for element #" + String(i+1) + ".");
+            var im = element.getProperty ("IsImaginary", var());
             if (im.isBool())
                 isImaginary = im;
             else
-                return Result::fail ("Wrong datatype for attribute 'IsImaginary' for loudspeaker #" + String (i+1) + ".");
+                return Result::fail ("Wrong datatype for attribute 'IsImaginary' for element #" + String (i+1) + ".");
 
-            loudspeakers.appendChild (createLoudspeaker(azimuth, elevation, radius, channel, isImaginary, gain), undoManager);
+            elements.appendChild (createElement(azimuth, elevation, radius, channel, isImaginary, gain), undoManager);
         }
 
         return Result::ok();
     }
 
     /**
-     Creates a single loudspeaker ValueTree, which can be appended to another ValueTree holding several loudspeakers.
+     Creates a single element ValueTree, which can be appended to another ValueTree holding several elements.
      */
-    static ValueTree createLoudspeaker (const float azimuth, const float elevation, const float radius, const int channel, const bool isImaginary, const float gain)
+    static ValueTree createElement (const float azimuth, const float elevation, const float radius, const int channel, const bool isImaginary, const float gain)
     {
-        ValueTree newLoudspeaker ("Loudspeaker");
+        ValueTree newElement ("Element");
 
-        newLoudspeaker.setProperty ("Azimuth", azimuth, nullptr);
-        newLoudspeaker.setProperty ("Elevation", elevation, nullptr);
-        newLoudspeaker.setProperty ("Radius", radius, nullptr);
-        newLoudspeaker.setProperty ("Channel", channel, nullptr);
-        newLoudspeaker.setProperty ("Imaginary", isImaginary, nullptr);
-        newLoudspeaker.setProperty ("Gain", gain, nullptr);
+        newElement.setProperty ("Azimuth", azimuth, nullptr);
+        newElement.setProperty ("Elevation", elevation, nullptr);
+        newElement.setProperty ("Radius", radius, nullptr);
+        newElement.setProperty ("Channel", channel, nullptr);
+        newElement.setProperty ("Imaginary", isImaginary, nullptr);
+        newElement.setProperty ("Gain", gain, nullptr);
 
-        return newLoudspeaker;
+        return newElement;
     }
 
-#endif // #if CONFIGURATIONHELPER_ENABLE_LOUDSPEAKERLAYOUT_METHODS
+#endif // #if CONFIGURATIONHELPER_ENABLE_GENERICLAYOUT_METHODS
 
 #if CONFIGURATIONHELPER_ENABLE_DECODER_METHODS
     // =============== EXPORT ======================================================
@@ -483,7 +512,7 @@ public:
 
         const int subwooferChannel = settings.subwooferChannel;
         if (subwooferChannel > 0)
-          obj->setProperty ("SubwooferCHannel", subwooferChannel);
+            obj->setProperty ("SubwooferChannel", subwooferChannel);
 
         // decoder matrix
         var decoderMatrix = convertMatrixToVar (decoder->getMatrix());
@@ -494,7 +523,7 @@ public:
         Array<int>& routingArray = decoder->getRoutingArrayReference();
         for (int i = 0; i < routingArray.size(); ++i)
             routing.append(routingArray[i] + 1); // one count
-        
+
         obj->setProperty ("Routing", routing);
 
         return var(obj);
@@ -573,8 +602,42 @@ public:
         return var(obj);
     }
 
-#endif //#if CONFIGURATIONHELPER_ENABLE_LOUDSPEAKERLAYOUTS_METHODS
-    
+#endif //#if CONFIGURATIONHELPER_ENABLE_LOUDSPEAKERLAYOUT_METHODS
+
+#if CONFIGURATIONHELPER_ENABLE_GENERICLAYOUT_METHODS
+    /**
+     Converts a elements ValueTree object to a var object. Useful for writing the sources to a configuration file ('GenericLayout'). Make sure the ValueTree contains valid elements.
+     */
+    static var convertElementsToVar (ValueTree& elements, String name = "", String description = "")
+    {
+        DynamicObject* obj = new DynamicObject();
+        if (! name.isEmpty())
+            obj->setProperty("Name", name);
+        if (! description.isEmpty())
+            obj->setProperty("Description", description);
+
+        var elementArray;
+
+        for (ValueTree::Iterator it = elements.begin() ; it != elements.end(); ++it)
+        {
+            DynamicObject* element = new DynamicObject();
+
+            element->setProperty ("Azimuth", (*it).getProperty ("Azimuth"));
+            element->setProperty ("Elevation", (*it).getProperty ("Elevation"));
+            element->setProperty ("Radius", (*it).getProperty ("Radius"));
+            element->setProperty ("IsImaginary", (*it).getProperty("Imaginary"));
+            element->setProperty ("Channel", (*it).getProperty("Channel"));
+            element->setProperty ("Gain", (*it).getProperty("Gain"));
+
+            elementArray.append(var(element));
+        }
+
+        obj->setProperty("Elements", elementArray);
+        return var(obj);
+    }
+
+#endif //#if CONFIGURATIONHELPER_ENABLE_GENERICLAYOUT_METHODS
+
     /**
      Writes a configuration var to a JSON file.
      Example use-case:

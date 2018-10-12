@@ -133,54 +133,61 @@ public:
 
     const int getComponentSize() override { return selectable ? 110 : 75; }
 
-    void setMaxSize (int maxPossibleNumberOfChannels) override
+    void updateDisplayTextIfNotSelectable()
     {
-        if (selectable)
+        if (availableChannels < channelSizeIfNotSelectable)
         {
-            if (maxPossibleNumberOfChannels > 0) cbChannels->changeItemText(1, "Auto (" + String(maxPossibleNumberOfChannels) + ")");
-            else cbChannels->changeItemText(1, "(Auto)");
-            int currId = cbChannels->getSelectedId();
-            if (currId == 0) currId = 1; //bad work around
-            int i;
-            for (i = 1; i <= maxPossibleNumberOfChannels; ++i)
-            {
-                cbChannels->changeItemText(i+1, String(i));
-            }
-            for (i = maxPossibleNumberOfChannels+1; i<=maxChannels; ++i)
-            {
-                cbChannels->changeItemText(i+1, String(i) + " (bus too small)");
-            }
-            if (maxPossibleNumberOfChannels < cbChannels->getSelectedId() - 1)
-                setBusTooSmall(true);
-            else
-                setBusTooSmall(false);
-
-            cbChannels->setText(cbChannels->getItemText(cbChannels->indexOfItemId((currId))));
+            displayTextIfNotSelectable = String(channelSizeIfNotSelectable) + " (bus too small)";
+            setBusTooSmall(true);
         }
         else
         {
-            if (maxPossibleNumberOfChannels < channelSizeIfNotSelectable)
+            displayTextIfNotSelectable = String(channelSizeIfNotSelectable);
+            setBusTooSmall(false);
+        }
+        repaint();
+    }
+
+    void setMaxSize (int maxPossibleNumberOfChannels) override
+    {
+        if (availableChannels != maxPossibleNumberOfChannels)
+        {
+            availableChannels = maxPossibleNumberOfChannels;
+            if (selectable)
             {
-                displayTextIfNotSelectable = String(channelSizeIfNotSelectable) + " (bus too small)";
-                setBusTooSmall(true);
+                if (maxPossibleNumberOfChannels > 0) cbChannels->changeItemText(1, "Auto (" + String(maxPossibleNumberOfChannels) + ")");
+                else cbChannels->changeItemText(1, "(Auto)");
+                int currId = cbChannels->getSelectedId();
+                if (currId == 0) currId = 1; //bad work around
+                int i;
+                for (i = 1; i <= maxPossibleNumberOfChannels; ++i)
+                {
+                    cbChannels->changeItemText(i+1, String(i));
+                }
+                for (i = maxPossibleNumberOfChannels+1; i<=maxChannels; ++i)
+                {
+                    cbChannels->changeItemText(i+1, String(i) + " (bus too small)");
+                }
+                if (maxPossibleNumberOfChannels < cbChannels->getSelectedId() - 1)
+                    setBusTooSmall(true);
+                else
+                    setBusTooSmall(false);
+
+                cbChannels->setText(cbChannels->getItemText(cbChannels->indexOfItemId((currId))));
             }
             else
             {
-                displayTextIfNotSelectable = String(channelSizeIfNotSelectable);
-                setBusTooSmall(false);
+                updateDisplayTextIfNotSelectable();
             }
-            repaint();
         }
-        availableChannels = maxPossibleNumberOfChannels;
     }
 
     void setSizeIfUnselectable (int newSize)
     {
-        if (! selectable)
+        if (! selectable && channelSizeIfNotSelectable != newSize)
         {
             channelSizeIfNotSelectable = newSize;
-            setMaxSize(availableChannels);
-            repaint();
+            updateDisplayTextIfNotSelectable();
         }
     }
 
@@ -526,9 +533,9 @@ public:
         g.setFont(14.0f);
         String versionString = "v";
 
-    #if JUCE_DEBUG
+#if JUCE_DEBUG
         versionString = "DEBUG - v";
-    #endif
+#endif
         versionString.append(JucePlugin_VersionString, 6);
 
         g.drawText(versionString, 0, 0, bounds.getWidth() - 8,bounds.getHeight()-2, Justification::bottomRight);

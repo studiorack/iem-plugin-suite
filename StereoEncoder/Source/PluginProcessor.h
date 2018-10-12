@@ -50,7 +50,7 @@ public:
    #ifndef JucePlugin_PreferredChannelConfigurations
     bool isBusesLayoutSupported (const BusesLayout& layouts) const override;
    #endif
-
+    
     void processBlock (AudioSampleBuffer&, MidiBuffer&) override;
 
     //==============================================================================
@@ -91,6 +91,9 @@ public:
     OSCReceiverPlus& getOSCReceiver () { return oscReceiver; }
     // =================
 
+    inline void updateQuaternions();
+    inline void updateEuler();
+
     Vector3D<float> posC, posL, posR;
 
     Atomic<bool> updatedPositionData;
@@ -126,6 +129,10 @@ private:
     float _SHL[64];
     float _SHR[64];
 
+    Atomic<bool> positionHasChanged = true;
+
+    iem::Quaternion<float> quaternionDirection;
+    
     AudioBuffer<float> bufferCopy;
 
     LinearSmoothedValue<float> smoothAzimuthL, smoothElevationL;
