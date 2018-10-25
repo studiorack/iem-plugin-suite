@@ -32,6 +32,7 @@
 //Custom Components
 #include "../../resources/customComponents/ReverseSlider.h"
 #include "../../resources/customComponents/SimpleLabel.h"
+#include "../../resources/customComponents/FilterVisualizer.h"
 
 
 typedef ReverseSlider::SliderAttachment SliderAttachment; // all ReverseSliders will make use of the parameters' valueToText() function
@@ -79,8 +80,16 @@ private:
     // and the associated parameters
     ScopedPointer<ComboBoxAttachment> cbNumInputChannelsAttachment;
 
+    FilterVisualizer<float> fv;
 
-
+    ComboBox cbFilterType[numFilterBands];
+    ReverseSlider slFilterFrequency[numFilterBands];
+    ReverseSlider slFilterQ[numFilterBands];
+    ReverseSlider slFilterGain[numFilterBands];
+    ScopedPointer<ComboBoxAttachment> cbFilterTypeAttachment[numFilterBands];
+    ScopedPointer<SliderAttachment> slFilterFrequencyAttachment[numFilterBands];
+    ScopedPointer<SliderAttachment> slFilterQAttachment[numFilterBands];
+    ScopedPointer<SliderAttachment> slFilterGainAttachment[numFilterBands];
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MultiEQAudioProcessorEditor)
 };

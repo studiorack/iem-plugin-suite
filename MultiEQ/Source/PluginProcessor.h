@@ -29,6 +29,8 @@
 #include "../../resources/OSCParameterInterface.h"
 #include "../../resources/OSCReceiverPlus.h"
 
+#define numFilterBands 6
+using namespace juce::dsp;
 
 //==============================================================================
 /**
@@ -48,6 +50,8 @@ public:
     //==============================================================================
     MultiEQAudioProcessor();
     ~MultiEQAudioProcessor();
+
+
 
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
@@ -102,7 +106,18 @@ public:
     //==============================================================================
 
 
+
+    IIR::Filter<float> filter[numFilterBands];
+    Atomic<bool> repaintFV = true;
+    
 private:
+    enum FilterType
+    {
+        HighPass, LowShelf, Peak, HighShelf, LowPass
+    };
+    inline dsp::IIR::Coefficients<float>::Ptr createFilterCoefficients (const FilterType type, const double sampleRate, const float frequency, const float Q, const float gain);
+
+
     // ====== parameters
     AudioProcessorValueTreeState parameters;
     OSCParameterInterface oscParams;
@@ -110,6 +125,11 @@ private:
     
     // list of used audio parameters
     float *inputChannelsSetting;
+    float* filterType[numFilterBands];
+    float* filterFrequency[numFilterBands];
+    float* filterQ[numFilterBands];
+    float* filterGain[numFilterBands];
+
 
 
     //==============================================================================

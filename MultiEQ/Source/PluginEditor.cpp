@@ -31,7 +31,7 @@ MultiEQAudioProcessorEditor::MultiEQAudioProcessorEditor (MultiEQAudioProcessor&
     // ============== BEGIN: essentials ======================
     // set GUI size and lookAndFeel
     //setSize(500, 300); // use this to create a fixed-size GUI
-    setResizeLimits (500, 300, 800, 500); // use this to create a resizable GUI
+    setResizeLimits (880, 330, 1000, 800); // use this to create a resizable GUI
     setLookAndFeel (&globalLaF);
 
     // make title and footer visible, and set the PluginName
@@ -44,6 +44,57 @@ MultiEQAudioProcessorEditor::MultiEQAudioProcessorEditor (MultiEQAudioProcessor&
 
     // create the connection between title component's comboBoxes and parameters
     cbNumInputChannelsAttachment = new ComboBoxAttachment(valueTreeState,"inputSetting",*title.getInputWidgetPtr()->getChannelsCbPointer());
+
+
+
+    const Colour colours[numFilterBands] = { Colours::cadetblue, // make sure you have enough colours in here
+        Colours::mediumpurple,
+        Colours::cornflowerblue,
+        Colours::greenyellow,
+        Colours::orangered,
+        Colours::red };
+
+
+    addAndMakeVisible (fv);
+    for (int f = 0; f < numFilterBands; ++f)
+        fv.addCoefficients (&processor.filter[f].coefficients, colours[f], &slFilterFrequency[f], &slFilterGain[f], &slFilterQ[f]);
+
+
+
+    for (int i = 0; i < numFilterBands; ++i)
+    {
+        addAndMakeVisible (&cbFilterType[i]);
+        cbFilterType[i].addItem ("High-Pass", 1);
+        cbFilterType[i].addItem ("Low-shelf", 2);
+        cbFilterType[i].addItem ("Peak", 3);
+        cbFilterType[i].addItem ("High-shelf", 4);
+        cbFilterType[i].addItem ("Low-pass", 5);
+        cbFilterType[i].setJustificationType (Justification::centred);
+        cbFilterTypeAttachment[i] = new ComboBoxAttachment (valueTreeState, "filterType" + String(i), cbFilterType[i]);
+
+        addAndMakeVisible (&slFilterFrequency[i]);
+        slFilterFrequency[i].setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
+        slFilterFrequency[i].setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
+        slFilterFrequency[i].setColour (Slider::rotarySliderOutlineColourId, colours[i]);
+        slFilterFrequencyAttachment[i] = new SliderAttachment (valueTreeState, "filterFrequency" + String(i), slFilterFrequency[i]);
+
+        addAndMakeVisible(&slFilterQ[i]);
+        slFilterQ[i].setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
+        slFilterQ[i].setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
+        slFilterQ[i].setColour (Slider::rotarySliderOutlineColourId, colours[i]);
+        slFilterQAttachment[i] = new SliderAttachment (valueTreeState, "filterQ" + String(i), slFilterQ[i]);
+
+        addAndMakeVisible(&slFilterGain[i]);
+        slFilterGain[i].setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
+        slFilterGain[i].setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
+        slFilterGain[i].setColour (Slider::rotarySliderOutlineColourId, colours[i]);
+        slFilterGainAttachment[i] = new SliderAttachment (valueTreeState, "filterGain" + String(i), slFilterGain[i]);
+    }
+
+
+
+
+
 
 
 
@@ -64,6 +115,7 @@ void MultiEQAudioProcessorEditor::paint (Graphics& g)
 
 void MultiEQAudioProcessorEditor::resized()
 {
+    DBG ("GUI resized to " << getLocalBounds().getWidth() << "x" << getLocalBounds().getHeight());
     // ============ BEGIN: header and footer ============
     const int leftRightMargin = 30;
     const int headerHeight = 60;
@@ -86,8 +138,28 @@ void MultiEQAudioProcessorEditor::resized()
     // the removeFrom...() methods are quite handy to create scalable areas
     // best practice would be the use of flexBoxes...
     // the following is medium level practice ;-)
-    Rectangle<int> sliderRow = area.removeFromTop (50);
+    Rectangle<int> filterArea = area;
+    { // upper row
 
+        Rectangle<int> cbArea (filterArea.removeFromBottom (50));
+        for (int i = 0; i < numFilterBands; ++i)
+        {
+            slFilterFrequency[i].setBounds(cbArea.removeFromLeft (40));
+            slFilterGain[i].setBounds(cbArea.removeFromLeft  (40));
+            slFilterQ[i].setBounds(cbArea.removeFromLeft(40));
+            cbArea.removeFromLeft(20);
+        }
+
+        cbArea = filterArea.removeFromBottom(15);
+        cbArea.removeFromLeft(20);
+        for (int i = 0; i < numFilterBands; ++i)
+        {
+            cbFilterType[i].setBounds(cbArea.removeFromLeft(100));
+            cbArea.removeFromLeft(40);
+        }
+
+        fv.setBounds(filterArea);
+    }
 
 }
 
@@ -98,6 +170,12 @@ void MultiEQAudioProcessorEditor::timerCallback()
     processor.getMaxSize (maxInSize, maxOutSize);
     title.setMaxSize (maxInSize, maxOutSize);
     // ==========================================
+
+    if (processor.repaintFV.get())
+    {
+        processor.repaintFV = false;
+        fv.repaint();
+    }
 
     // insert stuff you want to do be done at every timer callback
 }

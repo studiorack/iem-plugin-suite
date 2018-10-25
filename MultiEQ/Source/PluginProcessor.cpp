@@ -24,6 +24,9 @@
 #include "PluginEditor.h"
 
 
+static constexpr int filterTypePresets[] = {0, 1, 2, 2, 2, 4};
+static constexpr float filterFrequencyPresets[] = {80.0f, 120.0f, 1600.0f, 2200.0f, 8000.0f, 16000.0f};
+
 //==============================================================================
 MultiEQAudioProcessor::MultiEQAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
@@ -42,7 +45,32 @@ parameters (*this, nullptr), oscParams (parameters)
                                      NormalisableRange<float> (0.0f, 10.0f, 1.0f), 0.0f,
                                      [](float value) {return value < 0.5f ? "Auto" : String (value);}, nullptr);
 
+    for (int i = 0; i < numFilterBands; ++i)
+    {
+        oscParams.createAndAddParameter ("filterType" + String (i), "Filter Type " + String (i + 1), "",
+                                        NormalisableRange<float> (0.0f, 4.0f, 1.0f),  filterTypePresets[i],
+                                        [](float value) {
+                                            if (value >= 0.5f && value < 1.5f) return "Low-shelf";
+                                            else if (value >= 1.5f && value < 2.5f) return "Peak";
+                                            else if (value >= 2.5f) return "High-shelf";
+                                            else if (value >= 3.5f) return "Low-pass";
+                                            else return "High-pass";},
+                                        nullptr);
 
+        oscParams.createAndAddParameter ("filterFrequency" + String (i), "Filter Frequency " + String (i + 1), "Hz",
+                                        NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.4f), filterFrequencyPresets[i],
+                                        [](float value) { return String((int) value); }, nullptr);
+
+        oscParams.createAndAddParameter ("filterQ" + String (i), "Filter Q " + String (i+1), "",
+                                        NormalisableRange<float> (0.05f, 8.0f, 0.05f), 0.5f,
+                                        [](float value) { return String (value, 2); },
+                                        nullptr);
+
+        oscParams.createAndAddParameter ("filterGain" + String (i), "Filter Gain " + String (i + 1), "dB",
+                                        NormalisableRange<float> (-60.0f, 10.0f, 0.1f), 0.0f,
+                                        [](float value) { return (value >= -59.9f) ? String (value, 1) : "-inf"; },
+                                        nullptr);
+    }
 
 
     // this must be initialised after all calls to createAndAddParameter().
@@ -58,6 +86,26 @@ parameters (*this, nullptr), oscParams (parameters)
     // add listeners to parameter changes
     parameters.addParameterListener ("inputChannelsSetting", this);
 
+    for (int i = 0; i < numFilterBands; ++i)
+    {
+        filterType[i] = parameters.getRawParameterValue ("filterType" + String(i));
+        filterFrequency[i] = parameters.getRawParameterValue ("filterFrequency" + String(i));
+        filterQ[i] = parameters.getRawParameterValue ("filterQ" + String(i));
+        filterGain[i] = parameters.getRawParameterValue ("filterGain" + String(i));
+
+        parameters.addParameterListener("filterType" + String(i), this);
+        parameters.addParameterListener("filterFrequency" + String(i), this);
+        parameters.addParameterListener("filterQ" + String(i), this);
+        parameters.addParameterListener("filterGain" + String(i), this);
+    }
+
+
+
+    for (int i = 0; i < numFilterBands; ++i)
+    {
+        filter[i].coefficients = createFilterCoefficients (FilterType (filterTypePresets[i]), 44100.0, filterFrequencyPresets[i], 1.0f, 1.1f);
+    }
+
 
     oscReceiver.addListener (this);
 }
@@ -65,6 +113,32 @@ parameters (*this, nullptr), oscParams (parameters)
 MultiEQAudioProcessor::~MultiEQAudioProcessor()
 {
 }
+
+
+inline dsp::IIR::Coefficients<float>::Ptr MultiEQAudioProcessor::createFilterCoefficients (const FilterType type, const double sampleRate, const float frequency, const float Q, const float gain)
+{
+    switch (type) {
+        case 0:
+            return IIR::Coefficients<float>::makeHighPass(sampleRate, frequency, Q);
+            break;
+        case 1:
+            return IIR::Coefficients<float>::makeLowShelf (sampleRate, frequency, Q, gain);
+            break;
+        case 2:
+            return IIR::Coefficients<float>::makePeakFilter (sampleRate, frequency, Q, gain);
+            break;
+        case 3:
+            return IIR::Coefficients<float>::makeHighShelf (sampleRate, frequency, Q, gain);
+            break;
+        case 4:
+            return IIR::Coefficients<float>::makeLowPass (sampleRate, frequency, Q);
+            break;
+        default:
+            return IIR::Coefficients<float>::makeAllPass (sampleRate, frequency, Q);
+            break;
+    }
+}
+
 
 //==============================================================================
 const String MultiEQAudioProcessor::getName() const
@@ -227,6 +301,12 @@ void MultiEQAudioProcessor::parameterChanged (const String &parameterID, float n
 
     if (parameterID == "inputChannelsSetting")
         userChangedIOSettings = true;
+    else if (parameterID.startsWith ("filter"))
+    {
+        const int i = parameterID.getLastCharacters(1).getIntValue();
+        *filter[i].coefficients = *createFilterCoefficients (FilterType (roundToInt (*filterType[i])), getSampleRate(), *filterFrequency[i], *filterQ[i], Decibels::decibelsToGain (*filterGain[i]));
+        repaintFV = true;
+    }
 }
 
 void MultiEQAudioProcessor::updateBuffers()
