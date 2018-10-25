@@ -32,6 +32,14 @@
 #define numFilterBands 6
 using namespace juce::dsp;
 
+#if JUCE_USE_SIMD
+# define IIRfloat juce::dsp::SIMDRegister<float>
+# define IIRfloat_elements() IIRfloat::size()
+#else /* !JUCE_USE_SIMD */
+# define IIRfloat float
+# define IIRfloat_elements() 1
+#endif /* JUCE_USE_SIMD */
+
 //==============================================================================
 /**
  Use the IOHelper to detect which amount of channels or which Ambisonic order is possible with the current bus layout.
@@ -105,9 +113,11 @@ public:
     OSCReceiverPlus& getOSCReceiver () { return oscReceiver; }
     //==============================================================================
 
+    void updateFilterCoefficients (double sampleRate);
+    void copyFilterCoefficientsToProcessor();
 
-
-    IIR::Filter<float> filter[numFilterBands];
+    // filter dummy for GUI
+    IIR::Filter<float> dummyFilter[numFilterBands];
     Atomic<bool> repaintFV = true;
     
 private:
@@ -115,8 +125,10 @@ private:
     {
         HighPass, LowShelf, Peak, HighShelf, LowPass
     };
+
     inline dsp::IIR::Coefficients<float>::Ptr createFilterCoefficients (const FilterType type, const double sampleRate, const float frequency, const float Q, const float gain);
 
+    IIR::Coefficients<float>::Ptr processorCoefficients[numFilterBands];
 
     // ====== parameters
     AudioProcessorValueTreeState parameters;
@@ -130,7 +142,10 @@ private:
     float* filterQ[numFilterBands];
     float* filterGain[numFilterBands];
 
+    // filter for processing
+    OwnedArray<IIR::Filter<IIRfloat>> filterArrays[numFilterBands];
 
+    Atomic<bool> userHasChangedFilterSettings = true;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MultiEQAudioProcessor)

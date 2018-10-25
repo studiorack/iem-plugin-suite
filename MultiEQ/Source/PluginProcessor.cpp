@@ -103,7 +103,12 @@ parameters (*this, nullptr), oscParams (parameters)
 
     for (int i = 0; i < numFilterBands; ++i)
     {
-        filter[i].coefficients = createFilterCoefficients (FilterType (filterTypePresets[i]), 44100.0, filterFrequencyPresets[i], 1.0f, 1.1f);
+        dummyFilter[i].coefficients = createFilterCoefficients (FilterType (filterTypePresets[i]), 44100.0, filterFrequencyPresets[i], 1.0f, 1.1f);
+        processorCoefficients[i] = createFilterCoefficients (FilterType (filterTypePresets[i]), 44100.0, filterFrequencyPresets[i], 1.0f, 1.1f);
+
+        filterArrays[i].clear();
+        for (int ch = 0; ch < ceil (64 / SIMDRegister<float>::SIMDNumElements); ++ch)
+            filterArrays[i].add (new IIR::Filter<IIRfloat>(processorCoefficients[i]));
     }
 
 
@@ -119,7 +124,7 @@ inline dsp::IIR::Coefficients<float>::Ptr MultiEQAudioProcessor::createFilterCoe
 {
     switch (type) {
         case 0:
-            return IIR::Coefficients<float>::makeHighPass(sampleRate, frequency, Q);
+            return IIR::Coefficients<float>::makeHighPass (sampleRate, frequency, Q);
             break;
         case 1:
             return IIR::Coefficients<float>::makeLowShelf (sampleRate, frequency, Q, gain);
@@ -137,6 +142,14 @@ inline dsp::IIR::Coefficients<float>::Ptr MultiEQAudioProcessor::createFilterCoe
             return IIR::Coefficients<float>::makeAllPass (sampleRate, frequency, Q);
             break;
     }
+}
+
+void MultiEQAudioProcessor::copyFilterCoefficientsToProcessor()
+{
+    for (int b = 0; b < numFilterBands; ++b)
+        *processorCoefficients[b] = *dummyFilter[b].coefficients;
+
+    userHasChangedFilterSettings = false;
 }
 
 
@@ -304,8 +317,9 @@ void MultiEQAudioProcessor::parameterChanged (const String &parameterID, float n
     else if (parameterID.startsWith ("filter"))
     {
         const int i = parameterID.getLastCharacters(1).getIntValue();
-        *filter[i].coefficients = *createFilterCoefficients (FilterType (roundToInt (*filterType[i])), getSampleRate(), *filterFrequency[i], *filterQ[i], Decibels::decibelsToGain (*filterGain[i]));
+        *dummyFilter[i].coefficients = *createFilterCoefficients (FilterType (roundToInt (*filterType[i])), getSampleRate(), *filterFrequency[i], *filterQ[i], Decibels::decibelsToGain (*filterGain[i]));
         repaintFV = true;
+        userHasChangedFilterSettings = true;
     }
 }
 

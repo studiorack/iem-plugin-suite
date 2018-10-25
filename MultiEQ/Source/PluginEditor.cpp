@@ -57,7 +57,7 @@ MultiEQAudioProcessorEditor::MultiEQAudioProcessorEditor (MultiEQAudioProcessor&
 
     addAndMakeVisible (fv);
     for (int f = 0; f < numFilterBands; ++f)
-        fv.addCoefficients (&processor.filter[f].coefficients, colours[f], &slFilterFrequency[f], &slFilterGain[f], &slFilterQ[f]);
+        fv.addCoefficients (&processor.dummyFilter[f].coefficients, colours[f], &slFilterFrequency[f], &slFilterGain[f], &slFilterQ[f]);
 
 
 
