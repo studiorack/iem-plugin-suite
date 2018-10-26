@@ -34,7 +34,7 @@ using namespace juce::dsp;
 
 #if JUCE_USE_SIMD
 # define IIRfloat juce::dsp::SIMDRegister<float>
-# define IIRfloat_elements() IIRfloat::size()
+# define IIRfloat_elements() IIRfloat::SIMDNumElements
 #else /* !JUCE_USE_SIMD */
 # define IIRfloat float
 # define IIRfloat_elements() 1
@@ -129,6 +129,12 @@ private:
     inline dsp::IIR::Coefficients<float>::Ptr createFilterCoefficients (const FilterType type, const double sampleRate, const float frequency, const float Q, const float gain);
 
     IIR::Coefficients<float>::Ptr processorCoefficients[numFilterBands];
+
+    // data for interleaving audio
+    HeapBlock<char> interleavedBlockData[16], zeroData; //todo: dynamically?
+    OwnedArray<AudioBlock<IIRfloat>> interleavedData;
+    AudioBlock<float> zero;
+
 
     // ====== parameters
     AudioProcessorValueTreeState parameters;

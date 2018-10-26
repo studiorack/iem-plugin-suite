@@ -42,7 +42,7 @@ MultiEQAudioProcessor::MultiEQAudioProcessor()
 parameters (*this, nullptr), oscParams (parameters)
 {
     oscParams.createAndAddParameter ("inputChannelsSetting", "Number of input channels ", "",
-                                     NormalisableRange<float> (0.0f, 10.0f, 1.0f), 0.0f,
+                                     NormalisableRange<float> (0.0f, 64.0f, 1.0f), 0.0f,
                                      [](float value) {return value < 0.5f ? "Auto" : String (value);}, nullptr);
 
     for (int i = 0; i < numFilterBands; ++i)
@@ -100,14 +100,13 @@ parameters (*this, nullptr), oscParams (parameters)
     }
 
 
-
     for (int i = 0; i < numFilterBands; ++i)
     {
         dummyFilter[i].coefficients = createFilterCoefficients (FilterType (filterTypePresets[i]), 44100.0, filterFrequencyPresets[i], 1.0f, 1.1f);
         processorCoefficients[i] = createFilterCoefficients (FilterType (filterTypePresets[i]), 44100.0, filterFrequencyPresets[i], 1.0f, 1.1f);
 
         filterArrays[i].clear();
-        for (int ch = 0; ch < ceil (64 / SIMDRegister<float>::SIMDNumElements); ++ch)
+        for (int ch = 0; ch < ceil (64 / IIRfloat_elements()); ++ch)
             filterArrays[i].add (new IIR::Filter<IIRfloat>(processorCoefficients[i]));
     }
 
@@ -220,11 +219,23 @@ void MultiEQAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
 {
     checkInputAndOutput (this, *inputChannelsSetting, *inputChannelsSetting, true);
 
-    // Use this method as the place to do any pre-playback
-    // initialisation that you need..
 
+    interleavedData.clear();
 
+    for (int i = 0; i < ceil (64 / IIRfloat_elements()); ++i)
+    {
+        // reset filters
+        for (int f = 0; f < numFilterBands; ++f)
+        {
+            filterArrays[f][i]->reset (IIRfloat (0.0f));
+        }
 
+        interleavedData.add (new AudioBlock<IIRfloat> (interleavedBlockData[i], 1, samplesPerBlock));
+        interleavedData.getLast()->clear();
+    }
+
+    zero = AudioBlock<float> (zeroData, IIRfloat_elements(), samplesPerBlock);
+    zero.clear();
 }
 
 void MultiEQAudioProcessor::releaseResources()
@@ -245,26 +256,110 @@ void MultiEQAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
     checkInputAndOutput (this, *inputChannelsSetting, *inputChannelsSetting, false);
     ScopedNoDenormals noDenormals;
 
+    const int L = buffer.getNumSamples();
+
     const int totalNumInputChannels  = getTotalNumInputChannels();
     const int totalNumOutputChannels = getTotalNumOutputChannels();
 
-    // In case we have more outputs than inputs, this code clears any output
-    // channels that didn't contain input data, (because these aren't
-    // guaranteed to be empty - they may contain garbage).
-    // This is here to avoid people getting screaming feedback
-    // when they first compile a plugin, but obviously you don't need to keep
-    // this code if your algorithm always overwrites all the output channels.
-    for (int i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-        buffer.clear (i, 0, buffer.getNumSamples());
+    const int maxNChIn = jmin (buffer.getNumChannels(), input.getSize());
+    const int maxNChOut = jmin (buffer.getNumChannels(), output.getSize());
 
-    // This is the place where you'd normally do the guts of your plugin's
-    // audio processing...
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
+    const int nSIMDFilters = 1 + (maxNChIn - 1) / IIRfloat_elements();
+
+
+    // update iir filter coefficients
+    if (userHasChangedFilterSettings.get()) copyFilterCoefficientsToProcessor();
+
+
+    //interleave input data
+    int partial = maxNChIn % IIRfloat_elements();
+    if (partial == 0)
     {
-        float* channelData = buffer.getWritePointer (channel);
-
-        // ..do something to the data...
+        for (int i = 0; i<nSIMDFilters; ++i)
+        {
+            AudioDataConverters::interleaveSamples (buffer.getArrayOfReadPointers() + i*IIRfloat_elements(),
+                                                   reinterpret_cast<float*> (interleavedData[i]->getChannelPointer (0)), L,
+                                                   static_cast<int> (IIRfloat_elements()));
+        }
     }
+    else
+    {
+        int i;
+        for (i = 0; i<nSIMDFilters-1; ++i)
+        {
+            AudioDataConverters::interleaveSamples (buffer.getArrayOfReadPointers() + i*IIRfloat_elements(),
+                                                   reinterpret_cast<float*> (interleavedData[i]->getChannelPointer (0)), L,
+                                                   static_cast<int> (IIRfloat_elements()));
+        }
+
+        const float* addr[IIRfloat_elements()];
+        int ch;
+        for (ch = 0; ch < partial; ++ch)
+        {
+            addr[ch] = buffer.getReadPointer (i * IIRfloat_elements() + ch);
+        }
+        for (; ch < IIRfloat_elements(); ++ch)
+        {
+            addr[ch] = zero.getChannelPointer(ch);
+        }
+        AudioDataConverters::interleaveSamples (addr,
+                                               reinterpret_cast<float*> (interleavedData[i]->getChannelPointer (0)), L,
+                                               static_cast<int> (IIRfloat_elements()));
+    }
+
+
+
+    // apply filters
+    for (int f = 0; f <numFilterBands; ++f)
+    {
+        for (int i = 0; i < nSIMDFilters; ++i)
+        {
+            ProcessContextReplacing<IIRfloat> context (*interleavedData[i]);
+            filterArrays[f][i]->process (context);
+        }
+    }
+
+
+
+    // deinterleave
+    if (partial == 0)
+    {
+        for (int i = 0; i<nSIMDFilters; ++i)
+        {
+            AudioDataConverters::deinterleaveSamples (reinterpret_cast<float*> (interleavedData[i]->getChannelPointer (0)),
+                                                      buffer.getArrayOfWritePointers() + i * IIRfloat_elements(),
+                                                      L,
+                                                      static_cast<int> (IIRfloat_elements()));
+        }
+    }
+    else
+    {
+        int i;
+        for (i = 0; i<nSIMDFilters-1; ++i)
+        {
+            AudioDataConverters::deinterleaveSamples (reinterpret_cast<float*> (interleavedData[i]->getChannelPointer (0)),
+                                                      buffer.getArrayOfWritePointers() + i * IIRfloat_elements(),
+                                                      L,
+                                                      static_cast<int> (IIRfloat_elements()));
+        }
+
+        float* addr[IIRfloat_elements()];
+        int ch;
+        for (ch = 0; ch < partial; ++ch)
+        {
+            addr[ch] = buffer.getWritePointer (i * IIRfloat_elements() + ch);
+        }
+        for (; ch < IIRfloat_elements(); ++ch)
+        {
+            addr[ch] = zero.getChannelPointer (ch);
+        }
+        AudioDataConverters::deinterleaveSamples (reinterpret_cast<float*> (interleavedData[i]->getChannelPointer (0)),
+                                                 addr,
+                                                 L,
+                                                 static_cast<int> (IIRfloat_elements()));
+        zero.clear();
+    }
+
 }
 
 //==============================================================================
