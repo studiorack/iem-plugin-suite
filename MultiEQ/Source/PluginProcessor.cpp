@@ -495,6 +495,12 @@ void MultiEQAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
 {
     checkInputAndOutput (this, *inputChannelsSetting, *inputChannelsSetting, true);
 
+    for (int f = 0; f < numFilterBands; ++f)
+    {
+        createFilterCoefficients (f, sampleRate);
+    }
+    copyFilterCoefficientsToProcessor();
+
 
     interleavedData.clear();
 
