@@ -69,20 +69,14 @@ public:
         g.drawEllipse (buttonArea, 1.0f);
 
         buttonArea.reduce(1.5f, 1.5f);
+
         g.setColour (findColour (ToggleButton::tickColourId).withMultipliedAlpha (ticked ? 1.0f : isMouseOverButton ? 0.5f : 0.2f));
 
         g.fillEllipse (buttonArea);
 
-
-        g.setFont (getLookAndFeel().getTypefaceForFont (Font (13.0f, 1)));
-        g.setFont (buttonArea.getHeight());
-        g.setColour (findColour (getToggleState() ? TextButton::textColourOnId
-                                 : TextButton::textColourOffId)
-                     .withMultipliedAlpha (isEnabled() ? 1.0f : 0.5f));
-
         g.setColour (ticked ? findColour (ResizableWindow::backgroundColourId) :  findColour (ToggleButton::tickColourId).withMultipliedAlpha (isMouseOverButton ? 0.7f : 0.5f));
 
-        g.fillPath (powerButton, powerButton.getTransformToScaleToFit(buttonArea, true));
+        g.fillPath (powerButton, powerButton.getTransformToScaleToFit (buttonArea.reduced (2.0f), true));
     }
 
     void resized() override
