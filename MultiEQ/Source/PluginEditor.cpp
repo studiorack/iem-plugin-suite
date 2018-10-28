@@ -45,7 +45,7 @@ MultiEQAudioProcessorEditor::MultiEQAudioProcessorEditor (MultiEQAudioProcessor&
     // create the connection between title component's comboBoxes and parameters
     cbNumInputChannelsAttachment = new ComboBoxAttachment (valueTreeState, "inputChannelsSetting", *title.getInputWidgetPtr()->getChannelsCbPointer());
 
-
+    tooltips.setOpaque (false);
 
     const Colour colours[numFilterBands] = { Colours::cadetblue, // make sure you have enough colours in here
         Colours::mediumpurple,
