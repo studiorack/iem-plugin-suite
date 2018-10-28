@@ -39,7 +39,7 @@ class  FilterVisualizer :  public Component
     template <typename T>
     struct FilterWithSlidersAndColour
     {
-        typename dsp::IIR::Coefficients<T>::Ptr* coefficients;
+        typename dsp::IIR::Coefficients<T>::Ptr coefficients;
         Colour colour;
         Slider* frequencySlider = nullptr;
         Slider* gainSlider = nullptr;
@@ -56,12 +56,12 @@ class  FilterVisualizer :  public Component
     const float OH = 3.0f;
 
 public:
-    FilterVisualizer() : overallGainInDb (0.0f), sampleRate (48000)
+    FilterVisualizer() : overallGainInDb (0.0f), sampleRate (48000.0)
     {
         init();
     };
 
-    FilterVisualizer (float fMin, float fMax, float dbMin, float dbMax, float gridDiv, bool gainHandleLin = false) : overallGainInDb (0.0f), sampleRate (48000), s {fMin, fMax, dbMin, dbMax, gridDiv, gainHandleLin}
+    FilterVisualizer (float fMin, float fMax, float dbMin, float dbMax, float gridDiv, bool gainHandleLin = false) : overallGainInDb (0.0f), sampleRate (48000.0), s {fMin, fMax, dbMin, dbMax, gridDiv, gainHandleLin}
     {
         init();
     };
@@ -72,7 +72,7 @@ public:
     {
         dyn = s.dbMax - s.dbMin;
         zero = 2.0f * s.dbMax / dyn;
-        scale = 1.0f / (zero + std::tanh(s.dbMin/dyn * -2.0f));
+        scale = 1.0f / (zero + std::tanh (s.dbMin / dyn * -2.0f));
     }
 
 
@@ -156,7 +156,7 @@ public:
 
             auto handle (elements[b]);
             const bool isEnabled = handle->enabled;
-            typename dsp::IIR::Coefficients<coefficientsType>::Ptr coeffs = *handle->coefficients;
+            typename dsp::IIR::Coefficients<coefficientsType>::Ptr coeffs = handle->coefficients;
             //calculate magnitude response
             if (coeffs != nullptr)
                 coeffs->getMagnitudeForFrequencyArray (frequencies.getRawDataPointer(), magnitudes.getRawDataPointer(), numPixels, sampleRate);
@@ -320,7 +320,7 @@ public:
         return s.fMin * pow ((s.fMax / s.fMin), ((x - mL) / width));
     }
 
-    void setSampleRate (int newSampleRate)
+    void setSampleRate (const double newSampleRate)
     {
         sampleRate = newSampleRate;
     }
@@ -418,6 +418,7 @@ public:
 
         allMagnitudesInDb.resize (numPixels);
         magnitudes.resize (numPixels);
+        magnitudes.fill (1.0f);
         phases.resize (numPixels);
         complexMagnitudes.resize (numPixels);
 
@@ -465,10 +466,19 @@ public:
             element->enabled = shouldBeEnabled;
             repaint();
         }
-
     }
 
-    void addCoefficients (typename dsp::IIR::Coefficients<coefficientsType>::Ptr* newCoeffs, Colour newColourForCoeffs, Slider* frequencySlider = nullptr, Slider* gainSlider = nullptr, Slider* qSlider = nullptr, float* overrideLinearGain = nullptr)
+    void replaceCoefficients (const int filterIdx, typename dsp::IIR::Coefficients<coefficientsType>::Ptr newCoefficients)
+    {
+        if (filterIdx < elements.size())
+        {
+            auto element = elements[filterIdx];
+            element->coefficients = newCoefficients;
+            repaint();
+        }
+    }
+
+    void addCoefficients (typename dsp::IIR::Coefficients<coefficientsType>::Ptr newCoeffs, Colour newColourForCoeffs, Slider* frequencySlider = nullptr, Slider* gainSlider = nullptr, Slider* qSlider = nullptr, float* overrideLinearGain = nullptr)
     {
         elements.add (new FilterWithSlidersAndColour<coefficientsType> {newCoeffs, newColourForCoeffs, frequencySlider, gainSlider, qSlider, overrideLinearGain});
     }
@@ -482,7 +492,7 @@ private:
     bool filtersAreParallel = false;
     float overallGainInDb {0.0};
 
-    int sampleRate;
+    double sampleRate;
 
     int activeElem = 0;
 
