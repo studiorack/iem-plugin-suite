@@ -180,31 +180,35 @@ public:
                 magnitude.lineTo (x, y);
             }
 
-            g.setColour (handle->colour.withMultipliedAlpha (isEnabled ? 0.5f : 0.1f));
+            g.setColour (handle->colour.withMultipliedAlpha (isEnabled ? 0.7f : 0.1f));
             g.strokePath (magnitude, PathStrokeType (isActive ? 2.5f : 1.0f));
 
             magnitude.lineTo (xMax, yZero);
             magnitude.lineTo (xMin, yZero);
             magnitude.closeSubPath();
 
-            g.setColour (handle->colour.withMultipliedAlpha (isEnabled ? 0.3f : 0.0f));
+            g.setColour (handle->colour.withMultipliedAlpha (isEnabled ? 0.3f : 0.1f));
             g.fillPath (magnitude);
 
             float multGain = (handle->overrideGain != nullptr) ? *handle->overrideGain : Decibels::decibelsToGain (additiveDB);
+
             //overall magnitude update
-            if (filtersAreParallel)
+            if (isEnabled)
             {
-                for (int i = 0; i < numPixels; ++i)
+                if (filtersAreParallel)
                 {
-                    complexMagnitudes.setUnchecked (i, complexMagnitudes[i] + std::polar (magnitudes[i] * multGain, phases[i])); //*addGain
+                    for (int i = 0; i < numPixels; ++i)
+                    {
+                        complexMagnitudes.setUnchecked (i, complexMagnitudes[i] + std::polar (magnitudes[i] * multGain, phases[i])); //*addGain
+                    }
                 }
-            }
-            else
-            {
-                for (int i = 0; i < numPixels; ++i)
+                else
                 {
-                    const float dB = Decibels::gainToDecibels (magnitudes[i] * multGain);
-                    allMagnitudesInDb.setUnchecked (i, allMagnitudesInDb[i] + dB);
+                    for (int i = 0; i < numPixels; ++i)
+                    {
+                        const float dB = Decibels::gainToDecibels (magnitudes[i] * multGain);
+                        allMagnitudesInDb.setUnchecked (i, allMagnitudesInDb[i] + dB);
+                    }
                 }
             }
         }
@@ -213,7 +217,7 @@ public:
             for (int i = 0; i < numPixels; ++i)
             {
                 const float dB = Decibels::gainToDecibels (std::abs (complexMagnitudes[i]));
-                allMagnitudesInDb.setUnchecked(i, allMagnitudesInDb[i] + dB);
+                allMagnitudesInDb.setUnchecked (i, allMagnitudesInDb[i] + dB);
             }
 
 
@@ -236,21 +240,22 @@ public:
         g.setColour (Colours::white.withMultipliedAlpha (0.1f));
         g.fillPath (magnitude);
 
-        int size = elements.size();
+        const int size = elements.size();
         for (int i = 0; i < size; ++i)
         {
-        auto handle (elements[i]);
+            auto handle (elements[i]);
             float circX = handle->frequencySlider == nullptr ? hzToX (s.fMin) : hzToX (handle->frequencySlider->getValue());
             float circY;
             if (!s.gainHandleLin)
                 circY = handle->gainSlider == nullptr ? dbToY(0.0f) : dbToY (handle->gainSlider->getValue());
             else
                 circY = handle->gainSlider == nullptr ? dbToY(0.0f) : dbToY (Decibels::gainToDecibels (handle->gainSlider->getValue()));
-            g.setColour (Colour(0xFF191919));
+
+            g.setColour (Colour (0xFF191919));
             g.drawEllipse (circX - 5.0f, circY - 5.0f , 10.0f, 10.0f, 3.0f);
 
             g.setColour (handle->colour);
-            g.drawEllipse (circX - 5.0f, circY - 5.0f , 10.0f, 10.0f, 1.0f);
+            g.drawEllipse (circX - 5.0f, circY - 5.0f , 10.0f, 10.0f, 2.0f);
             g.setColour (activeElem == i ? handle->colour : handle->colour.withSaturation (0.2));
             g.fillEllipse (circX - 5.0f, circY - 5.0f , 10.0f, 10.0f);
         }
@@ -458,6 +463,7 @@ public:
         {
             auto element = elements[filterIdx];
             element->enabled = shouldBeEnabled;
+            repaint();
         }
 
     }
