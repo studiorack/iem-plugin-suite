@@ -54,9 +54,9 @@ parameters (*this, nullptr), oscParams (parameters)
     oscParams.createAndAddParameter ("filterType" + String (i), "Filter Type " + String (i + 1), "",
                                      NormalisableRange<float> (0.0f, 3.0f, 1.0f),  filterTypePresets[i],
                                      [](float value) {
-                                         if (value < 0.5f) return "1st order HP";
-                                         else if (value >= 0.5f && value < 1.5f) return "2nd order HP";
-                                         else if (value >= 1.5f && value < 2.5f) return "Linkwitz-Riley HP";
+                                         if (value < 0.5f) return "HP (6dB/oct)";
+                                         else if (value >= 0.5f && value < 1.5f) return "HP (12dB/oct)";
+                                         else if (value >= 1.5f && value < 2.5f) return "HP (24dB/oct)";
                                          else return "Low-shelf";},
                                      nullptr);
 
@@ -113,9 +113,9 @@ parameters (*this, nullptr), oscParams (parameters)
     oscParams.createAndAddParameter ("filterType" + String (i), "Filter Type " + String (i + 1), "",
                                      NormalisableRange<float> (0.0f, 3.0f, 1.0f),  filterTypePresets[i],
                                      [](float value) {
-                                         if (value < 0.5f) return "1st order LP";
-                                         else if (value >= 0.5f && value < 1.5f) return "2nd order LP";
-                                         else if (value >= 1.5f && value < 2.5f) return "Linkwitz-Riley LP";
+                                         if (value < 0.5f) return "LP (6dB/Oct)";
+                                         else if (value >= 0.5f && value < 1.5f) return "LP (12dB/oct)";
+                                         else if (value >= 1.5f && value < 2.5f) return "LP (24dB/oct)";
                                          else return "High-shelf";},
                                      nullptr);
 

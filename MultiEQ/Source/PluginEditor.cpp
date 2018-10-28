@@ -86,16 +86,16 @@ MultiEQAudioProcessorEditor::MultiEQAudioProcessorEditor (MultiEQAudioProcessor&
 
         if (i == 0)
         {
-            cbFilterType[i].addItem ("1st order HP", 1);
-            cbFilterType[i].addItem ("2nd order HP", 2);
-            cbFilterType[i].addItem ("Linkwitz-Riley HP", 3);
+            cbFilterType[i].addItem ("HP (6dB/oct)", 1);
+            cbFilterType[i].addItem ("HP (12dB/oct)", 2);
+            cbFilterType[i].addItem ("HP (24db/oct)", 3);
             cbFilterType[i].addItem ("Low-shelf", 4);
         }
         else if (i == numFilterBands - 1)
         {
-            cbFilterType[i].addItem ("1st order LP", 1);
-            cbFilterType[i].addItem ("2nd order LP", 2);
-            cbFilterType[i].addItem ("Linkwitz-Riley LP", 3);
+            cbFilterType[i].addItem ("LP (6dB/oct)", 1);
+            cbFilterType[i].addItem ("LP (12dB/oct)", 2);
+            cbFilterType[i].addItem ("LP (24dB/oct)", 3);
             cbFilterType[i].addItem ("High-shelf", 4);
         }
         else
