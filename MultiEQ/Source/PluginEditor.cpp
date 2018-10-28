@@ -47,22 +47,29 @@ MultiEQAudioProcessorEditor::MultiEQAudioProcessorEditor (MultiEQAudioProcessor&
 
     tooltips.setOpaque (false);
 
-    const Colour colours[numFilterBands] = { Colours::cadetblue, // make sure you have enough colours in here
+    const Colour colours[numFilterBands] =
+    {
+        Colours::cadetblue, // make sure you have enough colours in here
         Colours::mediumpurple,
         Colours::cornflowerblue,
         Colours::greenyellow,
         Colours::yellow,
-        Colours::orangered };
+        Colours::orangered
+    };
 
 
     addAndMakeVisible (fv);
     for (int f = 0; f < numFilterBands; ++f)
         fv.addCoefficients (&processor.dummyFilter[f].coefficients, colours[f], &slFilterFrequency[f], &slFilterGain[f], &slFilterQ[f]);
 
-
+    fv.enableFilter (2, false);
 
     for (int i = 0; i < numFilterBands; ++i)
     {
+        addAndMakeVisible (&tbFilterOn[i]);
+        tbFilterOn[i].setColour (ToggleButton::tickColourId, colours[i]);
+        tbFilterOnAttachment[i] = new ButtonAttachment (valueTreeState, "filterEnablement" + String(i), tbFilterOn[i]);
+
         addAndMakeVisible (&cbFilterType[i]);
         cbFilterType[i].addItem ("High-Pass", 1);
         cbFilterType[i].addItem ("Low-shelf", 2);
@@ -90,10 +97,6 @@ MultiEQAudioProcessorEditor::MultiEQAudioProcessorEditor (MultiEQAudioProcessor&
         slFilterGain[i].setColour (Slider::rotarySliderOutlineColourId, colours[i]);
         slFilterGainAttachment[i] = new SliderAttachment (valueTreeState, "filterGain" + String(i), slFilterGain[i]);
     }
-
-
-
-
 
 
 
@@ -150,12 +153,13 @@ void MultiEQAudioProcessorEditor::resized()
             cbArea.removeFromLeft(20);
         }
 
-        cbArea = filterArea.removeFromBottom(15);
-        cbArea.removeFromLeft(20);
+        cbArea = filterArea.removeFromBottom (18);
+        cbArea.removeFromLeft (3);
         for (int i = 0; i < numFilterBands; ++i)
         {
-            cbFilterType[i].setBounds(cbArea.removeFromLeft(100));
-            cbArea.removeFromLeft(40);
+            tbFilterOn[i].setBounds (cbArea.removeFromLeft (18));
+            cbFilterType[i].setBounds (cbArea.removeFromLeft (97));
+            cbArea.removeFromLeft (25);
         }
 
         fv.setBounds(filterArea);

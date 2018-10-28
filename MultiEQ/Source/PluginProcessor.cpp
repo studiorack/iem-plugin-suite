@@ -47,6 +47,10 @@ parameters (*this, nullptr), oscParams (parameters)
 
     for (int i = 0; i < numFilterBands; ++i)
     {
+        oscParams.createAndAddParameter ("filterEnablement" + String (i), "Filter Enablement " + String (i + 1), "",
+                                         NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
+                                         [](float value) { return value < 0.5 ? String ("OFF") : String ("ON");}, nullptr);
+
         oscParams.createAndAddParameter ("filterType" + String (i), "Filter Type " + String (i + 1), "",
                                         NormalisableRange<float> (0.0f, 4.0f, 1.0f),  filterTypePresets[i],
                                         [](float value) {
@@ -59,7 +63,7 @@ parameters (*this, nullptr), oscParams (parameters)
 
         oscParams.createAndAddParameter ("filterFrequency" + String (i), "Filter Frequency " + String (i + 1), "Hz",
                                         NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.4f), filterFrequencyPresets[i],
-                                        [](float value) { return String((int) value); }, nullptr);
+                                        [](float value) { return String(value, 0); }, nullptr);
 
         oscParams.createAndAddParameter ("filterQ" + String (i), "Filter Q " + String (i+1), "",
                                         NormalisableRange<float> (0.05f, 8.0f, 0.05f), 0.7f,

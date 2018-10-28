@@ -33,6 +33,7 @@
 #include "../../resources/customComponents/ReverseSlider.h"
 #include "../../resources/customComponents/SimpleLabel.h"
 #include "../../resources/customComponents/FilterVisualizer.h"
+#include "../../resources/customComponents/OnOffButton.h"
 
 
 typedef ReverseSlider::SliderAttachment SliderAttachment; // all ReverseSliders will make use of the parameters' valueToText() function
@@ -82,10 +83,12 @@ private:
 
     FilterVisualizer<float> fv;
     TooltipWindow tooltips;
+    OnOffButton tbFilterOn[numFilterBands];
     ComboBox cbFilterType[numFilterBands];
     ReverseSlider slFilterFrequency[numFilterBands];
     ReverseSlider slFilterQ[numFilterBands];
     ReverseSlider slFilterGain[numFilterBands];
+    ScopedPointer<ButtonAttachment> tbFilterOnAttachment[numFilterBands];
     ScopedPointer<ComboBoxAttachment> cbFilterTypeAttachment[numFilterBands];
     ScopedPointer<SliderAttachment> slFilterFrequencyAttachment[numFilterBands];
     ScopedPointer<SliderAttachment> slFilterQAttachment[numFilterBands];
