@@ -62,13 +62,13 @@ parameters (*this, nullptr), oscParams (parameters)
                                         [](float value) { return String((int) value); }, nullptr);
 
         oscParams.createAndAddParameter ("filterQ" + String (i), "Filter Q " + String (i+1), "",
-                                        NormalisableRange<float> (0.05f, 8.0f, 0.05f), 0.5f,
+                                        NormalisableRange<float> (0.05f, 8.0f, 0.05f), 0.7f,
                                         [](float value) { return String (value, 2); },
                                         nullptr);
 
         oscParams.createAndAddParameter ("filterGain" + String (i), "Filter Gain " + String (i + 1), "dB",
-                                        NormalisableRange<float> (-60.0f, 10.0f, 0.1f), 0.0f,
-                                        [](float value) { return (value >= -59.9f) ? String (value, 1) : "-inf"; },
+                                        NormalisableRange<float> (-60.0f, 15.0f, 0.1f), 0.0f,
+                                        [](float value) { return String (value, 1); },
                                         nullptr);
     }
 
@@ -102,12 +102,12 @@ parameters (*this, nullptr), oscParams (parameters)
 
     for (int i = 0; i < numFilterBands; ++i)
     {
-        dummyFilter[i].coefficients = createFilterCoefficients (FilterType (filterTypePresets[i]), 44100.0, filterFrequencyPresets[i], 1.0f, 1.1f);
-        processorCoefficients[i] = createFilterCoefficients (FilterType (filterTypePresets[i]), 44100.0, filterFrequencyPresets[i], 1.0f, 1.1f);
+        dummyFilter[i].coefficients = createFilterCoefficients (FilterType (filterTypePresets[i]), 44100.0, filterFrequencyPresets[i], 0.70f, 1.0f);
+        processorCoefficients[i] = createFilterCoefficients (FilterType (filterTypePresets[i]), 44100.0, filterFrequencyPresets[i], 0.70f, 1.0f);
 
         filterArrays[i].clear();
         for (int ch = 0; ch < ceil (64 / IIRfloat_elements()); ++ch)
-            filterArrays[i].add (new IIR::Filter<IIRfloat>(processorCoefficients[i]));
+            filterArrays[i].add (new IIR::Filter<IIRfloat> (processorCoefficients[i]));
     }
 
 
@@ -277,7 +277,7 @@ void MultiEQAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
     {
         for (int i = 0; i<nSIMDFilters; ++i)
         {
-            AudioDataConverters::interleaveSamples (buffer.getArrayOfReadPointers() + i*IIRfloat_elements(),
+            AudioDataConverters::interleaveSamples (buffer.getArrayOfReadPointers() + i* IIRfloat_elements(),
                                                    reinterpret_cast<float*> (interleavedData[i]->getChannelPointer (0)), L,
                                                    static_cast<int> (IIRfloat_elements()));
         }
@@ -287,7 +287,7 @@ void MultiEQAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
         int i;
         for (i = 0; i<nSIMDFilters-1; ++i)
         {
-            AudioDataConverters::interleaveSamples (buffer.getArrayOfReadPointers() + i*IIRfloat_elements(),
+            AudioDataConverters::interleaveSamples (buffer.getArrayOfReadPointers() + i* IIRfloat_elements(),
                                                    reinterpret_cast<float*> (interleavedData[i]->getChannelPointer (0)), L,
                                                    static_cast<int> (IIRfloat_elements()));
         }
