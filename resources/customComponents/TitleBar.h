@@ -29,16 +29,21 @@
 #include "OSCStatus.h"
 #endif
 
-class AlertSymbol : public Component
+class AlertSymbol : public Component, public TooltipClient
 {
 public:
     AlertSymbol() : Component()
     {
         warningSign.loadPathFromData (WarningSignData, sizeof (WarningSignData));
-        setBufferedToImage(true);
+        setBufferedToImage (true);
     };
 
     ~AlertSymbol() {};
+
+    String getTooltip() override
+    {
+        return "Not enough channels available \n for your current setting.";
+    }
 
     void paint (Graphics& g) override
     {
