@@ -26,7 +26,7 @@
 
 //==============================================================================
 MultiEQAudioProcessorEditor::MultiEQAudioProcessorEditor (MultiEQAudioProcessor& p, AudioProcessorValueTreeState& vts)
-    : AudioProcessorEditor (&p), processor (p), valueTreeState (vts), footer (p.getOSCReceiver())
+: AudioProcessorEditor (&p), processor (p), valueTreeState (vts), footer (p.getOSCReceiver())
 {
     // ============== BEGIN: essentials ======================
     // set GUI size and lookAndFeel
@@ -57,10 +57,18 @@ MultiEQAudioProcessorEditor::MultiEQAudioProcessorEditor (MultiEQAudioProcessor&
         Colours::orangered
     };
 
+    for (int f = 0; f < numFilterBands; ++f)
+    {
+        gainEnabled[f] = true;
+        qEnabled[f] = true;
+    }
+    gainEnabled[0] = false;
+    gainEnabled[numFilterBands - 1] = false;
+
 
     addAndMakeVisible (fv);
     for (int f = 0; f < numFilterBands; ++f)
-        fv.addCoefficients (&processor.dummyFilter[f].coefficients, colours[f], &slFilterFrequency[f], &slFilterGain[f], &slFilterQ[f]);
+        fv.addCoefficients (processor.getCoefficientsForGui (f), colours[f], &slFilterFrequency[f], &slFilterGain[f], &slFilterQ[f]);
 
     fv.enableFilter (2, false);
 
@@ -72,42 +80,59 @@ MultiEQAudioProcessorEditor::MultiEQAudioProcessorEditor (MultiEQAudioProcessor&
         tbFilterOnAttachment[i] = new ButtonAttachment (valueTreeState, "filterEnabled" + String(i), tbFilterOn[i]);
 
         const bool enabled = tbFilterOn[i].getToggleState();
-        fv.enableFilter (i, enabled);
 
         addAndMakeVisible (&cbFilterType[i]);
-        cbFilterType[i].setEnabled (enabled);
-        cbFilterType[i].addItem ("High-Pass", 1);
-        cbFilterType[i].addItem ("Low-shelf", 2);
-        cbFilterType[i].addItem ("Peak", 3);
-        cbFilterType[i].addItem ("High-shelf", 4);
-        cbFilterType[i].addItem ("Low-pass", 5);
+
+
+        if (i == 0)
+        {
+            cbFilterType[i].addItem ("1st order HP", 1);
+            cbFilterType[i].addItem ("2nd order HP", 2);
+            cbFilterType[i].addItem ("Linkwitz-Riley HP", 3);
+            cbFilterType[i].addItem ("Low-shelf", 4);
+        }
+        else if (i == numFilterBands - 1)
+        {
+            cbFilterType[i].addItem ("1st order LP", 1);
+            cbFilterType[i].addItem ("2nd order LP", 2);
+            cbFilterType[i].addItem ("Linkwitz-Riley LP", 3);
+            cbFilterType[i].addItem ("High-shelf", 4);
+        }
+        else
+        {
+            cbFilterType[i].addItem ("Low-shelf", 1);
+            cbFilterType[i].addItem ("Peak", 2);
+            cbFilterType[i].addItem ("High-shelf", 3);
+        }
+        
         cbFilterType[i].setJustificationType (Justification::centred);
         cbFilterTypeAttachment[i] = new ComboBoxAttachment (valueTreeState, "filterType" + String(i), cbFilterType[i]);
 
         addAndMakeVisible (&slFilterFrequency[i]);
-        slFilterFrequency[i].setEnabled (enabled);
         slFilterFrequency[i].setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
         slFilterFrequency[i].setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
         slFilterFrequency[i].setColour (Slider::rotarySliderOutlineColourId, colours[i]);
         slFilterFrequencyAttachment[i] = new SliderAttachment (valueTreeState, "filterFrequency" + String(i), slFilterFrequency[i]);
 
         addAndMakeVisible(&slFilterQ[i]);
-        slFilterQ[i].setEnabled (enabled);
         slFilterQ[i].setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
         slFilterQ[i].setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
         slFilterQ[i].setColour (Slider::rotarySliderOutlineColourId, colours[i]);
         slFilterQAttachment[i] = new SliderAttachment (valueTreeState, "filterQ" + String(i), slFilterQ[i]);
 
         addAndMakeVisible(&slFilterGain[i]);
-        slFilterGain[i].setEnabled (enabled);
         slFilterGain[i].setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
         slFilterGain[i].setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
         slFilterGain[i].setColour (Slider::rotarySliderOutlineColourId, colours[i]);
         slFilterGainAttachment[i] = new SliderAttachment (valueTreeState, "filterGain" + String(i), slFilterGain[i]);
+
+        updateEnablement (i, enabled);
     }
 
+    cbFilterType[0].addListener (this);
+    cbFilterType[numFilterBands - 1].addListener (this);
 
-
+    updateFilterVisualizer();
 
     // start timer after everything is set up properly
     startTimer (20);
@@ -173,7 +198,14 @@ void MultiEQAudioProcessorEditor::resized()
 
         fv.setBounds(filterArea);
     }
+}
 
+void MultiEQAudioProcessorEditor::updateFilterVisualizer()
+{
+    processor.updateGuiCoefficients();
+    fv.setSampleRate (processor.getSampleRate());
+    for (int f = 0; f < numFilterBands; ++f)
+        fv.replaceCoefficients (f, processor.getCoefficientsForGui (f));
 }
 
 void MultiEQAudioProcessorEditor::timerCallback()
@@ -187,8 +219,17 @@ void MultiEQAudioProcessorEditor::timerCallback()
     if (processor.repaintFV.get())
     {
         processor.repaintFV = false;
-        fv.repaint();
+        updateFilterVisualizer();
     }
+}
+
+void MultiEQAudioProcessorEditor::updateEnablement (const int idx, const bool shouldBeEnabled)
+{
+    slFilterFrequency[idx].setEnabled (shouldBeEnabled);
+    slFilterGain[idx].setEnabled (shouldBeEnabled && gainEnabled[idx]);
+    slFilterQ[idx].setEnabled (shouldBeEnabled && qEnabled[idx]);
+    cbFilterType[idx].setEnabled (shouldBeEnabled);
+    fv.enableFilter (idx, shouldBeEnabled);
 }
 
 void MultiEQAudioProcessorEditor::buttonClicked (Button* button)
@@ -198,11 +239,36 @@ void MultiEQAudioProcessorEditor::buttonClicked (Button* button)
         if (button == &tbFilterOn[f])
         {
             const bool state = button->getToggleState();
-            slFilterFrequency[f].setEnabled (state);
-            slFilterGain[f].setEnabled (state);
-            slFilterQ[f].setEnabled (state);
-            cbFilterType[f].setEnabled (state);
-            fv.enableFilter (f, state);
+            updateEnablement (f, state);
         }
     }
+}
+
+void MultiEQAudioProcessorEditor::comboBoxChanged (ComboBox *comboBoxThatHasChanged)
+{
+    int idx = -1;
+    if (comboBoxThatHasChanged == &cbFilterType[0])
+        idx = 0;
+    else if (comboBoxThatHasChanged == &cbFilterType[numFilterBands - 1])
+        idx = numFilterBands - 1;
+    else
+        return;
+
+    const auto id = comboBoxThatHasChanged->getSelectedItemIndex();
+    if (id == 0 || id == 2)
+    {
+        qEnabled[idx] = false;
+        gainEnabled[idx] = false;
+    }
+    else if (id == 1)
+    {
+        qEnabled[idx] = true;
+        gainEnabled[idx] = false;
+    }
+    else
+    {   qEnabled[idx] = true;
+        gainEnabled[idx] = true;
+    }
+
+    updateEnablement (idx, tbFilterOn[idx].getToggleState());
 }

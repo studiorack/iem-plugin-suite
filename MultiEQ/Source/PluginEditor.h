@@ -43,7 +43,7 @@ typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 //==============================================================================
 /**
 */
-class MultiEQAudioProcessorEditor  : public AudioProcessorEditor, private Timer, private Button::Listener
+class MultiEQAudioProcessorEditor  : public AudioProcessorEditor, private Timer, private Button::Listener, private ComboBox::Listener
 {
 public:
     MultiEQAudioProcessorEditor (MultiEQAudioProcessor&, AudioProcessorValueTreeState&);
@@ -54,9 +54,16 @@ public:
     void resized() override;
 
 
+    void extracted();
+    
     void timerCallback() override;
+    void extracted(int f, bool state);
+    
     void buttonClicked (Button* button) override;
+    void comboBoxChanged (ComboBox *comboBoxThatHasChanged) override;
 
+    void updateFilterVisualizer();
+    void updateEnablement (const int idx, const bool shouldBeEnabled);
 
 private:
     // ====================== begin essentials ==================
@@ -83,7 +90,7 @@ private:
     // and the associated parameters
     ScopedPointer<ComboBoxAttachment> cbNumInputChannelsAttachment;
 
-    FilterVisualizer<float> fv;
+    FilterVisualizer<double> fv;
     TooltipWindow tooltips;
     OnOffButton tbFilterOn[numFilterBands];
     ComboBox cbFilterType[numFilterBands];
@@ -95,6 +102,10 @@ private:
     ScopedPointer<SliderAttachment> slFilterFrequencyAttachment[numFilterBands];
     ScopedPointer<SliderAttachment> slFilterQAttachment[numFilterBands];
     ScopedPointer<SliderAttachment> slFilterGainAttachment[numFilterBands];
+
+    bool gainEnabled[numFilterBands];
+    bool qEnabled[numFilterBands];
+
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MultiEQAudioProcessorEditor)
 };

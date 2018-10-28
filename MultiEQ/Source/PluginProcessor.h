@@ -24,6 +24,7 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "../../resources/IOHelper.h"
+#include "../../resources/FilterVisualizerHelper.h"
 
 // ===== OSC ====
 #include "../../resources/OSCParameterInterface.h"
@@ -116,19 +117,40 @@ public:
     void updateFilterCoefficients (double sampleRate);
     void copyFilterCoefficientsToProcessor();
 
-    // filter dummy for GUI
-    IIR::Filter<float> dummyFilter[numFilterBands];
+    IIR::Coefficients<double>::Ptr getCoefficientsForGui (const int filterIndex) { return guiCoefficients[filterIndex]; };
+    void updateGuiCoefficients();
+    
+    // FV repaint flag
     Atomic<bool> repaintFV = true;
     
 private:
-    enum FilterType
+
+    enum class RegularFilterType
     {
-        HighPass, LowShelf, Peak, HighShelf, LowPass
+        FirstOrderHighPass, SecondOrderHighPass, LowShelf, PeakFilter, HighShelf, FirstOrderLowPass, SecondOrderLowPass, NothingToDo
     };
 
-    inline dsp::IIR::Coefficients<float>::Ptr createFilterCoefficients (const FilterType type, const double sampleRate, const float frequency, const float Q, const float gain);
+    enum class SpecialFilterType
+    {
+        FirstOrderHighPass, SecondOrderHighPass, LinkwitzRileyHighPass, LowShelf, FirstOrderLowPass, SecondOrderLowPass, LinkwitzRileyLowPass, HighShelf
+    };
+
+    void createLinkwitzRileyFilter (const bool isUpperBand);
+    void createFilterCoefficients (const int filterIndex, const double sampleRate);
+
+
+    inline dsp::IIR::Coefficients<float>::Ptr createFilterCoefficients (const RegularFilterType type, const double sampleRate, const float frequency, const float Q, const float gain);
+
+    inline dsp::IIR::Coefficients<double>::Ptr createFilterCoefficientsForGui (const RegularFilterType type, const double sampleRate, const float frequency, const float Q, const float gain);
+
+    // filter dummy for GUI
+    IIR::Coefficients<double>::Ptr guiCoefficients[numFilterBands];
 
     IIR::Coefficients<float>::Ptr processorCoefficients[numFilterBands];
+    IIR::Coefficients<float>::Ptr additionalProcessorCoefficients[2];
+
+    IIR::Coefficients<float>::Ptr tempCoefficients[numFilterBands];
+    IIR::Coefficients<float>::Ptr additionalTempCoefficients[2];
 
     // data for interleaving audio
     HeapBlock<char> interleavedBlockData[16], zeroData; //todo: dynamically?
@@ -149,8 +171,9 @@ private:
     float* filterQ[numFilterBands];
     float* filterGain[numFilterBands];
 
-    // filter for processing
+    // filters for processing
     OwnedArray<IIR::Filter<IIRfloat>> filterArrays[numFilterBands];
+    OwnedArray<IIR::Filter<IIRfloat>> additionalFilterArrays[2];
 
     Atomic<bool> userHasChangedFilterSettings = true;
 

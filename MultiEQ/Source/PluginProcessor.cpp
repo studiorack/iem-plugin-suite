@@ -24,7 +24,7 @@
 #include "PluginEditor.h"
 
 
-static constexpr int filterTypePresets[] = {0, 1, 2, 2, 2, 4};
+static constexpr int filterTypePresets[] = {1, 1, 1, 1, 1, 1};
 static constexpr float filterFrequencyPresets[] = {80.0f, 120.0f, 1600.0f, 2200.0f, 8000.0f, 16000.0f};
 
 //==============================================================================
@@ -45,20 +45,48 @@ parameters (*this, nullptr), oscParams (parameters)
                                      NormalisableRange<float> (0.0f, 64.0f, 1.0f), 0.0f,
                                      [](float value) {return value < 0.5f ? "Auto" : String (value);}, nullptr);
 
-    for (int i = 0; i < numFilterBands; ++i)
+
+    int i = 0;
+    oscParams.createAndAddParameter ("filterEnabled" + String (i), "Filter Enablement " + String (i + 1), "",
+                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
+                                     [](float value) { return value < 0.5 ? String ("OFF") : String ("ON");}, nullptr);
+
+    oscParams.createAndAddParameter ("filterType" + String (i), "Filter Type " + String (i + 1), "",
+                                     NormalisableRange<float> (0.0f, 3.0f, 1.0f),  filterTypePresets[i],
+                                     [](float value) {
+                                         if (value < 0.5f) return "1st order HP";
+                                         else if (value >= 0.5f && value < 1.5f) return "2nd order HP";
+                                         else if (value >= 1.5f && value < 2.5f) return "Linkwitz-Riley HP";
+                                         else return "Low-shelf";},
+                                     nullptr);
+
+    oscParams.createAndAddParameter ("filterFrequency" + String (i), "Filter Frequency " + String (i + 1), "Hz",
+                                     NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.4f), filterFrequencyPresets[i],
+                                     [](float value) { return String(value, 0); }, nullptr);
+
+    oscParams.createAndAddParameter ("filterQ" + String (i), "Filter Q " + String (i+1), "",
+                                     NormalisableRange<float> (0.05f, 8.0f, 0.05f), 0.7f,
+                                     [](float value) { return String (value, 2); },
+                                     nullptr);
+
+    oscParams.createAndAddParameter ("filterGain" + String (i), "Filter Gain " + String (i + 1), "dB",
+                                     NormalisableRange<float> (-60.0f, 15.0f, 0.1f), 0.0f,
+                                     [](float value) { return String (value, 1); },
+                                     nullptr);
+
+
+    for (int i = 1; i < numFilterBands - 1; ++i)
     {
         oscParams.createAndAddParameter ("filterEnabled" + String (i), "Filter Enablement " + String (i + 1), "",
                                          NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                          [](float value) { return value < 0.5 ? String ("OFF") : String ("ON");}, nullptr);
 
         oscParams.createAndAddParameter ("filterType" + String (i), "Filter Type " + String (i + 1), "",
-                                        NormalisableRange<float> (0.0f, 4.0f, 1.0f),  filterTypePresets[i],
+                                        NormalisableRange<float> (0.0f, 2.0f, 1.0f),  filterTypePresets[i],
                                         [](float value) {
-                                            if (value >= 0.5f && value < 1.5f) return "Low-shelf";
-                                            else if (value >= 1.5f && value < 2.5f) return "Peak";
-                                            else if (value >= 2.5f) return "High-shelf";
-                                            else if (value >= 3.5f) return "Low-pass";
-                                            else return "High-pass";},
+                                            if (value < 0.5f) return "Low-shelf";
+                                            else if (value >= 0.5f && value < 1.5f) return "Peak";
+                                            else return "High-shelf";},
                                         nullptr);
 
         oscParams.createAndAddParameter ("filterFrequency" + String (i), "Filter Frequency " + String (i + 1), "Hz",
@@ -76,6 +104,34 @@ parameters (*this, nullptr), oscParams (parameters)
                                         nullptr);
     }
 
+    i = numFilterBands - 1;
+
+    oscParams.createAndAddParameter ("filterEnabled" + String (i), "Filter Enablement " + String (i + 1), "",
+                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
+                                     [](float value) { return value < 0.5 ? String ("OFF") : String ("ON");}, nullptr);
+
+    oscParams.createAndAddParameter ("filterType" + String (i), "Filter Type " + String (i + 1), "",
+                                     NormalisableRange<float> (0.0f, 3.0f, 1.0f),  filterTypePresets[i],
+                                     [](float value) {
+                                         if (value < 0.5f) return "1st order LP";
+                                         else if (value >= 0.5f && value < 1.5f) return "2nd order LP";
+                                         else if (value >= 1.5f && value < 2.5f) return "Linkwitz-Riley LP";
+                                         else return "High-shelf";},
+                                     nullptr);
+
+    oscParams.createAndAddParameter ("filterFrequency" + String (i), "Filter Frequency " + String (i + 1), "Hz",
+                                     NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.4f), filterFrequencyPresets[i],
+                                     [](float value) { return String(value, 0); }, nullptr);
+
+    oscParams.createAndAddParameter ("filterQ" + String (i), "Filter Q " + String (i+1), "",
+                                     NormalisableRange<float> (0.05f, 8.0f, 0.05f), 0.7f,
+                                     [](float value) { return String (value, 2); },
+                                     nullptr);
+
+    oscParams.createAndAddParameter ("filterGain" + String (i), "Filter Gain " + String (i + 1), "dB",
+                                     NormalisableRange<float> (-60.0f, 15.0f, 0.1f), 0.0f,
+                                     [](float value) { return String (value, 1); },
+                                     nullptr);
 
     // this must be initialised after all calls to createAndAddParameter().
     parameters.state = ValueTree (Identifier ("MultiEQ"));
@@ -84,8 +140,6 @@ parameters (*this, nullptr), oscParams (parameters)
 
     // get pointers to the parameters
     inputChannelsSetting = parameters.getRawParameterValue ("inputChannelsSetting");
-
-
 
     // add listeners to parameter changes
     parameters.addParameterListener ("inputChannelsSetting", this);
@@ -104,42 +158,152 @@ parameters (*this, nullptr), oscParams (parameters)
         parameters.addParameterListener("filterGain" + String(i), this);
     }
 
+    additionalTempCoefficients[0] = IIR::Coefficients<float>::makeAllPass (48000.0, 20.0f);
+    additionalTempCoefficients[1] = IIR::Coefficients<float>::makeAllPass (48000.0, 20.0f);
 
     for (int i = 0; i < numFilterBands; ++i)
     {
-        dummyFilter[i].coefficients = createFilterCoefficients (FilterType (filterTypePresets[i]), 44100.0, filterFrequencyPresets[i], 0.70f, 1.0f);
-        processorCoefficients[i] = createFilterCoefficients (FilterType (filterTypePresets[i]), 44100.0, filterFrequencyPresets[i], 0.70f, 1.0f);
+        createFilterCoefficients (i, 48000.0);
+    }
 
+    for (int i = 0; i < numFilterBands; ++i)
+    {
+        processorCoefficients[i] = IIR::Coefficients<float>::makeAllPass (48000.0, 20.0f);
+    }
+
+    additionalProcessorCoefficients[0] = IIR::Coefficients<float>::makeAllPass (48000.0, 20.0f);
+    additionalProcessorCoefficients[1] = IIR::Coefficients<float>::makeAllPass (48000.0, 20.0f);
+
+    copyFilterCoefficientsToProcessor();
+
+    for (int i = 0; i < numFilterBands; ++i)
+    {
         filterArrays[i].clear();
         for (int ch = 0; ch < ceil (64 / IIRfloat_elements()); ++ch)
             filterArrays[i].add (new IIR::Filter<IIRfloat> (processorCoefficients[i]));
     }
 
+    additionalFilterArrays[0].clear();
+    for (int ch = 0; ch < ceil (64 / IIRfloat_elements()); ++ch)
+        additionalFilterArrays[0].add (new IIR::Filter<IIRfloat> (additionalProcessorCoefficients[0]));
+
+    additionalFilterArrays[1].clear();
+    for (int ch = 0; ch < ceil (64 / IIRfloat_elements()); ++ch)
+        additionalFilterArrays[1].add (new IIR::Filter<IIRfloat> (additionalProcessorCoefficients[1]));
+
 
     oscReceiver.addListener (this);
 }
+
 
 MultiEQAudioProcessor::~MultiEQAudioProcessor()
 {
 }
 
 
-inline dsp::IIR::Coefficients<float>::Ptr MultiEQAudioProcessor::createFilterCoefficients (const FilterType type, const double sampleRate, const float frequency, const float Q, const float gain)
+void MultiEQAudioProcessor::updateGuiCoefficients()
 {
-    switch (type) {
-        case 0:
+    const double sampleRate = getSampleRate();
+
+    // Low band
+    const SpecialFilterType lowType = SpecialFilterType (static_cast<int> (*filterType[0]));
+
+    switch (lowType)
+    {
+        case SpecialFilterType::LinkwitzRileyHighPass:
+        {
+            auto coeffs = IIR::Coefficients<double>::makeHighPass (sampleRate, *filterFrequency[0]);
+            coeffs->coefficients = FilterVisualizerHelper<double>::cascadeSecondOrderCoefficients
+            (coeffs->coefficients, coeffs->coefficients);
+            guiCoefficients[0] = coeffs;
+            break;
+        }
+        case SpecialFilterType::FirstOrderHighPass:
+            guiCoefficients[0] = IIR::Coefficients<double>::makeFirstOrderHighPass (sampleRate, *filterFrequency[0]);
+            break;
+        case SpecialFilterType::SecondOrderHighPass:
+            guiCoefficients[0] = IIR::Coefficients<double>::makeHighPass (sampleRate, *filterFrequency[0], *filterQ[0]);
+            break;
+        case SpecialFilterType::LowShelf:
+            guiCoefficients[0] = IIR::Coefficients<double>::makeLowShelf (sampleRate, *filterFrequency[0], *filterQ[0], Decibels::decibelsToGain (*filterGain[0]));
+            break;
+        default:
+            break;
+    }
+
+
+    // High band
+    const SpecialFilterType highType = SpecialFilterType (4 + static_cast<int> (*filterType[numFilterBands - 1]));
+
+    switch (highType)
+    {
+        case SpecialFilterType::LinkwitzRileyLowPass:
+        {
+            auto coeffs = IIR::Coefficients<double>::makeLowPass (sampleRate, *filterFrequency[numFilterBands - 1]);
+            coeffs->coefficients = FilterVisualizerHelper<double>::cascadeSecondOrderCoefficients
+            (coeffs->coefficients, coeffs->coefficients);
+            guiCoefficients[numFilterBands - 1] = coeffs;
+            break;
+        }
+        case SpecialFilterType::FirstOrderLowPass:
+            guiCoefficients[numFilterBands - 1] = IIR::Coefficients<double>::makeFirstOrderLowPass (sampleRate, *filterFrequency[numFilterBands - 1]);
+            break;
+        case SpecialFilterType::SecondOrderLowPass:
+            guiCoefficients[numFilterBands - 1] = IIR::Coefficients<double>::makeLowPass (sampleRate, *filterFrequency[numFilterBands - 1], *filterQ[numFilterBands - 1]);
+            break;
+        case SpecialFilterType::HighShelf:
+            guiCoefficients[numFilterBands - 1] = IIR::Coefficients<double>::makeHighShelf (sampleRate, *filterFrequency[numFilterBands - 1], *filterQ[numFilterBands - 1], Decibels::decibelsToGain (*filterGain[numFilterBands - 1]));
+            break;
+        default:
+            break;
+    }
+
+    // regular bands
+
+    for (int f = 1; f < numFilterBands - 1; ++f)
+    {
+        const RegularFilterType type = RegularFilterType (2 + static_cast<int>(*filterType[f]));
+        switch (type)
+        {
+            case RegularFilterType::LowShelf:
+                guiCoefficients[f] = IIR::Coefficients<double>::makeLowShelf (sampleRate, *filterFrequency[f], *filterQ[f], Decibels::decibelsToGain (*filterGain[f]));
+                break;
+            case RegularFilterType::PeakFilter:
+                guiCoefficients[f] = IIR::Coefficients<double>::makePeakFilter (sampleRate, *filterFrequency[f], *filterQ[f], Decibels::decibelsToGain (*filterGain[f]));
+                break;
+            case RegularFilterType::HighShelf:
+                guiCoefficients[f] = IIR::Coefficients<double>::makeHighShelf (sampleRate, *filterFrequency[f], *filterQ[f], Decibels::decibelsToGain (*filterGain[f]));
+                break;
+            default:
+                break;
+        }
+
+    }
+}
+
+inline dsp::IIR::Coefficients<float>::Ptr MultiEQAudioProcessor::createFilterCoefficients (const RegularFilterType type, const double sampleRate, const float frequency, const float Q, const float gain)
+{
+    switch (type)
+    {
+        case RegularFilterType::FirstOrderHighPass:
+            return IIR::Coefficients<float>::makeFirstOrderHighPass (sampleRate, frequency);
+            break;
+        case RegularFilterType::SecondOrderHighPass:
             return IIR::Coefficients<float>::makeHighPass (sampleRate, frequency, Q);
             break;
-        case 1:
+        case RegularFilterType::LowShelf:
             return IIR::Coefficients<float>::makeLowShelf (sampleRate, frequency, Q, gain);
             break;
-        case 2:
+        case RegularFilterType::PeakFilter:
             return IIR::Coefficients<float>::makePeakFilter (sampleRate, frequency, Q, gain);
             break;
-        case 3:
+        case RegularFilterType::HighShelf:
             return IIR::Coefficients<float>::makeHighShelf (sampleRate, frequency, Q, gain);
             break;
-        case 4:
+        case RegularFilterType::FirstOrderLowPass:
+            return IIR::Coefficients<float>::makeFirstOrderLowPass (sampleRate, frequency);
+            break;
+        case RegularFilterType::SecondOrderLowPass:
             return IIR::Coefficients<float>::makeLowPass (sampleRate, frequency, Q);
             break;
         default:
@@ -148,11 +312,118 @@ inline dsp::IIR::Coefficients<float>::Ptr MultiEQAudioProcessor::createFilterCoe
     }
 }
 
+inline dsp::IIR::Coefficients<double>::Ptr MultiEQAudioProcessor::createFilterCoefficientsForGui (const RegularFilterType type, const double sampleRate, const float frequency, const float Q, const float gain)
+{
+    switch (type)
+    {
+        case RegularFilterType::FirstOrderHighPass:
+            return IIR::Coefficients<double>::makeFirstOrderHighPass (sampleRate, frequency);
+            break;
+        case RegularFilterType::SecondOrderHighPass:
+            return IIR::Coefficients<double>::makeHighPass (sampleRate, frequency, Q);
+            break;
+        case RegularFilterType::LowShelf:
+            return IIR::Coefficients<double>::makeLowShelf (sampleRate, frequency, Q, gain);
+            break;
+        case RegularFilterType::PeakFilter:
+            return IIR::Coefficients<double>::makePeakFilter (sampleRate, frequency, Q, gain);
+            break;
+        case RegularFilterType::HighShelf:
+            return IIR::Coefficients<double>::makeHighShelf (sampleRate, frequency, Q, gain);
+            break;
+        case RegularFilterType::FirstOrderLowPass:
+            return IIR::Coefficients<double>::makeFirstOrderLowPass (sampleRate, frequency);
+            break;
+        case RegularFilterType::SecondOrderLowPass:
+            return IIR::Coefficients<double>::makeLowPass (sampleRate, frequency, Q);
+            break;
+        default:
+            return IIR::Coefficients<double>::makeAllPass (sampleRate, frequency, Q);
+            break;
+    }
+}
+
+void MultiEQAudioProcessor::createLinkwitzRileyFilter (const bool isUpperBand)
+{
+    if (isUpperBand)
+    {
+        tempCoefficients[numFilterBands - 1] = IIR::Coefficients<float>::makeLowPass (getSampleRate(), *filterFrequency[numFilterBands - 1], *filterQ[numFilterBands - 1]);
+        additionalTempCoefficients[1] = processorCoefficients[numFilterBands - 1];
+    }
+    else
+    {
+        tempCoefficients[0] = IIR::Coefficients<float>::makeHighPass (getSampleRate(), *filterFrequency[0], *filterQ[0]);
+        additionalTempCoefficients[0] = processorCoefficients[0];
+    }
+}
+
+void MultiEQAudioProcessor::createFilterCoefficients (const int filterIndex, const double sampleRate)
+{
+    const int type = roundToInt (*filterType[filterIndex]);
+    if (filterIndex == 0 && type == 2)
+    {
+        createLinkwitzRileyFilter (false);
+    }
+    else if (filterIndex == numFilterBands - 1 && type == 2)
+    {
+        createLinkwitzRileyFilter (true);
+    }
+    else
+    {
+        RegularFilterType filterType = RegularFilterType::NothingToDo;
+        switch (filterIndex)
+        {
+            case 0:
+                jassert (type != 2);
+                if (type == 0)
+                    filterType = RegularFilterType::FirstOrderHighPass;
+                else if (type == 3)
+                    filterType = RegularFilterType::LowShelf;
+                else if (type == 1)
+                    filterType = RegularFilterType::SecondOrderHighPass;
+                break;
+
+            case numFilterBands - 1:
+                jassert (type != 2);
+                if (type == 0)
+                    filterType = RegularFilterType::FirstOrderLowPass;
+                else if (type == 3)
+                    filterType = RegularFilterType::HighShelf;
+                else if (type == 1)
+                    filterType = RegularFilterType::SecondOrderLowPass;
+                break;
+
+            default:
+                jassert (type < 2);
+                switch (type)
+                {
+                    case 0:
+                        filterType = RegularFilterType::LowShelf;
+                        break;
+                    case 1:
+                        filterType = RegularFilterType::PeakFilter;
+                        break;
+                    case 2:
+                        filterType = RegularFilterType::HighShelf;
+                        break;
+                    default:
+                        break;
+                }
+                break;
+        }
+        tempCoefficients[filterIndex] = createFilterCoefficients (filterType, sampleRate, *filterFrequency[filterIndex], *filterQ[filterIndex], Decibels::decibelsToGain (*filterGain[filterIndex]));
+    }
+
+}
+
 void MultiEQAudioProcessor::copyFilterCoefficientsToProcessor()
 {
     for (int b = 0; b < numFilterBands; ++b)
-        *processorCoefficients[b] = *dummyFilter[b].coefficients;
+        *processorCoefficients[b] = *tempCoefficients[b];
 
+    *additionalProcessorCoefficients[0] = *additionalTempCoefficients[0];
+    *additionalProcessorCoefficients[1] = *additionalTempCoefficients[1];
+    
     userHasChangedFilterSettings = false;
 }
 
@@ -327,6 +598,23 @@ void MultiEQAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
         }
     }
 
+    // check and apply additional filters (Linkwitz Riley -> two BiQuads)
+    if (static_cast<int> (*filterType[0]) == 2 && *filterEnabled[0] > 0.5f)
+    {
+        for (int i = 0; i < nSIMDFilters; ++i)
+        {
+            ProcessContextReplacing<IIRfloat> context (*interleavedData[i]);
+            additionalFilterArrays[0][i]->process (context);
+        }
+    }
+    if (static_cast<int> (*filterType[numFilterBands - 1]) == 2 && *filterEnabled[numFilterBands - 1] > 0.5f)
+    {
+        for (int i = 0; i < nSIMDFilters; ++i)
+        {
+            ProcessContextReplacing<IIRfloat> context (*interleavedData[i]);
+            additionalFilterArrays[1][i]->process (context);
+        }
+    }
 
 
     // deinterleave
@@ -420,7 +708,9 @@ void MultiEQAudioProcessor::parameterChanged (const String &parameterID, float n
     else if (parameterID.startsWith ("filter"))
     {
         const int i = parameterID.getLastCharacters(1).getIntValue();
-        *dummyFilter[i].coefficients = *createFilterCoefficients (FilterType (roundToInt (*filterType[i])), getSampleRate(), *filterFrequency[i], *filterQ[i], Decibels::decibelsToGain (*filterGain[i]));
+
+        createFilterCoefficients (i, getSampleRate());
+
         repaintFV = true;
         userHasChangedFilterSettings = true;
     }
