@@ -51,8 +51,8 @@ MultiEQAudioProcessorEditor::MultiEQAudioProcessorEditor (MultiEQAudioProcessor&
         Colours::mediumpurple,
         Colours::cornflowerblue,
         Colours::greenyellow,
-        Colours::orangered,
-        Colours::red };
+        Colours::yellow,
+        Colours::orangered };
 
 
     addAndMakeVisible (fv);
