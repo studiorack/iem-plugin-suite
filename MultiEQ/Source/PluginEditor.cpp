@@ -68,9 +68,14 @@ MultiEQAudioProcessorEditor::MultiEQAudioProcessorEditor (MultiEQAudioProcessor&
     {
         addAndMakeVisible (&tbFilterOn[i]);
         tbFilterOn[i].setColour (ToggleButton::tickColourId, colours[i]);
-        tbFilterOnAttachment[i] = new ButtonAttachment (valueTreeState, "filterEnablement" + String(i), tbFilterOn[i]);
+        tbFilterOn[i].addListener (this);
+        tbFilterOnAttachment[i] = new ButtonAttachment (valueTreeState, "filterEnabled" + String(i), tbFilterOn[i]);
+
+        const bool enabled = tbFilterOn[i].getToggleState();
+        fv.enableFilter (i, enabled);
 
         addAndMakeVisible (&cbFilterType[i]);
+        cbFilterType[i].setEnabled (enabled);
         cbFilterType[i].addItem ("High-Pass", 1);
         cbFilterType[i].addItem ("Low-shelf", 2);
         cbFilterType[i].addItem ("Peak", 3);
@@ -80,18 +85,21 @@ MultiEQAudioProcessorEditor::MultiEQAudioProcessorEditor (MultiEQAudioProcessor&
         cbFilterTypeAttachment[i] = new ComboBoxAttachment (valueTreeState, "filterType" + String(i), cbFilterType[i]);
 
         addAndMakeVisible (&slFilterFrequency[i]);
+        slFilterFrequency[i].setEnabled (enabled);
         slFilterFrequency[i].setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
         slFilterFrequency[i].setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
         slFilterFrequency[i].setColour (Slider::rotarySliderOutlineColourId, colours[i]);
         slFilterFrequencyAttachment[i] = new SliderAttachment (valueTreeState, "filterFrequency" + String(i), slFilterFrequency[i]);
 
         addAndMakeVisible(&slFilterQ[i]);
+        slFilterQ[i].setEnabled (enabled);
         slFilterQ[i].setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
         slFilterQ[i].setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
         slFilterQ[i].setColour (Slider::rotarySliderOutlineColourId, colours[i]);
         slFilterQAttachment[i] = new SliderAttachment (valueTreeState, "filterQ" + String(i), slFilterQ[i]);
 
         addAndMakeVisible(&slFilterGain[i]);
+        slFilterGain[i].setEnabled (enabled);
         slFilterGain[i].setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
         slFilterGain[i].setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
         slFilterGain[i].setColour (Slider::rotarySliderOutlineColourId, colours[i]);
@@ -153,12 +161,13 @@ void MultiEQAudioProcessorEditor::resized()
             cbArea.removeFromLeft(20);
         }
 
-        cbArea = filterArea.removeFromBottom (18);
+        cbArea = filterArea.removeFromBottom (21);
         cbArea.removeFromLeft (3);
         for (int i = 0; i < numFilterBands; ++i)
         {
             tbFilterOn[i].setBounds (cbArea.removeFromLeft (18));
-            cbFilterType[i].setBounds (cbArea.removeFromLeft (97));
+            cbArea.removeFromLeft (5);
+            cbFilterType[i].setBounds (cbArea.removeFromLeft (92).reduced (0, 3));
             cbArea.removeFromLeft (25);
         }
 
@@ -180,6 +189,20 @@ void MultiEQAudioProcessorEditor::timerCallback()
         processor.repaintFV = false;
         fv.repaint();
     }
+}
 
-    // insert stuff you want to do be done at every timer callback
+void MultiEQAudioProcessorEditor::buttonClicked (Button* button)
+{
+    for (int f = 0; f < numFilterBands; ++f)
+    {
+        if (button == &tbFilterOn[f])
+        {
+            const bool state = button->getToggleState();
+            slFilterFrequency[f].setEnabled (state);
+            slFilterGain[f].setEnabled (state);
+            slFilterQ[f].setEnabled (state);
+            cbFilterType[f].setEnabled (state);
+            fv.enableFilter (f, state);
+        }
+    }
 }

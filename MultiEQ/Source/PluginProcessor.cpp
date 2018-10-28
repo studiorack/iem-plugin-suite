@@ -47,7 +47,7 @@ parameters (*this, nullptr), oscParams (parameters)
 
     for (int i = 0; i < numFilterBands; ++i)
     {
-        oscParams.createAndAddParameter ("filterEnablement" + String (i), "Filter Enablement " + String (i + 1), "",
+        oscParams.createAndAddParameter ("filterEnabled" + String (i), "Filter Enablement " + String (i + 1), "",
                                          NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                          [](float value) { return value < 0.5 ? String ("OFF") : String ("ON");}, nullptr);
 
@@ -92,6 +92,7 @@ parameters (*this, nullptr), oscParams (parameters)
 
     for (int i = 0; i < numFilterBands; ++i)
     {
+        filterEnabled[i] = parameters.getRawParameterValue ("filterEnabled" + String(i));
         filterType[i] = parameters.getRawParameterValue ("filterType" + String(i));
         filterFrequency[i] = parameters.getRawParameterValue ("filterFrequency" + String(i));
         filterQ[i] = parameters.getRawParameterValue ("filterQ" + String(i));
@@ -316,10 +317,13 @@ void MultiEQAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
     // apply filters
     for (int f = 0; f <numFilterBands; ++f)
     {
-        for (int i = 0; i < nSIMDFilters; ++i)
+        if (*filterEnabled[f] > 0.5f)
         {
-            ProcessContextReplacing<IIRfloat> context (*interleavedData[i]);
-            filterArrays[f][i]->process (context);
+            for (int i = 0; i < nSIMDFilters; ++i)
+            {
+                ProcessContextReplacing<IIRfloat> context (*interleavedData[i]);
+                filterArrays[f][i]->process (context);
+            }
         }
     }
 

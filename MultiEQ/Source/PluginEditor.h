@@ -43,7 +43,7 @@ typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 //==============================================================================
 /**
 */
-class MultiEQAudioProcessorEditor  : public AudioProcessorEditor, private Timer
+class MultiEQAudioProcessorEditor  : public AudioProcessorEditor, private Timer, private Button::Listener
 {
 public:
     MultiEQAudioProcessorEditor (MultiEQAudioProcessor&, AudioProcessorValueTreeState&);
@@ -55,6 +55,8 @@ public:
 
 
     void timerCallback() override;
+    void buttonClicked (Button* button) override;
+
 
 private:
     // ====================== begin essentials ==================

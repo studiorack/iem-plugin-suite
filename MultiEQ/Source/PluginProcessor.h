@@ -143,6 +143,7 @@ private:
     
     // list of used audio parameters
     float *inputChannelsSetting;
+    float* filterEnabled[numFilterBands];
     float* filterType[numFilterBands];
     float* filterFrequency[numFilterBands];
     float* filterQ[numFilterBands];
