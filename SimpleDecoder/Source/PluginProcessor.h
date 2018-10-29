@@ -120,7 +120,9 @@ public:
     }
 
     IIR::Coefficients<double>::Ptr cascadedHighPassCoeffs, cascadedLowPassCoeffs;
-    bool updateFv {true};
+    Atomic<bool> guiUpdateLowPassCoefficients = true;
+    Atomic<bool> guiUpdateHighPassCoefficients = true;
+    Atomic<bool> guiUpdateLowPassGain = true;
 
 private:
     void updateLowPassCoefficients (double sampleRate, float frequency);

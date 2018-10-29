@@ -149,26 +149,24 @@ SimpleDecoderAudioProcessor::~SimpleDecoderAudioProcessor()
 {
 }
 
-void SimpleDecoderAudioProcessor::updateLowPassCoefficients(double sampleRate, float frequency)
+void SimpleDecoderAudioProcessor::updateLowPassCoefficients (double sampleRate, float frequency)
 {
-    *lowPassCoeffs = *IIR::Coefficients<float>::makeLowPass(sampleRate, frequency);
+    *lowPassCoeffs = *IIR::Coefficients<float>::makeLowPass (sampleRate, frequency);
 
-    cascadedLowPassCoeffs->coefficients = FilterVisualizerHelper<double>::cascadeSecondOrderCoefficients
-    (
-     IIR::Coefficients<double>::makeLowPass(sampleRate, frequency)->coefficients,
-     IIR::Coefficients<double>::makeLowPass(sampleRate, frequency)->coefficients
-     );
+    auto newCoeffs = IIR::Coefficients<double>::makeLowPass (sampleRate, frequency);
+    newCoeffs->coefficients = FilterVisualizerHelper<double>::cascadeSecondOrderCoefficients (newCoeffs->coefficients, newCoeffs->coefficients);
+    cascadedLowPassCoeffs = newCoeffs;
+    guiUpdateLowPassCoefficients = true;
 }
 
 void SimpleDecoderAudioProcessor::updateHighPassCoefficients(double sampleRate, float frequency)
 {
-    *highPassCoeffs = *IIR::Coefficients<float>::makeHighPass(sampleRate, frequency);
+    *highPassCoeffs = *IIR::Coefficients<float>::makeHighPass (sampleRate, frequency);
 
-    cascadedHighPassCoeffs->coefficients = FilterVisualizerHelper<double>::cascadeSecondOrderCoefficients
-    (
-     IIR::Coefficients<double>::makeHighPass(sampleRate, frequency)->coefficients,
-     IIR::Coefficients<double>::makeHighPass(sampleRate, frequency)->coefficients
-     );
+    auto newCoeffs = IIR::Coefficients<double>::makeHighPass (sampleRate, frequency);
+    newCoeffs->coefficients = FilterVisualizerHelper<double>::cascadeSecondOrderCoefficients (newCoeffs->coefficients, newCoeffs->coefficients);
+    cascadedHighPassCoeffs = newCoeffs;
+    guiUpdateHighPassCoefficients = true;
 }
 
 
@@ -459,17 +457,15 @@ void SimpleDecoderAudioProcessor::parameterChanged (const String &parameterID, f
         userChangedIOSettings = true;
     else if (parameterID == "highPassFrequency")
     {
-        updateHighPassCoefficients(highPassSpecs.sampleRate, *highPassFrequency);
-        updateFv = true;
+        updateHighPassCoefficients (highPassSpecs.sampleRate, *highPassFrequency);
     }
     else if (parameterID == "lowPassFrequency")
     {
-        updateLowPassCoefficients(highPassSpecs.sampleRate, *lowPassFrequency);
-        updateFv = true;
+        updateLowPassCoefficients (highPassSpecs.sampleRate, *lowPassFrequency);
     }
     else if (parameterID == "lowPassGain")
     {
-        updateFv = true;
+        guiUpdateLowPassGain = true;
     }
     else if (parameterID == "useSN3D")
     {
