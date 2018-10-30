@@ -120,6 +120,17 @@ parameters (*this, nullptr), oscParams (parameters)
     parameters.addParameterListener ("qz", this);
 
 
+
+    orderMatrices.add (new Matrix<float> (0, 0)); // 0th
+
+    for (int l = 1; l < 7; ++l )
+    {
+        const int nCh = (2 * l + 1);
+        auto elem = orderMatrices.add (new Matrix<float> (nCh, nCh));
+        elem->clear();
+    }
+
+
     oscReceiver.addListener (this);
 }
 
@@ -226,17 +237,96 @@ void SceneRotatorAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBu
        calcRotationMatrix();
 }
 
+double P (int i, int l, int a, int b, Matrix<float>& R1, Matrix<float>& Rlm1)
+{
+    double ri1 = R1 (i + 1, 2);
+    double rim1 = R1 (i + 1, 0);
+    double ri0 = R1 (i + 1, 1);
+
+    if (b == -l)
+        return ri1 * Rlm1(a + l - 1, 0) + rim1 * Rlm1(a + l - 1, 2 * l - 2);
+    else if (b == l)
+        return ri1 * Rlm1(a + l - 1, 2 * l - 2) - rim1 * Rlm1 (a + l-1, 0);
+    else
+        return ri0 * Rlm1(a + l - 1, b + l - 1);
+};
+
+double U (int l, int m, int n, Matrix<float>& R1, Matrix<float>& Rlm1)
+{
+    return P (0, l, m, n, R1, Rlm1);
+}
+
 
 void SceneRotatorAudioProcessor::calcRotationMatrix()
 {
     rotationParamsHaveChanged = false;
-    Vector3D<float> rotAngles { Conversions<float>::degreesToRadians (*yaw), Conversions<float>::degreesToRadians (*pitch), Conversions<float>::degreesToRadians (*roll)};
+    Vector3D<float> rotAngles { Conversions<float>::degreesToRadians (*pitch), Conversions<float>::degreesToRadians (*roll), Conversions<float>::degreesToRadians (*yaw)};
     Matrix3D<float> rotMat = Matrix3D<float>::rotation (rotAngles);
 
     DBG (rotMat.mat[0] << "\t" << rotMat.mat[4] << "\t" << rotMat.mat[8]);
     DBG (rotMat.mat[1] << "\t" << rotMat.mat[5] << "\t" << rotMat.mat[9]);
     DBG (rotMat.mat[2] << "\t" << rotMat.mat[6] << "\t" << rotMat.mat[10]);
 
+    DBG ("");
+
+    Matrix<float> shRot (64, 64);
+    shRot.clear();
+
+    shRot(0, 0) = 1.0f;
+    shRot(1, 1) = rotMat.mat[5];
+    shRot(1, 2) = rotMat.mat[9];
+    shRot(1, 3) = rotMat.mat[1];
+    shRot(2, 1) = rotMat.mat[6];
+    shRot(2, 2) = rotMat.mat[10];
+    shRot(2, 3) = rotMat.mat[2];
+    shRot(3, 1) = rotMat.mat[4];
+    shRot(3, 2) = rotMat.mat[8];
+    shRot(3, 3) = rotMat.mat[0];
+
+    auto Rl = orderMatrices[1];
+
+    Rl->operator()(0, 0) = rotMat.mat[5];
+    Rl->operator()(0, 1) = rotMat.mat[9];
+    Rl->operator()(0, 2) = rotMat.mat[1];
+    Rl->operator()(0, 0) = rotMat.mat[6];
+    Rl->operator()(0, 1) = rotMat.mat[10];
+    Rl->operator()(0, 2) = rotMat.mat[2];
+    Rl->operator()(0, 0) = rotMat.mat[4];
+    Rl->operator()(0, 1) = rotMat.mat[8];
+    Rl->operator()(0, 2) = rotMat.mat[0];
+
+
+    DBG (shRot(1, 1) << "\t" << shRot(1, 2) << "\t" << shRot(1, 3));
+    DBG (shRot(2, 1) << "\t" << shRot(2, 2) << "\t" << shRot(2, 3));
+    DBG (shRot(3, 1) << "\t" << shRot(3, 2) << "\t" << shRot(3, 3));
+
+
+    for (int l = 2; l < 7; ++l)
+    {
+        auto R1 = orderMatrices[1];
+        auto Rlm1 = orderMatrices[l - 1];
+        auto Rl = orderMatrices[l];
+        for (int m = -l; m <= l; ++m)
+        {
+            for (int n = -l; n <= l; ++n)
+            {
+                const int d = (m == 0) ? 1 : 0;
+                double denom;
+                if (abs(n) == l)
+                    denom = (2 * l) * (2 * l - 1);
+                else
+                    denom = l * l - n * n;
+
+                double u = sqrt ((l * l - m * m) / denom);
+                double v = sqrt ((1.0 + d) * (l + abs (m) - 1.0) * (l + abs (m)) / denom) * (1.0 - 2.0 * d) * 0.5;
+                double w = sqrt ((l - abs (m) - 1.0) * (l - abs (m)) / denom) * (1.0 - d) * (-0.5);
+
+                if (u != 0)
+                    u *= U (l, m, n, *Rl, *Rlm1);
+
+            }
+        }
+    }
     DBG ("");
 }
 

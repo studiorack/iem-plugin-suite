@@ -134,9 +134,7 @@ private:
     Atomic<bool> updatingParams {false};
     Atomic<bool> rotationParamsHaveChanged {true};
 
-    // members for rotation
-    Array<float> sin_z;
-    Array<float> cos_z;
+    OwnedArray<Matrix<float>> orderMatrices;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SceneRotatorAudioProcessor)
