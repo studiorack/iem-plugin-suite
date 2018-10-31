@@ -122,12 +122,15 @@ parameters (*this, nullptr), oscParams (parameters)
 
 
     orderMatrices.add (new Matrix<float> (0, 0)); // 0th
+    orderMatricesCopy.add (new Matrix<float> (0, 0)); // 0th
 
-    for (int l = 1; l < 7; ++l )
+    for (int l = 1; l <= 7; ++l )
     {
         const int nCh = (2 * l + 1);
         auto elem = orderMatrices.add (new Matrix<float> (nCh, nCh));
         elem->clear();
+        auto elemCopy = orderMatricesCopy.add (new Matrix<float> (nCh, nCh));
+        elemCopy->clear();
     }
 
 
@@ -232,9 +235,6 @@ void SceneRotatorAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBu
     checkInputAndOutput (this, *orderSetting, *orderSetting, false);
     ScopedNoDenormals noDenormals;
 
-    const int totalNumInputChannels  = getTotalNumInputChannels();
-    const int totalNumOutputChannels = getTotalNumOutputChannels();
-
     const int L = buffer.getNumSamples();
 
     const int inputOrder = input.getOrder();
@@ -243,8 +243,12 @@ void SceneRotatorAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBu
     const int actualChannels = square (actualOrder + 1);
     jassert (actualChannels <= nChIn);
 
+    bool newRotationMatrix = false;
     if (rotationParamsHaveChanged.get())
-        calcRotationMatrix();
+    {
+        newRotationMatrix = true;
+        calcRotationMatrix (inputOrder);
+    }
 
     // make copy of input
     for (int ch = 0; ch < actualChannels; ++ch)
@@ -259,13 +263,14 @@ void SceneRotatorAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBu
     {
         const int offset = l * l;
         const int nCh = 2 * l + 1;
+        auto R = orderMatrices[l];
+        auto Rcopy = orderMatricesCopy[l];
         for (int o = 0;  o < nCh; ++o)
         {
             const int chOut = offset + o;
             for (int p = 0; p < nCh; ++p)
             {
-                const int chIn = offset + p;
-                buffer.addFrom (chOut, 0, copyBuffer, chIn, 0, L, shRot(chOut, chIn));
+                buffer.addFromWithRamp (chOut, 0, copyBuffer.getReadPointer (offset + p), L, Rcopy->operator() (o, p), R->operator() (o, p));
             }
         }
     }
@@ -336,9 +341,14 @@ double W (int l, int m, int n, Matrix<float>& Rone, Matrix<float>& Rlm1)
 }
 
 
-void SceneRotatorAudioProcessor::calcRotationMatrix()
+void SceneRotatorAudioProcessor::calcRotationMatrix (const int order)
 {
     rotationParamsHaveChanged = false;
+
+    // make copies for fading between old and new matrices
+    for (int l = 1; l <= order; ++l)
+        *orderMatricesCopy[l] = *orderMatrices[l];
+
     Vector3D<float> rotAngles { Conversions<float>::degreesToRadians (*roll), Conversions<float>::degreesToRadians (*pitch), Conversions<float>::degreesToRadians (*yaw)};
 
     Matrix<float> rotMat (3, 3);
@@ -363,25 +373,6 @@ void SceneRotatorAudioProcessor::calcRotationMatrix()
     rotMat(1, 2) = sa * sb * cy - ca * sy;
     rotMat(2, 2) = cb * cy;
 
-    DBG (rotMat(0, 0) << "\t" << rotMat(0, 1) << "\t" << rotMat(0, 2));
-    DBG (rotMat(1, 0) << "\t" << rotMat(1, 1) << "\t" << rotMat(1, 2));
-    DBG (rotMat(2, 0) << "\t" << rotMat(2, 1) << "\t" << rotMat(2, 2));
-
-    DBG ("");
-
-    shRot.clear();
-
-    shRot(0, 0) = 1.0f;
-    shRot(1, 1) = rotMat(1, 1);
-    shRot(1, 2) = rotMat(1, 2);
-    shRot(1, 3) = rotMat(1, 0);
-    shRot(2, 1) = rotMat(2, 1);
-    shRot(2, 2) = rotMat(2, 2);
-    shRot(2, 3) = rotMat(2, 0);
-    shRot(3, 1) = rotMat(0, 1);
-    shRot(3, 2) = rotMat(0, 2);
-    shRot(3, 3) = rotMat(0, 0);
-
     auto Rl = orderMatrices[1];
 
     Rl->operator()(0, 0) = rotMat(1, 1);
@@ -395,15 +386,8 @@ void SceneRotatorAudioProcessor::calcRotationMatrix()
     Rl->operator()(2, 2) = rotMat(0, 0);
 
 
-    DBG (shRot(1, 1) << "\t" << shRot(1, 2) << "\t" << shRot(1, 3));
-    DBG (shRot(2, 1) << "\t" << shRot(2, 2) << "\t" << shRot(2, 3));
-    DBG (shRot(3, 1) << "\t" << shRot(3, 2) << "\t" << shRot(3, 3));
 
-
-
-
-
-    for (int l = 2; l < 7; ++l)
+    for (int l = 2; l <= order; ++l)
     {
         auto Rone = orderMatrices[1];
         auto Rlm1 = orderMatrices[l - 1];
@@ -431,44 +415,9 @@ void SceneRotatorAudioProcessor::calcRotationMatrix()
                     w *= W (l, m, n, *Rone, *Rlm1);
 
                 Rl->operator() (m + l, n + l) = u + v + w;
-
-                if (l == 2)
-                {
-                    DBG ("");
-                    DBG ("");
-                    DBG (Rl->operator() (0, 0) << "\t" << Rl->operator() (0, 1) << "\t" << Rl->operator() (0, 2) << "\t" << Rl->operator() (0, 3) << "\t" << Rl->operator() (0, 4));
-                    DBG (Rl->operator() (1, 0) << "\t" << Rl->operator() (1, 1) << "\t" << Rl->operator() (1, 2) << "\t" << Rl->operator() (1, 3) << "\t" << Rl->operator() (1, 4));
-                    DBG (Rl->operator() (2, 0) << "\t" << Rl->operator() (2, 1) << "\t" << Rl->operator() (2, 2) << "\t" << Rl->operator() (2, 3) << "\t" << Rl->operator() (2, 4));
-                    DBG (Rl->operator() (3, 0) << "\t" << Rl->operator() (3, 1) << "\t" << Rl->operator() (3, 2) << "\t" << Rl->operator() (3, 3) << "\t" << Rl->operator() (3, 4));
-                    DBG (Rl->operator() (4, 0) << "\t" << Rl->operator() (4, 1) << "\t" << Rl->operator() (4, 2) << "\t" << Rl->operator() (4, 3) << "\t" << Rl->operator() (4, 4));
-
-                    DBG ("");
-                    DBG ("");
-                }
-
-
             }
         }
-
-
-
-        // write to spherical rotation matrix
-        const int offset = l * l;
-        for (int o = 0; o < 2 * l + 1; ++o)
-            for (int p = 0; p < 2 * l + 1; ++p)
-            {
-                shRot(offset + o, offset + p) = Rl->operator() (o, p);
-            }
     }
-    DBG ("");
-
-
-    DBG (shRot(4, 4) << "\t" << shRot(4, 5) << "\t" << shRot(4, 6) << "\t" << shRot(4, 7) << "\t" << shRot(4, 7));
-    DBG (shRot(5, 4) << "\t" << shRot(5, 5) << "\t" << shRot(5, 6) << "\t" << shRot(5, 7) << "\t" << shRot(5, 7));
-    DBG (shRot(6, 4) << "\t" << shRot(6, 5) << "\t" << shRot(6, 6) << "\t" << shRot(6, 7) << "\t" << shRot(6, 7));
-    DBG (shRot(7, 4) << "\t" << shRot(7, 5) << "\t" << shRot(7, 6) << "\t" << shRot(7, 7) << "\t" << shRot(7, 7));
-    DBG (shRot(8, 4) << "\t" << shRot(8, 5) << "\t" << shRot(8, 6) << "\t" << shRot(8, 7) << "\t" << shRot(8, 7));
-
 
 }
 

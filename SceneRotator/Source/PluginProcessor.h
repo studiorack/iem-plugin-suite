@@ -110,7 +110,7 @@ public:
     
 
     void rotateBuffer (AudioBuffer<float>* bufferToRotate, const int nChannels, const int samples);
-    void calcRotationMatrix();
+    void calcRotationMatrix (const int order);
 
 private:
     // ====== parameters
@@ -137,8 +137,7 @@ private:
     AudioBuffer<float> copyBuffer;
     
     OwnedArray<Matrix<float>> orderMatrices;
-
-    Matrix<float> shRot {64, 64};
+    OwnedArray<Matrix<float>> orderMatricesCopy;
     
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SceneRotatorAudioProcessor)
