@@ -322,7 +322,7 @@ void SceneRotatorAudioProcessor::calcRotationMatrix()
                 double w = sqrt ((l - abs (m) - 1.0) * (l - abs (m)) / denom) * (1.0 - d) * (-0.5);
 
                 if (u != 0)
-                    u *= U (l, m, n, *Rl, *Rlm1);
+                    u *= U (l, m, n, *R1, *Rlm1);
 
             }
         }
