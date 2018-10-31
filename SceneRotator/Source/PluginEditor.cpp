@@ -31,7 +31,7 @@ SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotator
     // ============== BEGIN: essentials ======================
     // set GUI size and lookAndFeel
     //setSize(500, 300); // use this to create a fixed-size GUI
-    setResizeLimits (450, 300, 800, 500); // use this to create a resizable GUI
+    setResizeLimits (450, 220, 800, 500); // use this to create a resizable GUI
     setLookAndFeel (&globalLaF);
 
     // make title and footer visible, and set the PluginName
@@ -84,6 +84,22 @@ SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotator
     slRoll.setRotaryParameters (M_PI, 3 * M_PI, false);
     slRoll.setTooltip ("Roll angle");
     slRoll.setTextValueSuffix (CharPointer_UTF8 (R"(°)"));
+
+    addAndMakeVisible (tbYawFlip);
+    tbYawFlipAttachment = new ButtonAttachment (valueTreeState, "yawFlip", tbYawFlip);
+    tbYawFlip.setColour (ToggleButton::ColourIds::tickColourId, globalLaF.ClWidgetColours[0]);
+    tbYawFlip.setButtonText ("Flip");
+
+    addAndMakeVisible (tbPitchFlip);
+    tbPitchFlipAttachment = new ButtonAttachment (valueTreeState, "pitchFlip", tbPitchFlip);
+    tbPitchFlip.setColour (ToggleButton::ColourIds::tickColourId, globalLaF.ClWidgetColours[1]);
+    tbPitchFlip.setButtonText ("Flip");
+
+    addAndMakeVisible (tbRollFlip);
+    tbRollFlipAttachment = new ButtonAttachment (valueTreeState, "rollFlip", tbRollFlip);
+    tbRollFlip.setColour (ToggleButton::ColourIds::tickColourId, globalLaF.ClWidgetColours[2]);
+    tbRollFlip.setButtonText ("Flip");
+
 
 
     // ====================== QUATERNION GROUP
@@ -177,45 +193,54 @@ void SceneRotatorAudioProcessorEditor::resized()
     // =========== END: header and footer =================
 
 
-    const int sliderHeight = 15;
+    const int sliderHeight = 17;
     const int rotSliderHeight = 55;
     const int rotSliderSpacing = 10;
-    const int sliderSpacing = 3;
+    const int sliderSpacing = 6;
     const int rotSliderWidth = 40;
     const int labelHeight = 15;
     const int labelWidth = 20;
 
-    auto topArea (area.removeFromTop (100));
+    auto topArea (area.removeFromTop (150));
 
-    // -------------- Azimuth Elevation Roll Width ------------------
-    auto yprArea (topArea.removeFromLeft (150));
+    // -------------- Yaw Pitch Roll ------------------
+    auto yprArea (topArea.removeFromLeft (160));
     yprGroup.setBounds (yprArea);
     yprArea.removeFromTop (25); //for box headline
 
     auto sliderRow (yprArea.removeFromTop (rotSliderHeight));
-    slYaw.setBounds (sliderRow.removeFromLeft (rotSliderWidth));
+    slYaw.setBounds (sliderRow.removeFromLeft (rotSliderWidth + 5));
     sliderRow.removeFromLeft (rotSliderSpacing);
-    slPitch.setBounds (sliderRow.removeFromLeft (rotSliderWidth));
-    sliderRow.removeFromLeft(rotSliderSpacing);
-    slRoll.setBounds (sliderRow.removeFromLeft( rotSliderWidth));
+    slPitch.setBounds (sliderRow.removeFromLeft (rotSliderWidth + 5));
+    sliderRow.removeFromLeft (rotSliderSpacing);
+    slRoll.setBounds (sliderRow.removeFromLeft (rotSliderWidth + 5));
 
     sliderRow = yprArea.removeFromTop (20);
-    lbYaw.setBounds (sliderRow.removeFromLeft (rotSliderWidth));
-    sliderRow.removeFromLeft (rotSliderSpacing - 5);
-    lbPitch.setBounds (sliderRow.removeFromLeft (rotSliderWidth + 10));
-    sliderRow.removeFromLeft (rotSliderSpacing - 5);
-    lbRoll.setBounds (sliderRow.removeFromLeft (rotSliderWidth));
+    lbYaw.setBounds (sliderRow.removeFromLeft (rotSliderWidth + 5));
+    sliderRow.removeFromLeft (rotSliderSpacing);
+    lbPitch.setBounds (sliderRow.removeFromLeft (rotSliderWidth + 5));
+    sliderRow.removeFromLeft (rotSliderSpacing);
+    lbRoll.setBounds (sliderRow.removeFromLeft (rotSliderWidth + 5));
+
+    sliderRow = yprArea.removeFromTop (20);
+    tbYawFlip.setBounds (sliderRow.removeFromLeft (rotSliderWidth + 5));
+    sliderRow.removeFromLeft (rotSliderSpacing);
+    tbPitchFlip.setBounds (sliderRow.removeFromLeft (rotSliderWidth + 5));
+    sliderRow.removeFromLeft (rotSliderSpacing);
+    tbRollFlip.setBounds (sliderRow.removeFromLeft (rotSliderWidth + 5));
 
 
-    // ------------- Quaternion ------------------------
+    // ------------- Quaternions ------------------------
     auto quatArea (topArea.removeFromRight (190));
     quatGroup.setBounds (quatArea);
     quatArea.removeFromTop (25); //for box headline
 
-    sliderRow = quatArea.removeFromTop(sliderHeight);
+    quatArea.removeFromTop (5);
+
+    sliderRow = quatArea.removeFromTop (sliderHeight);
     slQW.setBounds (sliderRow.removeFromRight (185 - labelWidth));
     lbQW.setBounds (sliderRow);
-    quatArea.removeFromTop(sliderSpacing);
+    quatArea.removeFromTop (sliderSpacing);
 
     sliderRow = quatArea.removeFromTop (sliderHeight);
     slQX.setBounds (sliderRow.removeFromRight (185 - labelWidth));
@@ -225,7 +250,7 @@ void SceneRotatorAudioProcessorEditor::resized()
     sliderRow = quatArea.removeFromTop (sliderHeight);
     slQY.setBounds (sliderRow.removeFromRight (185 - labelWidth));
     lbQY.setBounds (sliderRow);
-    quatArea.removeFromTop(sliderSpacing);
+    quatArea.removeFromTop (sliderSpacing);
 
     sliderRow = quatArea.removeFromTop (sliderHeight);
     slQZ.setBounds (sliderRow.removeFromRight (185 - labelWidth));

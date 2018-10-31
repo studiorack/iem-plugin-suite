@@ -129,8 +129,10 @@ private:
     float* qx;
     float* qy;
     float* qz;
+    float* yawFlip;
+    float* pitchFlip;
+    float* rollFlip;
 
-    Atomic<bool> yprInput {true};
     Atomic<bool> updatingParams {false};
     Atomic<bool> rotationParamsHaveChanged {true};
 
@@ -138,6 +140,11 @@ private:
     
     OwnedArray<Matrix<float>> orderMatrices;
     OwnedArray<Matrix<float>> orderMatricesCopy;
+
+    double P (int i, int l, int a, int b, Matrix<float>& R1, Matrix<float>& Rlm1);
+    double U (int l, int m, int n, Matrix<float>& Rone, Matrix<float>& Rlm1);
+    double V (int l, int m, int n, Matrix<float>& Rone, Matrix<float>& Rlm1);
+    double W (int l, int m, int n, Matrix<float>& Rone, Matrix<float>& Rlm1);
     
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SceneRotatorAudioProcessor)

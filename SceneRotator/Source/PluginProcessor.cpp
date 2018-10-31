@@ -39,7 +39,7 @@ SceneRotatorAudioProcessor::SceneRotatorAudioProcessor()
 parameters (*this, nullptr), oscParams (parameters)
 {
     oscParams.createAndAddParameter ("orderSetting", "Ambisonics Order", "",
-                                     NormalisableRange<float>(0.0f, 8.0f, 1.0f), 0.0f,
+                                     NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
                                      [](float value) {
                                          if (value >= 0.5f && value < 1.5f) return "0th";
                                          else if (value >= 1.5f && value < 2.5f) return "1st";
@@ -61,32 +61,44 @@ parameters (*this, nullptr), oscParams (parameters)
                                      }, nullptr);
 
     oscParams.createAndAddParameter ("yaw", "Yaw Angle", CharPointer_UTF8 (R"(°)"),
-                                     NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
+                                     NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
                                      [](float value) { return String(value, 2); }, nullptr, true);
 
     oscParams.createAndAddParameter ("pitch", "Pitch Angle", CharPointer_UTF8 (R"(°)"),
-                                     NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
+                                     NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
                                      [](float value) { return String(value, 2); }, nullptr, true);
 
     oscParams.createAndAddParameter ("roll", "Roll Angle", CharPointer_UTF8 (R"(°)"),
-                                     NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
+                                     NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
                                      [](float value) { return String(value, 2); }, nullptr, true);
 
     oscParams.createAndAddParameter ("qw", "Quaternion W", "",
-                                     NormalisableRange<float>(-1.0f, 1.0f, 0.001f), 1.0,
+                                     NormalisableRange<float> (-1.0f, 1.0f, 0.001f), 1.0,
                                      [](float value) { return String(value, 2); }, nullptr, true);
 
     oscParams.createAndAddParameter ("qx", "Quaternion X", "",
-                                     NormalisableRange<float>(-1.0f, 1.0f, 0.001f), 0.0,
+                                     NormalisableRange<float> (-1.0f, 1.0f, 0.001f), 0.0,
                                      [](float value) { return String(value, 2); }, nullptr, true);
 
     oscParams.createAndAddParameter ("qy", "Quaternion Y", "",
-                                     NormalisableRange<float>(-1.0f, 1.0f, 0.001f), 0.0,
+                                     NormalisableRange<float> (-1.0f, 1.0f, 0.001f), 0.0,
                                      [](float value) { return String(value, 2); }, nullptr, true);
 
     oscParams.createAndAddParameter ("qz", "Quaternion Z", "",
-                                     NormalisableRange<float>(-1.0f, 1.0f, 0.001f), 0.0,
+                                     NormalisableRange<float> (-1.0f, 1.0f, 0.001f), 0.0,
                                      [](float value) { return String(value, 2); }, nullptr, true);
+
+    oscParams.createAndAddParameter ("yawFlip", "Invert Yaw", "",
+                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
+                                     [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr);
+
+    oscParams.createAndAddParameter ("pitchFlip", "Invert Pitch", "",
+                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
+                                     [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr);
+
+    oscParams.createAndAddParameter ("rollFlip", "Invert Roll", "",
+                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
+                                     [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr);
 
 
 
@@ -105,6 +117,9 @@ parameters (*this, nullptr), oscParams (parameters)
     qx = parameters.getRawParameterValue ("qx");
     qy = parameters.getRawParameterValue ("qy");
     qz = parameters.getRawParameterValue ("qz");
+    yawFlip = parameters.getRawParameterValue ("yawFlip");
+    pitchFlip = parameters.getRawParameterValue ("pitchFlip");
+    rollFlip = parameters.getRawParameterValue ("rollFlip");
 
 
     // add listeners to parameter changes
@@ -118,6 +133,9 @@ parameters (*this, nullptr), oscParams (parameters)
     parameters.addParameterListener ("qx", this);
     parameters.addParameterListener ("qy", this);
     parameters.addParameterListener ("qz", this);
+    parameters.addParameterListener ("yawFlip", this);
+    parameters.addParameterListener ("pitchFlip", this);
+    parameters.addParameterListener ("rollFlip", this);
 
 
 
@@ -275,9 +293,14 @@ void SceneRotatorAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBu
         }
     }
 
+    // make copies for fading between old and new matrices
+    if (newRotationMatrix)
+        for (int l = 1; l <= inputOrder; ++l)
+            *orderMatricesCopy[l] = *orderMatrices[l];
+
 }
 
-double P (int i, int l, int a, int b, Matrix<float>& R1, Matrix<float>& Rlm1)
+double SceneRotatorAudioProcessor::P (int i, int l, int a, int b, Matrix<float>& R1, Matrix<float>& Rlm1)
 {
     double ri1 = R1 (i + 1, 2);
     double rim1 = R1 (i + 1, 0);
@@ -291,12 +314,12 @@ double P (int i, int l, int a, int b, Matrix<float>& R1, Matrix<float>& Rlm1)
         return ri0 * Rlm1(a + l - 1, b + l - 1);
 };
 
-double U (int l, int m, int n, Matrix<float>& Rone, Matrix<float>& Rlm1)
+double SceneRotatorAudioProcessor::U (int l, int m, int n, Matrix<float>& Rone, Matrix<float>& Rlm1)
 {
     return P (0, l, m, n, Rone, Rlm1);
 }
 
-double V (int l, int m, int n, Matrix<float>& Rone, Matrix<float>& Rlm1)
+double SceneRotatorAudioProcessor::V (int l, int m, int n, Matrix<float>& Rone, Matrix<float>& Rlm1)
 {
     if (m == 0)
     {
@@ -322,7 +345,7 @@ double V (int l, int m, int n, Matrix<float>& Rone, Matrix<float>& Rlm1)
     }
 }
 
-double W (int l, int m, int n, Matrix<float>& Rone, Matrix<float>& Rlm1)
+double SceneRotatorAudioProcessor::W (int l, int m, int n, Matrix<float>& Rone, Matrix<float>& Rlm1)
 {
     if (m > 0)
     {
@@ -345,21 +368,20 @@ void SceneRotatorAudioProcessor::calcRotationMatrix (const int order)
 {
     rotationParamsHaveChanged = false;
 
-    // make copies for fading between old and new matrices
-    for (int l = 1; l <= order; ++l)
-        *orderMatricesCopy[l] = *orderMatrices[l];
+    const auto yawRadians = Conversions<float>::degreesToRadians (*yaw) * (*yawFlip > 0.5 ? -1 : 1);
+    const auto pitchRadians = Conversions<float>::degreesToRadians (*pitch) * (*pitchFlip > 0.5 ? -1 : 1);
+    const auto rollRadians = Conversions<float>::degreesToRadians (*roll) * (*rollFlip > 0.5 ? -1 : 1);
 
-    Vector3D<float> rotAngles { Conversions<float>::degreesToRadians (*roll), Conversions<float>::degreesToRadians (*pitch), Conversions<float>::degreesToRadians (*yaw)};
+    auto ca = std::cos (yawRadians);
+    auto cb = std::cos (pitchRadians);
+    auto cy = std::cos (rollRadians);
+
+    auto sa = std::sin (yawRadians);
+    auto sb = std::sin (pitchRadians);
+    auto sy = std::sin (rollRadians);
+
 
     Matrix<float> rotMat (3, 3);
-
-    auto ca = std::cos (Conversions<float>::degreesToRadians (*yaw));
-    auto cb = std::cos (Conversions<float>::degreesToRadians (*pitch));
-    auto cy = std::cos (Conversions<float>::degreesToRadians (*roll));
-
-    auto sa = std::sin (Conversions<float>::degreesToRadians (*yaw));
-    auto sb = std::sin (Conversions<float>::degreesToRadians (*pitch));
-    auto sy = std::sin (Conversions<float>::degreesToRadians (*roll));
 
     rotMat(0, 0) = ca * cb;
     rotMat(1, 0) = sa * cb;
@@ -375,15 +397,15 @@ void SceneRotatorAudioProcessor::calcRotationMatrix (const int order)
 
     auto Rl = orderMatrices[1];
 
-    Rl->operator()(0, 0) = rotMat(1, 1);
-    Rl->operator()(0, 1) = rotMat(1, 2);
-    Rl->operator()(0, 2) = rotMat(1, 0);
-    Rl->operator()(1, 0) = rotMat(2, 1);
-    Rl->operator()(1, 1) = rotMat(2, 2);
-    Rl->operator()(1, 2) = rotMat(2, 0);
-    Rl->operator()(2, 0) = rotMat(0, 1);
-    Rl->operator()(2, 1) = rotMat(0, 2);
-    Rl->operator()(2, 2) = rotMat(0, 0);
+    Rl->operator() (0, 0) = rotMat(1, 1);
+    Rl->operator() (0, 1) = rotMat(1, 2);
+    Rl->operator() (0, 2) = rotMat(1, 0);
+    Rl->operator() (1, 0) = rotMat(2, 1);
+    Rl->operator() (1, 1) = rotMat(2, 2);
+    Rl->operator() (1, 2) = rotMat(2, 0);
+    Rl->operator() (2, 0) = rotMat(0, 1);
+    Rl->operator() (2, 1) = rotMat(0, 2);
+    Rl->operator() (2, 2) = rotMat(0, 0);
 
 
 
@@ -471,22 +493,21 @@ void SceneRotatorAudioProcessor::parameterChanged (const String &parameterID, fl
     {
         if (parameterID == "qw" || parameterID == "qx" || parameterID == "qy" || parameterID == "qz")
         {
-            yprInput = false;
             updateEuler();
             rotationParamsHaveChanged = true;
         }
         else if (parameterID == "yaw" || parameterID == "pitch" || parameterID == "roll")
         {
-            yprInput = true;
             updateQuaternions();
             rotationParamsHaveChanged = true;
         }
     }
 
 
-
     if (parameterID == "orderSetting")
         userChangedIOSettings = true;
+    else if (parameterID == "yawFlip" || parameterID == "pitchFlip" || parameterID == "rollFlip")
+        rotationParamsHaveChanged = true;
 }
 
 inline void SceneRotatorAudioProcessor::updateQuaternions ()
