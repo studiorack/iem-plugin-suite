@@ -410,7 +410,11 @@ void StereoEncoderAudioProcessor::parameterChanged (const String &parameterID, f
             positionHasChanged = true;
         }
     }
-    if (parameterID == "orderSetting") userChangedIOSettings = true;
+    if (parameterID == "orderSetting")
+    {
+        userChangedIOSettings = true;
+        positionHasChanged = true;
+    }
 }
 
 
