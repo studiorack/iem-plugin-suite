@@ -134,8 +134,12 @@ private:
     Atomic<bool> updatingParams {false};
     Atomic<bool> rotationParamsHaveChanged {true};
 
+    AudioBuffer<float> copyBuffer;
+    
     OwnedArray<Matrix<float>> orderMatrices;
 
+    Matrix<float> shRot {64, 64};
+    
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SceneRotatorAudioProcessor)
 };
