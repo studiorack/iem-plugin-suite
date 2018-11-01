@@ -106,15 +106,15 @@ parameters (*this, nullptr), oscParams (parameters)
                                      NormalisableRange<float> (-1.0f, 1.0f, 0.001f), 0.0,
                                      [](float value) { return String(value, 2); }, nullptr, true);
 
-    oscParams.createAndAddParameter ("yawFlip", "Invert Yaw", "",
+    oscParams.createAndAddParameter ("invertYaw", "Invert Yaw", "",
                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
                                      [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr);
 
-    oscParams.createAndAddParameter ("pitchFlip", "Invert Pitch", "",
+    oscParams.createAndAddParameter ("invertPitch", "Invert Pitch", "",
                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
                                      [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr);
 
-    oscParams.createAndAddParameter ("rollFlip", "Invert Roll", "",
+    oscParams.createAndAddParameter ("invertRoll", "Invert Roll", "",
                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
                                      [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr);
 
@@ -135,9 +135,9 @@ parameters (*this, nullptr), oscParams (parameters)
     qx = parameters.getRawParameterValue ("qx");
     qy = parameters.getRawParameterValue ("qy");
     qz = parameters.getRawParameterValue ("qz");
-    yawFlip = parameters.getRawParameterValue ("yawFlip");
-    pitchFlip = parameters.getRawParameterValue ("pitchFlip");
-    rollFlip = parameters.getRawParameterValue ("rollFlip");
+    invertYaw = parameters.getRawParameterValue ("invertYaw");
+    invertPitch = parameters.getRawParameterValue ("invertPitch");
+    invertRoll = parameters.getRawParameterValue ("invertRoll");
 
 
     // add listeners to parameter changes
@@ -151,9 +151,9 @@ parameters (*this, nullptr), oscParams (parameters)
     parameters.addParameterListener ("qx", this);
     parameters.addParameterListener ("qy", this);
     parameters.addParameterListener ("qz", this);
-    parameters.addParameterListener ("yawFlip", this);
-    parameters.addParameterListener ("pitchFlip", this);
-    parameters.addParameterListener ("rollFlip", this);
+    parameters.addParameterListener ("invertYaw", this);
+    parameters.addParameterListener ("invertPitch", this);
+    parameters.addParameterListener ("invertRoll", this);
 
 
 
@@ -386,9 +386,9 @@ void SceneRotatorAudioProcessor::calcRotationMatrix (const int order)
 {
     rotationParamsHaveChanged = false;
 
-    const auto yawRadians = Conversions<float>::degreesToRadians (*yaw) * (*yawFlip > 0.5 ? -1 : 1);
-    const auto pitchRadians = Conversions<float>::degreesToRadians (*pitch) * (*pitchFlip > 0.5 ? -1 : 1);
-    const auto rollRadians = Conversions<float>::degreesToRadians (*roll) * (*rollFlip > 0.5 ? -1 : 1);
+    const auto yawRadians = Conversions<float>::degreesToRadians (*yaw) * (*invertYaw > 0.5 ? -1 : 1);
+    const auto pitchRadians = Conversions<float>::degreesToRadians (*pitch) * (*invertPitch > 0.5 ? -1 : 1);
+    const auto rollRadians = Conversions<float>::degreesToRadians (*roll) * (*invertRoll > 0.5 ? -1 : 1);
 
     auto ca = std::cos (yawRadians);
     auto cb = std::cos (pitchRadians);
@@ -524,7 +524,7 @@ void SceneRotatorAudioProcessor::parameterChanged (const String &parameterID, fl
 
     if (parameterID == "orderSetting")
         userChangedIOSettings = true;
-    else if (parameterID == "yawFlip" || parameterID == "pitchFlip" || parameterID == "rollFlip")
+    else if (parameterID == "invertYaw" || parameterID == "invertPitch" || parameterID == "invertRoll")
         rotationParamsHaveChanged = true;
 }
 

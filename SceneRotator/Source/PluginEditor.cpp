@@ -85,20 +85,20 @@ SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotator
     slRoll.setTooltip ("Roll angle");
     slRoll.setTextValueSuffix (CharPointer_UTF8 (R"(°)"));
 
-    addAndMakeVisible (tbYawFlip);
-    tbYawFlipAttachment = new ButtonAttachment (valueTreeState, "yawFlip", tbYawFlip);
-    tbYawFlip.setColour (ToggleButton::ColourIds::tickColourId, globalLaF.ClWidgetColours[0]);
-    tbYawFlip.setButtonText ("Flip");
+    addAndMakeVisible (tbInvertYaw);
+    tbInvertYawAttachment = new ButtonAttachment (valueTreeState, "invertYaw", tbInvertYaw);
+    tbInvertYaw.setColour (ToggleButton::ColourIds::tickColourId, globalLaF.ClWidgetColours[0]);
+    tbInvertYaw.setButtonText ("Flip");
 
-    addAndMakeVisible (tbPitchFlip);
-    tbPitchFlipAttachment = new ButtonAttachment (valueTreeState, "pitchFlip", tbPitchFlip);
-    tbPitchFlip.setColour (ToggleButton::ColourIds::tickColourId, globalLaF.ClWidgetColours[1]);
-    tbPitchFlip.setButtonText ("Flip");
+    addAndMakeVisible (tbInvertPitch);
+    tbInvertPitchAttachment = new ButtonAttachment (valueTreeState, "invertPitch", tbInvertPitch);
+    tbInvertPitch.setColour (ToggleButton::ColourIds::tickColourId, globalLaF.ClWidgetColours[1]);
+    tbInvertPitch.setButtonText ("Flip");
 
-    addAndMakeVisible (tbRollFlip);
-    tbRollFlipAttachment = new ButtonAttachment (valueTreeState, "rollFlip", tbRollFlip);
-    tbRollFlip.setColour (ToggleButton::ColourIds::tickColourId, globalLaF.ClWidgetColours[2]);
-    tbRollFlip.setButtonText ("Flip");
+    addAndMakeVisible (tbInvertRoll);
+    tbRollFlipAttachment = new ButtonAttachment (valueTreeState, "invertRoll", tbInvertRoll);
+    tbInvertRoll.setColour (ToggleButton::ColourIds::tickColourId, globalLaF.ClWidgetColours[2]);
+    tbInvertRoll.setButtonText ("Flip");
 
 
 
@@ -223,11 +223,11 @@ void SceneRotatorAudioProcessorEditor::resized()
     lbRoll.setBounds (sliderRow.removeFromLeft (rotSliderWidth + 5));
 
     sliderRow = yprArea.removeFromTop (20);
-    tbYawFlip.setBounds (sliderRow.removeFromLeft (rotSliderWidth + 5));
+    tbInvertYaw.setBounds (sliderRow.removeFromLeft (rotSliderWidth + 5));
     sliderRow.removeFromLeft (rotSliderSpacing);
-    tbPitchFlip.setBounds (sliderRow.removeFromLeft (rotSliderWidth + 5));
+    tbInvertPitch.setBounds (sliderRow.removeFromLeft (rotSliderWidth + 5));
     sliderRow.removeFromLeft (rotSliderSpacing);
-    tbRollFlip.setBounds (sliderRow.removeFromLeft (rotSliderWidth + 5));
+    tbInvertRoll.setBounds (sliderRow.removeFromLeft (rotSliderWidth + 5));
 
 
     // ------------- Quaternions ------------------------

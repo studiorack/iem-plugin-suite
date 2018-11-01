@@ -129,9 +129,9 @@ private:
     float* qx;
     float* qy;
     float* qz;
-    float* yawFlip;
-    float* pitchFlip;
-    float* rollFlip;
+    float* invertYaw;
+    float* invertPitch;
+    float* invertRoll;
 
     Atomic<bool> updatingParams {false};
     Atomic<bool> rotationParamsHaveChanged {true};

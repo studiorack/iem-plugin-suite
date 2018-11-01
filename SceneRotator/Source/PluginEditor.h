@@ -90,8 +90,8 @@ private:
     SimpleLabel lbYaw, lbPitch, lbRoll, lbQW, lbQX, lbQY, lbQZ;
     GroupComponent quatGroup, yprGroup;
 
-    ToggleButton tbYawFlip, tbPitchFlip, tbRollFlip;
-    ScopedPointer<ButtonAttachment> tbYawFlipAttachment, tbPitchFlipAttachment, tbRollFlipAttachment;
+    ToggleButton tbInvertYaw, tbInvertPitch, tbInvertRoll;
+    ScopedPointer<ButtonAttachment> tbInvertYawAttachment, tbInvertPitchAttachment, tbRollFlipAttachment;
 
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SceneRotatorAudioProcessorEditor)
