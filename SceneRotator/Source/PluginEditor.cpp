@@ -116,19 +116,19 @@ SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotator
     slQW.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
 
     addAndMakeVisible (&slQX);
-    slQXAttachment = new SliderAttachment (valueTreeState,"qx", slQX);
+    slQXAttachment = new SliderAttachment (valueTreeState, "qx", slQX);
     slQX.setSliderStyle (Slider::LinearHorizontal);
     slQX.setTextBoxStyle (Slider::TextBoxLeft, false, 50, 15);
     slQX.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
 
     addAndMakeVisible (&slQY);
-    slQYAttachment = new SliderAttachment (valueTreeState,"qy", slQY);
+    slQYAttachment = new SliderAttachment (valueTreeState, "qy", slQY);
     slQY.setSliderStyle (Slider::LinearHorizontal);
     slQY.setTextBoxStyle (Slider::TextBoxLeft, false, 50, 15);
     slQY.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
 
     addAndMakeVisible (&slQZ);
-    slQZAttachment = new SliderAttachment (valueTreeState,"qz", slQZ);
+    slQZAttachment = new SliderAttachment (valueTreeState, "qz", slQZ);
     slQZ.setSliderStyle (Slider::LinearHorizontal);
     slQZ.setTextBoxStyle (Slider::TextBoxLeft, false, 50, 15);
     slQZ.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
