@@ -596,7 +596,36 @@ void SceneRotatorAudioProcessor::oscMessageReceived (const OSCMessage &message)
     OSCMessage msg (message);
     msg.setAddressPattern (message.getAddressPattern().toString().substring (String (JucePlugin_Name).length() + 1));
 
-    oscParams.processOSCMessage (msg);
+    if (! oscParams.processOSCMessage (msg))
+    {
+        if (msg.getAddressPattern().toString().equalsIgnoreCase ("/quaternions") && msg.size() == 4)
+        {
+            float qs[4];
+            for (int i = 0; i < 4; ++i)
+                if (msg[i].isFloat32())
+                    qs[i] = msg[i].getFloat32();
+                else if (msg[i].isInt32())
+                    qs[i] = msg[i].getInt32();
+
+            oscParams.setValue ("qw", qs[0]);
+            oscParams.setValue ("qx", qs[1]);
+            oscParams.setValue ("qy", qs[2]);
+            oscParams.setValue ("qz", qs[3]);
+        }
+        else if (msg.getAddressPattern().toString().equalsIgnoreCase ("/ypr") && msg.size() == 3)
+        {
+            float ypr[3];
+            for (int i = 0; i < 3; ++i)
+                if (msg[i].isFloat32())
+                    ypr[i] = msg[i].getFloat32();
+                else if (msg[i].isInt32())
+                    ypr[i] = msg[i].getInt32();
+
+            oscParams.setValue ("yaw", ypr[0]);
+            oscParams.setValue ("pitch", ypr[1]);
+            oscParams.setValue ("roll", ypr[2]);
+        }
+    }
 }
 
 void SceneRotatorAudioProcessor::oscBundleReceived (const OSCBundle &bundle)
