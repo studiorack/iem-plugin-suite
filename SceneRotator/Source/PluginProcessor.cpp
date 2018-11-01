@@ -2,7 +2,7 @@
  ==============================================================================
  This file is part of the IEM plug-in suite.
  Author: Daniel Rudrich
- Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
+ Copyright (c) 2018 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
 
  The IEM plug-in suite is free software: you can redistribute it and/or modify
@@ -18,6 +18,24 @@
  You should have received a copy of the GNU General Public License
  along with this software.  If not, see <https://www.gnu.org/licenses/>.
  ==============================================================================
+ */
+
+/*
+ The computation of Ambisonic rotation matrices is done by the recursive method
+ of Ivanic and Ruedenberg:
+
+    Ivanic, J., Ruedenberg, K. (1996). Rotation Matrices for Real Spherical
+    Harmonics. Direct Determination by Recursion. The Journal of Physical
+    Chemistry, 100(15), 6342?6347.
+
+ Including their correction:
+
+    Ivanic, J., Ruedenberg, K. (1998). Rotation Matrices for Real Spherical
+    Harmonics. Direct Determination by Recursion Page: Additions and
+    Corrections. Journal of Physical Chemistry A, 102(45), 9099?9100.
+
+ It also follows the implementations of Archontis Politis (Spherical Harmonic
+ Transform Toolbox) and Matthias Kronlachner (AmbiX Plug-in Suite).
  */
 
 #include "PluginProcessor.h"
