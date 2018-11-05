@@ -6,11 +6,13 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
 
 ## untagged changes
 - general changes
-    - refa
+    - rafactored widgets (internal change)
     
 - new plug-ins:
     - **Multi**EQ
         - equalizer plug-in with several filter types, filtering up to 64 audio channels
+    - **Scene**Rotator
+        - simple rotator of Ambisonic scenes
 
 - plug-in specific changes
     - **Fdn**Reverb
