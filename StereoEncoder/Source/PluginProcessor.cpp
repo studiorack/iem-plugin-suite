@@ -249,8 +249,8 @@ void StereoEncoderAudioProcessor::updateEuler()
     //updating not active params
     processorUpdatingParams = true;
     parameters.getParameter("azimuth")->setValue(parameters.getParameterRange("azimuth").convertTo0to1(Conversions<float>::radiansToDegrees(ypr[0])));
-    parameters.getParameter("elevation")->setValue(parameters.getParameterRange("azimuth").convertTo0to1(- Conversions<float>::radiansToDegrees(ypr[1])));
-    parameters.getParameter("roll")->setValue(parameters.getParameterRange("azimuth").convertTo0to1(Conversions<float>::radiansToDegrees(ypr[2])));
+    parameters.getParameter("elevation")->setValue(parameters.getParameterRange("elevation").convertTo0to1(- Conversions<float>::radiansToDegrees(ypr[1])));
+    parameters.getParameter("roll")->setValue(parameters.getParameterRange("roll").convertTo0to1(Conversions<float>::radiansToDegrees(ypr[2])));
     processorUpdatingParams = false;
 }
 
@@ -410,7 +410,11 @@ void StereoEncoderAudioProcessor::parameterChanged (const String &parameterID, f
             positionHasChanged = true;
         }
     }
-    if (parameterID == "orderSetting") userChangedIOSettings = true;
+    if (parameterID == "orderSetting")
+    {
+        userChangedIOSettings = true;
+        positionHasChanged = true;
+    }
 }
 
 
