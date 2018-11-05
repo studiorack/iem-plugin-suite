@@ -28,7 +28,7 @@
     Harmonics. Direct Determination by Recursion. The Journal of Physical
     Chemistry, 100(15), 6342?6347.
 
- Including their correction:
+ Including their corrections:
 
     Ivanic, J., Ruedenberg, K. (1998). Rotation Matrices for Real Spherical
     Harmonics. Direct Determination by Recursion Page: Additions and
@@ -560,7 +560,7 @@ void SceneRotatorAudioProcessor::updateEuler()
     updatingParams = true;
     parameters.getParameter ("yaw")->setValue (parameters.getParameterRange ("yaw").convertTo0to1 (Conversions<float>::radiansToDegrees (ypr[0])));
     parameters.getParameter ("pitch")->setValue (parameters.getParameterRange ("pitch").convertTo0to1 (Conversions<float>::radiansToDegrees (ypr[1])));
-    parameters.getParameter ("roll")->setValue( parameters.getParameterRange ("roll").convertTo0to1 (Conversions<float>::radiansToDegrees (ypr[2])));
+    parameters.getParameter ("roll")->setValue (parameters.getParameterRange ("roll").convertTo0to1 (Conversions<float>::radiansToDegrees (ypr[2])));
     updatingParams = false;
 }
 
