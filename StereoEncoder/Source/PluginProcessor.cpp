@@ -61,6 +61,7 @@ oscParameterInterface (parameters)
                                                      else return "Auto";
                                                  }, nullptr);
 
+
     oscParameterInterface.createAndAddParameter ("useSN3D", "Normalization", "",
                                                  NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
                                                  [](float value) {
@@ -70,31 +71,31 @@ oscParameterInterface (parameters)
 
     oscParameterInterface.createAndAddParameter ("qw", "Quaternion W", "",
                                                  NormalisableRange<float>(-1.0f, 1.0f, 0.001f), 1.0,
-                                                 [](float value) { return String(value, 2); }, nullptr);
+                                                 [](float value) { return String(value, 2); }, nullptr, true);
 
     oscParameterInterface.createAndAddParameter ("qx", "Quaternion X", "",
                                                  NormalisableRange<float>(-1.0f, 1.0f, 0.001f), 0.0,
-                                                 [](float value) { return String(value, 2); }, nullptr);
+                                                 [](float value) { return String(value, 2); }, nullptr, true);
 
     oscParameterInterface.createAndAddParameter ("qy", "Quaternion Y", "",
                                                  NormalisableRange<float>(-1.0f, 1.0f, 0.001f), 0.0,
-                                                 [](float value) { return String(value, 2); }, nullptr);
+                                                 [](float value) { return String(value, 2); }, nullptr, true);
 
     oscParameterInterface.createAndAddParameter ("qz", "Quaternion Z", "",
                                                  NormalisableRange<float>(-1.0f, 1.0f, 0.001f), 0.0,
-                                                 [](float value) { return String(value, 2); }, nullptr);
+                                                 [](float value) { return String(value, 2); }, nullptr, true);
 
     oscParameterInterface.createAndAddParameter ("azimuth", "Azimuth Angle", CharPointer_UTF8 (R"(°)"),
                                                  NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
-                                                 [](float value) { return String(value, 2); }, nullptr);
+                                                 [](float value) { return String(value, 2); }, nullptr, true);
 
     oscParameterInterface.createAndAddParameter ("elevation", "Elevation Angle", CharPointer_UTF8 (R"(°)"),
                                                  NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
-                                                 [](float value) { return String(value, 2); }, nullptr);
+                                                 [](float value) { return String(value, 2); }, nullptr, true);
 
     oscParameterInterface.createAndAddParameter ("roll", "Roll Angle", CharPointer_UTF8 (R"(°)"),
                                                  NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
-                                                 [](float value) { return String(value, 2); }, nullptr);
+                                                 [](float value) { return String(value, 2); }, nullptr, true);
 
     oscParameterInterface.createAndAddParameter ("width", "Stereo Width", CharPointer_UTF8 (R"(°)"),
                                                  NormalisableRange<float>(-360.0f, 360.0f, 0.01f), 0.0,
@@ -248,8 +249,8 @@ void StereoEncoderAudioProcessor::updateEuler()
     //updating not active params
     processorUpdatingParams = true;
     parameters.getParameter("azimuth")->setValue(parameters.getParameterRange("azimuth").convertTo0to1(Conversions<float>::radiansToDegrees(ypr[0])));
-    parameters.getParameter("elevation")->setValue(parameters.getParameterRange("azimuth").convertTo0to1(- Conversions<float>::radiansToDegrees(ypr[1])));
-    parameters.getParameter("roll")->setValue(parameters.getParameterRange("azimuth").convertTo0to1(Conversions<float>::radiansToDegrees(ypr[2])));
+    parameters.getParameter("elevation")->setValue(parameters.getParameterRange("elevation").convertTo0to1(- Conversions<float>::radiansToDegrees(ypr[1])));
+    parameters.getParameter("roll")->setValue(parameters.getParameterRange("roll").convertTo0to1(Conversions<float>::radiansToDegrees(ypr[2])));
     processorUpdatingParams = false;
 }
 
@@ -409,7 +410,11 @@ void StereoEncoderAudioProcessor::parameterChanged (const String &parameterID, f
             positionHasChanged = true;
         }
     }
-    if (parameterID == "orderSetting") userChangedIOSettings = true;
+    if (parameterID == "orderSetting")
+    {
+        userChangedIOSettings = true;
+        positionHasChanged = true;
+    }
 }
 
 

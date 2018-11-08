@@ -3,6 +3,23 @@ For a list of all changes and bugfixes see the git log.
 
 Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They might lead to an unexpected behaviour and might not be compatible with your previous projects without making some adaptions. See the [Breaking changes article](https://plugins.iem.at/docs/breakingchanges/) for more information.
 
+
+## v1.8.0
+- general changes
+    - rafactored widgets (internal change)
+    
+- new plug-ins:
+    - **Multi**EQ
+        - equalizer plug-in with several filter types, filtering up to 64 audio channels
+    - **Scene**Rotator
+        - simple rotator of Ambisonic scenes
+
+- plug-in specific changes
+    - **Fdn**Reverb
+        - mouse-wheel controls Q factors of filters within the FilterVisualizer
+
+
+
 ## v1.7.1
 - general changes
     - smaller GUI re-draw improvements

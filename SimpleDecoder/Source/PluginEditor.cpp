@@ -126,8 +126,8 @@ SimpleDecoderAudioProcessorEditor::SimpleDecoderAudioProcessorEditor (SimpleDeco
 
     addAndMakeVisible(fv);
     fv.setParallel(true);
-    fv.addCoefficients(&processor.cascadedLowPassCoeffs, Colours::orangered, &slLowPassFrequency, &slLowPassGain);
-    fv.addCoefficients(&processor.cascadedHighPassCoeffs, Colours::cyan, &slHighPassFrequency);
+    fv.addCoefficients (processor.cascadedLowPassCoeffs, Colours::orangered, &slLowPassFrequency, &slLowPassGain);
+    fv.addCoefficients (processor.cascadedHighPassCoeffs, Colours::cyan, &slHighPassFrequency);
 
     // start timer after everything is set up properly
     startTimer(20);
@@ -311,10 +311,22 @@ void SimpleDecoderAudioProcessorEditor::timerCallback()
         lbAlreadyUsed.setVisible(false);
     }
 
-    if (processor.updateFv)
+    if (processor.guiUpdateLowPassCoefficients.get())
+    {
+        fv.replaceCoefficients (0, processor.cascadedLowPassCoeffs);
+        processor.guiUpdateLowPassCoefficients = false;
+    }
+
+    if (processor.guiUpdateHighPassCoefficients.get())
+    {
+        fv.replaceCoefficients (1, processor.cascadedHighPassCoeffs);
+        processor.guiUpdateHighPassCoefficients = false;
+    }
+
+    if (processor.guiUpdateLowPassGain.get())
     {
         fv.repaint();
-        processor.updateFv = false;
+        processor.guiUpdateLowPassGain = false;
     }
 
     if (changeEnablement)

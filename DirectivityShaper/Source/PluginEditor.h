@@ -65,7 +65,6 @@ private:
 
     float weights[numberOfBands][8];
 
-    bool addedCoefficients = false;
     void timerCallback() override;
 
     TitleBar<AudioChannelsIOWidget<1,false>, DirectivityIOWidget> title;

@@ -104,7 +104,6 @@ public:
 
     inline dsp::IIR::Coefficients<float>::Ptr createFilterCoefficients(int type, double sampleRate, double frequency, double Q);
 
-    IIR::Coefficients<float>::Ptr arrayOfCoefficients[4];
     IIR::Filter<float> filter[numberOfBands];
 
     float probeGains[numberOfBands];

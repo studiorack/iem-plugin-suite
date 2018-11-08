@@ -192,10 +192,10 @@ FdnReverbAudioProcessorEditor::FdnReverbAudioProcessorEditor (FdnReverbAudioProc
     tv.repaint();
 
     addAndMakeVisible (&fv);
-    fv.addCoefficients (&lowpassCoeffs, globalLaF.ClWidgetColours[3], &lowCutoffSlider,
-        &lowGainSlider);
-    fv.addCoefficients (&highpassCoeffs, globalLaF.ClWidgetColours[0], &highCutoffSlider,
-        &highGainSlider);
+    fv.addCoefficients (lowpassCoeffs, globalLaF.ClWidgetColours[3], &lowCutoffSlider,
+        &lowGainSlider, &lowQSlider);
+    fv.addCoefficients (highpassCoeffs, globalLaF.ClWidgetColours[0], &highCutoffSlider,
+        &highGainSlider, &highQSlider);
     fv.setOverallGain (gain);
     fv.repaint();
 }

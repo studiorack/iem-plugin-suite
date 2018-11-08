@@ -29,8 +29,7 @@
 
 //==============================================================================
 RoomEncoderAudioProcessorEditor::RoomEncoderAudioProcessorEditor (RoomEncoderAudioProcessor& p, AudioProcessorValueTreeState& vts)
-: AudioProcessorEditor (&p),
-processor (p), valueTreeState(vts), footer (p.getOSCReceiver()),
+: AudioProcessorEditor (&p), footer (p.getOSCReceiver()), processor (p), valueTreeState(vts),
 sourceElement(*valueTreeState.getParameter("sourceX"), valueTreeState.getParameterRange("sourceX"),
               *valueTreeState.getParameter("sourceY"), valueTreeState.getParameterRange("sourceY"),
               *valueTreeState.getParameter("sourceZ"), valueTreeState.getParameterRange("sourceZ")),
@@ -262,8 +261,8 @@ listenerElement(*valueTreeState.getParameter("listenerX"), valueTreeState.getPar
     slHighShelfGain.setColour (Slider::rotarySliderOutlineColourId, Colours::orangered);
 
     addAndMakeVisible(&fv);
-    fv.addCoefficients(&processor.lowShelfCoefficients, Colours::cyan, &slLowShelfFreq, &slLowShelfGain);
-    fv.addCoefficients(&processor.highShelfCoefficients, Colours::orangered, &slHighShelfFreq, &slHighShelfGain);
+    fv.addCoefficients(processor.lowShelfCoefficients, Colours::cyan, &slLowShelfFreq, &slLowShelfGain);
+    fv.addCoefficients(processor.highShelfCoefficients, Colours::orangered, &slHighShelfFreq, &slHighShelfGain);
 
     addAndMakeVisible(&rv);
     rv.setDataPointers(p.allGains, p.mRadius, p.numRefl);

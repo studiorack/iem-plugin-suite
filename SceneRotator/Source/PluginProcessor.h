@@ -24,19 +24,16 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "../../resources/IOHelper.h"
-#include "../../resources/AmbisonicDecoder.h"
-
-#define CONFIGURATIONHELPER_ENABLE_DECODER_METHODS 1
-#include "../../resources/ConfigurationHelper.h"
-
-#include "../../resources/ReferenceCountedDecoder.h"
-#include "../../resources/FilterVisualizerHelper.h"
 
 // ===== OSC ====
 #include "../../resources/OSCParameterInterface.h"
 #include "../../resources/OSCReceiverPlus.h"
 
-using namespace dsp;
+#include "../../resources/Conversions.h"
+#include "../../resources/Quaternion.h"
+#include "../../resources/ReferenceCountedMatrix.h"
+
+
 //==============================================================================
 /**
  Use the IOHelper to detect which amount of channels or which Ambisonic order is possible with the current bus layout.
@@ -45,16 +42,16 @@ using namespace dsp;
     - Ambisonics<maxOrder> (can also be used for directivity signals)
  You can leave `maxChannelCount` and `maxOrder` empty for default values (64 channels and 7th order)
 */
-class SimpleDecoderAudioProcessor  :    public AudioProcessor,
+class SceneRotatorAudioProcessor  : public AudioProcessor,
                                         public AudioProcessorValueTreeState::Listener,
-                                        public IOHelper<IOTypes::Ambisonics<>, IOTypes::AudioChannels<>>,
+                                        public IOHelper<IOTypes::Ambisonics<>, IOTypes::Ambisonics<>, true>,
                                         public VSTCallbackHandler,
                                         private OSCReceiver::Listener<OSCReceiver::RealtimeCallback>
 {
 public:
     //==============================================================================
-    SimpleDecoderAudioProcessor();
-    ~SimpleDecoderAudioProcessor();
+    SceneRotatorAudioProcessor();
+    ~SceneRotatorAudioProcessor();
 
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
@@ -96,9 +93,11 @@ public:
     //======== PluginCanDo =========================================================
     pointer_sized_int handleVstManufacturerSpecific (int32 index, pointer_sized_int value,
                                                      void* ptr, float opt) override { return 0; };
+
     pointer_sized_int handleVstPluginCanDo (int32 index, pointer_sized_int value,
                                             void* ptr, float opt) override;
     //==============================================================================
+
 
     //======== OSC =================================================================
     void oscMessageReceived (const OSCMessage &message) override;
@@ -106,67 +105,47 @@ public:
     OSCReceiverPlus& getOSCReceiver () { return oscReceiver; }
     //==============================================================================
 
-    File getLastDir() {return lastDir;}
-    void setLastDir(File newLastDir);
-    void loadConfiguration(const File& presetFile);
+    inline void updateQuaternions();
+    inline void updateEuler();
+    
 
-    bool updateDecoderInfo = true;
-    bool messageChanged {true};
-    String getMessageForEditor() {return messageForEditor;}
-
-    ReferenceCountedDecoder::Ptr getCurrentDecoderConfig()
-    {
-        return decoderConfig;
-    }
-
-    IIR::Coefficients<double>::Ptr cascadedHighPassCoeffs, cascadedLowPassCoeffs;
-    Atomic<bool> guiUpdateLowPassCoefficients = true;
-    Atomic<bool> guiUpdateHighPassCoefficients = true;
-    Atomic<bool> guiUpdateLowPassGain = true;
+    void rotateBuffer (AudioBuffer<float>* bufferToRotate, const int nChannels, const int samples);
+    void calcRotationMatrix (const int order);
 
 private:
-    void updateLowPassCoefficients (double sampleRate, float frequency);
-    void updateHighPassCoefficients (double sampleRate, float frequency);
-    
     // ====== parameters
     AudioProcessorValueTreeState parameters;
     OSCParameterInterface oscParams;
     OSCReceiverPlus oscReceiver;
-
+    
     // list of used audio parameters
-    float *inputOrderSetting, *useSN3D;
-    float *lowPassFrequency, *lowPassGain;
-    float *highPassFrequency;
+    float* orderSetting;
+    float* useSN3D;
 
-    float *swMode;
-    float *swChannel;
+    float* yaw;
+    float* pitch;
+    float* roll;
+    float* qw;
+    float* qx;
+    float* qy;
+    float* qz;
+    float* invertYaw;
+    float* invertPitch;
+    float* invertRoll;
 
-    // =========================================
+    Atomic<bool> updatingParams {false};
+    Atomic<bool> rotationParamsHaveChanged {true};
 
-    float omniGain = 0.0f;
+    AudioBuffer<float> copyBuffer;
+    
+    OwnedArray<Matrix<float>> orderMatrices;
+    OwnedArray<Matrix<float>> orderMatricesCopy;
 
-    File lastDir;
-    File lastFile;
-    ScopedPointer<PropertiesFile> properties;
-
-    AudioBuffer<float> swBuffer;
-
-
-    // processors
-    ScopedPointer<IIR::Filter<float>> lowPass1;
-    ScopedPointer<IIR::Filter<float>> lowPass2;
-    IIR::Coefficients<float>::Ptr highPassCoeffs;
-    IIR::Coefficients<float>::Ptr lowPassCoeffs;
-
-    ProcessorDuplicator<IIR::Filter<float>, IIR::Coefficients<float>> highPass1;
-    ProcessorDuplicator<IIR::Filter<float>, IIR::Coefficients<float>> highPass2;
-
-    ProcessSpec highPassSpecs {48000, 0, 0};
-
-    AmbisonicDecoder decoder;
-
-    ReferenceCountedDecoder::Ptr decoderConfig {nullptr};
-    String messageForEditor {""};
+    double P (int i, int l, int a, int b, Matrix<float>& R1, Matrix<float>& Rlm1);
+    double U (int l, int m, int n, Matrix<float>& Rone, Matrix<float>& Rlm1);
+    double V (int l, int m, int n, Matrix<float>& Rone, Matrix<float>& Rlm1);
+    double W (int l, int m, int n, Matrix<float>& Rone, Matrix<float>& Rlm1);
+    
     //==============================================================================
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SimpleDecoderAudioProcessor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SceneRotatorAudioProcessor)
 };

@@ -568,7 +568,7 @@ private:
     float radius = 1.0f;
     Rectangle<float> sphereArea;
     Point<int> centre;
-    int activeElem;
+    int activeElem = -1;
     bool activeElemWasUpBeforeDrag;
     Array<Listener*> listeners;
     Array<Element*> elements;

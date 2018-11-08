@@ -69,7 +69,7 @@ fv(20.0f, 20000.0f, -50.0f, 10.0f, 10.0f)
     addAndMakeVisible(&fv);
     fv.setSampleRate(48000); //TODO
     for (int i = 0; i < numberOfBands; ++i)
-        fv.addCoefficients(&processor.filter[i].coefficients, colours[i], &slFilterFrequency[i], &slFilterGain[i], &slFilterQ[i], &processor.probeGains[i]);
+        fv.addCoefficients(processor.filter[i].coefficients, colours[i], &slFilterFrequency[i], &slFilterGain[i], &slFilterQ[i], &processor.probeGains[i]);
     fv.setParallel(true);
 
     addAndMakeVisible(&xyPad);
