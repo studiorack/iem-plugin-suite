@@ -368,7 +368,7 @@ void AllRADecoderAudioProcessor::setStateInformation (const void* data, int size
             for (int i = 0; i < nChilds; ++i)
             {
                 XmlElement* lsp (lsps->getChildElement(i));
-                if (lsp->getTagName() == "Loudspeaker")
+                if (lsp->getTagName() == "Element")
                     loudspeakers.appendChild(createLoudspeakerFromSpherical(Vector3D<float> (lsp->getDoubleAttribute("Radius", 1.0),
                                                                                              lsp->getDoubleAttribute("Azimuth"),
                                                                                              lsp->getDoubleAttribute("Elevation")),
