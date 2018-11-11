@@ -380,6 +380,7 @@ void AllRADecoderAudioProcessor::setStateInformation (const void* data, int size
             undoManager.clearUndoHistory();
             loudspeakers.addListener(this);
             prepareLayout();
+            updateTable = true;
             calculateDecoder();
         }
     }
