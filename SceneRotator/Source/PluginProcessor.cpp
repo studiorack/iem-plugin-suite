@@ -608,6 +608,8 @@ void SceneRotatorAudioProcessor::updateEuler()
     auto quaternionDirection = iem::Quaternion<float> (*qw, *qx, *qy, *qz);
     quaternionDirection.normalize();
 
+    // Thanks to Amy de Buitléir for this great algorithm!
+
     const float p0 = quaternionDirection.w;
     const float p1 = quaternionDirection.z;
     const float p2 = quaternionDirection.y;
@@ -620,25 +622,28 @@ void SceneRotatorAudioProcessor::updateEuler()
     else // yaw -> pitch -> roll
         e = 1.0f;
 
-    // yaw (z-axis rotation)
-    float t0 = 2.0f * (p0 * p1 - e * p2 * p3);
-    float t1 = 1.0f - 2.0f * (p1 * p1 + p2 * p2);
-    ypr[0] = atan2 (t0, t1);
-
     // pitch (y-axis rotation)
-    t0 = 2.0f * (p0 * p2 + e * p1 * p3);
+    float t0 = 2.0f * (p0 * p2 + e * p1 * p3);
     ypr[1] = asin (t0);
-
-    // roll (x-axis rotation)
-    t0 = 2.0f * (p0 * p3 - e * p1 * p2);
-    t1 = 1.0f - 2.0f * (p2 * p2 + p3 * p3);
-    ypr[2] = atan2 (t0, t1);
 
     if (ypr[1] == MathConstants<float>::pi || ypr[1] == - MathConstants<float>::pi)
     {
         ypr[2] = 0.0f;
         ypr[0] = atan2 (p1, p0);
     }
+    else
+    {
+        // yaw (z-axis rotation)
+        t0 = 2.0f * (p0 * p1 - e * p2 * p3);
+        float t1 = 1.0f - 2.0f * (p1 * p1 + p2 * p2);
+        ypr[0] = atan2 (t0, t1);
+
+        // roll (x-axis rotation)
+        t0 = 2.0f * (p0 * p3 - e * p1 * p2);
+        t1 = 1.0f - 2.0f * (p2 * p2 + p3 * p3);
+        ypr[2] = atan2 (t0, t1);
+    }
+
 
 
     //updating not active params
