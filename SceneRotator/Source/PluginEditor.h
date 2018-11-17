@@ -85,6 +85,8 @@ private:
     ScopedPointer<SliderAttachment> slQYAttachment;
     ScopedPointer<SliderAttachment> slQZAttachment;
 
+    ComboBox cbRotationOrder;
+    ScopedPointer<ComboBoxAttachment> cbRotationOrderAttachment;
 
     // Labels and Groups
     SimpleLabel lbYaw, lbPitch, lbRoll, lbQW, lbQX, lbQY, lbQZ;

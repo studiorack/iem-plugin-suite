@@ -118,6 +118,14 @@ parameters (*this, nullptr), oscParams (parameters)
                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
                                      [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr);
 
+    oscParams.createAndAddParameter ("invertQuaternion", "Invert Quaternion", "",
+                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
+                                     [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr);
+
+    oscParams.createAndAddParameter ("rotationOrder", "Order of Rotations", "",
+                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0,
+                                     [](float value) { return value >= 0.5f ? "Roll->Pitch->Yaw" : "Yaw->Pitch->Roll"; }, nullptr);
+
 
 
     // this must be initialised after all calls to createAndAddParameter().
@@ -138,6 +146,8 @@ parameters (*this, nullptr), oscParams (parameters)
     invertYaw = parameters.getRawParameterValue ("invertYaw");
     invertPitch = parameters.getRawParameterValue ("invertPitch");
     invertRoll = parameters.getRawParameterValue ("invertRoll");
+    invertQuaternion = parameters.getRawParameterValue ("invertQuaternion");
+    rotationOrder = parameters.getRawParameterValue ("rotationOrder");
 
 
     // add listeners to parameter changes
@@ -154,6 +164,8 @@ parameters (*this, nullptr), oscParams (parameters)
     parameters.addParameterListener ("invertYaw", this);
     parameters.addParameterListener ("invertPitch", this);
     parameters.addParameterListener ("invertRoll", this);
+    parameters.addParameterListener ("invertQuaternion", this);
+    parameters.addParameterListener ("rotationOrder", this);
 
 
 
@@ -384,8 +396,6 @@ double SceneRotatorAudioProcessor::W (int l, int m, int n, Matrix<float>& Rone, 
 
 void SceneRotatorAudioProcessor::calcRotationMatrix (const int order)
 {
-    rotationParamsHaveChanged = false;
-
     const auto yawRadians = Conversions<float>::degreesToRadians (*yaw) * (*invertYaw > 0.5 ? -1 : 1);
     const auto pitchRadians = Conversions<float>::degreesToRadians (*pitch) * (*invertPitch > 0.5 ? -1 : 1);
     const auto rollRadians = Conversions<float>::degreesToRadians (*roll) * (*invertRoll > 0.5 ? -1 : 1);
@@ -401,17 +411,36 @@ void SceneRotatorAudioProcessor::calcRotationMatrix (const int order)
 
     Matrix<float> rotMat (3, 3);
 
-    rotMat(0, 0) = ca * cb;
-    rotMat(1, 0) = sa * cb;
-    rotMat(2, 0) = - sb;
+    if (*rotationOrder >= 0.5f) // roll -> pitch -> yaw
+    {
+        rotMat(0, 0) = ca * cb;
+        rotMat(1, 0) = sa * cb;
+        rotMat(2, 0) = - sb;
 
-    rotMat(0, 1) = ca * sb * sy - sa * cy;
-    rotMat(1, 1) = sa * sb *sy + ca * cy;
-    rotMat(2, 1) = cb * sy;
+        rotMat(0, 1) = ca * sb * sy - sa * cy;
+        rotMat(1, 1) = sa * sb * sy + ca * cy;
+        rotMat(2, 1) = cb * sy;
 
-    rotMat(0, 2) = ca * sb * cy + sa * sy;
-    rotMat(1, 2) = sa * sb * cy - ca * sy;
-    rotMat(2, 2) = cb * cy;
+        rotMat(0, 2) = ca * sb * cy + sa * sy;
+        rotMat(1, 2) = sa * sb * cy - ca * sy;
+        rotMat(2, 2) = cb * cy;
+    }
+    else // yaw -> pitch -> roll
+    {
+        rotMat(0, 0) = ca * cb;
+        rotMat(1, 0) = sa * cy + ca * sb * sy;
+        rotMat(2, 0) = sa * sy - ca * sb * cy;
+
+        rotMat(0, 1) = - sa * cb;
+        rotMat(1, 1) = ca * cy - sa * sb * sy;
+        rotMat(2, 1) = ca * sy + sa * sb * cy;
+
+        rotMat(0, 2) = sb;
+        rotMat(1, 2) = - cb * sy;
+        rotMat(2, 2) = cb * cy;
+    }
+
+
 
     auto Rl = orderMatrices[1];
 
@@ -459,6 +488,8 @@ void SceneRotatorAudioProcessor::calcRotationMatrix (const int order)
         }
     }
 
+    rotationParamsHaveChanged = false;
+
 }
 
 
@@ -500,6 +531,8 @@ void SceneRotatorAudioProcessor::setStateInformation (const void* data, int size
                 oscReceiver.connect (parameters.state.getProperty ("OSCPort", var (-1)));
             }
         }
+
+    usingYpr = true;
 }
 
 //==============================================================================
@@ -511,11 +544,13 @@ void SceneRotatorAudioProcessor::parameterChanged (const String &parameterID, fl
     {
         if (parameterID == "qw" || parameterID == "qx" || parameterID == "qy" || parameterID == "qz")
         {
+            usingYpr = false;
             updateEuler();
             rotationParamsHaveChanged = true;
         }
         else if (parameterID == "yaw" || parameterID == "pitch" || parameterID == "roll")
         {
+            usingYpr = true;
             updateQuaternions();
             rotationParamsHaveChanged = true;
         }
@@ -523,9 +558,27 @@ void SceneRotatorAudioProcessor::parameterChanged (const String &parameterID, fl
 
 
     if (parameterID == "orderSetting")
+    {
         userChangedIOSettings = true;
-    else if (parameterID == "invertYaw" || parameterID == "invertPitch" || parameterID == "invertRoll")
+    }
+    else if (parameterID == "invertYaw" || parameterID == "invertPitch" || parameterID == "invertRoll" || parameterID == "invertQuaternion")
+    {
+        if (usingYpr.get())
+            updateQuaternions();
+        else
+            updateEuler();
+
         rotationParamsHaveChanged = true;
+    }
+    else if (parameterID == "rotationOrder")
+    {
+        if (usingYpr.get())
+            updateQuaternions();
+        else
+            updateEuler();
+
+        rotationParamsHaveChanged = true;
+    }
 }
 
 inline void SceneRotatorAudioProcessor::updateQuaternions ()
@@ -554,7 +607,39 @@ void SceneRotatorAudioProcessor::updateEuler()
     float ypr[3];
     auto quaternionDirection = iem::Quaternion<float> (*qw, *qx, *qy, *qz);
     quaternionDirection.normalize();
-    quaternionDirection.toYPR(ypr);
+
+    const float p0 = quaternionDirection.w;
+    const float p1 = quaternionDirection.z;
+    const float p2 = quaternionDirection.y;
+    const float p3 = quaternionDirection.x;
+
+    float e;
+
+    if (*rotationOrder >= 0.5f) // roll -> pitch -> yaw
+        e = -1.0f;
+    else // yaw -> pitch -> roll
+        e = 1.0f;
+
+    // yaw (z-axis rotation)
+    float t0 = 2.0f * (p0 * p1 - e * p2 * p3);
+    float t1 = 1.0f - 2.0f * (p1 * p1 + p2 * p2);
+    ypr[0] = atan2 (t0, t1);
+
+    // pitch (y-axis rotation)
+    t0 = 2.0f * (p0 * p2 + e * p1 * p3);
+    ypr[1] = asin (t0);
+
+    // roll (x-axis rotation)
+    t0 = 2.0f * (p0 * p3 - e * p1 * p2);
+    t1 = 1.0f - 2.0f * (p2 * p2 + p3 * p3);
+    ypr[2] = atan2 (t0, t1);
+
+    if (ypr[1] == MathConstants<float>::pi || ypr[1] == - MathConstants<float>::pi)
+    {
+        ypr[2] = 0.0f;
+        ypr[0] = atan2 (p1, p0);
+    }
+
 
     //updating not active params
     updatingParams = true;

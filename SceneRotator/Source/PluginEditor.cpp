@@ -31,7 +31,7 @@ SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotator
     // ============== BEGIN: essentials ======================
     // set GUI size and lookAndFeel
     //setSize(500, 300); // use this to create a fixed-size GUI
-    setResizeLimits (450, 220, 800, 500); // use this to create a resizable GUI
+    setResizeLimits (450, 250, 800, 500); // use this to create a resizable GUI
     setLookAndFeel (&globalLaF);
 
     // make title and footer visible, and set the PluginName
@@ -100,6 +100,12 @@ SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotator
     tbInvertRoll.setColour (ToggleButton::ColourIds::tickColourId, globalLaF.ClWidgetColours[2]);
     tbInvertRoll.setButtonText ("Flip");
 
+    addAndMakeVisible (cbRotationOrder);
+    cbRotationOrder.addSectionHeading ("Select order of rotation");
+    cbRotationOrder.addItem("Yaw -> Pitch -> Roll", 1);
+    cbRotationOrder.addItem("Roll -> Pitch -> Yaw", 2);
+    cbRotationOrder.setJustificationType (Justification::centred);
+    cbRotationOrderAttachment = new ComboBoxAttachment (valueTreeState, "rotationOrder", cbRotationOrder);
 
 
     // ====================== QUATERNION GROUP
@@ -228,6 +234,12 @@ void SceneRotatorAudioProcessorEditor::resized()
     tbInvertPitch.setBounds (sliderRow.removeFromLeft (rotSliderWidth + 5));
     sliderRow.removeFromLeft (rotSliderSpacing);
     tbInvertRoll.setBounds (sliderRow.removeFromLeft (rotSliderWidth + 5));
+
+    yprArea.removeFromTop (5);
+    
+    sliderRow = yprArea.removeFromTop (20);
+    sliderRow.reduce (10, 0);
+    cbRotationOrder.setBounds (sliderRow);
 
 
     // ------------- Quaternions ------------------------
