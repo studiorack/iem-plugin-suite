@@ -100,6 +100,11 @@ SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotator
     tbInvertRoll.setColour (ToggleButton::ColourIds::tickColourId, globalLaF.ClWidgetColours[2]);
     tbInvertRoll.setButtonText ("Flip");
 
+    addAndMakeVisible (tbInvertQuaternion);
+    tbInvertQuaternionAttachment = new ButtonAttachment (valueTreeState, "invertQuaternion", tbInvertQuaternion);
+    tbInvertQuaternion.setColour (ToggleButton::ColourIds::tickColourId, globalLaF.ClWidgetColours[0]);
+    tbInvertQuaternion.setButtonText ("Invert Quaternions");
+
     addAndMakeVisible (cbRotationOrder);
     cbRotationOrder.addSectionHeading ("Select order of rotation");
     cbRotationOrder.addItem("Yaw -> Pitch -> Roll", 1);
@@ -202,7 +207,7 @@ void SceneRotatorAudioProcessorEditor::resized()
     const int sliderHeight = 17;
     const int rotSliderHeight = 55;
     const int rotSliderSpacing = 10;
-    const int sliderSpacing = 6;
+    const int sliderSpacing = 4;
     const int rotSliderWidth = 40;
     const int labelHeight = 15;
     const int labelWidth = 20;
@@ -268,6 +273,10 @@ void SceneRotatorAudioProcessorEditor::resized()
     slQZ.setBounds (sliderRow.removeFromRight (185 - labelWidth));
     lbQZ.setBounds (sliderRow);
     quatArea.removeFromTop (sliderSpacing);
+
+    sliderRow = quatArea.removeFromTop (20);
+    sliderRow.removeFromLeft (20);
+    tbInvertQuaternion.setBounds (sliderRow);
 
 }
 

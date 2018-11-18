@@ -411,7 +411,7 @@ void SceneRotatorAudioProcessor::calcRotationMatrix (const int order)
 
     Matrix<float> rotMat (3, 3);
 
-    if (*rotationOrder >= 0.5f) // roll -> pitch -> yaw
+    if (*rotationOrder >= 0.5f) // roll -> pitch -> yaw (extrinsic rotations)
     {
         rotMat(0, 0) = ca * cb;
         rotMat(1, 0) = sa * cb;
@@ -425,7 +425,7 @@ void SceneRotatorAudioProcessor::calcRotationMatrix (const int order)
         rotMat(1, 2) = sa * sb * cy - ca * sy;
         rotMat(2, 2) = cb * cy;
     }
-    else // yaw -> pitch -> roll
+    else // yaw -> pitch -> roll (extrinsic rotations)
     {
         rotMat(0, 0) = ca * cb;
         rotMat(1, 0) = sa * cy + ca * sb * sy;
@@ -583,22 +583,43 @@ void SceneRotatorAudioProcessor::parameterChanged (const String &parameterID, fl
 
 inline void SceneRotatorAudioProcessor::updateQuaternions ()
 {
-    float ypr[3];
-    ypr[0] = Conversions<float>::degreesToRadians (*yaw);
-    ypr[1] = Conversions<float>::degreesToRadians (*pitch);
-    ypr[2] = Conversions<float>::degreesToRadians (*roll);
+    const float wa = cos (Conversions<float>::degreesToRadians (*yaw) * 0.5f);
+    const float za = sin (Conversions<float>::degreesToRadians (*yaw) * (*invertYaw >= 0.5 ? -0.5f : 0.5f));
+    const float wb = cos (Conversions<float>::degreesToRadians (*pitch) * 0.5f);
+    const float yb = sin (Conversions<float>::degreesToRadians (*pitch) * (*invertPitch >= 0.5 ? -0.5f : 0.5f));
+    const float wc = cos (Conversions<float>::degreesToRadians (*roll) * 0.5f);
+    const float xc = sin (Conversions<float>::degreesToRadians (*roll) * (*invertRoll >= 0.5 ? -0.5f : 0.5f));
 
+    float qw, qx, qy, qz;
 
-    //updating not active params
-    iem::Quaternion<float> quaternionDirection;
-    quaternionDirection.fromYPR (ypr);
+    if (*rotationOrder >= 0.5f) // roll -> pitch -> yaw (extrinsic rotations)
+    {
+        qw = wa * wc * wb + za * xc * yb;
+        qx = wa * xc * wb - za * wc * yb;
+        qy = wa * wc * yb + za * xc * wb;
+        qz = za * wc * wb - wa * xc * yb;
+    }
+    else // yaw -> pitch -> roll (extrinsic rotations)
+    {
+        qw = wc * wb * wa - xc * yb * za;
+        qx = wc * yb * za + xc * wb * wa;
+        qy = wc * yb * wa - xc * wb * za;
+        qz = wc * wb * za + xc * yb * wa;
+    }
+
+    if (*invertQuaternion >= 0.5f)
+    {
+        qx = -qx;
+        qy = -qy;
+        qz = -qz;
+    }
 
     
     updatingParams = true;
-    parameters.getParameter ("qw")->setValue (parameters.getParameterRange ("qw").convertTo0to1 (quaternionDirection.w));
-    parameters.getParameter ("qx")->setValue (parameters.getParameterRange ("qx").convertTo0to1 (quaternionDirection.x));
-    parameters.getParameter ("qy")->setValue (parameters.getParameterRange ("qy").convertTo0to1 (quaternionDirection.y));
-    parameters.getParameter ("qz")->setValue (parameters.getParameterRange ("qz").convertTo0to1 (quaternionDirection.z));
+    parameters.getParameter ("qw")->setValue (parameters.getParameterRange ("qw").convertTo0to1 (qw));
+    parameters.getParameter ("qx")->setValue (parameters.getParameterRange ("qx").convertTo0to1 (qx));
+    parameters.getParameter ("qy")->setValue (parameters.getParameterRange ("qy").convertTo0to1 (qy));
+    parameters.getParameter ("qz")->setValue (parameters.getParameterRange ("qz").convertTo0to1 (qz));
     updatingParams = false;
 }
 
@@ -607,6 +628,10 @@ void SceneRotatorAudioProcessor::updateEuler()
     float ypr[3];
     auto quaternionDirection = iem::Quaternion<float> (*qw, *qx, *qy, *qz);
     quaternionDirection.normalize();
+
+    if (*invertQuaternion >= 0.5f)
+        quaternionDirection = quaternionDirection.getConjugate();
+
 
     // Thanks to Amy de Buitléir for this great algorithm!
 
@@ -617,9 +642,9 @@ void SceneRotatorAudioProcessor::updateEuler()
 
     float e;
 
-    if (*rotationOrder >= 0.5f) // roll -> pitch -> yaw
+    if (*rotationOrder >= 0.5f) // roll -> pitch -> yaw (extrinsic rotations)
         e = -1.0f;
-    else // yaw -> pitch -> roll
+    else // yaw -> pitch -> roll (extrinsic rotations)
         e = 1.0f;
 
     // pitch (y-axis rotation)
@@ -644,7 +669,12 @@ void SceneRotatorAudioProcessor::updateEuler()
         ypr[2] = atan2 (t0, t1);
     }
 
-
+    if (*invertYaw >= 0.5)
+        ypr[0] *= -1.0f;
+    if (*invertPitch >= 0.5)
+        ypr[1] *= -1.0f;
+    if (*invertRoll >= 0.5)
+        ypr[2] *= -1.0f;
 
     //updating not active params
     updatingParams = true;
