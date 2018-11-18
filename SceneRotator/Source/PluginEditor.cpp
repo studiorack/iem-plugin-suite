@@ -105,12 +105,12 @@ SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotator
     tbInvertQuaternion.setColour (ToggleButton::ColourIds::tickColourId, globalLaF.ClWidgetColours[0]);
     tbInvertQuaternion.setButtonText ("Invert Quaternions");
 
-    addAndMakeVisible (cbRotationOrder);
-    cbRotationOrder.addSectionHeading ("Select order of rotation");
-    cbRotationOrder.addItem("Yaw -> Pitch -> Roll", 1);
-    cbRotationOrder.addItem("Roll -> Pitch -> Yaw", 2);
-    cbRotationOrder.setJustificationType (Justification::centred);
-    cbRotationOrderAttachment = new ComboBoxAttachment (valueTreeState, "rotationOrder", cbRotationOrder);
+    addAndMakeVisible (cbRotationSequence);
+    cbRotationSequence.addSectionHeading ("Select order of rotation");
+    cbRotationSequence.addItem("Yaw -> Pitch -> Roll", 1);
+    cbRotationSequence.addItem("Roll -> Pitch -> Yaw", 2);
+    cbRotationSequence.setJustificationType (Justification::centred);
+    cbRotationSequenceAttachment = new ComboBoxAttachment (valueTreeState, "rotationSequence", cbRotationSequence);
 
 
     // ====================== QUATERNION GROUP
@@ -244,7 +244,7 @@ void SceneRotatorAudioProcessorEditor::resized()
     
     sliderRow = yprArea.removeFromTop (20);
     sliderRow.reduce (10, 0);
-    cbRotationOrder.setBounds (sliderRow);
+    cbRotationSequence.setBounds (sliderRow);
 
 
     // ------------- Quaternions ------------------------

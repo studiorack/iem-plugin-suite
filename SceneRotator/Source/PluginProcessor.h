@@ -135,7 +135,7 @@ private:
     float* invertPitch;
     float* invertRoll;
     float* invertQuaternion;
-    float* rotationOrder;
+    float* rotationSequence;
 
     Atomic<bool> updatingParams {false};
     Atomic<bool> rotationParamsHaveChanged {true};

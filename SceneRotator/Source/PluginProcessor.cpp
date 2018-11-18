@@ -122,7 +122,7 @@ parameters (*this, nullptr), oscParams (parameters)
                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
                                      [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr);
 
-    oscParams.createAndAddParameter ("rotationOrder", "Order of Rotations", "",
+    oscParams.createAndAddParameter ("rotationSequence", "Sequence of Rotations", "",
                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0,
                                      [](float value) { return value >= 0.5f ? "Roll->Pitch->Yaw" : "Yaw->Pitch->Roll"; }, nullptr);
 
@@ -147,7 +147,7 @@ parameters (*this, nullptr), oscParams (parameters)
     invertPitch = parameters.getRawParameterValue ("invertPitch");
     invertRoll = parameters.getRawParameterValue ("invertRoll");
     invertQuaternion = parameters.getRawParameterValue ("invertQuaternion");
-    rotationOrder = parameters.getRawParameterValue ("rotationOrder");
+    rotationSequence = parameters.getRawParameterValue ("rotationSequence");
 
 
     // add listeners to parameter changes
@@ -165,7 +165,7 @@ parameters (*this, nullptr), oscParams (parameters)
     parameters.addParameterListener ("invertPitch", this);
     parameters.addParameterListener ("invertRoll", this);
     parameters.addParameterListener ("invertQuaternion", this);
-    parameters.addParameterListener ("rotationOrder", this);
+    parameters.addParameterListener ("rotationSequence", this);
 
 
 
@@ -411,7 +411,7 @@ void SceneRotatorAudioProcessor::calcRotationMatrix (const int order)
 
     Matrix<float> rotMat (3, 3);
 
-    if (*rotationOrder >= 0.5f) // roll -> pitch -> yaw (extrinsic rotations)
+    if (*rotationSequence >= 0.5f) // roll -> pitch -> yaw (extrinsic rotations)
     {
         rotMat(0, 0) = ca * cb;
         rotMat(1, 0) = sa * cb;
@@ -570,7 +570,7 @@ void SceneRotatorAudioProcessor::parameterChanged (const String &parameterID, fl
 
         rotationParamsHaveChanged = true;
     }
-    else if (parameterID == "rotationOrder")
+    else if (parameterID == "rotationSequence")
     {
         if (usingYpr.get())
             updateQuaternions();
@@ -592,7 +592,7 @@ inline void SceneRotatorAudioProcessor::updateQuaternions ()
 
     float qw, qx, qy, qz;
 
-    if (*rotationOrder >= 0.5f) // roll -> pitch -> yaw (extrinsic rotations)
+    if (*rotationSequence >= 0.5f) // roll -> pitch -> yaw (extrinsic rotations)
     {
         qw = wa * wc * wb + za * xc * yb;
         qx = wa * xc * wb - za * wc * yb;
@@ -642,7 +642,7 @@ void SceneRotatorAudioProcessor::updateEuler()
 
     float e;
 
-    if (*rotationOrder >= 0.5f) // roll -> pitch -> yaw (extrinsic rotations)
+    if (*rotationSequence >= 0.5f) // roll -> pitch -> yaw (extrinsic rotations)
         e = -1.0f;
     else // yaw -> pitch -> roll (extrinsic rotations)
         e = 1.0f;
