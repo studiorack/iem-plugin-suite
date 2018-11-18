@@ -31,7 +31,7 @@ SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotator
     // ============== BEGIN: essentials ======================
     // set GUI size and lookAndFeel
     //setSize(500, 300); // use this to create a fixed-size GUI
-    setResizeLimits (450, 220, 800, 500); // use this to create a resizable GUI
+    setResizeLimits (450, 250, 800, 500); // use this to create a resizable GUI
     setLookAndFeel (&globalLaF);
 
     // make title and footer visible, and set the PluginName
@@ -100,6 +100,17 @@ SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotator
     tbInvertRoll.setColour (ToggleButton::ColourIds::tickColourId, globalLaF.ClWidgetColours[2]);
     tbInvertRoll.setButtonText ("Flip");
 
+    addAndMakeVisible (tbInvertQuaternion);
+    tbInvertQuaternionAttachment = new ButtonAttachment (valueTreeState, "invertQuaternion", tbInvertQuaternion);
+    tbInvertQuaternion.setColour (ToggleButton::ColourIds::tickColourId, globalLaF.ClWidgetColours[0]);
+    tbInvertQuaternion.setButtonText ("Invert Quaternions");
+
+    addAndMakeVisible (cbRotationSequence);
+    cbRotationSequence.addSectionHeading ("Select order of rotation");
+    cbRotationSequence.addItem("Yaw -> Pitch -> Roll", 1);
+    cbRotationSequence.addItem("Roll -> Pitch -> Yaw", 2);
+    cbRotationSequence.setJustificationType (Justification::centred);
+    cbRotationSequenceAttachment = new ComboBoxAttachment (valueTreeState, "rotationSequence", cbRotationSequence);
 
 
     // ====================== QUATERNION GROUP
@@ -196,7 +207,7 @@ void SceneRotatorAudioProcessorEditor::resized()
     const int sliderHeight = 17;
     const int rotSliderHeight = 55;
     const int rotSliderSpacing = 10;
-    const int sliderSpacing = 6;
+    const int sliderSpacing = 4;
     const int rotSliderWidth = 40;
     const int labelHeight = 15;
     const int labelWidth = 20;
@@ -229,6 +240,12 @@ void SceneRotatorAudioProcessorEditor::resized()
     sliderRow.removeFromLeft (rotSliderSpacing);
     tbInvertRoll.setBounds (sliderRow.removeFromLeft (rotSliderWidth + 5));
 
+    yprArea.removeFromTop (5);
+    
+    sliderRow = yprArea.removeFromTop (20);
+    sliderRow.reduce (10, 0);
+    cbRotationSequence.setBounds (sliderRow);
+
 
     // ------------- Quaternions ------------------------
     auto quatArea (topArea.removeFromRight (190));
@@ -256,6 +273,10 @@ void SceneRotatorAudioProcessorEditor::resized()
     slQZ.setBounds (sliderRow.removeFromRight (185 - labelWidth));
     lbQZ.setBounds (sliderRow);
     quatArea.removeFromTop (sliderSpacing);
+
+    sliderRow = quatArea.removeFromTop (20);
+    sliderRow.removeFromLeft (20);
+    tbInvertQuaternion.setBounds (sliderRow);
 
 }
 

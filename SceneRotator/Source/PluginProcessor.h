@@ -117,7 +117,9 @@ private:
     AudioProcessorValueTreeState parameters;
     OSCParameterInterface oscParams;
     OSCReceiverPlus oscReceiver;
-    
+
+    Atomic<bool> usingYpr = true;
+
     // list of used audio parameters
     float* orderSetting;
     float* useSN3D;
@@ -132,6 +134,8 @@ private:
     float* invertYaw;
     float* invertPitch;
     float* invertRoll;
+    float* invertQuaternion;
+    float* rotationSequence;
 
     Atomic<bool> updatingParams {false};
     Atomic<bool> rotationParamsHaveChanged {true};
