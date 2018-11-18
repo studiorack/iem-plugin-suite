@@ -225,6 +225,12 @@ void BinauralDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, Mid
     checkInputAndOutput(this, *inputOrderSetting, 0, false);
     ScopedNoDenormals noDenormals;
 
+    if (buffer.getNumChannels() < 2)
+    {
+        buffer.clear();
+        return;
+    }
+
     const int nIRsPerChannel = input.getNumberOfChannels();
     const int nCh = jmin(buffer.getNumChannels(), input.getNumberOfChannels());
     const int L = buffer.getNumSamples();
