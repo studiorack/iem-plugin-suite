@@ -180,9 +180,9 @@ void MultiEQAudioProcessorEditor::resized()
         Rectangle<int> cbArea (filterArea.removeFromBottom (50));
         for (int i = 0; i < numFilterBands; ++i)
         {
-            slFilterFrequency[i].setBounds(cbArea.removeFromLeft (40));
-            slFilterGain[i].setBounds(cbArea.removeFromLeft  (40));
-            slFilterQ[i].setBounds(cbArea.removeFromLeft(40));
+            slFilterFrequency[i].setBounds(cbArea.removeFromLeft (45));
+            slFilterGain[i].setBounds(cbArea.removeFromLeft (40));
+            slFilterQ[i].setBounds(cbArea.removeFromLeft (35));
             cbArea.removeFromLeft(20);
         }
 
