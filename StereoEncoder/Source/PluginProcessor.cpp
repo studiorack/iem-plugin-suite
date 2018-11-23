@@ -257,10 +257,11 @@ void StereoEncoderAudioProcessor::updateEuler()
 void StereoEncoderAudioProcessor::processBlock(AudioSampleBuffer &buffer, MidiBuffer &midiMessages) {
     checkInputAndOutput(this, 2, *orderSetting);
 
-    const int nChOut = jmin(buffer.getNumChannels(), output.getNumberOfChannels());
     const int L = buffer.getNumSamples();
     const int totalNumInputChannels = getTotalNumInputChannels() < 2 ? 1 : 2;
-    const int ambisonicOrder = output.getOrder();
+
+    const int ambisonicOrder = *orderSetting < 0.5f ? output.getOrder() : roundToInt (*orderSetting) - 1;
+    const int nChOut = jmin (buffer.getNumChannels(), square(ambisonicOrder + 1));
 
     for (int i = 0; i < totalNumInputChannels; ++i)
         bufferCopy.copyFrom(i, 0, buffer.getReadPointer(i), buffer.getNumSamples());
