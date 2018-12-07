@@ -348,9 +348,9 @@ void CoordinateConverterAudioProcessor::updateCartesianCoordinates()
     cartesian.y /= *yRange * yFlipFactor;
     cartesian.z /= *zRange * zFlipFactor;
 
-    parameters.getParameter ("xPos")->setValue (parameters.getParameterRange ("xPos").convertTo0to1 (cartesian.x));
-    parameters.getParameter ("yPos")->setValue (parameters.getParameterRange ("yPos").convertTo0to1 (cartesian.y));
-    parameters.getParameter ("zPos")->setValue (parameters.getParameterRange ("zPos").convertTo0to1 (cartesian.z));
+    parameters.getParameter ("xPos")->setValueNotifyingHost (parameters.getParameterRange ("xPos").convertTo0to1 (cartesian.x));
+    parameters.getParameter ("yPos")->setValueNotifyingHost (parameters.getParameterRange ("yPos").convertTo0to1 (cartesian.y));
+    parameters.getParameter ("zPos")->setValueNotifyingHost (parameters.getParameterRange ("zPos").convertTo0to1 (cartesian.z));
     repaintPositionPlanes = true;
 
     cartesianWasLastUpdated = true;
@@ -377,9 +377,9 @@ void CoordinateConverterAudioProcessor::updateSphericalCoordinates()
     spherical.y *= azimuthFlipFactor;
     spherical.z *= elevationFlipFactor;
 
-    parameters.getParameter ("radius")->setValue (parameters.getParameterRange ("radius").convertTo0to1 (spherical.x));
-    parameters.getParameter ("azimuth")->setValue (parameters.getParameterRange ("azimuth").convertTo0to1  (spherical.y));
-    parameters.getParameter ("elevation")->setValue (parameters.getParameterRange ("elevation").convertTo0to1 (spherical.z));
+    parameters.getParameter ("radius")->setValueNotifyingHost (parameters.getParameterRange ("radius").convertTo0to1 (spherical.x));
+    parameters.getParameter ("azimuth")->setValueNotifyingHost (parameters.getParameterRange ("azimuth").convertTo0to1  (spherical.y));
+    parameters.getParameter ("elevation")->setValueNotifyingHost (parameters.getParameterRange ("elevation").convertTo0to1 (spherical.z));
     repaintPositionPlanes = true;
 
     cartesianWasLastUpdated = false;
