@@ -41,7 +41,7 @@
 */
 class CoordinateConverterAudioProcessor  : public AudioProcessor,
                                         public AudioProcessorValueTreeState::Listener,
-                                        public IOHelper<IOTypes::AudioChannels<64>, IOTypes::Ambisonics<64>>,
+                                        public IOHelper<IOTypes::AudioChannels<64>, IOTypes::AudioChannels<64>>,
                                         public VSTCallbackHandler,
                                         private OSCReceiver::Listener<OSCReceiver::RealtimeCallback>
 {
