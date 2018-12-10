@@ -36,45 +36,8 @@ PluginTemplateAudioProcessor::PluginTemplateAudioProcessor()
                      #endif
                        ),
 #endif
-parameters (*this, nullptr), oscParams (parameters)
+oscParams (parameters), parameters (*this, nullptr, "PluginTemplate", createParameterLayout())
 {
-    oscParams.createAndAddParameter ("inputChannelsSetting", "Number of input channels ", "",
-                                     NormalisableRange<float> (0.0f, 10.0f, 1.0f), 0.0f,
-                                     [](float value) {return value < 0.5f ? "Auto" : String (value);}, nullptr);
-
-    oscParams.createAndAddParameter ("outputOrderSetting", "Ambisonic Order", "",
-                                      NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
-                                      [](float value) {
-                                          if (value >= 0.5f && value < 1.5f) return "0th";
-                                          else if (value >= 1.5f && value < 2.5f) return "1st";
-                                          else if (value >= 2.5f && value < 3.5f) return "2nd";
-                                          else if (value >= 3.5f && value < 4.5f) return "3rd";
-                                          else if (value >= 4.5f && value < 5.5f) return "4th";
-                                          else if (value >= 5.5f && value < 6.5f) return "5th";
-                                          else if (value >= 6.5f && value < 7.5f) return "6th";
-                                          else if (value >= 7.5f) return "7th";
-                                          else return "Auto";},
-                                      nullptr);
-    oscParams.createAndAddParameter ("useSN3D", "Normalization", "",
-                                     NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
-                                     [](float value) {
-                                         if (value >= 0.5f) return "SN3D";
-                                         else return "N3D";
-                                     }, nullptr);
-
-    oscParams.createAndAddParameter ("param1", "Parameter 1", "",
-                                     NormalisableRange<float> (-10.0f, 10.0f, 0.1f), 0.0,
-                                     [](float value) {return String (value);}, nullptr);
-
-    oscParams.createAndAddParameter ("param2", "Parameter 2", "dB",
-                                     NormalisableRange<float> (-50.0f, 0.0f, 0.1f), -10.0,
-                                     [](float value) {return String (value, 1);}, nullptr);
-
-    // this must be initialised after all calls to createAndAddParameter().
-    parameters.state = ValueTree (Identifier ("PluginTemplate"));
-    // tip: you can also add other values to parameters.state, which are also saved and restored when the session is closed/reopened
-
-
     // get pointers to the parameters
     inputChannelsSetting = parameters.getRawParameterValue ("inputChannelsSetting");
     outputOrderSetting = parameters.getRawParameterValue ("outputOrderSetting");
@@ -302,6 +265,50 @@ void PluginTemplateAudioProcessor::oscBundleReceived (const OSCBundle &bundle)
             oscBundleReceived (elem.getBundle());
     }
 }
+
+//==============================================================================
+AudioProcessorValueTreeState::ParameterLayout PluginTemplateAudioProcessor::createParameterLayout()
+{
+    // add your audio parameters here
+    std::vector<std::unique_ptr<RangedAudioParameter>> params;
+
+    params.push_back (oscParams.createAndAddParameter ("inputChannelsSetting", "Number of input channels ", "",
+                                                       NormalisableRange<float> (0.0f, 10.0f, 1.0f), 0.0f,
+                                                       [](float value) {return value < 0.5f ? "Auto" : String (value);}, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("outputOrderSetting", "Ambisonic Order", "",
+                                                       NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
+                                                       [](float value) {
+                                                           if (value >= 0.5f && value < 1.5f) return "0th";
+                                                           else if (value >= 1.5f && value < 2.5f) return "1st";
+                                                           else if (value >= 2.5f && value < 3.5f) return "2nd";
+                                                           else if (value >= 3.5f && value < 4.5f) return "3rd";
+                                                           else if (value >= 4.5f && value < 5.5f) return "4th";
+                                                           else if (value >= 5.5f && value < 6.5f) return "5th";
+                                                           else if (value >= 6.5f && value < 7.5f) return "6th";
+                                                           else if (value >= 7.5f) return "7th";
+                                                           else return "Auto";},
+                                                       nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("useSN3D", "Normalization", "",
+                                                       NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
+                                                       [](float value) {
+                                                           if (value >= 0.5f) return "SN3D";
+                                                           else return "N3D";
+                                                       }, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("param1", "Parameter 1", "",
+                                                       NormalisableRange<float> (-10.0f, 10.0f, 0.1f), 0.0,
+                                                       [](float value) {return String (value);}, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("param2", "Parameter 2", "dB",
+                                                       NormalisableRange<float> (-50.0f, 0.0f, 0.1f), -10.0,
+                                                       [](float value) {return String (value, 1);}, nullptr));
+
+
+    return { params.begin(), params.end() };
+}
+
 
 //==============================================================================
 // This creates new instances of the plugin..

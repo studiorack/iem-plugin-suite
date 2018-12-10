@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <JUCERPROJECT id="mbpAgi" name="PluginTemplate" displaySplashScreen="0" reportAppUsage="0"
-              splashScreenColour="Dark" projectType="audioplug" version="0.3.0"
+              splashScreenColour="Dark" projectType="audioplug" version="0.4.0"
               bundleIdentifier="at.iem.PluginTemplate" includeBinaryInAppConfig="1"
-              cppLanguageStandard="14" buildVST="1" buildVST3="0" buildAU="0"
+              cppLanguageStandard="14" buildVST="1" buildVST3="1" buildAU="0"
               buildAUv3="0" buildRTAS="0" buildAAX="0" buildStandalone="1"
               enableIAA="0" pluginName="PluginTemplate" pluginDesc="PluginTemplate"
               pluginManufacturer="IEM" pluginManufacturerCode="IEMA" pluginCode="PlTe"
               pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
               pluginAUExportPrefix="PluginTemplateAU" aaxIdentifier="at.iem.PluginTemplate"
-              pluginAAXCategory="2" jucerVersion="5.3.2" companyCopyright="IEM - FirstName FamilyName"
+              pluginAAXCategory="2" jucerVersion="5.4.1" companyCopyright="IEM - FirstName FamilyName"
               companyName="IEM" companyWebsite="iem.at" headerPath="../../../resources/"
-              pluginFormats="buildVST,buildStandalone">
+              pluginFormats="buildStandalone,buildVST,buildVST3">
   <MAINGROUP id="LpzrV9" name="PluginTemplate">
     <GROUP id="{1B6BB8E4-E576-FBC7-B6B6-8603D2CEBF9D}" name="lookAndFeel">
       <FILE id="AVFaGo" name="IEM_LaF.h" compile="0" resource="0" file="../resources/lookAndFeel/IEM_LaF.h"/>
