@@ -149,7 +149,7 @@ void DistanceCompensatorAudioProcessor::loadConfiguration (const File& configFil
 
         DBG("num lsps: " << loadedLoudspeakerPositions.size());
         if (maxChannel > 0)
-            parameters.getParameter("inputChannelsSetting")->setValue(parameters.getParameterRange("inputChannelsSetting" ).convertTo0to1(maxChannel));
+            parameters.getParameter("inputChannelsSetting")->setValueNotifyingHost (parameters.getParameterRange("inputChannelsSetting" ).convertTo0to1(maxChannel));
         updateParameters();
     }
 }

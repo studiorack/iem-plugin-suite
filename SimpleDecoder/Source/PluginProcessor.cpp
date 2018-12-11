@@ -269,8 +269,8 @@ void SimpleDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiB
         highPass2.prepare(highPassSpecs);
         if (decoder.getCurrentDecoder()->getSettings().subwooferChannel != -1)
         {
-            parameters.getParameterAsValue("swChannel").setValue(decoder.getCurrentDecoder()->getSettings().subwooferChannel);
-            parameters.getParameterAsValue("swMode").setValue(1); //discrete
+            parameters.getParameterAsValue("swChannel").setValueNotifyingHost (decoder.getCurrentDecoder()->getSettings().subwooferChannel);
+            parameters.getParameterAsValue("swMode").setValueNotifyingHost (1); //discrete
         }
 
         // calculate mean omni-signal-gain

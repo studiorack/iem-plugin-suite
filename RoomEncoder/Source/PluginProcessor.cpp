@@ -732,9 +732,9 @@ void RoomEncoderAudioProcessor::timerCallback()
         {
             if (roomParam.validRoomData) {
                 readingSharedParams = true;
-                parameters.getParameterAsValue("roomX").setValue(roomParam.roomX);
-                parameters.getParameterAsValue("roomY").setValue(roomParam.roomY);
-                parameters.getParameterAsValue("roomZ").setValue(roomParam.roomZ);
+                parameters.getParameterAsValue ("roomX").setValueNotifyingHost (roomParam.roomX);
+                parameters.getParameterAsValue ("roomY").setValueNotifyingHost (roomParam.roomY);
+                parameters.getParameterAsValue ("roomZ").setValueNotifyingHost (roomParam.roomZ);
                 readingSharedParams = false;
             }
             else
@@ -749,9 +749,9 @@ void RoomEncoderAudioProcessor::timerCallback()
         {
             if (roomParam.validListenerData) {
                 readingSharedParams = true;
-                parameters.getParameterAsValue("listenerX").setValue(roomParam.listenerX);
-                parameters.getParameterAsValue("listenerY").setValue(roomParam.listenerY);
-                parameters.getParameterAsValue("listenerZ").setValue(roomParam.listenerZ);
+                parameters.getParameterAsValue ("listenerX").setValueNotifyingHost (roomParam.listenerX);
+                parameters.getParameterAsValue ("listenerY").setValueNotifyingHost (roomParam.listenerY);
+                parameters.getParameterAsValue ("listenerZ").setValueNotifyingHost (roomParam.listenerZ);
                 readingSharedParams = false;
             }
             else
@@ -766,12 +766,12 @@ void RoomEncoderAudioProcessor::timerCallback()
         {
             if (roomParam.validReflectionData) {
                 readingSharedParams = true;
-                parameters.getParameterAsValue("reflCoeff").setValue(roomParam.reflCoeff);
-                parameters.getParameterAsValue("numRefl").setValue(roomParam.numRefl);
-                parameters.getParameterAsValue("lowShelfFreq").setValue(roomParam.lowShelfFreq);
-                parameters.getParameterAsValue("lowShelfGain").setValue(roomParam.lowShelfGain);
-                parameters.getParameterAsValue("highShelfFreq").setValue(roomParam.highShelfFreq);
-                parameters.getParameterAsValue("highShelfGain").setValue(roomParam.highShelfGain);
+                parameters.getParameterAsValue ("reflCoeff").setValueNotifyingHost (roomParam.reflCoeff);
+                parameters.getParameterAsValue ("numRefl").setValueNotifyingHost (roomParam.numRefl);
+                parameters.getParameterAsValue ("lowShelfFreq").setValueNotifyingHost (roomParam.lowShelfFreq);
+                parameters.getParameterAsValue ("lowShelfGain").setValueNotifyingHost (roomParam.lowShelfGain);
+                parameters.getParameterAsValue ("highShelfFreq").setValueNotifyingHost (roomParam.highShelfFreq);
+                parameters.getParameterAsValue ("highShelfGain").setValueNotifyingHost (roomParam.highShelfGain);
                 readingSharedParams = false;
             }
             else

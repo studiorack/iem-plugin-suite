@@ -390,8 +390,8 @@ void DirectivityShaperAudioProcessor::parameterChanged (const String &parameterI
             {
                 iem::Quaternion<float> temp = probeQuat*quats[i];
                 temp.toYPR(ypr);
-                parameters.getParameterAsValue("azimuth" + String(i)).setValue(radiansToDegrees(ypr[0]));
-                parameters.getParameterAsValue("elevation" + String(i)).setValue(radiansToDegrees(ypr[1]));
+                parameters.getParameterAsValue ("azimuth" + String (i)).setValueNotifyingHost (radiansToDegrees(ypr[0]));
+                parameters.getParameterAsValue ("elevation" + String (i)).setValueNotifyingHost (radiansToDegrees(ypr[1]));
             }
             moving = false;
             repaintSphere = true;
