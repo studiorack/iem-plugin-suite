@@ -36,91 +36,8 @@ CoordinateConverterAudioProcessor::CoordinateConverterAudioProcessor()
                      #endif
                        ),
 #endif
-parameters(*this, nullptr), oscParams (parameters)
+oscParams (parameters), parameters (*this, nullptr, "CoordinateConverter", createParameterLayout())
 {
-
-    oscParams.createAndAddParameter ("azimuth", "Azimuth Angle", CharPointer_UTF8 (R"(°)"),
-                                     NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
-                                     [](float value) { return String(value, 2); }, nullptr);
-
-    oscParams.createAndAddParameter ("elevation", "Elevation Angle", CharPointer_UTF8 (R"(°)"),
-                                     NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
-                                     [](float value) { return String(value, 2); }, nullptr);
-
-    oscParams.createAndAddParameter ("radius", "Radius", "",
-                                     NormalisableRange<float>(0.0f, 1.0f, 0.001f), 1.0,
-                                     [](float value) { return String(value, 3); }, nullptr);
-
-    oscParams.createAndAddParameter ("xPos", "X Coordinate", "",
-                                     NormalisableRange<float>(-1.0f, 1.0f, 0.0001f), 1.0,
-                                     [](float value) { return String(value, 4); }, nullptr);
-
-    oscParams.createAndAddParameter ("yPos", "Y Coordinate", "",
-                                     NormalisableRange<float>(-1.0f, 1.0f, 0.0001f), 0.0,
-                                     [](float value) { return String(value, 4); }, nullptr);
-
-    oscParams.createAndAddParameter ("zPos", "Z Coordinate", "",
-                                     NormalisableRange<float>(-1.0f, 1.0f, 0.0001f), 0.0,
-                                     [](float value) { return String(value, 4); }, nullptr);
-
-    oscParams.createAndAddParameter ("xReference", "X Reference", "m",
-                                      NormalisableRange<float>(-50.0f, 50.0f, 0.001f), 0.0,
-                                      [](float value) { return String(value, 3); }, nullptr);
-
-    oscParams.createAndAddParameter ("yReference", "Y Reference", "m",
-                                      NormalisableRange<float>(-50.0f, 50.0f, 0.001f), 0.0,
-                                      [](float value) { return String(value, 3); }, nullptr);
-
-    oscParams.createAndAddParameter ("zReference", "Z Reference", "m",
-                                      NormalisableRange<float>(-50.0f, 50.0f, 0.001f), 0.0,
-                                      [](float value) { return String(value, 3); }, nullptr);
-
-    oscParams.createAndAddParameter ("radiusRange", "Radius Range", "m",
-                                     NormalisableRange<float>(0.1f, 50.0f, 0.01f), 1.0,
-                                     [](float value) { return String(value, 2); }, nullptr);
-
-    oscParams.createAndAddParameter ("xRange", "X Range", "m",
-                                     NormalisableRange<float>(0.1f, 50.0f, 0.01f), 1.0,
-                                     [](float value) { return String(value, 2); }, nullptr);
-
-    oscParams.createAndAddParameter ("yRange", "Y Range", "m",
-                                     NormalisableRange<float>(0.1f, 50.0f, 0.01f), 1.0,
-                                     [](float value) { return String(value, 2); }, nullptr);
-
-    oscParams.createAndAddParameter ("zRange", "Z Range", "m",
-                                     NormalisableRange<float>(0.1f, 50.0f, 0.01f), 1.0,
-                                     [](float value) { return String(value, 2); }, nullptr);
-
-    oscParams.createAndAddParameter ("azimuthFlip", "Invert Azimuth", "",
-                                      NormalisableRange<float>(0.0f, 1.0f, 1.0f), 0.0,
-                                      [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr);
-
-    oscParams.createAndAddParameter ("elevationFlip", "Invert Elevation", "",
-                                      NormalisableRange<float>(0.0f, 1.0f, 1.0f), 0.0,
-                                      [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr);
-
-    oscParams.createAndAddParameter ("radiusFlip", "Invert Radius Axis", "",
-                                      NormalisableRange<float>(0.0f, 1.0f, 1.0f), 0.0,
-                                      [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr);
-
-    oscParams.createAndAddParameter ("xFlip", "Invert X Axis", "",
-                                      NormalisableRange<float>(0.0f, 1.0f, 1.0f), 0.0,
-                                      [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr);
-
-    oscParams.createAndAddParameter ("yFlip", "Invert Y Axis", "",
-                                      NormalisableRange<float>(0.0f, 1.0f, 1.0f), 0.0,
-                                      [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr);
-
-    oscParams.createAndAddParameter ("zFlip", "Invert Z Axis", "",
-                                      NormalisableRange<float>(0.0f, 1.0f, 1.0f), 0.0,
-                                      [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr);
-
-
-    // this must be initialised after all calls to createAndAddParameter().
-    parameters.state = ValueTree (Identifier ("CoordinateConverter"));
-    // tip: you can also add other values to parameters.state, which are also saved and restored when the session is closed/reopened
-
-
     // get pointers to the parameters
     azimuth = parameters.getRawParameterValue ("azimuth");
     elevation = parameters.getRawParameterValue ("elevation");
@@ -428,6 +345,94 @@ void CoordinateConverterAudioProcessor::oscBundleReceived (const OSCBundle &bund
             oscBundleReceived (elem.getBundle());
     }
 }
+
+//==============================================================================
+AudioProcessorValueTreeState::ParameterLayout CoordinateConverterAudioProcessor::createParameterLayout()
+{
+    // add your audio parameters here
+    std::vector<std::unique_ptr<RangedAudioParameter>> params;
+
+    params.push_back (oscParams.createAndAddParameter ("azimuth", "Azimuth Angle", CharPointer_UTF8 (R"(°)"),
+                                                       NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
+                                                       [](float value) { return String(value, 2); }, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("elevation", "Elevation Angle", CharPointer_UTF8 (R"(°)"),
+                                                       NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
+                                                       [](float value) { return String(value, 2); }, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("radius", "Radius", "",
+                                                       NormalisableRange<float>(0.0f, 1.0f, 0.001f), 1.0,
+                                                       [](float value) { return String(value, 3); }, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("xPos", "X Coordinate", "",
+                                                       NormalisableRange<float>(-1.0f, 1.0f, 0.0001f), 1.0,
+                                                       [](float value) { return String(value, 4); }, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("yPos", "Y Coordinate", "",
+                                                       NormalisableRange<float>(-1.0f, 1.0f, 0.0001f), 0.0,
+                                                       [](float value) { return String(value, 4); }, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("zPos", "Z Coordinate", "",
+                                                       NormalisableRange<float>(-1.0f, 1.0f, 0.0001f), 0.0,
+                                                       [](float value) { return String(value, 4); }, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("xReference", "X Reference", "m",
+                                                       NormalisableRange<float>(-50.0f, 50.0f, 0.001f), 0.0,
+                                                       [](float value) { return String(value, 3); }, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("yReference", "Y Reference", "m",
+                                                       NormalisableRange<float>(-50.0f, 50.0f, 0.001f), 0.0,
+                                                       [](float value) { return String(value, 3); }, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("zReference", "Z Reference", "m",
+                                                       NormalisableRange<float>(-50.0f, 50.0f, 0.001f), 0.0,
+                                                       [](float value) { return String(value, 3); }, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("radiusRange", "Radius Range", "m",
+                                                       NormalisableRange<float>(0.1f, 50.0f, 0.01f), 1.0,
+                                                       [](float value) { return String(value, 2); }, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("xRange", "X Range", "m",
+                                                       NormalisableRange<float>(0.1f, 50.0f, 0.01f), 1.0,
+                                                       [](float value) { return String(value, 2); }, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("yRange", "Y Range", "m",
+                                                       NormalisableRange<float>(0.1f, 50.0f, 0.01f), 1.0,
+                                                       [](float value) { return String(value, 2); }, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("zRange", "Z Range", "m",
+                                                       NormalisableRange<float>(0.1f, 50.0f, 0.01f), 1.0,
+                                                       [](float value) { return String(value, 2); }, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("azimuthFlip", "Invert Azimuth", "",
+                                                       NormalisableRange<float>(0.0f, 1.0f, 1.0f), 0.0,
+                                                       [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("elevationFlip", "Invert Elevation", "",
+                                                       NormalisableRange<float>(0.0f, 1.0f, 1.0f), 0.0,
+                                                       [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("radiusFlip", "Invert Radius Axis", "",
+                                                       NormalisableRange<float>(0.0f, 1.0f, 1.0f), 0.0,
+                                                       [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("xFlip", "Invert X Axis", "",
+                                                       NormalisableRange<float>(0.0f, 1.0f, 1.0f), 0.0,
+                                                       [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("yFlip", "Invert Y Axis", "",
+                                                       NormalisableRange<float>(0.0f, 1.0f, 1.0f), 0.0,
+                                                       [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("zFlip", "Invert Z Axis", "",
+                                                       NormalisableRange<float>(0.0f, 1.0f, 1.0f), 0.0,
+                                                       [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr));
+
+
+    return { params.begin(), params.end() };
+}
+
+
 
 //==============================================================================
 // This creates new instances of the plugin..

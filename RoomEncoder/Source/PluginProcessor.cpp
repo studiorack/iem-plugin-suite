@@ -34,139 +34,8 @@ RoomEncoderAudioProcessor::RoomEncoderAudioProcessor()
 #endif
                   ),
 #endif
-parameters (*this, nullptr), oscParams (parameters)
+oscParams (parameters), parameters (*this, nullptr, "RoomEncoder", createParameterLayout())
 {
-    oscParams.createAndAddParameter ("directivityOrderSetting", "Input Directivity Order", "",
-                                      NormalisableRange<float> (0.0f, 8.0f, 1.0f), 1.0f,
-                                      [](float value) {
-                                          if (value >= 0.5f && value < 1.5f) return "0th";
-                                          else if (value >= 1.5f && value < 2.5f) return "1st";
-                                          else if (value >= 2.5f && value < 3.5f) return "2nd";
-                                          else if (value >= 3.5f && value < 4.5f) return "3rd";
-                                          else if (value >= 4.5f && value < 5.5f) return "4th";
-                                          else if (value >= 5.5f && value < 6.5f) return "5th";
-                                          else if (value >= 6.5f && value < 7.5f) return "6th";
-                                          else if (value >= 7.5f) return "7th";
-                                          else return "Auto"; },
-                                      nullptr);
-    oscParams.createAndAddParameter ("inputIsSN3D", "Input Directivity Normalization", "",
-                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
-                                      [](float value) { if (value >= 0.5f ) return "SN3D";
-                                          else return "N3D"; },
-                                      nullptr);
-
-    oscParams.createAndAddParameter ("orderSetting", "Output Ambisonics Order", "",
-                                      NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
-                                      [](float value) {
-                                          if (value >= 0.5f && value < 1.5f) return "0th";
-                                          else if (value >= 1.5f && value < 2.5f) return "1st";
-                                          else if (value >= 2.5f && value < 3.5f) return "2nd";
-                                          else if (value >= 3.5f && value < 4.5f) return "3rd";
-                                          else if (value >= 4.5f && value < 5.5f) return "4th";
-                                          else if (value >= 5.5f && value < 6.5f) return "5th";
-                                          else if (value >= 6.5f && value < 7.5f) return "6th";
-                                          else if (value >= 7.5f) return "7th";
-                                          else return "Auto"; },
-                                      nullptr);
-    oscParams.createAndAddParameter ("useSN3D", "Normalization", "",
-                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
-                                      [](float value) { if (value >= 0.5f ) return "SN3D";
-                                          else return "N3D"; },
-                                      nullptr);
-
-    oscParams.createAndAddParameter ("roomX", "room size x", "m",
-                                     NormalisableRange<float> (1.0f, 30.0f, 0.01f), 10.0f,
-                                     [](float value) { return String(value, 2); }, nullptr);
-    oscParams.createAndAddParameter ("roomY", "room size y", "m",
-                                     NormalisableRange<float> (1.0f, 30.0f, 0.01f), 11.0f,
-                                     [](float value) { return String(value, 2); }, nullptr);
-    oscParams.createAndAddParameter ("roomZ", "room size z", "m",
-                                     NormalisableRange<float> (1.0f, 20.0f, 0.01f), 7.0f,
-                                     [](float value) { return String(value, 2); }, nullptr);
-
-    oscParams.createAndAddParameter ("sourceX", "source position x", "m",
-                                     NormalisableRange<float> (-15.0f, 15.0f, 0.001f), 1.0f,
-                                     [](float value) { return String(value, 3); }, nullptr);
-    oscParams.createAndAddParameter ("sourceY", "source position y", "m",
-                                     NormalisableRange<float> (-15.0f, 15.0f, 0.001f), 1.0f,
-                                     [](float value) { return String(value, 3); }, nullptr);
-    oscParams.createAndAddParameter ("sourceZ", "source position z", "m",
-                                     NormalisableRange<float> (-10.0f, 10.0f, 0.001f), -1.0f,
-                                     [](float value) { return String(value, 3); }, nullptr);
-
-    oscParams.createAndAddParameter ("listenerX", "listener position x", "m",
-                                     NormalisableRange<float> (-15.0f, 15.0f, 0.001f), -1.0f,
-                                     [](float value) { return String(value, 3); }, nullptr);
-    oscParams.createAndAddParameter ("listenerY", "listener position y", "m",
-                                     NormalisableRange<float> (-15.0f, 15.0f, 0.001f), -1.0f,
-                                     [](float value) { return String(value, 3); }, nullptr);
-    oscParams.createAndAddParameter ("listenerZ", "listener position z", "m",
-                                     NormalisableRange<float> (-10.0f, 10.0f, 0.001f), -1.0f,
-                                     [](float value) { return String(value, 3); }, nullptr);
-
-    oscParams.createAndAddParameter ("numRefl", "number of reflections", "",
-                                     NormalisableRange<float> (0.0f, nImgSrc-1, 1.0f), 33.0f,
-                                     [](float value) { return String((int) value); }, nullptr);
-
-    oscParams.createAndAddParameter ("lowShelfFreq", "LowShelf Frequency", "Hz",
-                                     NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.2f), 100.0,
-                                     [](float value) { return String((int) value); }, nullptr);
-    oscParams.createAndAddParameter ("lowShelfGain", "LowShelf Gain", "dB",
-                                     NormalisableRange<float> (-15.0f, 5.0f, 0.1f), -5.0f,
-                                     [](float value) { return String(value, 1); }, nullptr);
-
-    oscParams.createAndAddParameter ("highShelfFreq", "HighShelf Frequency", "Hz",
-                                     NormalisableRange<float> (20., 20000.0f, 1.0f, 0.2f), 8000.0,
-                                     [](float value) { return String((int) value); }, nullptr);
-    oscParams.createAndAddParameter ("highShelfGain", "HighShelf Gain", "dB",
-                                     NormalisableRange<float> (-15.0f, 5.0f, 0.1f), -5.0f,
-                                     [](float value) { return String(value, 1); }, nullptr);
-
-    oscParams.createAndAddParameter ("reflCoeff", "Reflection Coefficient", "dB",
-                                     NormalisableRange<float> (-15.0f, 0.0f, 0.01f), -1.0f,
-                                     [](float value) { return String(value, 2); }, nullptr);
-
-    oscParams.createAndAddParameter ("syncChannel", "Synchronize to Channel", "",
-                                      NormalisableRange<float> (0.0f, 4.0f, 1.0f), 0.0f,
-                                      [](float value) {
-                                          if (value >= 0.5f && value < 1.5f) return "Channel 1";
-                                          else if (value >= 1.5f && value < 2.5f) return "Channel 2";
-                                          else if (value >= 2.5f && value < 3.5f) return "Channel 3";
-                                          else if (value >= 3.5f) return "Channel 4";
-                                          else return "None"; },
-                                      nullptr);
-
-    oscParams.createAndAddParameter ("syncRoomSize", "Synchronize Room Dimensions", "",
-                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
-                                      [](float value) {
-                                          if (value >= 0.5f) return "YES";
-                                          else return "NO"; },
-                                      nullptr);
-
-    oscParams.createAndAddParameter ("syncReflection", "Synchronize Reflection Properties", "",
-                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
-                                      [](float value) {
-                                          if (value >= 0.5f) return "YES";
-                                          else return "NO"; },
-                                      nullptr);
-
-    oscParams.createAndAddParameter ("syncListener", "Synchronize Listener Position", "",
-                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
-                                      [](float value) {
-                                          if (value >= 0.5f) return "YES";
-                                          else return "NO"; },
-                                      nullptr);
-
-    oscParams.createAndAddParameter ("renderDirectPath", "Render Direct Path", "",
-                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
-                                      [](float value) {
-                                          if (value >= 0.5f) return "YES";
-                                          else return "NO"; },
-                                      nullptr);
-
-
-    parameters.state = ValueTree (Identifier ("RoomEncoder"));
-
     directivityOrderSetting = parameters.getRawParameterValue ("directivityOrderSetting");
     inputIsSN3D = parameters.getRawParameterValue ("inputIsSN3D");
     orderSetting = parameters.getRawParameterValue ("orderSetting");
@@ -981,6 +850,152 @@ void RoomEncoderAudioProcessor::oscBundleReceived (const OSCBundle &bundle)
         else if (elem.isBundle())
             oscBundleReceived (elem.getBundle());
     }
+}
+
+//==============================================================================
+AudioProcessorValueTreeState::ParameterLayout RoomEncoderAudioProcessor::createParameterLayout()
+{
+    // add your audio parameters here
+    std::vector<std::unique_ptr<RangedAudioParameter>> params;
+
+
+
+
+    params.push_back (oscParams.createAndAddParameter ("directivityOrderSetting", "Input Directivity Order", "",
+                                     NormalisableRange<float> (0.0f, 8.0f, 1.0f), 1.0f,
+                                     [](float value) {
+                                         if (value >= 0.5f && value < 1.5f) return "0th";
+                                         else if (value >= 1.5f && value < 2.5f) return "1st";
+                                         else if (value >= 2.5f && value < 3.5f) return "2nd";
+                                         else if (value >= 3.5f && value < 4.5f) return "3rd";
+                                         else if (value >= 4.5f && value < 5.5f) return "4th";
+                                         else if (value >= 5.5f && value < 6.5f) return "5th";
+                                         else if (value >= 6.5f && value < 7.5f) return "6th";
+                                         else if (value >= 7.5f) return "7th";
+                                         else return "Auto"; },
+                                     nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("inputIsSN3D", "Input Directivity Normalization", "",
+                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
+                                     [](float value) { if (value >= 0.5f ) return "SN3D";
+                                         else return "N3D"; },
+                                     nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("orderSetting", "Output Ambisonics Order", "",
+                                     NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
+                                     [](float value) {
+                                         if (value >= 0.5f && value < 1.5f) return "0th";
+                                         else if (value >= 1.5f && value < 2.5f) return "1st";
+                                         else if (value >= 2.5f && value < 3.5f) return "2nd";
+                                         else if (value >= 3.5f && value < 4.5f) return "3rd";
+                                         else if (value >= 4.5f && value < 5.5f) return "4th";
+                                         else if (value >= 5.5f && value < 6.5f) return "5th";
+                                         else if (value >= 6.5f && value < 7.5f) return "6th";
+                                         else if (value >= 7.5f) return "7th";
+                                         else return "Auto"; },
+                                     nullptr));
+    params.push_back (oscParams.createAndAddParameter ("useSN3D", "Normalization", "",
+                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
+                                     [](float value) { if (value >= 0.5f ) return "SN3D";
+                                         else return "N3D"; },
+                                     nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("roomX", "room size x", "m",
+                                     NormalisableRange<float> (1.0f, 30.0f, 0.01f), 10.0f,
+                                     [](float value) { return String(value, 2); }, nullptr));
+    params.push_back (oscParams.createAndAddParameter ("roomY", "room size y", "m",
+                                     NormalisableRange<float> (1.0f, 30.0f, 0.01f), 11.0f,
+                                     [](float value) { return String(value, 2); }, nullptr));
+    params.push_back (oscParams.createAndAddParameter ("roomZ", "room size z", "m",
+                                     NormalisableRange<float> (1.0f, 20.0f, 0.01f), 7.0f,
+                                     [](float value) { return String(value, 2); }, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("sourceX", "source position x", "m",
+                                     NormalisableRange<float> (-15.0f, 15.0f, 0.001f), 1.0f,
+                                     [](float value) { return String(value, 3); }, nullptr));
+    params.push_back (oscParams.createAndAddParameter ("sourceY", "source position y", "m",
+                                     NormalisableRange<float> (-15.0f, 15.0f, 0.001f), 1.0f,
+                                     [](float value) { return String(value, 3); }, nullptr));
+    params.push_back (oscParams.createAndAddParameter ("sourceZ", "source position z", "m",
+                                     NormalisableRange<float> (-10.0f, 10.0f, 0.001f), -1.0f,
+                                     [](float value) { return String(value, 3); }, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("listenerX", "listener position x", "m",
+                                     NormalisableRange<float> (-15.0f, 15.0f, 0.001f), -1.0f,
+                                     [](float value) { return String(value, 3); }, nullptr));
+    params.push_back (oscParams.createAndAddParameter ("listenerY", "listener position y", "m",
+                                     NormalisableRange<float> (-15.0f, 15.0f, 0.001f), -1.0f,
+                                     [](float value) { return String(value, 3); }, nullptr));
+    params.push_back (oscParams.createAndAddParameter ("listenerZ", "listener position z", "m",
+                                     NormalisableRange<float> (-10.0f, 10.0f, 0.001f), -1.0f,
+                                     [](float value) { return String(value, 3); }, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("numRefl", "number of reflections", "",
+                                     NormalisableRange<float> (0.0f, nImgSrc-1, 1.0f), 33.0f,
+                                     [](float value) { return String((int) value); }, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("lowShelfFreq", "LowShelf Frequency", "Hz",
+                                     NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.2f), 100.0,
+                                     [](float value) { return String((int) value); }, nullptr));
+    params.push_back (oscParams.createAndAddParameter ("lowShelfGain", "LowShelf Gain", "dB",
+                                     NormalisableRange<float> (-15.0f, 5.0f, 0.1f), -5.0f,
+                                     [](float value) { return String(value, 1); }, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("highShelfFreq", "HighShelf Frequency", "Hz",
+                                     NormalisableRange<float> (20., 20000.0f, 1.0f, 0.2f), 8000.0,
+                                     [](float value) { return String((int) value); }, nullptr));
+    params.push_back (oscParams.createAndAddParameter ("highShelfGain", "HighShelf Gain", "dB",
+                                     NormalisableRange<float> (-15.0f, 5.0f, 0.1f), -5.0f,
+                                     [](float value) { return String(value, 1); }, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("reflCoeff", "Reflection Coefficient", "dB",
+                                     NormalisableRange<float> (-15.0f, 0.0f, 0.01f), -1.0f,
+                                     [](float value) { return String(value, 2); }, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("syncChannel", "Synchronize to Channel", "",
+                                     NormalisableRange<float> (0.0f, 4.0f, 1.0f), 0.0f,
+                                     [](float value) {
+                                         if (value >= 0.5f && value < 1.5f) return "Channel 1";
+                                         else if (value >= 1.5f && value < 2.5f) return "Channel 2";
+                                         else if (value >= 2.5f && value < 3.5f) return "Channel 3";
+                                         else if (value >= 3.5f) return "Channel 4";
+                                         else return "None"; },
+                                     nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("syncRoomSize", "Synchronize Room Dimensions", "",
+                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
+                                     [](float value) {
+                                         if (value >= 0.5f) return "YES";
+                                         else return "NO"; },
+                                     nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("syncReflection", "Synchronize Reflection Properties", "",
+                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
+                                     [](float value) {
+                                         if (value >= 0.5f) return "YES";
+                                         else return "NO"; },
+                                     nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("syncListener", "Synchronize Listener Position", "",
+                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
+                                     [](float value) {
+                                         if (value >= 0.5f) return "YES";
+                                         else return "NO"; },
+                                     nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("renderDirectPath", "Render Direct Path", "",
+                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
+                                     [](float value) {
+                                         if (value >= 0.5f) return "YES";
+                                         else return "NO"; },
+                                     nullptr));
+
+
+
+
+
+
+    return { params.begin(), params.end() };
 }
 
 //==============================================================================

@@ -126,8 +126,8 @@ public:
 
         AudioBlock<float>& buffer = context.getOutputBlock();
 
-        const int nChannels = buffer.getNumChannels();
-        const int numSamples = buffer.getNumSamples();
+        const int nChannels = static_cast<int> (buffer.getNumChannels());
+        const int numSamples = static_cast<int> (buffer.getNumSamples());
 
         //TODO andere belegung?
 
@@ -278,8 +278,8 @@ public:
         coefficients = *IIR::Coefficients<float>::makeHighShelf(spec.sampleRate, highShelfParameters.frequency, highShelfParameters.q, highShelfParameters.linearGain);
         coefficients.getMagnitudeForFrequencyArray(frequencies, &temp[0], numSamples, spec.sampleRate);
 
-        FloatVectorOperations::multiply(&temp[0], t60Data, numSamples);
-        FloatVectorOperations::multiply(&temp[0], overallGain, numSamples);
+        FloatVectorOperations::multiply (&temp[0], t60Data, static_cast<int> (numSamples));
+        FloatVectorOperations::multiply (&temp[0], overallGain, static_cast<int> (numSamples));
 
         for (int i = 0; i < numSamples; ++i)
         {

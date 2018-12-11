@@ -81,6 +81,7 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
 
     void parameterChanged (const String &parameterID, float newValue) override;
+    void updateBuffers() override;
 
     //======== PluginCanDo =========================================================
     pointer_sized_int handleVstManufacturerSpecific (int32 index, pointer_sized_int value,
@@ -95,16 +96,15 @@ public:
     OSCReceiverPlus& getOSCReceiver () { return oscReceiver; }
     //==============================================================================
 
+    //======= Parameters ===========================================================
+    AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
+    //==============================================================================
 
-    float getleftLPValue() {return *LPcutOffL;}
-    void updateBuffers() override;
 private:
     //==============================================================================
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DualDelayAudioProcessor)
-
-    AudioProcessorValueTreeState parameters;
     OSCParameterInterface oscParams;
     OSCReceiverPlus oscReceiver;
+    AudioProcessorValueTreeState parameters;
     
     // parameters
     float* dryGain;
@@ -166,4 +166,6 @@ private:
     OwnedArray<IIRFilter> lowPassFiltersRight;
     OwnedArray<IIRFilter> highPassFiltersLeft;
     OwnedArray<IIRFilter> highPassFiltersRight;
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DualDelayAudioProcessor)
 };

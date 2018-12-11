@@ -36,71 +36,8 @@ OmniCompressorAudioProcessor::OmniCompressorAudioProcessor()
 #endif
                   ),
 #endif
-parameters (*this, nullptr), oscParams (parameters)
+oscParams (parameters), parameters (*this, nullptr, "OmniCompressor", createParameterLayout())
 {
-    oscParams.createAndAddParameter ("orderSetting", "Ambisonics Order", "",
-                                     NormalisableRange<float>(0.0f, 8.0f, 1.0f), 0.0f,
-                                     [](float value) {
-                                         if (value >= 0.5f && value < 1.5f) return "0th";
-                                         else if (value >= 1.5f && value < 2.5f) return "1st";
-                                         else if (value >= 2.5f && value < 3.5f) return "2nd";
-                                         else if (value >= 3.5f && value < 4.5f) return "3rd";
-                                         else if (value >= 4.5f && value < 5.5f) return "4th";
-                                         else if (value >= 5.5f && value < 6.5f) return "5th";
-                                         else if (value >= 6.5f && value < 7.5f) return "6th";
-                                         else if (value >= 7.5f) return "7th";
-                                         else return "Auto";
-                                     }, nullptr);
-
-    oscParams.createAndAddParameter ("useSN3D", "Normalization", "",
-                                     NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
-                                     [](float value) {
-                                         if (value >= 0.5f) return "SN3D";
-                                         else return "N3D";
-                                     }, nullptr);
-
-    oscParams.createAndAddParameter ("threshold", "Threshold", "dB",
-                                     NormalisableRange<float> (-50.0f, 10.0f, 0.1f), -10.0,
-                                     [](float value) {return String(value, 1);}, nullptr);
-
-    oscParams.createAndAddParameter ("knee", "Knee", "dB",
-                                     NormalisableRange<float> (0.0f, 30.0f, 0.1f), 0.0f,
-                                     [](float value) {return String(value, 1);}, nullptr);
-
-    oscParams.createAndAddParameter ("attack", "Attack Time", "ms",
-                                     NormalisableRange<float> (0.0f, 100.0f, 0.1f), 30.0,
-                                     [](float value) {return String(value, 1);}, nullptr);
-
-    oscParams.createAndAddParameter ("release", "Release Time", "ms",
-                                     NormalisableRange<float> (0.0f, 500.0f, 0.1f), 150.0,
-                                     [](float value) {return String(value, 1);}, nullptr);
-
-    oscParams.createAndAddParameter ("ratio", "Ratio", " : 1",
-                                     NormalisableRange<float> (1.0f, 16.0f, .2f), 4.0,
-                                     [](float value) {
-                                         if (value > 15.9f)
-                                             return String("inf");
-                                         return String(value, 1);
-
-                                     }, nullptr);
-
-    oscParams.createAndAddParameter ("outGain", "MakeUp Gain", "dB",
-                                     NormalisableRange<float> (-10.0f, 20.0f, 0.1f), 0.0,
-                                     [](float value) {return String(value, 1);}, nullptr);
-
-    oscParams.createAndAddParameter ("lookAhead", "LookAhead", "",
-                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
-                                     [](float value) {return value >= 0.5f ? "ON (5ms)" : "OFF";}, nullptr);
-
-    oscParams.createAndAddParameter ("reportLatency", "Report Latency to DAW", "",
-                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
-                                      [](float value) {
-                                          if (value >= 0.5f) return "Yes";
-                                          else return "No";
-                                      }, nullptr);
-
-    parameters.state = ValueTree (Identifier ("OmniCompressor"));
-
     parameters.addParameterListener("orderSetting", this);
 
 
@@ -362,6 +299,78 @@ void OmniCompressorAudioProcessor::oscBundleReceived (const OSCBundle &bundle)
         else if (elem.isBundle())
             oscBundleReceived (elem.getBundle());
     }
+}
+
+//==============================================================================
+AudioProcessorValueTreeState::ParameterLayout OmniCompressorAudioProcessor::createParameterLayout()
+{
+    // add your audio parameters here
+    std::vector<std::unique_ptr<RangedAudioParameter>> params;
+
+    params.push_back (oscParams.createAndAddParameter ("orderSetting", "Ambisonics Order", "",
+                                     NormalisableRange<float>(0.0f, 8.0f, 1.0f), 0.0f,
+                                     [](float value) {
+                                         if (value >= 0.5f && value < 1.5f) return "0th";
+                                         else if (value >= 1.5f && value < 2.5f) return "1st";
+                                         else if (value >= 2.5f && value < 3.5f) return "2nd";
+                                         else if (value >= 3.5f && value < 4.5f) return "3rd";
+                                         else if (value >= 4.5f && value < 5.5f) return "4th";
+                                         else if (value >= 5.5f && value < 6.5f) return "5th";
+                                         else if (value >= 6.5f && value < 7.5f) return "6th";
+                                         else if (value >= 7.5f) return "7th";
+                                         else return "Auto";
+                                     }, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("useSN3D", "Normalization", "",
+                                     NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
+                                     [](float value) {
+                                         if (value >= 0.5f) return "SN3D";
+                                         else return "N3D";
+                                     }, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("threshold", "Threshold", "dB",
+                                     NormalisableRange<float> (-50.0f, 10.0f, 0.1f), -10.0,
+                                     [](float value) {return String(value, 1);}, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("knee", "Knee", "dB",
+                                     NormalisableRange<float> (0.0f, 30.0f, 0.1f), 0.0f,
+                                     [](float value) {return String(value, 1);}, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("attack", "Attack Time", "ms",
+                                     NormalisableRange<float> (0.0f, 100.0f, 0.1f), 30.0,
+                                     [](float value) {return String(value, 1);}, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("release", "Release Time", "ms",
+                                     NormalisableRange<float> (0.0f, 500.0f, 0.1f), 150.0,
+                                     [](float value) {return String(value, 1);}, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("ratio", "Ratio", " : 1",
+                                     NormalisableRange<float> (1.0f, 16.0f, .2f), 4.0,
+                                     [](float value) {
+                                         if (value > 15.9f)
+                                             return String("inf");
+                                         return String(value, 1);
+
+                                     }, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("outGain", "MakeUp Gain", "dB",
+                                     NormalisableRange<float> (-10.0f, 20.0f, 0.1f), 0.0,
+                                     [](float value) {return String(value, 1);}, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("lookAhead", "LookAhead", "",
+                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
+                                     [](float value) {return value >= 0.5f ? "ON (5ms)" : "OFF";}, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("reportLatency", "Report Latency to DAW", "",
+                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
+                                     [](float value) {
+                                         if (value >= 0.5f) return "Yes";
+                                         else return "No";
+                                     }, nullptr));
+
+
+
+    return { params.begin(), params.end() };
 }
 
 //==============================================================================

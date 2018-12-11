@@ -36,7 +36,7 @@ SimpleDecoderAudioProcessor::SimpleDecoderAudioProcessor()
 #endif
                   ),
 #endif
-parameters(*this, nullptr), oscParams (parameters)
+oscParams (parameters), parameters(*this, nullptr, "Decoder", createParameterLayout())
 {
     // dummy values
     cascadedLowPassCoeffs = IIR::Coefficients<double>::makeLowPass(48000.0, 100.0f);
@@ -44,56 +44,6 @@ parameters(*this, nullptr), oscParams (parameters)
 
     lowPassCoeffs = IIR::Coefficients<float>::makeHighPass(48000.0, 100.0f);
     highPassCoeffs = IIR::Coefficients<float>::makeFirstOrderHighPass(48000.0, 100.0f);
-
-    oscParams.createAndAddParameter ("inputOrderSetting", "Ambisonic Order", "",
-                                      NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
-                                      [](float value) {
-                                          if (value >= 0.5f && value < 1.5f) return "0th";
-                                          else if (value >= 1.5f && value < 2.5f) return "1st";
-                                          else if (value >= 2.5f && value < 3.5f) return "2nd";
-                                          else if (value >= 3.5f && value < 4.5f) return "3rd";
-                                          else if (value >= 4.5f && value < 5.5f) return "4th";
-                                          else if (value >= 5.5f && value < 6.5f) return "5th";
-                                          else if (value >= 6.5f && value < 7.5f) return "6th";
-                                          else if (value >= 7.5f) return "7th";
-                                          else return "Auto";},
-                                      nullptr);
-
-    oscParams.createAndAddParameter("useSN3D", "Normalization", "",
-                                     NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
-                                     [](float value) {
-                                         if (value >= 0.5f) return "SN3D";
-                                         else return "N3D";
-                                     }, nullptr);
-
-    oscParams.createAndAddParameter ("lowPassFrequency", "LowPass Cutoff Frequency", "Hz",
-                                      NormalisableRange<float> (20.f, 300.f, 1.0f), 80.f,
-                                      [](float value) {return String ((int) value);},
-                                      nullptr);
-    oscParams.createAndAddParameter ("lowPassGain", "LowPass Gain", "dB",
-                                      NormalisableRange<float> (-20.0f, 10.0, 0.1f), 0.0f,
-                                      [](float value) {return String (value, 1);},
-                                      nullptr);
-
-    oscParams.createAndAddParameter ("highPassFrequency", "HighPass Cutoff Frequency", "Hz",
-                                      NormalisableRange<float> (20.f, 300.f, 1.f), 80.f,
-                                      [](float value) {return String ((int) value);},
-                                      nullptr);
-
-    oscParams.createAndAddParameter ("swMode", "Subwoofer Mode", "",
-                                     NormalisableRange<float> (0.0f, 2.0f, 1.0f), 0.0f,
-                                     [](float value) {
-                                         if (value < 0.5f) return "none";
-                                         else if (value >= 0.5f && value < 1.5f) return "Discrete SW";
-                                         else return "Virtual SW";}, nullptr);
-
-    oscParams.createAndAddParameter ("swChannel", "SW Channel Number", "",
-                                      NormalisableRange<float> (1.0f, 64.0f, 1.0f), 1.0f,
-                                      [](float value) { return String ((int) value);}, nullptr);
-
-    // this must be initialised after all calls to createAndAddParameter().
-    parameters.state = ValueTree (Identifier ("Decoder"));
-    // tip: you can also add other values to parameters.state, which are also saved and restored when the session is closed/reopened
 
 
     // get pointers to the parameters
@@ -547,6 +497,63 @@ void SimpleDecoderAudioProcessor::oscBundleReceived (const OSCBundle &bundle)
         else if (elem.isBundle())
             oscBundleReceived (elem.getBundle());
     }
+}
+
+//==============================================================================
+AudioProcessorValueTreeState::ParameterLayout SimpleDecoderAudioProcessor::createParameterLayout()
+{
+    // add your audio parameters here
+    std::vector<std::unique_ptr<RangedAudioParameter>> params;
+
+    params.push_back (oscParams.createAndAddParameter ("inputOrderSetting", "Ambisonic Order", "",
+                                     NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
+                                     [](float value) {
+                                         if (value >= 0.5f && value < 1.5f) return "0th";
+                                         else if (value >= 1.5f && value < 2.5f) return "1st";
+                                         else if (value >= 2.5f && value < 3.5f) return "2nd";
+                                         else if (value >= 3.5f && value < 4.5f) return "3rd";
+                                         else if (value >= 4.5f && value < 5.5f) return "4th";
+                                         else if (value >= 5.5f && value < 6.5f) return "5th";
+                                         else if (value >= 6.5f && value < 7.5f) return "6th";
+                                         else if (value >= 7.5f) return "7th";
+                                         else return "Auto";},
+                                     nullptr));
+
+    params.push_back (oscParams.createAndAddParameter("useSN3D", "Normalization", "",
+                                    NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
+                                    [](float value) {
+                                        if (value >= 0.5f) return "SN3D";
+                                        else return "N3D";
+                                    }, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("lowPassFrequency", "LowPass Cutoff Frequency", "Hz",
+                                     NormalisableRange<float> (20.f, 300.f, 1.0f), 80.f,
+                                     [](float value) {return String ((int) value);},
+                                     nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("lowPassGain", "LowPass Gain", "dB",
+                                     NormalisableRange<float> (-20.0f, 10.0, 0.1f), 0.0f,
+                                     [](float value) {return String (value, 1);},
+                                     nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("highPassFrequency", "HighPass Cutoff Frequency", "Hz",
+                                     NormalisableRange<float> (20.f, 300.f, 1.f), 80.f,
+                                     [](float value) {return String ((int) value);},
+                                     nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("swMode", "Subwoofer Mode", "",
+                                     NormalisableRange<float> (0.0f, 2.0f, 1.0f), 0.0f,
+                                     [](float value) {
+                                         if (value < 0.5f) return "none";
+                                         else if (value >= 0.5f && value < 1.5f) return "Discrete SW";
+                                         else return "Virtual SW";}, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("swChannel", "SW Channel Number", "",
+                                     NormalisableRange<float> (1.0f, 64.0f, 1.0f), 1.0f,
+                                     [](float value) { return String ((int) value);}, nullptr));
+
+
+    return { params.begin(), params.end() };
 }
 
 //==============================================================================

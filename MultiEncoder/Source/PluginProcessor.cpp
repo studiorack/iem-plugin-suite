@@ -41,73 +41,8 @@ MultiEncoderAudioProcessor::MultiEncoderAudioProcessor()
 #endif
                  ),
 #endif
-parameters (*this, nullptr), oscParams (parameters)
-
+oscParams (parameters), parameters (*this, nullptr, "MultiEncoder", createParameterLayout())
 {
-    oscParams.createAndAddParameter("inputSetting", "Number of input channels ", "",
-                                     NormalisableRange<float> (0.0f, maxNumberOfInputs, 1.0f), startNnumberOfInputs,
-                                     [](float value) {return String(value);}, nullptr);
-    oscParams.createAndAddParameter ("orderSetting", "Ambisonics Order", "",
-                                      NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
-                                      [](float value) {
-                                          if (value >= 0.5f && value < 1.5f) return "0th";
-                                          else if (value >= 1.5f && value < 2.5f) return "1st";
-                                          else if (value >= 2.5f && value < 3.5f) return "2nd";
-                                          else if (value >= 3.5f && value < 4.5f) return "3rd";
-                                          else if (value >= 4.5f && value < 5.5f) return "4th";
-                                          else if (value >= 5.5f && value < 6.5f) return "5th";
-                                          else if (value >= 6.5f && value < 7.5f) return "6th";
-                                          else if (value >= 7.5f) return "7th";
-                                          else return "Auto";},
-                                      nullptr);
-    oscParams.createAndAddParameter ("useSN3D", "Normalization", "",
-                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
-                                      [](float value)
-                                      {
-                                          if (value >= 0.5f ) return "SN3D";
-                                          else return "N3D";
-                                      }, nullptr);
-
-    oscParams.createAndAddParameter("masterAzimuth", "Master azimuth angle", CharPointer_UTF8 (R"(°)"),
-                                     NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0f,
-                                     [](float value) {return String(value, 2);}, nullptr);
-    oscParams.createAndAddParameter("masterElevation", "Master elevation angle", CharPointer_UTF8 (R"(°)"),
-                                     NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0f,
-                                     [](float value) {return String(value, 2);}, nullptr);
-    oscParams.createAndAddParameter("masterRoll", "Master roll angle", CharPointer_UTF8 (R"(°)"),
-                                     NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0f,
-                                     [](float value) {return String(value, 2);}, nullptr);
-
-    oscParams.createAndAddParameter("lockedToMaster", "Lock Directions relative to Master", "",
-                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
-                                     [](float value) {return (value >= 0.5f) ? "locked" : "not locked";}, nullptr);
-
-    for (int i = 0; i < maxNumberOfInputs; ++i)
-    {
-        oscParams.createAndAddParameter("azimuth" + String(i), "Azimuth angle " + String(i + 1), CharPointer_UTF8 (R"(°)"),
-                                         NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
-                                         [](float value) {return String(value, 2);}, nullptr);
-        oscParams.createAndAddParameter("elevation" + String(i), "Elevation angle " + String(i + 1), CharPointer_UTF8 (R"(°)"),
-                                         NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
-                                         [](float value) {return String(value, 2);}, nullptr);
-        oscParams.createAndAddParameter("gain" + String(i), "Gain " + String(i + 1), "dB",
-                                         NormalisableRange<float> (-60.0f, 10.0f, 0.1f), 0.0f,
-                                         [](float value) {return (value >= -59.9f) ? String(value, 1) : "-inf";},
-                                         nullptr);
-        oscParams.createAndAddParameter("mute" + String(i), "Mute input " + String(i + 1), "",
-                                         NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
-                                         [](float value) {return (value >= 0.5f) ? "muted" : "not muted";}, nullptr);
-
-        oscParams.createAndAddParameter("solo" + String(i), "Solo input " + String(i + 1), "",
-                                         NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
-                                         [](float value) {return (value >= 0.5f) ? "soloed" : "not soloed";}, nullptr);
-    }
-
-
-
-
-    parameters.state = ValueTree (Identifier ("MultiEncoder"));
-
     parameters.addParameterListener("masterAzimuth", this);
     parameters.addParameterListener("masterElevation", this);
     parameters.addParameterListener("masterRoll", this);
@@ -510,3 +445,77 @@ void MultiEncoderAudioProcessor::oscBundleReceived (const OSCBundle &bundle)
     }
 }
 
+//==============================================================================
+AudioProcessorValueTreeState::ParameterLayout MultiEncoderAudioProcessor::createParameterLayout()
+{
+    // add your audio parameters here
+    std::vector<std::unique_ptr<RangedAudioParameter>> params;
+
+    params.push_back (oscParams.createAndAddParameter("inputSetting", "Number of input channels ", "",
+                                    NormalisableRange<float> (0.0f, maxNumberOfInputs, 1.0f), startNnumberOfInputs,
+                                    [](float value) {return String(value);}, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("orderSetting", "Ambisonics Order", "",
+                                     NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
+                                     [](float value) {
+                                         if (value >= 0.5f && value < 1.5f) return "0th";
+                                         else if (value >= 1.5f && value < 2.5f) return "1st";
+                                         else if (value >= 2.5f && value < 3.5f) return "2nd";
+                                         else if (value >= 3.5f && value < 4.5f) return "3rd";
+                                         else if (value >= 4.5f && value < 5.5f) return "4th";
+                                         else if (value >= 5.5f && value < 6.5f) return "5th";
+                                         else if (value >= 6.5f && value < 7.5f) return "6th";
+                                         else if (value >= 7.5f) return "7th";
+                                         else return "Auto";},
+                                     nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("useSN3D", "Normalization", "",
+                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
+                                     [](float value)
+                                     {
+                                         if (value >= 0.5f ) return "SN3D";
+                                         else return "N3D";
+                                     }, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter("masterAzimuth", "Master azimuth angle", CharPointer_UTF8 (R"(°)"),
+                                    NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0f,
+                                    [](float value) {return String(value, 2);}, nullptr));
+    params.push_back (oscParams.createAndAddParameter("masterElevation", "Master elevation angle", CharPointer_UTF8 (R"(°)"),
+                                    NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0f,
+                                    [](float value) {return String(value, 2);}, nullptr));
+    
+    params.push_back (oscParams.createAndAddParameter("masterRoll", "Master roll angle", CharPointer_UTF8 (R"(°)"),
+                                    NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0f,
+                                    [](float value) {return String(value, 2);}, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter("lockedToMaster", "Lock Directions relative to Master", "",
+                                    NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
+                                    [](float value) {return (value >= 0.5f) ? "locked" : "not locked";}, nullptr));
+
+    for (int i = 0; i < maxNumberOfInputs; ++i)
+    {
+        params.push_back (oscParams.createAndAddParameter("azimuth" + String(i), "Azimuth angle " + String(i + 1), CharPointer_UTF8 (R"(°)"),
+                                        NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
+                                        [](float value) {return String(value, 2);}, nullptr));
+
+        params.push_back (oscParams.createAndAddParameter("elevation" + String(i), "Elevation angle " + String(i + 1), CharPointer_UTF8 (R"(°)"),
+                                        NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
+                                        [](float value) {return String(value, 2);}, nullptr));
+
+        params.push_back (oscParams.createAndAddParameter("gain" + String(i), "Gain " + String(i + 1), "dB",
+                                        NormalisableRange<float> (-60.0f, 10.0f, 0.1f), 0.0f,
+                                        [](float value) {return (value >= -59.9f) ? String(value, 1) : "-inf";},
+                                        nullptr));
+
+        params.push_back (oscParams.createAndAddParameter("mute" + String(i), "Mute input " + String(i + 1), "",
+                                        NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
+                                        [](float value) {return (value >= 0.5f) ? "muted" : "not muted";}, nullptr));
+
+        params.push_back (oscParams.createAndAddParameter("solo" + String(i), "Solo input " + String(i + 1), "",
+                                        NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
+                                        [](float value) {return (value >= 0.5f) ? "soloed" : "not soloed";}, nullptr));
+    }
+
+
+    return { params.begin(), params.end() };
+}

@@ -37,68 +37,8 @@ FdnReverbAudioProcessor::FdnReverbAudioProcessor()
                  ),
 #endif
 
-parameters (*this, nullptr), oscParams (parameters)
+oscParams (parameters), parameters (*this, nullptr, "FdnReverb", createParameterLayout())
 {
-    oscParams.createAndAddParameter ("delayLength", "Room Size", "",
-                                      NormalisableRange<float> (1.0f, 30.0f, 1.0f), 20.0f,
-                                      [](float value) {return String (value, 0);},
-                                      nullptr);
-    oscParams.createAndAddParameter ("revTime", "Reverberation Time", "s",
-                                      NormalisableRange<float> (0.1f, 9.0f, 0.1f), 5.f,
-                                      [](float value) {return String (value, 1);},
-                                      nullptr);
-
-    oscParams.createAndAddParameter ("lowCutoff", "Lows Cutoff Frequency", "Hz",
-                                      NormalisableRange<float> (20.f, 20000.f, 1.f, 0.2f), 100.f,
-                                      [](float value) {return String (value, 0);},
-                                      nullptr);
-    oscParams.createAndAddParameter ("lowQ", "Lows Q Factor", "",
-                                      NormalisableRange<float> (0.01f, 0.9f, 0.01f), 0.5f,
-                                      [](float value) {return String (value, 2);},
-                                      nullptr);
-    oscParams.createAndAddParameter ("lowGain",
-                                      "Lows Gain", "dB/s",
-                                      NormalisableRange<float> (-80.0f, 6.0, 0.1f), 1.f,
-                                      [](float value) {return String (value, 1);},
-                                      nullptr);
-
-    oscParams.createAndAddParameter ("highCutoff", "Highs Cutoff Frequency", "Hz",
-                                      NormalisableRange<float> (20.f, 20000.f, 1.f, 0.2f), 2000.f,
-                                      [](float value) {return String (value, 0);},
-                                      nullptr);
-    oscParams.createAndAddParameter ("highQ", "Highs Q Factor", "",
-                                      NormalisableRange<float> (0.01f, 0.9f, 0.01f), 0.5f,
-                                      [](float value) {return String (value, 2);},
-                                      nullptr);
-    oscParams.createAndAddParameter ("highGain",
-                                      "Highs Gain", "dB/s",
-                                      NormalisableRange<float> (-80.0f, 4.0f, 0.1f), -10.f,
-                                      [](float value) {return String (value, 1);},
-                                      nullptr);
-    oscParams.createAndAddParameter ("dryWet", "Dry/Wet", "",
-                                      NormalisableRange<float> (0.f, 1.f, 0.01f), 0.5f,
-                                      [](float value) {return String (value, 2);},
-                                      nullptr);
-
-	oscParams.createAndAddParameter ("fadeInTime", "Fdn Time", "s",
-                                      NormalisableRange<float> (0.0f, 9.0f, 0.01f), 0.f,
-                                      [](float value) {return String(value, 2);},
-                                      nullptr);
-
-    oscParams.createAndAddParameter ("fdnSize", "Fdn Size", "",
-                                     NormalisableRange<float> (0.0f, 2.0f, 1.0f), 2.0f,
-                                     [](float value) {
-                                         if (value == 0.0f)
-                                             return "16";
-                                         else if (value == 1.0f)
-                                             return "32";
-                                         else
-                                             return "64";
-                                     },
-                                     nullptr);
-
-    parameters.state = ValueTree (Identifier ("FdnReverb"));
-
     parameters.addParameterListener ("delayLength", this);
     parameters.addParameterListener ("revTime", this);
 	parameters.addParameterListener ("fadeInTime", this);
@@ -400,6 +340,81 @@ void FdnReverbAudioProcessor::oscBundleReceived (const OSCBundle &bundle)
         else if (elem.isBundle())
             oscBundleReceived (elem.getBundle());
     }
+}
+
+//==============================================================================
+AudioProcessorValueTreeState::ParameterLayout FdnReverbAudioProcessor::createParameterLayout()
+{
+    // add your audio parameters here
+    std::vector<std::unique_ptr<RangedAudioParameter>> params;
+
+
+    params.push_back (oscParams.createAndAddParameter ("delayLength", "Room Size", "",
+                                     NormalisableRange<float> (1.0f, 30.0f, 1.0f), 20.0f,
+                                     [](float value) {return String (value, 0);},
+                                     nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("revTime", "Reverberation Time", "s",
+                                     NormalisableRange<float> (0.1f, 9.0f, 0.1f), 5.f,
+                                     [](float value) {return String (value, 1);},
+                                     nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("lowCutoff", "Lows Cutoff Frequency", "Hz",
+                                     NormalisableRange<float> (20.f, 20000.f, 1.f, 0.2f), 100.f,
+                                     [](float value) {return String (value, 0);},
+                                     nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("lowQ", "Lows Q Factor", "",
+                                     NormalisableRange<float> (0.01f, 0.9f, 0.01f), 0.5f,
+                                     [](float value) {return String (value, 2);},
+                                     nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("lowGain",
+                                     "Lows Gain", "dB/s",
+                                     NormalisableRange<float> (-80.0f, 6.0, 0.1f), 1.f,
+                                     [](float value) {return String (value, 1);},
+                                     nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("highCutoff", "Highs Cutoff Frequency", "Hz",
+                                     NormalisableRange<float> (20.f, 20000.f, 1.f, 0.2f), 2000.f,
+                                     [](float value) {return String (value, 0);},
+                                     nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("highQ", "Highs Q Factor", "",
+                                     NormalisableRange<float> (0.01f, 0.9f, 0.01f), 0.5f,
+                                     [](float value) {return String (value, 2);},
+                                     nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("highGain",
+                                     "Highs Gain", "dB/s",
+                                     NormalisableRange<float> (-80.0f, 4.0f, 0.1f), -10.f,
+                                     [](float value) {return String (value, 1);},
+                                     nullptr));
+    
+    params.push_back (oscParams.createAndAddParameter ("dryWet", "Dry/Wet", "",
+                                     NormalisableRange<float> (0.f, 1.f, 0.01f), 0.5f,
+                                     [](float value) {return String (value, 2);},
+                                     nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("fadeInTime", "Fdn Time", "s",
+                                     NormalisableRange<float> (0.0f, 9.0f, 0.01f), 0.f,
+                                     [](float value) {return String(value, 2);},
+                                     nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("fdnSize", "Fdn Size", "",
+                                     NormalisableRange<float> (0.0f, 2.0f, 1.0f), 2.0f,
+                                     [](float value) {
+                                         if (value == 0.0f)
+                                             return "16";
+                                         else if (value == 1.0f)
+                                             return "32";
+                                         else
+                                             return "64";
+                                     },
+                                     nullptr));
+
+
+    return { params.begin(), params.end() };
 }
 
 //==============================================================================

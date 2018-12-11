@@ -38,13 +38,13 @@ public:
     /**
      Creates and AudioProcessorParameter and adds it to the AudioProcessorValueTreeState. Additionally, the parameterID will added to a StringArray.
      */
-    AudioProcessorParameterWithID* createAndAddParameter (const String& parameterID,
+    std::unique_ptr<RangedAudioParameter> createAndAddParameter (const String& parameterID,
                                                  const String& parameterName,
                                                  const String& labelText,
                                                  NormalisableRange<float> valueRange,
                                                  float defaultValue,
-                                                 std::function<String (float)> valueToTextFunction,
-                                                 std::function<float (const String&)> textToValueFunction,
+                                                 std::function<String (float)> valueToTextFunction = nullptr,
+                                                 std::function<float (const String&)> textToValueFunction = nullptr,
                                                  bool isMetaParameter = false,
                                                  bool isAutomatableParameter = true,
                                                  bool isDiscrete = false,
@@ -52,11 +52,12 @@ public:
                                                  = AudioProcessorParameter::genericParameter,
                                                  bool isBoolean = false)
     {
-        parameterIDs.add (parameterID);
 #ifdef DEBUG_PARAMETERS_FOR_DOCUMENTATION
         DBG ("| " << parameterID << " | " << valueRange.getRange().getStart() << " : " << valueRange.getRange().getEnd() <<  " | " << parameterName <<" | |");
 #endif
-        return parameters.createAndAddParameter (parameterID, parameterName, labelText, valueRange, defaultValue,
+
+        parameterIDs.add (parameterID);
+        return std::make_unique<AudioProcessorValueTreeState::Parameter> (parameterID, parameterName, labelText, valueRange, defaultValue,
                                           valueToTextFunction, textToValueFunction,
                                           isMetaParameter, isAutomatableParameter, isDiscrete,
                                                  category, isBoolean);
@@ -74,7 +75,7 @@ public:
             for (int i = 0; i < parameterIDs.size(); ++i)
             {
                 String address = parameterIDs.getReference(i);
-                if (pattern.matches(OSCAddress("/" + address)))
+                if (pattern.matches (OSCAddress ("/" + address)))
                 {
                     if (oscMessage.size() > 0)
                     {

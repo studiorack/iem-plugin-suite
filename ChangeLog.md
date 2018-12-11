@@ -8,6 +8,8 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
     - **Scene**Rotator
         - adds quaternion inversion
         - adds selectable sequence of rotations
+    - **Distance**Compensator
+        - fixes broken import of loudspeaker layouts
 
 ## v1.8.1
 - plug-in specific changes

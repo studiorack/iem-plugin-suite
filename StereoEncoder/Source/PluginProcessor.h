@@ -91,6 +91,10 @@ public:
     OSCReceiverPlus& getOSCReceiver () { return oscReceiver; }
     // =================
 
+    //======= Parameters ===========================================================
+    AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
+    //==============================================================================
+
     inline void updateQuaternions();
     inline void updateEuler();
 
@@ -118,11 +122,13 @@ public:
 
 private:
     //==============================================================================
+    OSCParameterInterface oscParams;
+    OSCReceiverPlus oscReceiver;
+    AudioProcessorValueTreeState parameters;
+
     bool processorUpdatingParams;
 
-    AudioProcessorValueTreeState parameters;
-    OSCParameterInterface oscParameterInterface;
-    OSCReceiverPlus oscReceiver;
+
 
     float SHL[64];
     float SHR[64];

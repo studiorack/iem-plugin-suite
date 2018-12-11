@@ -83,6 +83,9 @@ public:
     void getStateInformation (MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
+    //==============================================================================
+    void parameterChanged (const String &parameterID, float newValue) override;
+
     //======== PluginCanDo =========================================================
     pointer_sized_int handleVstManufacturerSpecific (int32 index, pointer_sized_int value,
                                                      void* ptr, float opt) override { return 0; };
@@ -97,9 +100,11 @@ public:
     OSCReceiverPlus& getOSCReceiver () { return oscReceiver; }
     //==============================================================================
 
+    //======= Parameters ===========================================================
+    AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
+    //==============================================================================
 
-    void parameterChanged (const String &parameterID, float newValue) override;
-    AudioProcessorValueTreeState parameters;
+
     float weights[numberOfBands][8];
 
     inline dsp::IIR::Coefficients<float>::Ptr createFilterCoefficients(int type, double sampleRate, double frequency, double Q);
@@ -118,6 +123,7 @@ public:
 private:
     OSCParameterInterface oscParams;
     OSCReceiverPlus oscReceiver;
+    AudioProcessorValueTreeState parameters;
 
     AudioSampleBuffer filteredBuffer;
 

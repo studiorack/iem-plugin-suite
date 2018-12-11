@@ -36,43 +36,14 @@ EnergyVisualizerAudioProcessor::EnergyVisualizerAudioProcessor()
                      #endif
                        ),
 #endif
-parameters(*this, nullptr), oscParams (parameters)
+oscParams (parameters), parameters (*this, nullptr, "EnergyVisualizer", createParameterLayout())
 {
-    oscParams.createAndAddParameter ("orderSetting", "Ambisonics Order", "",
-                                      NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
-                                      [](float value)
-                                      {
-                                          if (value >= 0.5f && value < 1.5f) return "0th";
-                                          else if (value >= 1.5f && value < 2.5f) return "1st";
-                                          else if (value >= 2.5f && value < 3.5f) return "2nd";
-                                          else if (value >= 3.5f && value < 4.5f) return "3rd";
-                                          else if (value >= 4.5f && value < 5.5f) return "4th";
-                                          else if (value >= 5.5f && value < 6.5f) return "5th";
-                                          else if (value >= 6.5f && value < 7.5f) return "6th";
-                                          else if (value >= 7.5f) return "7th";
-                                          else return "Auto";
-                                      }, nullptr);
-
-    oscParams.createAndAddParameter ("useSN3D", "Normalization", "",
-                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
-                                      [](float value)
-                                      {
-                                          if (value >= 0.5f ) return "SN3D";
-                                          else return "N3D";
-                                      }, nullptr);
-
-    oscParams.createAndAddParameter("peakLevel", "Peak level", "dB",
-                                     NormalisableRange<float> (-50.0f, 10.0f, 0.1f), 0.0,
-                                     [](float value) {return String(value, 1);}, nullptr);
-
-
     orderSetting = parameters.getRawParameterValue ("orderSetting");
     useSN3D = parameters.getRawParameterValue ("useSN3D");
     peakLevel = parameters.getRawParameterValue ("peakLevel");
 
     parameters.addParameterListener ("orderSetting", this);
 
-    parameters.state = ValueTree (Identifier ("EnergyVisualizer"));
 
     Eigen::Matrix<float,64,nSamplePoints> Y;
     // calc Y and YH
@@ -294,6 +265,42 @@ void EnergyVisualizerAudioProcessor::oscBundleReceived (const OSCBundle &bundle)
         else if (elem.isBundle())
             oscBundleReceived (elem.getBundle());
     }
+}
+
+//==============================================================================
+AudioProcessorValueTreeState::ParameterLayout EnergyVisualizerAudioProcessor::createParameterLayout()
+{
+    // add your audio parameters here
+    std::vector<std::unique_ptr<RangedAudioParameter>> params;
+
+    params.push_back (oscParams.createAndAddParameter ("orderSetting", "Ambisonics Order", "",
+                                     NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
+                                     [](float value)
+                                     {
+                                         if (value >= 0.5f && value < 1.5f) return "0th";
+                                         else if (value >= 1.5f && value < 2.5f) return "1st";
+                                         else if (value >= 2.5f && value < 3.5f) return "2nd";
+                                         else if (value >= 3.5f && value < 4.5f) return "3rd";
+                                         else if (value >= 4.5f && value < 5.5f) return "4th";
+                                         else if (value >= 5.5f && value < 6.5f) return "5th";
+                                         else if (value >= 6.5f && value < 7.5f) return "6th";
+                                         else if (value >= 7.5f) return "7th";
+                                         else return "Auto";
+                                     }, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("useSN3D", "Normalization", "",
+                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
+                                     [](float value)
+                                     {
+                                         if (value >= 0.5f ) return "SN3D";
+                                         else return "N3D";
+                                     }, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("peakLevel", "Peak level", "dB",
+                                    NormalisableRange<float> (-50.0f, 10.0f, 0.1f), 0.0,
+                                    [](float value) {return String(value, 1);}, nullptr));
+
+    return { params.begin(), params.end() };
 }
 
 //==============================================================================
