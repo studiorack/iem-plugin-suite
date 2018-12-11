@@ -89,11 +89,12 @@
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="BinauralDecoder"
                        enablePluginBinaryCopyStep="1" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"
-                       libraryPath="/usr/local/lib/" headerPath="/usr/local/include"/>
+                       libraryPath="/usr/local/lib/" headerPath="/usr/local/include"
+                       vst3BinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST3/IEM/"/>
         <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="BinauralDecoder"
                        enablePluginBinaryCopyStep="1" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"
                        libraryPath="/usr/local/lib/" headerPath="/usr/local/include"
-                       osxCompatibility="10.9 SDK"/>
+                       osxCompatibility="10.9 SDK" vst3BinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST3/IEM/"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_core" path="../../../../../Applications/JUCE/modules"/>
