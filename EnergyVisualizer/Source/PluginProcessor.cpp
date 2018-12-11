@@ -59,6 +59,8 @@ oscParams (parameters), parameters (*this, nullptr, "EnergyVisualizer", createPa
     rms.resize(nSamplePoints);
 
     oscReceiver.addListener (this);
+
+    startTimer (200);
 }
 
 EnergyVisualizerAudioProcessor::~EnergyVisualizerAudioProcessor()
@@ -154,6 +156,9 @@ void EnergyVisualizerAudioProcessor::processBlock (AudioSampleBuffer& buffer, Mi
     ScopedNoDenormals noDenormals;
 
     checkInputAndOutput(this, *orderSetting, 0);
+
+    if (! doProcessing.get())
+        return;
 
     //const int nCh = buffer.getNumChannels();
     const int L = buffer.getNumSamples();
@@ -302,6 +307,18 @@ AudioProcessorValueTreeState::ParameterLayout EnergyVisualizerAudioProcessor::cr
 
     return { params.begin(), params.end() };
 }
+
+
+//==============================================================================
+void EnergyVisualizerAudioProcessor::timerCallback()
+{
+    RelativeTime timeDifference = Time::getCurrentTime() - lastEditorTime.get();
+    if (timeDifference.inMilliseconds() > 800)
+        doProcessing = false;
+    else
+        doProcessing = true;
+}
+
 
 //==============================================================================
 // This creates new instances of the plugin..

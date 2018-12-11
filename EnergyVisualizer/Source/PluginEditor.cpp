@@ -133,4 +133,6 @@ void EnergyVisualizerAudioProcessorEditor::timerCallback()
     // ==========================================
 
     visualizer.setColormap(colormap.getColormap());
+
+    processor.lastEditorTime = Time::getCurrentTime();
 }

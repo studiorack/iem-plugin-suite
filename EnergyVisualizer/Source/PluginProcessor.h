@@ -42,7 +42,8 @@ class EnergyVisualizerAudioProcessor  : public AudioProcessor,
                                         public AudioProcessorValueTreeState::Listener,
                                         public IOHelper<IOTypes::Ambisonics<>, IOTypes::Nothing>,
                                         public VSTCallbackHandler,
-                                        private OSCReceiver::Listener<OSCReceiver::RealtimeCallback>
+                                        private OSCReceiver::Listener<OSCReceiver::RealtimeCallback>,
+                                        private Timer
 {
 public:
     //==============================================================================
@@ -103,6 +104,7 @@ public:
     //==============================================================================
 
     Array<float> rms;
+    Atomic<Time> lastEditorTime;
 
 private:
     OSCParameterInterface oscParams;
@@ -115,10 +117,13 @@ private:
     // parameter
     float *orderSetting, *useSN3D, *peakLevel;
 
-
+    Atomic<bool> doProcessing = true;
+    
     Eigen::Matrix<float,nSamplePoints,64,Eigen::ColMajor> YH;
     Eigen::Matrix<float,nSamplePoints,64,Eigen::ColMajor> workingMatrix;
     AudioSampleBuffer sampledSignals;
+
+    void timerCallback() override;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (EnergyVisualizerAudioProcessor)
