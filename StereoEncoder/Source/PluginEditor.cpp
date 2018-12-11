@@ -23,9 +23,6 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
 
 //==============================================================================
 StereoEncoderAudioProcessorEditor::StereoEncoderAudioProcessorEditor (StereoEncoderAudioProcessor& p, AudioProcessorValueTreeState& vts)
@@ -85,7 +82,7 @@ StereoEncoderAudioProcessorEditor::StereoEncoderAudioProcessorEditor (StereoEnco
     azimuthSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     azimuthSlider.setReverse(true);
     azimuthSlider.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
-    azimuthSlider.setRotaryParameters(M_PI, 3*M_PI, false);
+    azimuthSlider.setRotaryParameters(MathConstants<float>::pi, 3*MathConstants<float>::pi, false);
     azimuthSlider.setTooltip("Azimuth angle");
     azimuthSlider.setTextValueSuffix(CharPointer_UTF8 (R"(°)"));
 
@@ -94,7 +91,7 @@ StereoEncoderAudioProcessorEditor::StereoEncoderAudioProcessorEditor (StereoEnco
     elevationSlider.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     elevationSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     elevationSlider.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
-    elevationSlider.setRotaryParameters(0.5 * M_PI, 2.5 * M_PI, false);
+    elevationSlider.setRotaryParameters(0.5 * MathConstants<float>::pi, 2.5 * MathConstants<float>::pi, false);
     elevationSlider.setTooltip("Elevation angle");
     elevationSlider.setTextValueSuffix(CharPointer_UTF8 (R"(°)"));
 
@@ -104,7 +101,7 @@ StereoEncoderAudioProcessorEditor::StereoEncoderAudioProcessorEditor (StereoEnco
     rollSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     rollSlider.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
     rollSlider.setReverse(false);
-    rollSlider.setRotaryParameters(M_PI, 3*M_PI, false);
+    rollSlider.setRotaryParameters(MathConstants<float>::pi, 3*MathConstants<float>::pi, false);
     rollSlider.setTooltip("Roll angle");
     rollSlider.setTextValueSuffix(CharPointer_UTF8 (R"(°)"));
 
@@ -157,7 +154,7 @@ StereoEncoderAudioProcessorEditor::StereoEncoderAudioProcessorEditor (StereoEnco
     widthSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     widthSlider.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[3]);
     widthSlider.setReverse(false);
-    widthSlider.setRotaryParameters(M_PI, 3*M_PI, false);
+    widthSlider.setRotaryParameters(MathConstants<float>::pi, 3*MathConstants<float>::pi, false);
     widthSlider.setTooltip("Stereo Width");
     //widthSlider.setEnabled(*processor.inputMode >= 0.5f);
 

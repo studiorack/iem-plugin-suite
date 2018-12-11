@@ -23,10 +23,6 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
-
 //==============================================================================
 RoomEncoderAudioProcessorEditor::RoomEncoderAudioProcessorEditor (RoomEncoderAudioProcessor& p, AudioProcessorValueTreeState& vts)
 : AudioProcessorEditor (&p), footer (p.getOSCReceiver()), processor (p), valueTreeState(vts),
@@ -176,7 +172,7 @@ listenerElement(*valueTreeState.getParameter("listenerX"), valueTreeState.getPar
     slListenerX.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slListenerX.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slListenerX.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
-    slListenerX.setRotaryParameters(M_PI, 3*M_PI, false);
+    slListenerX.setRotaryParameters(MathConstants<float>::pi, 3*MathConstants<float>::pi, false);
     slListenerX.setTextValueSuffix(" m");
     slListenerX.setTooltip("listener position x");
     slListenerX.addListener(this);

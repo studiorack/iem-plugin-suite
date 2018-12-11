@@ -23,10 +23,6 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
-
 
 //==============================================================================
 MultiEncoderAudioProcessor::MultiEncoderAudioProcessor()
@@ -294,10 +290,10 @@ void MultiEncoderAudioProcessor::parameterChanged (const String &parameterID, fl
         const int nChIn = input.getSize();
         for (int i = 0; i < nChIn; ++i)
         {
-            iem::Quaternion<float> temp = masterQuat*quats[i];
+            iem::Quaternion<float> temp = masterQuat * quats[i];
             temp.toYPR(ypr);
-            parameters.getParameterAsValue("azimuth" + String(i)).setValue(radiansToDegrees(ypr[0]));
-            parameters.getParameterAsValue("elevation" + String(i)).setValue(radiansToDegrees(ypr[1]));
+            parameters.getParameterAsValue ("azimuth" + String (i)).setValueNotifyingHost (radiansToDegrees(ypr[0]));
+            parameters.getParameterAsValue ("elevation" + String (i)).setValueNotifyingHost (radiansToDegrees(ypr[1]));
         }
         moving = false;
         updateSphere = true;
@@ -381,8 +377,8 @@ void MultiEncoderAudioProcessor::updateBuffers() {
     // disable solo and mute for deleted input channels
     for (int i = nChIn; i < _nChIn; ++i)
     {
-        parameters.getParameter("mute" + String(i))->setValue(0.0f);
-        parameters.getParameter("solo" + String(i))->setValue(0.0f);
+        parameters.getParameter ("mute" + String(i))->setValueNotifyingHost (0.0f);
+        parameters.getParameter ("solo" + String(i))->setValueNotifyingHost (0.0f);
     }
 };
 

@@ -875,7 +875,7 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
                 minLvl = lvl;
             const float map = jlimit(-0.5f, 0.5f, 0.5f * 0.16666667f * Decibels::gainToDecibels(sumOfSquares)) + 0.5f;
 
-            const float reMap = jlimit(0.0f, 1.0f, width / (float) M_PI);
+            const float reMap = jlimit(0.0f, 1.0f, width / (float) MathConstants<float>::pi);
 
             Colour rEPixelColour = Colours::limegreen.withMultipliedAlpha(reMap);
             Colour pixelColour = Colours::red.withMultipliedAlpha(map);

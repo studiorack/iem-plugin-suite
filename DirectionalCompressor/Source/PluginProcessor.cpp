@@ -83,7 +83,7 @@ oscParams (parameters), parameters (*this, nullptr, "DirectionalCompressor", cre
         //FloatVectorOperations::multiply(Y.data()+point*64, Y.data()+point*64, sn3d2n3d, 64); //expecting sn3d normalization -> converting it to n3d
     }
 
-    Y *= sqrt(4 * M_PI / tDesignN) / decodeCorrection(7); // reverting 7th order correction
+    Y *= sqrt(4 * MathConstants<float>::pi / tDesignN) / decodeCorrection(7); // reverting 7th order correction
     YH = Y.transpose();
 
     oscReceiver.addListener (this);
@@ -401,7 +401,7 @@ void DirectionalCompressorAudioProcessor::calcParams()
 
     FloatVectorOperations::clip(dist, dist, widthHalf, 3*widthHalf, tDesignN);
     FloatVectorOperations::add(dist, - widthHalf, tDesignN);
-    FloatVectorOperations::multiply(dist, 0.25f * M_PI / widthHalf, tDesignN);
+    FloatVectorOperations::multiply(dist, 0.25f * MathConstants<float>::pi / widthHalf, tDesignN);
 
     sumMaskWeights = 0.0f;
     for (int point=0; point<tDesignN; ++point)

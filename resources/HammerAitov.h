@@ -33,10 +33,10 @@ public:
      */
     static void sphericalToXY (float azimuthInRadians, float elevationInRadians, float& x, float& y)
     {
-        while (azimuthInRadians > M_PI + FLT_EPSILON)
-            azimuthInRadians -= 2.0f * M_PI;
-        while (azimuthInRadians < -M_PI - FLT_EPSILON)
-            azimuthInRadians += 2.0f * M_PI;
+        while (azimuthInRadians > MathConstants<float>::pi + FLT_EPSILON)
+            azimuthInRadians -= 2.0f * MathConstants<float>::pi;
+        while (azimuthInRadians < -MathConstants<float>::pi - FLT_EPSILON)
+            azimuthInRadians += 2.0f * MathConstants<float>::pi;
 
         const float cosEle = cos(elevationInRadians);
         const float factor = 1.0f / sqrt(1.0f + cosEle * cos(0.5f * azimuthInRadians));

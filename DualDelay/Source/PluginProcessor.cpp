@@ -296,11 +296,11 @@ void DualDelayAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffe
     }
 
     // left delay rotation
-    calcParams(*rotationL/180.0f*M_PI);
+    calcParams(*rotationL/180.0f*MathConstants<float>::pi);
     rotateBuffer(&delayInLeft, nCh, spb);
 
     // right delay rotation
-    calcParams(*rotationR/180.0f*M_PI);
+    calcParams(*rotationR/180.0f*MathConstants<float>::pi);
     rotateBuffer(&delayInRight, nCh, spb);
 
 

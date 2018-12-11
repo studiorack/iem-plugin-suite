@@ -20,9 +20,6 @@
  ==============================================================================
  */
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
 
 #pragma once
 
@@ -773,8 +770,8 @@ public:
         Path p;
         Path stroke;
         stroke.addRoundedRectangle(Rectangle<float>(-1.0f, -5.0f, 2.0f, 10.0f), 0.1f, 0.1f);
-        p.addPath(stroke, AffineTransform().rotation(0.25f*M_PI));
-        p.addPath(stroke, AffineTransform().rotation(-0.25f*M_PI));
+        p.addPath(stroke, AffineTransform().rotation(0.25f*MathConstants<float>::pi));
+        p.addPath(stroke, AffineTransform().rotation(-0.25f*MathConstants<float>::pi));
         p.scaleToFit (0, 0, height * 2.0f, height, true);
         return p;
     }

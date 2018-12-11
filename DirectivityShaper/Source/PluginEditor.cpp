@@ -88,21 +88,21 @@ fv(20.0f, 20000.0f, -50.0f, 10.0f, 10.0f)
     slProbeAzimuth.setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
     slProbeAzimuth.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
     slProbeAzimuth.setReverse(true);
-    slProbeAzimuth.setRotaryParameters(M_PI, 3*M_PI, false);
+    slProbeAzimuth.setRotaryParameters(MathConstants<float>::pi, 3*MathConstants<float>::pi, false);
     slProbeAzimuthAttachment = new SliderAttachment(valueTreeState, "probeAzimuth", slProbeAzimuth);
 
     addAndMakeVisible(&slProbeElevation);
     slProbeElevation.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
     slProbeElevation.setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
     slProbeElevation.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
-    slProbeElevation.setRotaryParameters(0.5 * M_PI, 2.5 * M_PI, false);
+    slProbeElevation.setRotaryParameters(0.5 * MathConstants<float>::pi, 2.5 * MathConstants<float>::pi, false);
     slProbeElevationAttachment = new SliderAttachment(valueTreeState, "probeElevation", slProbeElevation);
 
     addAndMakeVisible(&slProbeRoll);
     slProbeRoll.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
     slProbeRoll.setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
     slProbeRoll.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
-    slProbeRoll.setRotaryParameters(M_PI, 3*M_PI, false);
+    slProbeRoll.setRotaryParameters(MathConstants<float>::pi, 3*MathConstants<float>::pi, false);
     slProbeRollAttachment = new SliderAttachment(valueTreeState, "probeRoll", slProbeRoll);
 
     addAndMakeVisible(&tbProbeLock);
@@ -155,7 +155,7 @@ fv(20.0f, 20000.0f, -50.0f, 10.0f, 10.0f)
         slAzimuth[i].setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
         slAzimuth[i].setColour(Slider::rotarySliderOutlineColourId, colours[i]);
         slAzimuth[i].setReverse(true);
-        slAzimuth[i].setRotaryParameters(M_PI, 3*M_PI, false);
+        slAzimuth[i].setRotaryParameters(MathConstants<float>::pi, 3*MathConstants<float>::pi, false);
         slAzimuth[i].setTextValueSuffix(CharPointer_UTF8 (R"(°)"));
         slAzimuthAttachment[i] = new SliderAttachment(valueTreeState, "azimuth" + String(i), slAzimuth[i]);
 
@@ -164,7 +164,7 @@ fv(20.0f, 20000.0f, -50.0f, 10.0f, 10.0f)
         slElevation[i].setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
         slElevation[i].setColour(Slider::rotarySliderOutlineColourId, colours[i]);
         slElevation[i].setReverse(true);
-        slElevation[i].setRotaryParameters(0.5 * M_PI, 2.5 * M_PI, false);
+        slElevation[i].setRotaryParameters(0.5 * MathConstants<float>::pi, 2.5 * MathConstants<float>::pi, false);
         slElevation[i].setTextValueSuffix(CharPointer_UTF8 (R"(°)"));
         slElevationAttachment[i] = new SliderAttachment(valueTreeState, "elevation" + String(i), slElevation[i]);
     }
