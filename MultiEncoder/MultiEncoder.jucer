@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<JUCERPROJECT id="cBXtXS" name="MultiEncoder" projectType="audioplug" version="0.5.1"
+<JUCERPROJECT id="cBXtXS" name="MultiEncoder" projectType="audioplug" version="0.5.2"
               bundleIdentifier="at.iem.MultiEncoder" includeBinaryInAppConfig="1"
-              buildVST="1" buildVST3="0" buildAU="0" buildAUv3="0" buildRTAS="0"
+              buildVST="1" buildVST3="1" buildAU="0" buildAUv3="0" buildRTAS="0"
               buildAAX="0" pluginName="MultiEncoder" pluginDesc="MultiEncoder"
               pluginManufacturer="IEM" pluginManufacturerCode="IEMA" pluginCode="MuEn"
               pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
               pluginAUExportPrefix="MultiEncoderAU" aaxIdentifier="at.iem.MultiEncoder"
-              pluginAAXCategory="2" jucerVersion="5.3.2" companyName="IEM"
+              pluginAAXCategory="2" jucerVersion="5.4.1" companyName="IEM"
               companyWebsite="iem.at" displaySplashScreen="0" reportAppUsage="0"
               splashScreenColour="Dark" buildStandalone="1" enableIAA="0" cppLanguageStandard="11"
               companyCopyright="IEM - Daniel Rudrich" headerPath="../../../resources/"
-              pluginFormats="buildVST,buildStandalone">
+              pluginFormats="buildStandalone,buildVST,buildVST3">
   <MAINGROUP id="u5XoJ7" name="MultiEncoder">
     <GROUP id="{F7FBCFCD-FDA3-F671-8F2C-4DF9DB5750A7}" name="lookAndFeel">
       <FILE id="HsfM83" name="IEM_LaF.h" compile="0" resource="0" file="../resources/lookAndFeel/IEM_LaF.h"/>

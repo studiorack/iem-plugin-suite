@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <JUCERPROJECT id="VK9lv8" name="RoomEncoder" displaySplashScreen="0" reportAppUsage="0"
-              splashScreenColour="Dark" projectType="audioplug" version="1.0.2"
+              splashScreenColour="Dark" projectType="audioplug" version="1.0.3"
               bundleIdentifier="at.iem.RoomEncoder" includeBinaryInAppConfig="1"
-              buildVST="1" buildVST3="0" buildAU="0" buildAUv3="0" buildRTAS="0"
+              buildVST="1" buildVST3="1" buildAU="0" buildAUv3="0" buildRTAS="0"
               buildAAX="0" buildStandalone="1" enableIAA="0" pluginName="RoomEncoder"
               pluginDesc="RoomEncoder" pluginManufacturer="IEM" pluginManufacturerCode="IEMA"
               pluginCode="RoEn" pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
               pluginAUExportPrefix="RoomEncoderAU" aaxIdentifier="at.iem.RoomEncoder"
-              pluginAAXCategory="2" jucerVersion="5.3.2" companyName="IEM"
+              pluginAAXCategory="2" jucerVersion="5.4.1" companyName="IEM"
               companyWebsite="iem.at" cppLanguageStandard="latest" companyCopyright="IEM - Daniel Rudrich"
-              headerPath="../../../resources/" pluginFormats="buildVST,buildStandalone">
+              headerPath="../../../resources/" pluginFormats="buildStandalone,buildVST,buildVST3">
   <MAINGROUP id="ONcHIf" name="RoomEncoder">
     <GROUP id="{417A8B9D-191D-95A1-7CD1-3876D83AFD09}" name="lookAndFeel">
       <FILE id="s7VnYv" name="IEM_LaF.h" compile="0" resource="0" file="../resources/lookAndFeel/IEM_LaF.h"/>
@@ -38,7 +38,7 @@
           file="../resources/efficientSHvanilla.cpp"/>
   </MAINGROUP>
   <EXPORTFORMATS>
-    <XCODE_MAC targetFolder="Builds/MacOSX" vst3Folder="">
+    <XCODE_MAC targetFolder="Builds/MacOSX">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="RoomEncoder"
                        enablePluginBinaryCopyStep="1" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"/>

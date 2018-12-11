@@ -229,7 +229,6 @@ void MultiEncoderAudioProcessorEditor::resized()
     // =================================================
     Rectangle<int> sideBarArea (area.removeFromRight(220));
     //const int sliderHeight = 15;
-    const int rotSliderHeight = 55;
     const int rotSliderSpacing = 10;
     //const int sliderSpacing = 3;
     const int rotSliderWidth = 40;

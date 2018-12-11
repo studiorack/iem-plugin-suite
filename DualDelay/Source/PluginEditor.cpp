@@ -26,7 +26,7 @@
 
 //==============================================================================
 DualDelayAudioProcessorEditor::DualDelayAudioProcessorEditor (DualDelayAudioProcessor& p, AudioProcessorValueTreeState& vts)
-    : AudioProcessorEditor (&p), processor (p), footer (p.getOSCReceiver()), valueTreeState(vts)
+    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts), footer (p.getOSCReceiver())
 {
     setLookAndFeel (&globalLaF);
 

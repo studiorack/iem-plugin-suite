@@ -36,12 +36,8 @@ MatrixMultiplierAudioProcessor::MatrixMultiplierAudioProcessor()
                      #endif
                        ),
 #endif
-parameters(*this, nullptr), oscParams (parameters)
+oscParams (parameters), parameters (*this, nullptr, "MatrixMultiplier", createParameterLayout())
 {
-    // this must be initialised after all calls to createAndAddParameter().
-    parameters.state = ValueTree (Identifier ("MatrixMultiplier"));
-    // tip: you can also add other values to parameters.state, which are also saved and restored when the session is closed/reopened
-
     PropertiesFile::Options options;
     options.applicationName     = "MatrixMultiplier";
     options.filenameSuffix      = "settings";
@@ -309,4 +305,13 @@ void MatrixMultiplierAudioProcessor::oscBundleReceived (const OSCBundle &bundle)
         else if (elem.isBundle())
             oscBundleReceived (elem.getBundle());
     }
+}
+
+//==============================================================================
+AudioProcessorValueTreeState::ParameterLayout MatrixMultiplierAudioProcessor::createParameterLayout()
+{
+    // add your audio parameters here
+    std::vector<std::unique_ptr<RangedAudioParameter>> params;
+
+    return { params.begin(), params.end() };
 }

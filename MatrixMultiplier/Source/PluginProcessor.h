@@ -103,6 +103,10 @@ public:
     OSCReceiverPlus& getOSCReceiver () { return oscReceiver; }
     //==============================================================================
 
+    //======= Parameters ===========================================================
+    AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
+    //==============================================================================
+
     void setMatrix(ReferenceCountedMatrix::Ptr newMatrixToUse)
     {
         matTrans.setMatrix(newMatrixToUse);
@@ -119,9 +123,9 @@ public:
 
 private:
     // ====== parameters
-    AudioProcessorValueTreeState parameters;
     OSCParameterInterface oscParams;
     OSCReceiverPlus oscReceiver;
+    AudioProcessorValueTreeState parameters;
     
     // list of used audio parameters
 //    float *inputChannelsSetting, *outputChannelsSetting;

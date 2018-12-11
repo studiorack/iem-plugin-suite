@@ -90,22 +90,24 @@ public:
     OSCReceiverPlus& getOSCReceiver () { return oscReceiver; }
     //==============================================================================
 
+    //======= Parameters ===========================================================
+    AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
+    //==============================================================================
+
 
 //==============================================================================
-    // parameters/functions for interfacing with GUI
-    AudioProcessorValueTreeState parameters;
+
     int maxPossibleChannels = 64;
 
     void setFreezeMode (bool freezeState);
     void updateFilterParameters ();
-        void getT60ForFrequencyArray(double* frequencies, double* t60Data, size_t numSamples);
+    void getT60ForFrequencyArray (double* frequencies, double* t60Data, size_t numSamples);
 
 private:
-//==============================================================================
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (FdnReverbAudioProcessor)
-    
+    //==============================================================================
     OSCParameterInterface oscParams;
     OSCReceiverPlus oscReceiver;
+    AudioProcessorValueTreeState parameters;
 
 	AudioBuffer<float> copyBuffer;
 
@@ -124,4 +126,6 @@ private:
 
 
     FeedbackDelayNetwork fdn, fdnFade;
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (FdnReverbAudioProcessor)
 };

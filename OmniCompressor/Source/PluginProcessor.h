@@ -95,19 +95,23 @@ public:
     OSCReceiverPlus& getOSCReceiver () { return oscReceiver; }
     //==============================================================================
 
+    //======= Parameters ===========================================================
+    AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
+    //==============================================================================
+
+
     float maxRMS;
     float maxGR;
     Compressor compressor;
 
 private:
     //==============================================================================
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OmniCompressorAudioProcessor)
+    OSCParameterInterface oscParams;
+    OSCReceiverPlus oscReceiver;
+    AudioProcessorValueTreeState parameters;
 
     Delay delay;
     LookAheadGainReduction grProcessing;
-    AudioProcessorValueTreeState parameters;
-    OSCParameterInterface oscParams;
-    OSCReceiverPlus oscReceiver;
 
     Array<float> RMS, allGR;
     AudioBuffer<float> gains;
@@ -122,4 +126,6 @@ private:
     float *knee;
     float *lookAhead;
     float *reportLatency;
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OmniCompressorAudioProcessor)
 };

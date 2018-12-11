@@ -106,6 +106,10 @@ public:
     OSCReceiverPlus& getOSCReceiver () { return oscReceiver; }
     //==============================================================================
 
+    //======= Parameters ===========================================================
+    AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
+    //==============================================================================
+
     File getLastDir() {return lastDir;}
     void setLastDir(File newLastDir);
     void loadConfiguration(const File& presetFile);
@@ -125,13 +129,13 @@ public:
     Atomic<bool> guiUpdateLowPassGain = true;
 
 private:
-    void updateLowPassCoefficients (double sampleRate, float frequency);
-    void updateHighPassCoefficients (double sampleRate, float frequency);
-    
     // ====== parameters
-    AudioProcessorValueTreeState parameters;
     OSCParameterInterface oscParams;
     OSCReceiverPlus oscReceiver;
+    AudioProcessorValueTreeState parameters;
+
+    void updateLowPassCoefficients (double sampleRate, float frequency);
+    void updateHighPassCoefficients (double sampleRate, float frequency);
 
     // list of used audio parameters
     float *inputOrderSetting, *useSN3D;

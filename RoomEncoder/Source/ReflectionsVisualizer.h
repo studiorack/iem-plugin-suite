@@ -46,10 +46,6 @@ public:
 
     void paint (Graphics& g) override
     {
-        Rectangle<int> bounds = getLocalBounds();
-
-
-
         g.setColour(Colours::steelblue.withMultipliedAlpha(0.01f));
         g.fillAll();
 

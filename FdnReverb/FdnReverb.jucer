@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <JUCERPROJECT id="Az27uX" name="FdnReverb" displaySplashScreen="0" reportAppUsage="0"
-              splashScreenColour="Dark" projectType="audioplug" version="1.1.0"
+              splashScreenColour="Dark" projectType="audioplug" version="1.1.1"
               bundleIdentifier="at.iem.FdnReverb" includeBinaryInAppConfig="1"
-              buildVST="1" buildVST3="0" buildAU="0" buildAUv3="0" buildRTAS="0"
+              buildVST="1" buildVST3="1" buildAU="0" buildAUv3="0" buildRTAS="0"
               buildAAX="0" buildStandalone="1" enableIAA="0" pluginName="FdnReverb"
               pluginDesc="FdnReverb" pluginManufacturer="IEM" pluginManufacturerCode="IEMA"
               pluginCode="FdRe" pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
               pluginAUExportPrefix="FdnReverbAU" aaxIdentifier="at.IEM.FdnReverb"
-              pluginAAXCategory="2" jucerVersion="5.3.2" companyName="IEM"
+              pluginAAXCategory="2" jucerVersion="5.4.1" companyName="IEM"
               companyWebsite="iem.at" cppLanguageStandard="14" companyCopyright="IEM - Sebastian Grill"
-              headerPath="../../../resources/" pluginFormats="buildVST,buildStandalone">
+              headerPath="../../../resources/" pluginFormats="buildStandalone,buildVST,buildVST3">
   <MAINGROUP id="IWaAhA" name="FdnReverb">
     <GROUP id="{FF79C8C1-CE70-FACC-7429-B6FE05F4C53A}" name="resources">
       <GROUP id="{5152CA90-0646-EDE3-BFDF-03793E4AC1D7}" name="WalshHadamard">
