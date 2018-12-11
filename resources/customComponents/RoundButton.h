@@ -42,8 +42,6 @@ public:
     {
         auto bounds = getLocalBounds();
 
-        const auto fontSize = jmin (15.0f, bounds.getHeight() * 0.75f);
-
         const float boxSize = bounds.getWidth() * 0.8f;
         Rectangle<float> buttonArea((bounds.getWidth() - boxSize) * 0.5f, (bounds.getHeight() - boxSize) * 0.5f, boxSize, boxSize);
 
