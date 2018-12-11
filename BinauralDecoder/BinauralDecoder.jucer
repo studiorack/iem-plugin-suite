@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <JUCERPROJECT id="mbpAgi" name="BinauralDecoder" displaySplashScreen="0" reportAppUsage="0"
-              splashScreenColour="Dark" projectType="audioplug" version="0.4.2"
+              splashScreenColour="Dark" projectType="audioplug" version="0.4.3"
               bundleIdentifier="at.iem.BinauralDecoder" includeBinaryInAppConfig="1"
-              cppLanguageStandard="14" buildVST="1" buildVST3="0" buildAU="0"
+              cppLanguageStandard="14" buildVST="1" buildVST3="1" buildAU="0"
               buildAUv3="0" buildRTAS="0" buildAAX="0" buildStandalone="1"
               enableIAA="0" pluginName="BinauralDecoder" pluginDesc="BinauralDecoder"
               pluginManufacturer="IEM" pluginManufacturerCode="IEMA" pluginCode="BiDe"
               pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
               pluginAUExportPrefix="BinauralDecoderAU" aaxIdentifier="at.iem.BinauralDecoder"
-              pluginAAXCategory="2" jucerVersion="5.3.2" companyCopyright="IEM - Daniel Rudrich"
+              pluginAAXCategory="2" jucerVersion="5.4.1" companyCopyright="IEM - Daniel Rudrich"
               companyName="IEM" companyWebsite="iem.at" headerPath="../../../resources/"
-              pluginFormats="buildVST,buildStandalone">
+              pluginFormats="buildStandalone,buildVST,buildVST3">
   <MAINGROUP id="LpzrV9" name="BinauralDecoder">
     <GROUP id="{C1C55B51-F542-B1C9-6FA4-94FB642C5EEF}" name="IRs">
       <FILE id="nHipry" name="irsOrd1.wav" compile="0" resource="1" file="Source/IRs/irsOrd1.wav"/>
