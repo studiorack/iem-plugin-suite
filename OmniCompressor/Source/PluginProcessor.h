@@ -100,8 +100,8 @@ public:
     //==============================================================================
 
 
-    float maxRMS;
-    float maxGR;
+    Atomic<float> maxRMS;
+    Atomic<float> maxGR;
     Compressor compressor;
 
 private:
