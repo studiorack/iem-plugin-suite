@@ -513,8 +513,8 @@ void DistanceCompensatorAudioProcessor::updateParameters()
 
     for (int i = 0; i < 64; ++i)
     {
-        parameters.getParameter("enableCompensation" + String(i))->setValue(0.0f);
-        parameters.getParameter("distance" + String(i))->setValue(0.0f);
+        parameters.getParameter ("enableCompensation" + String (i))->setValueNotifyingHost (0.0f);
+        parameters.getParameter ("distance" + String (i))->setValueNotifyingHost (0.0f);
     }
 
     const Vector3D<float> reference {*referenceX, *referenceY, *referenceZ};
@@ -524,8 +524,8 @@ void DistanceCompensatorAudioProcessor::updateParameters()
         auto lsp = loadedLoudspeakerPositions.getReference(i);
         const float radius = jmax(1.0f, (lsp.position - reference).length());
 
-        parameters.getParameter("enableCompensation" + String(lsp.channel - 1))->setValue(1.0f);
-        parameters.getParameter("distance" + String(lsp.channel - 1))->setValue(parameters.getParameterRange("distance" + String(lsp.channel - 1)).convertTo0to1(radius));
+        parameters.getParameter ("enableCompensation" + String (lsp.channel - 1))->setValueNotifyingHost (1.0f);
+        parameters.getParameter ("distance" + String (lsp.channel - 1))->setValueNotifyingHost (parameters.getParameterRange ("distance" + String (lsp.channel - 1)).convertTo0to1 (radius));
     }
 
 
