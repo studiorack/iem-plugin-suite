@@ -15,6 +15,7 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
         - fixes broken import of loudspeaker layouts
     - **Energy**Visualizer
         - levels will only be calculated when the GUI is open
+        - adds control to change visualized dynamic range 
 
 ## v1.8.1
 - plug-in specific changes

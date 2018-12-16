@@ -55,8 +55,21 @@ EnergyVisualizerAudioProcessorEditor::EnergyVisualizerAudioProcessorEditor (Ener
     slPeakLevel.setReverse(false);
     slPeakLevel.addListener(this);
 
+    addAndMakeVisible(&slDynamicRange);
+    slDynamicRangeAttachment = new SliderAttachment(valueTreeState, "dynamicRange", slDynamicRange);
+    slDynamicRange.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
+    slDynamicRange.setTextBoxStyle(Slider::TextBoxBelow, false, 100, 12);
+    slDynamicRange.setTextValueSuffix(" dB");
+    slDynamicRange.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
+    slDynamicRange.setReverse(false);
+    slDynamicRange.addListener (this);
+
+
     addAndMakeVisible(&lbPeakLevel);
     lbPeakLevel.setText("Peak level");
+
+    addAndMakeVisible (&lbDynamicRange);
+    lbDynamicRange.setText("Range");
 
     addAndMakeVisible(&visualizer);
     visualizer.setRmsDataPtr(&p.rms);
@@ -100,15 +113,20 @@ void EnergyVisualizerAudioProcessorEditor::resized()
 
     Rectangle<int> UIarea = area.removeFromRight(105);
     const Point<int> UIareaCentre = UIarea.getCentre();
-    UIarea.setHeight(220);
+    UIarea.setHeight(240);
     UIarea.setCentre(UIareaCentre);
 
 
     Rectangle<int> sliderCol = UIarea.removeFromRight(50);
-    sliderCol.reduce(0, 40);
 
-    lbPeakLevel.setBounds(sliderCol.removeFromBottom(12));
-    slPeakLevel.setBounds(sliderCol);
+    lbDynamicRange.setBounds (sliderCol.removeFromBottom (12));
+    slDynamicRange.setBounds (sliderCol.removeFromBottom (50));
+
+    sliderCol.removeFromBottom (20);
+
+    lbPeakLevel.setBounds (sliderCol.removeFromBottom (12));
+    slPeakLevel.setBounds (sliderCol);
+
 
     UIarea.removeFromRight(5);
     sliderCol = UIarea.removeFromRight(50);
@@ -121,7 +139,11 @@ void EnergyVisualizerAudioProcessorEditor::resized()
 }
 void EnergyVisualizerAudioProcessorEditor::sliderValueChanged (Slider *slider)
 {
-    colormap.setMaxLevel((float) slider->getValue());
+    if (slider == &slPeakLevel)
+        colormap.setMaxLevel((float) slider->getValue());
+    else if (slider == &slDynamicRange)
+        colormap.setRange ((float) slider->getValue());
+
 }
 
 void EnergyVisualizerAudioProcessorEditor::timerCallback()

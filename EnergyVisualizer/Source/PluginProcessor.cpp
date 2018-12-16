@@ -41,6 +41,7 @@ oscParams (parameters), parameters (*this, nullptr, "EnergyVisualizer", createPa
     orderSetting = parameters.getRawParameterValue ("orderSetting");
     useSN3D = parameters.getRawParameterValue ("useSN3D");
     peakLevel = parameters.getRawParameterValue ("peakLevel");
+    dynamicRange = parameters.getRawParameterValue ("dynamicRange");
 
     parameters.addParameterListener ("orderSetting", this);
 
@@ -190,7 +191,7 @@ void EnergyVisualizerAudioProcessor::processBlock (AudioSampleBuffer& buffer, Mi
     float oneMinusTimeConstant = 1.0f - timeConstant;
     for (int i = 0; i < nSamplePoints; ++i)
     {
-        pRms[i] = timeConstant * pRms[i] + oneMinusTimeConstant * ((Decibels::gainToDecibels(sampledSignals.getRMSLevel(i, 0, L)) - *peakLevel) / 35.0f + 1.0f);
+        pRms[i] = timeConstant * pRms[i] + oneMinusTimeConstant * ((Decibels::gainToDecibels(sampledSignals.getRMSLevel(i, 0, L)) - *peakLevel) / *dynamicRange + 1.0f);
     }
     FloatVectorOperations::clip(pRms, rms.getRawDataPointer(), 0.0f, 1.0f, nSamplePoints);
 }
@@ -304,6 +305,10 @@ AudioProcessorValueTreeState::ParameterLayout EnergyVisualizerAudioProcessor::cr
     params.push_back (oscParams.createAndAddParameter ("peakLevel", "Peak level", "dB",
                                     NormalisableRange<float> (-50.0f, 10.0f, 0.1f), 0.0,
                                     [](float value) {return String(value, 1);}, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("dynamicRange", "Dynamic Range", "dB",
+                                                       NormalisableRange<float> (10.0f, 60.0f, 1.f), 35.0,
+                                                       [](float value) {return String (value, 0);}, nullptr));
 
     return { params.begin(), params.end() };
 }

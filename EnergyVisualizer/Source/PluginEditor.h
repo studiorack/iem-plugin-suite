@@ -70,8 +70,10 @@ private:
     OSCFooter footer;
 
     ReverseSlider slPeakLevel;
+    ReverseSlider slDynamicRange;
     SimpleLabel lbPeakLevel;
-    ScopedPointer<SliderAttachment> slPeakLevelAttachment;
+    SimpleLabel lbDynamicRange;
+    ScopedPointer<SliderAttachment> slPeakLevelAttachment, slDynamicRangeAttachment;
 
     ScopedPointer<ComboBoxAttachment> cbNormalizationAtachement;
     ScopedPointer<ComboBoxAttachment> cbOrderAtachement;

@@ -88,13 +88,19 @@ public:
         g.drawText(String(maxLevel,1), 25, 12, width, 12, Justification::centred);
         for (int i = 1; i < 8; ++i)
         {
-            g.drawText(String(maxLevel - 5 * i,1), 25, 6 + yStep * i, width, 12, Justification::centred);
+            g.drawText (String (maxLevel - range / 7.0 * i, 1), 25, 6 + yStep * i, width, 12, Justification::centred);
         }
     }
 
     void setMaxLevel (const float newMaxLevel)
     {
         maxLevel = newMaxLevel;
+        repaint();
+    }
+
+    void setRange (const float newRange)
+    {
+        range = newRange;
         repaint();
     }
 
@@ -125,5 +131,6 @@ public:
 private:
     bool usePerceptualColormap = true;
     float maxLevel = 0.0f;
+    float range = 35.0f;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (VisualizerColormap)
 };

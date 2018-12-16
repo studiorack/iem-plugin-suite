@@ -115,7 +115,7 @@ private:
 
     float timeConstant;
     // parameter
-    float *orderSetting, *useSN3D, *peakLevel;
+    float *orderSetting, *useSN3D, *peakLevel, *dynamicRange;
 
     Atomic<bool> doProcessing = true;
     
