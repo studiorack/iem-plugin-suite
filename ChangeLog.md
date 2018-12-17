@@ -6,6 +6,7 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
 ## untagged changes
 - general changes
     - plug-in host will be notified when paramater values change automatically (e.g. conversions)
+    - osc port can be changed on the fly when opened, plug-ins will close and re-open port immediately
     
 - plug-in specific changes
     - **Scene**Rotator

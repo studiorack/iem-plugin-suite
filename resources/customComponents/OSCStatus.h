@@ -25,7 +25,7 @@
 #include "SimpleLabel.h"
 #include "../OSCReceiverPlus.h"
 
-class OSCDialogWindow  : public Component, private Timer
+class OSCDialogWindow  : public Component, private Timer, private Label::Listener
 {
 public:
     OSCDialogWindow (OSCReceiverPlus& oscReceiver) : receiver (oscReceiver)
@@ -41,6 +41,7 @@ public:
         lbPort.setText (port == -1 ? "none" : String (port), NotificationType::dontSendNotification);
         lbPort.setEditable (true);
         lbPort.setJustificationType (Justification::centred);
+        lbPort.addListener (this);
 
         addAndMakeVisible (tbOpenPort);
         tbOpenPort.setButtonText (isConnected ? "CLOSE" : "OPEN");
@@ -66,8 +67,20 @@ public:
         }
     }
 
-    void paint (Graphics& g) override
+    void labelTextChanged (Label *labelThatHasChanged) override
     {
+        DBG ("Label changed");
+        auto val = lbPort.getTextValue();
+        int v = val.getValue();
+
+        if (receiver.isConnected())
+        {
+            if (v == -1 || (v > 1000 && v < 15000))
+            {
+                receiver.disconnect();
+                checkPortAndConnect();
+            }
+        }
     }
 
     void checkPortAndConnect()
