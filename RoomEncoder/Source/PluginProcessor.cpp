@@ -732,9 +732,9 @@ void RoomEncoderAudioProcessor::timerCallback()
         {
             if (roomParam.validRoomData) {
                 readingSharedParams = true;
-                parameters.getParameterAsValue ("roomX").setValueNotifyingHost (roomParam.roomX);
-                parameters.getParameterAsValue ("roomY").setValueNotifyingHost (roomParam.roomY);
-                parameters.getParameterAsValue ("roomZ").setValueNotifyingHost (roomParam.roomZ);
+                parameters.getParameter ("roomX")->setValueNotifyingHost (parameters.getParameterRange ("roomX").convertTo0to1 (roomParam.roomX));
+                parameters.getParameter ("roomY")->setValueNotifyingHost (parameters.getParameterRange ("roomY").convertTo0to1 (roomParam.roomY));
+                parameters.getParameter ("roomZ")->setValueNotifyingHost (parameters.getParameterRange ("roomZ").convertTo0to1 (roomParam.roomZ));
                 readingSharedParams = false;
             }
             else
@@ -749,9 +749,9 @@ void RoomEncoderAudioProcessor::timerCallback()
         {
             if (roomParam.validListenerData) {
                 readingSharedParams = true;
-                parameters.getParameterAsValue ("listenerX").setValueNotifyingHost (roomParam.listenerX);
-                parameters.getParameterAsValue ("listenerY").setValueNotifyingHost (roomParam.listenerY);
-                parameters.getParameterAsValue ("listenerZ").setValueNotifyingHost (roomParam.listenerZ);
+                parameters.getParameter ("listenerX")->setValueNotifyingHost (parameters.getParameterRange ("listenerX").convertTo0to1 (roomParam.listenerX));
+                parameters.getParameter ("listenerY")->setValueNotifyingHost (parameters.getParameterRange ("listenerY").convertTo0to1 (roomParam.listenerY));
+                parameters.getParameter ("listenerZ")->setValueNotifyingHost (parameters.getParameterRange ("listenerZ").convertTo0to1 (roomParam.listenerZ));
                 readingSharedParams = false;
             }
             else
@@ -766,12 +766,12 @@ void RoomEncoderAudioProcessor::timerCallback()
         {
             if (roomParam.validReflectionData) {
                 readingSharedParams = true;
-                parameters.getParameterAsValue ("reflCoeff").setValueNotifyingHost (roomParam.reflCoeff);
-                parameters.getParameterAsValue ("numRefl").setValueNotifyingHost (roomParam.numRefl);
-                parameters.getParameterAsValue ("lowShelfFreq").setValueNotifyingHost (roomParam.lowShelfFreq);
-                parameters.getParameterAsValue ("lowShelfGain").setValueNotifyingHost (roomParam.lowShelfGain);
-                parameters.getParameterAsValue ("highShelfFreq").setValueNotifyingHost (roomParam.highShelfFreq);
-                parameters.getParameterAsValue ("highShelfGain").setValueNotifyingHost (roomParam.highShelfGain);
+                parameters.getParameter ("reflCoeff")->setValueNotifyingHost (parameters.getParameterRange ("reflCoeff").convertTo0to1 (roomParam.reflCoeff));
+                parameters.getParameter ("numRefl")->setValueNotifyingHost (parameters.getParameterRange ("numRefl").convertTo0to1 (roomParam.numRefl));
+                parameters.getParameter ("lowShelfFreq")->setValueNotifyingHost (parameters.getParameterRange ("lowShelfFreq").convertTo0to1 (roomParam.lowShelfFreq));
+                parameters.getParameter ("lowShelfGain")->setValueNotifyingHost (parameters.getParameterRange ("lowShelfGain").convertTo0to1 (roomParam.lowShelfGain));
+                parameters.getParameter ("highShelfFreq")->setValueNotifyingHost (parameters.getParameterRange ("highShelfFreq").convertTo0to1 (roomParam.highShelfFreq));
+                parameters.getParameter ("highShelfGain")->setValueNotifyingHost (parameters.getParameterRange ("highShelfGain").convertTo0to1 (roomParam.highShelfGain));
                 readingSharedParams = false;
             }
             else

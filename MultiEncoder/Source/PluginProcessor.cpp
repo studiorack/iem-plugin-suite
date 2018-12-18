@@ -292,8 +292,8 @@ void MultiEncoderAudioProcessor::parameterChanged (const String &parameterID, fl
         {
             iem::Quaternion<float> temp = masterQuat * quats[i];
             temp.toYPR(ypr);
-            parameters.getParameterAsValue ("azimuth" + String (i)).setValueNotifyingHost (radiansToDegrees(ypr[0]));
-            parameters.getParameterAsValue ("elevation" + String (i)).setValueNotifyingHost (radiansToDegrees(ypr[1]));
+            parameters.getParameter ("azimuth" + String (i))->setValueNotifyingHost (parameters.getParameterRange ("azimuth" + String (i)).convertTo0to1 (radiansToDegrees (ypr[0])));
+            parameters.getParameter ("elevation" + String (i))->setValueNotifyingHost (parameters.getParameterRange ("elevation" + String (i)).convertTo0to1 (radiansToDegrees(ypr[1])));
         }
         moving = false;
         updateSphere = true;
