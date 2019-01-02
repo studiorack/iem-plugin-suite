@@ -93,6 +93,10 @@ public:
     OSCReceiverPlus& getOSCReceiver () { return oscReceiver; }
     //==============================================================================
 
+    //======= Parameters ===========================================================
+    AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
+    //==============================================================================
+
     float *orderSetting;
     float *useSN3D;
 
@@ -100,10 +104,9 @@ public:
 
 private:
     //==============================================================================
-
-    AudioProcessorValueTreeState parameters;
     OSCParameterInterface oscParams;
     OSCReceiverPlus oscReceiver;
+    AudioProcessorValueTreeState parameters;
     
     float *azimuth;
     float *elevation;

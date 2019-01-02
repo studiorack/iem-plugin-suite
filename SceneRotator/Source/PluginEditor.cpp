@@ -31,7 +31,7 @@ SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotator
     // ============== BEGIN: essentials ======================
     // set GUI size and lookAndFeel
     //setSize(500, 300); // use this to create a fixed-size GUI
-    setResizeLimits (450, 220, 800, 500); // use this to create a resizable GUI
+    setResizeLimits (450, 250, 800, 500); // use this to create a resizable GUI
     setLookAndFeel (&globalLaF);
 
     // make title and footer visible, and set the PluginName
@@ -61,7 +61,7 @@ SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotator
     slYaw.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slYaw.setReverse (true);
     slYaw.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
-    slYaw.setRotaryParameters (M_PI, 3 * M_PI, false);
+    slYaw.setRotaryParameters (MathConstants<float>::pi, 3 * MathConstants<float>::pi, false);
     slYaw.setTooltip ("Yaw angle");
     slYaw.setTextValueSuffix (CharPointer_UTF8 (R"(°)"));
 
@@ -71,7 +71,7 @@ SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotator
     slPitch.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slPitch.setReverse (true);
     slPitch.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
-    slPitch.setRotaryParameters (0.5 * M_PI, 2.5 * M_PI, false);
+    slPitch.setRotaryParameters (0.5 * MathConstants<float>::pi, 2.5 * MathConstants<float>::pi, false);
     slPitch.setTooltip ("Pitch angle");
     slPitch.setTextValueSuffix (CharPointer_UTF8 (R"(°)"));
 
@@ -81,7 +81,7 @@ SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotator
     slRoll.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slRoll.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
     slRoll.setReverse (false);
-    slRoll.setRotaryParameters (M_PI, 3 * M_PI, false);
+    slRoll.setRotaryParameters (MathConstants<float>::pi, 3 * MathConstants<float>::pi, false);
     slRoll.setTooltip ("Roll angle");
     slRoll.setTextValueSuffix (CharPointer_UTF8 (R"(°)"));
 
@@ -100,6 +100,17 @@ SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotator
     tbInvertRoll.setColour (ToggleButton::ColourIds::tickColourId, globalLaF.ClWidgetColours[2]);
     tbInvertRoll.setButtonText ("Flip");
 
+    addAndMakeVisible (tbInvertQuaternion);
+    tbInvertQuaternionAttachment = new ButtonAttachment (valueTreeState, "invertQuaternion", tbInvertQuaternion);
+    tbInvertQuaternion.setColour (ToggleButton::ColourIds::tickColourId, globalLaF.ClWidgetColours[0]);
+    tbInvertQuaternion.setButtonText ("Invert Quaternions");
+
+    addAndMakeVisible (cbRotationSequence);
+    cbRotationSequence.addSectionHeading ("Select order of rotation");
+    cbRotationSequence.addItem("Yaw -> Pitch -> Roll", 1);
+    cbRotationSequence.addItem("Roll -> Pitch -> Yaw", 2);
+    cbRotationSequence.setJustificationType (Justification::centred);
+    cbRotationSequenceAttachment = new ComboBoxAttachment (valueTreeState, "rotationSequence", cbRotationSequence);
 
 
     // ====================== QUATERNION GROUP
@@ -196,7 +207,7 @@ void SceneRotatorAudioProcessorEditor::resized()
     const int sliderHeight = 17;
     const int rotSliderHeight = 55;
     const int rotSliderSpacing = 10;
-    const int sliderSpacing = 6;
+    const int sliderSpacing = 4;
     const int rotSliderWidth = 40;
     const int labelHeight = 15;
     const int labelWidth = 20;
@@ -229,6 +240,12 @@ void SceneRotatorAudioProcessorEditor::resized()
     sliderRow.removeFromLeft (rotSliderSpacing);
     tbInvertRoll.setBounds (sliderRow.removeFromLeft (rotSliderWidth + 5));
 
+    yprArea.removeFromTop (5);
+    
+    sliderRow = yprArea.removeFromTop (20);
+    sliderRow.reduce (10, 0);
+    cbRotationSequence.setBounds (sliderRow);
+
 
     // ------------- Quaternions ------------------------
     auto quatArea (topArea.removeFromRight (190));
@@ -256,6 +273,10 @@ void SceneRotatorAudioProcessorEditor::resized()
     slQZ.setBounds (sliderRow.removeFromRight (185 - labelWidth));
     lbQZ.setBounds (sliderRow);
     quatArea.removeFromTop (sliderSpacing);
+
+    sliderRow = quatArea.removeFromTop (20);
+    sliderRow.removeFromLeft (20);
+    tbInvertQuaternion.setBounds (sliderRow);
 
 }
 

@@ -125,7 +125,7 @@ $(ALL_PROJECTS:%=%-clean):
 		CONFIG="$(CONFIG)" \
 		clean
 %/Builds/LinuxMakefile/Makefile: %.jucer
-	$(PROJUCER) -resave "$^"
+	$(PROJUCER) --resave "$^"
 
 # XCode based rules
 .SECONDEXPANSION:
@@ -144,7 +144,7 @@ $(ALL_PROJECTS:%=%-clean):
 # this does not declare a proper dependency,
 # so Projucer will be called for each %-build
 %.pbxproj:
-	$(PROJUCER) -resave $(subst @,$(firstword $(subst /, ,$@)),@/@.jucer)
+	$(PROJUCER) --resave $(subst @,$(firstword $(subst /, ,$@)),@/@.jucer)
 
 
 # VS2017 based rules
@@ -161,5 +161,5 @@ $(ALL_PROJECTS:%=%-clean):
 # this does not declare a proper dependency,
 # so Projucer will be called for each %-build
 %.sln:
-	$(PROJUCER) -resave $(subst @,$(firstword $(subst /, ,$@)),@/@.jucer)
+	$(PROJUCER) --resave $(subst @,$(firstword $(subst /, ,$@)),@/@.jucer)
 

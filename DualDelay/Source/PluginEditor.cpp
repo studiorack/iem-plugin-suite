@@ -26,7 +26,7 @@
 
 //==============================================================================
 DualDelayAudioProcessorEditor::DualDelayAudioProcessorEditor (DualDelayAudioProcessor& p, AudioProcessorValueTreeState& vts)
-    : AudioProcessorEditor (&p), processor (p), footer (p.getOSCReceiver()), valueTreeState(vts)
+    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts), footer (p.getOSCReceiver())
 {
     setLookAndFeel (&globalLaF);
 
@@ -54,7 +54,7 @@ DualDelayAudioProcessorEditor::DualDelayAudioProcessorEditor (DualDelayAudioProc
     SlLeftRot.setReverse(true);
     SlLeftRot.setTextValueSuffix(" deg");
     SlLeftRot.setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
-    SlLeftRot.setRotaryParameters(M_PI, 3*M_PI, false);
+    SlLeftRot.setRotaryParameters(MathConstants<float>::pi, 3*MathConstants<float>::pi, false);
     SlLeftRot.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
 
     addAndMakeVisible(&SlLeftDelay);
@@ -120,7 +120,7 @@ DualDelayAudioProcessorEditor::DualDelayAudioProcessorEditor (DualDelayAudioProc
     SlRightRot.setReverse(true);
     SlRightRot.setTextValueSuffix(" deg");
     SlRightRot.setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
-    SlRightRot.setRotaryParameters(M_PI, 3*M_PI, false);
+    SlRightRot.setRotaryParameters(MathConstants<float>::pi, 3*MathConstants<float>::pi, false);
     SlRightRot.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
 
     addAndMakeVisible(&SlRightDelay);

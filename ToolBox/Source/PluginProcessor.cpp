@@ -36,79 +36,8 @@ ToolBoxAudioProcessor::ToolBoxAudioProcessor()
                      #endif
                        ),
 #endif
-parameters(*this, nullptr), oscParams (parameters), flipXMask(int64(0)), flipYMask(int64(0)), flipZMask(int64(0))
+oscParams (parameters), parameters (*this, nullptr, "ToolBox", createParameterLayout()), flipXMask (int64 (0)), flipYMask (int64 (0)), flipZMask (int64 (0))
 {
-    oscParams.createAndAddParameter ("inputOrderSetting", "Input Ambisonic Order", "",
-                                      NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
-                                      [](float value) {
-                                          if (value >= 0.5f && value < 1.5f) return "0th";
-                                          else if (value >= 1.5f && value < 2.5f) return "1st";
-                                          else if (value >= 2.5f && value < 3.5f) return "2nd";
-                                          else if (value >= 3.5f && value < 4.5f) return "3rd";
-                                          else if (value >= 4.5f && value < 5.5f) return "4th";
-                                          else if (value >= 5.5f && value < 6.5f) return "5th";
-                                          else if (value >= 6.5f && value < 7.5f) return "6th";
-                                          else if (value >= 7.5f) return "7th";
-                                          else return "Auto";},
-                                      nullptr);
-
-    oscParams.createAndAddParameter ("useSn3dInput", "Input Normalization", "",
-                                     NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
-                                     [](float value) {
-                                         if (value >= 0.5f) return "SN3D";
-                                         else return "N3D";
-                                     }, nullptr);
-
-    oscParams.createAndAddParameter ("outputOrderSetting", "Output Ambisonic Order", "",
-                                      NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
-                                      [](float value) {
-                                          if (value >= 0.5f && value < 1.5f) return "0th";
-                                          else if (value >= 1.5f && value < 2.5f) return "1st";
-                                          else if (value >= 2.5f && value < 3.5f) return "2nd";
-                                          else if (value >= 3.5f && value < 4.5f) return "3rd";
-                                          else if (value >= 4.5f && value < 5.5f) return "4th";
-                                          else if (value >= 5.5f && value < 6.5f) return "5th";
-                                          else if (value >= 6.5f && value < 7.5f) return "6th";
-                                          else if (value >= 7.5f) return "7th";
-                                          else return "Auto";},
-                                      nullptr);
-
-    oscParams.createAndAddParameter ("useSn3dOutput", "Output Normalization", "",
-                                     NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
-                                     [](float value) {
-                                         if (value >= 0.5f) return "SN3D";
-                                         else return "N3D";
-                                     }, nullptr);
-
-    oscParams.createAndAddParameter ("flipX", "Flip X axis", "",
-                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
-                                     [](float value) {if (value >= 0.5f) return "ON";
-                                         else return "OFF";}, nullptr);
-
-    oscParams.createAndAddParameter ("flipY", "Flip Y axis", "",
-                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
-                                     [](float value) {if (value >= 0.5f) return "ON";
-                                         else return "OFF";}, nullptr);
-
-    oscParams.createAndAddParameter ("flipZ", "Flip Z axis", "",
-                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
-                                     [](float value) {if (value >= 0.5f) return "ON";
-                                         else return "OFF";}, nullptr);
-
-    oscParams.createAndAddParameter ("loaWeights", "Lower Order Ambisonic Weighting", "",
-                                      NormalisableRange<float> (0.0f, 2.0f, 1.0f), 0.0f,
-                                      [](float value) {
-                                          if (value >= 0.5f && value < 1.5f) return "maxrE";
-                                          else if (value >= 1.5f) return "inPhase";
-                                          else return "none";},
-                                      nullptr);
-
-
-    // this must be initialised after all calls to createAndAddParameter().
-    parameters.state = ValueTree (Identifier ("ToolBox"));
-    // tip: you can also add other values to parameters.state, which are also saved and restored when the session is closed/reopened
-
-
     // get pointers to the parameters
     inputOrderSetting = parameters.getRawParameterValue("inputOrderSetting");
     outputOrderSetting = parameters.getRawParameterValue ("outputOrderSetting");
@@ -414,6 +343,82 @@ void ToolBoxAudioProcessor::oscBundleReceived (const OSCBundle &bundle)
         else if (elem.isBundle())
             oscBundleReceived (elem.getBundle());
     }
+}
+
+//==============================================================================
+AudioProcessorValueTreeState::ParameterLayout ToolBoxAudioProcessor::createParameterLayout()
+{
+    // add your audio parameters here
+    std::vector<std::unique_ptr<RangedAudioParameter>> params;
+
+
+    params.push_back (oscParams.createAndAddParameter ("inputOrderSetting", "Input Ambisonic Order", "",
+                                     NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
+                                     [](float value) {
+                                         if (value >= 0.5f && value < 1.5f) return "0th";
+                                         else if (value >= 1.5f && value < 2.5f) return "1st";
+                                         else if (value >= 2.5f && value < 3.5f) return "2nd";
+                                         else if (value >= 3.5f && value < 4.5f) return "3rd";
+                                         else if (value >= 4.5f && value < 5.5f) return "4th";
+                                         else if (value >= 5.5f && value < 6.5f) return "5th";
+                                         else if (value >= 6.5f && value < 7.5f) return "6th";
+                                         else if (value >= 7.5f) return "7th";
+                                         else return "Auto";},
+                                     nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("useSn3dInput", "Input Normalization", "",
+                                     NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
+                                     [](float value) {
+                                         if (value >= 0.5f) return "SN3D";
+                                         else return "N3D";
+                                     }, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("outputOrderSetting", "Output Ambisonic Order", "",
+                                     NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
+                                     [](float value) {
+                                         if (value >= 0.5f && value < 1.5f) return "0th";
+                                         else if (value >= 1.5f && value < 2.5f) return "1st";
+                                         else if (value >= 2.5f && value < 3.5f) return "2nd";
+                                         else if (value >= 3.5f && value < 4.5f) return "3rd";
+                                         else if (value >= 4.5f && value < 5.5f) return "4th";
+                                         else if (value >= 5.5f && value < 6.5f) return "5th";
+                                         else if (value >= 6.5f && value < 7.5f) return "6th";
+                                         else if (value >= 7.5f) return "7th";
+                                         else return "Auto";},
+                                     nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("useSn3dOutput", "Output Normalization", "",
+                                     NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
+                                     [](float value) {
+                                         if (value >= 0.5f) return "SN3D";
+                                         else return "N3D";
+                                     }, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("flipX", "Flip X axis", "",
+                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
+                                     [](float value) {if (value >= 0.5f) return "ON";
+                                         else return "OFF";}, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("flipY", "Flip Y axis", "",
+                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
+                                     [](float value) {if (value >= 0.5f) return "ON";
+                                         else return "OFF";}, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("flipZ", "Flip Z axis", "",
+                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
+                                     [](float value) {if (value >= 0.5f) return "ON";
+                                         else return "OFF";}, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("loaWeights", "Lower Order Ambisonic Weighting", "",
+                                     NormalisableRange<float> (0.0f, 2.0f, 1.0f), 0.0f,
+                                     [](float value) {
+                                         if (value >= 0.5f && value < 1.5f) return "maxrE";
+                                         else if (value >= 1.5f) return "inPhase";
+                                         else return "none";},
+                                     nullptr));
+    
+
+    return { params.begin(), params.end() };
 }
 
 //==============================================================================

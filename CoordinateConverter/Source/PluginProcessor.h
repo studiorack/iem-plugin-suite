@@ -41,7 +41,7 @@
 */
 class CoordinateConverterAudioProcessor  : public AudioProcessor,
                                         public AudioProcessorValueTreeState::Listener,
-                                        public IOHelper<IOTypes::AudioChannels<64>, IOTypes::Ambisonics<64>>,
+                                        public IOHelper<IOTypes::AudioChannels<64>, IOTypes::AudioChannels<64>>,
                                         public VSTCallbackHandler,
                                         private OSCReceiver::Listener<OSCReceiver::RealtimeCallback>
 {
@@ -101,6 +101,10 @@ public:
     OSCReceiverPlus& getOSCReceiver () { return oscReceiver; }
     //==============================================================================
 
+    //======= Parameters ===========================================================
+    AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
+    //==============================================================================
+
     void updateCartesianCoordinates();
     void updateSphericalCoordinates();
 
@@ -110,9 +114,9 @@ public:
 
 private:
     // ====== parameters
-    AudioProcessorValueTreeState parameters;
     OSCParameterInterface oscParams;
     OSCReceiverPlus oscReceiver;
+    AudioProcessorValueTreeState parameters;
     
     Atomic<bool> updatingParams = false;
     bool cartesianWasLastUpdated = true;

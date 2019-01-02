@@ -23,9 +23,6 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
 
 //==============================================================================
 MultiEncoderAudioProcessorEditor::MultiEncoderAudioProcessorEditor (MultiEncoderAudioProcessor& p, AudioProcessorValueTreeState& vts)
@@ -77,7 +74,7 @@ encoderList(p, sphere, &vts)
     slMasterAzimuth.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slMasterAzimuth.setReverse(true);
     slMasterAzimuth.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
-    slMasterAzimuth.setRotaryParameters(M_PI, 3*M_PI, false);
+    slMasterAzimuth.setRotaryParameters(MathConstants<float>::pi, 3*MathConstants<float>::pi, false);
     slMasterAzimuth.setTooltip("Master azimuth angle");
 
     addAndMakeVisible(&slMasterElevation);
@@ -85,7 +82,7 @@ encoderList(p, sphere, &vts)
     slMasterElevation.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slMasterElevation.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slMasterElevation.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
-    slMasterElevation.setRotaryParameters(0.5*M_PI, 2.5*M_PI, false);
+    slMasterElevation.setRotaryParameters(0.5*MathConstants<float>::pi, 2.5*MathConstants<float>::pi, false);
     slMasterElevation.setTooltip("Master elevation angle");
 
     addAndMakeVisible(&slMasterRoll);
@@ -93,7 +90,7 @@ encoderList(p, sphere, &vts)
     slMasterRoll.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slMasterRoll.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slMasterRoll.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
-    slMasterRoll.setRotaryParameters(M_PI, 3*M_PI, false);
+    slMasterRoll.setRotaryParameters(MathConstants<float>::pi, 3*MathConstants<float>::pi, false);
     slMasterRoll.setTooltip("Master roll angle");
 
     addAndMakeVisible(&tbLockedToMaster);
@@ -229,7 +226,6 @@ void MultiEncoderAudioProcessorEditor::resized()
     // =================================================
     Rectangle<int> sideBarArea (area.removeFromRight(220));
     //const int sliderHeight = 15;
-    const int rotSliderHeight = 55;
     const int rotSliderSpacing = 10;
     //const int sliderSpacing = 3;
     const int rotSliderWidth = 40;

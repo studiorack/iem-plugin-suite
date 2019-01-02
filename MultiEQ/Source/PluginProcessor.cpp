@@ -33,111 +33,14 @@ MultiEQAudioProcessor::MultiEQAudioProcessor()
      : AudioProcessor (BusesProperties()
                      #if ! JucePlugin_IsMidiEffect
                       #if ! JucePlugin_IsSynth
-                       .withInput  ("Input",  AudioChannelSet::discreteChannels (10), true)
+                       .withInput  ("Input",  AudioChannelSet::discreteChannels (64), true)
                       #endif
                        .withOutput ("Output", AudioChannelSet::discreteChannels (64), true)
                      #endif
                        ),
 #endif
-parameters (*this, nullptr), oscParams (parameters)
+oscParams (parameters), parameters (*this, nullptr, "MultiEQ", createParameterLayout())
 {
-    oscParams.createAndAddParameter ("inputChannelsSetting", "Number of input channels ", "",
-                                     NormalisableRange<float> (0.0f, 64.0f, 1.0f), 0.0f,
-                                     [](float value) {return value < 0.5f ? "Auto" : String (value);}, nullptr);
-
-
-    int i = 0;
-    oscParams.createAndAddParameter ("filterEnabled" + String (i), "Filter Enablement " + String (i + 1), "",
-                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
-                                     [](float value) { return value < 0.5 ? String ("OFF") : String ("ON");}, nullptr);
-
-    oscParams.createAndAddParameter ("filterType" + String (i), "Filter Type " + String (i + 1), "",
-                                     NormalisableRange<float> (0.0f, 3.0f, 1.0f),  filterTypePresets[i],
-                                     [](float value) {
-                                         if (value < 0.5f) return "HP (6dB/oct)";
-                                         else if (value >= 0.5f && value < 1.5f) return "HP (12dB/oct)";
-                                         else if (value >= 1.5f && value < 2.5f) return "HP (24dB/oct)";
-                                         else return "Low-shelf";},
-                                     nullptr);
-
-    oscParams.createAndAddParameter ("filterFrequency" + String (i), "Filter Frequency " + String (i + 1), "Hz",
-                                     NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.4f), filterFrequencyPresets[i],
-                                     [](float value) { return String(value, 0); }, nullptr);
-
-    oscParams.createAndAddParameter ("filterQ" + String (i), "Filter Q " + String (i+1), "",
-                                     NormalisableRange<float> (0.05f, 8.0f, 0.05f), 0.7f,
-                                     [](float value) { return String (value, 2); },
-                                     nullptr);
-
-    oscParams.createAndAddParameter ("filterGain" + String (i), "Filter Gain " + String (i + 1), "dB",
-                                     NormalisableRange<float> (-60.0f, 15.0f, 0.1f), 0.0f,
-                                     [](float value) { return String (value, 1); },
-                                     nullptr);
-
-
-    for (int i = 1; i < numFilterBands - 1; ++i)
-    {
-        oscParams.createAndAddParameter ("filterEnabled" + String (i), "Filter Enablement " + String (i + 1), "",
-                                         NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
-                                         [](float value) { return value < 0.5 ? String ("OFF") : String ("ON");}, nullptr);
-
-        oscParams.createAndAddParameter ("filterType" + String (i), "Filter Type " + String (i + 1), "",
-                                        NormalisableRange<float> (0.0f, 2.0f, 1.0f),  filterTypePresets[i],
-                                        [](float value) {
-                                            if (value < 0.5f) return "Low-shelf";
-                                            else if (value >= 0.5f && value < 1.5f) return "Peak";
-                                            else return "High-shelf";},
-                                        nullptr);
-
-        oscParams.createAndAddParameter ("filterFrequency" + String (i), "Filter Frequency " + String (i + 1), "Hz",
-                                        NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.4f), filterFrequencyPresets[i],
-                                        [](float value) { return String(value, 0); }, nullptr);
-
-        oscParams.createAndAddParameter ("filterQ" + String (i), "Filter Q " + String (i+1), "",
-                                        NormalisableRange<float> (0.05f, 8.0f, 0.05f), 0.7f,
-                                        [](float value) { return String (value, 2); },
-                                        nullptr);
-
-        oscParams.createAndAddParameter ("filterGain" + String (i), "Filter Gain " + String (i + 1), "dB",
-                                        NormalisableRange<float> (-60.0f, 15.0f, 0.1f), 0.0f,
-                                        [](float value) { return String (value, 1); },
-                                        nullptr);
-    }
-
-    i = numFilterBands - 1;
-
-    oscParams.createAndAddParameter ("filterEnabled" + String (i), "Filter Enablement " + String (i + 1), "",
-                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
-                                     [](float value) { return value < 0.5 ? String ("OFF") : String ("ON");}, nullptr);
-
-    oscParams.createAndAddParameter ("filterType" + String (i), "Filter Type " + String (i + 1), "",
-                                     NormalisableRange<float> (0.0f, 3.0f, 1.0f),  filterTypePresets[i],
-                                     [](float value) {
-                                         if (value < 0.5f) return "LP (6dB/Oct)";
-                                         else if (value >= 0.5f && value < 1.5f) return "LP (12dB/oct)";
-                                         else if (value >= 1.5f && value < 2.5f) return "LP (24dB/oct)";
-                                         else return "High-shelf";},
-                                     nullptr);
-
-    oscParams.createAndAddParameter ("filterFrequency" + String (i), "Filter Frequency " + String (i + 1), "Hz",
-                                     NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.4f), filterFrequencyPresets[i],
-                                     [](float value) { return String(value, 0); }, nullptr);
-
-    oscParams.createAndAddParameter ("filterQ" + String (i), "Filter Q " + String (i+1), "",
-                                     NormalisableRange<float> (0.05f, 8.0f, 0.05f), 0.7f,
-                                     [](float value) { return String (value, 2); },
-                                     nullptr);
-
-    oscParams.createAndAddParameter ("filterGain" + String (i), "Filter Gain " + String (i + 1), "dB",
-                                     NormalisableRange<float> (-60.0f, 15.0f, 0.1f), 0.0f,
-                                     [](float value) { return String (value, 1); },
-                                     nullptr);
-
-    // this must be initialised after all calls to createAndAddParameter().
-    parameters.state = ValueTree (Identifier ("MultiEQ"));
-    // tip: you can also add other values to parameters.state, which are also saved and restored when the session is closed/reopened
-
-
     // get pointers to the parameters
     inputChannelsSetting = parameters.getRawParameterValue ("inputChannelsSetting");
 
@@ -540,11 +443,7 @@ void MultiEQAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
 
     const int L = buffer.getNumSamples();
 
-    const int totalNumInputChannels  = getTotalNumInputChannels();
-    const int totalNumOutputChannels = getTotalNumOutputChannels();
-
     const int maxNChIn = jmin (buffer.getNumChannels(), input.getSize());
-    const int maxNChOut = jmin (buffer.getNumChannels(), output.getSize());
 
     const int nSIMDFilters = 1 + (maxNChIn - 1) / IIRfloat_elements();
 
@@ -763,6 +662,112 @@ void MultiEQAudioProcessor::oscBundleReceived (const OSCBundle &bundle)
         else if (elem.isBundle())
             oscBundleReceived (elem.getBundle());
     }
+}
+
+//==============================================================================
+AudioProcessorValueTreeState::ParameterLayout MultiEQAudioProcessor::createParameterLayout()
+{
+    // add your audio parameters here
+    std::vector<std::unique_ptr<RangedAudioParameter>> params;
+
+
+
+    params.push_back (oscParams.createAndAddParameter ("inputChannelsSetting", "Number of input channels ", "",
+                                     NormalisableRange<float> (0.0f, 64.0f, 1.0f), 0.0f,
+                                     [](float value) {return value < 0.5f ? "Auto" : String (value);}, nullptr));
+
+
+    int i = 0;
+    params.push_back (oscParams.createAndAddParameter ("filterEnabled" + String (i), "Filter Enablement " + String (i + 1), "",
+                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
+                                     [](float value) { return value < 0.5 ? String ("OFF") : String ("ON");}, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("filterType" + String (i), "Filter Type " + String (i + 1), "",
+                                     NormalisableRange<float> (0.0f, 3.0f, 1.0f),  filterTypePresets[i],
+                                     [](float value) {
+                                         if (value < 0.5f) return "HP (6dB/oct)";
+                                         else if (value >= 0.5f && value < 1.5f) return "HP (12dB/oct)";
+                                         else if (value >= 1.5f && value < 2.5f) return "HP (24dB/oct)";
+                                         else return "Low-shelf";},
+                                     nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("filterFrequency" + String (i), "Filter Frequency " + String (i + 1), "Hz",
+                                     NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.4f), filterFrequencyPresets[i],
+                                     [](float value) { return String(value, 0); }, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("filterQ" + String (i), "Filter Q " + String (i+1), "",
+                                     NormalisableRange<float> (0.05f, 8.0f, 0.05f), 0.7f,
+                                     [](float value) { return String (value, 2); },
+                                     nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("filterGain" + String (i), "Filter Gain " + String (i + 1), "dB",
+                                     NormalisableRange<float> (-60.0f, 15.0f, 0.1f), 0.0f,
+                                     [](float value) { return String (value, 1); },
+                                     nullptr));
+
+
+    for (int i = 1; i < numFilterBands - 1; ++i)
+    {
+        params.push_back (oscParams.createAndAddParameter ("filterEnabled" + String (i), "Filter Enablement " + String (i + 1), "",
+                                         NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
+                                         [](float value) { return value < 0.5 ? String ("OFF") : String ("ON");}, nullptr));
+
+        params.push_back (oscParams.createAndAddParameter ("filterType" + String (i), "Filter Type " + String (i + 1), "",
+                                         NormalisableRange<float> (0.0f, 2.0f, 1.0f),  filterTypePresets[i],
+                                         [](float value) {
+                                             if (value < 0.5f) return "Low-shelf";
+                                             else if (value >= 0.5f && value < 1.5f) return "Peak";
+                                             else return "High-shelf";},
+                                         nullptr));
+
+        params.push_back (oscParams.createAndAddParameter ("filterFrequency" + String (i), "Filter Frequency " + String (i + 1), "Hz",
+                                         NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.4f), filterFrequencyPresets[i],
+                                         [](float value) { return String(value, 0); }, nullptr));
+
+        params.push_back (oscParams.createAndAddParameter ("filterQ" + String (i), "Filter Q " + String (i+1), "",
+                                         NormalisableRange<float> (0.05f, 8.0f, 0.05f), 0.7f,
+                                         [](float value) { return String (value, 2); },
+                                         nullptr));
+
+        params.push_back (oscParams.createAndAddParameter ("filterGain" + String (i), "Filter Gain " + String (i + 1), "dB",
+                                         NormalisableRange<float> (-60.0f, 15.0f, 0.1f), 0.0f,
+                                         [](float value) { return String (value, 1); },
+                                         nullptr));
+    }
+
+    i = numFilterBands - 1;
+
+    params.push_back (oscParams.createAndAddParameter ("filterEnabled" + String (i), "Filter Enablement " + String (i + 1), "",
+                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
+                                     [](float value) { return value < 0.5 ? String ("OFF") : String ("ON");}, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("filterType" + String (i), "Filter Type " + String (i + 1), "",
+                                     NormalisableRange<float> (0.0f, 3.0f, 1.0f),  filterTypePresets[i],
+                                     [](float value) {
+                                         if (value < 0.5f) return "LP (6dB/Oct)";
+                                         else if (value >= 0.5f && value < 1.5f) return "LP (12dB/oct)";
+                                         else if (value >= 1.5f && value < 2.5f) return "LP (24dB/oct)";
+                                         else return "High-shelf";},
+                                     nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("filterFrequency" + String (i), "Filter Frequency " + String (i + 1), "Hz",
+                                     NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.4f), filterFrequencyPresets[i],
+                                     [](float value) { return String(value, 0); }, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("filterQ" + String (i), "Filter Q " + String (i+1), "",
+                                     NormalisableRange<float> (0.05f, 8.0f, 0.05f), 0.7f,
+                                     [](float value) { return String (value, 2); },
+                                     nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("filterGain" + String (i), "Filter Gain " + String (i + 1), "dB",
+                                     NormalisableRange<float> (-60.0f, 15.0f, 0.1f), 0.0f,
+                                     [](float value) { return String (value, 1); },
+                                     nullptr));
+
+
+
+
+    return { params.begin(), params.end() };
 }
 
 //==============================================================================

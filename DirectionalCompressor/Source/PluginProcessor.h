@@ -22,9 +22,6 @@
 
 
 #pragma once
-#ifndef M_PI
-#define M_PI 3.141592654
-#endif
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "../../resources/efficientSHvanilla.h"
@@ -98,6 +95,10 @@ public:
     OSCReceiverPlus& getOSCReceiver () { return oscReceiver; }
     //==============================================================================
 
+    //======= Parameters ===========================================================
+    AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
+    //==============================================================================
+    
     void parameterChanged (const String &parameterID, float newValue) override;
 
     float c1MaxRMS;
@@ -105,7 +106,6 @@ public:
     float c2MaxRMS;
     float c2MaxGR;
 
-    AudioProcessorValueTreeState parameters;
     void calcParams();
     Atomic<bool> updatedPositionData;
 
@@ -114,6 +114,7 @@ private:
     //==============================================================================
     OSCParameterInterface oscParams;
     OSCReceiverPlus oscReceiver;
+    AudioProcessorValueTreeState parameters;
     
     void updateBuffers() override;
 

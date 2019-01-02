@@ -25,9 +25,6 @@
 #define maxNumberOfInputs 64
 #define startNnumberOfInputs 5
 
-#ifndef M_PI
-#define M_PI 3.141592654
-#endif
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "../../resources/Quaternion.h"
@@ -102,6 +99,9 @@ public:
     OSCReceiverPlus& getOSCReceiver () { return oscReceiver; }
     //==============================================================================
 
+    //======= Parameters ===========================================================
+    AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
+    //==============================================================================
 
     float xyzGrab[3];
     float xyz[maxNumberOfInputs][3];
@@ -139,13 +139,12 @@ public:
 
 private:
     //==============================================================================
-//    iem::Quaternion quat;
-
-    bool processorUpdatingParams;
-    AudioProcessorValueTreeState parameters;
     OSCParameterInterface oscParams;
     OSCReceiverPlus oscReceiver;
-    
+    AudioProcessorValueTreeState parameters;
+
+    bool processorUpdatingParams;
+
     float masterYpr[3];
 
     iem::Quaternion<float> quats[maxNumberOfInputs];

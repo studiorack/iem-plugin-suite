@@ -135,6 +135,10 @@ public:
     OSCReceiverPlus& getOSCReceiver () { return oscReceiver; }
     //==============================================================================
 
+    //======= Parameters ===========================================================
+    AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
+    //==============================================================================
+
     double oldDelay[nImgSrc];
     //float oldRGain[nImgSrc];
     float allGains[nImgSrc];
@@ -161,9 +165,9 @@ public:
     Atomic<bool> repaintPositionPlanes = true;
 private:
     //==============================================================================
-    AudioProcessorValueTreeState parameters;
     OSCParameterInterface oscParams;
     OSCReceiverPlus oscReceiver;
+    AudioProcessorValueTreeState parameters;
     
     bool readingSharedParams = false;;
 

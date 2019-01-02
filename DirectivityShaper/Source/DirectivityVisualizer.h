@@ -35,40 +35,40 @@ class DirectivityVisualizer    : public Component
         Colour colour;
     };
 
-    const float deg2rad = M_PI / 180.0f;
+    const float deg2rad = MathConstants<float>::pi / 180.0f;
     const int degStep = 1;
     const int nLookUpSamples = 360;
     const int maxdB = 90;
     const float power = 3.0f;
     const int dBstep = 10;
     //#define scale 4
-    const float scale = sqrt(4 * M_PI) * decodeCorrection(7);
+    const float scale = sqrt(4 * MathConstants<float>::pi) * decodeCorrection(7);
 public:
     DirectivityVisualizer()
     {
         // 0th
-        lookUpTables.add(new LookupTableTransform<float>([this] (float phi) { return scale * (0.25f / (float) M_PI); }, -M_PI, M_PI, nLookUpSamples));
+        lookUpTables.add(new LookupTableTransform<float>([this] (float phi) { return scale * (0.25f / (float) MathConstants<float>::pi); }, -MathConstants<float>::pi, MathConstants<float>::pi, nLookUpSamples));
 
         // 1st
-        lookUpTables.add(new LookupTableTransform<float>([this] (float phi) { return scale * (0.75f / M_PI) * std::cos (phi); }, -M_PI, M_PI, nLookUpSamples));
+        lookUpTables.add(new LookupTableTransform<float>([this] (float phi) { return scale * (0.75f / MathConstants<float>::pi) * std::cos (phi); }, -MathConstants<float>::pi, MathConstants<float>::pi, nLookUpSamples));
 
         // 2nd
-        lookUpTables.add(new LookupTableTransform<float>([this] (float phi) { return scale * 2.0f*(5.0f /16.0f / M_PI) * (3 * std::cos (phi) * std::cos (phi) - 1.0f); }, -M_PI, M_PI, nLookUpSamples));
+        lookUpTables.add(new LookupTableTransform<float>([this] (float phi) { return scale * 2.0f*(5.0f /16.0f / MathConstants<float>::pi) * (3 * std::cos (phi) * std::cos (phi) - 1.0f); }, -MathConstants<float>::pi, MathConstants<float>::pi, nLookUpSamples));
 
         // 3rd
-        lookUpTables.add(new LookupTableTransform<float>([this] (float phi) { return scale * (7.0f / M_PI) / 8.0f * (5 * pow(std::cos (phi), 3) - 3.0f * std::cos (phi));}, -M_PI, M_PI, nLookUpSamples));
+        lookUpTables.add(new LookupTableTransform<float>([this] (float phi) { return scale * (7.0f / MathConstants<float>::pi) / 8.0f * (5 * pow(std::cos (phi), 3) - 3.0f * std::cos (phi));}, -MathConstants<float>::pi, MathConstants<float>::pi, nLookUpSamples));
 
         // 4th
-        lookUpTables.add(new LookupTableTransform<float>([this] (float phi) { return scale * 9.0f / 32.0f / M_PI * (35 * pow(std::cos (phi),4) - 30* pow(std::cos (phi), 2) + 3.0f); }, -M_PI, M_PI, nLookUpSamples));
+        lookUpTables.add(new LookupTableTransform<float>([this] (float phi) { return scale * 9.0f / 32.0f / MathConstants<float>::pi * (35 * pow(std::cos (phi),4) - 30* pow(std::cos (phi), 2) + 3.0f); }, -MathConstants<float>::pi, MathConstants<float>::pi, nLookUpSamples));
 
         // 5th
-        lookUpTables.add(new LookupTableTransform<float>([this] (float phi) { return scale * 8.0f / 256.0f * 11.0f / M_PI * (63 * pow(std::cos (phi),5) - 70* pow(std::cos (phi),3) + 15.0f * std::cos (phi)); }, -M_PI, M_PI, nLookUpSamples));
+        lookUpTables.add(new LookupTableTransform<float>([this] (float phi) { return scale * 8.0f / 256.0f * 11.0f / MathConstants<float>::pi * (63 * pow(std::cos (phi),5) - 70* pow(std::cos (phi),3) + 15.0f * std::cos (phi)); }, -MathConstants<float>::pi, MathConstants<float>::pi, nLookUpSamples));
 
         // 6th
-        lookUpTables.add(new LookupTableTransform<float>([this] (float phi) { return scale * 16.0f / 1024.0f * 13.0f / M_PI * (231 *  pow(std::cos (phi),6) - 315 * pow(std::cos (phi), 4) + 105 * pow(std::cos (phi),2) - 5.0f); }, -M_PI, M_PI, nLookUpSamples));
+        lookUpTables.add(new LookupTableTransform<float>([this] (float phi) { return scale * 16.0f / 1024.0f * 13.0f / MathConstants<float>::pi * (231 *  pow(std::cos (phi),6) - 315 * pow(std::cos (phi), 4) + 105 * pow(std::cos (phi),2) - 5.0f); }, -MathConstants<float>::pi, MathConstants<float>::pi, nLookUpSamples));
 
         // 7th
-        lookUpTables.add(new LookupTableTransform<float>([this] (float phi) { return scale * 16.0f / 1024.0f *15.0f /M_PI * (429 * pow(std::cos (phi),7) - 693 * pow(std::cos (phi), 5) + 315* pow(std::cos (phi),3) - 35 * std::cos (phi)); }, -M_PI, M_PI, nLookUpSamples));
+        lookUpTables.add(new LookupTableTransform<float>([this] (float phi) { return scale * 16.0f / 1024.0f *15.0f /MathConstants<float>::pi * (429 * pow(std::cos (phi),7) - 693 * pow(std::cos (phi), 5) + 315* pow(std::cos (phi),3) - 35 * std::cos (phi)); }, -MathConstants<float>::pi, MathConstants<float>::pi, nLookUpSamples));
 
         for (int phi = -180; phi <= 180; phi += degStep)
         {
@@ -92,9 +92,9 @@ public:
             subGrid.addPath(circle, AffineTransform().scaled(dBToRadius(-dB)));
 
         subGrid.addPath(line);
-        subGrid.addPath(line, AffineTransform().rotation(0.25f * M_PI));
-        subGrid.addPath(line, AffineTransform().rotation(0.5f * M_PI));
-        subGrid.addPath(line, AffineTransform().rotation(0.75f * M_PI));
+        subGrid.addPath(line, AffineTransform().rotation(0.25f * MathConstants<float>::pi));
+        subGrid.addPath(line, AffineTransform().rotation(0.5f * MathConstants<float>::pi));
+        subGrid.addPath(line, AffineTransform().rotation(0.75f * MathConstants<float>::pi));
 
     }
 

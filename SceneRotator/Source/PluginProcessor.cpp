@@ -54,77 +54,8 @@ SceneRotatorAudioProcessor::SceneRotatorAudioProcessor()
 #endif
                   ),
 #endif
-parameters (*this, nullptr), oscParams (parameters)
+oscParams (parameters), parameters (*this, nullptr, "SceneRotator", createParameterLayout())
 {
-    oscParams.createAndAddParameter ("orderSetting", "Ambisonics Order", "",
-                                     NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
-                                     [](float value) {
-                                         if (value >= 0.5f && value < 1.5f) return "0th";
-                                         else if (value >= 1.5f && value < 2.5f) return "1st";
-                                         else if (value >= 2.5f && value < 3.5f) return "2nd";
-                                         else if (value >= 3.5f && value < 4.5f) return "3rd";
-                                         else if (value >= 4.5f && value < 5.5f) return "4th";
-                                         else if (value >= 5.5f && value < 6.5f) return "5th";
-                                         else if (value >= 6.5f && value < 7.5f) return "6th";
-                                         else if (value >= 7.5f) return "7th";
-                                         else return "Auto";
-                                     }, nullptr);
-
-    oscParams.createAndAddParameter ("useSN3D", "Normalization", "",
-                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
-                                     [](float value)
-                                     {
-                                         if (value >= 0.5f ) return "SN3D";
-                                         else return "N3D";
-                                     }, nullptr);
-
-    oscParams.createAndAddParameter ("yaw", "Yaw Angle", CharPointer_UTF8 (R"(°)"),
-                                     NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
-                                     [](float value) { return String(value, 2); }, nullptr, true);
-
-    oscParams.createAndAddParameter ("pitch", "Pitch Angle", CharPointer_UTF8 (R"(°)"),
-                                     NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
-                                     [](float value) { return String(value, 2); }, nullptr, true);
-
-    oscParams.createAndAddParameter ("roll", "Roll Angle", CharPointer_UTF8 (R"(°)"),
-                                     NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
-                                     [](float value) { return String(value, 2); }, nullptr, true);
-
-    oscParams.createAndAddParameter ("qw", "Quaternion W", "",
-                                     NormalisableRange<float> (-1.0f, 1.0f, 0.001f), 1.0,
-                                     [](float value) { return String(value, 2); }, nullptr, true);
-
-    oscParams.createAndAddParameter ("qx", "Quaternion X", "",
-                                     NormalisableRange<float> (-1.0f, 1.0f, 0.001f), 0.0,
-                                     [](float value) { return String(value, 2); }, nullptr, true);
-
-    oscParams.createAndAddParameter ("qy", "Quaternion Y", "",
-                                     NormalisableRange<float> (-1.0f, 1.0f, 0.001f), 0.0,
-                                     [](float value) { return String(value, 2); }, nullptr, true);
-
-    oscParams.createAndAddParameter ("qz", "Quaternion Z", "",
-                                     NormalisableRange<float> (-1.0f, 1.0f, 0.001f), 0.0,
-                                     [](float value) { return String(value, 2); }, nullptr, true);
-
-    oscParams.createAndAddParameter ("invertYaw", "Invert Yaw", "",
-                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
-                                     [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr);
-
-    oscParams.createAndAddParameter ("invertPitch", "Invert Pitch", "",
-                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
-                                     [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr);
-
-    oscParams.createAndAddParameter ("invertRoll", "Invert Roll", "",
-                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
-                                     [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr);
-
-
-
-    // this must be initialised after all calls to createAndAddParameter().
-    parameters.state = ValueTree (Identifier ("SceneRotator"));
-    // tip: you can also add other values to parameters.state, which are also saved and restored when the session is closed/reopened
-
-
     // get pointers to the parameters
     orderSetting = parameters.getRawParameterValue ("orderSetting");
     useSN3D = parameters.getRawParameterValue ("useSN3D");
@@ -138,6 +69,8 @@ parameters (*this, nullptr), oscParams (parameters)
     invertYaw = parameters.getRawParameterValue ("invertYaw");
     invertPitch = parameters.getRawParameterValue ("invertPitch");
     invertRoll = parameters.getRawParameterValue ("invertRoll");
+    invertQuaternion = parameters.getRawParameterValue ("invertQuaternion");
+    rotationSequence = parameters.getRawParameterValue ("rotationSequence");
 
 
     // add listeners to parameter changes
@@ -154,6 +87,8 @@ parameters (*this, nullptr), oscParams (parameters)
     parameters.addParameterListener ("invertYaw", this);
     parameters.addParameterListener ("invertPitch", this);
     parameters.addParameterListener ("invertRoll", this);
+    parameters.addParameterListener ("invertQuaternion", this);
+    parameters.addParameterListener ("rotationSequence", this);
 
 
 
@@ -384,8 +319,6 @@ double SceneRotatorAudioProcessor::W (int l, int m, int n, Matrix<float>& Rone, 
 
 void SceneRotatorAudioProcessor::calcRotationMatrix (const int order)
 {
-    rotationParamsHaveChanged = false;
-
     const auto yawRadians = Conversions<float>::degreesToRadians (*yaw) * (*invertYaw > 0.5 ? -1 : 1);
     const auto pitchRadians = Conversions<float>::degreesToRadians (*pitch) * (*invertPitch > 0.5 ? -1 : 1);
     const auto rollRadians = Conversions<float>::degreesToRadians (*roll) * (*invertRoll > 0.5 ? -1 : 1);
@@ -401,17 +334,36 @@ void SceneRotatorAudioProcessor::calcRotationMatrix (const int order)
 
     Matrix<float> rotMat (3, 3);
 
-    rotMat(0, 0) = ca * cb;
-    rotMat(1, 0) = sa * cb;
-    rotMat(2, 0) = - sb;
+    if (*rotationSequence >= 0.5f) // roll -> pitch -> yaw (extrinsic rotations)
+    {
+        rotMat(0, 0) = ca * cb;
+        rotMat(1, 0) = sa * cb;
+        rotMat(2, 0) = - sb;
 
-    rotMat(0, 1) = ca * sb * sy - sa * cy;
-    rotMat(1, 1) = sa * sb *sy + ca * cy;
-    rotMat(2, 1) = cb * sy;
+        rotMat(0, 1) = ca * sb * sy - sa * cy;
+        rotMat(1, 1) = sa * sb * sy + ca * cy;
+        rotMat(2, 1) = cb * sy;
 
-    rotMat(0, 2) = ca * sb * cy + sa * sy;
-    rotMat(1, 2) = sa * sb * cy - ca * sy;
-    rotMat(2, 2) = cb * cy;
+        rotMat(0, 2) = ca * sb * cy + sa * sy;
+        rotMat(1, 2) = sa * sb * cy - ca * sy;
+        rotMat(2, 2) = cb * cy;
+    }
+    else // yaw -> pitch -> roll (extrinsic rotations)
+    {
+        rotMat(0, 0) = ca * cb;
+        rotMat(1, 0) = sa * cy + ca * sb * sy;
+        rotMat(2, 0) = sa * sy - ca * sb * cy;
+
+        rotMat(0, 1) = - sa * cb;
+        rotMat(1, 1) = ca * cy - sa * sb * sy;
+        rotMat(2, 1) = ca * sy + sa * sb * cy;
+
+        rotMat(0, 2) = sb;
+        rotMat(1, 2) = - cb * sy;
+        rotMat(2, 2) = cb * cy;
+    }
+
+
 
     auto Rl = orderMatrices[1];
 
@@ -459,6 +411,8 @@ void SceneRotatorAudioProcessor::calcRotationMatrix (const int order)
         }
     }
 
+    rotationParamsHaveChanged = false;
+
 }
 
 
@@ -500,6 +454,8 @@ void SceneRotatorAudioProcessor::setStateInformation (const void* data, int size
                 oscReceiver.connect (parameters.state.getProperty ("OSCPort", var (-1)));
             }
         }
+
+    usingYpr = true;
 }
 
 //==============================================================================
@@ -511,11 +467,13 @@ void SceneRotatorAudioProcessor::parameterChanged (const String &parameterID, fl
     {
         if (parameterID == "qw" || parameterID == "qx" || parameterID == "qy" || parameterID == "qz")
         {
+            usingYpr = false;
             updateEuler();
             rotationParamsHaveChanged = true;
         }
         else if (parameterID == "yaw" || parameterID == "pitch" || parameterID == "roll")
         {
+            usingYpr = true;
             updateQuaternions();
             rotationParamsHaveChanged = true;
         }
@@ -523,29 +481,68 @@ void SceneRotatorAudioProcessor::parameterChanged (const String &parameterID, fl
 
 
     if (parameterID == "orderSetting")
+    {
         userChangedIOSettings = true;
-    else if (parameterID == "invertYaw" || parameterID == "invertPitch" || parameterID == "invertRoll")
+    }
+    else if (parameterID == "invertYaw" || parameterID == "invertPitch" || parameterID == "invertRoll" || parameterID == "invertQuaternion")
+    {
+        if (usingYpr.get())
+            updateQuaternions();
+        else
+            updateEuler();
+
         rotationParamsHaveChanged = true;
+    }
+    else if (parameterID == "rotationSequence")
+    {
+        if (usingYpr.get())
+            updateQuaternions();
+        else
+            updateEuler();
+
+        rotationParamsHaveChanged = true;
+    }
 }
 
-inline void SceneRotatorAudioProcessor::updateQuaternions ()
+inline void SceneRotatorAudioProcessor::updateQuaternions()
 {
-    float ypr[3];
-    ypr[0] = Conversions<float>::degreesToRadians (*yaw);
-    ypr[1] = Conversions<float>::degreesToRadians (*pitch);
-    ypr[2] = Conversions<float>::degreesToRadians (*roll);
+    const float wa = cos (Conversions<float>::degreesToRadians (*yaw) * 0.5f);
+    const float za = sin (Conversions<float>::degreesToRadians (*yaw) * (*invertYaw >= 0.5 ? -0.5f : 0.5f));
+    const float wb = cos (Conversions<float>::degreesToRadians (*pitch) * 0.5f);
+    const float yb = sin (Conversions<float>::degreesToRadians (*pitch) * (*invertPitch >= 0.5 ? -0.5f : 0.5f));
+    const float wc = cos (Conversions<float>::degreesToRadians (*roll) * 0.5f);
+    const float xc = sin (Conversions<float>::degreesToRadians (*roll) * (*invertRoll >= 0.5 ? -0.5f : 0.5f));
 
+    float qw, qx, qy, qz;
 
-    //updating not active params
-    iem::Quaternion<float> quaternionDirection;
-    quaternionDirection.fromYPR (ypr);
+    if (*rotationSequence >= 0.5f) // roll -> pitch -> yaw (extrinsic rotations)
+    {
+        qw = wa * wc * wb + za * xc * yb;
+        qx = wa * xc * wb - za * wc * yb;
+        qy = wa * wc * yb + za * xc * wb;
+        qz = za * wc * wb - wa * xc * yb;
+    }
+    else // yaw -> pitch -> roll (extrinsic rotations)
+    {
+        qw = wc * wb * wa - xc * yb * za;
+        qx = wc * yb * za + xc * wb * wa;
+        qy = wc * yb * wa - xc * wb * za;
+        qz = wc * wb * za + xc * yb * wa;
+    }
+
+    if (*invertQuaternion >= 0.5f)
+    {
+        qx = -qx;
+        qy = -qy;
+        qz = -qz;
+    }
 
     
     updatingParams = true;
-    parameters.getParameter ("qw")->setValue (parameters.getParameterRange ("qw").convertTo0to1 (quaternionDirection.w));
-    parameters.getParameter ("qx")->setValue (parameters.getParameterRange ("qx").convertTo0to1 (quaternionDirection.x));
-    parameters.getParameter ("qy")->setValue (parameters.getParameterRange ("qy").convertTo0to1 (quaternionDirection.y));
-    parameters.getParameter ("qz")->setValue (parameters.getParameterRange ("qz").convertTo0to1 (quaternionDirection.z));
+    parameters.getParameter ("qw")->setValueNotifyingHost (parameters.getParameterRange ("qw").convertTo0to1 (qw));
+    parameters.getParameter ("qx")->setValueNotifyingHost (parameters.getParameterRange ("qx").convertTo0to1 (qx));
+    parameters.getParameter ("qy")->setValueNotifyingHost (parameters.getParameterRange ("qy").convertTo0to1 (qy));
+    parameters.getParameter ("qz")->setValueNotifyingHost (parameters.getParameterRange ("qz").convertTo0to1 (qz));
     updatingParams = false;
 }
 
@@ -554,13 +551,59 @@ void SceneRotatorAudioProcessor::updateEuler()
     float ypr[3];
     auto quaternionDirection = iem::Quaternion<float> (*qw, *qx, *qy, *qz);
     quaternionDirection.normalize();
-    quaternionDirection.toYPR(ypr);
+
+    if (*invertQuaternion >= 0.5f)
+        quaternionDirection = quaternionDirection.getConjugate();
+
+
+    // Thanks to Amy de Buitléir for this great algorithm!
+
+    const float p0 = quaternionDirection.w;
+    const float p1 = quaternionDirection.z;
+    const float p2 = quaternionDirection.y;
+    const float p3 = quaternionDirection.x;
+
+    float e;
+
+    if (*rotationSequence >= 0.5f) // roll -> pitch -> yaw (extrinsic rotations)
+        e = -1.0f;
+    else // yaw -> pitch -> roll (extrinsic rotations)
+        e = 1.0f;
+
+    // pitch (y-axis rotation)
+    float t0 = 2.0f * (p0 * p2 + e * p1 * p3);
+    ypr[1] = asin (t0);
+
+    if (ypr[1] == MathConstants<float>::pi || ypr[1] == - MathConstants<float>::pi)
+    {
+        ypr[2] = 0.0f;
+        ypr[0] = atan2 (p1, p0);
+    }
+    else
+    {
+        // yaw (z-axis rotation)
+        t0 = 2.0f * (p0 * p1 - e * p2 * p3);
+        float t1 = 1.0f - 2.0f * (p1 * p1 + p2 * p2);
+        ypr[0] = atan2 (t0, t1);
+
+        // roll (x-axis rotation)
+        t0 = 2.0f * (p0 * p3 - e * p1 * p2);
+        t1 = 1.0f - 2.0f * (p2 * p2 + p3 * p3);
+        ypr[2] = atan2 (t0, t1);
+    }
+
+    if (*invertYaw >= 0.5)
+        ypr[0] *= -1.0f;
+    if (*invertPitch >= 0.5)
+        ypr[1] *= -1.0f;
+    if (*invertRoll >= 0.5)
+        ypr[2] *= -1.0f;
 
     //updating not active params
     updatingParams = true;
-    parameters.getParameter ("yaw")->setValue (parameters.getParameterRange ("yaw").convertTo0to1 (Conversions<float>::radiansToDegrees (ypr[0])));
-    parameters.getParameter ("pitch")->setValue (parameters.getParameterRange ("pitch").convertTo0to1 (Conversions<float>::radiansToDegrees (ypr[1])));
-    parameters.getParameter ("roll")->setValue (parameters.getParameterRange ("roll").convertTo0to1 (Conversions<float>::radiansToDegrees (ypr[2])));
+    parameters.getParameter ("yaw")->setValueNotifyingHost (parameters.getParameterRange ("yaw").convertTo0to1 (Conversions<float>::radiansToDegrees (ypr[0])));
+    parameters.getParameter ("pitch")->setValueNotifyingHost (parameters.getParameterRange ("pitch").convertTo0to1 (Conversions<float>::radiansToDegrees (ypr[1])));
+    parameters.getParameter ("roll")->setValueNotifyingHost (parameters.getParameterRange ("roll").convertTo0to1 (Conversions<float>::radiansToDegrees (ypr[2])));
     updatingParams = false;
 }
 
@@ -638,6 +681,89 @@ void SceneRotatorAudioProcessor::oscBundleReceived (const OSCBundle &bundle)
         else if (elem.isBundle())
             oscBundleReceived (elem.getBundle());
     }
+}
+
+//==============================================================================
+AudioProcessorValueTreeState::ParameterLayout SceneRotatorAudioProcessor::createParameterLayout()
+{
+    // add your audio parameters here
+    std::vector<std::unique_ptr<RangedAudioParameter>> params;
+
+
+    params.push_back (oscParams.createAndAddParameter ("orderSetting", "Ambisonics Order", "",
+                                     NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
+                                     [](float value) {
+                                         if (value >= 0.5f && value < 1.5f) return "0th";
+                                         else if (value >= 1.5f && value < 2.5f) return "1st";
+                                         else if (value >= 2.5f && value < 3.5f) return "2nd";
+                                         else if (value >= 3.5f && value < 4.5f) return "3rd";
+                                         else if (value >= 4.5f && value < 5.5f) return "4th";
+                                         else if (value >= 5.5f && value < 6.5f) return "5th";
+                                         else if (value >= 6.5f && value < 7.5f) return "6th";
+                                         else if (value >= 7.5f) return "7th";
+                                         else return "Auto";
+                                     }, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("useSN3D", "Normalization", "",
+                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
+                                     [](float value)
+                                     {
+                                         if (value >= 0.5f ) return "SN3D";
+                                         else return "N3D";
+                                     }, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("yaw", "Yaw Angle", CharPointer_UTF8 (R"(°)"),
+                                     NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
+                                     [](float value) { return String(value, 2); }, nullptr, true));
+
+    params.push_back (oscParams.createAndAddParameter ("pitch", "Pitch Angle", CharPointer_UTF8 (R"(°)"),
+                                     NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
+                                     [](float value) { return String(value, 2); }, nullptr, true));
+
+    params.push_back (oscParams.createAndAddParameter ("roll", "Roll Angle", CharPointer_UTF8 (R"(°)"),
+                                     NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
+                                     [](float value) { return String(value, 2); }, nullptr, true));
+
+    params.push_back (oscParams.createAndAddParameter ("qw", "Quaternion W", "",
+                                     NormalisableRange<float> (-1.0f, 1.0f, 0.001f), 1.0,
+                                     [](float value) { return String(value, 2); }, nullptr, true));
+
+    params.push_back (oscParams.createAndAddParameter ("qx", "Quaternion X", "",
+                                     NormalisableRange<float> (-1.0f, 1.0f, 0.001f), 0.0,
+                                     [](float value) { return String(value, 2); }, nullptr, true));
+
+    params.push_back (oscParams.createAndAddParameter ("qy", "Quaternion Y", "",
+                                     NormalisableRange<float> (-1.0f, 1.0f, 0.001f), 0.0,
+                                     [](float value) { return String(value, 2); }, nullptr, true));
+
+    params.push_back (oscParams.createAndAddParameter ("qz", "Quaternion Z", "",
+                                     NormalisableRange<float> (-1.0f, 1.0f, 0.001f), 0.0,
+                                     [](float value) { return String(value, 2); }, nullptr, true));
+
+    params.push_back (oscParams.createAndAddParameter ("invertYaw", "Invert Yaw", "",
+                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
+                                     [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("invertPitch", "Invert Pitch", "",
+                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
+                                     [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("invertRoll", "Invert Roll", "",
+                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
+                                     [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("invertQuaternion", "Invert Quaternion", "",
+                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
+                                     [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("rotationSequence", "Sequence of Rotations", "",
+                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0,
+                                     [](float value) { return value >= 0.5f ? "Roll->Pitch->Yaw" : "Yaw->Pitch->Roll"; }, nullptr));
+
+
+
+
+    return { params.begin(), params.end() };
 }
 
 //==============================================================================

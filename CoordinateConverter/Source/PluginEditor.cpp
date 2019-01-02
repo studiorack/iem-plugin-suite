@@ -70,7 +70,7 @@ CoordinateConverterAudioProcessorEditor::CoordinateConverterAudioProcessorEditor
     slAzimuth.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slAzimuth.setReverse (true);
     slAzimuth.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
-    slAzimuth.setRotaryParameters (M_PI, 3*M_PI, false);
+    slAzimuth.setRotaryParameters (MathConstants<float>::pi, 3*MathConstants<float>::pi, false);
     slAzimuth.setTooltip ("Azimuth angle");
 
     addAndMakeVisible (slElevation);
@@ -78,7 +78,7 @@ CoordinateConverterAudioProcessorEditor::CoordinateConverterAudioProcessorEditor
     slElevation.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slElevation.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slElevation.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
-    slElevation.setRotaryParameters (0.5 * M_PI, 2.5 * M_PI, false);
+    slElevation.setRotaryParameters (0.5 * MathConstants<float>::pi, 2.5 * MathConstants<float>::pi, false);
     slElevation.setTooltip( "Elevation angle");
 
     addAndMakeVisible (slRadius);

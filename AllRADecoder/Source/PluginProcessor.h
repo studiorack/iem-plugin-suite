@@ -22,9 +22,6 @@
 
 #pragma once
 
-#ifndef M_PI
-    #define M_PI 3.141592654
-#endif
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "../../resources/IOHelper.h"
@@ -166,11 +163,16 @@ public:
     OSCReceiverPlus& getOSCReceiver () { return oscReceiver; }
     //==============================================================================
 
+    //======= Parameters ===========================================================
+    AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
+    //==============================================================================
+
+
 private:
     // ====== parameters and osc
-    AudioProcessorValueTreeState parameters;
     OSCParameterInterface oscParams;
     OSCReceiverPlus oscReceiver;
+    AudioProcessorValueTreeState parameters;
 
     // list of used audio parameters
     float* inputOrderSetting;

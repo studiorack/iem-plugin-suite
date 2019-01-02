@@ -23,13 +23,9 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
-
 //==============================================================================
 ProbeDecoderAudioProcessorEditor::ProbeDecoderAudioProcessorEditor (ProbeDecoderAudioProcessor& p, AudioProcessorValueTreeState& vts)
-: AudioProcessorEditor (&p), processor (p), valueTreeState(vts), footer (p.getOSCReceiver()),
+: AudioProcessorEditor (&p), footer (p.getOSCReceiver()), processor (p), valueTreeState(vts),
 probe(*valueTreeState.getParameter("azimuth"), valueTreeState.getParameterRange("azimuth"),
       *valueTreeState.getParameter("elevation"), valueTreeState.getParameterRange("elevation"))
 {
@@ -77,7 +73,7 @@ probe(*valueTreeState.getParameter("azimuth"), valueTreeState.getParameterRange(
     slAzimuth.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slAzimuth.setReverse(true);
     slAzimuth.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
-    slAzimuth.setRotaryParameters(M_PI, 3*M_PI, false);
+    slAzimuth.setRotaryParameters(MathConstants<float>::pi, 3*MathConstants<float>::pi, false);
     slAzimuth.setTooltip("Azimuth angle");
     slAzimuth.setTextValueSuffix(CharPointer_UTF8 (R"(°)"));
 
@@ -86,7 +82,7 @@ probe(*valueTreeState.getParameter("azimuth"), valueTreeState.getParameterRange(
     slElevation.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slElevation.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slElevation.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
-    slElevation.setRotaryParameters(0.5*M_PI, 2.5*M_PI, false);
+    slElevation.setRotaryParameters(0.5*MathConstants<float>::pi, 2.5*MathConstants<float>::pi, false);
     slElevation.setTooltip("Elevation angle");
 
 

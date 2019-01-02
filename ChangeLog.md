@@ -3,6 +3,22 @@ For a list of all changes and bugfixes see the git log.
 
 Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They might lead to an unexpected behaviour and might not be compatible with your previous projects without making some adaptions. See the [Breaking changes article](https://plugins.iem.at/docs/breakingchanges/) for more information.
 
+## v1.9.0
+- general changes
+    - plug-in host will be notified when paramater values change automatically (e.g. conversions)
+    - osc port can be changed on the fly when opened, plug-ins will close and re-open port immediately
+    
+- plug-in specific changes
+    - **Binaural**Decoder
+        - output level reduced by 10dB
+    - **Distance**Compensator
+        - fixes broken import of loudspeaker layouts
+    - **Energy**Visualizer
+        - levels will only be calculated when the GUI is open
+        - adds control to change visualized dynamic range
+    - **Scene**Rotator
+        - adds quaternion inversion
+        - adds selectable sequence of rotations
 
 ## v1.8.1
 - plug-in specific changes

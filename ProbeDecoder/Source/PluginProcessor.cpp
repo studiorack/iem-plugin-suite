@@ -23,11 +23,6 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
-
-
 //==============================================================================
 ProbeDecoderAudioProcessor::ProbeDecoderAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
@@ -40,38 +35,8 @@ ProbeDecoderAudioProcessor::ProbeDecoderAudioProcessor()
 #endif
                   ),
 #endif
-parameters(*this, nullptr), oscParams (parameters)
+parameters (*this, nullptr, "ProbeDecoder", createParameterLayout()), oscParams (parameters)
 {
-    oscParams.createAndAddParameter ("orderSetting", "Ambisonics Order", "",
-                                     NormalisableRange<float>(0.0f, 8.0f, 1.0f), 0.0f,
-                                     [](float value) {
-                                         if (value >= 0.5f && value < 1.5f) return "0th";
-                                         else if (value >= 1.5f && value < 2.5f) return "1st";
-                                         else if (value >= 2.5f && value < 3.5f) return "2nd";
-                                         else if (value >= 3.5f && value < 4.5f) return "3rd";
-                                         else if (value >= 4.5f && value < 5.5f) return "4th";
-                                         else if (value >= 5.5f && value < 6.5f) return "5th";
-                                         else if (value >= 6.5f && value < 7.5f) return "6th";
-                                         else if (value >= 7.5f) return "7th";
-                                         else return "Auto";
-                                     }, nullptr);
-    oscParams.createAndAddParameter ("useSN3D", "Normalization", "",
-                                     NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
-                                     [](float value) {
-                                         if (value >= 0.5f) return "SN3D";
-                                         else return "N3D";
-                                     }, nullptr);
-
-    oscParams.createAndAddParameter ("azimuth", "Azimuth angle", CharPointer_UTF8 (R"(°)"),
-                                     NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
-                                     [](float value) { return String(value, 2); }, nullptr);
-    oscParams.createAndAddParameter ("elevation", "Elevation angle", CharPointer_UTF8 (R"(°)"),
-                                     NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
-                                     [](float value) { return String(value, 2); }, nullptr);
-
-
-    parameters.state = ValueTree(Identifier("ProbeDecoder"));
-
     orderSetting = parameters.getRawParameterValue("orderSetting");
     useSN3D = parameters.getRawParameterValue("useSN3D");
     azimuth = parameters.getRawParameterValue("azimuth");
@@ -256,6 +221,46 @@ void ProbeDecoderAudioProcessor::oscBundleReceived (const OSCBundle &bundle)
         else if (elem.isBundle())
             oscBundleReceived (elem.getBundle());
     }
+}
+
+//==============================================================================
+AudioProcessorValueTreeState::ParameterLayout ProbeDecoderAudioProcessor::createParameterLayout()
+{
+    // add your audio parameters here
+    std::vector<std::unique_ptr<RangedAudioParameter>> params;
+
+
+    params.push_back (oscParams.createAndAddParameter ("orderSetting", "Ambisonics Order", "",
+                                     NormalisableRange<float>(0.0f, 8.0f, 1.0f), 0.0f,
+                                     [](float value) {
+                                         if (value >= 0.5f && value < 1.5f) return "0th";
+                                         else if (value >= 1.5f && value < 2.5f) return "1st";
+                                         else if (value >= 2.5f && value < 3.5f) return "2nd";
+                                         else if (value >= 3.5f && value < 4.5f) return "3rd";
+                                         else if (value >= 4.5f && value < 5.5f) return "4th";
+                                         else if (value >= 5.5f && value < 6.5f) return "5th";
+                                         else if (value >= 6.5f && value < 7.5f) return "6th";
+                                         else if (value >= 7.5f) return "7th";
+                                         else return "Auto";
+                                     }, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("useSN3D", "Normalization", "",
+                                     NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
+                                     [](float value) {
+                                         if (value >= 0.5f) return "SN3D";
+                                         else return "N3D";
+                                     }, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("azimuth", "Azimuth angle", CharPointer_UTF8 (R"(°)"),
+                                     NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
+                                     [](float value) { return String(value, 2); }, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("elevation", "Elevation angle", CharPointer_UTF8 (R"(°)"),
+                                     NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
+                                     [](float value) { return String(value, 2); }, nullptr));
+
+
+    return { params.begin(), params.end() };
 }
 
 //==============================================================================

@@ -401,7 +401,7 @@ public:
     void mouseDrag (const MouseEvent& e) override {
         float deltaY = (float) e.getDistanceFromDragStartY() / 100;
         tilt = tiltBeforeDrag + deltaY;
-        tilt = jmin(tilt, (float) M_PI / 2.0f);
+        tilt = jmin(tilt, (float) MathConstants<float>::pi / 2.0f);
         tilt = jmax(tilt, 0.0f);
 
         float deltaX = (float) e.getDistanceFromDragStartX() / 100;

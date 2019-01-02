@@ -22,9 +22,6 @@
 
 #pragma once
 
-#ifndef M_PI
-#define M_PI 3.141592654
-#endif
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "../hammerAitovSample.h"
@@ -45,7 +42,8 @@ class EnergyVisualizerAudioProcessor  : public AudioProcessor,
                                         public AudioProcessorValueTreeState::Listener,
                                         public IOHelper<IOTypes::Ambisonics<>, IOTypes::Nothing>,
                                         public VSTCallbackHandler,
-                                        private OSCReceiver::Listener<OSCReceiver::RealtimeCallback>
+                                        private OSCReceiver::Listener<OSCReceiver::RealtimeCallback>,
+                                        private Timer
 {
 public:
     //==============================================================================
@@ -101,23 +99,31 @@ public:
     OSCReceiverPlus& getOSCReceiver () { return oscReceiver; }
     //==============================================================================
 
+    //======= Parameters ===========================================================
+    AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
+    //==============================================================================
+
     Array<float> rms;
+    Atomic<Time> lastEditorTime;
 
 private:
-    AudioProcessorValueTreeState parameters;
     OSCParameterInterface oscParams;
     OSCReceiverPlus oscReceiver;
+    AudioProcessorValueTreeState parameters;
 
     Eigen::DiagonalMatrix<float, 64> maxReWeights;
 
     float timeConstant;
     // parameter
-    float *orderSetting, *useSN3D, *peakLevel;
+    float *orderSetting, *useSN3D, *peakLevel, *dynamicRange;
 
-
+    Atomic<bool> doProcessing = true;
+    
     Eigen::Matrix<float,nSamplePoints,64,Eigen::ColMajor> YH;
     Eigen::Matrix<float,nSamplePoints,64,Eigen::ColMajor> workingMatrix;
     AudioSampleBuffer sampledSignals;
+
+    void timerCallback() override;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (EnergyVisualizerAudioProcessor)

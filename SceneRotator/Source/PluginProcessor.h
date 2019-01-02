@@ -105,6 +105,10 @@ public:
     OSCReceiverPlus& getOSCReceiver () { return oscReceiver; }
     //==============================================================================
 
+    //======= Parameters ===========================================================
+    AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
+    //==============================================================================
+
     inline void updateQuaternions();
     inline void updateEuler();
     
@@ -114,10 +118,12 @@ public:
 
 private:
     // ====== parameters
-    AudioProcessorValueTreeState parameters;
     OSCParameterInterface oscParams;
     OSCReceiverPlus oscReceiver;
-    
+    AudioProcessorValueTreeState parameters;
+
+    Atomic<bool> usingYpr = true;
+
     // list of used audio parameters
     float* orderSetting;
     float* useSN3D;
@@ -132,6 +138,8 @@ private:
     float* invertYaw;
     float* invertPitch;
     float* invertRoll;
+    float* invertQuaternion;
+    float* rotationSequence;
 
     Atomic<bool> updatingParams {false};
     Atomic<bool> rotationParamsHaveChanged {true};

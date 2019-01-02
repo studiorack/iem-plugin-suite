@@ -114,6 +114,10 @@ public:
     OSCReceiverPlus& getOSCReceiver () { return oscReceiver; }
     //==============================================================================
 
+    //======= Parameters ===========================================================
+    AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
+    //==============================================================================
+
     void updateFilterCoefficients (double sampleRate);
     void copyFilterCoefficientsToProcessor();
 
@@ -124,6 +128,11 @@ public:
     Atomic<bool> repaintFV = true;
     
 private:
+    // ====== parameters
+    OSCParameterInterface oscParams;
+    OSCReceiverPlus oscReceiver;
+    AudioProcessorValueTreeState parameters;
+    
 
     enum class RegularFilterType
     {
@@ -157,11 +166,6 @@ private:
     OwnedArray<AudioBlock<IIRfloat>> interleavedData;
     AudioBlock<float> zero;
 
-
-    // ====== parameters
-    AudioProcessorValueTreeState parameters;
-    OSCParameterInterface oscParams;
-    OSCReceiverPlus oscReceiver;
     
     // list of used audio parameters
     float *inputChannelsSetting;

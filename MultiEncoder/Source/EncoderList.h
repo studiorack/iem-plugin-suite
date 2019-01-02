@@ -162,7 +162,7 @@ public:
                 azimuthSlider->setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
                 azimuthSlider->setReverse(true);
                 azimuthSlider->setColour (Slider::rotarySliderOutlineColourId, Colour(0xFF00CAFF));
-                azimuthSlider->setRotaryParameters(M_PI, 3*M_PI, false);
+                azimuthSlider->setRotaryParameters(MathConstants<float>::pi, 3*MathConstants<float>::pi, false);
                 azimuthSlider->setTooltip("Azimuth angle");
 
                 addAndMakeVisible(elevationSlider);
@@ -170,7 +170,7 @@ public:
                 elevationSlider->setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
                 elevationSlider->setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
                 elevationSlider->setColour (Slider::rotarySliderOutlineColourId, Colour(0xFF4FFF00));
-                elevationSlider->setRotaryParameters(0.5*M_PI, 2.5*M_PI, false);
+                elevationSlider->setRotaryParameters(0.5*MathConstants<float>::pi, 2.5*MathConstants<float>::pi, false);
                 elevationSlider->setTooltip("Elevation angle");
 
                 addAndMakeVisible(gainSlider);

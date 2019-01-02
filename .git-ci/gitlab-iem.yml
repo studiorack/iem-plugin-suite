@@ -5,7 +5,7 @@ variables:
 #  PROJECTS: AllRADecoder BinauralDecoder DirectionalCompressor DirectivityShaper DistanceCompensator DualDelay EnergyVisualizer FdnReverb MatrixMultiplier MultiEncoder OmniCompressor ProbeDecoder RoomEncoder SimpleDecoder StereoEncoder ToolBox
 
   CONFIG: Release
-  JUCEVERSION: 5.3.2
+  JUCEVERSION: 5.4.1
 
 ###################################################
 # cleanup after the job (e.g. rename files for the artifacts...)
@@ -49,17 +49,11 @@ variables:
     - apt-get install -y --no-install-recommends xvfb xauth curl unzip build-essential ca-certificates
     - apt-get install -y --no-install-recommends libwebkit2gtk-4.0-dev libasound2-dev libfreetype6-dev libcurl4-gnutls-dev libgl1-mesa-dev libx11-dev libxext-dev libxinerama-dev libxrandr-dev libgtk-3-dev
     - apt-get install -y --no-install-recommends libjack-dev libfftw3-dev
-# we use Debian's Projucer, but upstream's JUCE module sources
-# because Roli's Projucer binaries link against an old version of libcurl,
-# which is no longer available in Debian.
-# cheers to proprietary software!
-    - apt-get install -y --no-install-recommends juce-tools
     - .git-ci/getjuce.sh "${JUCEVERSION}-linux" ~/JUCE
-# re-configure Projucer to use the user-provided JUCE modules
-    - xvfb-run -a Projucer --set-global-search-path linux defaultJuceModulePath ~/JUCE/modules/
+    - xvfb-run -a ~/JUCE/Projucer --set-global-search-path linux defaultJuceModulePath ~/JUCE/modules/
 # run the actual build
-    - make system V=1 CONFIG=${CONFIG} CPPFLAGS=-DJUCE_JACK=1 CFLAGS="$(pkg-config --cflags ${PKGLIBS})" LDFLAGS="$(pkg-config --libs ${PKGLIBS})" PARALLEL=$(nproc) TARGET_ARCH=-march=core2
-    - xvfb-run -a make V=1 CONFIG=${CONFIG} CPPFLAGS=-DJUCE_JACK=1 CFLAGS="$(pkg-config --cflags ${PKGLIBS})" LDFLAGS="$(pkg-config --libs ${PKGLIBS})" PARALLEL=$(nproc) TARGET_ARCH=-march=core2
+    - make system V=1 CONFIG=${CONFIG} CPPFLAGS=-DJUCE_JACK=1 CFLAGS="$(pkg-config --cflags ${PKGLIBS})" LDFLAGS="$(pkg-config --libs ${PKGLIBS})" PARALLEL=$(nproc) TARGET_ARCH=-march=core2 PROJUCER=~/JUCE/Projucer
+    - xvfb-run -a make V=1 CONFIG=${CONFIG} CPPFLAGS=-DJUCE_JACK=1 CFLAGS="$(pkg-config --cflags ${PKGLIBS})" LDFLAGS="$(pkg-config --libs ${PKGLIBS})" PARALLEL=$(nproc) TARGET_ARCH=-march=core2 PROJUCER=~/JUCE/Projucer
 
 # collect binaries for artifacts
     - mkdir -p IEM/standalone/

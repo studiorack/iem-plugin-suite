@@ -116,6 +116,11 @@ public:
     OSCReceiverPlus& getOSCReceiver () { return oscReceiver; }
     //==============================================================================
 
+    //======= Parameters ===========================================================
+    AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
+    //==============================================================================
+
+
     void setLastDir (File newLastDir);
     File getLastDir() {return lastDir;};
 
@@ -133,9 +138,9 @@ public:
     MailBox::Message messageToEditor;
 private:
     // ====== parameters
-    AudioProcessorValueTreeState parameters;
     OSCParameterInterface oscParams;
     OSCReceiverPlus oscReceiver;
+    AudioProcessorValueTreeState parameters;
     
     Atomic<bool> updatingParameters = false;
 

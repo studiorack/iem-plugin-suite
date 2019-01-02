@@ -269,7 +269,6 @@ void FdnReverbAudioProcessorEditor::resized()
     const int footerHeight = 25;
     const int rotSliderHeight = 55;
     const int rotSliderSpacing = 10;
-    const int rotSliderWidth = 40;
     const int labelHeight = 20;
 
     Rectangle<int> area (getLocalBounds());

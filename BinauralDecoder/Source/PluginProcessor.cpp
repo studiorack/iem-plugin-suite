@@ -36,41 +36,8 @@ BinauralDecoderAudioProcessor::BinauralDecoderAudioProcessor()
 #endif
                   ),
 #endif
-parameters(*this, nullptr), oscParams (parameters)
+oscParams (parameters), parameters(*this, nullptr, "BinauralDecoder", createParameterLayout())
 {
-    oscParams.createAndAddParameter ("inputOrderSetting", "Input Ambisonic Order", "",
-                                      NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
-                                      [](float value) {
-                                          if (value >= 0.5f && value < 1.5f) return "0th";
-                                          else if (value >= 1.5f && value < 2.5f) return "1st";
-                                          else if (value >= 2.5f && value < 3.5f) return "2nd";
-                                          else if (value >= 3.5f && value < 4.5f) return "3rd";
-                                          else if (value >= 4.5f && value < 5.5f) return "4th";
-                                          else if (value >= 5.5f && value < 6.5f) return "5th";
-                                          else if (value >= 6.5f && value < 7.5f) return "6th";
-                                          else if (value >= 7.5f) return "7th";
-                                          else return "Auto";},
-                                      nullptr);
-
-    oscParams.createAndAddParameter ("useSN3D", "Input Normalization", "",
-                                     NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
-                                     [](float value) {
-                                         if (value >= 0.5f) return "SN3D";
-                                         else return "N3D";
-                                     }, nullptr);
-
-    oscParams.createAndAddParameter ("applyHeadphoneEq", "Headphone Equalization", "",
-                                     NormalisableRange<float>(0.0f, float(headphoneEQs.size()), 1.0f), 0.0f,
-                                     [this](float value) {
-                                         if (value < 0.5f) return String("OFF");
-                                         else return String(this->headphoneEQs[roundToInt(value)-1]);
-                                     }, nullptr);
-
-    // this must be initialised after all calls to createAndAddParameter().
-    parameters.state = ValueTree (Identifier ("BinauralDecoder"));
-    // tip: you can also add other values to parameters.state, which are also saved and restored when the session is closed/reopened
-
-
     // get pointers to the parameters
     inputOrderSetting = parameters.getRawParameterValue("inputOrderSetting");
     useSN3D = parameters.getRawParameterValue ("useSN3D");
@@ -100,6 +67,7 @@ parameters(*this, nullptr), oscParams (parameters)
         irs[i].setSize(square(i + 2), irLength);
         ScopedPointer<AudioFormatReader> reader = wavFormat.createReaderFor(mis[i], true);
         reader->read(&irs[i], 0, irLength, 0, true, false);
+        irs[i].applyGain (0.3f);
     }
 
     oscReceiver.addListener (this);
@@ -224,6 +192,12 @@ void BinauralDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, Mid
 {
     checkInputAndOutput(this, *inputOrderSetting, 0, false);
     ScopedNoDenormals noDenormals;
+
+    if (buffer.getNumChannels() < 2)
+    {
+        buffer.clear();
+        return;
+    }
 
     const int nIRsPerChannel = input.getNumberOfChannels();
     const int nCh = jmin(buffer.getNumChannels(), input.getNumberOfChannels());
@@ -535,4 +509,41 @@ void BinauralDecoderAudioProcessor::oscBundleReceived (const OSCBundle &bundle)
         else if (elem.isBundle())
             oscBundleReceived (elem.getBundle());
     }
+}
+
+//==============================================================================
+AudioProcessorValueTreeState::ParameterLayout BinauralDecoderAudioProcessor::createParameterLayout()
+{
+    // add your audio parameters here
+    std::vector<std::unique_ptr<RangedAudioParameter>> params;
+
+    params.push_back (oscParams.createAndAddParameter ("inputOrderSetting", "Input Ambisonic Order", "",
+                                                         NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
+                                                         [](float value) {
+                                                             if (value >= 0.5f && value < 1.5f) return "0th";
+                                                             else if (value >= 1.5f && value < 2.5f) return "1st";
+                                                             else if (value >= 2.5f && value < 3.5f) return "2nd";
+                                                             else if (value >= 3.5f && value < 4.5f) return "3rd";
+                                                             else if (value >= 4.5f && value < 5.5f) return "4th";
+                                                             else if (value >= 5.5f && value < 6.5f) return "5th";
+                                                             else if (value >= 6.5f && value < 7.5f) return "6th";
+                                                             else if (value >= 7.5f) return "7th";
+                                                             else return "Auto";},
+                                                         nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("useSN3D", "Input Normalization", "",
+                                                       NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
+                                                       [](float value) {
+                                                           if (value >= 0.5f) return "SN3D";
+                                                           else return "N3D";
+                                                       }, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("applyHeadphoneEq", "Headphone Equalization", "",
+                                                       NormalisableRange<float>(0.0f, float(headphoneEQs.size()), 1.0f), 0.0f,
+                                                       [this](float value) {
+                                                           if (value < 0.5f) return String("OFF");
+                                                           else return String(this->headphoneEQs[roundToInt(value)-1]);
+                                                       }, nullptr));
+
+    return { params.begin(), params.end() };
 }

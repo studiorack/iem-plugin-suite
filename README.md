@@ -20,8 +20,10 @@ All you need for compiling the IEM Plug-in Suite is the latest version of JUCE, 
 - Build
 - Enjoy ;-)
 
+The *.jucer projects are configured to build VST2, VST3, and standalone versions. In order to build the VST2 versions of the plug-ins, you need to have a copy of the Steinberg VST2-SDK which no longer comes with JUCE. 
+
 Instead of building each plug-in separately, you can also use the provided shell-scripts to start a batch processing.
 **For Windows:** The .jucer projects have to opened and saved first, to create the exporters. Then the 'Developer Command Prompt' has to execute the win_compileAll.bat script. 
 
 ## Known issues
-- no issues so far
+- There's an issue with the channel-layout behavior of the VST3 versions of the plug-ins. This issue comes down to the VST3 SDK and has to be fixed by Steinberg. Already reported at their developer forum.

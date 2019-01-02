@@ -37,62 +37,8 @@ AllRADecoderAudioProcessor::AllRADecoderAudioProcessor()
 #endif
                   ),
 #endif
-energyDistribution(Image::PixelFormat::ARGB, 200, 100, true), rEVector(Image::PixelFormat::ARGB, 200, 100, true), parameters(*this, nullptr), oscParams (parameters)
+energyDistribution (Image::PixelFormat::ARGB, 200, 100, true), rEVector (Image::PixelFormat::ARGB, 200, 100, true), oscParams (parameters), parameters (*this, nullptr, "AllRADecoder", createParameterLayout())
 {
-
-    oscParams.createAndAddParameter ("inputOrderSetting", "Input Ambisonic Order", "",
-                                      NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
-                                      [](float value) {
-                                          if (value >= 0.5f && value < 1.5f) return "0th";
-                                          else if (value >= 1.5f && value < 2.5f) return "1st";
-                                          else if (value >= 2.5f && value < 3.5f) return "2nd";
-                                          else if (value >= 3.5f && value < 4.5f) return "3rd";
-                                          else if (value >= 4.5f && value < 5.5f) return "4th";
-                                          else if (value >= 5.5f && value < 6.5f) return "5th";
-                                          else if (value >= 6.5f && value < 7.5f) return "6th";
-                                          else if (value >= 7.5f) return "7th";
-                                          else return "Auto";},
-                                      nullptr);
-
-    oscParams.createAndAddParameter("useSN3D", "Input Normalization", "",
-                                     NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
-                                     [](float value) {
-                                         if (value >= 0.5f) return "SN3D";
-                                         else return "N3D";
-                                     }, nullptr);
-
-    oscParams.createAndAddParameter ("decoderOrder", "Decoder Order", "",
-                                      NormalisableRange<float> (0.0f, 6.0f, 1.0f), 0.0f,
-                                      [](float value) {
-                                          if (value >= 0.5f && value < 1.5f) return "2nd";
-                                          else if (value >= 1.5f && value < 2.5f) return "3rd";
-                                          else if (value >= 2.5f && value < 3.5f) return "4th";
-                                          else if (value >= 3.5f && value < 4.5f) return "5th";
-                                          else if (value >= 4.5f && value < 5.5f) return "6th";
-                                          else if (value >= 5.5f ) return "7th";
-                                          else return "1st";},
-                                      nullptr);
-
-    oscParams.createAndAddParameter ("exportDecoder", "Export Decoder", "",
-                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
-                                      [](float value) {
-                                          if (value >= 0.5f) return "Yes";
-                                          else return "No";
-                                      }, nullptr);
-
-    oscParams.createAndAddParameter ("exportLayout", "Export Layout", "",
-                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
-                                      [](float value) {
-                                          if (value >= 0.5f) return "Yes";
-                                          else return "No";
-                                      }, nullptr);
-
-
-    // this must be initialised after all calls to createAndAddParameter().
-    parameters.state = ValueTree (Identifier ("AllRADecoder"));
-    // tip: you can also add other values to parameters.state, which are also saved and restored when the session is closed/reopened
-
-
     // get pointers to the parameters
     inputOrderSetting = parameters.getRawParameterValue ("inputOrderSetting");
     useSN3D = parameters.getRawParameterValue ("useSN3D");
@@ -929,7 +875,7 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
                 minLvl = lvl;
             const float map = jlimit(-0.5f, 0.5f, 0.5f * 0.16666667f * Decibels::gainToDecibels(sumOfSquares)) + 0.5f;
 
-            const float reMap = jlimit(0.0f, 1.0f, width / (float) M_PI);
+            const float reMap = jlimit(0.0f, 1.0f, width / (float) MathConstants<float>::pi);
 
             Colour rEPixelColour = Colours::limegreen.withMultipliedAlpha(reMap);
             Colour pixelColour = Colours::red.withMultipliedAlpha(map);
@@ -1269,3 +1215,59 @@ void AllRADecoderAudioProcessor::oscBundleReceived (const OSCBundle &bundle)
     }
 }
 
+// ==============================================================================
+AudioProcessorValueTreeState::ParameterLayout AllRADecoderAudioProcessor::createParameterLayout()
+{
+    // add your audio parameters here
+    std::vector<std::unique_ptr<RangedAudioParameter>> params;
+
+    params.push_back (oscParams.createAndAddParameter ("inputOrderSetting", "Input Ambisonic Order", "",
+                                     NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
+                                     [](float value) {
+                                         if (value >= 0.5f && value < 1.5f) return "0th";
+                                         else if (value >= 1.5f && value < 2.5f) return "1st";
+                                         else if (value >= 2.5f && value < 3.5f) return "2nd";
+                                         else if (value >= 3.5f && value < 4.5f) return "3rd";
+                                         else if (value >= 4.5f && value < 5.5f) return "4th";
+                                         else if (value >= 5.5f && value < 6.5f) return "5th";
+                                         else if (value >= 6.5f && value < 7.5f) return "6th";
+                                         else if (value >= 7.5f) return "7th";
+                                         else return "Auto";},
+                                     nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("useSN3D", "Input Normalization", "",
+                                    NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
+                                    [](float value) {
+                                        if (value >= 0.5f) return "SN3D";
+                                        else return "N3D";
+                                    }, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("decoderOrder", "Decoder Order", "",
+                                     NormalisableRange<float> (0.0f, 6.0f, 1.0f), 0.0f,
+                                     [](float value) {
+                                         if (value >= 0.5f && value < 1.5f) return "2nd";
+                                         else if (value >= 1.5f && value < 2.5f) return "3rd";
+                                         else if (value >= 2.5f && value < 3.5f) return "4th";
+                                         else if (value >= 3.5f && value < 4.5f) return "5th";
+                                         else if (value >= 4.5f && value < 5.5f) return "6th";
+                                         else if (value >= 5.5f ) return "7th";
+                                         else return "1st";},
+                                     nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("exportDecoder", "Export Decoder", "",
+                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
+                                     [](float value) {
+                                         if (value >= 0.5f) return "Yes";
+                                         else return "No";
+                                     }, nullptr));
+
+    params.push_back (oscParams.createAndAddParameter ("exportLayout", "Export Layout", "",
+                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
+                                     [](float value) {
+                                         if (value >= 0.5f) return "Yes";
+                                         else return "No";
+                                     }, nullptr));
+
+
+    return { params.begin(), params.end() };
+}
