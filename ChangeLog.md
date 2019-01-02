@@ -11,14 +11,14 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
 - plug-in specific changes
     - **Binaural**Decoder
         - output level reduced by 10dB
-    - **Scene**Rotator
-        - adds quaternion inversion
-        - adds selectable sequence of rotations
     - **Distance**Compensator
         - fixes broken import of loudspeaker layouts
     - **Energy**Visualizer
         - levels will only be calculated when the GUI is open
-        - adds control to change visualized dynamic range 
+        - adds control to change visualized dynamic range
+    - **Scene**Rotator
+        - adds quaternion inversion
+        - adds selectable sequence of rotations
 
 ## v1.8.1
 - plug-in specific changes
