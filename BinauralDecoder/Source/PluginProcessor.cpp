@@ -67,6 +67,7 @@ oscParams (parameters), parameters(*this, nullptr, "BinauralDecoder", createPara
         irs[i].setSize(square(i + 2), irLength);
         ScopedPointer<AudioFormatReader> reader = wavFormat.createReaderFor(mis[i], true);
         reader->read(&irs[i], 0, irLength, 0, true, false);
+        irs[i].applyGain (0.3f);
     }
 
     oscReceiver.addListener (this);

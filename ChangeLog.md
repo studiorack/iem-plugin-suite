@@ -9,6 +9,8 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
     - osc port can be changed on the fly when opened, plug-ins will close and re-open port immediately
     
 - plug-in specific changes
+    - **Binaural**Decoder
+        - output level reduced by 10dB
     - **Scene**Rotator
         - adds quaternion inversion
         - adds selectable sequence of rotations
