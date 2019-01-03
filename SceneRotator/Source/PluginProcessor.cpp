@@ -214,6 +214,62 @@ void SceneRotatorAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBu
     const int actualChannels = square (actualOrder + 1);
     jassert (actualChannels <= nChIn);
 
+
+    MidiBuffer::Iterator i (midiMessages);
+    MidiMessage message;
+    int time;
+
+    while (i.getNextEvent (message, time))
+    {     
+        if (! message.isController())
+            break;
+        
+        switch (message.getControllerNumber())
+        {
+            case 48:
+                yawLsb = message.getControllerValue();
+                break;
+
+            case 49:
+                pitchLsb = message.getControllerValue();
+                break;
+
+            case 50:
+                rollLsb = message.getControllerValue();
+                break;
+
+            case 16:
+            {
+                float val = (128 * message.getControllerValue() + yawLsb) * (1.0f / 16384);
+                jassert (val >= 0.0f);
+                jassert (val <= 1.0f);
+                parameters.getParameter ("yaw")->setValueNotifyingHost (val);
+                break;
+            }
+
+            case 17:
+            {
+                float val = (128 * message.getControllerValue() + pitchLsb) * (1.0f / 16384);
+                jassert (val >= 0.0f);
+                jassert (val <= 1.0f);
+                parameters.getParameter ("pitch")->setValueNotifyingHost (val);
+                break;
+            }
+
+            case 18:
+            {
+                float val = (128 * message.getControllerValue() + rollLsb) * (1.0f / 16384);
+                jassert (val >= 0.0f);
+                jassert (val <= 1.0f);
+                parameters.getParameter ("roll")->setValueNotifyingHost (val);
+                break;
+            }
+        }
+
+    }
+
+
+
     bool newRotationMatrix = false;
     if (rotationParamsHaveChanged.get())
     {

@@ -153,7 +153,12 @@ private:
     double U (int l, int m, int n, Matrix<float>& Rone, Matrix<float>& Rlm1);
     double V (int l, int m, int n, Matrix<float>& Rone, Matrix<float>& Rlm1);
     double W (int l, int m, int n, Matrix<float>& Rone, Matrix<float>& Rlm1);
-    
+
+
+    // MrHeadTracker 14-bit MIDI Data
+    int yawLsb = 0, pitchLsb = 0, rollLsb = 0;
+
+
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SceneRotatorAudioProcessor)
 };
