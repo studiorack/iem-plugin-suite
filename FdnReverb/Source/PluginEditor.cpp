@@ -183,13 +183,8 @@ FdnReverbAudioProcessorEditor::FdnReverbAudioProcessorEditor (FdnReverbAudioProc
     tv.addCoefficients(highpassCoeffs, Colours::cyan, &highCutoffSlider,
         &highGainSlider);
 
-        float gain = pow(10.0, -3.0 / revTimeSlider.getValue());
-        tv.setOverallGain(gain);
-
-		float fdnGain = pow(10.0, -3.0 / fadeInSlider.getValue());
-		tv.setOverallGain(fdnGain);
-
-    tv.repaint();
+    float gain = pow (10.0, -3.0 / revTimeSlider.getValue());
+    tv.setOverallGain (gain);
 
     addAndMakeVisible (&fv);
     fv.addCoefficients (lowpassCoeffs, globalLaF.ClWidgetColours[3], &lowCutoffSlider,
@@ -197,7 +192,6 @@ FdnReverbAudioProcessorEditor::FdnReverbAudioProcessorEditor (FdnReverbAudioProc
     fv.addCoefficients (highpassCoeffs, globalLaF.ClWidgetColours[0], &highCutoffSlider,
         &highGainSlider, &highQSlider);
     fv.setOverallGain (gain);
-    fv.repaint();
 }
 
 FdnReverbAudioProcessorEditor::~FdnReverbAudioProcessorEditor()
@@ -254,9 +248,6 @@ void FdnReverbAudioProcessorEditor::sliderValueChanged(Slider* slider)
         float gain = pow (10.0, -3.0 / revTimeSlider.getValue());
         fv.setOverallGain (gain);
         tv.setOverallGain (gain);
-
-        fv.repaint();
-        tv.repaint();
     }
 }
 
