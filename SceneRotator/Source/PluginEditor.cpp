@@ -31,7 +31,7 @@ SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotator
     // ============== BEGIN: essentials ======================
     // set GUI size and lookAndFeel
     //setSize(500, 300); // use this to create a fixed-size GUI
-    setResizeLimits (450, 250, 800, 500); // use this to create a resizable GUI
+    setResizeLimits (450, 320, 800, 500); // use this to create a resizable GUI
     setLookAndFeel (&globalLaF);
 
     // make title and footer visible, and set the PluginName
@@ -168,6 +168,18 @@ SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotator
     lbQZ.setText("Z");
 
 
+    // ====================== MIDI GROUP
+
+    addAndMakeVisible (midiGroup);
+    midiGroup.setText ("MIDI Connection");
+    midiGroup.setTextLabelPosition (Justification::centredLeft);
+    //midiGroup.setColour (GroupComponent::outlineColourId, globalLaF.ClSeperator);
+    //midiGroup.setColour (GroupComponent::textColourId, Colours::white);
+
+    addAndMakeVisible(cbMidiDevices);
+    cbMidiDevices.setJustificationType (Justification::centred);
+    refreshMidiDeviceList();
+    cbMidiDevices.addListener (this);
 
     // start timer after everything is set up properly
     startTimer (20);
@@ -209,7 +221,7 @@ void SceneRotatorAudioProcessorEditor::resized()
     const int rotSliderSpacing = 10;
     const int sliderSpacing = 4;
     const int rotSliderWidth = 40;
-    const int labelHeight = 15;
+    //const int labelHeight = 15;
     const int labelWidth = 20;
 
     auto topArea (area.removeFromTop (150));
@@ -278,6 +290,12 @@ void SceneRotatorAudioProcessorEditor::resized()
     sliderRow.removeFromLeft (20);
     tbInvertQuaternion.setBounds (sliderRow);
 
+    // ------------- MIDI Connection ------------------------
+    area.removeFromTop (10);
+    midiGroup.setBounds(area);
+    area.removeFromTop (25);
+    cbMidiDevices.setBounds (area.removeFromTop (20).removeFromLeft (150));
+
 }
 
 void SceneRotatorAudioProcessorEditor::timerCallback()
@@ -289,4 +307,61 @@ void SceneRotatorAudioProcessorEditor::timerCallback()
     // ==========================================
 
     // insert stuff you want to do be done at every timer callback
+}
+
+
+void SceneRotatorAudioProcessorEditor::comboBoxChanged (ComboBox *comboBoxThatHasChanged)
+{
+    if (comboBoxThatHasChanged == &cbMidiDevices && ! refreshingMidiDevices.get())
+    {
+        auto id = cbMidiDevices.getSelectedId();
+
+        if (id == -3) // refresh
+            refreshMidiDeviceList();
+        else if (id == -2)
+        {
+            processor.closeMidiInput();
+            refreshMidiDeviceList();
+        }
+        else if (id > 0) // an actual device is selected!
+        {
+            String deviceName = cbMidiDevices.getText();
+            if (processor.openMidiInput (deviceName))
+                refreshMidiDeviceList();
+        }
+    }
+}
+
+void SceneRotatorAudioProcessorEditor::refreshMidiDeviceList()
+{
+    cbMidiDevices.clear();
+    cbMidiDevices.addItem ("refresh list...", -3);
+    cbMidiDevices.addItem ("none / use DAW input", -2);
+    cbMidiDevices.addSeparator();
+    cbMidiDevices.addSectionHeading ("Available Devices");
+
+    String currentDevice = processor.getCurrentMidiDeviceName();
+
+    int select = -2;
+
+    StringArray devices = MidiInput::getDevices();
+    if (! currentDevice.isEmpty())
+    {
+        if (devices.contains (currentDevice))
+            select = devices.indexOf (currentDevice) + 1;
+        else
+        {
+            cbMidiDevices.addItem (currentDevice + " (not available)", -1);
+            select = -1;
+        }
+    }
+
+
+    for (int i = 0; i < devices.size(); ++i)
+    {
+        cbMidiDevices.addItem (devices[i], i + 1);
+    }
+
+    ScopedValueSetter<Atomic<bool>> refreshing (refreshingMidiDevices, true, false);
+    cbMidiDevices.setSelectedId (select, sendNotificationSync);
 }

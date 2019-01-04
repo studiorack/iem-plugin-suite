@@ -43,10 +43,11 @@
  You can leave `maxChannelCount` and `maxOrder` empty for default values (64 channels and 7th order)
 */
 class SceneRotatorAudioProcessor  : public AudioProcessor,
-                                        public AudioProcessorValueTreeState::Listener,
-                                        public IOHelper<IOTypes::Ambisonics<>, IOTypes::Ambisonics<>, true>,
-                                        public VSTCallbackHandler,
-                                        private OSCReceiver::Listener<OSCReceiver::RealtimeCallback>
+                                    public AudioProcessorValueTreeState::Listener,
+                                    public IOHelper<IOTypes::Ambisonics<>, IOTypes::Ambisonics<>, true>,
+                                    public VSTCallbackHandler,
+                                    private OSCReceiver::Listener<OSCReceiver::RealtimeCallback>,
+                                    private MidiMessageCollector
 {
 public:
     //==============================================================================
@@ -116,6 +117,13 @@ public:
     void rotateBuffer (AudioBuffer<float>* bufferToRotate, const int nChannels, const int samples);
     void calcRotationMatrix (const int order);
 
+
+    //======= MIDI Connection ======================================================
+    String getCurrentMidiDeviceName();
+    bool openMidiInput (String midiDeviceName);
+    bool closeMidiInput();
+    //==============================================================================
+
 private:
     // ====== parameters
     OSCParameterInterface oscParams;
@@ -158,7 +166,9 @@ private:
     // MrHeadTracker 14-bit MIDI Data
     int yawLsb = 0, pitchLsb = 0, rollLsb = 0;
 
-
+    std::unique_ptr<MidiInput> midiInput;
+    String currentMidiDeviceName = "";
+    CriticalSection changingMidiDevice;
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SceneRotatorAudioProcessor)
 };

@@ -41,7 +41,7 @@ typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 //==============================================================================
 /**
 */
-class SceneRotatorAudioProcessorEditor  : public AudioProcessorEditor, private Timer
+class SceneRotatorAudioProcessorEditor  : public AudioProcessorEditor, private Timer, private ComboBox::Listener
 {
 public:
     SceneRotatorAudioProcessorEditor (SceneRotatorAudioProcessor&, AudioProcessorValueTreeState&);
@@ -53,6 +53,9 @@ public:
 
 
     void timerCallback() override;
+    void comboBoxChanged (ComboBox *comboBoxThatHasChanged) override;
+
+    void refreshMidiDeviceList();
 
 private:
     // ====================== begin essentials ==================
@@ -94,6 +97,12 @@ private:
 
     ToggleButton tbInvertYaw, tbInvertPitch, tbInvertRoll, tbInvertQuaternion;
     ScopedPointer<ButtonAttachment> tbInvertYawAttachment, tbInvertPitchAttachment, tbRollFlipAttachment, tbInvertQuaternionAttachment;
+
+
+    // MIDI Section
+    GroupComponent midiGroup;
+    ComboBox cbMidiDevices;
+    Atomic<bool> refreshingMidiDevices = false;
 
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SceneRotatorAudioProcessorEditor)

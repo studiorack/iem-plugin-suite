@@ -106,6 +106,7 @@ oscParams (parameters), parameters (*this, nullptr, "SceneRotator", createParame
 
 
     oscReceiver.addListener (this);
+
 }
 
 SceneRotatorAudioProcessor::~SceneRotatorAudioProcessor()
@@ -184,6 +185,7 @@ void SceneRotatorAudioProcessor::prepareToPlay (double sampleRate, int samplesPe
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
 
+    MidiMessageCollector::reset (sampleRate);
     rotationParamsHaveChanged = true;
 
 }
@@ -214,16 +216,21 @@ void SceneRotatorAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBu
     const int actualChannels = square (actualOrder + 1);
     jassert (actualChannels <= nChIn);
 
+    removeNextBlockOfMessages (midiMessages, buffer.getNumSamples());
 
     MidiBuffer::Iterator i (midiMessages);
     MidiMessage message;
     int time;
 
+    
     while (i.getNextEvent (message, time))
-    {     
+    {
+
         if (! message.isController())
             break;
-        
+
+        DBG (message.getDescription());
+
         switch (message.getControllerNumber())
         {
             case 48:
@@ -491,6 +498,7 @@ void SceneRotatorAudioProcessor::getStateInformation (MemoryBlock& destData)
     // as intermediaries to make it easy to save and load complex data.
     auto state = parameters.copyState();
     state.setProperty ("OSCPort", var (oscReceiver.getPortNumber()), nullptr);
+    state.setProperty ("MidiDeviceName", var (currentMidiDeviceName), nullptr);
     std::unique_ptr<XmlElement> xml (state.createXml());
     copyXmlToBinary (*xml, destData);
 }
@@ -506,9 +514,9 @@ void SceneRotatorAudioProcessor::setStateInformation (const void* data, int size
         {
             parameters.replaceState (ValueTree::fromXml (*xmlState));
             if (parameters.state.hasProperty ("OSCPort"))
-            {
                 oscReceiver.connect (parameters.state.getProperty ("OSCPort", var (-1)));
-            }
+            if (parameters.state.hasProperty ("MidiDeviceName"))
+                openMidiInput (parameters.state.getProperty ("MidiDeviceName", var ("")));
         }
 
     usingYpr = true;
@@ -820,6 +828,45 @@ AudioProcessorValueTreeState::ParameterLayout SceneRotatorAudioProcessor::create
 
 
     return { params.begin(), params.end() };
+}
+
+//==============================================================================
+String SceneRotatorAudioProcessor::getCurrentMidiDeviceName()
+{
+    return currentMidiDeviceName;
+}
+
+bool SceneRotatorAudioProcessor::openMidiInput (String midiDeviceName)
+{
+    const ScopedLock scopedLock (changingMidiDevice);
+
+    StringArray devices = MidiInput::getDevices();
+
+    const int index = devices.indexOf (midiDeviceName);
+    if (index != -1)
+    {
+        midiInput.reset (MidiInput::openDevice (index, this));
+        midiInput->start();
+        DBG ("Opened MidiInput: " << midiInput->getName());
+        currentMidiDeviceName = midiDeviceName;
+        return true;
+    }
+
+    return false;
+}
+
+bool SceneRotatorAudioProcessor::closeMidiInput()
+{
+    const ScopedLock scopedLock (changingMidiDevice);
+    if (midiInput == nullptr)
+        return false;
+
+    midiInput->stop();
+    midiInput.reset();
+    currentMidiDeviceName = ""; // hoping there's not actually a MidiDevice without a name!
+    DBG ("Closed MidiInput");
+    
+    return true;
 }
 
 //==============================================================================
