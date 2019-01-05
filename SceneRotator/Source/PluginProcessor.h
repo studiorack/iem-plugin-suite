@@ -49,31 +49,6 @@ class SceneRotatorAudioProcessor  : public AudioProcessor,
                                     private OSCReceiver::Listener<OSCReceiver::RealtimeCallback>,
                                     private MidiMessageCollector
 {
-    enum MidiScheme
-    {
-        none = 0,
-        mrHeadTrackerYprDir,
-        mrHeadTrackerYprInv,
-        mrHeadTrackerQuaternions,
-        numSchemes
-    };
-
-    const StringArray midiSchemeNames
-    {
-        "none (link only)",
-        "MrHT YPR Direct",
-        "MrHT YPR Inverse",
-        "MrHT Quaternions"
-    };
-
-    const Identifier midiSchemeIdentifieres[numSchemes]
-    {
-        "none",
-        "MrHT_YprDir",
-        "MrHT_YprInv",
-        "MrHT_Quat"
-    };
-
 public:
     //==============================================================================
     SceneRotatorAudioProcessor();
@@ -144,6 +119,30 @@ public:
 
 
     //======= MIDI Connection ======================================================
+    enum MidiScheme
+    {
+        none = 0,
+        mrHeadTrackerYprDir,
+        mrHeadTrackerYprInv,
+        mrHeadTrackerQuaternions
+    };
+
+    const StringArray midiSchemeNames
+    {
+        "none (link only)",
+        "MrHT YPR Direct",
+        "MrHT YPR Inverse",
+        "MrHT Quaternions"
+    };
+
+    const Identifier midiSchemeIdentifieres[4]
+    {
+        "none",
+        "MrHT_YprDir",
+        "MrHT_YprInv",
+        "MrHT_Quat"
+    };
+    
     String getCurrentMidiDeviceName();
     void openMidiInput (String midiDeviceName);
     void closeMidiInput();

@@ -882,7 +882,27 @@ void SceneRotatorAudioProcessor::closeMidiInput()
 
 void SceneRotatorAudioProcessor::setMidiScheme (MidiScheme newMidiScheme)
 {
+    currentMidiScheme = newMidiScheme;
+    DBG ("Scheme set to " << midiSchemeNames[newMidiScheme]);
+    
+    switch (newMidiScheme)
+    {
+        case none:
+            break;
+            
+        case mrHeadTrackerYprDir:
+            parameters.getParameter ("rotationSequence")->setValueNotifyingHost (1.0f); // roll->pitch->yaw
+            break;
 
+        case mrHeadTrackerYprInv:
+            parameters.getParameter ("rotationSequence")->setValueNotifyingHost (1.0f); // roll->pitch->yaw
+            break;
+
+        case mrHeadTrackerQuaternions:
+            break;
+    }
+
+    schemeHasChanged = true;
 }
 
 //==============================================================================

@@ -362,7 +362,7 @@ void SceneRotatorAudioProcessorEditor::comboBoxChanged (ComboBox *comboBoxThatHa
     }
     else if (comboBoxThatHasChanged == &cbMidiScheme && ! updatingMidiScheme.get())
     {
-        
+        processor.setMidiScheme (SceneRotatorAudioProcessor::MidiScheme (cbMidiScheme.getSelectedId() - 1));
     }
 
 }
