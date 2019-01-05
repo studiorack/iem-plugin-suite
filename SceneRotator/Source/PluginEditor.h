@@ -101,7 +101,9 @@ private:
 
     // MIDI Section
     GroupComponent midiGroup;
-    ComboBox cbMidiDevices;
+    SimpleLabel slMidiDevices, slMidiScheme;
+    ComboBox cbMidiDevices, cbMidiScheme;
+    
     Atomic<bool> refreshingMidiDevices = false;
 
 

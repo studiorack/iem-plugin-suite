@@ -49,6 +49,31 @@ class SceneRotatorAudioProcessor  : public AudioProcessor,
                                     private OSCReceiver::Listener<OSCReceiver::RealtimeCallback>,
                                     private MidiMessageCollector
 {
+    enum MidiScheme
+    {
+        none = 0,
+        mrHeadTrackerYprDir,
+        mrHeadTrackerYprInv,
+        mrHeadTrackerQuaternions,
+        numSchemes
+    };
+
+    const StringArray midiSchemeNames
+    {
+        "none (link only)",
+        "MrHT YPR Direct",
+        "MrHT YPR Inverse",
+        "MrHT Quaternions"
+    };
+
+    const Identifier midiSchemeIdentifieres[numSchemes]
+    {
+        "none",
+        "MrHT_YprDir",
+        "MrHT_YprInv",
+        "MrHT_Quat"
+    };
+
 public:
     //==============================================================================
     SceneRotatorAudioProcessor();
@@ -122,6 +147,9 @@ public:
     String getCurrentMidiDeviceName();
     bool openMidiInput (String midiDeviceName);
     bool closeMidiInput();
+
+    StringArray getMidiSchemes() { return midiSchemeNames; };
+    MidiScheme getCurrentMidiScheme() {return currentMidiScheme; };
     //==============================================================================
 
 private:
@@ -165,9 +193,11 @@ private:
 
     // MrHeadTracker 14-bit MIDI Data
     int yawLsb = 0, pitchLsb = 0, rollLsb = 0;
+    int wLsb = 0, xLsb = 0, yLsb = 0, zLsb = 0;
 
     std::unique_ptr<MidiInput> midiInput;
     String currentMidiDeviceName = "";
+    MidiScheme currentMidiScheme = MidiScheme::none;
     CriticalSection changingMidiDevice;
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SceneRotatorAudioProcessor)

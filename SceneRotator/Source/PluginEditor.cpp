@@ -51,8 +51,6 @@ SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotator
     // ======================== YAW, PITCH, ROLL GROUP
     yprGroup.setText ("Yaw, Pitch & Roll");
     yprGroup.setTextLabelPosition (Justification::centredLeft);
-    yprGroup.setColour (GroupComponent::outlineColourId, globalLaF.ClSeperator);
-    yprGroup.setColour (GroupComponent::textColourId, Colours::white);
     addAndMakeVisible (&yprGroup);
 
     addAndMakeVisible (&slYaw);
@@ -116,8 +114,6 @@ SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotator
     // ====================== QUATERNION GROUP
     quatGroup.setText ("Quaternions");
     quatGroup.setTextLabelPosition (Justification::centredLeft);
-    quatGroup.setColour (GroupComponent::outlineColourId, globalLaF.ClSeperator);
-    quatGroup.setColour (GroupComponent::textColourId, Colours::white);
     addAndMakeVisible (&quatGroup);
 
     addAndMakeVisible (&slQW);
@@ -169,17 +165,27 @@ SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotator
 
 
     // ====================== MIDI GROUP
-
     addAndMakeVisible (midiGroup);
     midiGroup.setText ("MIDI Connection");
     midiGroup.setTextLabelPosition (Justification::centredLeft);
-    //midiGroup.setColour (GroupComponent::outlineColourId, globalLaF.ClSeperator);
-    //midiGroup.setColour (GroupComponent::textColourId, Colours::white);
 
-    addAndMakeVisible(cbMidiDevices);
+    addAndMakeVisible (cbMidiDevices);
     cbMidiDevices.setJustificationType (Justification::centred);
     refreshMidiDeviceList();
     cbMidiDevices.addListener (this);
+
+    addAndMakeVisible (cbMidiScheme);
+    cbMidiScheme.setJustificationType (Justification::centred);
+    cbMidiScheme.addSectionHeading("Select Device's MIDI Scheme");
+    cbMidiScheme.addItemList (processor.getMidiSchemes(), 1);
+    cbMidiScheme.setSelectedId (processor.getCurrentMidiScheme() + 1);
+    cbMidiScheme.addListener (this);
+
+    addAndMakeVisible (slMidiDevices);
+    slMidiDevices.setText ("Device");
+
+    addAndMakeVisible (slMidiScheme);
+    slMidiScheme.setText ("Scheme");
 
     // start timer after everything is set up properly
     startTimer (20);
@@ -292,9 +298,17 @@ void SceneRotatorAudioProcessorEditor::resized()
 
     // ------------- MIDI Connection ------------------------
     area.removeFromTop (10);
-    midiGroup.setBounds(area);
+    midiGroup.setBounds (area);
     area.removeFromTop (25);
-    cbMidiDevices.setBounds (area.removeFromTop (20).removeFromLeft (150));
+    auto row = area.removeFromTop (20);
+    auto leftSide = row.removeFromLeft (160);
+    slMidiDevices.setBounds (leftSide.removeFromLeft (40));
+    cbMidiDevices.setBounds (leftSide);
+
+    row.removeFromLeft (10);
+    slMidiScheme.setBounds (row.removeFromLeft (48));
+    cbMidiScheme.setBounds (row.removeFromLeft (128));
+
 
 }
 
