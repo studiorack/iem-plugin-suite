@@ -179,6 +179,7 @@ SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotator
     cbMidiScheme.addSectionHeading("Select Device's MIDI Scheme");
     cbMidiScheme.addItemList (processor.getMidiSchemes(), 1);
     cbMidiScheme.setSelectedId (processor.getCurrentMidiScheme() + 1);
+    updateSelectedMidiScheme();
     cbMidiScheme.addListener (this);
 
     addAndMakeVisible (slMidiDevices);
@@ -321,6 +322,17 @@ void SceneRotatorAudioProcessorEditor::timerCallback()
     // ==========================================
 
     // insert stuff you want to do be done at every timer callback
+    if (processor.deviceHasChanged.get())
+    {
+        processor.deviceHasChanged = false;
+        refreshMidiDeviceList();
+    }
+
+    if (processor.schemeHasChanged.get())
+    {
+        processor.schemeHasChanged = false;
+        updateSelectedMidiScheme();
+    }
 }
 
 
@@ -344,6 +356,11 @@ void SceneRotatorAudioProcessorEditor::comboBoxChanged (ComboBox *comboBoxThatHa
                 refreshMidiDeviceList();
         }
     }
+    else if (comboBoxThatHasChanged == &cbMidiScheme && ! updatingMidiScheme.get())
+    {
+        
+    }
+
 }
 
 void SceneRotatorAudioProcessorEditor::refreshMidiDeviceList()
@@ -378,4 +395,10 @@ void SceneRotatorAudioProcessorEditor::refreshMidiDeviceList()
 
     ScopedValueSetter<Atomic<bool>> refreshing (refreshingMidiDevices, true, false);
     cbMidiDevices.setSelectedId (select, sendNotificationSync);
+}
+
+void SceneRotatorAudioProcessorEditor::updateSelectedMidiScheme()
+{
+    ScopedValueSetter<Atomic<bool>> refreshing (updatingMidiScheme, true, false);
+    //cbMidiScheme.setSelectedId (select, sendNotificationSync);
 }

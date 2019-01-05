@@ -152,6 +152,12 @@ public:
     MidiScheme getCurrentMidiScheme() {return currentMidiScheme; };
     //==============================================================================
 
+
+    // Flags for editor
+    Atomic<bool> deviceHasChanged = false;
+    Atomic<bool> schemeHasChanged = false;
+
+    
 private:
     // ====== parameters
     OSCParameterInterface oscParams;
@@ -191,6 +197,7 @@ private:
     double W (int l, int m, int n, Matrix<float>& Rone, Matrix<float>& Rlm1);
 
 
+    // ============ MIDI Device Connection ======================
     // MrHeadTracker 14-bit MIDI Data
     int yawLsb = 0, pitchLsb = 0, rollLsb = 0;
     int wLsb = 0, xLsb = 0, yLsb = 0, zLsb = 0;

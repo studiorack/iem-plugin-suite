@@ -56,6 +56,7 @@ public:
     void comboBoxChanged (ComboBox *comboBoxThatHasChanged) override;
 
     void refreshMidiDeviceList();
+    void updateSelectedMidiScheme();
 
 private:
     // ====================== begin essentials ==================
@@ -105,6 +106,7 @@ private:
     ComboBox cbMidiDevices, cbMidiScheme;
     
     Atomic<bool> refreshingMidiDevices = false;
+    Atomic<bool> updatingMidiScheme = false;
 
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SceneRotatorAudioProcessorEditor)
