@@ -64,6 +64,8 @@ public:
         setColour (ListBox::backgroundColourId, Colours::steelblue.withMultipliedAlpha(0.1f));
         setColour (ListBox::outlineColourId, Colours::steelblue.withMultipliedAlpha(0.3f));
 
+        setColour (TooltipWindow::backgroundColourId, Colours::steelblue.withMultipliedAlpha (0.9f));
+
         setColour (TableHeaderComponent::backgroundColourId, Colours::lightgrey.withMultipliedAlpha(0.8f));
         setColour (TableHeaderComponent::highlightColourId, Colours::steelblue.withMultipliedAlpha(0.3f));
 

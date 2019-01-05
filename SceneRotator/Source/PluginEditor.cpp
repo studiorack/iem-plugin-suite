@@ -60,7 +60,7 @@ SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotator
     slYaw.setReverse (true);
     slYaw.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
     slYaw.setRotaryParameters (MathConstants<float>::pi, 3 * MathConstants<float>::pi, false);
-    slYaw.setTooltip ("Yaw angle");
+    slYaw.setTooltip ("Yaw angle: rotation around z-axis");
     slYaw.setTextValueSuffix (CharPointer_UTF8 (R"(°)"));
 
     addAndMakeVisible (&slPitch);
@@ -70,7 +70,7 @@ SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotator
     slPitch.setReverse (true);
     slPitch.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
     slPitch.setRotaryParameters (0.5 * MathConstants<float>::pi, 2.5 * MathConstants<float>::pi, false);
-    slPitch.setTooltip ("Pitch angle");
+    slPitch.setTooltip ("Pitch angle: rotation around y-axis");
     slPitch.setTextValueSuffix (CharPointer_UTF8 (R"(°)"));
 
     addAndMakeVisible (&slRoll);
@@ -80,7 +80,7 @@ SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotator
     slRoll.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
     slRoll.setReverse (false);
     slRoll.setRotaryParameters (MathConstants<float>::pi, 3 * MathConstants<float>::pi, false);
-    slRoll.setTooltip ("Roll angle");
+    slRoll.setTooltip ("Roll angle: rotation around x-axis");
     slRoll.setTextValueSuffix (CharPointer_UTF8 (R"(°)"));
 
     addAndMakeVisible (tbInvertYaw);
@@ -104,7 +104,8 @@ SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotator
     tbInvertQuaternion.setButtonText ("Invert Quaternions");
 
     addAndMakeVisible (cbRotationSequence);
-    cbRotationSequence.addSectionHeading ("Select order of rotation");
+    cbRotationSequence.setTooltip ("Sequence of intrinsic rotations");
+    cbRotationSequence.addSectionHeading ("Rotation sequence");
     cbRotationSequence.addItem("Yaw -> Pitch -> Roll", 1);
     cbRotationSequence.addItem("Roll -> Pitch -> Yaw", 2);
     cbRotationSequence.setJustificationType (Justification::centred);
@@ -187,6 +188,10 @@ SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotator
 
     addAndMakeVisible (slMidiScheme);
     slMidiScheme.setText ("Scheme");
+
+    tooltipWin.setLookAndFeel (&globalLaF);
+    tooltipWin.setMillisecondsBeforeTipAppears (500);
+    tooltipWin.setOpaque (false);
 
     // start timer after everything is set up properly
     startTimer (20);

@@ -127,8 +127,10 @@ AllRADecoderAudioProcessorEditor::AllRADecoderAudioProcessorEditor (AllRADecoder
 
     // start timer after everything is set up properly
     startTimer(50);
-    tooltip.setMillisecondsBeforeTipAppears (800);
-    tooltip.setOpaque (false);
+    
+    tooltipWin.setLookAndFeel (&globalLaF);
+    tooltipWin.setMillisecondsBeforeTipAppears (500);
+    tooltipWin.setOpaque (false);
 }
 
 AllRADecoderAudioProcessorEditor::~AllRADecoderAudioProcessorEditor()

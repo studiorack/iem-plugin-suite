@@ -157,10 +157,12 @@ DistanceCompensatorAudioProcessorEditor::DistanceCompensatorAudioProcessorEditor
         lbHandle->setText(String(i + 1), true, Justification::right);
     }
 
-
-    setResizeLimits (500, 650, 500, 650); // use this to create a resizable GUI
+    tooltipWin.setLookAndFeel (&globalLaF);
     toolTipWin.setMillisecondsBeforeTipAppears (500);
     toolTipWin.setOpaque (false);
+
+    setResizeLimits (500, 650, 500, 650); // use this to create a resizable GUI
+
     // start timer after everything is set up properly
     startTimer (20);
 }
