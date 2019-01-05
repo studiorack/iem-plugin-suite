@@ -111,6 +111,7 @@ oscParams (parameters), parameters (*this, nullptr, "SceneRotator", createParame
 
 SceneRotatorAudioProcessor::~SceneRotatorAudioProcessor()
 {
+    closeMidiInput();
 }
 
 //==============================================================================
@@ -314,6 +315,7 @@ void SceneRotatorAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBu
         for (int l = 1; l <= inputOrder; ++l)
             *orderMatricesCopy[l] = *orderMatrices[l];
 
+    midiMessages.clear();
 }
 
 double SceneRotatorAudioProcessor::P (int i, int l, int a, int b, Matrix<float>& R1, Matrix<float>& Rlm1)
@@ -517,6 +519,8 @@ void SceneRotatorAudioProcessor::setStateInformation (const void* data, int size
                 oscReceiver.connect (parameters.state.getProperty ("OSCPort", var (-1)));
             if (parameters.state.hasProperty ("MidiDeviceName"))
                 openMidiInput (parameters.state.getProperty ("MidiDeviceName", var ("")));
+            else
+                closeMidiInput();
         }
 
     usingYpr = true;
@@ -825,8 +829,6 @@ AudioProcessorValueTreeState::ParameterLayout SceneRotatorAudioProcessor::create
                                      [](float value) { return value >= 0.5f ? "Roll->Pitch->Yaw" : "Yaw->Pitch->Roll"; }, nullptr));
 
 
-
-
     return { params.begin(), params.end() };
 }
 
@@ -838,6 +840,9 @@ String SceneRotatorAudioProcessor::getCurrentMidiDeviceName()
 
 bool SceneRotatorAudioProcessor::openMidiInput (String midiDeviceName)
 {
+    if (midiDeviceName.isEmpty())
+        return closeMidiInput();
+
     const ScopedLock scopedLock (changingMidiDevice);
 
     StringArray devices = MidiInput::getDevices();
@@ -847,8 +852,12 @@ bool SceneRotatorAudioProcessor::openMidiInput (String midiDeviceName)
     {
         midiInput.reset (MidiInput::openDevice (index, this));
         midiInput->start();
+
         DBG ("Opened MidiInput: " << midiInput->getName());
+
         currentMidiDeviceName = midiDeviceName;
+        deviceHasChanged = true;
+
         return true;
     }
 
@@ -863,8 +872,10 @@ bool SceneRotatorAudioProcessor::closeMidiInput()
 
     midiInput->stop();
     midiInput.reset();
-    currentMidiDeviceName = ""; // hoping there's not actually a MidiDevice without a name!
     DBG ("Closed MidiInput");
+
+    currentMidiDeviceName = ""; // hoping there's not actually a MidiDevice without a name!
+    deviceHasChanged = true;
     
     return true;
 }
