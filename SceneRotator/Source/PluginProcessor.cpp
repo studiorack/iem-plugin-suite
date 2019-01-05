@@ -501,6 +501,7 @@ void SceneRotatorAudioProcessor::getStateInformation (MemoryBlock& destData)
     auto state = parameters.copyState();
     state.setProperty ("OSCPort", var (oscReceiver.getPortNumber()), nullptr);
     state.setProperty ("MidiDeviceName", var (currentMidiDeviceName), nullptr);
+    state.setProperty ("MidiDeviceScheme", var (currentMidiScheme), nullptr);
     std::unique_ptr<XmlElement> xml (state.createXml());
     copyXmlToBinary (*xml, destData);
 }
@@ -517,10 +518,14 @@ void SceneRotatorAudioProcessor::setStateInformation (const void* data, int size
             parameters.replaceState (ValueTree::fromXml (*xmlState));
             if (parameters.state.hasProperty ("OSCPort"))
                 oscReceiver.connect (parameters.state.getProperty ("OSCPort", var (-1)));
+
             if (parameters.state.hasProperty ("MidiDeviceName"))
                 openMidiInput (parameters.state.getProperty ("MidiDeviceName", var ("")));
             else
                 closeMidiInput();
+
+            if (parameters.state.hasProperty ("MidiDeviceScheme"))
+                setMidiScheme (MidiScheme (static_cast<int> (parameters.state.getProperty ("MidiDeviceScheme", var (0)))));
         }
 
     usingYpr = true;
@@ -899,6 +904,11 @@ void SceneRotatorAudioProcessor::setMidiScheme (MidiScheme newMidiScheme)
             break;
 
         case mrHeadTrackerQuaternions:
+            break;
+
+        default:
+            DBG ("Not supported MidiScheme - I guess the casting from int failed hard!");
+            jassertfalse;
             break;
     }
 
