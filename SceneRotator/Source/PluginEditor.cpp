@@ -352,8 +352,7 @@ void SceneRotatorAudioProcessorEditor::comboBoxChanged (ComboBox *comboBoxThatHa
         else if (id > 0) // an actual device is selected!
         {
             String deviceName = cbMidiDevices.getText();
-            if (processor.openMidiInput (deviceName))
-                refreshMidiDeviceList();
+            processor.openMidiInput (deviceName);
         }
     }
     else if (comboBoxThatHasChanged == &cbMidiScheme && ! updatingMidiScheme.get())

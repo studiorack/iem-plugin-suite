@@ -145,11 +145,12 @@ public:
 
     //======= MIDI Connection ======================================================
     String getCurrentMidiDeviceName();
-    bool openMidiInput (String midiDeviceName);
-    bool closeMidiInput();
+    void openMidiInput (String midiDeviceName);
+    void closeMidiInput();
 
-    StringArray getMidiSchemes() { return midiSchemeNames; };
-    MidiScheme getCurrentMidiScheme() {return currentMidiScheme; };
+    const StringArray getMidiSchemes() { return midiSchemeNames; };
+    MidiScheme getCurrentMidiScheme() { return currentMidiScheme; };
+    void setMidiScheme (MidiScheme newMidiScheme);
     //==============================================================================
 
 

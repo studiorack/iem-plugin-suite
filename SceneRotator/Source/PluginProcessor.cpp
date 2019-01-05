@@ -838,10 +838,10 @@ String SceneRotatorAudioProcessor::getCurrentMidiDeviceName()
     return currentMidiDeviceName;
 }
 
-bool SceneRotatorAudioProcessor::openMidiInput (String midiDeviceName)
+void SceneRotatorAudioProcessor::openMidiInput (String midiDeviceName)
 {
     if (midiDeviceName.isEmpty())
-        return closeMidiInput();
+        return closeMidiInput(); // <- not sure if that syntax is totally wrong or brilliant!
 
     const ScopedLock scopedLock (changingMidiDevice);
 
@@ -858,17 +858,17 @@ bool SceneRotatorAudioProcessor::openMidiInput (String midiDeviceName)
         currentMidiDeviceName = midiDeviceName;
         deviceHasChanged = true;
 
-        return true;
+        return;
     }
 
-    return false;
+    return;
 }
 
-bool SceneRotatorAudioProcessor::closeMidiInput()
+void SceneRotatorAudioProcessor::closeMidiInput()
 {
     const ScopedLock scopedLock (changingMidiDevice);
     if (midiInput == nullptr)
-        return false;
+        return;
 
     midiInput->stop();
     midiInput.reset();
@@ -877,7 +877,12 @@ bool SceneRotatorAudioProcessor::closeMidiInput()
     currentMidiDeviceName = ""; // hoping there's not actually a MidiDevice without a name!
     deviceHasChanged = true;
     
-    return true;
+    return;
+}
+
+void SceneRotatorAudioProcessor::setMidiScheme (MidiScheme newMidiScheme)
+{
+
 }
 
 //==============================================================================
