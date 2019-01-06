@@ -200,7 +200,7 @@ private:
     // ============ MIDI Device Connection ======================
     // MrHeadTracker 14-bit MIDI Data
     int yawLsb = 0, pitchLsb = 0, rollLsb = 0;
-    int wLsb = 0, xLsb = 0, yLsb = 0, zLsb = 0;
+    int qwLsb = 0, qxLsb = 0, qyLsb = 0, qzLsb = 0;
 
     std::unique_ptr<MidiInput> midiInput;
     String currentMidiDeviceName = "";

@@ -218,64 +218,95 @@ void SceneRotatorAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBu
     jassert (actualChannels <= nChIn);
 
     if (currentMidiScheme != MidiScheme::none)
-    removeNextBlockOfMessages (midiMessages, buffer.getNumSamples());
-
-    MidiBuffer::Iterator i (midiMessages);
-    MidiMessage message;
-    int time;
-
-    
-    while (i.getNextEvent (message, time))
     {
+        removeNextBlockOfMessages (midiMessages, buffer.getNumSamples());
 
-        if (! message.isController())
-            break;
+        MidiBuffer::Iterator i (midiMessages);
+        MidiMessage message;
+        int time;
 
-        DBG (message.getDescription());
 
-        switch (message.getControllerNumber())
+        while (i.getNextEvent (message, time))
         {
-            case 48:
-                yawLsb = message.getControllerValue();
+
+            if (! message.isController())
                 break;
 
-            case 49:
-                pitchLsb = message.getControllerValue();
-                break;
-
-            case 50:
-                rollLsb = message.getControllerValue();
-                break;
-
-            case 16:
+            switch (currentMidiScheme)
             {
-                float val = (128 * message.getControllerValue() + yawLsb) * (1.0f / 16384);
-                jassert (val >= 0.0f);
-                jassert (val <= 1.0f);
-                parameters.getParameter ("yaw")->setValueNotifyingHost (val);
-                break;
-            }
+                case MidiScheme::mrHeadTrackerYprDir:
+                case MidiScheme::mrHeadTrackerYprInv:
+                    switch (message.getControllerNumber())
+                    {
+                        case 48: yawLsb = message.getControllerValue(); break;
+                        case 49: pitchLsb = message.getControllerValue(); break;
+                        case 50: rollLsb = message.getControllerValue(); break;
 
-            case 17:
-            {
-                float val = (128 * message.getControllerValue() + pitchLsb) * (1.0f / 16384);
-                jassert (val >= 0.0f);
-                jassert (val <= 1.0f);
-                parameters.getParameter ("pitch")->setValueNotifyingHost (val);
-                break;
-            }
+                        case 16:
+                        {
+                            float yawVal = (128 * message.getControllerValue() + yawLsb) * (1.0f / 16384);
+                            parameters.getParameter ("yaw")->setValueNotifyingHost (yawVal);
+                            break;
+                        }
 
-            case 18:
-            {
-                float val = (128 * message.getControllerValue() + rollLsb) * (1.0f / 16384);
-                jassert (val >= 0.0f);
-                jassert (val <= 1.0f);
-                parameters.getParameter ("roll")->setValueNotifyingHost (val);
-                break;
-            }
-        }
+                        case 17:
+                        {
+                            float pitchVal = (128 * message.getControllerValue() + pitchLsb) * (1.0f / 16384);
+                            parameters.getParameter ("pitch")->setValueNotifyingHost (pitchVal);
+                            break;
+                        }
 
-    }
+                        case 18:
+                        {
+                            float rollVal = (128 * message.getControllerValue() + rollLsb) * (1.0f / 16384);
+                            parameters.getParameter ("roll")->setValueNotifyingHost (rollVal);
+                            break;
+                        }
+                    } // switch (message.getControllerNumber())
+                    break;
+
+                case MidiScheme::mrHeadTrackerQuaternions:
+                    switch (message.getControllerNumber())
+                    {
+                        case 48: qwLsb = message.getControllerValue(); break;
+                        case 49: qxLsb = message.getControllerValue(); break;
+                        case 50: qyLsb = message.getControllerValue(); break;
+                        case 51: qzLsb = message.getControllerValue(); break;
+
+                        case 16:
+                        {
+                            float qwVal = (128 * message.getControllerValue() + qwLsb) * (1.0f / 16384);
+                            parameters.getParameter ("qw")->setValueNotifyingHost (qwVal);
+                            break;
+                        }
+
+                        case 17:
+                        {
+                            float qxVal = (128 * message.getControllerValue() + qxLsb) * (1.0f / 16384);
+                            parameters.getParameter ("qx")->setValueNotifyingHost (qxVal);
+                            break;
+                        }
+
+                        case 18:
+                        {
+                            float qyVal = (128 * message.getControllerValue() + qyLsb) * (1.0f / 16384);
+                            parameters.getParameter ("qy")->setValueNotifyingHost (qyVal);
+                            break;
+                        }
+
+                        case 19:
+                        {
+                            float qzVal = (128 * message.getControllerValue() + qzLsb) * (1.0f / 16384);
+                            parameters.getParameter ("qz")->setValueNotifyingHost (qzVal);
+                            break;
+                        }
+                    } // switch (message.getControllerNumber())
+                    break;
+                default:
+                    break;
+            } // switch (currentMidiScheme)
+        } //while (i.getNextEvent (message, time))
+    } //if (currentMidiScheme != MidiScheme::none)
 
 
 
@@ -765,74 +796,74 @@ AudioProcessorValueTreeState::ParameterLayout SceneRotatorAudioProcessor::create
 
 
     params.push_back (oscParams.createAndAddParameter ("orderSetting", "Ambisonics Order", "",
-                                     NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
-                                     [](float value) {
-                                         if (value >= 0.5f && value < 1.5f) return "0th";
-                                         else if (value >= 1.5f && value < 2.5f) return "1st";
-                                         else if (value >= 2.5f && value < 3.5f) return "2nd";
-                                         else if (value >= 3.5f && value < 4.5f) return "3rd";
-                                         else if (value >= 4.5f && value < 5.5f) return "4th";
-                                         else if (value >= 5.5f && value < 6.5f) return "5th";
-                                         else if (value >= 6.5f && value < 7.5f) return "6th";
-                                         else if (value >= 7.5f) return "7th";
-                                         else return "Auto";
-                                     }, nullptr));
+                                                       NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
+                                                       [](float value) {
+                                                           if (value >= 0.5f && value < 1.5f) return "0th";
+                                                           else if (value >= 1.5f && value < 2.5f) return "1st";
+                                                           else if (value >= 2.5f && value < 3.5f) return "2nd";
+                                                           else if (value >= 3.5f && value < 4.5f) return "3rd";
+                                                           else if (value >= 4.5f && value < 5.5f) return "4th";
+                                                           else if (value >= 5.5f && value < 6.5f) return "5th";
+                                                           else if (value >= 6.5f && value < 7.5f) return "6th";
+                                                           else if (value >= 7.5f) return "7th";
+                                                           else return "Auto";
+                                                       }, nullptr));
 
     params.push_back (oscParams.createAndAddParameter ("useSN3D", "Normalization", "",
-                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
-                                     [](float value)
-                                     {
-                                         if (value >= 0.5f ) return "SN3D";
-                                         else return "N3D";
-                                     }, nullptr));
+                                                       NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
+                                                       [](float value)
+                                                       {
+                                                           if (value >= 0.5f ) return "SN3D";
+                                                           else return "N3D";
+                                                       }, nullptr));
 
     params.push_back (oscParams.createAndAddParameter ("yaw", "Yaw Angle", CharPointer_UTF8 (R"(°)"),
-                                     NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
-                                     [](float value) { return String(value, 2); }, nullptr, true));
+                                                       NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
+                                                       [](float value) { return String(value, 2); }, nullptr, true));
 
     params.push_back (oscParams.createAndAddParameter ("pitch", "Pitch Angle", CharPointer_UTF8 (R"(°)"),
-                                     NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
-                                     [](float value) { return String(value, 2); }, nullptr, true));
+                                                       NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
+                                                       [](float value) { return String(value, 2); }, nullptr, true));
 
     params.push_back (oscParams.createAndAddParameter ("roll", "Roll Angle", CharPointer_UTF8 (R"(°)"),
-                                     NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
-                                     [](float value) { return String(value, 2); }, nullptr, true));
+                                                       NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
+                                                       [](float value) { return String(value, 2); }, nullptr, true));
 
     params.push_back (oscParams.createAndAddParameter ("qw", "Quaternion W", "",
-                                     NormalisableRange<float> (-1.0f, 1.0f, 0.001f), 1.0,
-                                     [](float value) { return String(value, 2); }, nullptr, true));
+                                                       NormalisableRange<float> (-1.0f, 1.0f, 0.001f), 1.0,
+                                                       [](float value) { return String(value, 2); }, nullptr, true));
 
     params.push_back (oscParams.createAndAddParameter ("qx", "Quaternion X", "",
-                                     NormalisableRange<float> (-1.0f, 1.0f, 0.001f), 0.0,
-                                     [](float value) { return String(value, 2); }, nullptr, true));
+                                                       NormalisableRange<float> (-1.0f, 1.0f, 0.001f), 0.0,
+                                                       [](float value) { return String(value, 2); }, nullptr, true));
 
     params.push_back (oscParams.createAndAddParameter ("qy", "Quaternion Y", "",
-                                     NormalisableRange<float> (-1.0f, 1.0f, 0.001f), 0.0,
-                                     [](float value) { return String(value, 2); }, nullptr, true));
+                                                       NormalisableRange<float> (-1.0f, 1.0f, 0.001f), 0.0,
+                                                       [](float value) { return String(value, 2); }, nullptr, true));
 
     params.push_back (oscParams.createAndAddParameter ("qz", "Quaternion Z", "",
-                                     NormalisableRange<float> (-1.0f, 1.0f, 0.001f), 0.0,
-                                     [](float value) { return String(value, 2); }, nullptr, true));
+                                                       NormalisableRange<float> (-1.0f, 1.0f, 0.001f), 0.0,
+                                                       [](float value) { return String(value, 2); }, nullptr, true));
 
     params.push_back (oscParams.createAndAddParameter ("invertYaw", "Invert Yaw", "",
-                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
-                                     [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr));
+                                                       NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
+                                                       [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr));
 
     params.push_back (oscParams.createAndAddParameter ("invertPitch", "Invert Pitch", "",
-                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
-                                     [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr));
+                                                       NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
+                                                       [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr));
 
     params.push_back (oscParams.createAndAddParameter ("invertRoll", "Invert Roll", "",
-                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
-                                     [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr));
+                                                       NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
+                                                       [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr));
 
     params.push_back (oscParams.createAndAddParameter ("invertQuaternion", "Invert Quaternion", "",
-                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
-                                     [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr));
+                                                       NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
+                                                       [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr));
 
     params.push_back (oscParams.createAndAddParameter ("rotationSequence", "Sequence of Rotations", "",
-                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0,
-                                     [](float value) { return value >= 0.5f ? "Roll->Pitch->Yaw" : "Yaw->Pitch->Roll"; }, nullptr));
+                                                       NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0,
+                                                       [](float value) { return value >= 0.5f ? "Roll->Pitch->Yaw" : "Yaw->Pitch->Roll"; }, nullptr));
 
 
     return { params.begin(), params.end() };
