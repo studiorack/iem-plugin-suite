@@ -179,7 +179,7 @@ SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotator
     cbMidiScheme.setJustificationType (Justification::centred);
     cbMidiScheme.addSectionHeading("Select Device's MIDI Scheme");
     cbMidiScheme.addItemList (processor.getMidiSchemes(), 1);
-    cbMidiScheme.setSelectedId (processor.getCurrentMidiScheme() + 1);
+    cbMidiScheme.setSelectedId (static_cast<int> (processor.getCurrentMidiScheme()) + 1);
     updateSelectedMidiScheme();
     cbMidiScheme.addListener (this);
 

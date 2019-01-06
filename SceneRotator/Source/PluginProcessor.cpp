@@ -217,6 +217,7 @@ void SceneRotatorAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBu
     const int actualChannels = square (actualOrder + 1);
     jassert (actualChannels <= nChIn);
 
+    if (currentMidiScheme != MidiScheme::none)
     removeNextBlockOfMessages (midiMessages, buffer.getNumSamples());
 
     MidiBuffer::Iterator i (midiMessages);
@@ -501,7 +502,7 @@ void SceneRotatorAudioProcessor::getStateInformation (MemoryBlock& destData)
     auto state = parameters.copyState();
     state.setProperty ("OSCPort", var (oscReceiver.getPortNumber()), nullptr);
     state.setProperty ("MidiDeviceName", var (currentMidiDeviceName), nullptr);
-    state.setProperty ("MidiDeviceScheme", var (currentMidiScheme), nullptr);
+    state.setProperty ("MidiDeviceScheme", var (static_cast<int> (currentMidiScheme)), nullptr);
     std::unique_ptr<XmlElement> xml (state.createXml());
     copyXmlToBinary (*xml, destData);
 }
@@ -888,22 +889,22 @@ void SceneRotatorAudioProcessor::closeMidiInput()
 void SceneRotatorAudioProcessor::setMidiScheme (MidiScheme newMidiScheme)
 {
     currentMidiScheme = newMidiScheme;
-    DBG ("Scheme set to " << midiSchemeNames[newMidiScheme]);
+    DBG ("Scheme set to " << midiSchemeNames[static_cast<int> (newMidiScheme)]);
     
     switch (newMidiScheme)
     {
-        case none:
+        case MidiScheme::none:
             break;
             
-        case mrHeadTrackerYprDir:
+        case MidiScheme::mrHeadTrackerYprDir:
             parameters.getParameter ("rotationSequence")->setValueNotifyingHost (1.0f); // roll->pitch->yaw
             break;
 
-        case mrHeadTrackerYprInv:
+        case MidiScheme::mrHeadTrackerYprInv:
             parameters.getParameter ("rotationSequence")->setValueNotifyingHost (1.0f); // roll->pitch->yaw
             break;
 
-        case mrHeadTrackerQuaternions:
+        case MidiScheme::mrHeadTrackerQuaternions:
             break;
 
         default:

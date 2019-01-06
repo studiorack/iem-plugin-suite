@@ -119,7 +119,7 @@ public:
 
 
     //======= MIDI Connection ======================================================
-    enum MidiScheme
+    enum class MidiScheme
     {
         none = 0,
         mrHeadTrackerYprDir,
