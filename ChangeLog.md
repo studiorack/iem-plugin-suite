@@ -7,6 +7,8 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
 - plug-in specific changes
     - **Fdn**Reverb
         - reverberation time visualization bug fixed
+    - **Scene**Rotator
+        - MIDI Devices can now be opened directly to receive rotation data (for now support for MrHeadTracker only, more will follow)
     
 ## v1.9.0
 - general changes
