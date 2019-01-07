@@ -144,7 +144,7 @@ public:
     };
     
     String getCurrentMidiDeviceName();
-    void openMidiInput (String midiDeviceName);
+    void openMidiInput (String midiDeviceName, bool forceUpdatingCurrentMidiDeviceName = false);
     void closeMidiInput();
 
     const StringArray getMidiSchemes() { return midiSchemeNames; };
@@ -155,6 +155,7 @@ public:
 
     // Flags for editor
     Atomic<bool> deviceHasChanged = false;
+    Atomic<bool> showMidiOpenError = false;
     Atomic<bool> schemeHasChanged = false;
 
     

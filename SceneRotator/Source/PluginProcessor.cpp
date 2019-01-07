@@ -552,7 +552,7 @@ void SceneRotatorAudioProcessor::setStateInformation (const void* data, int size
                 oscReceiver.connect (parameters.state.getProperty ("OSCPort", var (-1)));
 
             if (parameters.state.hasProperty ("MidiDeviceName"))
-                openMidiInput (parameters.state.getProperty ("MidiDeviceName", var ("")));
+                openMidiInput (parameters.state.getProperty ("MidiDeviceName", var ("")), true);
             else
                 closeMidiInput();
 
@@ -875,7 +875,7 @@ String SceneRotatorAudioProcessor::getCurrentMidiDeviceName()
     return currentMidiDeviceName;
 }
 
-void SceneRotatorAudioProcessor::openMidiInput (String midiDeviceName)
+void SceneRotatorAudioProcessor::openMidiInput (String midiDeviceName, bool forceUpdatingCurrentMidiDeviceName)
 {
     if (midiDeviceName.isEmpty())
         return closeMidiInput(); // <- not sure if that syntax is totally wrong or brilliant!
@@ -888,6 +888,13 @@ void SceneRotatorAudioProcessor::openMidiInput (String midiDeviceName)
     if (index != -1)
     {
         midiInput.reset (MidiInput::openDevice (index, this));
+        if (midiInput == nullptr)
+        {
+            deviceHasChanged = true;
+            showMidiOpenError = true;
+            return;
+        }
+
         midiInput->start();
 
         DBG ("Opened MidiInput: " << midiInput->getName());
@@ -898,18 +905,24 @@ void SceneRotatorAudioProcessor::openMidiInput (String midiDeviceName)
         return;
     }
 
+    if (forceUpdatingCurrentMidiDeviceName)
+    {
+        currentMidiDeviceName = midiDeviceName;
+        deviceHasChanged = true;
+    }
+
     return;
 }
 
 void SceneRotatorAudioProcessor::closeMidiInput()
 {
     const ScopedLock scopedLock (changingMidiDevice);
-    if (midiInput == nullptr)
-        return;
-
-    midiInput->stop();
-    midiInput.reset();
-    DBG ("Closed MidiInput");
+    if (midiInput != nullptr)
+    {
+        midiInput->stop();
+        midiInput.reset();
+        DBG ("Closed MidiInput");
+    }
 
     currentMidiDeviceName = ""; // hoping there's not actually a MidiDevice without a name!
     deviceHasChanged = true;

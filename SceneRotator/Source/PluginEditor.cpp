@@ -338,6 +338,18 @@ void SceneRotatorAudioProcessorEditor::timerCallback()
         processor.schemeHasChanged = false;
         updateSelectedMidiScheme();
     }
+
+
+    if (processor.showMidiOpenError.get())
+    {
+        processor.showMidiOpenError = false;
+        AlertWindow alert ("Could no open device", "The MIDI device could not be opened, although it's listed in the available device list. This can happen if this process has already opened that device. Please visit https://plugins.iem.at/docs/scenerotator/ for troubleshooting.", AlertWindow::NoIcon);
+        alert.setLookAndFeel (&globalLaF);
+        alert.addButton ("OK", 1, KeyPress (KeyPress::returnKey, 0, 0));
+        alert.addButton ("Visit website", 2);
+        if (alert.runModalLoop() == 2)
+            URL ("https://plugins.iem.at/docs/scenerotator/").launchInDefaultBrowser();
+    }
 }
 
 
@@ -372,8 +384,6 @@ void SceneRotatorAudioProcessorEditor::refreshMidiDeviceList()
     cbMidiDevices.clear();
     cbMidiDevices.addItem ("refresh list...", -3);
     cbMidiDevices.addItem ("none / use DAW input", -2);
-    cbMidiDevices.addSeparator();
-    cbMidiDevices.addSectionHeading ("Available Devices");
 
     String currentDevice = processor.getCurrentMidiDeviceName();
 
@@ -390,6 +400,10 @@ void SceneRotatorAudioProcessorEditor::refreshMidiDeviceList()
             select = -1;
         }
     }
+
+    cbMidiDevices.addSeparator();
+    cbMidiDevices.addSectionHeading ("Available Devices");
+
 
 
     for (int i = 0; i < devices.size(); ++i)
