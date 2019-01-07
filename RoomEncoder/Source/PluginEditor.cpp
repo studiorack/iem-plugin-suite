@@ -38,7 +38,7 @@ listenerElement(*valueTreeState.getParameter("listenerX"), valueTreeState.getPar
     setSize (800, 600);
     setLookAndFeel (&globalLaF);
 
-    tooltipWin.setLookAndFeel (&globalLaF);
+    toolTipWin.setLookAndFeel (&globalLaF);
     toolTipWin.setMillisecondsBeforeTipAppears(500);
     toolTipWin.setOpaque (false);
 

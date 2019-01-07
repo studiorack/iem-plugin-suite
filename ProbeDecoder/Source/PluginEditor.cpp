@@ -51,7 +51,7 @@ probe(*valueTreeState.getParameter("azimuth"), valueTreeState.getParameterRange(
 
     addAndMakeVisible(&footer);
 
-    tooltipWin.setLookAndFeel (&globalLaF);
+    toolTipWin.setLookAndFeel (&globalLaF);
     toolTipWin.setMillisecondsBeforeTipAppears(500);
     toolTipWin.setOpaque (false);
 
