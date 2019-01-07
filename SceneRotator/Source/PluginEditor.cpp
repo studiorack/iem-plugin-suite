@@ -307,14 +307,13 @@ void SceneRotatorAudioProcessorEditor::resized()
     midiGroup.setBounds (area);
     area.removeFromTop (25);
     auto row = area.removeFromTop (20);
-    auto leftSide = row.removeFromLeft (160);
+    auto leftSide = row.removeFromLeft (180);
     slMidiDevices.setBounds (leftSide.removeFromLeft (40));
     cbMidiDevices.setBounds (leftSide);
 
     row.removeFromLeft (10);
     slMidiScheme.setBounds (row.removeFromLeft (48));
-    cbMidiScheme.setBounds (row.removeFromLeft (128));
-
+    cbMidiScheme.setBounds (row.removeFromLeft (140));
 
 }
 
@@ -382,7 +381,7 @@ void SceneRotatorAudioProcessorEditor::comboBoxChanged (ComboBox *comboBoxThatHa
 void SceneRotatorAudioProcessorEditor::refreshMidiDeviceList()
 {
     cbMidiDevices.clear();
-    cbMidiDevices.addItem ("refresh list...", -3);
+    cbMidiDevices.addItem ("(refresh list...)", -3);
     cbMidiDevices.addItem ("none / use DAW input", -2);
 
     String currentDevice = processor.getCurrentMidiDeviceName();
