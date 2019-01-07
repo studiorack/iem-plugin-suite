@@ -31,7 +31,7 @@ SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotator
     // ============== BEGIN: essentials ======================
     // set GUI size and lookAndFeel
     //setSize(500, 300); // use this to create a fixed-size GUI
-    setResizeLimits (450, 250, 800, 500); // use this to create a resizable GUI
+    setResizeLimits (450, 320, 800, 500); // use this to create a resizable GUI
     setLookAndFeel (&globalLaF);
 
     // make title and footer visible, and set the PluginName
@@ -51,8 +51,6 @@ SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotator
     // ======================== YAW, PITCH, ROLL GROUP
     yprGroup.setText ("Yaw, Pitch & Roll");
     yprGroup.setTextLabelPosition (Justification::centredLeft);
-    yprGroup.setColour (GroupComponent::outlineColourId, globalLaF.ClSeperator);
-    yprGroup.setColour (GroupComponent::textColourId, Colours::white);
     addAndMakeVisible (&yprGroup);
 
     addAndMakeVisible (&slYaw);
@@ -62,7 +60,7 @@ SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotator
     slYaw.setReverse (true);
     slYaw.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
     slYaw.setRotaryParameters (MathConstants<float>::pi, 3 * MathConstants<float>::pi, false);
-    slYaw.setTooltip ("Yaw angle");
+    slYaw.setTooltip ("Yaw angle: rotation around z-axis");
     slYaw.setTextValueSuffix (CharPointer_UTF8 (R"(°)"));
 
     addAndMakeVisible (&slPitch);
@@ -72,7 +70,7 @@ SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotator
     slPitch.setReverse (true);
     slPitch.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
     slPitch.setRotaryParameters (0.5 * MathConstants<float>::pi, 2.5 * MathConstants<float>::pi, false);
-    slPitch.setTooltip ("Pitch angle");
+    slPitch.setTooltip ("Pitch angle: rotation around y-axis");
     slPitch.setTextValueSuffix (CharPointer_UTF8 (R"(°)"));
 
     addAndMakeVisible (&slRoll);
@@ -82,7 +80,7 @@ SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotator
     slRoll.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
     slRoll.setReverse (false);
     slRoll.setRotaryParameters (MathConstants<float>::pi, 3 * MathConstants<float>::pi, false);
-    slRoll.setTooltip ("Roll angle");
+    slRoll.setTooltip ("Roll angle: rotation around x-axis");
     slRoll.setTextValueSuffix (CharPointer_UTF8 (R"(°)"));
 
     addAndMakeVisible (tbInvertYaw);
@@ -106,7 +104,8 @@ SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotator
     tbInvertQuaternion.setButtonText ("Invert Quaternions");
 
     addAndMakeVisible (cbRotationSequence);
-    cbRotationSequence.addSectionHeading ("Select order of rotation");
+    cbRotationSequence.setTooltip ("Sequence of intrinsic rotations");
+    cbRotationSequence.addSectionHeading ("Rotation sequence");
     cbRotationSequence.addItem("Yaw -> Pitch -> Roll", 1);
     cbRotationSequence.addItem("Roll -> Pitch -> Yaw", 2);
     cbRotationSequence.setJustificationType (Justification::centred);
@@ -116,8 +115,6 @@ SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotator
     // ====================== QUATERNION GROUP
     quatGroup.setText ("Quaternions");
     quatGroup.setTextLabelPosition (Justification::centredLeft);
-    quatGroup.setColour (GroupComponent::outlineColourId, globalLaF.ClSeperator);
-    quatGroup.setColour (GroupComponent::textColourId, Colours::white);
     addAndMakeVisible (&quatGroup);
 
     addAndMakeVisible (&slQW);
@@ -168,6 +165,33 @@ SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotator
     lbQZ.setText("Z");
 
 
+    // ====================== MIDI GROUP
+    addAndMakeVisible (midiGroup);
+    midiGroup.setText ("MIDI Connection");
+    midiGroup.setTextLabelPosition (Justification::centredLeft);
+
+    addAndMakeVisible (cbMidiDevices);
+    cbMidiDevices.setJustificationType (Justification::centred);
+    refreshMidiDeviceList();
+    cbMidiDevices.addListener (this);
+
+    addAndMakeVisible (cbMidiScheme);
+    cbMidiScheme.setJustificationType (Justification::centred);
+    cbMidiScheme.addSectionHeading("Select Device's MIDI Scheme");
+    cbMidiScheme.addItemList (processor.getMidiSchemes(), 1);
+    cbMidiScheme.setSelectedId (static_cast<int> (processor.getCurrentMidiScheme()) + 1);
+    updateSelectedMidiScheme();
+    cbMidiScheme.addListener (this);
+
+    addAndMakeVisible (slMidiDevices);
+    slMidiDevices.setText ("Device");
+
+    addAndMakeVisible (slMidiScheme);
+    slMidiScheme.setText ("Scheme");
+
+    tooltipWin.setLookAndFeel (&globalLaF);
+    tooltipWin.setMillisecondsBeforeTipAppears (500);
+    tooltipWin.setOpaque (false);
 
     // start timer after everything is set up properly
     startTimer (20);
@@ -209,7 +233,7 @@ void SceneRotatorAudioProcessorEditor::resized()
     const int rotSliderSpacing = 10;
     const int sliderSpacing = 4;
     const int rotSliderWidth = 40;
-    const int labelHeight = 15;
+    //const int labelHeight = 15;
     const int labelWidth = 20;
 
     auto topArea (area.removeFromTop (150));
@@ -278,6 +302,19 @@ void SceneRotatorAudioProcessorEditor::resized()
     sliderRow.removeFromLeft (20);
     tbInvertQuaternion.setBounds (sliderRow);
 
+    // ------------- MIDI Connection ------------------------
+    area.removeFromTop (10);
+    midiGroup.setBounds (area);
+    area.removeFromTop (25);
+    auto row = area.removeFromTop (20);
+    auto leftSide = row.removeFromLeft (180);
+    slMidiDevices.setBounds (leftSide.removeFromLeft (40));
+    cbMidiDevices.setBounds (leftSide);
+
+    row.removeFromLeft (10);
+    slMidiScheme.setBounds (row.removeFromLeft (48));
+    cbMidiScheme.setBounds (row.removeFromLeft (140));
+
 }
 
 void SceneRotatorAudioProcessorEditor::timerCallback()
@@ -289,4 +326,96 @@ void SceneRotatorAudioProcessorEditor::timerCallback()
     // ==========================================
 
     // insert stuff you want to do be done at every timer callback
+    if (processor.deviceHasChanged.get())
+    {
+        processor.deviceHasChanged = false;
+        refreshMidiDeviceList();
+    }
+
+    if (processor.schemeHasChanged.get())
+    {
+        processor.schemeHasChanged = false;
+        updateSelectedMidiScheme();
+    }
+
+
+    if (processor.showMidiOpenError.get())
+    {
+        processor.showMidiOpenError = false;
+        AlertWindow alert ("Could no open device", "The MIDI device could not be opened, although it's listed in the available device list. This can happen if this process has already opened that device. Please visit https://plugins.iem.at/docs/scenerotator/ for troubleshooting.", AlertWindow::NoIcon);
+        alert.setLookAndFeel (&globalLaF);
+        alert.addButton ("OK", 1, KeyPress (KeyPress::returnKey, 0, 0));
+        alert.addButton ("Visit website", 2);
+        if (alert.runModalLoop() == 2)
+            URL ("https://plugins.iem.at/docs/scenerotator/").launchInDefaultBrowser();
+    }
+}
+
+
+void SceneRotatorAudioProcessorEditor::comboBoxChanged (ComboBox *comboBoxThatHasChanged)
+{
+    if (comboBoxThatHasChanged == &cbMidiDevices && ! refreshingMidiDevices.get())
+    {
+        auto id = cbMidiDevices.getSelectedId();
+
+        if (id == -3) // refresh
+            refreshMidiDeviceList();
+        else if (id == -2)
+        {
+            processor.closeMidiInput();
+            refreshMidiDeviceList();
+        }
+        else if (id > 0) // an actual device is selected!
+        {
+            String deviceName = cbMidiDevices.getText();
+            processor.openMidiInput (deviceName);
+        }
+    }
+    else if (comboBoxThatHasChanged == &cbMidiScheme && ! updatingMidiScheme.get())
+    {
+        processor.setMidiScheme (SceneRotatorAudioProcessor::MidiScheme (cbMidiScheme.getSelectedId() - 1));
+    }
+
+}
+
+void SceneRotatorAudioProcessorEditor::refreshMidiDeviceList()
+{
+    cbMidiDevices.clear();
+    cbMidiDevices.addItem ("(refresh list...)", -3);
+    cbMidiDevices.addItem ("none / use DAW input", -2);
+
+    String currentDevice = processor.getCurrentMidiDeviceName();
+
+    int select = -2;
+
+    StringArray devices = MidiInput::getDevices();
+    if (! currentDevice.isEmpty())
+    {
+        if (devices.contains (currentDevice))
+            select = devices.indexOf (currentDevice) + 1;
+        else
+        {
+            cbMidiDevices.addItem (currentDevice + " (not available)", -1);
+            select = -1;
+        }
+    }
+
+    cbMidiDevices.addSeparator();
+    cbMidiDevices.addSectionHeading ("Available Devices");
+
+
+
+    for (int i = 0; i < devices.size(); ++i)
+    {
+        cbMidiDevices.addItem (devices[i], i + 1);
+    }
+
+    ScopedValueSetter<Atomic<bool>> refreshing (refreshingMidiDevices, true, false);
+    cbMidiDevices.setSelectedId (select, sendNotificationSync);
+}
+
+void SceneRotatorAudioProcessorEditor::updateSelectedMidiScheme()
+{
+    ScopedValueSetter<Atomic<bool>> refreshing (updatingMidiScheme, true, false);
+    //cbMidiScheme.setSelectedId (select, sendNotificationSync);
 }

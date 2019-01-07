@@ -106,10 +106,12 @@ oscParams (parameters), parameters (*this, nullptr, "SceneRotator", createParame
 
 
     oscReceiver.addListener (this);
+
 }
 
 SceneRotatorAudioProcessor::~SceneRotatorAudioProcessor()
 {
+    closeMidiInput();
 }
 
 //==============================================================================
@@ -184,6 +186,7 @@ void SceneRotatorAudioProcessor::prepareToPlay (double sampleRate, int samplesPe
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
 
+    MidiMessageCollector::reset (sampleRate);
     rotationParamsHaveChanged = true;
 
 }
@@ -213,6 +216,99 @@ void SceneRotatorAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBu
     const int actualOrder = floor (sqrt (nChIn)) - 1;
     const int actualChannels = square (actualOrder + 1);
     jassert (actualChannels <= nChIn);
+
+    if (currentMidiScheme != MidiScheme::none)
+    {
+        removeNextBlockOfMessages (midiMessages, buffer.getNumSamples());
+
+        MidiBuffer::Iterator i (midiMessages);
+        MidiMessage message;
+        int time;
+
+
+        while (i.getNextEvent (message, time))
+        {
+
+            if (! message.isController())
+                break;
+
+            switch (currentMidiScheme)
+            {
+                case MidiScheme::mrHeadTrackerYprDir:
+                case MidiScheme::mrHeadTrackerYprInv:
+                    switch (message.getControllerNumber())
+                    {
+                        case 48: yawLsb = message.getControllerValue(); break;
+                        case 49: pitchLsb = message.getControllerValue(); break;
+                        case 50: rollLsb = message.getControllerValue(); break;
+
+                        case 16:
+                        {
+                            float yawVal = (128 * message.getControllerValue() + yawLsb) * (1.0f / 16384);
+                            parameters.getParameter ("yaw")->setValueNotifyingHost (yawVal);
+                            break;
+                        }
+
+                        case 17:
+                        {
+                            float pitchVal = (128 * message.getControllerValue() + pitchLsb) * (1.0f / 16384);
+                            parameters.getParameter ("pitch")->setValueNotifyingHost (pitchVal);
+                            break;
+                        }
+
+                        case 18:
+                        {
+                            float rollVal = (128 * message.getControllerValue() + rollLsb) * (1.0f / 16384);
+                            parameters.getParameter ("roll")->setValueNotifyingHost (rollVal);
+                            break;
+                        }
+                    } // switch (message.getControllerNumber())
+                    break;
+
+                case MidiScheme::mrHeadTrackerQuaternions:
+                    switch (message.getControllerNumber())
+                    {
+                        case 48: qwLsb = message.getControllerValue(); break;
+                        case 49: qxLsb = message.getControllerValue(); break;
+                        case 50: qyLsb = message.getControllerValue(); break;
+                        case 51: qzLsb = message.getControllerValue(); break;
+
+                        case 16:
+                        {
+                            float qwVal = (128 * message.getControllerValue() + qwLsb) * (1.0f / 16384);
+                            parameters.getParameter ("qw")->setValueNotifyingHost (qwVal);
+                            break;
+                        }
+
+                        case 17:
+                        {
+                            float qxVal = (128 * message.getControllerValue() + qxLsb) * (1.0f / 16384);
+                            parameters.getParameter ("qx")->setValueNotifyingHost (qxVal);
+                            break;
+                        }
+
+                        case 18:
+                        {
+                            float qyVal = (128 * message.getControllerValue() + qyLsb) * (1.0f / 16384);
+                            parameters.getParameter ("qy")->setValueNotifyingHost (qyVal);
+                            break;
+                        }
+
+                        case 19:
+                        {
+                            float qzVal = (128 * message.getControllerValue() + qzLsb) * (1.0f / 16384);
+                            parameters.getParameter ("qz")->setValueNotifyingHost (qzVal);
+                            break;
+                        }
+                    } // switch (message.getControllerNumber())
+                    break;
+                default:
+                    break;
+            } // switch (currentMidiScheme)
+        } //while (i.getNextEvent (message, time))
+    } //if (currentMidiScheme != MidiScheme::none)
+
+
 
     bool newRotationMatrix = false;
     if (rotationParamsHaveChanged.get())
@@ -251,6 +347,7 @@ void SceneRotatorAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBu
         for (int l = 1; l <= inputOrder; ++l)
             *orderMatricesCopy[l] = *orderMatrices[l];
 
+    midiMessages.clear();
 }
 
 double SceneRotatorAudioProcessor::P (int i, int l, int a, int b, Matrix<float>& R1, Matrix<float>& Rlm1)
@@ -435,6 +532,8 @@ void SceneRotatorAudioProcessor::getStateInformation (MemoryBlock& destData)
     // as intermediaries to make it easy to save and load complex data.
     auto state = parameters.copyState();
     state.setProperty ("OSCPort", var (oscReceiver.getPortNumber()), nullptr);
+    state.setProperty ("MidiDeviceName", var (currentMidiDeviceName), nullptr);
+    state.setProperty ("MidiDeviceScheme", var (static_cast<int> (currentMidiScheme)), nullptr);
     std::unique_ptr<XmlElement> xml (state.createXml());
     copyXmlToBinary (*xml, destData);
 }
@@ -450,9 +549,15 @@ void SceneRotatorAudioProcessor::setStateInformation (const void* data, int size
         {
             parameters.replaceState (ValueTree::fromXml (*xmlState));
             if (parameters.state.hasProperty ("OSCPort"))
-            {
                 oscReceiver.connect (parameters.state.getProperty ("OSCPort", var (-1)));
-            }
+
+            if (parameters.state.hasProperty ("MidiDeviceName"))
+                openMidiInput (parameters.state.getProperty ("MidiDeviceName", var ("")), true);
+            else
+                closeMidiInput();
+
+            if (parameters.state.hasProperty ("MidiDeviceScheme"))
+                setMidiScheme (MidiScheme (static_cast<int> (parameters.state.getProperty ("MidiDeviceScheme", var (0)))));
         }
 
     usingYpr = true;
@@ -691,79 +796,168 @@ AudioProcessorValueTreeState::ParameterLayout SceneRotatorAudioProcessor::create
 
 
     params.push_back (oscParams.createAndAddParameter ("orderSetting", "Ambisonics Order", "",
-                                     NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
-                                     [](float value) {
-                                         if (value >= 0.5f && value < 1.5f) return "0th";
-                                         else if (value >= 1.5f && value < 2.5f) return "1st";
-                                         else if (value >= 2.5f && value < 3.5f) return "2nd";
-                                         else if (value >= 3.5f && value < 4.5f) return "3rd";
-                                         else if (value >= 4.5f && value < 5.5f) return "4th";
-                                         else if (value >= 5.5f && value < 6.5f) return "5th";
-                                         else if (value >= 6.5f && value < 7.5f) return "6th";
-                                         else if (value >= 7.5f) return "7th";
-                                         else return "Auto";
-                                     }, nullptr));
+                                                       NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
+                                                       [](float value) {
+                                                           if (value >= 0.5f && value < 1.5f) return "0th";
+                                                           else if (value >= 1.5f && value < 2.5f) return "1st";
+                                                           else if (value >= 2.5f && value < 3.5f) return "2nd";
+                                                           else if (value >= 3.5f && value < 4.5f) return "3rd";
+                                                           else if (value >= 4.5f && value < 5.5f) return "4th";
+                                                           else if (value >= 5.5f && value < 6.5f) return "5th";
+                                                           else if (value >= 6.5f && value < 7.5f) return "6th";
+                                                           else if (value >= 7.5f) return "7th";
+                                                           else return "Auto";
+                                                       }, nullptr));
 
     params.push_back (oscParams.createAndAddParameter ("useSN3D", "Normalization", "",
-                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
-                                     [](float value)
-                                     {
-                                         if (value >= 0.5f ) return "SN3D";
-                                         else return "N3D";
-                                     }, nullptr));
+                                                       NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
+                                                       [](float value)
+                                                       {
+                                                           if (value >= 0.5f ) return "SN3D";
+                                                           else return "N3D";
+                                                       }, nullptr));
 
     params.push_back (oscParams.createAndAddParameter ("yaw", "Yaw Angle", CharPointer_UTF8 (R"(°)"),
-                                     NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
-                                     [](float value) { return String(value, 2); }, nullptr, true));
+                                                       NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
+                                                       [](float value) { return String(value, 2); }, nullptr, true));
 
     params.push_back (oscParams.createAndAddParameter ("pitch", "Pitch Angle", CharPointer_UTF8 (R"(°)"),
-                                     NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
-                                     [](float value) { return String(value, 2); }, nullptr, true));
+                                                       NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
+                                                       [](float value) { return String(value, 2); }, nullptr, true));
 
     params.push_back (oscParams.createAndAddParameter ("roll", "Roll Angle", CharPointer_UTF8 (R"(°)"),
-                                     NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
-                                     [](float value) { return String(value, 2); }, nullptr, true));
+                                                       NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
+                                                       [](float value) { return String(value, 2); }, nullptr, true));
 
     params.push_back (oscParams.createAndAddParameter ("qw", "Quaternion W", "",
-                                     NormalisableRange<float> (-1.0f, 1.0f, 0.001f), 1.0,
-                                     [](float value) { return String(value, 2); }, nullptr, true));
+                                                       NormalisableRange<float> (-1.0f, 1.0f, 0.001f), 1.0,
+                                                       [](float value) { return String(value, 2); }, nullptr, true));
 
     params.push_back (oscParams.createAndAddParameter ("qx", "Quaternion X", "",
-                                     NormalisableRange<float> (-1.0f, 1.0f, 0.001f), 0.0,
-                                     [](float value) { return String(value, 2); }, nullptr, true));
+                                                       NormalisableRange<float> (-1.0f, 1.0f, 0.001f), 0.0,
+                                                       [](float value) { return String(value, 2); }, nullptr, true));
 
     params.push_back (oscParams.createAndAddParameter ("qy", "Quaternion Y", "",
-                                     NormalisableRange<float> (-1.0f, 1.0f, 0.001f), 0.0,
-                                     [](float value) { return String(value, 2); }, nullptr, true));
+                                                       NormalisableRange<float> (-1.0f, 1.0f, 0.001f), 0.0,
+                                                       [](float value) { return String(value, 2); }, nullptr, true));
 
     params.push_back (oscParams.createAndAddParameter ("qz", "Quaternion Z", "",
-                                     NormalisableRange<float> (-1.0f, 1.0f, 0.001f), 0.0,
-                                     [](float value) { return String(value, 2); }, nullptr, true));
+                                                       NormalisableRange<float> (-1.0f, 1.0f, 0.001f), 0.0,
+                                                       [](float value) { return String(value, 2); }, nullptr, true));
 
     params.push_back (oscParams.createAndAddParameter ("invertYaw", "Invert Yaw", "",
-                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
-                                     [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr));
+                                                       NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
+                                                       [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr));
 
     params.push_back (oscParams.createAndAddParameter ("invertPitch", "Invert Pitch", "",
-                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
-                                     [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr));
+                                                       NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
+                                                       [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr));
 
     params.push_back (oscParams.createAndAddParameter ("invertRoll", "Invert Roll", "",
-                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
-                                     [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr));
+                                                       NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
+                                                       [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr));
 
     params.push_back (oscParams.createAndAddParameter ("invertQuaternion", "Invert Quaternion", "",
-                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
-                                     [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr));
+                                                       NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
+                                                       [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr));
 
     params.push_back (oscParams.createAndAddParameter ("rotationSequence", "Sequence of Rotations", "",
-                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0,
-                                     [](float value) { return value >= 0.5f ? "Roll->Pitch->Yaw" : "Yaw->Pitch->Roll"; }, nullptr));
-
-
+                                                       NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0,
+                                                       [](float value) { return value >= 0.5f ? "Roll->Pitch->Yaw" : "Yaw->Pitch->Roll"; }, nullptr));
 
 
     return { params.begin(), params.end() };
+}
+
+//==============================================================================
+String SceneRotatorAudioProcessor::getCurrentMidiDeviceName()
+{
+    return currentMidiDeviceName;
+}
+
+void SceneRotatorAudioProcessor::openMidiInput (String midiDeviceName, bool forceUpdatingCurrentMidiDeviceName)
+{
+    if (midiDeviceName.isEmpty())
+        return closeMidiInput(); // <- not sure if that syntax is totally wrong or brilliant!
+
+    const ScopedLock scopedLock (changingMidiDevice);
+
+    StringArray devices = MidiInput::getDevices();
+
+    const int index = devices.indexOf (midiDeviceName);
+    if (index != -1)
+    {
+        midiInput.reset (MidiInput::openDevice (index, this));
+        if (midiInput == nullptr)
+        {
+            deviceHasChanged = true;
+            showMidiOpenError = true;
+            return;
+        }
+
+        midiInput->start();
+
+        DBG ("Opened MidiInput: " << midiInput->getName());
+
+        currentMidiDeviceName = midiDeviceName;
+        deviceHasChanged = true;
+
+        return;
+    }
+
+    if (forceUpdatingCurrentMidiDeviceName)
+    {
+        currentMidiDeviceName = midiDeviceName;
+        deviceHasChanged = true;
+    }
+
+    return;
+}
+
+void SceneRotatorAudioProcessor::closeMidiInput()
+{
+    const ScopedLock scopedLock (changingMidiDevice);
+    if (midiInput != nullptr)
+    {
+        midiInput->stop();
+        midiInput.reset();
+        DBG ("Closed MidiInput");
+    }
+
+    currentMidiDeviceName = ""; // hoping there's not actually a MidiDevice without a name!
+    deviceHasChanged = true;
+    
+    return;
+}
+
+void SceneRotatorAudioProcessor::setMidiScheme (MidiScheme newMidiScheme)
+{
+    currentMidiScheme = newMidiScheme;
+    DBG ("Scheme set to " << midiSchemeNames[static_cast<int> (newMidiScheme)]);
+    
+    switch (newMidiScheme)
+    {
+        case MidiScheme::none:
+            break;
+            
+        case MidiScheme::mrHeadTrackerYprDir:
+            parameters.getParameter ("rotationSequence")->setValueNotifyingHost (1.0f); // roll->pitch->yaw
+            break;
+
+        case MidiScheme::mrHeadTrackerYprInv:
+            parameters.getParameter ("rotationSequence")->setValueNotifyingHost (1.0f); // roll->pitch->yaw
+            break;
+
+        case MidiScheme::mrHeadTrackerQuaternions:
+            break;
+
+        default:
+            DBG ("Not supported MidiScheme - I guess the casting from int failed hard!");
+            jassertfalse;
+            break;
+    }
+
+    schemeHasChanged = true;
 }
 
 //==============================================================================

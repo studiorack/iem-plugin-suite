@@ -43,10 +43,11 @@
  You can leave `maxChannelCount` and `maxOrder` empty for default values (64 channels and 7th order)
 */
 class SceneRotatorAudioProcessor  : public AudioProcessor,
-                                        public AudioProcessorValueTreeState::Listener,
-                                        public IOHelper<IOTypes::Ambisonics<>, IOTypes::Ambisonics<>, true>,
-                                        public VSTCallbackHandler,
-                                        private OSCReceiver::Listener<OSCReceiver::RealtimeCallback>
+                                    public AudioProcessorValueTreeState::Listener,
+                                    public IOHelper<IOTypes::Ambisonics<>, IOTypes::Ambisonics<>, true>,
+                                    public VSTCallbackHandler,
+                                    private OSCReceiver::Listener<OSCReceiver::RealtimeCallback>,
+                                    private MidiMessageCollector
 {
 public:
     //==============================================================================
@@ -116,6 +117,48 @@ public:
     void rotateBuffer (AudioBuffer<float>* bufferToRotate, const int nChannels, const int samples);
     void calcRotationMatrix (const int order);
 
+
+    //======= MIDI Connection ======================================================
+    enum class MidiScheme
+    {
+        none = 0,
+        mrHeadTrackerYprDir,
+        mrHeadTrackerYprInv,
+        mrHeadTrackerQuaternions
+    };
+
+    const StringArray midiSchemeNames
+    {
+        "none (link only)",
+        "MrHT YPR Direct",
+        "MrHT YPR Inverse",
+        "MrHT Quaternions"
+    };
+
+    const Identifier midiSchemeIdentifieres[4]
+    {
+        "none",
+        "MrHT_YprDir",
+        "MrHT_YprInv",
+        "MrHT_Quat"
+    };
+    
+    String getCurrentMidiDeviceName();
+    void openMidiInput (String midiDeviceName, bool forceUpdatingCurrentMidiDeviceName = false);
+    void closeMidiInput();
+
+    const StringArray getMidiSchemes() { return midiSchemeNames; };
+    MidiScheme getCurrentMidiScheme() { return currentMidiScheme; };
+    void setMidiScheme (MidiScheme newMidiScheme);
+    //==============================================================================
+
+
+    // Flags for editor
+    Atomic<bool> deviceHasChanged = false;
+    Atomic<bool> showMidiOpenError = false;
+    Atomic<bool> schemeHasChanged = false;
+
+    
 private:
     // ====== parameters
     OSCParameterInterface oscParams;
@@ -153,7 +196,17 @@ private:
     double U (int l, int m, int n, Matrix<float>& Rone, Matrix<float>& Rlm1);
     double V (int l, int m, int n, Matrix<float>& Rone, Matrix<float>& Rlm1);
     double W (int l, int m, int n, Matrix<float>& Rone, Matrix<float>& Rlm1);
-    
+
+
+    // ============ MIDI Device Connection ======================
+    // MrHeadTracker 14-bit MIDI Data
+    int yawLsb = 0, pitchLsb = 0, rollLsb = 0;
+    int qwLsb = 0, qxLsb = 0, qyLsb = 0, qzLsb = 0;
+
+    std::unique_ptr<MidiInput> midiInput;
+    String currentMidiDeviceName = "";
+    MidiScheme currentMidiScheme = MidiScheme::none;
+    CriticalSection changingMidiDevice;
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SceneRotatorAudioProcessor)
 };
