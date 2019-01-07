@@ -157,7 +157,7 @@ DistanceCompensatorAudioProcessorEditor::DistanceCompensatorAudioProcessorEditor
         lbHandle->setText(String(i + 1), true, Justification::right);
     }
 
-    tooltipWin.setLookAndFeel (&globalLaF);
+    toolTipWin.setLookAndFeel (&globalLaF);
     toolTipWin.setMillisecondsBeforeTipAppears (500);
     toolTipWin.setOpaque (false);
 
