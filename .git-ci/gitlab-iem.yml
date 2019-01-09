@@ -95,6 +95,7 @@ after_script:
     - .git-ci/fftw4win.sh $BITS
 # FIXXME: try to find out why JUCE cannot find the VST2 headers:
     - find /c/JUCE -name aeffect.h || true
+    - /c/JUCE/Projucer --set-global-search-path windows vst3Path ";C:/JUCE/modules/juce_audio_processors/format_types/VST3_SDK/"
 # run the actual build
     - test -z "${PROJECTS}" && PROJECTS=$(make showprojects)
     - make system CONFIG=$CONFIG BITS=$BITS PROJUCER="/c/JUCE/Projucer.exe"
