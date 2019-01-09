@@ -9,9 +9,11 @@ variables:
 
 ###################################################
 # cleanup after the job (e.g. rename files for the artifacts...)
-.after_script:
-  - test -d IEM && find IEM -type f -exec file {} +
-  - find DualDelay/Builds/ -type f -exec file {} +
+after_script:
+# FIXXME: try to find out why JUCE cannot find the VST2 headers:
+   - rgrep . AllRADecoder/Builds/VisualStudio2017/
+#  - test -d IEM && find IEM -type f -exec file {} +
+#  - find DualDelay/Builds/ -type f -exec file {} +
 
 ###################################################
 ### configuration templates (to be used for snapshot and release builds)
@@ -91,6 +93,8 @@ variables:
 # install dependencies
     - .git-ci/getjuce.sh "${JUCEVERSION}-windows" /c/JUCE
     - .git-ci/fftw4win.sh $BITS
+# FIXXME: try to find out why JUCE cannot find the VST2 headers:
+    - find /c/JUCE -name aeffect.h || true
 # run the actual build
     - test -z "${PROJECTS}" && PROJECTS=$(make showprojects)
     - make system CONFIG=$CONFIG BITS=$BITS PROJUCER="/c/JUCE/Projucer.exe"
