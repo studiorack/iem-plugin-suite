@@ -104,9 +104,9 @@ oscParams (parameters), parameters (*this, nullptr, "SceneRotator", createParame
         elemCopy->clear();
     }
 
-
     oscReceiver.addListener (this);
 
+    startTimer (500);
 }
 
 SceneRotatorAudioProcessor::~SceneRotatorAudioProcessor()
@@ -868,6 +868,15 @@ AudioProcessorValueTreeState::ParameterLayout SceneRotatorAudioProcessor::create
 
     return { params.begin(), params.end() };
 }
+
+//==============================================================================
+void SceneRotatorAudioProcessor::timerCallback()
+{
+    // retrying to connect to a desired device which might not be physically connected
+    if (currentMidiDeviceName != "" && midiInput == nullptr)
+        openMidiInput (currentMidiDeviceName);
+}
+
 
 //==============================================================================
 String SceneRotatorAudioProcessor::getCurrentMidiDeviceName()

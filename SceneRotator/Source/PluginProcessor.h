@@ -47,7 +47,8 @@ class SceneRotatorAudioProcessor  : public AudioProcessor,
                                     public IOHelper<IOTypes::Ambisonics<>, IOTypes::Ambisonics<>, true>,
                                     public VSTCallbackHandler,
                                     private OSCReceiver::Listener<OSCReceiver::RealtimeCallback>,
-                                    private MidiMessageCollector
+                                    private MidiMessageCollector,
+                                    private Timer
 {
 public:
     //==============================================================================
@@ -197,6 +198,7 @@ private:
     double V (int l, int m, int n, Matrix<float>& Rone, Matrix<float>& Rlm1);
     double W (int l, int m, int n, Matrix<float>& Rone, Matrix<float>& Rlm1);
 
+    void timerCallback() override;
 
     // ============ MIDI Device Connection ======================
     // MrHeadTracker 14-bit MIDI Data
