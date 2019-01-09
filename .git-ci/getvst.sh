@@ -9,6 +9,6 @@ VST2REPO=https://raw.githubusercontent.com/WeAreROLI/JUCE/a54535bc317b5c005a8cda
 
 mkdir -p "${VST2DIR}"
 for f in aeffect.h  aeffectx.h  vstfxstore.h; do
-  echo "fetching VST2/$f" 1>&2
+  echo "fetching VST2:$f" 1>&2
   curl -s -o "${VST2DIR}/${f}" "${VST2REPO}/${f}"
 done
