@@ -11,7 +11,7 @@ variables:
 # cleanup after the job (e.g. rename files for the artifacts...)
 after_script:
 # FIXXME: try to find out why JUCE cannot find the VST2 headers:
-   - rgrep . AllRADecoder/Builds/VisualStudio2017/
+   - find AllRADecoder/Builds/VisualStudio2017/ -maxdepth 1 -type f -exec grep . {} +
 #  - test -d IEM && find IEM -type f -exec file {} +
 #  - find DualDelay/Builds/ -type f -exec file {} +
 
