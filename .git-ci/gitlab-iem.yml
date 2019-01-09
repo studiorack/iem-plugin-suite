@@ -9,11 +9,9 @@ variables:
 
 ###################################################
 # cleanup after the job (e.g. rename files for the artifacts...)
-after_script:
-# FIXXME: try to find out why JUCE cannot find the VST2 headers:
-   - find AllRADecoder/Builds/VisualStudio2017/ -maxdepth 1 -type f -exec grep . {} +
-#  - test -d IEM && find IEM -type f -exec file {} +
-#  - find DualDelay/Builds/ -type f -exec file {} +
+.after_script:
+  - test -d IEM && find IEM -type f -exec file {} +
+  - find DualDelay/Builds/ -type f -exec file {} +
 
 ###################################################
 ### configuration templates (to be used for snapshot and release builds)
@@ -93,8 +91,7 @@ after_script:
 # install dependencies
     - .git-ci/getjuce.sh "${JUCEVERSION}-windows" /c/JUCE
     - .git-ci/fftw4win.sh $BITS
-# FIXXME: try to find out why JUCE cannot find the VST2 headers:
-    - find /c/JUCE -name aeffect.h || true
+# tell JUCE where to look for the vstheaders
     - /c/JUCE/Projucer --set-global-search-path windows vst3Path ";C:/JUCE/modules/juce_audio_processors/format_types/VST3_SDK/"
 # run the actual build
     - test -z "${PROJECTS}" && PROJECTS=$(make showprojects)
