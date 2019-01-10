@@ -147,7 +147,7 @@ MultiBandCompressorAudioProcessor::~MultiBandCompressorAudioProcessor()
 ParameterLayout MultiBandCompressorAudioProcessor::createParameterLayout()
 {
     std::vector<std::unique_ptr<RangedAudioParameter>> params;
-    const float cutoffPresets[numFilterBands-1] = {80.0f, 440.0f, 2200.0f};
+    const float cutoffPresets [numFilterBands-1] = { 80.0f, 440.0f, 2200.0f };
   
     std::unique_ptr<AudioParameterFloat> floatParam;
     std::unique_ptr<AudioParameterBool> boolParam;
