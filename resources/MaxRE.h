@@ -272,7 +272,7 @@ inline void multiplyMaxRE(const int N, float *data) {
         case 6: FloatVectorOperations::multiply (data, maxre6, 47); break;
         case 7: FloatVectorOperations::multiply (data, maxre7, 64); break;
     }
-};
+}
 
 inline void copyMaxRE(const int N, float *data) {
     switch (N) {
@@ -285,7 +285,7 @@ inline void copyMaxRE(const int N, float *data) {
         case 6: FloatVectorOperations::copy (data, maxre6, 47); break;
         case 7: FloatVectorOperations::copy (data, maxre7, 64); break;
     }
-};
+}
 
 inline const float* getMaxRELUT(const int N) {
     switch (N) {
@@ -298,4 +298,4 @@ inline const float* getMaxRELUT(const int N) {
         case 7: return &maxre7[0];
         default: return &maxre0;
     }
-};
+}
