@@ -122,9 +122,9 @@ public:
         double ret = 0;
         if (reversed)
             ret = getMaximum() + getMinimum() - Slider::proportionOfLengthToValue(proportion);
-            else
-                ret = Slider::proportionOfLengthToValue(proportion);
-                return ret;
+        else
+            ret = Slider::proportionOfLengthToValue(proportion);
+        return ret;
     }
 
     double valueToProportionOfLength (double value) override
@@ -132,9 +132,9 @@ public:
         double ret = 0;
         if (reversed)
             ret = jlimit(0., 1., 1.0 - Slider::valueToProportionOfLength(value));
-            else
-                ret = Slider::valueToProportionOfLength(value);
-                return ret;
+        else
+            ret = Slider::valueToProportionOfLength(value);
+        return ret;
     }
 
     void setScrollWheelEnabled(bool enabled) {
