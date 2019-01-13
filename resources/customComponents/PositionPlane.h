@@ -366,7 +366,7 @@ public:
     bool usingAutoScale() {return autoScale;}
 
     void setScale(float newScale) {
-        if (~autoScale)
+        if (!autoScale)
             scale = newScale;
     }
 
