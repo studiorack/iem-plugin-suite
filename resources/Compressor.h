@@ -34,8 +34,8 @@ public:
     {
         sampleRate = spec.sampleRate;
 
-        alphaAttack = timeToGain(attackTime);
-        alphaRelease = timeToGain(releaseTime);
+        alphaAttack = 1.0 - timeToGain(attackTime);
+        alphaRelease = 1.0 - timeToGain(releaseTime);
 
         prepared = true;
     }
