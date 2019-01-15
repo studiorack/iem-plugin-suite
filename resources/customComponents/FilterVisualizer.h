@@ -252,25 +252,50 @@ public:
         g.fillPath (magnitude);
 
         const int size = elements.size();
+        float prevXPos = xMin;
         for (int i = 0; i < size; ++i)
         {
             auto handle (elements[i]);
-            if (handle->syncFilter >= 0)
+            if (handle->syncFilter >= 0 && i < size - 1)
               continue;
-            float circX = handle->frequencySlider == nullptr ? hzToX (s.fMin) : hzToX (handle->frequencySlider->getValue());
+            float xPos = handle->frequencySlider == nullptr ? hzToX (s.fMax) : hzToX (handle->frequencySlider->getValue());
+          
+            Colour ellipseColour = handle->colour;
+            if (handle->highlightFilteredBand)
+            {
+                // fill whole area of frequency band with colour
+                g.setColour (handle->colour.withMultipliedAlpha (0.3f));
+                // we must keep some distance between the freq bands (they must not overlap).
+                // otherwise filling the rectangle will fail
+                float xWidth = static_cast<int>(xPos - prevXPos) >= 1.0f ? xPos - prevXPos : 1.0f;
+                g.fillRoundedRectangle (prevXPos, yMin, xWidth, yMax - yMin, 2.0);
+              
+                if (i == size-1)
+                    break;
+              
+                // draw separation lines between frequencybands
+                Path filterBandSeparator;
+                filterBandSeparator.startNewSubPath (xPos, yMin);
+                filterBandSeparator.lineTo (xPos, yMax);
+                g.setColour (Colour (0xFF979797));
+                g.strokePath (filterBandSeparator, PathStrokeType (2.0f));
+              
+                // if we are in 'highlight-freq-bands-mode' then we want the filter knobs to be of the same colour
+                ellipseColour = Colour (0xFFD8D8D8).withSaturation (0.95f);
+            }
+            prevXPos = xPos;
+          
+            // drawing the filter knobs
             float circY;
             if (!s.gainHandleLin)
                 circY = handle->gainSlider == nullptr ? dbToY(0.0f) : dbToY (handle->gainSlider->getValue());
             else
                 circY = handle->gainSlider == nullptr ? dbToY(0.0f) : dbToY (Decibels::gainToDecibels (handle->gainSlider->getValue()));
 
-            g.setColour (Colour (0xFF191919));
-            g.drawEllipse (circX - 5.0f, circY - 5.0f , 10.0f, 10.0f, 3.0f);
-
-            g.setColour (handle->colour);
-            g.drawEllipse (circX - 5.0f, circY - 5.0f , 10.0f, 10.0f, 2.0f);
-            g.setColour (activeElem == i ? handle->colour : handle->colour.withSaturation (0.2));
-            g.fillEllipse (circX - 5.0f, circY - 5.0f , 10.0f, 10.0f);
+            g.setColour (ellipseColour);
+            g.drawEllipse (xPos - 5.0f, circY - 5.0f , 10.0f, 10.0f, 2.0f);
+            g.setColour (activeElem == i ? ellipseColour : ellipseColour.withSaturation (0.2));
+            g.fillEllipse (xPos - 5.0f, circY - 5.0f , 10.0f, 10.0f);
         }
     };
 
