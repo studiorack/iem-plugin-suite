@@ -47,19 +47,18 @@ MultiBandCompressorAudioProcessorEditor::MultiBandCompressorAudioProcessorEditor
     tooltips.setMillisecondsBeforeTipAppears(500);
     tooltips.setOpaque (false);
   
-    const Colour colours[numFilterBands-1] =
+    const Colour colours[numFilterBands] =
     {
-        Colours::cadetblue, // make sure you have enough colours in here
+//        Colours::cadetblue, // make sure you have enough colours in here
 //        Colours::mediumpurple,
-//        Colours::cornflowerblue,
+        Colours::cornflowerblue,
         Colours::greenyellow,
-//        Colours::yellow,
+        Colours::yellow,
         Colours::orangered
     };
 
     for (int i = 0; i < numFilterBands; ++i)
     {
-        // TODO: get rid of zombie filter cutoff dot at 0 Hz
         if (i < numFilterBands - 1)
         {
             slFilterFrequencyAttachment[i] = std::make_unique<SliderAttachment>(valueTreeState, "cutoff" + String(i), slFilterFrequency[i]);
@@ -73,7 +72,10 @@ MultiBandCompressorAudioProcessorEditor::MultiBandCompressorAudioProcessorEditor
             slFilterFrequency[i].addListener(this);
           
             filterVisualizer.addCoefficients (processor.lowPassLRCoeffs[i], colours[i], &slFilterFrequency[i]);
-            filterVisualizer.addCoefficients (processor.highPassLRCoeffs[i], colours[i]); // TODO: correct for not bold filter response
+            filterVisualizer.setFilterToHighlightFilteredBand(2*i, true);
+            filterVisualizer.addCoefficients (processor.highPassLRCoeffs[i], colours[i+1]);
+            filterVisualizer.setFilterToHighlightFilteredBand(2*i + 1, true);
+            filterVisualizer.setFilterToSyncWith(2*i + 1, 2*i);
         }
       
         addAndMakeVisible(&tbBandSelect[i]);
@@ -343,6 +345,8 @@ void MultiBandCompressorAudioProcessorEditor::sliderValueChanged(Slider *slider)
                           cutoff <= slFilterFrequency[f+1].getValue()))
                     {
                         slider->setValue(prevMidCutoff, NotificationType::dontSendNotification);
+                        filterVisualizer.repaint();
+
                     }
                     else
                     {

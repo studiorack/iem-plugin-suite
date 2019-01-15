@@ -315,7 +315,7 @@ void MultiBandCompressorAudioProcessor::calculateCoefficients(const int i)
     a1 = (2*Q*(pow(K,2.0) - 1)) / den;
     a2 = (Q*pow(K,2.0) - K + Q) / den;
   
-    // LP
+    // HP
     b0 = Q / den;
     b1 = -2.0 * b0;
     b2 = b0;
@@ -324,9 +324,9 @@ void MultiBandCompressorAudioProcessor::calculateCoefficients(const int i)
     // also calculate 4th order Linkwitz-Riley for GUI
     IIR::Coefficients<double>::Ptr coeffs(new IIR::Coefficients<double>(b0, b1, b2, a0, a1, a2));
     coeffs->coefficients = FilterVisualizerHelper<double>::cascadeSecondOrderCoefficients(coeffs->coefficients, coeffs->coefficients);
-    *lowPassLRCoeffs[i] = *coeffs;
+    *highPassLRCoeffs[i] = *coeffs;
   
-    // HP
+    // LP
     b0 = b0 * pow(K,2.0);
     b1 = 2.0 * b0;
     b2 = b0;
@@ -335,7 +335,7 @@ void MultiBandCompressorAudioProcessor::calculateCoefficients(const int i)
     coeffs.reset();
     coeffs = (new IIR::Coefficients<double>(b0, b1, b2, a0, a1, a2));
     coeffs->coefficients = FilterVisualizerHelper<double>::cascadeSecondOrderCoefficients(coeffs->coefficients, coeffs->coefficients);
-    *highPassLRCoeffs[i] = *coeffs;
+    *lowPassLRCoeffs[i] = *coeffs;
   
     // Allpass equivalent to 4th order Linkwitz-Riley
     double re = -(a1/2.0);
@@ -620,7 +620,7 @@ void MultiBandCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer,
             if (!(soloEnabledArray.count(i)))
             {
                 *maxGR[i] = 0.0f;
-                *maxRMS[i] = -60.0f;
+                *maxRMS[i] = -50.0f;
                 continue;
             }
         }
@@ -683,7 +683,7 @@ void MultiBandCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer,
                 FloatVectorOperations::add(tempBuffer.getWritePointer(ch), inout[ch], L);
             }
             *maxGR[i] = 0.0f;
-            *maxRMS[i] = -60.0f;
+            *maxRMS[i] = -50.0f;
         }
     }
   

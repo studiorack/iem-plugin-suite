@@ -46,6 +46,8 @@ class  FilterVisualizer :  public Component
         Slider* qSlider = nullptr;
         float* overrideGain = nullptr;
         bool enabled = true;
+        int syncFilter = std::numeric_limits<int>::lowest();
+        bool highlightFilteredBand = false;
     };
 
 
@@ -181,13 +183,22 @@ public:
             }
 
             g.setColour (handle->colour.withMultipliedAlpha (isEnabled ? 0.7f : 0.1f));
-            g.strokePath (magnitude, PathStrokeType (isActive ? 2.5f : 1.0f));
+            g.strokePath (magnitude, PathStrokeType ((activeElem == handle->syncFilter || isActive) ? 2.5f :  1.0f));
 
-            magnitude.lineTo (xMax, yZero);
-            magnitude.lineTo (xMin, yZero);
+            if (!(handle->highlightFilteredBand))
+            {
+                magnitude.lineTo (xMax, yZero);
+                magnitude.lineTo (xMin, yZero);
+                g.setColour (handle->colour.withMultipliedAlpha (isEnabled ? 0.3f : 0.1f));
+            }
+            else
+            {
+                magnitude.lineTo (xMax, yMax);
+                magnitude.lineTo (xMin, yMax);
+                g.setColour (handle->colour.withMultipliedAlpha (isEnabled ? 0.7f : 0.1f));
+            }
+
             magnitude.closeSubPath();
-
-            g.setColour (handle->colour.withMultipliedAlpha (isEnabled ? 0.3f : 0.1f));
             g.fillPath (magnitude);
 
             float multGain = (handle->overrideGain != nullptr) ? *handle->overrideGain : Decibels::decibelsToGain (additiveDB);
@@ -244,6 +255,8 @@ public:
         for (int i = 0; i < size; ++i)
         {
             auto handle (elements[i]);
+            if (handle->syncFilter >= 0)
+              continue;
             float circX = handle->frequencySlider == nullptr ? hzToX (s.fMin) : hzToX (handle->frequencySlider->getValue());
             float circY;
             if (!s.gainHandleLin)
@@ -464,6 +477,26 @@ public:
         {
             auto element = elements[filterIdx];
             element->enabled = shouldBeEnabled;
+            repaint();
+        }
+    }
+  
+    void setFilterToHighlightFilteredBand (const int filterIdx, const bool shouldHighlight)
+    {
+        if (filterIdx < elements.size())
+        {
+            auto element = elements[filterIdx];
+            element->highlightFilteredBand = shouldHighlight;
+            repaint();
+        }
+    }
+  
+    void setFilterToSyncWith (const int filterIdx, const int filterToSyncWith)
+    {
+        if (filterIdx < elements.size() && filterToSyncWith < elements.size())
+        {
+            auto element = elements[filterIdx];
+            element->syncFilter = filterToSyncWith;
             repaint();
         }
     }
