@@ -190,16 +190,9 @@ public:
                 magnitude.lineTo (xMax, yZero);
                 magnitude.lineTo (xMin, yZero);
                 g.setColour (handle->colour.withMultipliedAlpha (isEnabled ? 0.3f : 0.1f));
+                magnitude.closeSubPath();
+                g.fillPath (magnitude);
             }
-            else
-            {
-                magnitude.lineTo (xMax, yMax);
-                magnitude.lineTo (xMin, yMax);
-                g.setColour (handle->colour.withMultipliedAlpha (isEnabled ? 0.7f : 0.1f));
-            }
-
-            magnitude.closeSubPath();
-            g.fillPath (magnitude);
 
             float multGain = (handle->overrideGain != nullptr) ? *handle->overrideGain : Decibels::decibelsToGain (additiveDB);
 
@@ -268,7 +261,7 @@ public:
                 // we must keep some distance between the freq bands (they must not overlap).
                 // otherwise filling the rectangle will fail
                 float xWidth = static_cast<int>(xPos - prevXPos) >= 1.0f ? xPos - prevXPos : 1.0f;
-                g.fillRoundedRectangle (prevXPos, yMin, xWidth, yMax - yMin, 2.0);
+                g.fillRoundedRectangle (prevXPos, yMin, xWidth, yMax, 4.0);
               
                 if (i == size-1)
                     break;
@@ -276,12 +269,12 @@ public:
                 // draw separation lines between frequencybands
                 Path filterBandSeparator;
                 filterBandSeparator.startNewSubPath (xPos, yMin);
-                filterBandSeparator.lineTo (xPos, yMax);
+                filterBandSeparator.lineTo (xPos, yMax + yMin);
                 g.setColour (Colour (0xFF979797));
                 g.strokePath (filterBandSeparator, PathStrokeType (2.0f));
               
                 // if we are in 'highlight-freq-bands-mode' then we want the filter knobs to be of the same colour
-                ellipseColour = Colour (0xFFD8D8D8).withSaturation (0.95f);
+                ellipseColour = Colour (0xFF979797).brighter();
             }
             prevXPos = xPos;
           
@@ -552,7 +545,7 @@ private:
 
     double sampleRate;
 
-    int activeElem = 0;
+    int activeElem = -1;
 
     float dyn, zero, scale;
 
