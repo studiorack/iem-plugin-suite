@@ -25,7 +25,6 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "PluginProcessor.h"
 #include <unordered_map>
-#include <set>
 
 //Plugin Design Essentials
 #include "../../resources/lookAndFeel/IEM_LaF.h"
@@ -50,7 +49,8 @@ extern const int numFilterBands;
 //==============================================================================
 /**
 */
-class MultiBandCompressorAudioProcessorEditor  : public AudioProcessorEditor, private Timer, public Slider::Listener,           public Button::Listener
+class MultiBandCompressorAudioProcessorEditor  : public AudioProcessorEditor, private Timer, public Slider::Listener
+//, public Button::Listener
 {
 public:
     MultiBandCompressorAudioProcessorEditor (MultiBandCompressorAudioProcessor&, AudioProcessorValueTreeState&);
@@ -61,7 +61,7 @@ public:
     void resized() override;
   
     void sliderValueChanged(Slider *slider) override;
-    void buttonClicked(Button *button) override;
+//    void buttonClicked(Button *button) override;
 
     void timerCallback() override;
 
@@ -105,18 +105,19 @@ private:
     ToggleButton tbSoloEnabled[numFilterBands];
     std::unique_ptr<AudioProcessorValueTreeState::ButtonAttachment> soloAttachment[numFilterBands];
 
-    ToggleButton tbCompressionEnabled;
-    std::set< std::unique_ptr <AudioProcessorValueTreeState::ButtonAttachment>> compressionEnabledAttachment;
+    ToggleButton tbCompressionEnabled[numFilterBands];
+    std::unique_ptr <AudioProcessorValueTreeState::ButtonAttachment> compressionEnabledAttachment[numFilterBands];
   
     int bandToDisplay {0};
   
-    ReverseSlider slKnee, slThreshold, slRatio, slAttackTime, slReleaseTime, slMakeUpGain;
-    std::unordered_map<Component*, std::unique_ptr<SliderAttachment>> attachmentMap;
+    ReverseSlider slKnee[numFilterBands], slThreshold[numFilterBands], slRatio[numFilterBands], slAttackTime[numFilterBands], slReleaseTime[numFilterBands], slMakeUpGain[numFilterBands];
+    std::unique_ptr<SliderAttachment> slKneeAttachment[numFilterBands], slThresholdAttachment[numFilterBands], slRatioAttachment[numFilterBands], slAttackTimeAttachment[numFilterBands], slReleaseTimeAttachment[numFilterBands], slMakeUpGainAttachment[numFilterBands];
+//    std::unordered_map<Component*, std::unique_ptr<SliderAttachment>> attachmentMap;
 
-    CompressorVisualizer compressor;
+    OwnedArray<CompressorVisualizer> compressorVisualizers;
   
-    LevelMeter inpMeter, GRmeter;
-    SimpleLabel lbKnee, lbThreshold, lbMakeUpGain, lbRatio, lbAttack, lbRelease;
+    LevelMeter inpMeter[numFilterBands], GRmeter[numFilterBands];
+    SimpleLabel lbKnee[numFilterBands], lbThreshold[numFilterBands], lbMakeUpGain[numFilterBands], lbRatio[numFilterBands], lbAttack[numFilterBands], lbRelease[numFilterBands];
   
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MultiBandCompressorAudioProcessorEditor)
 };

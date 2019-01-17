@@ -163,9 +163,11 @@ public:
             if (coeffs != nullptr)
                 coeffs->getMagnitudeForFrequencyArray (frequencies.getRawDataPointer(), magnitudes.getRawDataPointer(), numPixels, sampleRate);
             float additiveDB = 0.0f;
+          
             if (filtersAreParallel && handle->gainSlider != nullptr)
                 additiveDB = handle->gainSlider->getValue();
-
+            if (handle->highlightFilteredBand >= 0 && handle->gainSlider != nullptr)
+                additiveDB = handle->gainSlider->getValue();
 
             //calculate phase response if needed
             if (filtersAreParallel && coeffs != nullptr)
@@ -281,9 +283,9 @@ public:
             // drawing the filter knobs
             float circY;
             if (!s.gainHandleLin)
-                circY = handle->gainSlider == nullptr ? dbToY(0.0f) : dbToY (handle->gainSlider->getValue());
+                circY = (handle->gainSlider == nullptr || handle->highlightFilteredBand) ? dbToY(0.0f) : dbToY (handle->gainSlider->getValue());
             else
-                circY = handle->gainSlider == nullptr ? dbToY(0.0f) : dbToY (Decibels::gainToDecibels (handle->gainSlider->getValue()));
+                circY = (handle->gainSlider == nullptr || handle->highlightFilteredBand) ? dbToY(0.0f) : dbToY (Decibels::gainToDecibels (handle->gainSlider->getValue()));
 
             g.setColour (ellipseColour);
             g.drawEllipse (xPos - 5.0f, circY - 5.0f , 10.0f, 10.0f, 2.0f);
@@ -399,7 +401,7 @@ public:
             auto handle (elements[activeElem]);
             if (handle->frequencySlider != nullptr)
                 handle->frequencySlider->setValue (frequency);
-            if (handle->gainSlider != nullptr)
+            if (handle->gainSlider != nullptr && handle->highlightFilteredBand != true)
                 handle->gainSlider->setValue (gain);
         }
     }
@@ -414,7 +416,7 @@ public:
             auto handle (elements[i]);
 
             float gain;
-            if (handle->gainSlider == nullptr)
+            if (handle->gainSlider == nullptr || handle->highlightFilteredBand)
                 gain = 0.0f;
             else
             {

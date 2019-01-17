@@ -135,7 +135,9 @@ public:
   
     Atomic<bool> repaintFilterVisualization = false;
   
-    Compressor* getCompressor(const int i) {return &compressors[i];};  
+    Compressor* getCompressor(const int i) {return &compressors[i];};
+    Compressor compressors[numFilterBands];
+
 
 private:
     // ====== parameters
@@ -162,7 +164,6 @@ private:
   
     std::set<int> soloEnabledArray;
 
-    Compressor compressors[numFilterBands];
 
     // filter coefficients
     IIR::Coefficients<float>::Ptr iirLPCoefficients[numFilterBands-1], iirHPCoefficients[numFilterBands-1],
