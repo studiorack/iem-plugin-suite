@@ -396,12 +396,12 @@ AudioProcessorValueTreeState::ParameterLayout FdnReverbAudioProcessor::createPar
                                      [](float value) {return String (value, 2);},
                                      nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("fadeInTime", "Fdn Time", "s",
+    params.push_back (oscParams.createAndAddParameter ("fadeInTime", "Fade-in Time", "s",
                                      NormalisableRange<float> (0.0f, 9.0f, 0.01f), 0.f,
                                      [](float value) {return String(value, 2);},
                                      nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("fdnSize", "Fdn Size", "",
+    params.push_back (oscParams.createAndAddParameter ("fdnSize", "Fdn Size (internal)", "",
                                      NormalisableRange<float> (0.0f, 2.0f, 1.0f), 2.0f,
                                      [](float value) {
                                          if (value == 0.0f)
