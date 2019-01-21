@@ -134,10 +134,9 @@ public:
     IIR::Coefficients<double>::Ptr highPassLRCoeffs[numFilterBands-1];
   
     Atomic<bool> repaintFilterVisualization = false;
+    Atomic<float> inputRMS = Decibels::gainToDecibels (-INFINITY), outputRMS = Decibels::gainToDecibels (-INFINITY);
   
     Compressor* getCompressor(const int i) {return &compressors[i];};
-    Compressor compressors[numFilterBands];
-
 
 private:
     // ====== parameters
@@ -153,6 +152,8 @@ private:
     int numChannels;
     const int maxNumFilters;
   
+//    float inputRMS = -INFINITY, outputRMS = -INFINTY;
+  
     // list of used audio parameters
     float* inputChannelsSetting, *outputOrderSetting,
            *cutoffs[numFilterBands-1],
@@ -160,10 +161,11 @@ private:
            *makeUpGain[numFilterBands], *ratio[numFilterBands],
            *attack[numFilterBands], *release[numFilterBands],
            *maxGR[numFilterBands], *maxRMS[numFilterBands],
-           *compressionEnabled[numFilterBands];
+           *bypass[numFilterBands];
   
     std::set<int> soloEnabledArray;
 
+    Compressor compressors[numFilterBands];
 
     // filter coefficients
     IIR::Coefficients<float>::Ptr iirLPCoefficients[numFilterBands-1], iirHPCoefficients[numFilterBands-1],

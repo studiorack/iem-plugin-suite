@@ -97,7 +97,7 @@ MultiBandCompressorAudioProcessor::MultiBandCompressorAudioProcessor()
         const String makeUpGainID("makeUpGain" + String(i));
         const String maxGRID("maxGR" + String(i));
         const String maxRMSID("maxRMS" + String(i));
-        const String compressionEnabledID("compressionEnabled" + String(i));
+        const String bypassID("bypass" + String(i));
         const String soloEnabledID("soloEnabled" + String(i));
       
         threshold[i] = parameters.getRawParameterValue(thresholdID);
@@ -108,7 +108,7 @@ MultiBandCompressorAudioProcessor::MultiBandCompressorAudioProcessor()
         makeUpGain[i] = parameters.getRawParameterValue(makeUpGainID);
         maxGR[i] = parameters.getRawParameterValue(maxGRID);
         maxRMS[i] = parameters.getRawParameterValue(maxRMSID);
-        compressionEnabled[i] = parameters.getRawParameterValue(compressionEnabledID);
+        bypass[i] = parameters.getRawParameterValue(bypassID);
         soloEnabledArray.clear();
 
         parameters.addParameterListener(thresholdID, this);
@@ -117,7 +117,7 @@ MultiBandCompressorAudioProcessor::MultiBandCompressorAudioProcessor()
         parameters.addParameterListener(releaseID, this);
         parameters.addParameterListener(ratioID, this);
         parameters.addParameterListener(makeUpGainID, this);
-        parameters.addParameterListener(compressionEnabledID, this);
+        parameters.addParameterListener(bypassID, this);
         parameters.addParameterListener(soloEnabledID, this);
 
         oscParams.addParameterID(thresholdID);
@@ -126,7 +126,7 @@ MultiBandCompressorAudioProcessor::MultiBandCompressorAudioProcessor()
         oscParams.addParameterID(releaseID);
         oscParams.addParameterID(ratioID);
         oscParams.addParameterID(makeUpGainID);
-        oscParams.addParameterID(compressionEnabledID);
+        oscParams.addParameterID(bypassID);
         oscParams.addParameterID(soloEnabledID);
     }
   
@@ -244,7 +244,7 @@ ParameterLayout MultiBandCompressorAudioProcessor::createParameterLayout()
         // ratio
         floatParam = std::make_unique<AudioParameterFloat>("ratio" + String(i),
                                                            "Ratio " + String(i),
-                                                           NormalisableRange<float> (1.0f, 16.0f, 0.2f),
+                                                           NormalisableRange<float> (1.0f, 16.0f, 0.1f),
                                                            4.0f, " : 1",
                                                            AudioProcessorParameter::genericParameter,
                                                            std::function <String (float value, int maximumStringLength)> ([](float v, int m){
@@ -285,9 +285,9 @@ ParameterLayout MultiBandCompressorAudioProcessor::createParameterLayout()
                                                           );
         params.push_back( std::move (floatParam));
       
-        boolParam = std::make_unique<AudioParameterBool>("compressionEnabled" + String(i),
+        boolParam = std::make_unique<AudioParameterBool>("bypass" + String(i),
                                                            "Compression on band " + String(i) + " enabled",
-                                                           true);
+                                                           false);
         params.push_back( std::move (boolParam));
 
       
@@ -434,6 +434,9 @@ void MultiBandCompressorAudioProcessor::prepareToPlay (double sampleRate, int sa
     monoSpec.maximumBlockSize = samplesPerBlock;
     monoSpec.numChannels = 1;
   
+    inputRMS = Decibels::gainToDecibels (-INFINITY);
+    outputRMS = Decibels::gainToDecibels (-INFINITY);
+  
     for (int i = 0; i < numFilterBands-1; i++)
     {
         calculateCoefficients(i);
@@ -539,6 +542,7 @@ void MultiBandCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer,
         copyCoeffsToProcessor();
     }
 
+    inputRMS = Decibels::gainToDecibels (buffer.getMagnitude (0, 0, L));
 
     // Interleave
     int partial = numChannels % MUCO_FLOAT_ELEMENTS;
@@ -620,7 +624,7 @@ void MultiBandCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer,
             if (!(soloEnabledArray.count(i)))
             {
                 *maxGR[i] = 0.0f;
-                *maxRMS[i] = -50.0f;
+                *maxRMS[i] = -90.0;
                 continue;
             }
         }
@@ -665,7 +669,7 @@ void MultiBandCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer,
         }
       
         // Compress
-        if (*compressionEnabled[i] > 0.5f)
+        if (*bypass[i] < 0.5f)
         {
             compressors[i].getGainFromSidechainSignal(inout[0], gainChannelPointer, L);
             *maxGR[i] = Decibels::gainToDecibels(FloatVectorOperations::findMinimum(gainChannelPointer, L)) - *makeUpGain[i];
@@ -683,9 +687,11 @@ void MultiBandCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer,
                 FloatVectorOperations::add(tempBuffer.getWritePointer(ch), inout[ch], L);
             }
             *maxGR[i] = 0.0f;
-            *maxRMS[i] = -50.0f;
+            *maxRMS[i] = -90.0;
         }
     }
+  
+    outputRMS = Decibels::gainToDecibels (tempBuffer.getMagnitude (0, 0, L));
   
     for (int ch = 0; ch < numChannels; ch++)
     {

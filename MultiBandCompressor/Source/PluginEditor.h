@@ -50,7 +50,6 @@ extern const int numFilterBands;
 /**
 */
 class MultiBandCompressorAudioProcessorEditor  : public AudioProcessorEditor, private Timer, public Slider::Listener
-//, public Button::Listener
 {
 public:
     MultiBandCompressorAudioProcessorEditor (MultiBandCompressorAudioProcessor&, AudioProcessorValueTreeState&);
@@ -61,7 +60,6 @@ public:
     void resized() override;
   
     void sliderValueChanged(Slider *slider) override;
-//    void buttonClicked(Button *button) override;
 
     void timerCallback() override;
 
@@ -93,31 +91,35 @@ private:
     // =============== end essentials ============
   
     std::unique_ptr<ComboBoxAttachment> cbInputChannelsSettingAttachment;
-//    std::unique_ptr<ComboBoxAttachment> cbOutputOrderSettingAttachment;
   
     FilterVisualizer<double> filterVisualizer;
     TooltipWindow tooltips;
   
+    // Filter Cutoffs
     ReverseSlider slFilterFrequency[numFilterBands-1];
     std::unique_ptr<SliderAttachment> slFilterFrequencyAttachment[numFilterBands-1];
   
-    ToggleButton tbBandSelect[numFilterBands];
-    ToggleButton tbSoloEnabled[numFilterBands];
-    std::unique_ptr<AudioProcessorValueTreeState::ButtonAttachment> soloAttachment[numFilterBands];
-
-    ToggleButton tbCompressionEnabled[numFilterBands];
-    std::unique_ptr <AudioProcessorValueTreeState::ButtonAttachment> compressionEnabledAttachment[numFilterBands];
+    // Solo and Bypass Buttons
+    TextButton tbSoloEnabled[numFilterBands], tbBypass[numFilterBands];
+    std::unique_ptr<AudioProcessorValueTreeState::ButtonAttachment> soloAttachment[numFilterBands], bypassAttachment[numFilterBands];
   
-    int bandToDisplay {0};
-  
+    // Compressor Parameters
     ReverseSlider slKnee[numFilterBands], slThreshold[numFilterBands], slRatio[numFilterBands], slAttackTime[numFilterBands], slReleaseTime[numFilterBands], slMakeUpGain[numFilterBands];
     std::unique_ptr<SliderAttachment> slKneeAttachment[numFilterBands], slThresholdAttachment[numFilterBands], slRatioAttachment[numFilterBands], slAttackTimeAttachment[numFilterBands], slReleaseTimeAttachment[numFilterBands], slMakeUpGainAttachment[numFilterBands];
-//    std::unordered_map<Component*, std::unique_ptr<SliderAttachment>> attachmentMap;
 
+    // Master parameters
+    GroupComponent gcMasterControls;
+    ReverseSlider slMasterThreshold, slMasterMakeUpGain, slMasterKnee, slMasterRatio, slMasterAttackTime, slMasterReleaseTime;
+    std::unordered_map<String, double> masterSliderPrevValueMap;
+
+    // Compressor Visualization
     OwnedArray<CompressorVisualizer> compressorVisualizers;
   
-    LevelMeter inpMeter[numFilterBands], GRmeter[numFilterBands];
-    SimpleLabel lbKnee[numFilterBands], lbThreshold[numFilterBands], lbMakeUpGain[numFilterBands], lbRatio[numFilterBands], lbAttack[numFilterBands], lbRelease[numFilterBands];
+    // Meters
+    LevelMeter omniFilteredMeter[numFilterBands], GRmeter[numFilterBands], omniInputMeter, omniOutputMeter;
+  
+    // Labels
+    SimpleLabel lbKnee[numFilterBands+1], lbThreshold[numFilterBands+1], lbMakeUpGain[numFilterBands+1], lbRatio[numFilterBands+1], lbAttack[numFilterBands+1], lbRelease[numFilterBands+1], lbInput, lbOutput;
   
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MultiBandCompressorAudioProcessorEditor)
 };
