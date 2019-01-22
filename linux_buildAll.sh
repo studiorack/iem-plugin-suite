@@ -14,4 +14,6 @@ for d in */*.jucer; do
         echo "no makefile found, moving on..."
     fi
 done
+find "_compiledPlugins/linux/IEM/" -type f -exec strip --strip-unneeded {} \;
+find "_compiledPlugins/linux/Standalone/" -type f -exec strip --strip-unneeded {} \;
 echo "all done!"
