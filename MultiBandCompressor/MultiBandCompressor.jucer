@@ -32,6 +32,8 @@
       <FILE id="Zu7LI7" name="PluginEditor.cpp" compile="1" resource="0"
             file="Source/PluginEditor.cpp"/>
       <FILE id="Ur0OCo" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
+      <FILE id="wKF8hH" name="FilterBankVisualizer.h" compile="0" resource="0"
+            file="Source/FilterBankVisualizer.h"/>
     </GROUP>
   </MAINGROUP>
   <EXPORTFORMATS>

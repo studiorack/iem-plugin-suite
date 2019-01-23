@@ -46,8 +46,6 @@ class  FilterVisualizer :  public Component
         Slider* qSlider = nullptr;
         float* overrideGain = nullptr;
         bool enabled = true;
-        int syncFilter = std::numeric_limits<int>::lowest();
-        bool highlightFilteredBand = false;
     };
 
 
@@ -163,11 +161,9 @@ public:
             if (coeffs != nullptr)
                 coeffs->getMagnitudeForFrequencyArray (frequencies.getRawDataPointer(), magnitudes.getRawDataPointer(), numPixels, sampleRate);
             float additiveDB = 0.0f;
-          
             if (filtersAreParallel && handle->gainSlider != nullptr)
                 additiveDB = handle->gainSlider->getValue();
-            if (handle->highlightFilteredBand >= 0 && handle->gainSlider != nullptr)
-                additiveDB = handle->gainSlider->getValue();
+
 
             //calculate phase response if needed
             if (filtersAreParallel && coeffs != nullptr)
@@ -185,16 +181,14 @@ public:
             }
 
             g.setColour (handle->colour.withMultipliedAlpha (isEnabled ? 0.7f : 0.1f));
-            g.strokePath (magnitude, PathStrokeType ((activeElem == handle->syncFilter || isActive) ? 2.5f :  1.0f));
+            g.strokePath (magnitude, PathStrokeType (isActive ? 2.5f : 1.0f));
 
-            if (!(handle->highlightFilteredBand))
-            {
-                magnitude.lineTo (xMax, yZero);
-                magnitude.lineTo (xMin, yZero);
-                g.setColour (handle->colour.withMultipliedAlpha (isEnabled ? 0.3f : 0.1f));
-                magnitude.closeSubPath();
-                g.fillPath (magnitude);
-            }
+            magnitude.lineTo (xMax, yZero);
+            magnitude.lineTo (xMin, yZero);
+            magnitude.closeSubPath();
+
+            g.setColour (handle->colour.withMultipliedAlpha (isEnabled ? 0.3f : 0.1f));
+            g.fillPath (magnitude);
 
             float multGain = (handle->overrideGain != nullptr) ? *handle->overrideGain : Decibels::decibelsToGain (additiveDB);
 
@@ -247,50 +241,23 @@ public:
         g.fillPath (magnitude);
 
         const int size = elements.size();
-        float prevXPos = xMin;
         for (int i = 0; i < size; ++i)
         {
             auto handle (elements[i]);
-            if (handle->syncFilter >= 0 && i < size - 1)
-              continue;
-            float xPos = handle->frequencySlider == nullptr ? hzToX (s.fMax) : hzToX (handle->frequencySlider->getValue());
-          
-            Colour ellipseColour = handle->colour;
-            if (handle->highlightFilteredBand)
-            {
-                // fill whole area of frequency band with colour
-                g.setColour (handle->colour.withMultipliedAlpha (0.3f));
-                // we must keep some distance between the freq bands (they must not overlap).
-                // otherwise filling the rectangle will fail
-                float xWidth = static_cast<int>(xPos - prevXPos) >= 1.0f ? xPos - prevXPos : 1.0f;
-                g.fillRoundedRectangle (prevXPos, yMin, xWidth, yMax, 4.0);
-              
-                if (i == size-1)
-                    break;
-              
-                // draw separation lines between frequencybands
-                Path filterBandSeparator;
-                filterBandSeparator.startNewSubPath (xPos, yMin);
-                filterBandSeparator.lineTo (xPos, yMax + yMin);
-                g.setColour (Colour (0xFF979797));
-                g.strokePath (filterBandSeparator, PathStrokeType (2.0f));
-              
-                // if we are in 'highlight-freq-bands-mode' then we want the filter knobs to be of the same colour
-                ellipseColour = Colour (0xFF979797).brighter();
-            }
-            prevXPos = xPos;
-          
-            // drawing the filter knobs
+            float circX = handle->frequencySlider == nullptr ? hzToX (s.fMin) : hzToX (handle->frequencySlider->getValue());
             float circY;
             if (!s.gainHandleLin)
-                circY = (handle->gainSlider == nullptr || handle->highlightFilteredBand) ? dbToY(0.0f) : dbToY (handle->gainSlider->getValue());
+                circY = handle->gainSlider == nullptr ? dbToY(0.0f) : dbToY (handle->gainSlider->getValue());
             else
-                circY = (handle->gainSlider == nullptr || handle->highlightFilteredBand) ? dbToY(0.0f) : dbToY (Decibels::gainToDecibels (handle->gainSlider->getValue()));
+                circY = handle->gainSlider == nullptr ? dbToY(0.0f) : dbToY (Decibels::gainToDecibels (handle->gainSlider->getValue()));
 
-            g.setColour (ellipseColour);
-            g.drawEllipse (xPos - 5.0f, circY - 5.0f , 10.0f, 10.0f, 2.0f);
-            g.setColour (activeElem == i ? ellipseColour : ellipseColour.withSaturation (0.2));
-            g.fillEllipse (xPos - 5.0f, circY - 5.0f , 10.0f, 10.0f);
+            g.setColour (Colour (0xFF191919));
+            g.drawEllipse (circX - 5.0f, circY - 5.0f , 10.0f, 10.0f, 3.0f);
+
+            g.setColour (handle->colour);
+            g.drawEllipse (circX - 5.0f, circY - 5.0f , 10.0f, 10.0f, 2.0f);
+            g.setColour (activeElem == i ? handle->colour : handle->colour.withSaturation (0.2));
+            g.fillEllipse (circX - 5.0f, circY - 5.0f , 10.0f, 10.0f);
         }
     };
 
@@ -401,7 +368,7 @@ public:
             auto handle (elements[activeElem]);
             if (handle->frequencySlider != nullptr)
                 handle->frequencySlider->setValue (frequency);
-            if (handle->gainSlider != nullptr && handle->highlightFilteredBand != true)
+            if (handle->gainSlider != nullptr)
                 handle->gainSlider->setValue (gain);
         }
     }
@@ -416,7 +383,7 @@ public:
             auto handle (elements[i]);
 
             float gain;
-            if (handle->gainSlider == nullptr || handle->highlightFilteredBand)
+            if (handle->gainSlider == nullptr)
                 gain = 0.0f;
             else
             {
@@ -497,26 +464,6 @@ public:
         {
             auto element = elements[filterIdx];
             element->enabled = shouldBeEnabled;
-            repaint();
-        }
-    }
-  
-    void setFilterToHighlightFilteredBand (const int filterIdx, const bool shouldHighlight)
-    {
-        if (filterIdx < elements.size())
-        {
-            auto element = elements[filterIdx];
-            element->highlightFilteredBand = shouldHighlight;
-            repaint();
-        }
-    }
-  
-    void setFilterToSyncWith (const int filterIdx, const int filterToSyncWith)
-    {
-        if (filterIdx < elements.size() && filterToSyncWith < elements.size())
-        {
-            auto element = elements[filterIdx];
-            element->syncFilter = filterToSyncWith;
             repaint();
         }
     }

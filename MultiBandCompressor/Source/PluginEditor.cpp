@@ -26,11 +26,11 @@
 
 //==============================================================================
 MultiBandCompressorAudioProcessorEditor::MultiBandCompressorAudioProcessorEditor (MultiBandCompressorAudioProcessor& p, AudioProcessorValueTreeState& vts)
-    : AudioProcessorEditor (&p), processor (p), valueTreeState (vts), footer (p.getOSCReceiver()), filterVisualizer(20.0f, 20000.0f, -15.0f, 20.0f, 5.0f)
+    : AudioProcessorEditor (&p), processor (p), valueTreeState (vts), footer (p.getOSCReceiver()), filterBankVisualizer(20.0f, 20000.0f, -15.0f, 20.0f, 5.0f)
 {
     // ============== BEGIN: essentials ======================
     // set GUI size and lookAndFeel
-    setResizeLimits (1000, 1000*0.56, 1600, 1600*0.56); // use this to create a resizable GUI
+    setResizeLimits (1000, 1000*0.54, 1600, 1600*0.54); // use this to create a resizable GUI
     setLookAndFeel (&globalLaF);
 
     // make title and footer visible, and set the PluginName
@@ -52,6 +52,12 @@ MultiBandCompressorAudioProcessorEditor::MultiBandCompressorAudioProcessorEditor
         Colours::yellow,
         Colours::orangered
     };
+  
+    filterBankVisualizer.setSampleRate(processor.getCurrentSampleRate());
+    filterBankVisualizer.setOverallGain(0.0f);
+    filterBankVisualizer.setNumFreqBands (numFilterBands);
+    addAndMakeVisible (&filterBankVisualizer);
+  
   
     for (int i = 0; i < numFilterBands; ++i)
     {
@@ -132,11 +138,7 @@ MultiBandCompressorAudioProcessorEditor::MultiBandCompressorAudioProcessorEditor
         omniFilteredMeter[i].setGainReductionMeter(false);
       
       
-        // ==== FILTER VISUALIZATION ====
-      
-        filterVisualizer.setSampleRate(processor.getCurrentSampleRate());
-        filterVisualizer.setOverallGainInDecibels(0.0f);
-        addAndMakeVisible (&filterVisualizer);
+        // ==== FILTERS ====
       
         if (i < numFilterBands - 1)
         {
@@ -144,18 +146,15 @@ MultiBandCompressorAudioProcessorEditor::MultiBandCompressorAudioProcessorEditor
             slFilterFrequencyAttachment[i] = std::make_unique<SliderAttachment> (valueTreeState, "cutoff" + String(i), slFilterFrequency[i]);
             addAndMakeVisible(&slFilterFrequency[i]);
             slFilterFrequency[i].setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-            slFilterFrequency[i].setTextBoxStyle (Slider::TextBoxBelow, false, 50, 12);
+            slFilterFrequency[i].setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
             slFilterFrequency[i].setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClRotSliderArrow);
             slFilterFrequency[i].setTooltip ("Cutoff " + String(i+1));
             slFilterFrequency[i].setName ("Cutoff" + String(i));
             slFilterFrequency[i].addListener (this);
           
             // filtervisualization / coeffs
-            filterVisualizer.addCoefficients (processor.lowPassLRCoeffs[i], colours[i], &slFilterFrequency[i], &slMakeUpGain[i]);
-            filterVisualizer.setFilterToHighlightFilteredBand (2*i, true);
-            filterVisualizer.addCoefficients (processor.highPassLRCoeffs[i], colours[i+1], nullptr, &slMakeUpGain[i+1]);
-            filterVisualizer.setFilterToHighlightFilteredBand (2*i + 1, true);
-            filterVisualizer.setFilterToSyncWith (2*i + 1, 2*i);
+            filterBankVisualizer.addCoefficients (processor.lowPassLRCoeffs[i], colours[i], &slFilterFrequency[i], &slMakeUpGain[i]);
+            filterBankVisualizer.addCoefficients (processor.highPassLRCoeffs[i], colours[i+1], &slFilterFrequency[i], &slMakeUpGain[i+1]);
         }
 
 
@@ -333,9 +332,9 @@ void MultiBandCompressorAudioProcessorEditor::resized()
 
 
     // ==== SPLIT INTO 4 BASIC SECTIONS ====
-    const float filterToCompressorSectionRatio = 0.4f;
+    const float filterToCompressorSectionRatio = 0.37f;
     const int filterToCompressorSeparator = 4;
-    const float masterToVisualizationAreaRatio = 0.15f;
+    const float masterToVisualizationAreaRatio = 0.18f;
     const int masterToVisualizationAreaSeparator = 0;
     const float masterUpperToLowerRatio = 0.41f;
     const int masterUpperToLowerSeparator = 16;
@@ -361,7 +360,7 @@ void MultiBandCompressorAudioProcessorEditor::resized()
   
     // ==== FILTER VISUALIZATION ====
     const int cutoffFilterSeparator = 5;
-    filterVisualizer.setBounds (filterArea);
+    filterBankVisualizer.setBounds (filterArea);
   
     Rectangle<int> filterCutoffArea = upperMasterArea.removeFromLeft(upperMasterArea.proportionOfWidth(0.5));
     const int sliderHeight = (filterCutoffArea.getHeight() - (numFilterBands-2)*cutoffFilterSeparator) / 3;
@@ -381,8 +380,6 @@ void MultiBandCompressorAudioProcessorEditor::resized()
     omniOutputMeter.setBounds (summedSignalMeterArea);
     lbInput.setBounds (labelMeterArea.removeFromLeft (labelMeterArea.proportionOfWidth (0.5f)));
     lbOutput.setBounds (labelMeterArea);
-  
-  
   
   
     // ==== COMPRESSOR VISUALIZATION ====
@@ -507,7 +504,7 @@ void MultiBandCompressorAudioProcessorEditor::sliderValueChanged(Slider *slider)
     // makeup gain affects filter magnitude
     if (slider->getName().startsWith("MakeUpGain"))
     {
-        filterVisualizer.repaint();
+        filterBankVisualizer.repaint();
         return;
     }
 
@@ -527,7 +524,7 @@ void MultiBandCompressorAudioProcessorEditor::sliderValueChanged(Slider *slider)
                 if (!(cutoff <= slFilterFrequency[f+1].getValue()))
                 {
                     slider->setValue(prevLowCutoff, NotificationType::dontSendNotification);
-                    filterVisualizer.repaint();
+                    filterBankVisualizer.repaint();
 
                 }
                 else
@@ -541,7 +538,7 @@ void MultiBandCompressorAudioProcessorEditor::sliderValueChanged(Slider *slider)
                       cutoff <= slFilterFrequency[f+1].getValue()))
                 {
                     slider->setValue(prevMidCutoff, NotificationType::dontSendNotification);
-                    filterVisualizer.repaint();
+                    filterBankVisualizer.repaint();
 
                 }
                 else
@@ -554,7 +551,7 @@ void MultiBandCompressorAudioProcessorEditor::sliderValueChanged(Slider *slider)
                 if (!(cutoff >= slFilterFrequency[f-1].getValue()))
                 {
                     slider->setValue(prevHighCutoff, NotificationType::dontSendNotification);
-                    filterVisualizer.repaint();
+                    filterBankVisualizer.repaint();
                 }
                 else
                 {
@@ -609,8 +606,8 @@ void MultiBandCompressorAudioProcessorEditor::timerCallback()
     if (processor.repaintFilterVisualization.get())
     {
         processor.repaintFilterVisualization = false;
-        filterVisualizer.setSampleRate(processor.getCurrentSampleRate());
-        filterVisualizer.repaint();
+        filterBankVisualizer.setSampleRate(processor.getCurrentSampleRate());
+        filterBankVisualizer.repaint();
     }
   
     omniInputMeter.setLevel (processor.inputRMS.get());

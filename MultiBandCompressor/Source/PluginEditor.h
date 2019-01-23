@@ -31,9 +31,10 @@
 #include "../../resources/customComponents/TitleBar.h"
 
 //Custom Components
+#include "../../resources/customComponents/FilterVisualizer.h"
+#include "FilterBankVisualizer.h"
 #include "../../resources/customComponents/ReverseSlider.h"
 #include "../../resources/customComponents/SimpleLabel.h"
-#include "../../resources/customComponents/FilterVisualizer.h"
 #include "../../resources/customComponents/CompressorVisualizer.h"
 #include "../../resources/customComponents/LevelMeter.h"
 #include "../../resources/customComponents/OnOffButton.h"
@@ -92,7 +93,7 @@ private:
   
     std::unique_ptr<ComboBoxAttachment> cbInputChannelsSettingAttachment;
   
-    FilterVisualizer<double> filterVisualizer;
+    FilterBankVisualizer<double> filterBankVisualizer;
     TooltipWindow tooltips;
   
     // Filter Cutoffs
