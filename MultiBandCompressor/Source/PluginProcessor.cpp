@@ -38,14 +38,10 @@ MultiBandCompressorAudioProcessor::MultiBandCompressorAudioProcessor()
        oscParams (parameters), maxNumFilters (ceil (64 / MUCO_FLOAT_ELEMENTS))
 #endif
 {  
-    const String inputSettingID = "inputChannelsSetting";
-    const String outputSettingID = "outputOrderSetting";
-    inputChannelsSetting = parameters.getRawParameterValue(inputSettingID);
-    outputOrderSetting = parameters.getRawParameterValue(outputSettingID);
-    parameters.addParameterListener(inputSettingID, this);
-    parameters.addParameterListener(outputSettingID, this);
+    const String inputSettingID = "orderSetting";
+    orderSetting = parameters.getRawParameterValue (inputSettingID);
+    parameters.addParameterListener (inputSettingID, this);
     oscParams.addParameterID(inputSettingID);
-    oscParams.addParameterID(outputSettingID);
   
     for (int i = 0; i < numFilterBands; i++)
     {
@@ -151,35 +147,38 @@ ParameterLayout MultiBandCompressorAudioProcessor::createParameterLayout()
   
     std::unique_ptr<AudioParameterFloat> floatParam;
     std::unique_ptr<AudioParameterBool> boolParam;
-  
-    floatParam = std::make_unique<AudioParameterFloat> ("inputChannelsSetting",
-                                                        "Number of Input Channels ",
-                                                        NormalisableRange<float> (0.0f, 64.0f, 1.0f),
-                                                        0.0f, "",
+
+    floatParam = std::make_unique<AudioParameterFloat> ("orderSetting",
+                                                        "Ambisonics Order",
+                                                        NormalisableRange<float>(0.0f, 8.0f, 1.0f), 0.0f,
+                                                        "",
                                                         AudioProcessorParameter::genericParameter,
-                                                        std::function <String (float value, int maximumStringLength)> ([](float v, int m){return v < 0.5f ? "Auto" : String (v);}),
-                                                        std::function< float(const String &text)> ([](const String &t){return t.getFloatValue();})
-                                                       );
-    params.push_back( std::move (floatParam));
-  
-    floatParam = std::make_unique<AudioParameterFloat>("outputOrderSetting",
-                                                       "Ambisonic Order ",
-                                                       NormalisableRange<float> (0.0f, 8.0f, 1.0f),
-                                                       0.0f, "",
-                                                       AudioProcessorParameter::genericParameter,
-                                                       std::function <String (float value, int maximumStringLength)> ([](float v, int m){
-                                                         if (v >= 0.5f && v < 1.5f) return "0th";
-                                                         else if (v >= 1.5f && v < 2.5f) return "1st";
-                                                         else if (v >= 2.5f && v < 3.5f) return "2nd";
-                                                         else if (v >= 3.5f && v < 4.5f) return "3rd";
-                                                         else if (v >= 4.5f && v < 5.5f) return "4th";
-                                                         else if (v >= 5.5f && v < 6.5f) return "5th";
-                                                         else if (v >= 6.5f && v < 7.5f) return "6th";
-                                                         else if (v >= 7.5f) return "7th";
-                                                         else return "Auto";}),
-                                                       nullptr
-                                                      );
-    params.push_back( std::move (floatParam));
+                                                        [](float value, int maximumStringLength)
+                                                        {
+                                                            if (value >= 0.5f && value < 1.5f) return "0th";
+                                                            else if (value >= 1.5f && value < 2.5f) return "1st";
+                                                            else if (value >= 2.5f && value < 3.5f) return "2nd";
+                                                            else if (value >= 3.5f && value < 4.5f) return "3rd";
+                                                            else if (value >= 4.5f && value < 5.5f) return "4th";
+                                                            else if (value >= 5.5f && value < 6.5f) return "5th";
+                                                            else if (value >= 6.5f && value < 7.5f) return "6th";
+                                                            else if (value >= 7.5f) return "7th";
+                                                            else return "Auto";
+                                                       }, nullptr);
+    params.push_back (std::move (floatParam));
+
+    floatParam = std::make_unique<AudioParameterFloat> ("useSN3D", "Normalization",
+                                                        NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
+                                                        "",
+                                                        AudioProcessorParameter::genericParameter,
+                                                        [](float value, int maximumStringLength)
+                                                        {
+                                                            if (value >= 0.5f) return "SN3D";
+                                                            else return "N3D";
+                                                        },
+                                                        nullptr);
+    params.push_back (std::move (floatParam));
+
 
 
     for (int i = 0; i < numFilterBands; i++)
@@ -424,10 +423,10 @@ void MultiBandCompressorAudioProcessor::changeProgramName (int index, const Stri
 //==============================================================================
 void MultiBandCompressorAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    checkInputAndOutput (this, *inputChannelsSetting, *outputOrderSetting, true);
+    checkInputAndOutput (this, *orderSetting, *orderSetting, true);
 
     lastSampleRate = sampleRate;
-    numChannels = jmin(getTotalNumInputChannels(), input.getSize());
+    numChannels = jmin (getTotalNumInputChannels(), input.getNumberOfChannels());
 
     ProcessSpec monoSpec;
     monoSpec.sampleRate = sampleRate;
@@ -487,13 +486,13 @@ void MultiBandCompressorAudioProcessor::prepareToPlay (double sampleRate, int sa
     zero = AudioBlock<float> (zeroData, MUCO_FLOAT_ELEMENTS, samplesPerBlock);
     zero.clear();
   
-    temp = AudioBlock<float> (tempData, input.getMaxSize(), samplesPerBlock);
+    temp = AudioBlock<float> (tempData, 64, samplesPerBlock);
     temp.clear();
   
     gains = AudioBlock<float> (gainData, 1, samplesPerBlock);
     gains.clear();
   
-    tempBuffer.setSize(input.getMaxSize(), samplesPerBlock);
+    tempBuffer.setSize (64, samplesPerBlock);
   
     repaintFilterVisualization = true;
 }
@@ -515,12 +514,12 @@ void MultiBandCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer,
 {
     if (userChangedIOSettings)
     {
-        checkInputAndOutput (this, *inputChannelsSetting, *outputOrderSetting, false);
+        checkInputAndOutput (this, *orderSetting, *orderSetting, false);
         numChannels = jmin(buffer.getNumChannels(), input.getSize());
     }
   
     ScopedNoDenormals noDenormals;
-    jassert(getTotalNumInputChannels() <= getTotalNumOutputChannels());
+    //jassert(getTotalNumInputChannels() <= getTotalNumOutputChannels()); // this is most likely to happen if using in standalone application
     for (int i = numChannels; i < getTotalNumOutputChannels(); ++i)
     {
         buffer.clear (i, 0, buffer.getNumSamples());
@@ -789,7 +788,7 @@ void MultiBandCompressorAudioProcessor::parameterChanged (const String &paramete
             soloEnabledArray.erase(freqBand);
         }
     }
-    else if (parameterID == "inputChannelsSetting" || parameterID == "outputOrderSetting" )
+    else if (parameterID == "orderSetting")
     {
         userChangedIOSettings = true;
     }

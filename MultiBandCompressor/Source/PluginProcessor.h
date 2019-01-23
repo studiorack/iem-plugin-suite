@@ -58,7 +58,7 @@ static const int numFilterBands {4};
 */
 class MultiBandCompressorAudioProcessor  : public AudioProcessor,
                                            public AudioProcessorValueTreeState::Listener,
-                                           public IOHelper<IOTypes::AudioChannels<64>, IOTypes::Ambisonics<7>>,
+                                           public IOHelper<IOTypes::Ambisonics<>, IOTypes:: Ambisonics<>>,
                                            public VSTCallbackHandler,
                                            private OSCReceiver::Listener<OSCReceiver::RealtimeCallback>
 {
@@ -155,7 +155,7 @@ private:
 //    float inputRMS = -INFINITY, outputRMS = -INFINTY;
   
     // list of used audio parameters
-    float* inputChannelsSetting, *outputOrderSetting,
+    float* orderSetting,
            *cutoffs[numFilterBands-1],
            *threshold[numFilterBands], *knee[numFilterBands],
            *makeUpGain[numFilterBands], *ratio[numFilterBands],
@@ -185,7 +185,7 @@ private:
   
     std::vector<HeapBlock<char>> interleavedBlockData,  freqBandsBlocks[numFilterBands];
     HeapBlock<char> zeroData, tempData, gainData;
-    HeapBlock<const float*> channelPointers { input.getMaxSize() };
+    HeapBlock<const float*> channelPointers { 64 };
   
     Atomic<bool> userChangedFilterSettings = true;
 

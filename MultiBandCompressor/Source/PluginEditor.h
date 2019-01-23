@@ -87,11 +87,12 @@ private:
         - AmbisonicIOWidget<maxOrder>
         - DirectivitiyIOWidget
      */
-    TitleBar<AudioChannelsIOWidget<64, true>, NoIOWidget> title;
+    TitleBar<AmbisonicIOWidget<>, NoIOWidget> title;
     OSCFooter footer;
     // =============== end essentials ============
   
-    std::unique_ptr<ComboBoxAttachment> cbInputChannelsSettingAttachment;
+    std::unique_ptr<ComboBoxAttachment> cbNormalizationAtachement;
+    std::unique_ptr<ComboBoxAttachment> cbOrderAtachement;
   
     FilterBankVisualizer<double> filterBankVisualizer;
     TooltipWindow tooltips;

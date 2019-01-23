@@ -40,7 +40,8 @@ MultiBandCompressorAudioProcessorEditor::MultiBandCompressorAudioProcessorEditor
     addAndMakeVisible (&footer);
     // ============= END: essentials ========================
   
-    cbInputChannelsSettingAttachment = std::make_unique<ComboBoxAttachment>(valueTreeState, "inputChannelsSetting", *title.getInputWidgetPtr()->getChannelsCbPointer());
+    cbNormalizationAtachement = std::make_unique<ComboBoxAttachment> (valueTreeState, "useSN3D", *title.getInputWidgetPtr()->getNormCbPointer());
+    cbOrderAtachement = std::make_unique<ComboBoxAttachment> (valueTreeState,"orderSetting", *title.getInputWidgetPtr()->getOrderCbPointer());
   
     tooltips.setMillisecondsBeforeTipAppears(500);
     tooltips.setOpaque (false);
@@ -598,9 +599,9 @@ void MultiBandCompressorAudioProcessorEditor::sliderValueChanged(Slider *slider)
 void MultiBandCompressorAudioProcessorEditor::timerCallback()
 {
     // === update titleBar widgets according to available input/output channel counts
-    //int maxInSize, maxOutSize;
-    // processor.getMaxSize (maxInSize, maxOutSize);
-    //title.setMaxSize (maxInSize, maxOutSize);
+    int maxInSize, maxOutSize;
+    processor.getMaxSize (maxInSize, maxOutSize);
+    title.setMaxSize (maxInSize, maxOutSize);
     // ==========================================
 
     if (processor.repaintFilterVisualization.get())
