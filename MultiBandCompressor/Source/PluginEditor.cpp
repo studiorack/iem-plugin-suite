@@ -54,11 +54,29 @@ MultiBandCompressorAudioProcessorEditor::MultiBandCompressorAudioProcessorEditor
         Colours::orangered
     };
   
+    // ==== FILTERS ====
     filterBankVisualizer.setSampleRate(processor.getCurrentSampleRate());
     filterBankVisualizer.setOverallGain(0.0f);
     filterBankVisualizer.setNumFreqBands (numFilterBands);
     addAndMakeVisible (&filterBankVisualizer);
   
+    for (int i = 0; i < numFilterBands -1; ++i)
+    {
+        // Crossovers
+        slCrossoverAttachment[i] = std::make_unique<SliderAttachment> (valueTreeState, "crossover" + String(i), slCrossover[i]);
+        addAndMakeVisible(&slCrossover[i]);
+        slCrossover[i].setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
+        slCrossover[i].setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
+        slCrossover[i].setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClRotSliderArrow);
+        slCrossover[i].setTooltip ("Crossover Frequency " + String(i+1));
+        slCrossover[i].setName ("Crossover" + String(i));
+        slCrossover[i].addListener (this);
+      
+        // filtervisualization / coeffs
+        filterBankVisualizer.addCoefficients (processor.lowPassLRCoeffs[i], colours[i], &slCrossover[i], &slMakeUpGain[i]);
+        filterBankVisualizer.addCoefficients (processor.highPassLRCoeffs[i], colours[i+1], &slCrossover[i], &slMakeUpGain[i+1]);
+    }
+
   
     for (int i = 0; i < numFilterBands; ++i)
     {
@@ -132,31 +150,6 @@ MultiBandCompressorAudioProcessorEditor::MultiBandCompressorAudioProcessorEditor
         GRmeter[i].setMinLevel(-25.0f);
         GRmeter[i].setColour(Colours::red.withMultipliedAlpha(0.8f));
         GRmeter[i].setGainReductionMeter(true);
-
-        addAndMakeVisible(&omniFilteredMeter[i]);
-        omniFilteredMeter[i].setMinLevel(-60.0f);
-        omniFilteredMeter[i].setColour(Colours::green.withMultipliedAlpha(0.8f));
-        omniFilteredMeter[i].setGainReductionMeter(false);
-      
-      
-        // ==== FILTERS ====
-      
-        if (i < numFilterBands - 1)
-        {
-            // cutoffs
-            slFilterFrequencyAttachment[i] = std::make_unique<SliderAttachment> (valueTreeState, "cutoff" + String(i), slFilterFrequency[i]);
-            addAndMakeVisible(&slFilterFrequency[i]);
-            slFilterFrequency[i].setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-            slFilterFrequency[i].setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-            slFilterFrequency[i].setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClRotSliderArrow);
-            slFilterFrequency[i].setTooltip ("Cutoff " + String(i+1));
-            slFilterFrequency[i].setName ("Cutoff" + String(i));
-            slFilterFrequency[i].addListener (this);
-          
-            // filtervisualization / coeffs
-            filterBankVisualizer.addCoefficients (processor.lowPassLRCoeffs[i], colours[i], &slFilterFrequency[i], &slMakeUpGain[i]);
-            filterBankVisualizer.addCoefficients (processor.highPassLRCoeffs[i], colours[i+1], &slFilterFrequency[i], &slMakeUpGain[i+1]);
-        }
 
 
         // ===== LABELS =====
@@ -340,7 +333,7 @@ void MultiBandCompressorAudioProcessorEditor::resized()
     const float masterUpperToLowerRatio = 0.41f;
     const int masterUpperToLowerSeparator = 16;
 
-    // split vertically into visualization section and 'master' (cutoffs, summed signal and master sliders) section
+    // split vertically into visualization section and 'master' (crossover, summed signal and master sliders) section
     Rectangle<int> compressorArea = area;
     Rectangle<int> masterArea = compressorArea.removeFromRight (compressorArea.proportionOfWidth (masterToVisualizationAreaRatio));
   
@@ -360,16 +353,16 @@ void MultiBandCompressorAudioProcessorEditor::resized()
   
   
     // ==== FILTER VISUALIZATION ====
-    const int cutoffFilterSeparator = 5;
+    const int crossoverSeparator = 5;
     filterBankVisualizer.setBounds (filterArea);
   
-    Rectangle<int> filterCutoffArea = upperMasterArea.removeFromLeft(upperMasterArea.proportionOfWidth(0.5));
-    const int sliderHeight = (filterCutoffArea.getHeight() - (numFilterBands-2)*cutoffFilterSeparator) / 3;
+    Rectangle<int> crossoverArea = upperMasterArea.removeFromLeft(upperMasterArea.proportionOfWidth(0.5));
+    const int sliderHeight = (crossoverArea.getHeight() - (numFilterBands-2)*crossoverSeparator) / 3;
     for (int i = 0; i < numFilterBands-1; ++i)
     {
-        slFilterFrequency[i].setBounds (filterCutoffArea.removeFromTop(sliderHeight));
+        slCrossover[i].setBounds (crossoverArea.removeFromTop(sliderHeight));
         if (i < numFilterBands-2)
-            filterCutoffArea.removeFromTop (cutoffFilterSeparator);
+            crossoverArea.removeFromTop (crossoverSeparator);
     }
 
   
@@ -387,7 +380,7 @@ void MultiBandCompressorAudioProcessorEditor::resized()
     const float buttonsToCompressorsRatio = 0.08f;
     const int buttonsToCompressorVisualizationSeparator = 4;
     const float compressorParamToVisualizationRatio = 0.48f;
-    const float metersToCompressorVisualizationRatio = 0.25f;
+    const float metersToCompressorVisualizationRatio = 0.175f;
     const int paramRowSeparator = 4;
     const int paramToCompressorVisualizationSeparator = 4;
     const int compressorVisualizationSeparator = 20;
@@ -456,7 +449,6 @@ void MultiBandCompressorAudioProcessorEditor::resized()
         currentArea.removeFromRight (compressorVisualizationToMeterSeparator / 2);
         meterArea.removeFromLeft (compressorVisualizationToMeterSeparator / 2);
       
-        omniFilteredMeter[i].setBounds (meterArea.removeFromLeft (meterArea.proportionOfWidth(0.5)));
         GRmeter[i].setBounds (meterArea);
       
         if (!(compressorVisualizers.isEmpty()))
@@ -509,54 +501,54 @@ void MultiBandCompressorAudioProcessorEditor::sliderValueChanged(Slider *slider)
         return;
     }
 
-    // Cutoffs - prevent overlaps
-    static double prevMidCutoff;
-    static double prevLowCutoff;
-    static double prevHighCutoff;
+    // Crossover - prevent overlaps
+    static double prevMidCrossover;
+    static double prevLowCrossover;
+    static double prevHighCrossover;
   
     // TODO: put in processor::parameterChanged
-    if (slider->getName().startsWith("Cutoff"))
+    if (slider->getName().startsWith("Crossover"))
     {
         int f = slider->getName().getLastCharacters(1).getIntValue();
-        double cutoff = slider->getValue();
+        double crossover = slider->getValue();
         switch (f)
         {
             case (int)FilterIndex::LowIndex:
-                if (!(cutoff <= slFilterFrequency[f+1].getValue()))
+                if (!(crossover <= slCrossover[f+1].getValue()))
                 {
-                    slider->setValue(prevLowCutoff, NotificationType::dontSendNotification);
+                    slider->setValue(prevLowCrossover, NotificationType::dontSendNotification);
                     filterBankVisualizer.repaint();
 
                 }
                 else
                 {
-                    prevLowCutoff = cutoff;
+                    prevLowCrossover = crossover;
                 }
                 break;
             
             case (int)FilterIndex::MidIndex:
-                if (!(cutoff >= slFilterFrequency[f-1].getValue() &&
-                      cutoff <= slFilterFrequency[f+1].getValue()))
+                if (!(crossover >= slCrossover[f-1].getValue() &&
+                      crossover <= slCrossover[f+1].getValue()))
                 {
-                    slider->setValue(prevMidCutoff, NotificationType::dontSendNotification);
+                    slider->setValue(prevMidCrossover, NotificationType::dontSendNotification);
                     filterBankVisualizer.repaint();
 
                 }
                 else
                 {
-                    prevMidCutoff = cutoff;
+                    prevMidCrossover = crossover;
                 }
                 break;
 
             case (int)FilterIndex::HighIndex:
-                if (!(cutoff >= slFilterFrequency[f-1].getValue()))
+                if (!(crossover >= slCrossover[f-1].getValue()))
                 {
-                    slider->setValue(prevHighCutoff, NotificationType::dontSendNotification);
+                    slider->setValue(prevHighCrossover, NotificationType::dontSendNotification);
                     filterBankVisualizer.repaint();
                 }
                 else
                 {
-                    prevHighCutoff = cutoff;
+                    prevHighCrossover = crossover;
                 }
                 break;
         }
@@ -611,17 +603,18 @@ void MultiBandCompressorAudioProcessorEditor::timerCallback()
         filterBankVisualizer.repaint();
     }
   
-    omniInputMeter.setLevel (processor.inputRMS.get());
-    omniOutputMeter.setLevel (processor.outputRMS.get());
+    omniInputMeter.setLevel (processor.inputPeak.get());
+    omniOutputMeter.setLevel (processor.outputPeak.get());
   
+    float gainReduction;
     for (int i = 0; i < numFilterBands; ++i)
     {
-        compressorVisualizers[i]->setMarkerLevels(*valueTreeState.getRawParameterValue("maxRMS" + String(i)), *valueTreeState.getRawParameterValue("maxGR" + String(i)));
+        gainReduction = processor.maxGR[i].get();
+        compressorVisualizers[i]->setMarkerLevels(processor.maxPeak[i].get(), gainReduction);
         compressorVisualizers[i]->updateCharacteristic();
         compressorVisualizers[i]->repaint();
       
-        omniFilteredMeter[i].setLevel(*valueTreeState.getRawParameterValue("maxRMS" + String(i)));
-        GRmeter[i].setLevel(*valueTreeState.getRawParameterValue("maxGR" + String(i)));
+        GRmeter[i].setLevel(gainReduction);
     }
 
 }

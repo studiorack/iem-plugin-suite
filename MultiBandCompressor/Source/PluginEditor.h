@@ -33,6 +33,7 @@
 //Custom Components
 #include "../../resources/customComponents/FilterVisualizer.h"
 #include "FilterBankVisualizer.h"
+#include "../../resources/customComponents/Mute"
 #include "../../resources/customComponents/ReverseSlider.h"
 #include "../../resources/customComponents/SimpleLabel.h"
 #include "../../resources/customComponents/CompressorVisualizer.h"
@@ -97,9 +98,9 @@ private:
     FilterBankVisualizer<double> filterBankVisualizer;
     TooltipWindow tooltips;
   
-    // Filter Cutoffs
-    ReverseSlider slFilterFrequency[numFilterBands-1];
-    std::unique_ptr<SliderAttachment> slFilterFrequencyAttachment[numFilterBands-1];
+    // Filter Crossovers
+    ReverseSlider slCrossover[numFilterBands-1];
+    std::unique_ptr<SliderAttachment> slCrossoverAttachment[numFilterBands-1];
   
     // Solo and Bypass Buttons
     TextButton tbSoloEnabled[numFilterBands], tbBypass[numFilterBands];
@@ -118,7 +119,7 @@ private:
     OwnedArray<CompressorVisualizer> compressorVisualizers;
   
     // Meters
-    LevelMeter omniFilteredMeter[numFilterBands], GRmeter[numFilterBands], omniInputMeter, omniOutputMeter;
+    LevelMeter GRmeter[numFilterBands], omniInputMeter, omniOutputMeter;
   
     // Labels
     SimpleLabel lbKnee[numFilterBands+1], lbThreshold[numFilterBands+1], lbMakeUpGain[numFilterBands+1], lbRatio[numFilterBands+1], lbAttack[numFilterBands+1], lbRelease[numFilterBands+1], lbInput, lbOutput;

@@ -118,7 +118,7 @@ public:
         g.excludeClipRegion (Rectangle<int> (0.0f, yMax + OH, getWidth(), getHeight() - yMax - OH));
 
 
-        // get values for first split (mid cutoff), since we need them more than once
+        // get values for first split (mid crossover), since we need them more than once
         const int firstLowSplitIndex = (size / 2) - 1;
         const int firstHighSplitIndex = firstLowSplitIndex + 1;
       
@@ -136,8 +136,8 @@ public:
             firstHighSplitCoeffs->getMagnitudeForFrequencyArray (frequencies.getRawDataPointer(), firstHighSplitMagnitude.getRawDataPointer(), numPixels, sampleRate);
 
 
-        // get x-axis values in between cutoffs, in order to display the filtered bands properly.
-        // the magnitude responses of the filter are only drawn one-sided, starting (LoPass) or ending (HiPass) in between cutoffs
+        // get x-axis values in-between crossovers, in order to display the filtered bands properly.
+        // the magnitude responses of the filter are only drawn one-sided, starting (LoPass) or ending (HiPass) in between crossovers
         Array<int> bandStartStop;
         bandStartStop.add (xMin);
         for (int i = 1; i < numFreqBands - 1; ++i)
