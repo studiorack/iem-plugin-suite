@@ -33,12 +33,11 @@
 //Custom Components
 #include "../../resources/customComponents/FilterVisualizer.h"
 #include "FilterBankVisualizer.h"
-#include "../../resources/customComponents/Mute"
+#include "../../resources/customComponents/RoundButton.h"
 #include "../../resources/customComponents/ReverseSlider.h"
 #include "../../resources/customComponents/SimpleLabel.h"
 #include "../../resources/customComponents/CompressorVisualizer.h"
 #include "../../resources/customComponents/LevelMeter.h"
-#include "../../resources/customComponents/OnOffButton.h"
 
 
 
@@ -103,7 +102,8 @@ private:
     std::unique_ptr<SliderAttachment> slCrossoverAttachment[numFilterBands-1];
   
     // Solo and Bypass Buttons
-    TextButton tbSoloEnabled[numFilterBands], tbBypass[numFilterBands];
+    RoundButton tbSolo[numFilterBands];
+    RoundButton tbBypass[numFilterBands];
     std::unique_ptr<AudioProcessorValueTreeState::ButtonAttachment> soloAttachment[numFilterBands], bypassAttachment[numFilterBands];
   
     // Compressor Parameters

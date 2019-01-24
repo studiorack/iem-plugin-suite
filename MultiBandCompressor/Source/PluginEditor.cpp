@@ -66,7 +66,7 @@ MultiBandCompressorAudioProcessorEditor::MultiBandCompressorAudioProcessorEditor
         slCrossoverAttachment[i] = std::make_unique<SliderAttachment> (valueTreeState, "crossover" + String(i), slCrossover[i]);
         addAndMakeVisible(&slCrossover[i]);
         slCrossover[i].setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-        slCrossover[i].setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
+        slCrossover[i].setTextBoxStyle (Slider::TextBoxBelow, false, 50, 12);
         slCrossover[i].setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClRotSliderArrow);
         slCrossover[i].setTooltip ("Crossover Frequency " + String(i+1));
         slCrossover[i].setName ("Crossover" + String(i));
@@ -86,16 +86,18 @@ MultiBandCompressorAudioProcessorEditor::MultiBandCompressorAudioProcessorEditor
         addAndMakeVisible(compressorVisualizers[i]);
       
         // Solo + Bypass buttons
-        tbSoloEnabled[i].setColour (TextButton::buttonColourId, Colours::darkgrey);
-        tbSoloEnabled[i].setColour (TextButton::buttonOnColourId, Colours::red);
-        tbSoloEnabled[i].setButtonText ("Solo");
-        tbSoloEnabled[i].setToggleState (false, dontSendNotification);
-        soloAttachment[i]  = std::make_unique<AudioProcessorValueTreeState::ButtonAttachment> (valueTreeState, "soloEnabled" + String(i), tbSoloEnabled[i]);
-        tbSoloEnabled[i].setClickingTogglesState (true);
-        addAndMakeVisible (&tbSoloEnabled[i]);
+        tbSolo[i].setColour (ToggleButton::tickColourId, Colours::yellow);
+        tbSolo[i].setCircularShape (false);
+        tbSolo[i].setScaleFontSize (0.7f);
+        tbSolo[i].setButtonText ("Solo");
+        tbSolo[i].setToggleState (false, dontSendNotification);
+        soloAttachment[i]  = std::make_unique<AudioProcessorValueTreeState::ButtonAttachment> (valueTreeState, "soloEnabled" + String(i), tbSolo[i]);
+        tbBypass[i].setClickingTogglesState (true);
+        addAndMakeVisible (&tbSolo[i]);
       
-        tbBypass[i].setColour (TextButton::buttonColourId, Colours::darkgrey);
-        tbBypass[i].setColour (TextButton::buttonOnColourId, colours[i]);
+        tbBypass[i].setColour (ToggleButton::tickColourId, colours[i]);
+        tbBypass[i].setCircularShape (false);
+        tbBypass[i].setScaleFontSize (0.7f);
         tbBypass[i].setToggleState (false, dontSendNotification);
         tbBypass[i].setButtonText ("Bypass");
         bypassAttachment[i] = std::make_unique<AudioProcessorValueTreeState::ButtonAttachment> (valueTreeState, "bypass" + String(i), tbBypass[i]);
@@ -164,15 +166,15 @@ MultiBandCompressorAudioProcessorEditor::MultiBandCompressorAudioProcessorEditor
         addAndMakeVisible(&lbMakeUpGain[i]);
         lbMakeUpGain[i].setText("Makeup");
         lbMakeUpGain[i].setTextColour (globalLaF.ClFace);
-
+      
         addAndMakeVisible(&lbRatio[i]);
         lbRatio[i].setText("Ratio");
         lbRatio[i].setTextColour (globalLaF.ClFace);
-
+      
         addAndMakeVisible(&lbAttack[i]);
         lbAttack[i].setText("Attack");
         lbAttack[i].setTextColour (globalLaF.ClFace);
-
+      
         addAndMakeVisible(&lbRelease[i]);
         lbRelease[i].setText("Release");
         lbRelease[i].setTextColour (globalLaF.ClFace);
@@ -325,107 +327,124 @@ void MultiBandCompressorAudioProcessorEditor::resized()
     // =========== END: header and footer =================
 
 
-    // ==== SPLIT INTO 4 BASIC SECTIONS ====
-    const float filterToCompressorSectionRatio = 0.37f;
-    const int filterToCompressorSeparator = 4;
-    const float masterToVisualizationAreaRatio = 0.18f;
-    const int masterToVisualizationAreaSeparator = 0;
-    const float masterUpperToLowerRatio = 0.41f;
-    const int masterUpperToLowerSeparator = 16;
-
-    // split vertically into visualization section and 'master' (crossover, summed signal and master sliders) section
-    Rectangle<int> compressorArea = area;
-    Rectangle<int> masterArea = compressorArea.removeFromRight (compressorArea.proportionOfWidth (masterToVisualizationAreaRatio));
+    // ==== SPLIT INTO 5 BASIC SECTIONS ====
+    const float leftToRightRatio = 0.8;
+    const int leftToRightGap = 6;
+    const float filterBankToLowerRatio = 0.35f;
+    const float meterToMasterRatio = 0.42f;
+    const float crossoverAndButtonToCompressorsRatio = 0.16f;
+    const int filterToCrossoverAndButtonGap = 4;
+    const int compressorToCrossoverAndButtonGap = 4;
+    const int meterToMasterGap = 16;
   
-    // split horizontally into filter section and compressor section
-    Rectangle<int> filterArea = compressorArea.removeFromTop (compressorArea.proportionOfHeight (filterToCompressorSectionRatio));
-    filterArea.removeFromBottom (filterToCompressorSeparator / 2);
-    compressorArea.removeFromTop (filterToCompressorSeparator / 2);
+    // split
+    Rectangle<int> leftArea = area.removeFromLeft (area.proportionOfWidth (leftToRightRatio));
+    Rectangle<int> rightArea (area);
+    leftArea.removeFromRight (leftToRightGap / 2);
+    rightArea.removeFromLeft (leftToRightGap / 2);
+    Rectangle<int> filterBankArea = leftArea.removeFromTop (leftArea.proportionOfHeight (filterBankToLowerRatio));
+    Rectangle<int> compressorArea = leftArea;
+    Rectangle<int> crossoverAndButtonArea = compressorArea.removeFromTop (compressorArea.proportionOfHeight (crossoverAndButtonToCompressorsRatio));
+    Rectangle<int> meterArea = rightArea.removeFromTop (rightArea.proportionOfHeight (meterToMasterRatio));
+    Rectangle<int> masterArea (rightArea);
   
-    Rectangle<int> upperMasterArea = masterArea.removeFromTop (masterArea.proportionOfHeight (masterUpperToLowerRatio));
-    Rectangle<int> lowerMasterArea = masterArea;
-    upperMasterArea.removeFromBottom (filterToCompressorSeparator / 2);
-    lowerMasterArea.removeFromTop (filterToCompressorSeparator / 2);
-    filterArea.removeFromRight (masterToVisualizationAreaSeparator / 2);
-    compressorArea.removeFromRight (masterToVisualizationAreaSeparator / 2);
-    upperMasterArea.removeFromLeft (masterUpperToLowerSeparator / 2);
-    lowerMasterArea.removeFromLeft (masterUpperToLowerSeparator / 2);
+    // safeguard against haphephobia
+    filterBankArea.removeFromBottom (filterToCrossoverAndButtonGap / 2);
+    crossoverAndButtonArea.removeFromTop (filterToCrossoverAndButtonGap / 2);
+    crossoverAndButtonArea.removeFromBottom (compressorToCrossoverAndButtonGap / 2);
+    compressorArea.removeFromTop (compressorToCrossoverAndButtonGap / 2);
+    meterArea.removeFromBottom (meterToMasterGap / 2);
+    masterArea.removeFromTop (meterToMasterGap / 2);
   
   
     // ==== FILTER VISUALIZATION ====
-    const int crossoverSeparator = 5;
-    filterBankVisualizer.setBounds (filterArea);
+    filterBankVisualizer.setBounds (filterBankArea);
+
+
+    // ==== BUTTONS AND CROSSOVER SLIDERS ====
+    const int crossoverToButtonGap = 4;
+    const int buttonToButtonGap = 10;
+    const float crossoverToButtonsRatio = 0.65f;
+    const float trimButtonsHeight = 0.25f;
+    const float trimButtonsWidth = 0.01f;
+    Rectangle<int> soloButtonArea;
+    Rectangle<int> bypassButtonArea;
+    Rectangle<int> crossoverArea;
   
-    Rectangle<int> crossoverArea = upperMasterArea.removeFromLeft(upperMasterArea.proportionOfWidth(0.5));
-    const int sliderHeight = (crossoverArea.getHeight() - (numFilterBands-2)*crossoverSeparator) / 3;
-    for (int i = 0; i < numFilterBands-1; ++i)
+    const int buttonsWidth = crossoverAndButtonArea.getWidth () / (numFilterBands + (numFilterBands-1)*crossoverToButtonsRatio);
+    const int crossoverSliderWidth = buttonsWidth * crossoverToButtonsRatio;
+
+
+    for (int i = 0; i < numFilterBands; ++i)
     {
-        slCrossover[i].setBounds (crossoverArea.removeFromTop(sliderHeight));
-        if (i < numFilterBands-2)
-            crossoverArea.removeFromTop (crossoverSeparator);
+        // Buttons
+        bypassButtonArea = crossoverAndButtonArea.removeFromLeft (buttonsWidth);
+        bypassButtonArea.reduce (crossoverToButtonGap / 2, 0);
+        soloButtonArea = bypassButtonArea.removeFromLeft (bypassButtonArea.proportionOfWidth (0.5));
+        soloButtonArea.removeFromRight (buttonToButtonGap / 2);
+        bypassButtonArea.removeFromLeft (buttonToButtonGap / 2);
+        tbSolo[i].setBounds (soloButtonArea.reduced (soloButtonArea.proportionOfWidth (trimButtonsWidth), soloButtonArea.proportionOfHeight (trimButtonsHeight)));
+        tbBypass[i].setBounds  (bypassButtonArea.reduced (bypassButtonArea.proportionOfWidth (trimButtonsWidth), bypassButtonArea.proportionOfHeight (trimButtonsHeight)));
+      
+        // Sliders
+        if (i < numFilterBands - 1)
+        {
+            crossoverArea = crossoverAndButtonArea.removeFromLeft (crossoverSliderWidth);
+            slCrossover[i].setBounds (crossoverArea.reduced (crossoverToButtonGap / 2, 0));
+        }
     }
 
   
     // ==== INPUT & OUTPUT METER
     const float labelToMeterRatio = 0.1f;
-    Rectangle<int> summedSignalMeterArea = upperMasterArea;
-    Rectangle<int> labelMeterArea = summedSignalMeterArea.removeFromBottom (summedSignalMeterArea.proportionOfHeight (labelToMeterRatio));
-    omniInputMeter.setBounds (summedSignalMeterArea.removeFromLeft (summedSignalMeterArea.proportionOfWidth(0.5f)));
-    omniOutputMeter.setBounds (summedSignalMeterArea);
-    lbInput.setBounds (labelMeterArea.removeFromLeft (labelMeterArea.proportionOfWidth (0.5f)));
-    lbOutput.setBounds (labelMeterArea);
+    const int meterToMeterGap = 8;
+  
+    meterArea.reduce (meterArea.proportionOfWidth (0.2f), 0);
+    Rectangle<int> inputMeterArea = meterArea.removeFromLeft (meterArea.proportionOfWidth (0.5f));
+    Rectangle<int> outputMeterArea = meterArea;
+    inputMeterArea.removeFromRight (meterToMeterGap / 2);
+    outputMeterArea.removeFromLeft (meterToMeterGap / 2);
+    Rectangle<int> inputMeterLabelArea = inputMeterArea.removeFromBottom (inputMeterArea.proportionOfHeight (labelToMeterRatio));
+    Rectangle<int> outputMeterLabelArea = outputMeterArea.removeFromBottom (outputMeterArea.proportionOfHeight (labelToMeterRatio));
+  
+    omniInputMeter.setBounds (inputMeterArea);
+    omniOutputMeter.setBounds (outputMeterArea);
+    lbInput.setBounds (inputMeterLabelArea);
+    lbOutput.setBounds (outputMeterLabelArea);
   
   
     // ==== COMPRESSOR VISUALIZATION ====
-    const float buttonsToCompressorsRatio = 0.08f;
-    const int buttonsToCompressorVisualizationSeparator = 4;
-    const float compressorParamToVisualizationRatio = 0.48f;
-    const float metersToCompressorVisualizationRatio = 0.175f;
-    const int paramRowSeparator = 4;
-    const int paramToCompressorVisualizationSeparator = 4;
-    const int compressorVisualizationSeparator = 20;
-    const int compressorVisualizationToMeterSeparator = 8;
+    const float paramToCharacteristiscRatio = 0.48f;
+    const float meterToCharacteristicRatio = 0.175f;
     const float labelToParamRatio = 0.15f;
-  
-    compressorArea.removeFromLeft (((compressorArea.getWidth() - (numFilterBands-1) * compressorVisualizationSeparator) % numFilterBands) / 2);
-    compressorArea.removeFromRight (((compressorArea.getWidth() - (numFilterBands-1) * compressorVisualizationSeparator) % numFilterBands) / 2);
-    const int widthPerBand = ((compressorArea.getWidth() - (numFilterBands-1) * compressorVisualizationSeparator) / numFilterBands);
+    const int paramRowToRowGap = 4;
+    const int paramToCharacteristicGap = 4;
+    const int bandToBandGap = 6;
+    const int meterToCharacteristicGap = 6;
+    const float trimMeterHeightRatio = 0.02f;
+
+    compressorArea.reduce (((compressorArea.getWidth() - (numFilterBands-1) * bandToBandGap) % numFilterBands) / 2, 0);
+    const int widthPerBand = ((compressorArea.getWidth() - (numFilterBands-1) * bandToBandGap) / numFilterBands);
+    Rectangle<int> characteristicArea, paramArea, paramRow1, paramRow2, labelRow1, labelRow2, grMeterArea;
   
     for (int i = 0; i < numFilterBands; ++i)
     {
-    
-        Rectangle<int> currentArea = compressorArea.removeFromLeft (widthPerBand);
-    
-        // Buttons
-        Rectangle<int> buttonArea = currentArea.removeFromTop (currentArea.proportionOfHeight (buttonsToCompressorsRatio));
-        buttonArea.removeFromBottom (buttonsToCompressorVisualizationSeparator / 2);
-        currentArea.removeFromTop (buttonsToCompressorVisualizationSeparator / 2);
-        Rectangle<int> soloButtonArea = buttonArea.removeFromLeft (buttonArea.proportionOfWidth (0.5));
-        Rectangle<int> bypassButtonArea = buttonArea;
-        const int bestWidth = tbBypass[i].getBestWidthForHeight (bypassButtonArea.getHeight());
-
-        int centreX = soloButtonArea.getCentreX();
-        soloButtonArea.setWidth(bestWidth);
-        soloButtonArea.setCentre(centreX, soloButtonArea.getCentreY());
-        tbSoloEnabled[i].setBounds (soloButtonArea);
-
-        centreX = bypassButtonArea.getCentreX();
-        bypassButtonArea.setWidth(bestWidth);
-        bypassButtonArea.setCentre(centreX, bypassButtonArea.getCentreY());
-        tbBypass[i].setBounds (bypassButtonArea);
-
+        characteristicArea = compressorArea.removeFromLeft (widthPerBand);
 
         // Compressor parameters
-        Rectangle<int> compressorParameterArea = currentArea.removeFromBottom (currentArea.proportionOfHeight (compressorParamToVisualizationRatio));
-        compressorParameterArea.removeFromTop (paramToCompressorVisualizationSeparator / 2);
-        compressorParameterArea.removeFromRight (compressorParameterArea.getWidth() % 3);
-        const int sliderWidth = compressorParameterArea.getWidth() / 3;
+        paramArea = characteristicArea.removeFromBottom (characteristicArea.proportionOfHeight (paramToCharacteristiscRatio));
+        paramArea.removeFromTop (paramToCharacteristicGap / 2);
+        characteristicArea.removeFromBottom (paramToCharacteristicGap / 2);
       
-        Rectangle<int> paramRow1 = compressorParameterArea.removeFromTop (compressorParameterArea.proportionOfHeight (0.5));
-        Rectangle<int> paramRow2 = compressorParameterArea;
-        paramRow1.removeFromBottom (paramRowSeparator / 2);
-        paramRow2.removeFromTop (paramRowSeparator / 2);
-        Rectangle<int> labelRow1 = paramRow1.removeFromBottom(paramRow1.proportionOfHeight (labelToParamRatio));
+        paramArea.reduce ((paramArea.getWidth() % 3) / 2, 0);
+        const int sliderWidth = paramArea.getWidth() / 3;
+      
+        paramRow1 = paramArea.removeFromTop (paramArea.proportionOfHeight (0.5f));
+        paramRow2 = paramArea;
+        paramRow1.removeFromBottom (paramRowToRowGap / 2);
+        paramRow2.removeFromTop (paramRowToRowGap / 2);
+        labelRow1 = paramRow1.removeFromBottom (paramRow1.proportionOfHeight (labelToParamRatio));
+        labelRow2 = paramRow2.removeFromBottom (paramRow2.proportionOfHeight (labelToParamRatio));
       
         lbThreshold[i].setBounds (labelRow1.removeFromLeft (sliderWidth));
         lbKnee[i].setBounds (labelRow1.removeFromLeft (sliderWidth));
@@ -434,7 +453,6 @@ void MultiBandCompressorAudioProcessorEditor::resized()
         slKnee[i].setBounds (paramRow1.removeFromLeft (sliderWidth));
         slMakeUpGain[i].setBounds (paramRow1.removeFromLeft (sliderWidth));
       
-        Rectangle<int> labelRow2 = paramRow2.removeFromBottom(paramRow2.proportionOfHeight (labelToParamRatio));
         lbRatio[i].setBounds (labelRow2.removeFromLeft (sliderWidth));
         lbAttack[i].setBounds (labelRow2.removeFromLeft (sliderWidth));
         lbRelease[i].setBounds (labelRow2.removeFromLeft (sliderWidth));
@@ -442,52 +460,53 @@ void MultiBandCompressorAudioProcessorEditor::resized()
         slAttackTime[i].setBounds (paramRow2.removeFromLeft (sliderWidth));
         slReleaseTime[i].setBounds (paramRow2.removeFromLeft (sliderWidth));
       
+        // Gain-Reduction meter
+        grMeterArea = characteristicArea.removeFromRight (characteristicArea.proportionOfWidth (meterToCharacteristicRatio));
+        grMeterArea.removeFromLeft (meterToCharacteristicGap / 2);
+        characteristicArea.removeFromRight (meterToCharacteristicGap / 2);
+        GRmeter[i].setBounds (grMeterArea.reduced (0, grMeterArea.proportionOfHeight (trimMeterHeightRatio)));
       
-        // Compressor + meter visualization
-        currentArea.removeFromBottom (paramToCompressorVisualizationSeparator / 2);
-        Rectangle<int> meterArea = currentArea.removeFromRight (currentArea.proportionOfWidth (metersToCompressorVisualizationRatio));
-        currentArea.removeFromRight (compressorVisualizationToMeterSeparator / 2);
-        meterArea.removeFromLeft (compressorVisualizationToMeterSeparator / 2);
-      
-        GRmeter[i].setBounds (meterArea);
-      
+        // Compressor characteristic
         if (!(compressorVisualizers.isEmpty()))
-            compressorVisualizers[i]->setBounds (currentArea);
+            compressorVisualizers[i]->setBounds (characteristicArea);
 
         if (i < numFilterBands-1)
-            compressorArea.removeFromLeft (compressorVisualizationSeparator);
+            compressorArea.removeFromLeft (bandToBandGap);
     }
   
   
     // ==== MASTER SLIDERS + LABELS ====
     const float labelToSliderRatio = 0.2f;
+    const int trimFromTop = 30;
+    const int trimFromGroupComponentHeader = 25;
+    const float trimRowsRatio = 0.1f;
   
-    lowerMasterArea.removeFromTop (30);
-    gcMasterControls.setBounds (lowerMasterArea);
-    lowerMasterArea.removeFromTop (25);
+    masterArea.removeFromTop (trimFromTop);
+    gcMasterControls.setBounds (masterArea);
+    masterArea.removeFromTop (trimFromGroupComponentHeader);
   
-    Rectangle<int> row1 = lowerMasterArea.removeFromTop (lowerMasterArea.proportionOfHeight (0.5f));
-    row1.reduce(0, row1.proportionOfHeight (0.1));
-    Rectangle<int> labelRow = row1.removeFromBottom (row1.proportionOfHeight (labelToSliderRatio));
-    const int width = row1.proportionOfWidth (0.33f);
+    Rectangle<int> sliderRow = masterArea.removeFromTop (masterArea.proportionOfHeight (0.5f));
+    sliderRow.reduce(0, sliderRow.proportionOfHeight (trimRowsRatio));
+    Rectangle<int> labelRow = sliderRow.removeFromBottom (sliderRow.proportionOfHeight (labelToSliderRatio));
+    const int sliderWidth = sliderRow.proportionOfWidth (0.33f);
   
-    slMasterThreshold.setBounds (row1.removeFromLeft (width));
-    slMasterKnee.setBounds (row1.removeFromLeft (width));
-    slMasterMakeUpGain.setBounds (row1.removeFromLeft (width));
-    lbThreshold[numFilterBands].setBounds (labelRow.removeFromLeft (width));
-    lbKnee[numFilterBands].setBounds (labelRow.removeFromLeft (width));
-    lbMakeUpGain[numFilterBands].setBounds (labelRow.removeFromLeft (width));
+    slMasterThreshold.setBounds (sliderRow.removeFromLeft (sliderWidth));
+    slMasterKnee.setBounds (sliderRow.removeFromLeft (sliderWidth));
+    slMasterMakeUpGain.setBounds (sliderRow.removeFromLeft (sliderWidth));
+    lbThreshold[numFilterBands].setBounds (labelRow.removeFromLeft (sliderWidth));
+    lbKnee[numFilterBands].setBounds (labelRow.removeFromLeft (sliderWidth));
+    lbMakeUpGain[numFilterBands].setBounds (labelRow.removeFromLeft (sliderWidth));
 
-    lowerMasterArea.reduce(0, lowerMasterArea.proportionOfHeight (0.1));
-    labelRow = lowerMasterArea.removeFromBottom (lowerMasterArea.proportionOfHeight (labelToSliderRatio));
+    sliderRow = masterArea;
+    sliderRow.reduce(0, sliderRow.proportionOfHeight (trimRowsRatio));
+    labelRow = sliderRow.removeFromBottom (sliderRow.proportionOfHeight (labelToSliderRatio));
 
-    slMasterRatio.setBounds (lowerMasterArea.removeFromLeft (width));
-    slMasterAttackTime.setBounds (lowerMasterArea.removeFromLeft (width));
-    slMasterReleaseTime.setBounds (lowerMasterArea.removeFromLeft (width));
-  
-    lbRatio[numFilterBands].setBounds (labelRow.removeFromLeft (width));
-    lbAttack[numFilterBands].setBounds (labelRow.removeFromLeft (width));
-    lbRelease[numFilterBands].setBounds (labelRow.removeFromLeft (width));
+    slMasterRatio.setBounds (sliderRow.removeFromLeft (sliderWidth));
+    slMasterAttackTime.setBounds (sliderRow.removeFromLeft (sliderWidth));
+    slMasterReleaseTime.setBounds (sliderRow.removeFromLeft (sliderWidth));
+    lbRatio[numFilterBands].setBounds (labelRow.removeFromLeft (sliderWidth));
+    lbAttack[numFilterBands].setBounds (labelRow.removeFromLeft (sliderWidth));
+    lbRelease[numFilterBands].setBounds (labelRow.removeFromLeft (sliderWidth));
   
 }
 
