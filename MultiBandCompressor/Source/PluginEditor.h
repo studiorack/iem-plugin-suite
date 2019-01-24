@@ -31,7 +31,6 @@
 #include "../../resources/customComponents/TitleBar.h"
 
 //Custom Components
-#include "../../resources/customComponents/FilterVisualizer.h"
 #include "FilterBankVisualizer.h"
 #include "../../resources/customComponents/RoundButton.h"
 #include "../../resources/customComponents/ReverseSlider.h"

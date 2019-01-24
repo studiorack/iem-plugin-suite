@@ -43,7 +43,7 @@ MultiBandCompressorAudioProcessorEditor::MultiBandCompressorAudioProcessorEditor
     cbNormalizationAtachement = std::make_unique<ComboBoxAttachment> (valueTreeState, "useSN3D", *title.getInputWidgetPtr()->getNormCbPointer());
     cbOrderAtachement = std::make_unique<ComboBoxAttachment> (valueTreeState,"orderSetting", *title.getInputWidgetPtr()->getOrderCbPointer());
   
-    tooltips.setMillisecondsBeforeTipAppears(500);
+    tooltips.setMillisecondsBeforeTipAppears(800);
     tooltips.setOpaque (false);
   
     const Colour colours[numFilterBands] =
@@ -86,20 +86,20 @@ MultiBandCompressorAudioProcessorEditor::MultiBandCompressorAudioProcessorEditor
         addAndMakeVisible(compressorVisualizers[i]);
       
         // Solo + Bypass buttons
-        tbSolo[i].setColour (ToggleButton::tickColourId, Colours::yellow);
-        tbSolo[i].setCircularShape (false);
-        tbSolo[i].setScaleFontSize (0.7f);
-        tbSolo[i].setButtonText ("Solo");
+        tbSolo[i].setColour (ToggleButton::tickColourId, Colour (0xFFFFFF66).withMultipliedAlpha (0.85f));
+        tbSolo[i].setScaleFontSize (0.75f);
+        tbSolo[i].setButtonText ("S");
+        tbSolo[i].setTooltip ("Solo band #" + String(i));
         tbSolo[i].setToggleState (false, dontSendNotification);
         soloAttachment[i]  = std::make_unique<AudioProcessorValueTreeState::ButtonAttachment> (valueTreeState, "soloEnabled" + String(i), tbSolo[i]);
         tbBypass[i].setClickingTogglesState (true);
         addAndMakeVisible (&tbSolo[i]);
       
-        tbBypass[i].setColour (ToggleButton::tickColourId, colours[i]);
-        tbBypass[i].setCircularShape (false);
-        tbBypass[i].setScaleFontSize (0.7f);
+        tbBypass[i].setColour (ToggleButton::tickColourId, Colour (0xFF74809D).withMultipliedAlpha (0.85f));
+        tbBypass[i].setScaleFontSize (0.75f);
         tbBypass[i].setToggleState (false, dontSendNotification);
-        tbBypass[i].setButtonText ("Bypass");
+        tbBypass[i].setButtonText ("B");
+        tbBypass[i].setTooltip ("Bypass band #" + String(i));
         bypassAttachment[i] = std::make_unique<AudioProcessorValueTreeState::ButtonAttachment> (valueTreeState, "bypass" + String(i), tbBypass[i]);
         tbBypass[i].setClickingTogglesState (true);
         addAndMakeVisible (&tbBypass[i]);
@@ -365,8 +365,8 @@ void MultiBandCompressorAudioProcessorEditor::resized()
     const int crossoverToButtonGap = 4;
     const int buttonToButtonGap = 10;
     const float crossoverToButtonsRatio = 0.65f;
-    const float trimButtonsHeight = 0.25f;
-    const float trimButtonsWidth = 0.01f;
+    const float trimButtonsHeight = 0.125f;
+    const float trimButtonsWidth = 0.125f;
     Rectangle<int> soloButtonArea;
     Rectangle<int> bypassButtonArea;
     Rectangle<int> crossoverArea;

@@ -44,7 +44,7 @@ public:
         Rectangle<float> buttonArea;
         if (isCircularShape)
         {
-            const float boxSize = bounds.getWidth() * 0.8f;
+            const float boxSize = bounds.getWidth() >= bounds.getHeight() ? bounds.getHeight() * 0.8f : bounds.getWidth() * 0.8f;
             buttonArea = Rectangle<float> ((bounds.getWidth() - boxSize) * 0.5f, (bounds.getHeight() - boxSize) * 0.5f, boxSize, boxSize);
         }
         else
