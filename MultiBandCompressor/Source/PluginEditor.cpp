@@ -54,6 +54,7 @@ MultiBandCompressorAudioProcessorEditor::MultiBandCompressorAudioProcessorEditor
         Colours::orangered
     };
   
+  
     // ==== FILTERS ====
     filterBankVisualizer.setSampleRate(processor.getCurrentSampleRate());
     filterBankVisualizer.setOverallGain(0.0f);
@@ -62,7 +63,7 @@ MultiBandCompressorAudioProcessorEditor::MultiBandCompressorAudioProcessorEditor
   
     for (int i = 0; i < numFilterBands -1; ++i)
     {
-        // Crossovers
+        // ==== CROSSOVER SLIDERS ====
         slCrossoverAttachment[i] = std::make_unique<SliderAttachment> (valueTreeState, "crossover" + String(i), slCrossover[i]);
         addAndMakeVisible(&slCrossover[i]);
         slCrossover[i].setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
@@ -72,11 +73,82 @@ MultiBandCompressorAudioProcessorEditor::MultiBandCompressorAudioProcessorEditor
         slCrossover[i].setName ("Crossover" + String(i));
         slCrossover[i].addListener (this);
       
-        // filtervisualization / coeffs
+        // add coefficients to visualizer
         filterBankVisualizer.addCoefficients (processor.lowPassLRCoeffs[i], colours[i], &slCrossover[i], &slMakeUpGain[i]);
         filterBankVisualizer.addCoefficients (processor.highPassLRCoeffs[i], colours[i+1], &slCrossover[i], &slMakeUpGain[i+1]);
     }
 
+  
+    // ==== METERS - INPUT/OUTPUT ====
+    addAndMakeVisible(&omniInputMeter);
+    omniInputMeter.setMinLevel(-60.0f);
+    omniInputMeter.setColour(Colours::green.withMultipliedAlpha(0.8f));
+    omniInputMeter.setGainReductionMeter(false);
+    addAndMakeVisible(&lbInput);
+    lbInput.setText ("Input");
+    lbInput.setTextColour (globalLaF.ClFace);
+  
+    addAndMakeVisible(&omniOutputMeter);
+    omniOutputMeter.setMinLevel(-60.0f);
+    omniOutputMeter.setColour(Colours::green.withMultipliedAlpha(0.8f));
+    omniOutputMeter.setGainReductionMeter(false);
+    addAndMakeVisible(&lbOutput);
+    lbOutput.setText ("Output");
+    lbOutput.setTextColour (globalLaF.ClFace);
+  
+  
+    // ==== MASTER CONTROLS ====
+    addAndMakeVisible (&slMasterThreshold);
+    slMasterThreshold.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
+    slMasterThreshold.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 12);
+    slMasterThreshold.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClSliderFace);
+    slMasterThreshold.setNormalisableRange (NormalisableRange<double> (-50.0f, 50.0f, 0.1f));
+    slMasterThreshold.setValue (0.0f);
+    slMasterThreshold.setTextValueSuffix (" dB");
+    slMasterThreshold.setName ("MasterThreshold");
+    addAndMakeVisible(&lbThreshold[numFilterBands]);
+    lbThreshold[numFilterBands].setText("Threshold");
+    lbThreshold[numFilterBands].setTextColour (globalLaF.ClFace);
+
+    addAndMakeVisible (&slMasterMakeUpGain);
+    slMasterMakeUpGain.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
+    slMasterMakeUpGain.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 12);
+    slMasterMakeUpGain.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClSliderFace);
+    slMasterMakeUpGain.setNormalisableRange (NormalisableRange<double> (-50.0f, 50.0f, 0.1f));
+    slMasterMakeUpGain.setValue (0.0f);
+    slMasterMakeUpGain.setTextValueSuffix (" dB");
+    slMasterMakeUpGain.setName ("MasterMakeUpGain");
+    addAndMakeVisible(&lbMakeUpGain[numFilterBands]);
+    lbMakeUpGain[numFilterBands].setText("Makeup");
+    lbMakeUpGain[numFilterBands].setTextColour (globalLaF.ClFace);
+
+    addAndMakeVisible (&slMasterAttackTime);
+    slMasterAttackTime.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
+    slMasterAttackTime.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 12);
+    slMasterAttackTime.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClSliderFace);
+    slMasterAttackTime.setNormalisableRange (NormalisableRange<double> (-100.0f, 100.0f, 0.1f));
+    slMasterAttackTime.setValue (0.0f);
+    slMasterAttackTime.setTextValueSuffix (" ms");
+    slMasterAttackTime.setName ("MasterAttackTime");
+    addAndMakeVisible(&lbAttack[numFilterBands]);
+    lbAttack[numFilterBands].setText("Attack");
+    lbAttack[numFilterBands].setTextColour (globalLaF.ClFace);
+  
+    addAndMakeVisible (&slMasterReleaseTime);
+    slMasterReleaseTime.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
+    slMasterReleaseTime.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 12);
+    slMasterReleaseTime.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClSliderFace);
+    slMasterReleaseTime.setNormalisableRange (NormalisableRange<double> (-500.0f, 500.0f, 0.1f));
+    slMasterReleaseTime.setValue (0.0f);
+    slMasterReleaseTime.setTextValueSuffix (" ms");
+    slMasterReleaseTime.setName ("MasterReleaseTime");
+    addAndMakeVisible(&lbRelease[numFilterBands]);
+    lbRelease[numFilterBands].setText("Release");
+    lbRelease[numFilterBands].setTextColour (globalLaF.ClFace);
+  
+    gcMasterControls.setText ("Master controls");
+    addAndMakeVisible (&gcMasterControls);
+  
   
     for (int i = 0; i < numFilterBands; ++i)
     {
@@ -85,7 +157,8 @@ MultiBandCompressorAudioProcessorEditor::MultiBandCompressorAudioProcessorEditor
         compressorVisualizers.add (new CompressorVisualizer (p.getCompressor (i)));
         addAndMakeVisible(compressorVisualizers[i]);
       
-        // Solo + Bypass buttons
+      
+        // ==== BUTTONS ====
         tbSolo[i].setColour (ToggleButton::tickColourId, Colour (0xFFFFFF66).withMultipliedAlpha (0.85f));
         tbSolo[i].setScaleFontSize (0.75f);
         tbSolo[i].setButtonText ("S");
@@ -104,7 +177,8 @@ MultiBandCompressorAudioProcessorEditor::MultiBandCompressorAudioProcessorEditor
         tbBypass[i].setClickingTogglesState (true);
         addAndMakeVisible (&tbBypass[i]);
       
-        // Sliders
+      
+        // ==== SLIDERS ====
         addAndMakeVisible(&slThreshold[i]);
         slThresholdAttachment[i] = std::make_unique<SliderAttachment> (valueTreeState, "threshold" + String(i), slThreshold[i]);
         slThreshold[i].setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
@@ -152,6 +226,12 @@ MultiBandCompressorAudioProcessorEditor::MultiBandCompressorAudioProcessorEditor
         GRmeter[i].setMinLevel(-25.0f);
         GRmeter[i].setColour(Colours::red.withMultipliedAlpha(0.8f));
         GRmeter[i].setGainReductionMeter(true);
+      
+        // add sliders to master controls
+        slMasterThreshold.addSlave (slThreshold[i]);
+        slMasterMakeUpGain.addSlave (slMakeUpGain[ i]);
+        slMasterAttackTime.addSlave (slAttackTime[i]);
+        slMasterReleaseTime.addSlave (slReleaseTime[i]);
 
 
         // ===== LABELS =====
@@ -179,112 +259,6 @@ MultiBandCompressorAudioProcessorEditor::MultiBandCompressorAudioProcessorEditor
         lbRelease[i].setText("Release");
         lbRelease[i].setTextColour (globalLaF.ClFace);
     }
-  
-    // ==== METERS - INPUT/OUTPUT ====
-    addAndMakeVisible(&omniInputMeter);
-    omniInputMeter.setMinLevel(-60.0f);
-    omniInputMeter.setColour(Colours::green.withMultipliedAlpha(0.8f));
-    omniInputMeter.setGainReductionMeter(false);
-    addAndMakeVisible(&lbInput);
-    lbInput.setText ("Input");
-    lbInput.setTextColour (globalLaF.ClFace);
-  
-    addAndMakeVisible(&omniOutputMeter);
-    omniOutputMeter.setMinLevel(-60.0f);
-    omniOutputMeter.setColour(Colours::green.withMultipliedAlpha(0.8f));
-    omniOutputMeter.setGainReductionMeter(false);
-    addAndMakeVisible(&lbOutput);
-    lbOutput.setText ("Output");
-    lbOutput.setTextColour (globalLaF.ClFace);
-  
-  
-    // ==== MASTER CONTROLS ====
-    addAndMakeVisible (&slMasterThreshold);
-    slMasterThreshold.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slMasterThreshold.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 12);
-    slMasterThreshold.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClSliderFace);
-    slMasterThreshold.setNormalisableRange (NormalisableRange<double> (-50.0f, 50.0f, 0.1f));
-    slMasterThreshold.setValue (0.0f);
-    slMasterThreshold.setTextValueSuffix (" dB");
-    slMasterThreshold.setName ("MasterThreshold");
-    slMasterThreshold.addListener (this);
-    masterSliderPrevValueMap["Threshold"] = slMasterThreshold.getValue();
-    addAndMakeVisible(&lbThreshold[numFilterBands]);
-    lbThreshold[numFilterBands].setText("Threshold");
-    lbThreshold[numFilterBands].setTextColour (globalLaF.ClFace);
-  
-    addAndMakeVisible (&slMasterKnee);
-    slMasterKnee.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slMasterKnee.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 12);
-    slMasterKnee.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClSliderFace);
-    slMasterKnee.setNormalisableRange (NormalisableRange<double> (-30.0f, 30.0f, 0.1f));
-    slMasterKnee.setValue (0.0f);
-    slMasterKnee.setTextValueSuffix (" dB");
-    slMasterKnee.setName ("MasterKnee");
-    slMasterKnee.addListener (this);
-    masterSliderPrevValueMap["Knee"] = slMasterKnee.getValue();
-    addAndMakeVisible(&lbKnee[numFilterBands]);
-    lbKnee[numFilterBands].setText("Knee");
-    lbKnee[numFilterBands].setTextColour (globalLaF.ClFace);
-  
-    addAndMakeVisible (&slMasterMakeUpGain);
-    slMasterMakeUpGain.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slMasterMakeUpGain.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 12);
-    slMasterMakeUpGain.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClSliderFace);
-    slMasterMakeUpGain.setNormalisableRange (NormalisableRange<double> (-50.0f, 50.0f, 0.1f));
-    slMasterMakeUpGain.setValue (0.0f);
-    slMasterMakeUpGain.setTextValueSuffix (" dB");
-    slMasterMakeUpGain.setName ("MasterMakeUpGain");
-    slMasterMakeUpGain.addListener (this);
-    masterSliderPrevValueMap["MakeUpGain"] = slMasterMakeUpGain.getValue();
-    addAndMakeVisible(&lbMakeUpGain[numFilterBands]);
-    lbMakeUpGain[numFilterBands].setText("Makeup");
-    lbMakeUpGain[numFilterBands].setTextColour (globalLaF.ClFace);
-  
-    addAndMakeVisible (&slMasterRatio);
-    slMasterRatio.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slMasterRatio.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 12);
-    slMasterRatio.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClSliderFace);
-    slMasterRatio.setNormalisableRange (NormalisableRange<double> (-15.0f, 15.0f, 0.1f));
-    slMasterRatio.setValue (0.0f);
-    slMasterRatio.setTextValueSuffix ("");
-    slMasterRatio.setName ("MasterRatio");
-    slMasterRatio.addListener (this);
-    masterSliderPrevValueMap["Ratio"] = slMasterRatio.getValue();
-    addAndMakeVisible(&lbRatio[numFilterBands]);
-    lbRatio[numFilterBands].setText("Ratio");
-    lbRatio[numFilterBands].setTextColour (globalLaF.ClFace);
-  
-    addAndMakeVisible (&slMasterAttackTime);
-    slMasterAttackTime.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slMasterAttackTime.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 12);
-    slMasterAttackTime.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClSliderFace);
-    slMasterAttackTime.setNormalisableRange (NormalisableRange<double> (-100.0f, 100.0f, 0.1f));
-    slMasterAttackTime.setValue (0.0f);
-    slMasterAttackTime.setTextValueSuffix (" ms");
-    slMasterAttackTime.setName ("MasterAttackTime");
-    slMasterAttackTime.addListener (this);
-    masterSliderPrevValueMap["AttackTime"] = slMasterAttackTime.getValue();
-    addAndMakeVisible(&lbAttack[numFilterBands]);
-    lbAttack[numFilterBands].setText("Attack");
-    lbAttack[numFilterBands].setTextColour (globalLaF.ClFace);
-  
-    addAndMakeVisible (&slMasterReleaseTime);
-    slMasterReleaseTime.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slMasterReleaseTime.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 12);
-    slMasterReleaseTime.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClSliderFace);
-    slMasterReleaseTime.setNormalisableRange (NormalisableRange<double> (-500.0f, 500.0f, 0.1f));
-    slMasterReleaseTime.setValue (0.0f);
-    slMasterReleaseTime.setTextValueSuffix (" ms");
-    slMasterReleaseTime.setName ("MasterReleaseTime");
-    slMasterReleaseTime.addListener (this);
-    masterSliderPrevValueMap["ReleaseTime"] = slMasterReleaseTime.getValue();
-    addAndMakeVisible(&lbRelease[numFilterBands]);
-    lbRelease[numFilterBands].setText("Release");
-    lbRelease[numFilterBands].setTextColour (globalLaF.ClFace);
-  
-    gcMasterControls.setText ("Master controls");
-    addAndMakeVisible (&gcMasterControls);
   
 
     /* resized () is called here, because otherwise the compressorVisualizers won't be drawn to the GUI until one manually resizes the window.
@@ -328,7 +302,7 @@ void MultiBandCompressorAudioProcessorEditor::resized()
 
 
     // ==== SPLIT INTO 5 BASIC SECTIONS ====
-    const float leftToRightRatio = 0.8;
+    const float leftToRightRatio = 0.85;
     const int leftToRightGap = 6;
     const float filterBankToLowerRatio = 0.35f;
     const float meterToMasterRatio = 0.42f;
@@ -479,32 +453,29 @@ void MultiBandCompressorAudioProcessorEditor::resized()
     const float labelToSliderRatio = 0.2f;
     const int trimFromTop = 30;
     const int trimFromGroupComponentHeader = 25;
-    const float trimRowsRatio = 0.1f;
+    const float trimSliderHeight = 0.125f;
+    const float trimSliderWidth = 0.05f;
   
     masterArea.removeFromTop (trimFromTop);
     gcMasterControls.setBounds (masterArea);
     masterArea.removeFromTop (trimFromGroupComponentHeader);
   
     Rectangle<int> sliderRow = masterArea.removeFromTop (masterArea.proportionOfHeight (0.5f));
-    sliderRow.reduce(0, sliderRow.proportionOfHeight (trimRowsRatio));
+    sliderRow.reduce (sliderRow.proportionOfWidth (trimSliderWidth), sliderRow.proportionOfHeight (trimSliderHeight));
     Rectangle<int> labelRow = sliderRow.removeFromBottom (sliderRow.proportionOfHeight (labelToSliderRatio));
-    const int sliderWidth = sliderRow.proportionOfWidth (0.33f);
+    const int sliderWidth = sliderRow.proportionOfWidth (0.5f);
   
     slMasterThreshold.setBounds (sliderRow.removeFromLeft (sliderWidth));
-    slMasterKnee.setBounds (sliderRow.removeFromLeft (sliderWidth));
     slMasterMakeUpGain.setBounds (sliderRow.removeFromLeft (sliderWidth));
     lbThreshold[numFilterBands].setBounds (labelRow.removeFromLeft (sliderWidth));
-    lbKnee[numFilterBands].setBounds (labelRow.removeFromLeft (sliderWidth));
     lbMakeUpGain[numFilterBands].setBounds (labelRow.removeFromLeft (sliderWidth));
 
     sliderRow = masterArea;
-    sliderRow.reduce(0, sliderRow.proportionOfHeight (trimRowsRatio));
+    sliderRow.reduce (sliderRow.proportionOfWidth (trimSliderWidth), sliderRow.proportionOfHeight (trimSliderHeight));
     labelRow = sliderRow.removeFromBottom (sliderRow.proportionOfHeight (labelToSliderRatio));
 
-    slMasterRatio.setBounds (sliderRow.removeFromLeft (sliderWidth));
     slMasterAttackTime.setBounds (sliderRow.removeFromLeft (sliderWidth));
     slMasterReleaseTime.setBounds (sliderRow.removeFromLeft (sliderWidth));
-    lbRatio[numFilterBands].setBounds (labelRow.removeFromLeft (sliderWidth));
     lbAttack[numFilterBands].setBounds (labelRow.removeFromLeft (sliderWidth));
     lbRelease[numFilterBands].setBounds (labelRow.removeFromLeft (sliderWidth));
   
@@ -571,38 +542,6 @@ void MultiBandCompressorAudioProcessorEditor::sliderValueChanged(Slider *slider)
                 }
                 break;
         }
-    }
-  
-    // Master sliders control
-    if (slider->getName().startsWith("Master"))
-    {
-        ReverseSlider* parameterSlidersControlledByMaster;
-        const String id = slider->getName().fromLastOccurrenceOf("Master", false, true);
-        if (id.contains ("Threshold"))       parameterSlidersControlledByMaster = slThreshold;
-        else if (id.contains ("Knee"))       parameterSlidersControlledByMaster = slKnee;
-        else if (id.contains ("MakeUpGain")) parameterSlidersControlledByMaster = slMakeUpGain;
-        else if (id.contains ("Ratio"))      parameterSlidersControlledByMaster = slRatio;
-        else if (id.contains ("AttackTime"))     parameterSlidersControlledByMaster = slAttackTime;
-        else if (id.contains ("ReleaseTime"))    parameterSlidersControlledByMaster = slReleaseTime;
-      
-        double currentValue = slider->getValue();
-        double offset = currentValue - masterSliderPrevValueMap[id];
-      
-        // first do a check if we can update without breaking ratios between individual parameters
-        // FIXME: not working smoothly
-        for (int i = 0; i < numFilterBands; ++i)
-        {
-            if (!(parameterSlidersControlledByMaster[i].getRange().contains (parameterSlidersControlledByMaster[i].getValue() + offset)))
-            {
-                return;
-            }
-        }
-      
-        for (int i = 0; i < numFilterBands; ++i)
-        {
-            parameterSlidersControlledByMaster[i].setValue (offset + parameterSlidersControlledByMaster[i].getValue());
-        }
-        masterSliderPrevValueMap[id] = currentValue;
     }
 }
 

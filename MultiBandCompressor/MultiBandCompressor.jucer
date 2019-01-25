@@ -34,6 +34,7 @@
       <FILE id="Ur0OCo" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
       <FILE id="wKF8hH" name="FilterBankVisualizer.h" compile="0" resource="0"
             file="Source/FilterBankVisualizer.h"/>
+      <FILE id="AhO2Ri" name="MasterSlider.h" compile="0" resource="0" file="Source/MasterSlider.h"/>
     </GROUP>
   </MAINGROUP>
   <EXPORTFORMATS>

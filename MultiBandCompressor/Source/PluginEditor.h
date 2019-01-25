@@ -24,7 +24,6 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "PluginProcessor.h"
-#include <unordered_map>
 
 //Plugin Design Essentials
 #include "../../resources/lookAndFeel/IEM_LaF.h"
@@ -32,6 +31,7 @@
 
 //Custom Components
 #include "FilterBankVisualizer.h"
+#include "MasterSlider.h"
 #include "../../resources/customComponents/RoundButton.h"
 #include "../../resources/customComponents/ReverseSlider.h"
 #include "../../resources/customComponents/SimpleLabel.h"
@@ -72,9 +72,6 @@ private:
     MultiBandCompressorAudioProcessor& processor;
     AudioProcessorValueTreeState& valueTreeState;
   
-    void updateFilterVisualizer();
-    void drawCompressorArea();
-
     enum class FilterIndex
     {
         LowIndex, MidIndex, HighIndex
@@ -111,8 +108,7 @@ private:
 
     // Master parameters
     GroupComponent gcMasterControls;
-    ReverseSlider slMasterThreshold, slMasterMakeUpGain, slMasterKnee, slMasterRatio, slMasterAttackTime, slMasterReleaseTime;
-    std::unordered_map<String, double> masterSliderPrevValueMap;
+    MasterSlider<ReverseSlider> slMasterThreshold, slMasterMakeUpGain, slMasterKnee, slMasterRatio, slMasterAttackTime, slMasterReleaseTime;
 
     // Compressor Visualization
     OwnedArray<CompressorVisualizer> compressorVisualizers;
