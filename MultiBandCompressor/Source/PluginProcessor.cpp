@@ -92,7 +92,7 @@ MultiBandCompressorAudioProcessor::MultiBandCompressorAudioProcessor()
         const String ratioID("ratio" + String(i));
         const String makeUpGainID("makeUpGain" + String(i));
         const String bypassID("bypass" + String(i));
-        const String soloEnabledID("soloEnabled" + String(i));
+        const String soloID("solo" + String(i));
       
         threshold[i] = parameters.getRawParameterValue(thresholdID);
         knee[i] = parameters.getRawParameterValue(kneeID);
@@ -101,7 +101,7 @@ MultiBandCompressorAudioProcessor::MultiBandCompressorAudioProcessor()
         ratio[i] = parameters.getRawParameterValue(ratioID);
         makeUpGain[i] = parameters.getRawParameterValue(makeUpGainID);
         bypass[i] = parameters.getRawParameterValue(bypassID);
-        soloEnabledArray.clear();
+        soloArray.clear();
 
         parameters.addParameterListener(thresholdID, this);
         parameters.addParameterListener(kneeID, this);
@@ -110,7 +110,7 @@ MultiBandCompressorAudioProcessor::MultiBandCompressorAudioProcessor()
         parameters.addParameterListener(ratioID, this);
         parameters.addParameterListener(makeUpGainID, this);
         parameters.addParameterListener(bypassID, this);
-        parameters.addParameterListener(soloEnabledID, this);
+        parameters.addParameterListener(soloID, this);
 
         oscParams.addParameterID(thresholdID);
         oscParams.addParameterID(kneeID);
@@ -119,7 +119,7 @@ MultiBandCompressorAudioProcessor::MultiBandCompressorAudioProcessor()
         oscParams.addParameterID(ratioID);
         oscParams.addParameterID(makeUpGainID);
         oscParams.addParameterID(bypassID);
-        oscParams.addParameterID(soloEnabledID);
+        oscParams.addParameterID(soloID);
     }
   
     copyCoeffsToProcessor();
@@ -266,7 +266,7 @@ ParameterLayout MultiBandCompressorAudioProcessor::createParameterLayout()
         params.push_back( std::move (boolParam));
 
       
-        boolParam = std::make_unique<AudioParameterBool>("soloEnabled" + String(i),
+        boolParam = std::make_unique<AudioParameterBool>("solo" + String(i),
                                                            "Put band " + String(i) + " in Solo mode",
                                                            false);
         params.push_back( std::move (boolParam));
@@ -594,9 +594,9 @@ void MultiBandCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer,
   
     for (int i = 0; i < numFilterBands; ++i)
     {
-        if (!(soloEnabledArray.empty()))
+        if (!(soloArray.empty()))
         {
-            if (!(soloEnabledArray.count(i)))
+            if (!(soloArray.count(i)))
             {
                 maxGR[i] = 0.0f;
                 maxPeak[i] = Decibels::gainToDecibels (-INFINITY);
@@ -649,6 +649,7 @@ void MultiBandCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer,
             compressors[i].getGainFromSidechainSignal(inout[0], gainChannelPointer, L);
             maxGR[i] = Decibels::gainToDecibels(FloatVectorOperations::findMinimum(gainChannelPointer, L)) - *makeUpGain[i];
             maxPeak[i] = compressors[i].getMaxLevelInDecibels();
+            bypassedForGui[i] = false;
           
             for (int ch = 0; ch < numChannels; ++ch)
             {
@@ -663,6 +664,7 @@ void MultiBandCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer,
             }
             maxGR[i] = 0.0f;
             maxPeak[i] = Decibels::gainToDecibels (-INFINITY);
+            bypassedForGui[i] = true;
         }
     }
   
@@ -752,17 +754,20 @@ void MultiBandCompressorAudioProcessor::parameterChanged (const String &paramete
     {
         compressors[parameterID.getLastCharacters(1).getIntValue()].setMakeUpGain(newValue);
     }
-    else if (parameterID.startsWith("soloEnabled"))
+    else if (parameterID.startsWith("solo"))
     {
-        int freqBand = parameterID.getLastCharacters(1).getIntValue();
         if (newValue >= 0.5f)
         {
-            soloEnabledArray.insert(freqBand);
+            soloArray.insert(parameterID.getLastCharacters(1).getIntValue());
         }
         else
         {
-            soloEnabledArray.erase(freqBand);
+            soloArray.erase(parameterID.getLastCharacters(1).getIntValue());
         }
+    }
+    else if (parameterID.startsWith("bypass"))
+    {
+        bypassedForGui[parameterID.getLastCharacters(1).getIntValue()] = (newValue <= 0.5f ? false : true);
     }
     else if (parameterID == "orderSetting")
     {

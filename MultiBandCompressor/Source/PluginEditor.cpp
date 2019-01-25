@@ -74,8 +74,8 @@ MultiBandCompressorAudioProcessorEditor::MultiBandCompressorAudioProcessorEditor
         slCrossover[i].addListener (this);
       
         // add coefficients to visualizer
-        filterBankVisualizer.addCoefficients (processor.lowPassLRCoeffs[i], colours[i], &slCrossover[i], &slMakeUpGain[i]);
-        filterBankVisualizer.addCoefficients (processor.highPassLRCoeffs[i], colours[i+1], &slCrossover[i], &slMakeUpGain[i+1]);
+        filterBankVisualizer.addCoefficients (processor.lowPassLRCoeffs[i], colours[i], &slCrossover[i], &slMakeUpGain[i], &(processor.maxGR[i]), &(processor.bypassedForGui[i]));
+        filterBankVisualizer.addCoefficients (processor.highPassLRCoeffs[i], colours[i+1], &slCrossover[i], &slMakeUpGain[i+1], &(processor.maxGR[i+1]), &(processor.bypassedForGui[i+1]));
     }
 
   
@@ -164,7 +164,7 @@ MultiBandCompressorAudioProcessorEditor::MultiBandCompressorAudioProcessorEditor
         tbSolo[i].setButtonText ("S");
         tbSolo[i].setTooltip ("Solo band #" + String(i));
         tbSolo[i].setToggleState (false, dontSendNotification);
-        soloAttachment[i]  = std::make_unique<AudioProcessorValueTreeState::ButtonAttachment> (valueTreeState, "soloEnabled" + String(i), tbSolo[i]);
+        soloAttachment[i]  = std::make_unique<AudioProcessorValueTreeState::ButtonAttachment> (valueTreeState, "solo" + String(i), tbSolo[i]);
         tbBypass[i].setClickingTogglesState (true);
         addAndMakeVisible (&tbSolo[i]);
       
@@ -266,7 +266,7 @@ MultiBandCompressorAudioProcessorEditor::MultiBandCompressorAudioProcessorEditor
     resized ();
   
     // start timer after everything is set up properly
-    startTimer (20);
+    startTimer (30);
 }
 
 MultiBandCompressorAudioProcessorEditor::~MultiBandCompressorAudioProcessorEditor()
@@ -558,9 +558,10 @@ void MultiBandCompressorAudioProcessorEditor::timerCallback()
     {
         processor.repaintFilterVisualization = false;
         filterBankVisualizer.setSampleRate(processor.getCurrentSampleRate());
-        filterBankVisualizer.repaint();
     }
   
+    filterBankVisualizer.repaint();
+
     omniInputMeter.setLevel (processor.inputPeak.get());
     omniOutputMeter.setLevel (processor.outputPeak.get());
   

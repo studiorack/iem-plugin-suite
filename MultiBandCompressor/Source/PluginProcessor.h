@@ -136,6 +136,7 @@ public:
     Atomic<bool> repaintFilterVisualization = false;
     Atomic<float> inputPeak = Decibels::gainToDecibels (-INFINITY), outputPeak = Decibels::gainToDecibels (-INFINITY);
     Atomic<float> maxGR[numFilterBands], maxPeak[numFilterBands];
+    Atomic<bool> bypassedForGui[numFilterBands]; 
 
     Compressor* getCompressor(const int i) {return &compressors[i];};
 
@@ -162,7 +163,7 @@ private:
            *attack[numFilterBands], *release[numFilterBands],
            *bypass[numFilterBands];
   
-    std::set<int> soloEnabledArray;
+    std::set<int> soloArray;
 
     Compressor compressors[numFilterBands];
 

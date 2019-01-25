@@ -22,7 +22,6 @@
 
 
 #pragma once
-//#include "../JuceLibraryCode/JuceHeader.h"
 
 template <typename coefficientsType>
 class FilterBankVisualizer    : public Component
@@ -168,8 +167,14 @@ public:
           
             // get additional gain
             float additiveDB = 0.0f;
-            if (handle->gainSlider != nullptr)
-                additiveDB = handle->gainSlider->getValue();
+            float gainReductionInDB = 0.0f;
+            if (! (handle->bypassed->get() == true))
+            {
+                if (handle->gainSlider != nullptr)
+                    additiveDB = handle->gainSlider->getValue();
+                if (handle->gainReductionPointer != nullptr)
+                    gainReductionInDB = handle->gainReductionPointer->get();
+            }
           
             int xStart = xMin;
             int xStop = numPixels;
@@ -187,12 +192,12 @@ public:
             }
 
             // draw responses
-            float db = Decibels::gainToDecibels (magnitudes[xStart - xMin]) + additiveDB;
+            float db = Decibels::gainToDecibels (magnitudes[xStart - xMin]) + additiveDB + gainReductionInDB;
             magnitude.startNewSubPath (xStart, jlimit (static_cast<float> (yMin), static_cast<float> (yMax) + OH + 1.0f, dbToYFloat (db)));
       
             for (int i = xStart + 1; i < xStart + xStop + 1; ++i)
             {
-                db = Decibels::gainToDecibels (magnitudes[i - xMin]) + additiveDB;
+                db = Decibels::gainToDecibels (magnitudes[i - xMin]) + additiveDB + gainReductionInDB;
                 float y = jlimit (static_cast<float> (yMin), static_cast<float> (yMax) + OH + 1.0f, dbToYFloat (db));
                 magnitude.lineTo (i, y);
             }
@@ -222,7 +227,7 @@ public:
           
             for (int n = 0; n < numPixels; ++n)
             {
-                db = Decibels::gainToDecibels (magnitudes[n]) + additiveDB;
+                db = Decibels::gainToDecibels (magnitudes[n]) + additiveDB + gainReductionInDB;
                 allMagnitudesInDb.setUnchecked (n, Decibels::gainToDecibels (Decibels::decibelsToGain (allMagnitudesInDb[n]) + Decibels::decibelsToGain (db)));
             }
         }
@@ -456,23 +461,14 @@ public:
             repaint();
     }
   
-    void addCoefficients (typename dsp::IIR::Coefficients<coefficientsType>::Ptr newCoeffs, Colour newColourForCoeffs, Slider* frequencySlider = nullptr, Slider* gainSlider = nullptr)
+    void addCoefficients (typename dsp::IIR::Coefficients<coefficientsType>::Ptr newCoeffs, Colour newColourForCoeffs, Slider* frequencySlider = nullptr, Slider* gainSlider = nullptr, Atomic<float>* gainReductionPointer = nullptr, Atomic<bool>* bypassed = nullptr)
     {
-        elements.add (new FilterWithSlidersAndColour<coefficientsType> {newCoeffs, newColourForCoeffs, frequencySlider, gainSlider});
+        elements.add (new FilterWithSlidersAndColour<coefficientsType> {newCoeffs, newColourForCoeffs, frequencySlider, gainSlider, gainReductionPointer, bypassed});
     }
   
     void setNumFreqBands (const int value)
     {
         numFreqBands = value;
-    }
-  
-    void setFilterToSyncWith (const int filterIdx, const int filterToSyncWith)
-    {
-        if (filterIdx < elements.size() && filterToSyncWith < elements.size())
-        {
-            elements[filterIdx]->syncFilterIndex = filterToSyncWith;
-            repaint();
-        }
     }
 
 private:
@@ -493,7 +489,8 @@ private:
         Colour colour;
         Slider* frequencySlider = nullptr;
         Slider* gainSlider = nullptr;
-        int syncFilterIndex = std::numeric_limits<int>::lowest(); // cutoff synced with other filter. synced filters are assumed to be hipass
+        Atomic<float>* gainReductionPointer = nullptr;
+        Atomic<bool>* bypassed = nullptr;
     };
 
     const float mL = 23.0f;
