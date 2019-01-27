@@ -31,6 +31,8 @@
 #include "../../resources/OSCParameterInterface.h"
 #include "../../resources/OSCReceiverPlus.h"
 
+#include "../../resources/OSCInputStream.h"
+
 //==============================================================================
 /**
 */
@@ -79,7 +81,7 @@ public:
 
     //======== PluginCanDo =========================================================
     pointer_sized_int handleVstManufacturerSpecific (int32 index, pointer_sized_int value,
-                                                     void* ptr, float opt) override { return 0; };
+                                                     void* ptr, float opt) override;
     pointer_sized_int handleVstPluginCanDo (int32 index, pointer_sized_int value,
                                             void* ptr, float opt) override;
     //==============================================================================
