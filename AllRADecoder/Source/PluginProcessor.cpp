@@ -1108,6 +1108,30 @@ void AllRADecoderAudioProcessor::rotate (const float degreesAddedToAzimuth)
 }
 
 //==============================================================================
+pointer_sized_int AllRADecoderAudioProcessor::handleVstManufacturerSpecific (int32 index, pointer_sized_int value,
+                                                                              void* ptr, float opt)
+{
+    if (index == 0) // let's make this the OSCMessage selector for now
+    {
+        try
+        {
+            size_t size = static_cast<size_t> (value); // let's make this the data size
+
+            MyOSCInputStream inputStream (ptr, size);
+            auto inMessage = inputStream.readMessage();
+
+            oscMessageReceived (inMessage);
+            return 1;
+        }
+        catch (const OSCFormatError&)
+        {
+            return -1;
+        }
+    }
+
+    return 0;
+}
+
 pointer_sized_int AllRADecoderAudioProcessor::handleVstPluginCanDo (int32 index,
                                                                     pointer_sized_int value, void* ptr, float opt)
 {
