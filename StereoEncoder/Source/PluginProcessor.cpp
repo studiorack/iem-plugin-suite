@@ -375,10 +375,10 @@ void StereoEncoderAudioProcessor::processNotYetConsumedOscMessage (const OSCMess
             else if (msg[i].isInt32())
                 qs[i] = msg[i].getInt32();
 
-        oscParameterInferface.setValue("qw", qs[0]);
-        oscParameterInferface.setValue("qx", qs[1]);
-        oscParameterInferface.setValue("qy", qs[2]);
-        oscParameterInferface.setValue("qz", qs[3]);
+        oscParameterInterface.setValue ("qw", qs[0]);
+        oscParameterInterface.setValue ("qx", qs[1]);
+        oscParameterInterface.setValue ("qy", qs[2]);
+        oscParameterInterface.setValue ("qz", qs[3]);
     }
 }
 
@@ -392,7 +392,7 @@ std::vector<std::unique_ptr<RangedAudioParameter>> StereoEncoderAudioProcessor::
 
 
 
-    params.push_back (oscParameterInferface.createAndAddParameter ("orderSetting", "Ambisonics Order", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("orderSetting", "Ambisonics Order", "",
                                                  NormalisableRange<float>(0.0f, 8.0f, 1.0f), 0.0f,
                                                  [](float value) {
                                                      if (value >= 0.5f && value < 1.5f) return "0th";
@@ -407,46 +407,46 @@ std::vector<std::unique_ptr<RangedAudioParameter>> StereoEncoderAudioProcessor::
                                                  }, nullptr));
 
 
-    params.push_back (oscParameterInferface.createAndAddParameter ("useSN3D", "Normalization", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("useSN3D", "Normalization", "",
                                                  NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
                                                  [](float value) {
                                                      if (value >= 0.5f) return "SN3D";
                                                      else return "N3D";
                                                  }, nullptr));
 
-    params.push_back (oscParameterInferface.createAndAddParameter ("qw", "Quaternion W", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("qw", "Quaternion W", "",
                                                  NormalisableRange<float>(-1.0f, 1.0f, 0.001f), 1.0,
                                                  [](float value) { return String(value, 2); }, nullptr, true));
 
-    params.push_back (oscParameterInferface.createAndAddParameter ("qx", "Quaternion X", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("qx", "Quaternion X", "",
                                                  NormalisableRange<float>(-1.0f, 1.0f, 0.001f), 0.0,
                                                  [](float value) { return String(value, 2); }, nullptr, true));
 
-    params.push_back (oscParameterInferface.createAndAddParameter ("qy", "Quaternion Y", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("qy", "Quaternion Y", "",
                                                  NormalisableRange<float>(-1.0f, 1.0f, 0.001f), 0.0,
                                                  [](float value) { return String(value, 2); }, nullptr, true));
 
-    params.push_back (oscParameterInferface.createAndAddParameter ("qz", "Quaternion Z", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("qz", "Quaternion Z", "",
                                                  NormalisableRange<float>(-1.0f, 1.0f, 0.001f), 0.0,
                                                  [](float value) { return String(value, 2); }, nullptr, true));
 
-    params.push_back (oscParameterInferface.createAndAddParameter ("azimuth", "Azimuth Angle", CharPointer_UTF8 (R"(°)"),
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("azimuth", "Azimuth Angle", CharPointer_UTF8 (R"(°)"),
                                                  NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
                                                  [](float value) { return String(value, 2); }, nullptr, true));
 
-    params.push_back (oscParameterInferface.createAndAddParameter ("elevation", "Elevation Angle", CharPointer_UTF8 (R"(°)"),
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("elevation", "Elevation Angle", CharPointer_UTF8 (R"(°)"),
                                                  NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
                                                  [](float value) { return String(value, 2); }, nullptr, true));
 
-    params.push_back (oscParameterInferface.createAndAddParameter ("roll", "Roll Angle", CharPointer_UTF8 (R"(°)"),
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("roll", "Roll Angle", CharPointer_UTF8 (R"(°)"),
                                                  NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
                                                  [](float value) { return String(value, 2); }, nullptr, true));
 
-    params.push_back (oscParameterInferface.createAndAddParameter ("width", "Stereo Width", CharPointer_UTF8 (R"(°)"),
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("width", "Stereo Width", CharPointer_UTF8 (R"(°)"),
                                                  NormalisableRange<float>(-360.0f, 360.0f, 0.01f), 0.0,
                                                  [](float value) { return String(value, 2); }, nullptr));
 
-    params.push_back (oscParameterInferface.createAndAddParameter ("highQuality", "Sample-wise Panning", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("highQuality", "Sample-wise Panning", "",
                                                  NormalisableRange<float>(0.0f, 1.0f, 1.0f), 0.0f,
                                                  [](float value) { return value < 0.5f ? "OFF" : "ON"; }, nullptr));
 

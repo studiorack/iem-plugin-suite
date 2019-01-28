@@ -39,6 +39,8 @@
           file="../resources/OSCParameterInterface.h"/>
     <FILE id="IXrAWH" name="OSCStatus.h" compile="0" resource="0" file="../resources/customComponents/OSCStatus.h"/>
     <FILE id="KzVW9N" name="SpherePanner.h" compile="0" resource="0" file="../resources/customComponents/SpherePanner.h"/>
+    <FILE id="KGgn5i" name="AudioProcessorBase.h" compile="0" resource="0"
+          file="../resources/AudioProcessorBase.h"/>
   </MAINGROUP>
   <EXPORTFORMATS>
     <XCODE_MAC targetFolder="Builds/MacOSX">

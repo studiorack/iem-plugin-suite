@@ -42,22 +42,27 @@ class AudioProcessorBase :  public AudioProcessor,
 public:
 
     AudioProcessorBase () : AudioProcessor(),
-                            parameters (*this, nullptr, String (JucePlugin_Name), {}),
-                            oscParameterInferface (parameters)
+                            oscParameterInterface (parameters),
+                            parameters (*this, nullptr, String (JucePlugin_Name), {})
+
     {
 
     };
 
     AudioProcessorBase (ParameterList parameterLayout) :
                             AudioProcessor(),
-    parameters (*this, nullptr, String (JucePlugin_Name), {parameterLayout.begin(), parameterLayout.end()}),
-                            oscParameterInferface (parameters)
-    {};
+                            parameters (*this, nullptr, String (JucePlugin_Name), {parameterLayout.begin(), parameterLayout.end()}),
+                            oscParameterInterface (parameters)
+    {
 
-    AudioProcessorBase (const BusesProperties& ioLayouts, ParameterList parameterLayout) : AudioProcessor (ioLayouts),
-    parameters (*this, nullptr, String (JucePlugin_Name), { parameterLayout.begin(), parameterLayout.end() }),
-                                                            oscParameterInferface (parameters)
-    {};
+    };
+
+    AudioProcessorBase (const BusesProperties& ioLayouts, ParameterList parameterLayout) :
+                            AudioProcessor (ioLayouts),
+                            parameters (*this, nullptr, String (JucePlugin_Name), { parameterLayout.begin(), parameterLayout.end() }),
+                            oscParameterInterface (parameters)
+    {
+    };
 
     ~AudioProcessorBase() {};
 
@@ -165,7 +170,7 @@ public:
                 OSCMessage msg (message);
                 msg.setAddressPattern (message.getAddressPattern().toString().substring (String (JucePlugin_Name).length() + 1));
 
-                if (oscParameterInferface.processOSCMessage (msg))
+                if (oscParameterInterface.processOSCMessage (msg))
                     return;
             }
 
@@ -191,7 +196,7 @@ public:
 
 
     AudioProcessorValueTreeState parameters;
-    OSCParameterInterface oscParameterInferface;
+    OSCParameterInterface oscParameterInterface;
     OSCReceiverPlus oscReceiver;
 
 private:
