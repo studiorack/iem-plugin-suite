@@ -379,7 +379,6 @@ void StereoEncoderAudioProcessor::setStateInformation (const void *data, int siz
 
 
 //==============================================================================
-
 pointer_sized_int StereoEncoderAudioProcessor::handleVstManufacturerSpecific (int32 index, pointer_sized_int value,
                                                  void* ptr, float opt)
 {
@@ -397,7 +396,7 @@ pointer_sized_int StereoEncoderAudioProcessor::handleVstManufacturerSpecific (in
         }
         catch (const OSCFormatError&)
         {
-            return 0;
+            return -1;
         }
     }
 
