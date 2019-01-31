@@ -1,17 +1,31 @@
 #!/bin/sh
+
+error() {
+  echo "$@" 1>&2
+}
+scriptpath="${0%/*}"
+
+# search for projucer (should be configured with global pathes before)
+# try to find Projucer in one of:
+# - ./JUCE/
+# - ${scriptpath}/JUCE/
+# - ~/JUCE/ (where Roli suggests to install it
+# - your system path (e.g. installed by Debian)
+which=$(which which)
+_projucer=Projuce
+projucer=${PROJUCER:=$(PATH=$(pwd)/JUCE:${HOME}/JUCE:${0%/*}/JUCE:${PATH} ${which} ${_projucer})}
+if [ ! -x "${projucer}" ]; then
+    if [ "x${projucer}" = "x" ]; then projucer=${_projucer}; fi
+    error "no executable '$projucer' found!"
+    error "  - either set the PROJUCER environment variable to the full path of the binary"
+    error "  - or install ${_projucer} in $(pwd)/JUCE, ${scriptpath}/JUCE or ~/JUCE"
+fi
+echo "using '$projucer' as ${_projucer}"
+
+
 cd ${0%/*}
 mkdir -p _compiledPlugins/linux/IEM
 mkdir -p _compiledPlugins/linux/Standalone
-
-# search for projucer (should be configured with global pathes before)
-projucer=$(pwd)/JUCE/Projucer
-if [ ! -x ${projucer} ]; then
-    projucer=$(which Projucer)
-    if [ ! -x ${projucer} ]; then
-        echo no $projucer found, maybe copy it there
-    fi
-fi
-echo using $projucer as Projucer
 
 for d in */*.jucer; do
     d=${d%/*}
