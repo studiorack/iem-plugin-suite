@@ -12,7 +12,7 @@ scriptpath="${0%/*}"
 # - ~/JUCE/ (where Roli suggests to install it
 # - your system path (e.g. installed by Debian)
 which=$(which which)
-_projucer=Projuce
+_projucer=Projucer
 projucer=${PROJUCER:=$(PATH=$(pwd)/JUCE:${HOME}/JUCE:${0%/*}/JUCE:${PATH} ${which} ${_projucer})}
 if [ ! -x "${projucer}" ]; then
     if [ "x${projucer}" = "x" ]; then projucer=${_projucer}; fi
@@ -27,8 +27,8 @@ cd ${0%/*}
 mkdir -p _compiledPlugins/linux/IEM
 mkdir -p _compiledPlugins/linux/Standalone
 
-for d in */*.jucer; do
-    d=${d%/*}
+for f in */*.jucer; do
+    d=${f%/*}
 
     if [ -x "${projucer}" ]; then ${projucer} --resave ${f}; fi  
 
