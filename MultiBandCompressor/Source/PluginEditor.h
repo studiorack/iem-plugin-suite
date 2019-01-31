@@ -36,6 +36,7 @@
 #include "../../resources/customComponents/ReverseSlider.h"
 #include "../../resources/customComponents/SimpleLabel.h"
 #include "../../resources/customComponents/CompressorVisualizer.h"
+#include "../../resources/customComponents/FilterVisualizer.h"
 #include "../../resources/customComponents/LevelMeter.h"
 
 
@@ -108,7 +109,7 @@ private:
 
     // Master parameters
     GroupComponent gcMasterControls;
-    MasterSlider<ReverseSlider> slMasterThreshold, slMasterMakeUpGain, slMasterKnee, slMasterRatio, slMasterAttackTime, slMasterReleaseTime;
+    MasterSlider slMasterThreshold, slMasterMakeUpGain, slMasterKnee, slMasterRatio, slMasterAttackTime, slMasterReleaseTime;
 
     // Compressor Visualization
     OwnedArray<CompressorVisualizer> compressorVisualizers;

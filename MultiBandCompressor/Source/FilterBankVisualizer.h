@@ -23,29 +23,101 @@
 
 #pragma once
 
-template <typename coefficientsType>
-class FilterBankVisualizer    : public Component
+// ============================
+
+struct Settings
 {
-public:
-    FilterBankVisualizer() : overallGainInDb (0.0f), sampleRate (48000.0)
-    {
-        init();
-    };
-
-    FilterBankVisualizer (float fMin, float fMax, float dbMin, float dbMax, float gridDiv) : overallGainInDb (0.0f), sampleRate (48000.0), s {fMin, fMax, dbMin, dbMax, gridDiv}
-    {
-        init();
-    };
-
-    ~FilterBankVisualizer() {};
+    float fMin = 20.0f;    // minimum displayed frequency
+    float fMax = 20000.0f; // maximum displayed frequency
+    float dbMin = -15.0f;  // min displayed dB
+    float dbMax = 15.0f;   // max displayed dB
+    float gridDiv = 5.0f;  // how many dB per divisions (between grid lines)
   
-    void init ()
+    float dyn = dbMax - dbMin;
+    float zero = 2.0f * dbMax / dyn;
+    float scale = 1.0f / (zero + std::tanh (dbMin / dyn * -2.0f));
+  
+    float height;
+    float width;
+  
+    int xMin = hzToX(fMin);
+    int xMax = hzToX(fMax);
+    int yMin = jmax (dbToY (dbMax), 0);
+    int yMax = jmax (dbToY (dbMin), yMin);
+    int yZero = dbToY (0.0f);
+
+  
+    int numPixels = xMax - xMin + 1;
+
+    const float mL = 23.0f;
+    const float mR = 10.0f;
+    const float mT = 7.0f;
+    const float mB = 15.0f;
+    const float OH = 3.0f;
+  
+    void setHeight (int newHeight)
     {
-        dyn = s.dbMax - s.dbMin;
-        zero = 2.0f * s.dbMax / dyn;
-        scale = 1.0f / (zero + std::tanh (s.dbMin / dyn * -2.0f));
+        height = static_cast<float> (newHeight) - mT - mB;
+    }
+  
+    void setWidth (int newWidth)
+    {
+        width = static_cast<float> (newWidth) - mL - mR;
+    }
+  
+    int dbToY (const float dB)
+    {
+        int ypos = dbToYFloat(dB);
+        return ypos;
     }
 
+    float dbToYFloat (const float dB)
+    {
+        if (height <= 0.0f) return 0.0f;
+        float temp;
+        if (dB < 0.0f)
+            temp = zero + std::tanh(dB / dyn * -2.0f);
+        else
+            temp = zero - 2.0f * dB / dyn;
+
+        return mT + scale * height * temp;
+    }
+
+    float yToDb (const float y)
+    {
+        float temp = (y - mT) / height / scale - zero;
+        float dB;
+        if (temp > 0.0f)
+            dB =  std::atanh (temp) * dyn * -0.5f;
+        else
+            dB = - 0.5f * temp * dyn;
+        return std::isnan (dB) ? dbMin : dB;
+    }
+
+    int hzToX (float hz)
+    {
+        int xpos = mL + width * (log (hz / fMin) / log (fMax / fMin));
+        return xpos;
+    }
+
+    float xToHz (int x)
+    {
+        return fMin * pow ((fMax / fMin), ((x - mL) / width));
+    }
+};
+
+
+// ============================
+
+class FilterBackdrop : public Component
+{
+public:
+    FilterBackdrop (Settings& settings) : s (settings)
+    {
+    };
+
+    ~FilterBackdrop() {};
+  
     void paint (Graphics& g) override
     {
         g.setColour (Colours::steelblue.withMultipliedAlpha (0.01f));
@@ -70,7 +142,7 @@ public:
 
         // frequency labels
         for (float f = s.fMin; f <= s.fMax; f += pow (10, floor (log10 (f)))) {
-            int xpos = hzToX (f);
+            int xpos = s.hzToX (f);
 
             String axislabel;
             bool drawText = false;
@@ -89,7 +161,7 @@ public:
             else
                 continue;
 
-            g.drawText (axislabel, xpos - 10, dbToY (s.dbMin) + OH + 0.0f, 20, 12, Justification::centred, false);
+            g.drawText (axislabel, xpos - 10, s.dbToY (s.dbMin) + s.OH + 0.0f, 20, 12, Justification::centred, false);
         }
 
 
@@ -101,223 +173,23 @@ public:
 
         g.setColour (Colours::steelblue.withMultipliedAlpha (0.8f));
         g.strokePath (hzGridPath, PathStrokeType (0.5f));
-
-
-        // draw filter magnitude responses
-        Path magnitude;
-        allMagnitudesInDb.fill (overallGainInDb);
-        const int size = elements.size();
-
-        const int xMin = hzToX (s.fMin);
-        const int xMax = hzToX (s.fMax);
-        const int yMin = jmax (dbToY (s.dbMax), 0);
-        const int yMax = jmax (dbToY (s.dbMin), yMin);
-        const int yZero = dbToY (0.0f);
-      
-        g.excludeClipRegion (Rectangle<int> (0.0f, yMax + OH, getWidth(), getHeight() - yMax - OH));
-
-
-        // get values for first split (mid crossover), since we need them more than once
-        const int firstLowSplitIndex = (size / 2) - 1;
-        const int firstHighSplitIndex = firstLowSplitIndex + 1;
-      
-        auto firstLowSplitCoeffs = elements[firstLowSplitIndex]->coefficients;
-        auto firstHighSplitCoeffs = elements[firstHighSplitIndex]->coefficients;
-      
-        Array<double> firstLowSplitMagnitude;
-        Array<double> firstHighSplitMagnitude;
-        firstLowSplitMagnitude.resize (numPixels);
-        firstHighSplitMagnitude.resize (numPixels);
-      
-        if (firstLowSplitCoeffs != nullptr)
-            firstLowSplitCoeffs->getMagnitudeForFrequencyArray (frequencies.getRawDataPointer(), firstLowSplitMagnitude.getRawDataPointer(), numPixels, sampleRate);
-        if (firstHighSplitCoeffs != nullptr)
-            firstHighSplitCoeffs->getMagnitudeForFrequencyArray (frequencies.getRawDataPointer(), firstHighSplitMagnitude.getRawDataPointer(), numPixels, sampleRate);
-
-
-        // get x-axis values in-between crossovers, in order to display the filtered bands properly.
-        // the magnitude responses of the filter are only drawn one-sided, starting (LoPass) or ending (HiPass) in between crossovers
-        Array<int> bandStartStop;
-        bandStartStop.add (xMin);
-        for (int i = 1; i < numFreqBands - 1; ++i)
-        {
-            int xStart = elements[2*i-2]->frequencySlider == nullptr ? xMin : hzToX (elements[2*i-2]->frequencySlider->getValue ());
-            int xStop = elements[2*i]->frequencySlider == nullptr ? xMin : hzToX (elements[2*i]->frequencySlider->getValue ());
-            bandStartStop.add (xStart + ((xStop - xStart)/2));
-        }
-        bandStartStop.add (xMax);
-
-
-        for (int i = 0; i < size; ++i)
-        {
-            magnitude.clear();
-            auto handle (elements[i]);
-          
-            // get magnitude response of filter
-            if (i != firstLowSplitIndex && i != firstHighSplitIndex)
-            {
-                typename dsp::IIR::Coefficients<coefficientsType>::Ptr coeffs = handle->coefficients;
-                if (coeffs != nullptr)
-                    coeffs->getMagnitudeForFrequencyArray (frequencies.getRawDataPointer(), magnitudes.getRawDataPointer(), numPixels, sampleRate);
-            }
-            else
-            {
-                magnitudes = i == firstLowSplitIndex ? firstLowSplitMagnitude : firstHighSplitMagnitude;
-            }
-          
-            // get additional gain
-            float additiveDB = 0.0f;
-            float gainReductionInDB = 0.0f;
-            if (! (handle->bypassed->get() == true))
-            {
-                if (handle->gainSlider != nullptr)
-                    additiveDB = handle->gainSlider->getValue();
-                if (handle->gainReductionPointer != nullptr)
-                    gainReductionInDB = handle->gainReductionPointer->get();
-            }
-          
-            int xStart = xMin;
-            int xStop = numPixels;
-
-            if (!(i == elements.size()-1 || i == 0)) // lowest and highest freq band do not have to be split up, only go through a single filter
-            {
-                if ((i % 2) == 0) // Lowpass
-                {
-                    xStart = bandStartStop[i/2];
-                }
-                else // Hipass
-                {
-                    xStop = bandStartStop[(i/2) + 1] - xMin;
-                }
-            }
-
-            // draw responses
-            float db = Decibels::gainToDecibels (magnitudes[xStart - xMin]) + additiveDB + gainReductionInDB;
-            magnitude.startNewSubPath (xStart, jlimit (static_cast<float> (yMin), static_cast<float> (yMax) + OH + 1.0f, dbToYFloat (db)));
-      
-            for (int i = xStart + 1; i < xStart + xStop + 1; ++i)
-            {
-                db = Decibels::gainToDecibels (magnitudes[i - xMin]) + additiveDB + gainReductionInDB;
-                float y = jlimit (static_cast<float> (yMin), static_cast<float> (yMax) + OH + 1.0f, dbToYFloat (db));
-                magnitude.lineTo (i, y);
-            }
-      
-            g.setColour (handle->colour.withMultipliedAlpha (0.7f));
-            g.strokePath (magnitude, PathStrokeType (1.0f));
-            magnitude.lineTo (xStop + xMin, yMax + OH + 1.0f);
-            magnitude.lineTo (xStart, yMax + OH + 1.0f);
-            magnitude.closeSubPath();
-            g.setColour (handle->colour.withMultipliedAlpha (0.3f));
-            g.fillPath (magnitude);
-          
-          
-            // accumulate responses
-            if (i < firstLowSplitIndex)
-            {
-                FloatVectorOperations::multiply (magnitudes.getRawDataPointer(), firstLowSplitMagnitude.getRawDataPointer(), numPixels);
-            }
-            else if (i > firstHighSplitIndex)
-            {
-                FloatVectorOperations::multiply (magnitudes.getRawDataPointer(), firstHighSplitMagnitude.getRawDataPointer(), numPixels);
-            }
-            else
-            {
-                continue;
-            }
-          
-            for (int n = 0; n < numPixels; ++n)
-            {
-                db = Decibels::gainToDecibels (magnitudes[n]) + additiveDB + gainReductionInDB;
-                allMagnitudesInDb.setUnchecked (n, Decibels::gainToDecibels (Decibels::decibelsToGain (allMagnitudesInDb[n]) + Decibels::decibelsToGain (db)));
-            }
-        }
-      
-        // draw summed magnitude
-        magnitude.clear();
-        magnitude.startNewSubPath (xMin, jlimit (static_cast<float> (yMin), static_cast<float> (yMax) + OH + 1.0f, dbToYFloat (allMagnitudesInDb[0])));
-        for (int x = xMin + 1; x<=xMax; ++x)
-        {
-            magnitude.lineTo (x, jlimit (static_cast<float> (yMin), static_cast<float> (yMax) + OH + 1.0f, dbToYFloat (allMagnitudesInDb[x-xMin])));
-        }
-
-        g.setColour (Colours::white);
-        g.strokePath (magnitude, PathStrokeType (1.5f));
-        magnitude.lineTo (xMax, yZero);
-        magnitude.lineTo (xMin, yZero);
-        magnitude.closeSubPath();
-        g.setColour (Colours::white.withMultipliedAlpha (0.1f));
-        g.fillPath (magnitude);
-      
-      
-        // draw filter knobs
-        float prevXPos = xMin;
-        for (int i = 0; i < numFreqBands-1; ++i)
-        {
-            auto handle (elements[2*i]);
-            float xPos = handle->frequencySlider == nullptr ? xMin : hzToX (handle->frequencySlider->getValue());
-          
-            // we must keep some distance between the freq bands (they must not overlap).
-            // otherwise filling the rectangle will fail
-            float xWidth = static_cast<int>(xPos - prevXPos) >= 1.0f ? xPos - prevXPos : 1.0f;
-            g.setColour (handle->colour.withMultipliedAlpha (0.3f));
-            g.fillRoundedRectangle (prevXPos, yMin, xWidth, yMax, 4.0);
-          
-            // draw separation lines between frequency bands
-            Path filterBandSeparator;
-            filterBandSeparator.startNewSubPath (xPos, yMin);
-            filterBandSeparator.lineTo (xPos, yMax + yMin);
-            g.setColour (Colour (0xFF979797));
-            g.strokePath (filterBandSeparator, PathStrokeType (2.0f));
-            prevXPos = xPos;
-
-            float yPos = dbToYFloat (allMagnitudesInDb[xPos - xMin]);
-          
-            g.setColour (Colour (0xFF191919));
-            g.drawEllipse (xPos - 5.0f, yPos - 5.0f , 10.0f, 10.0f, 3.0f);
-
-            Colour ellipseColour = Colour (0xFF979797).brighter();
-            g.setColour (ellipseColour);
-            g.drawEllipse (xPos - 5.0f, yPos - 5.0f , 10.0f, 10.0f, 2.0f);
-            g.setColour (activeElem == 2*i ? ellipseColour : ellipseColour.withSaturation (0.2));
-            g.fillEllipse (xPos - 5.0f, yPos - 5.0f , 10.0f, 10.0f);
-        }
-      
-        // fill last rectangle
-        auto handle = elements.getLast();
-        float xWidth = static_cast<int>(xMax - prevXPos) >= 1.0f ? xMax - prevXPos : 1.0f;
-        g.setColour (handle->colour.withMultipliedAlpha (0.3f));
-        g.fillRoundedRectangle (prevXPos, yMin, xWidth, yMax, 4.0);
     }
-
-
+  
     void resized() override
     {
-        int xMin = hzToX(s.fMin);
-        int xMax = hzToX(s.fMax);
-        numPixels = xMax - xMin + 1;
-
-        frequencies.resize (numPixels);
-        for (int i = 0; i < numPixels; ++i)
-            frequencies.set (i, xToHz (xMin + i));
-
-        allMagnitudesInDb.resize (numPixels);
-        magnitudes.resize (numPixels);
-        magnitudes.fill (1.0f);
-
-        const float width = getWidth() - mL - mR;
+        const float width = getWidth() - s.mL - s.mR;
         dbGridPath.clear();
 
-        float dyn = s.dbMax - s.dbMin;
-        int numgridlines = dyn / s.gridDiv + 1;
+        int numgridlines = s.dyn / s.gridDiv + 1;
 
         for (int i = 0; i < numgridlines; ++i)
         {
             float db_val = s.dbMax - i * s.gridDiv;
 
-            int ypos = dbToY (db_val);
+            int ypos = s.dbToY (db_val);
 
-            dbGridPath.startNewSubPath (mL - OH, ypos);
-            dbGridPath.lineTo (mL + width + OH, ypos);
+            dbGridPath.startNewSubPath (s.mL - s.OH, ypos);
+            dbGridPath.lineTo (s.mL + width + s.OH, ypos);
         }
 
         hzGridPath.clear();
@@ -325,24 +197,24 @@ public:
 
         for (float f = s.fMin; f <= s.fMax; f += powf(10, floor (log10 (f))))
         {
-            int xpos = hzToX (f);
+            int xpos = s.hzToX (f);
 
             if ((f == 20) || (f == 50) || (f == 100) || (f == 500) || (f == 1000) || (f == 5000) || (f == 10000) || (f == 20000))
             {
-                hzGridPathBold.startNewSubPath (xpos, dbToY (s.dbMax) - OH);
-                hzGridPathBold.lineTo (xpos, dbToY (s.dbMin) + OH);
+                hzGridPathBold.startNewSubPath (xpos, s.dbToY (s.dbMax) - s.OH);
+                hzGridPathBold.lineTo (xpos, s.dbToY (s.dbMin) + s.OH);
 
             } else
             {
-                hzGridPath.startNewSubPath (xpos, dbToY (s.dbMax) - OH);
-                hzGridPath.lineTo (xpos, dbToY (s.dbMin) + OH);
+                hzGridPath.startNewSubPath (xpos, s.dbToY (s.dbMax) - s.OH);
+                hzGridPath.lineTo (xpos, s.dbToY (s.dbMin) + s.OH);
             }
         }
     }
 
     int inline drawLevelMark (Graphics& g, int x, int width, const int level, const String& label, int lastTextDrawPos = -1)
     {
-        float yPos = dbToYFloat (level);
+        float yPos = s.dbToYFloat (level);
         x = x + 1.0f;
         width = width - 2.0f;
 
@@ -354,85 +226,389 @@ public:
         return lastTextDrawPos;
     }
 
-    int dbToY (const float dB)
+private:
+
+    Settings& s;
+  
+    Path dbGridPath;
+    Path hzGridPath;
+    Path hzGridPathBold;
+};
+
+
+// ============================
+
+template <typename coeffType>
+class FrequencyBand    : public Component
+{
+public:
+    FrequencyBand (Settings& settings) : s (settings), sampleRate (48000.0)
     {
-        int ypos = dbToYFloat(dB);
-        return ypos;
+    };
+  
+    FrequencyBand (Settings& settings, double sampleRate, typename dsp::IIR::Coefficients<coeffType>::Ptr coeffs1, typename dsp::IIR::Coefficients<coeffType>::Ptr coeffs2, Colour newColour, Atomic<bool>* newBypassed = nullptr) : s (settings), colour (newColour), bypassed (newBypassed), sampleRate (sampleRate)
+    {
+        addCoeffs (coeffs1, coeffs2);
+    };
+
+    ~FrequencyBand () {};
+  
+    void paint(Graphics& g) override
+    {
+        g.setColour (colour.withMultipliedAlpha (0.7f));
+        g.strokePath (path, PathStrokeType (1.0f));
+      
+        path.lineTo (s.xMax, s.yMax + s.OH + 1.0f);
+        path.lineTo (s.xMin, s.yMax + s.OH + 1.0f);
+        path.closeSubPath();
+        g.setColour (colour.withMultipliedAlpha (0.3f));
+        g.fillPath (path);
+    }
+  
+    void resized() override
+    {
+        frequencies.resize (s.numPixels);
+        for (int i = 0; i < s.numPixels; ++i)
+            frequencies.set (i, s.xToHz (s.xMin + i));
+
+        magnitudes.resize (s.numPixels);
+        magnitudes.fill (1.0f);
+        magnitudesIncludingGains.resize (s.numPixels);
+        magnitudesIncludingGains.fill (1.0f);
+    }
+  
+    void updateMakeUpGain (const float& newMakeUp)
+    {
+        if (bypassed != nullptr ? bypassed->get() : false)
+        {
+            if (makeUp != 0.0f || gainReduction != 0.0f)
+            {
+                makeUp = 0.0f;
+                gainReduction = 0.0f;
+                updatePath();
+            }
+            return;
+        }
+      
+        if (fabs (makeUp - newMakeUp) > 0.01)
+        {
+            makeUp = newMakeUp;
+            updatePath();
+        }
+    }
+  
+    void updateGainReduction (const float& newGainReduction)
+    {
+        if (bypassed != nullptr ? bypassed->get() : false)
+        {
+            if (makeUp != 0.0f || gainReduction != 0.0f)
+            {
+                makeUp = 0.0f;
+                gainReduction = 0.0f;
+                updatePath();
+            }
+            return;
+        }
+      
+        if (fabs (gainReduction - newGainReduction) > 0.01)
+        {
+            gainReduction = newGainReduction;
+            updatePath();
+        }
     }
 
-    float dbToYFloat (const float dB)
+  
+    void updateFilterResponse ()
     {
-        const float height = static_cast<float> (getHeight()) - mB - mT;
-        if (height <= 0.0f) return 0.0f;
-        float temp;
-        if (dB < 0.0f)
-            temp = zero + std::tanh(dB / dyn * -2.0f);
-        else
-            temp = zero - 2.0f * dB / dyn;
-
-        return mT + scale * height * temp;
+        Array<double> tempMagnitude;
+        tempMagnitude.resize (s.numPixels);
+        tempMagnitude.fill (1.0f);
+        for (int i = 0; i < coeffs.size(); ++i)
+        {
+            Array<double> filterMagnitude;
+            filterMagnitude.resize (s.numPixels);
+            if (coeffs[i] != nullptr)
+                coeffs[i]->getMagnitudeForFrequencyArray (frequencies.getRawDataPointer(), filterMagnitude.getRawDataPointer(), s.numPixels, sampleRate);
+            FloatVectorOperations::multiply (tempMagnitude.getRawDataPointer(), filterMagnitude.getRawDataPointer(), s.numPixels);
+        }
+        FloatVectorOperations::copy (magnitudes.getRawDataPointer(), tempMagnitude.getRawDataPointer(), s.numPixels);
+        updatePath();
+    }
+  
+    void updatePath ()
+    {
+        path.clear();
+      
+        float db = Decibels::gainToDecibels (magnitudes[0]) + makeUp + gainReduction;
+        magnitudesIncludingGains.set (0, Decibels::decibelsToGain (db) );
+        path.startNewSubPath (s.xMin, jlimit (static_cast<float> (s.yMin), static_cast<float> (s.yMax) + s.OH + 1.0f, s.dbToYFloat (db)));
+  
+        for (int i = 1; i < s.numPixels; ++i)
+        {
+            db = Decibels::gainToDecibels (magnitudes[i]) + makeUp + gainReduction;
+            magnitudesIncludingGains.set (i, Decibels::decibelsToGain (db) );
+            float y = jlimit (static_cast<float> (s.yMin), static_cast<float> (s.yMax) + s.OH + 1.0f, s.dbToYFloat (db));
+            path.lineTo (s.xMin + i, y);
+        }
+        repaint();
     }
 
-    float yToDb (const float y)
+    double* getMagnitudeIncludingGains ()
     {
-        float height = static_cast<float> (getHeight()) - mB - mT;
-
-        float temp = (y - mT) / height / scale - zero;
-        float dB;
-        if (temp > 0.0f)
-            dB =  std::atanh (temp) * dyn * -0.5f;
-        else
-            dB = - 0.5f * temp * dyn;
-        return std::isnan (dB) ? s.dbMin : dB;
+        return magnitudesIncludingGains.getRawDataPointer();
     }
-
-    int hzToX (float hz)
+  
+    Array<double> getMagnitudeIncludingGainsArray () const
     {
-        float width = static_cast<float> (getWidth()) - mL - mR;
-        int xpos = mL + width * (log (hz / s.fMin) / log (s.fMax / s.fMin));
-        return xpos;
-    }
-
-    float xToHz (int x)
-    {
-        float width = static_cast<float> (getWidth()) - mL - mR;
-        return s.fMin * pow ((s.fMax / s.fMin), ((x - mL) / width));
+        return magnitudesIncludingGains;
     }
 
     void setSampleRate (const double newSampleRate)
     {
         sampleRate = newSampleRate;
     }
-
-    void setOverallGain (float newGain)
+  
+    void setColour (const Colour newColour)
     {
-        float gainInDb = Decibels::gainToDecibels (newGain);
-        if (overallGainInDb != gainInDb)
-        {
-            overallGainInDb = gainInDb;
-            repaint();
-        }
+        colour = newColour;
+    }
+  
+    void setBypassed (Atomic<bool>* newBypassed)
+    {
+        bypassed = newBypassed;
+    }
+  
+    void addCoeffs (typename dsp::IIR::Coefficients<coeffType>::Ptr coeffs1, typename dsp::IIR::Coefficients<coeffType>::Ptr coeffs2)
+    {
+        coeffs.add (coeffs1);
+        coeffs.add (coeffs2);
     }
 
-    void setOverallGainInDecibels (float newGainInDecibels)
+private:
+    Settings& s;
+    Array<typename dsp::IIR::Coefficients<coeffType>::Ptr> coeffs;
+  
+    Colour colour;
+    Atomic<bool>* bypassed = nullptr;
+
+    double sampleRate;
+    float makeUp = 0.0f, gainReduction = 0.0f;
+
+    Array<double> frequencies;
+    Array<double> magnitudes, magnitudesIncludingGains;
+    Path path;
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (FrequencyBand);
+};
+
+// ============================
+
+template <typename coefficientType>
+class OverallMagnitude  : public Component
+{
+public:
+    OverallMagnitude (Settings& settings, int numFreqBands) : s (settings), numBands (numFreqBands), overallGain (0.0f)
     {
-        if (overallGainInDb != newGainInDecibels)
+    };
+  
+    ~OverallMagnitude () {};
+  
+    void paint(Graphics& g) override
+    {
+        g.setColour (Colours::white);
+        g.strokePath (path, PathStrokeType (1.25f));
+      
+        path.lineTo (s.xMax, s.yZero);
+        path.lineTo (s.xMin, s.yZero);
+        path.closeSubPath();
+        g.setColour (Colours::white.withMultipliedAlpha (0.125f));
+        g.fillPath (path);
+    }
+  
+    void resized() override
+    {
+        frequencies.resize (s.numPixels);
+        for (int i = 0; i < s.numPixels; ++i)
+            frequencies.set (i, s.xToHz (s.xMin + i));
+
+        overallMagnitude.resize (s.numPixels);
+        overallMagnitude.fill (overallGain);
+    }
+  
+    void setOverallGain (const float newGain)
+    {
+        overallGain = newGain;
+    }
+  
+    void updateOverallMagnitude ()
+    {
+        overallMagnitude.fill (overallGain);
+        for (int i = 0; i < (*freqBands).size(); ++i)
         {
-            overallGainInDb = newGainInDecibels;
-            repaint();
+            FloatVectorOperations::add (overallMagnitude.getRawDataPointer(), (*freqBands)[i]->getMagnitudeIncludingGains (), s.numPixels);
+        }
+      
+        updatePath();
+    }
+  
+  
+    void updatePath ()
+    {
+        path.clear();
+      
+        float db = Decibels::gainToDecibels (overallMagnitude[0]);
+        path.startNewSubPath (s.xMin, jlimit (static_cast<float> (s.yMin), static_cast<float> (s.yMax) + s.OH + 1.0f, s.dbToYFloat (db)));
+  
+        for (int i = 1; i < s.numPixels; ++i)
+        {
+            db = Decibels::gainToDecibels (overallMagnitude[i]);
+            float y = jlimit (static_cast<float> (s.yMin), static_cast<float> (s.yMax) + s.OH + 1.0f, s.dbToYFloat (db));
+            path.lineTo (s.xMin + i, y);
+        }
+        repaint();
+    }
+  
+    void setFreqBands (OwnedArray<FrequencyBand<coefficientType>>* bandsForOverallGain)
+    {
+        freqBands = bandsForOverallGain;
+    }
+  
+private:
+    Settings& s;
+    OwnedArray<FrequencyBand<coefficientType>>* freqBands;
+  
+    Array<double> frequencies, overallMagnitude;
+    Path path;
+  
+    int numBands;
+    float overallGain;
+};
+
+
+// ============================
+
+template <typename T>
+class FilterBankVisualizer : public Component
+{
+public:
+    FilterBankVisualizer() : filterBackdrop (s), sampleRate (48000.0), overallGainInDb (0.0), numFreqBands (4)
+    {
+        init();
+    };
+  
+
+    FilterBankVisualizer (float fMin, float fMax, float dbMin, float dbMax, float gridDiv, int numBands) : s {fMin, fMax, dbMin, dbMax, gridDiv}, filterBackdrop (s), overallMagnitude (s, numBands), sampleRate (48000.0), overallGainInDb (0.0), numFreqBands (numBands)
+    {
+        init();
+    };
+  
+    ~FilterBankVisualizer() {};
+  
+    void init ()
+    {
+        updateSettings();
+        addAndMakeVisible (&filterBackdrop);
+      
+        for (int i = 0; i < numFreqBands; ++i)
+        {
+            freqBands.add (new FrequencyBand<T> (s));
+            addAndMakeVisible (freqBands[i]);
+        }
+        addAndMakeVisible (&overallMagnitude);
+        overallMagnitude.addMouseListener (this, true);
+    }
+  
+    void updateSettings ()
+    {
+        s.setWidth (getWidth());
+        s.setHeight (getHeight());
+      
+        s.xMin = s.hzToX (s.fMin);
+        s.xMax = s.hzToX (s.fMax);
+        s.yMin = jmax (s.dbToY (s.dbMax), 0);
+        s.yMax = jmax (s.dbToY (s.dbMin), s.yMin);
+        s.yZero = s.dbToY (0.0f);
+
+        s.numPixels = s.xMax - s.xMin + 1;
+    }
+  
+    void paint (Graphics& g) override
+    {
+        g.excludeClipRegion (Rectangle<int> (0.0f, s.yMax + s.OH, s.width, s.height - s.yMax - s.OH));
+    }
+  
+    void paintOverChildren (Graphics& g) override
+    {
+        g.excludeClipRegion (Rectangle<int> (0.0f, s.yMax + s.OH, s.width, s.height - s.yMax - s.OH));
+
+        // draw crossovers separators and knobs
+        float yPos = s.dbToYFloat (0.0f);
+        float prevXPos = s.xMin;
+        for (int i = 0; i < crossoverSliders.size(); ++i)
+        {
+            float xPos = crossoverSliders[i] == nullptr ? s.xMin : s.hzToX (crossoverSliders[i]->getValue());
+            Path filterBandSeparator;
+            filterBandSeparator.startNewSubPath (xPos, s.yMin);
+            filterBandSeparator.lineTo (xPos, s.yMax + s.yMin);
+            g.setColour (activeElem == i ? Colour (0xFFDFDFDB) : Colour (0xFFDFDFDB).withMultipliedAlpha (0.6));
+            g.strokePath (filterBandSeparator, PathStrokeType (i == activeElem ? 3.0f : 2.25f));
+            prevXPos = xPos;
+          
+            g.setColour (Colours::black);
+            g.drawEllipse (xPos - 5.0f, yPos - 5.0f , 10.0f, 10.0f, 3.0f);
+            g.setColour (activeElem == i ? Colour (0xFFDFDFDB).brighter() : Colour (0xFFDFDFDB).darker());
+            g.fillEllipse (xPos - 5.0f, yPos - 5.0f , 10.0f, 10.0f);
+
         }
     }
-
+  
+    void resized() override
+    {
+        updateSettings ();
+      
+        Rectangle<int> area = getLocalBounds();
+        filterBackdrop.setBounds (area);
+        for (int i = 0; i < freqBands.size(); ++i)
+        {
+            freqBands[i]->setBounds (area);
+            freqBands[i]->updateFilterResponse();
+        }
+        overallMagnitude.setBounds (area);
+    }
+  
+    void setSampleRate (const double newSampleRate)
+    {
+        sampleRate = newSampleRate;
+        if (! freqBands.isEmpty())
+        {
+            for (int i = 0; i < freqBands.size(); ++i)
+            {
+                freqBands[i]->setSampleRate (sampleRate);
+            }
+        }
+    }
+  
+    void setNumFreqBands (const int newValue)
+    {
+        numFreqBands = newValue;
+    }
+  
     void mouseDrag (const MouseEvent &event) override
     {
         Point<int> pos = event.getPosition();
-        float frequency = xToHz (pos.x);
+        float frequency = s.xToHz (pos.x);
 
         if (activeElem != -1)
         {
-            auto handle (elements[activeElem]);
-            if (handle->frequencySlider != nullptr)
-                handle->frequencySlider->setValue (frequency);
+            if (crossoverSliders[activeElem] != nullptr)
+            {
+                crossoverSliders[activeElem]->setValue (frequency);
+                updateFreqBandResponse (activeElem);
+                updateFreqBandResponse (activeElem+1);
+                updateOverallMagnitude ();
+                repaint();
+            }
+          
         }
     }
 
@@ -441,18 +617,16 @@ public:
         Point<int> pos = event.getPosition();
         int oldActiveElem = activeElem;
         activeElem = -1;
-        jassert (elements.size() >= 2* (numFreqBands - 1));
-        for (int i = 0; i < numFreqBands - 1; ++i)
-        {
-            auto handle (elements[2*i]);
-          
-            int x = handle->frequencySlider == nullptr ? hzToX (s.fMin) : hzToX (handle->frequencySlider->getValue());
-            float y = dbToYFloat (allMagnitudesInDb[x - hzToX (s.fMin)]);
 
+        for (int i = 0; i < crossoverSliders.size(); ++i)
+        {
+            int x = crossoverSliders[i] == nullptr ? s.hzToX (s.fMin) : s.hzToX (crossoverSliders[i]->getValue());
+            float y = s.dbToYFloat (0.0f);
             Point<int> filterPos (x, y);
+
             if (pos.getDistanceSquaredFrom (filterPos) < 48)
             {
-                activeElem = 2*i;
+                activeElem = i;
                 break;
             }
         }
@@ -461,64 +635,72 @@ public:
             repaint();
     }
   
-    void addCoefficients (typename dsp::IIR::Coefficients<coefficientsType>::Ptr newCoeffs, Colour newColourForCoeffs, Slider* frequencySlider = nullptr, Slider* gainSlider = nullptr, Atomic<float>* gainReductionPointer = nullptr, Atomic<bool>* bypassed = nullptr)
+    void updateMakeUpGain (const int freqBand, const float newMakeUp)
     {
-        elements.add (new FilterWithSlidersAndColour<coefficientsType> {newCoeffs, newColourForCoeffs, frequencySlider, gainSlider, gainReductionPointer, bypassed});
+        freqBands[freqBand]->updateMakeUpGain(newMakeUp);
+    }
+
+  
+    void updateGainReduction (const int freqBand, const float newGainReduction)
+    {
+        freqBands[freqBand]->updateGainReduction(newGainReduction);
     }
   
-    void setNumFreqBands (const int value)
+    void updateFreqBandResponse (const int freqBand)
     {
-        numFreqBands = value;
+        freqBands[freqBand]->updateFilterResponse();
+    }
+  
+    void updateFreqBandResponses ()
+    {
+        for (int i = 0; i < numFreqBands; ++i)
+            freqBands[i]->updateFilterResponse();
+    }
+  
+    void updateOverallMagnitude ()
+    {
+        overallMagnitude.updateOverallMagnitude();
+    }
+  
+    void setFrequencyBand (const int i, typename dsp::IIR::Coefficients<T>::Ptr coeffs1, typename  dsp::IIR::Coefficients<T>::Ptr coeffs2, Colour colour, Atomic<bool>* bypassed = nullptr)
+    {
+        freqBands[i]->addCoeffs (coeffs1, coeffs2);
+        freqBands[i]->setColour (colour);
+        freqBands[i]->setBypassed (bypassed);
+        freqBands[i]->updateFilterResponse();
+    }
+  
+    void addFrequencyBand (typename dsp::IIR::Coefficients<T>::Ptr coeffs1, typename dsp::IIR::Coefficients<T>::Ptr coeffs2, Colour colour, Atomic<bool>* bypassed = nullptr)
+    {
+        freqBands.add (new FrequencyBand<T> (s, sampleRate, coeffs1, coeffs2, colour, bypassed));
+        addAndMakeVisible (freqBands.getLast());
+    }
+  
+    void initOverallMagnitude (const float gain=0.0f)
+    {
+        overallMagnitude.setFreqBands (&freqBands);
+        overallMagnitude.setOverallGain (gain);
+        overallMagnitude.updateOverallMagnitude();
+    }
+  
+    void addCrossover (Slider* crossoverSlider = nullptr)
+    {
+        crossoverSliders.add (crossoverSlider);
     }
 
+  
 private:
-
-    struct Settings
-    {
-        float fMin = 20.0f;    // minimum displayed frequency
-        float fMax = 20000.0f; // maximum displayed frequency
-        float dbMin = -15.0f;  // min displayed dB
-        float dbMax = 15.0f;   // max displayed dB
-        float gridDiv = 5.0f;  // how many dB per divisions (between grid lines)
-    };
-
-    template <typename T>
-    struct FilterWithSlidersAndColour
-    {
-        typename dsp::IIR::Coefficients<T>::Ptr coefficients;
-        Colour colour;
-        Slider* frequencySlider = nullptr;
-        Slider* gainSlider = nullptr;
-        Atomic<float>* gainReductionPointer = nullptr;
-        Atomic<bool>* bypassed = nullptr;
-    };
-
-    const float mL = 23.0f;
-    const float mR = 10.0f;
-    const float mT = 7.0f;
-    const float mB = 15.0f;
-    const float OH = 3.0f;
-
-    float overallGainInDb {0.0};
-
-    double sampleRate;
-
-    int activeElem = -1;
-
-    float dyn, zero, scale;
-
     Settings s;
-    Path dbGridPath;
-    Path hzGridPath;
-    Path hzGridPathBold;
-
-    Array<double> frequencies;
-    Array<double> magnitudes;
-    int numPixels, numFreqBands;
-
-    Array<float> allMagnitudesInDb;
-
-    OwnedArray<FilterWithSlidersAndColour<coefficientsType>> elements;
-
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (FilterBankVisualizer)
+  
+    FilterBackdrop filterBackdrop;
+    OwnedArray<FrequencyBand<T>> freqBands;
+    OverallMagnitude<T> overallMagnitude;
+  
+    Array<Slider*> crossoverSliders;
+  
+    double sampleRate;
+    float overallGainInDb = 0.0f;
+    int numFreqBands, activeElem = -1;
+  
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (FilterBankVisualizer);
 };

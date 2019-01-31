@@ -724,7 +724,7 @@ void MultiBandCompressorAudioProcessor::parameterChanged (const String &paramete
     if (parameterID.startsWith("crossover"))
     {
         calculateCoefficients(parameterID.getLastCharacters(1).getIntValue());
-        repaintFilterVisualization = true;
+//        repaintFilterVisualization = true;
         userChangedFilterSettings = true;
     }
     else if (parameterID.startsWith("threshold"))

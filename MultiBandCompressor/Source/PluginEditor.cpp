@@ -26,7 +26,7 @@
 
 //==============================================================================
 MultiBandCompressorAudioProcessorEditor::MultiBandCompressorAudioProcessorEditor (MultiBandCompressorAudioProcessor& p, AudioProcessorValueTreeState& vts)
-    : AudioProcessorEditor (&p), processor (p), valueTreeState (vts), footer (p.getOSCReceiver()), filterBankVisualizer(20.0f, 20000.0f, -15.0f, 20.0f, 5.0f)
+    : AudioProcessorEditor (&p), processor (p), valueTreeState (vts), footer (p.getOSCReceiver()), filterBankVisualizer(20.0f, 20000.0f, -15.0f, 20.0f, 5.0f, numFilterBands)
 {
     // ============== BEGIN: essentials ======================
     // set GUI size and lookAndFeel
@@ -56,14 +56,40 @@ MultiBandCompressorAudioProcessorEditor::MultiBandCompressorAudioProcessorEditor
   
   
     // ==== FILTERS ====
-    filterBankVisualizer.setSampleRate(processor.getCurrentSampleRate());
-    filterBankVisualizer.setOverallGain(0.0f);
-    filterBankVisualizer.setNumFreqBands (numFilterBands);
+    dsp::IIR::Coefficients<double>::Ptr coeffs1;
+    dsp::IIR::Coefficients<double>::Ptr coeffs2;
+    for (int i = 0; i < numFilterBands; ++i)
+    {
+        switch (i)
+        {
+            case (int)MultiBandCompressorAudioProcessor::FilterBands::Low:
+                coeffs1 = processor.lowPassLRCoeffs[1];
+                coeffs2 = processor.lowPassLRCoeffs[0];
+                break;
+            case (int)MultiBandCompressorAudioProcessor::FilterBands::MidLow:
+                coeffs1 = processor.lowPassLRCoeffs[1];
+                coeffs2 = processor.highPassLRCoeffs[0];
+                break;
+            case (int)MultiBandCompressorAudioProcessor::FilterBands::MidHigh:
+                coeffs1 = processor.highPassLRCoeffs[1];
+                coeffs2 = processor.lowPassLRCoeffs[2];
+                break;
+            case (int)MultiBandCompressorAudioProcessor::FilterBands::High:
+                coeffs1 = processor.highPassLRCoeffs[1];
+                coeffs2 = processor.highPassLRCoeffs[2];
+                break;
+        }
+      
+        filterBankVisualizer.setFrequencyBand (i, coeffs1, coeffs2, colours[i], &(processor.bypassedForGui[i]));
+    }
+    filterBankVisualizer.setSampleRate (processor.getCurrentSampleRate());
+    filterBankVisualizer.initOverallMagnitude (0.0f);
     addAndMakeVisible (&filterBankVisualizer);
   
+  
+    // ==== CROSSOVER SLIDERS ====
     for (int i = 0; i < numFilterBands -1; ++i)
     {
-        // ==== CROSSOVER SLIDERS ====
         slCrossoverAttachment[i] = std::make_unique<SliderAttachment> (valueTreeState, "crossover" + String(i), slCrossover[i]);
         addAndMakeVisible(&slCrossover[i]);
         slCrossover[i].setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
@@ -73,11 +99,9 @@ MultiBandCompressorAudioProcessorEditor::MultiBandCompressorAudioProcessorEditor
         slCrossover[i].setName ("Crossover" + String(i));
         slCrossover[i].addListener (this);
       
-        // add coefficients to visualizer
-        filterBankVisualizer.addCoefficients (processor.lowPassLRCoeffs[i], colours[i], &slCrossover[i], &slMakeUpGain[i], &(processor.maxGR[i]), &(processor.bypassedForGui[i]));
-        filterBankVisualizer.addCoefficients (processor.highPassLRCoeffs[i], colours[i+1], &slCrossover[i], &slMakeUpGain[i+1], &(processor.maxGR[i+1]), &(processor.bypassedForGui[i+1]));
+        // add crossover to visualizer
+        filterBankVisualizer.addCrossover (&slCrossover[i]);
     }
-
   
     // ==== METERS - INPUT/OUTPUT ====
     addAndMakeVisible(&omniInputMeter);
@@ -487,7 +511,8 @@ void MultiBandCompressorAudioProcessorEditor::sliderValueChanged(Slider *slider)
     // makeup gain affects filter magnitude
     if (slider->getName().startsWith("MakeUpGain"))
     {
-        filterBankVisualizer.repaint();
+        filterBankVisualizer.updateMakeUpGain (slider->getName().getLastCharacters(1).getIntValue(), slider->getValue());
+        filterBankVisualizer.updateOverallMagnitude ();
         return;
     }
 
@@ -506,42 +531,48 @@ void MultiBandCompressorAudioProcessorEditor::sliderValueChanged(Slider *slider)
             case (int)FilterIndex::LowIndex:
                 if (!(crossover <= slCrossover[f+1].getValue()))
                 {
-                    slider->setValue(prevLowCrossover, NotificationType::dontSendNotification);
-                    filterBankVisualizer.repaint();
-
+                    slider->setValue (prevLowCrossover, NotificationType::dontSendNotification);
                 }
                 else
                 {
                     prevLowCrossover = crossover;
+
+
                 }
+                filterBankVisualizer.updateFreqBandResponse(f);
+                filterBankVisualizer.updateFreqBandResponse(f + 1);
                 break;
             
             case (int)FilterIndex::MidIndex:
                 if (!(crossover >= slCrossover[f-1].getValue() &&
                       crossover <= slCrossover[f+1].getValue()))
                 {
-                    slider->setValue(prevMidCrossover, NotificationType::dontSendNotification);
-                    filterBankVisualizer.repaint();
+                    slider->setValue (prevMidCrossover, NotificationType::dontSendNotification);
 
                 }
                 else
                 {
                     prevMidCrossover = crossover;
                 }
+                filterBankVisualizer.updateFreqBandResponse(f);
+                filterBankVisualizer.updateFreqBandResponse(f + 1);
                 break;
 
             case (int)FilterIndex::HighIndex:
                 if (!(crossover >= slCrossover[f-1].getValue()))
                 {
-                    slider->setValue(prevHighCrossover, NotificationType::dontSendNotification);
-                    filterBankVisualizer.repaint();
+                    slider->setValue (prevHighCrossover, NotificationType::dontSendNotification);
                 }
                 else
                 {
                     prevHighCrossover = crossover;
                 }
+                filterBankVisualizer.updateFreqBandResponse(f);
+                filterBankVisualizer.updateFreqBandResponse(f + 1);
                 break;
         }
+      
+        filterBankVisualizer.updateOverallMagnitude();
     }
 }
 
@@ -557,10 +588,9 @@ void MultiBandCompressorAudioProcessorEditor::timerCallback()
     if (processor.repaintFilterVisualization.get())
     {
         processor.repaintFilterVisualization = false;
-        filterBankVisualizer.setSampleRate(processor.getCurrentSampleRate());
+        filterBankVisualizer.setSampleRate (processor.getCurrentSampleRate());
+        filterBankVisualizer.updateFreqBandResponses ();
     }
-  
-    filterBankVisualizer.repaint();
 
     omniInputMeter.setLevel (processor.inputPeak.get());
     omniOutputMeter.setLevel (processor.outputPeak.get());
@@ -569,11 +599,14 @@ void MultiBandCompressorAudioProcessorEditor::timerCallback()
     for (int i = 0; i < numFilterBands; ++i)
     {
         gainReduction = processor.maxGR[i].get();
+
+        filterBankVisualizer.updateGainReduction (i, gainReduction);
         compressorVisualizers[i]->setMarkerLevels(processor.maxPeak[i].get(), gainReduction);
         compressorVisualizers[i]->updateCharacteristic();
         compressorVisualizers[i]->repaint();
       
         GRmeter[i].setLevel(gainReduction);
     }
-
+  
+    filterBankVisualizer.updateOverallMagnitude();
 }

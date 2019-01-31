@@ -22,9 +22,6 @@
 
 #pragma once
 
-//#include "../JuceLibraryCode/JuceHeader.h"
-#include "../../resources/customComponents/ReverseSlider.h"
-
 
 //==============================================================================
 /**
@@ -32,11 +29,10 @@
     e.g. other Sliders, by forwarding mouse events. It's intended to hold
     pointers to the sliders it is controlling.
 */
-template <typename slaveType>
-class MasterSlider    : public ReverseSlider
+class MasterSlider : public Slider
 {
 public:
-    MasterSlider() : ReverseSlider ()
+    MasterSlider()
     {
     }
 
@@ -47,143 +43,56 @@ public:
 
     void mouseDrag (const MouseEvent& e) override
     {
-        ReverseSlider::mouseDrag (e);
-      
-        if (!elements.isEmpty())
+        Slider::mouseDrag (e);
+        for (int i = 0; i < elements.size(); ++i)
         {
-            checkIfUpdateIsValid ();
-          
-            if (!preventUpdates)
-            {
-                for (int i = 0; i < elements.size(); ++i)
-                {
-                    if (*elements[i] != nullptr)
-                        (*elements[i])->mouseDrag (e);
-                }
-            }
+            if (elements[i] != nullptr)
+                elements[i]->mouseDrag (e);
         }
     }
-  
-  
+
+
     void mouseWheelMove (const MouseEvent& e, const MouseWheelDetails& wheel) override
     {
-        ReverseSlider::mouseWheelMove (e, wheel);
-      
-        if (!elements.isEmpty())
+        Slider::mouseWheelMove (e, wheel);
+        for (int i = 0; i < elements.size(); ++i)
         {
-            checkIfUpdateIsValid ();
-          
-            if (!preventUpdates)
-            {
-                for (int i = 0; i < elements.size(); ++i)
-                {
-                    if (*elements[i] != nullptr)
-                        (*elements[i])->mouseWheelMove (e, wheel);
-                }
-            }
+            if (elements[i] != nullptr)
+                elements[i]->mouseWheelMove (e, wheel);
         }
     }
-  
+
 
     void  mouseUp (const MouseEvent & e) override
     {
-        ReverseSlider::mouseUp (e);
-    
-        if (!elements.isEmpty())
+        Slider::mouseUp (e);
+        for (int i = 0; i < elements.size(); ++i)
         {
-            for (int i = 0; i < elements.size(); ++i)
-            {
-                if (*elements[i] != nullptr)
-                    (*elements[i])->mouseUp (e);
-            }
+            if (elements[i] != nullptr)
+                elements[i]->mouseUp (e);
         }
     }
-  
-  
+
+
     void mouseDown (const MouseEvent& e) override
     {
-        ReverseSlider::mouseDown (e);
-    
-        if (!elements.isEmpty())
+        Slider::mouseDown (e);
+        for (int i = 0; i < elements.size(); ++i)
         {
-            for (int i = 0; i < elements.size(); ++i)
-            {
-                if (*elements[i] != nullptr)
-                    (*elements[i])->mouseDown (e);
-            }
+            if (elements[i] != nullptr)
+                elements[i]->mouseDown (e);
         }
     }
-  
-//    void mouseEnter (const MouseEvent & e) override
-//    {
-//        ReverseSlider::mouseEnter (e);
-//
-//        // calculate currently allowed value range, as they could possibly change over time
-//        range = getRange();
-//        if (!elements.isEmpty())
-//        {
-//            for (int i = 0; i < elements.size(); ++i)
-//            {
-//                if (*elements[i] != nullptr)
-//                {
-//                    range = range.getUnionWith ((*elements[i])->getRange());
-//                }
-//
-//            }
-//        }
-//    }
-  
-  
-    void addSlave (slaveType& newSlave)
+
+
+    void addSlave (Component& newComponentToControl)
     {
-        elements.add (new  slaveType* (&newSlave));
+        elements.add (&newComponentToControl);
     }
 
 
 private:
-    OwnedArray<slaveType*> elements;
-//    Range<double> range;
-    double overshoot;
-    bool isMaximum;
-    bool preventUpdates = false;
-  
-  
-    void checkIfUpdateIsValid ()
-    {
-        if (!preventUpdates)
-        {
-            for (int i = 0; i < elements.size(); ++i)
-            {
-                if ((*elements[i])->getValue() >= (*elements[i])->getMaximum())
-                {
-                    preventUpdates = true;
-                    isMaximum = true;
-                    overshoot = getValue();
-                    return;
-                }
-                else if ((*elements[i])->getValue() <= (*elements[i])->getMinimum())
-                {
-                    preventUpdates = true;
-                    isMaximum = false;
-                    overshoot = getValue();
-                    return;
-                }
-            }
-        }
-        else
-        {
-            preventUpdates = isMaximum ? (getValue() >= overshoot ? true : false) : (getValue() <= overshoot ? true : false);
-//
-//                if (isMaximum)
-//                {
-//                    preventUpdates = getValue() >= overshoot ? true : false;
-//                }
-//                else
-//                {
-//                    preventUpdates = getValue() <= overshoot ? true : false;
-//                }
-        }
-    }
+    Array<Component*> elements;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MasterSlider)
 };
