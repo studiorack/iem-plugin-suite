@@ -649,7 +649,7 @@ void MultiBandCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer,
             compressors[i].getGainFromSidechainSignal(inout[0], gainChannelPointer, L);
             maxGR[i] = Decibels::gainToDecibels(FloatVectorOperations::findMinimum(gainChannelPointer, L)) - *makeUpGain[i];
             maxPeak[i] = compressors[i].getMaxLevelInDecibels();
-            bypassedForGui[i] = false;
+//            bypassedForGui[i] = false;
           
             for (int ch = 0; ch < numChannels; ++ch)
             {
@@ -664,7 +664,7 @@ void MultiBandCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer,
             }
             maxGR[i] = 0.0f;
             maxPeak[i] = Decibels::gainToDecibels (-INFINITY);
-            bypassedForGui[i] = true;
+//            bypassedForGui[i] = true;
         }
     }
   
@@ -768,6 +768,7 @@ void MultiBandCompressorAudioProcessor::parameterChanged (const String &paramete
     else if (parameterID.startsWith("bypass"))
     {
         bypassedForGui[parameterID.getLastCharacters(1).getIntValue()] = (newValue <= 0.5f ? false : true);
+        repaintFilterVisualization = true;
     }
     else if (parameterID == "orderSetting")
     {

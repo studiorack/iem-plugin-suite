@@ -279,17 +279,6 @@ public:
   
     void updateMakeUpGain (const float& newMakeUp)
     {
-        if (bypassed != nullptr ? bypassed->get() : false)
-        {
-            if (makeUp != 0.0f || gainReduction != 0.0f)
-            {
-                makeUp = 0.0f;
-                gainReduction = 0.0f;
-                updatePath();
-            }
-            return;
-        }
-      
         if (fabs (makeUp - newMakeUp) > 0.01)
         {
             makeUp = newMakeUp;
@@ -299,17 +288,6 @@ public:
   
     void updateGainReduction (const float& newGainReduction)
     {
-        if (bypassed != nullptr ? bypassed->get() : false)
-        {
-            if (makeUp != 0.0f || gainReduction != 0.0f)
-            {
-                makeUp = 0.0f;
-                gainReduction = 0.0f;
-                updatePath();
-            }
-            return;
-        }
-      
         if (fabs (gainReduction - newGainReduction) > 0.01)
         {
             gainReduction = newGainReduction;
@@ -339,13 +317,22 @@ public:
     {
         path.clear();
       
-        float db = Decibels::gainToDecibels (magnitudes[0]) + makeUp + gainReduction;
+        float gain1 = makeUp;
+        float gain2 = gainReduction;
+      
+        if (bypassed != nullptr ? bypassed->get() : false)
+        {
+            gain1 = 0.0f;
+            gain2 = 0.0f;
+        }
+      
+        float db = Decibels::gainToDecibels (magnitudes[0]) + gain1 + gain2;
         magnitudesIncludingGains.set (0, Decibels::decibelsToGain (db) );
         path.startNewSubPath (s.xMin, jlimit (static_cast<float> (s.yMin), static_cast<float> (s.yMax) + s.OH + 1.0f, s.dbToYFloat (db)));
   
         for (int i = 1; i < s.numPixels; ++i)
         {
-            db = Decibels::gainToDecibels (magnitudes[i]) + makeUp + gainReduction;
+            db = Decibels::gainToDecibels (magnitudes[i]) + gain1 + gain2;
             magnitudesIncludingGains.set (i, Decibels::decibelsToGain (db) );
             float y = jlimit (static_cast<float> (s.yMin), static_cast<float> (s.yMax) + s.OH + 1.0f, s.dbToYFloat (db));
             path.lineTo (s.xMin + i, y);

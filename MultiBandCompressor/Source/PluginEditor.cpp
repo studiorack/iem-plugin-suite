@@ -554,8 +554,9 @@ void MultiBandCompressorAudioProcessorEditor::sliderValueChanged(Slider *slider)
                 {
                     prevMidCrossover = crossover;
                 }
-                filterBankVisualizer.updateFreqBandResponse(f);
-                filterBankVisualizer.updateFreqBandResponse(f + 1);
+                filterBankVisualizer.updateFreqBandResponses();
+//                filterBankVisualizer.updateFreqBandResponse(f);
+//                filterBankVisualizer.updateFreqBandResponse(f + 1);
                 break;
 
             case (int)FilterIndex::HighIndex:
@@ -571,7 +572,7 @@ void MultiBandCompressorAudioProcessorEditor::sliderValueChanged(Slider *slider)
                 filterBankVisualizer.updateFreqBandResponse(f + 1);
                 break;
         }
-      
+        filterBankVisualizer.updateFreqBandResponses();
         filterBankVisualizer.updateOverallMagnitude();
     }
 }
@@ -590,6 +591,7 @@ void MultiBandCompressorAudioProcessorEditor::timerCallback()
         processor.repaintFilterVisualization = false;
         filterBankVisualizer.setSampleRate (processor.getCurrentSampleRate());
         filterBankVisualizer.updateFreqBandResponses ();
+        filterBankVisualizer.updateOverallMagnitude();
     }
 
     omniInputMeter.setLevel (processor.inputPeak.get());
