@@ -29,12 +29,28 @@
 */
 class LevelMeter : public Component
 {
-
     class Overlay : public Component
     {
     public:
         Overlay() { setBufferedToImage (true); };
         ~Overlay() {};
+
+        const float decibelsToY (const float dB)
+        {
+            return offset - scale * std::tanh (dB / minLevel * -2.0f);
+        }
+
+        void setMinLevel (float newMinLevel)
+        {
+            minLevel = newMinLevel;
+            repaint();
+        }
+
+        const float getOffset() { return offset; }
+
+        const float getMeterHeight() { return getHeight() - 2; }
+
+        const Rectangle<int> getMeterArea() { return meterArea; }
 
     private:
         void paint (Graphics& g) override
@@ -68,11 +84,13 @@ class LevelMeter : public Component
         {
             offset = 0.1 * getHeight();
             scale = getHeight() - offset;
+
+            meterArea = Rectangle<int> (0, 0, getWidth(), getHeight()).reduced (2, 2);
         }
 
         const int inline drawLevelMark (Graphics& g, int x, int width, const int level, const String& label, int lastTextDrawPos = -1)
         {
-            float yPos = decibelsToY(level);
+            float yPos = decibelsToY (level);
             x = x + 1.0f;
             width = width - 2.0f;
 
@@ -87,11 +105,7 @@ class LevelMeter : public Component
             return lastTextDrawPos;
         }
 
-        const float decibelsToY (const float dB)
-        {
-            return offset - scale * std::tanh (dB / minLevel * -2.0f);
-        }
-
+        Rectangle<int> meterArea;
         float minLevel = -60.0f;
         float scale = 0.0f;
         float offset = 0.0f;
@@ -115,16 +129,18 @@ public:
 
     void paint (Graphics& g) override
     {
-        const int height = getHeight() - 2;
+        const int height = overlay.getMeterHeight();
+
+        auto meterArea = overlay.getMeterArea();
 
         g.setColour (Colours::black);
         g.fillRect (meterArea);
 
         Rectangle<int> lvlRect;
         if (isGRmeter)
-            lvlRect = Rectangle<int> (Point<int> (meterArea.getX(), offset), Point<int> (meterArea.getRight(), decibelsToY (level)));
+            lvlRect = Rectangle<int> (Point<int> (meterArea.getX(), overlay.getOffset()), Point<int> (meterArea.getRight(), overlay.decibelsToY (level)));
         else
-            lvlRect = Rectangle<int> (Point<int> (meterArea.getX(), height), Point<int> (meterArea.getRight(), decibelsToY (level)));
+            lvlRect = Rectangle<int> (Point<int> (meterArea.getX(), height), Point<int> (meterArea.getRight(), overlay.decibelsToY (level)));
 
         g.setColour (levelColour);
         g.fillRect (lvlRect);
@@ -148,38 +164,23 @@ public:
 
     void setMinLevel (float newMinLevel)
     {
-        minLevel = newMinLevel;
+        overlay.setMinLevel (newMinLevel);
         repaint();
     }
 
     void resized() override
     {
         overlay.setBounds (getLocalBounds());
-        offset = 0.1 * getHeight();
-        scale = getHeight() - offset;
-
-        meterArea = Rectangle<int> (0, 0, getWidth(), getHeight()).reduced (2, 2);
     }
 
-private: // methods
-    const float decibelsToY (const float dB)
-    {
-        return offset - scale * std::tanh (dB / minLevel * -2.0f);
-    }
 
-private: // members
-
+private:
     Overlay overlay;
-
-    Rectangle<int> meterArea;
 
     Colour levelColour = Colour (Colours::green);
 
     bool isGRmeter = false;
-    float minLevel = -60.0f;
     float level = 0.0f;
-    float scale = 0.0f;
-    float offset = 0.0f;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (LevelMeter)
 };
