@@ -71,7 +71,7 @@ public:
 
 
     // ====== OSC ======
-    void processNotYetConsumedOscMessage (const OSCMessage &message) override;
+    const bool processNotYetConsumedOSCMessage (const OSCMessage &message) override;
     // =================
 
     //======= Parameters ===========================================================

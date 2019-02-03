@@ -151,18 +151,25 @@ public:
     /*
      This method is exptected to return true, if the OSCMessage is considered to have been consumed, and should not be passed on.
      */
-    virtual inline bool interceptOscMessage (const OSCMessage &message)
+    virtual inline const bool interceptOSCMessage (const OSCMessage &message)
     {
         return false; // not processed
     };
 
-    /* This method will be called if the osc */;
 
-    virtual inline void processNotYetConsumedOscMessage (const OSCMessage &message) {};
+    /*
+     This method will be called if the OSC message wasn't consumed by both 'interceptOscMessage(...)' and the oscParameterInterface.processOSCmessage(...)'.
+     The method is expected to return true, if the SOCMessage is considered to have been consumed, and should not be passed on.
+     */
+
+    virtual inline const bool processNotYetConsumedOSCMessage (const OSCMessage &message)
+    {
+        return false;
+    };
 
     void oscMessageReceived (const OSCMessage &message) override
     {
-        if (! interceptOscMessage (message))
+        if (! interceptOSCMessage (message))
         {
             String prefix ("/" + String (JucePlugin_Name));
             if (message.getAddressPattern().toString().startsWith (prefix))
@@ -174,7 +181,25 @@ public:
                     return;
             }
 
-            processNotYetConsumedOscMessage (message);
+            if (processNotYetConsumedOSCMessage (message))
+                return;
+
+            // open/change osc port
+            if (message.getAddressPattern().toString().equalsIgnoreCase ("/openOSCPort") && message.size() == 1)
+            {
+                int newPort = -1;
+                
+                if (message[0].isInt32())
+                    newPort = message[0].getInt32();
+                else if (message[0].isFloat32())
+                    newPort = static_cast<int> (message[0].getFloat32());
+
+                if (newPort > 0)
+                {
+                    newPortNumber = newPort;
+                    MessageManager::callAsync ( [this]() { oscReceiver.connect (newPortNumber); } );
+                }
+            }
         }
     }
 
@@ -201,5 +226,7 @@ public:
 
 private:
 
+    bool shouldOpenNewPort = false;
+    int newPortNumber = -1;
 };
 

@@ -357,16 +357,16 @@ void StereoEncoderAudioProcessor::setStateInformation (const void *data, int siz
 //==============================================================================
 
 
-void StereoEncoderAudioProcessor::processNotYetConsumedOscMessage (const OSCMessage &message)
+const bool StereoEncoderAudioProcessor::processNotYetConsumedOSCMessage (const OSCMessage &message)
 {
     String prefix ("/" + String (JucePlugin_Name));
     if (! message.getAddressPattern().toString().startsWith (prefix))
-        return;
+        return false;
 
     OSCMessage msg (message);
-    msg.setAddressPattern (message.getAddressPattern().toString().substring(String(JucePlugin_Name).length() + 1));
+    msg.setAddressPattern (message.getAddressPattern().toString().substring (String (JucePlugin_Name).length() + 1));
 
-    if (msg.getAddressPattern().toString().equalsIgnoreCase("/quaternions") && msg.size() == 4)
+    if (msg.getAddressPattern().toString().equalsIgnoreCase ("/quaternions") && msg.size() == 4)
     {
         float qs[4];
         for (int i = 0; i < 4; ++i)
@@ -379,7 +379,11 @@ void StereoEncoderAudioProcessor::processNotYetConsumedOscMessage (const OSCMess
         oscParameterInterface.setValue ("qx", qs[1]);
         oscParameterInterface.setValue ("qy", qs[2]);
         oscParameterInterface.setValue ("qz", qs[3]);
+
+        return true;
     }
+
+    return false;
 }
 
 
