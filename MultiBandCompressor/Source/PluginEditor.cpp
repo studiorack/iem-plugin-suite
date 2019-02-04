@@ -123,48 +123,25 @@ MultiBandCompressorAudioProcessorEditor::MultiBandCompressorAudioProcessorEditor
   
     // ==== MASTER CONTROLS ====
     addAndMakeVisible (&slMasterThreshold);
-    slMasterThreshold.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slMasterThreshold.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 12);
-    slMasterThreshold.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClSliderFace);
-    slMasterThreshold.setNormalisableRange (NormalisableRange<double> (-50.0f, 50.0f, 0.1f));
-    slMasterThreshold.setValue (0.0f);
-    slMasterThreshold.setTextValueSuffix (" dB");
     slMasterThreshold.setName ("MasterThreshold");
+
     addAndMakeVisible(&lbThreshold[numFilterBands]);
     lbThreshold[numFilterBands].setText("Threshold");
     lbThreshold[numFilterBands].setTextColour (globalLaF.ClFace);
 
     addAndMakeVisible (&slMasterMakeUpGain);
-    slMasterMakeUpGain.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slMasterMakeUpGain.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 12);
-    slMasterMakeUpGain.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClSliderFace);
-    slMasterMakeUpGain.setNormalisableRange (NormalisableRange<double> (-50.0f, 50.0f, 0.1f));
-    slMasterMakeUpGain.setValue (0.0f);
-    slMasterMakeUpGain.setTextValueSuffix (" dB");
     slMasterMakeUpGain.setName ("MasterMakeUpGain");
     addAndMakeVisible(&lbMakeUpGain[numFilterBands]);
     lbMakeUpGain[numFilterBands].setText("Makeup");
     lbMakeUpGain[numFilterBands].setTextColour (globalLaF.ClFace);
 
     addAndMakeVisible (&slMasterAttackTime);
-    slMasterAttackTime.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slMasterAttackTime.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 12);
-    slMasterAttackTime.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClSliderFace);
-    slMasterAttackTime.setNormalisableRange (NormalisableRange<double> (-100.0f, 100.0f, 0.1f));
-    slMasterAttackTime.setValue (0.0f);
-    slMasterAttackTime.setTextValueSuffix (" ms");
     slMasterAttackTime.setName ("MasterAttackTime");
     addAndMakeVisible(&lbAttack[numFilterBands]);
     lbAttack[numFilterBands].setText("Attack");
     lbAttack[numFilterBands].setTextColour (globalLaF.ClFace);
   
     addAndMakeVisible (&slMasterReleaseTime);
-    slMasterReleaseTime.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slMasterReleaseTime.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 12);
-    slMasterReleaseTime.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClSliderFace);
-    slMasterReleaseTime.setNormalisableRange (NormalisableRange<double> (-500.0f, 500.0f, 0.1f));
-    slMasterReleaseTime.setValue (0.0f);
-    slMasterReleaseTime.setTextValueSuffix (" ms");
     slMasterReleaseTime.setName ("MasterReleaseTime");
     addAndMakeVisible(&lbRelease[numFilterBands]);
     lbRelease[numFilterBands].setText("Release");

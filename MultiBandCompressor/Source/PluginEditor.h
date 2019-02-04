@@ -31,7 +31,7 @@
 
 //Custom Components
 #include "FilterBankVisualizer.h"
-#include "MasterSlider.h"
+#include "MasterControl.h"
 #include "../../resources/customComponents/RoundButton.h"
 #include "../../resources/customComponents/ReverseSlider.h"
 #include "../../resources/customComponents/SimpleLabel.h"
@@ -109,7 +109,7 @@ private:
 
     // Master parameters
     GroupComponent gcMasterControls;
-    MasterSlider slMasterThreshold, slMasterMakeUpGain, slMasterKnee, slMasterRatio, slMasterAttackTime, slMasterReleaseTime;
+    MasterControl slMasterThreshold, slMasterMakeUpGain, slMasterKnee, slMasterRatio, slMasterAttackTime, slMasterReleaseTime;
 
     // Compressor Visualization
     OwnedArray<CompressorVisualizer> compressorVisualizers;
