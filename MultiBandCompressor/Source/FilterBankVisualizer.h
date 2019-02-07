@@ -114,6 +114,7 @@ class FilterBackdrop : public Component
 public:
     FilterBackdrop (Settings& settings) : s (settings)
     {
+        setBufferedToImage (true);
     };
 
     ~FilterBackdrop() {};
