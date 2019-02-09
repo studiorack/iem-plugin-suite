@@ -33,20 +33,8 @@
 #include "../../resources/OSCParameterInterface.h"
 #include "../../resources/OSCReceiverPlus.h"
 
-
-#if JUCE_USE_SIMD
-# define MUCO_FLOAT_TYPE juce::dsp::SIMDRegister<float>
-# define MUCO_FLOAT_ELEMENTS juce::dsp::SIMDRegister<float>::size()
-#else /* !JUCE_USE_SIMD */
-# define MUCO_FLOAT_TYPE float
-# define MUCO_FLOAT_ELEMENTS 1
-#endif /* JUCE_USE_SIMD */
-
-
 using namespace juce::dsp;
-typedef AudioProcessorValueTreeState::ParameterLayout ParameterLayout;
-
-static const int numFilterBands {4};
+using ParameterLayout = AudioProcessorValueTreeState::ParameterLayout;
 
 //==============================================================================
 /**
@@ -119,25 +107,32 @@ public:
     OSCReceiverPlus& getOSCReceiver () { return oscReceiver; }
     //==============================================================================
   
-    enum class FilterBands
+  
+    #if JUCE_USE_SIMD
+      using filterFloatType = SIMDRegister<float>;
+      const int filterRegisterSize = SIMDRegister<float>::size();
+    #else /* !JUCE_USE_SIMD */
+      using filterFloatType = float;
+      const int filterRegisterSize = 1;
+    #endif
+  
+    static constexpr int numFreqBands {4};
+  
+    enum FrequencyBands
     {
         Low, MidLow, MidHigh, High
     };
-  
-    enum class FilterType
-    {
-        LowPass, HighPass, AllPass
-    };
 
-    double const& getCurrentSampleRate() const { return lastSampleRate; };
-    IIR::Coefficients<double>::Ptr lowPassLRCoeffs[numFilterBands-1];
-    IIR::Coefficients<double>::Ptr highPassLRCoeffs[numFilterBands-1];
+
+    // Interface for gui
+    double& getSampleRate() { return lastSampleRate; };
+    IIR::Coefficients<double>::Ptr lowPassLRCoeffs[numFreqBands-1];
+    IIR::Coefficients<double>::Ptr highPassLRCoeffs[numFreqBands-1];
   
     Atomic<bool> repaintFilterVisualization = false;
     Atomic<float> inputPeak = Decibels::gainToDecibels (-INFINITY), outputPeak = Decibels::gainToDecibels (-INFINITY);
-    Atomic<float> maxGR[numFilterBands], maxPeak[numFilterBands];
-    Atomic<bool> bypassedForGui[numFilterBands]; 
-
+    Atomic<float> maxGR[numFreqBands], maxPeak[numFreqBands];
+  
     Compressor* getCompressor(const int i) {return &compressors[i];};
 
 private:
@@ -157,33 +152,33 @@ private:
   
     // list of used audio parameters
     float* orderSetting,
-           *crossovers[numFilterBands-1],
-           *threshold[numFilterBands], *knee[numFilterBands],
-           *makeUpGain[numFilterBands], *ratio[numFilterBands],
-           *attack[numFilterBands], *release[numFilterBands],
-           *bypass[numFilterBands];
+           *crossovers[numFreqBands-1],
+           *threshold[numFreqBands], *knee[numFreqBands],
+           *makeUpGain[numFreqBands], *ratio[numFreqBands],
+           *attack[numFreqBands], *release[numFreqBands],
+           *bypass[numFreqBands];
   
     std::set<int> soloArray;
 
-    Compressor compressors[numFilterBands];
+    Compressor compressors[numFreqBands];
 
     // filter coefficients
-    IIR::Coefficients<float>::Ptr iirLPCoefficients[numFilterBands-1], iirHPCoefficients[numFilterBands-1],
-                                  iirAPCoefficients[numFilterBands-1],
-                                  iirTempLPCoefficients[numFilterBands-1],
-                                  iirTempHPCoefficients[numFilterBands-1], iirTempAPCoefficients[numFilterBands-1];
+    IIR::Coefficients<float>::Ptr iirLPCoefficients[numFreqBands-1], iirHPCoefficients[numFreqBands-1],
+                                  iirAPCoefficients[numFreqBands-1],
+                                  iirTempLPCoefficients[numFreqBands-1],
+                                  iirTempHPCoefficients[numFreqBands-1], iirTempAPCoefficients[numFreqBands-1];
   
-    // filters (cascaded butterworth/linkwitz-riley filters  + allpass)
-    OwnedArray<IIR::Filter<MUCO_FLOAT_TYPE>> iirLP[numFilterBands-1], iirHP[numFilterBands-1],
-                                             iirLP2[numFilterBands-1], iirHP2[numFilterBands-1],
-                                             iirAP[numFilterBands-1];
+    // filters (cascaded butterworth/linkwitz-riley filters + allpass)
+    OwnedArray<IIR::Filter<filterFloatType>> iirLP[numFreqBands-1], iirHP[numFreqBands-1],
+                                             iirLP2[numFreqBands-1], iirHP2[numFreqBands-1],
+                                             iirAP[numFreqBands-1];
   
-    OwnedArray<AudioBlock<MUCO_FLOAT_TYPE>> interleaved, freqBands[numFilterBands];
+    OwnedArray<AudioBlock<filterFloatType>> interleaved, freqBands[numFreqBands];
     AudioBlock<float> zero, temp, gains;
     AudioBuffer<float> tempBuffer;
     float* gainChannelPointer;
   
-    std::vector<HeapBlock<char>> interleavedBlockData,  freqBandsBlocks[numFilterBands];
+    std::vector<HeapBlock<char>> interleavedBlockData,  freqBandsBlocks[numFreqBands];
     HeapBlock<char> zeroData, tempData, gainData;
     HeapBlock<const float*> channelPointers { 64 };
   

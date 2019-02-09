@@ -41,16 +41,14 @@
 
 
 
-typedef ReverseSlider::SliderAttachment SliderAttachment; // all ReverseSliders will make use of the parameters' valueToText() function
-typedef AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
-typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
-
-extern const int numFilterBands;
+using SliderAttachment = ReverseSlider::SliderAttachment ; // all ReverseSliders will make use of the parameters' valueToText() function
+using ComboBoxAttachment = AudioProcessorValueTreeState::ComboBoxAttachment;
+using ButtonAttachment = AudioProcessorValueTreeState::ButtonAttachment;
 
 //==============================================================================
 /**
 */
-class MultiBandCompressorAudioProcessorEditor  : public AudioProcessorEditor, private Timer, public Slider::Listener
+class MultiBandCompressorAudioProcessorEditor  : public AudioProcessorEditor, private Timer, public Slider::Listener, public Button::Listener
 {
 public:
     MultiBandCompressorAudioProcessorEditor (MultiBandCompressorAudioProcessor&, AudioProcessorValueTreeState&);
@@ -60,7 +58,8 @@ public:
     void paint (Graphics&) override;
     void resized() override;
   
-    void sliderValueChanged(Slider *slider) override;
+    void sliderValueChanged (Slider *slider) override;
+    void buttonClicked (Button* bypassButton) override;
 
     void timerCallback() override;
 
@@ -73,10 +72,6 @@ private:
     MultiBandCompressorAudioProcessor& processor;
     AudioProcessorValueTreeState& valueTreeState;
   
-    enum class FilterIndex
-    {
-        LowIndex, MidIndex, HighIndex
-    };
     /* title and footer component
      title component can hold different widgets for in- and output:
         - NoIOWidget (if there's no need for an input or output widget)
@@ -88,6 +83,8 @@ private:
     OSCFooter footer;
     // =============== end essentials ============
   
+    static constexpr const int& numFreqBands = MultiBandCompressorAudioProcessor::numFreqBands;
+  
     std::unique_ptr<ComboBoxAttachment> cbNormalizationAtachement;
     std::unique_ptr<ComboBoxAttachment> cbOrderAtachement;
   
@@ -95,17 +92,17 @@ private:
     TooltipWindow tooltips;
   
     // Filter Crossovers
-    ReverseSlider slCrossover[numFilterBands-1];
-    std::unique_ptr<SliderAttachment> slCrossoverAttachment[numFilterBands-1];
+    ReverseSlider slCrossover[numFreqBands-1];
+    std::unique_ptr<SliderAttachment> slCrossoverAttachment[numFreqBands-1];
   
     // Solo and Bypass Buttons
-    RoundButton tbSolo[numFilterBands];
-    RoundButton tbBypass[numFilterBands];
-    std::unique_ptr<AudioProcessorValueTreeState::ButtonAttachment> soloAttachment[numFilterBands], bypassAttachment[numFilterBands];
+    RoundButton tbSolo[numFreqBands];
+    RoundButton tbBypass[numFreqBands];
+    std::unique_ptr<AudioProcessorValueTreeState::ButtonAttachment> soloAttachment[numFreqBands], bypassAttachment[numFreqBands];
   
     // Compressor Parameters
-    ReverseSlider slKnee[numFilterBands], slThreshold[numFilterBands], slRatio[numFilterBands], slAttackTime[numFilterBands], slReleaseTime[numFilterBands], slMakeUpGain[numFilterBands];
-    std::unique_ptr<SliderAttachment> slKneeAttachment[numFilterBands], slThresholdAttachment[numFilterBands], slRatioAttachment[numFilterBands], slAttackTimeAttachment[numFilterBands], slReleaseTimeAttachment[numFilterBands], slMakeUpGainAttachment[numFilterBands];
+    ReverseSlider slKnee[numFreqBands], slThreshold[numFreqBands], slRatio[numFreqBands], slAttackTime[numFreqBands], slReleaseTime[numFreqBands], slMakeUpGain[numFreqBands];
+    std::unique_ptr<SliderAttachment> slKneeAttachment[numFreqBands], slThresholdAttachment[numFreqBands], slRatioAttachment[numFreqBands], slAttackTimeAttachment[numFreqBands], slReleaseTimeAttachment[numFreqBands], slMakeUpGainAttachment[numFreqBands];
 
     // Master parameters
     GroupComponent gcMasterControls;
@@ -115,10 +112,10 @@ private:
     OwnedArray<CompressorVisualizer> compressorVisualizers;
   
     // Meters
-    LevelMeter GRmeter[numFilterBands], omniInputMeter, omniOutputMeter;
+    LevelMeter GRmeter[numFreqBands], omniInputMeter, omniOutputMeter;
   
     // Labels
-    SimpleLabel lbKnee[numFilterBands+1], lbThreshold[numFilterBands+1], lbMakeUpGain[numFilterBands+1], lbRatio[numFilterBands+1], lbAttack[numFilterBands+1], lbRelease[numFilterBands+1], lbInput, lbOutput;
+    SimpleLabel lbKnee[numFreqBands+1], lbThreshold[numFreqBands+1], lbMakeUpGain[numFreqBands+1], lbRatio[numFreqBands+1], lbAttack[numFreqBands+1], lbRelease[numFreqBands+1], lbInput, lbOutput;
   
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MultiBandCompressorAudioProcessorEditor)
 };

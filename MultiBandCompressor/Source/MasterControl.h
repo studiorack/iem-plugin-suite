@@ -1,7 +1,7 @@
 /*
  ==============================================================================
  This file is part of the IEM plug-in suite.
- Author: Markus Huber
+ Author: Daniel Rudrich
  Copyright (c) 2017 - Institute of Electronic Music and Acoustics (IEM)
  https://iem.at
 
@@ -111,8 +111,6 @@ public:
 
 
 
-
-
     void addSlave (Component& newComponentToControl)
     {
         elements.add (&newComponentToControl);
@@ -165,9 +163,6 @@ public:
         lowerHalf.removeFromTop (2);
         triangleDown.clear();
         triangleDown.addTriangle (lowerHalf.getTopLeft(), lowerHalf.getTopRight(), {lowerHalf.getCentreX(), lowerHalf.getBottom()});
-
-
-
     }
 
 

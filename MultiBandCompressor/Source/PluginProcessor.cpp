@@ -35,7 +35,7 @@ MultiBandCompressorAudioProcessor::MultiBandCompressorAudioProcessor()
                      #endif
                        ),
        parameters (*this, nullptr, "PARAMETERS", createParameterLayout()),
-       oscParams (parameters), maxNumFilters (ceil (64 / MUCO_FLOAT_ELEMENTS))
+       oscParams (parameters), maxNumFilters (ceil (64 / filterRegisterSize))
 #endif
 {  
     const String inputSettingID = "orderSetting";
@@ -44,7 +44,7 @@ MultiBandCompressorAudioProcessor::MultiBandCompressorAudioProcessor()
     oscParams.addParameterID(inputSettingID);
   
   
-    for (int i = 0; i < numFilterBands-1; ++i)
+    for (int i = 0; i < numFreqBands-1; ++i)
     {
         const String crossoverID("crossover" + String(i));
       
@@ -70,15 +70,15 @@ MultiBandCompressorAudioProcessor::MultiBandCompressorAudioProcessor()
       
         for (int ch = 0; ch < maxNumFilters; ++ch)
         {
-            iirLP[i].add (new IIR::Filter<MUCO_FLOAT_TYPE> (iirLPCoefficients[i]));
-            iirLP2[i].add (new IIR::Filter<MUCO_FLOAT_TYPE> (iirLPCoefficients[i]));
-            iirHP[i].add (new IIR::Filter<MUCO_FLOAT_TYPE> (iirHPCoefficients[i]));
-            iirHP2[i].add (new IIR::Filter<MUCO_FLOAT_TYPE> (iirHPCoefficients[i]));
-            iirAP[i].add (new IIR::Filter<MUCO_FLOAT_TYPE> (iirAPCoefficients[i]));
+            iirLP[i].add (new IIR::Filter<filterFloatType> (iirLPCoefficients[i]));
+            iirLP2[i].add (new IIR::Filter<filterFloatType> (iirLPCoefficients[i]));
+            iirHP[i].add (new IIR::Filter<filterFloatType> (iirHPCoefficients[i]));
+            iirHP2[i].add (new IIR::Filter<filterFloatType> (iirHPCoefficients[i]));
+            iirAP[i].add (new IIR::Filter<filterFloatType> (iirAPCoefficients[i]));
         }
     }
   
-    for (int i = 0; i < numFilterBands; ++i)
+    for (int i = 0; i < numFreqBands; ++i)
     {
         for (int ch = 0; ch < maxNumFilters; ++ch)
         {
@@ -139,7 +139,7 @@ MultiBandCompressorAudioProcessor::~MultiBandCompressorAudioProcessor()
 ParameterLayout MultiBandCompressorAudioProcessor::createParameterLayout()
 {
     std::vector<std::unique_ptr<RangedAudioParameter>> params;
-    const float crossoverPresets [numFilterBands-1] = { 80.0f, 440.0f, 2200.0f };
+    const float crossoverPresets [numFreqBands-1] = { 80.0f, 440.0f, 2200.0f };
   
     std::unique_ptr<AudioParameterFloat> floatParam;
     std::unique_ptr<AudioParameterBool> boolParam;
@@ -177,7 +177,7 @@ ParameterLayout MultiBandCompressorAudioProcessor::createParameterLayout()
 
 
     // Crossovers
-    for (int i = 0; i < numFilterBands-1; ++i)
+    for (int i = 0; i < numFreqBands-1; ++i)
     {
         floatParam = std::make_unique<AudioParameterFloat> ("crossover" + String(i),
                                                             "Crossover " + String(i),
@@ -190,7 +190,7 @@ ParameterLayout MultiBandCompressorAudioProcessor::createParameterLayout()
     }
 
 
-    for (int i = 0; i < numFilterBands; ++i)
+    for (int i = 0; i < numFreqBands; ++i)
     {
         // compressor threshold
         floatParam = std::make_unique<AudioParameterFloat>("threshold" + String(i),
@@ -324,7 +324,7 @@ void MultiBandCompressorAudioProcessor::calculateCoefficients(const int i)
 
 void MultiBandCompressorAudioProcessor::copyCoeffsToProcessor()
 {
-    for (int b = 0; b < numFilterBands-1; ++b)
+    for (int b = 0; b < numFreqBands-1; ++b)
     {
         *iirLPCoefficients[b] = *iirTempLPCoefficients[b]; // LP
         *iirHPCoefficients[b] = *iirTempHPCoefficients[b]; // HP
@@ -412,7 +412,7 @@ void MultiBandCompressorAudioProcessor::prepareToPlay (double sampleRate, int sa
     inputPeak = Decibels::gainToDecibels (-INFINITY);
     outputPeak = Decibels::gainToDecibels (-INFINITY);
   
-    for (int i = 0; i < numFilterBands-1; ++i)
+    for (int i = 0; i < numFreqBands-1; ++i)
     {
         calculateCoefficients(i);
     }
@@ -422,18 +422,18 @@ void MultiBandCompressorAudioProcessor::prepareToPlay (double sampleRate, int sa
     interleaved.clear();
     for (int ch = 0; ch < maxNumFilters; ++ch)
     {
-        interleaved.add (new AudioBlock<MUCO_FLOAT_TYPE> (interleavedBlockData[ch], 1, samplesPerBlock));
+        interleaved.add (new AudioBlock<filterFloatType> (interleavedBlockData[ch], 1, samplesPerBlock));
     }
   
-    for (int i = 0; i < numFilterBands-1; ++i)
+    for (int i = 0; i < numFreqBands-1; ++i)
     {
         for (int ch = 0; ch < maxNumFilters; ++ch)
         {
-            iirLP[i][ch]->reset(MUCO_FLOAT_TYPE (0.0f));
-            iirLP2[i][ch]->reset(MUCO_FLOAT_TYPE (0.0f));
-            iirHP[i][ch]->reset(MUCO_FLOAT_TYPE (0.0f));
-            iirHP2[i][ch]->reset(MUCO_FLOAT_TYPE (0.0f));
-            iirAP[i][ch]->reset(MUCO_FLOAT_TYPE (0.0f));
+            iirLP[i][ch]->reset(filterFloatType (0.0f));
+            iirLP2[i][ch]->reset(filterFloatType (0.0f));
+            iirHP[i][ch]->reset(filterFloatType (0.0f));
+            iirHP2[i][ch]->reset(filterFloatType (0.0f));
+            iirAP[i][ch]->reset(filterFloatType (0.0f));
             iirLP[i][ch]->prepare(monoSpec);
             iirLP2[i][ch]->prepare(monoSpec);
             iirHP[i][ch]->prepare(monoSpec);
@@ -442,7 +442,7 @@ void MultiBandCompressorAudioProcessor::prepareToPlay (double sampleRate, int sa
         }
     }
   
-    for (int i = 0; i < numFilterBands; ++i)
+    for (int i = 0; i < numFreqBands; ++i)
     {
         compressors[i].prepare(monoSpec);
         compressors[i].setThreshold(*threshold[i]);
@@ -455,11 +455,11 @@ void MultiBandCompressorAudioProcessor::prepareToPlay (double sampleRate, int sa
         freqBands[i].clear();
         for (int ch = 0; ch < maxNumFilters; ++ch)
         {
-            freqBands[i].add(new AudioBlock<MUCO_FLOAT_TYPE> (freqBandsBlocks[i][ch], 1, samplesPerBlock));
+            freqBands[i].add(new AudioBlock<filterFloatType> (freqBandsBlocks[i][ch], 1, samplesPerBlock));
         }
     }
   
-    zero = AudioBlock<float> (zeroData, MUCO_FLOAT_ELEMENTS, samplesPerBlock);
+    zero = AudioBlock<float> (zeroData, filterRegisterSize, samplesPerBlock);
     zero.clear();
   
     temp = AudioBlock<float> (tempData, 64, samplesPerBlock);
@@ -495,7 +495,7 @@ void MultiBandCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer,
     }
   
     ScopedNoDenormals noDenormals;
-    //jassert(getTotalNumInputChannels() <= getTotalNumOutputChannels()); // this is most likely to happen if using in standalone application
+    
     for (int i = numChannels; i < getTotalNumOutputChannels(); ++i)
     {
         buffer.clear (i, 0, buffer.getNumSamples());
@@ -503,7 +503,7 @@ void MultiBandCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer,
 
     auto* inout = channelPointers.getData();
     const int L = buffer.getNumSamples();
-    const int numSimdFilters =  1 + (numChannels - 1) / MUCO_FLOAT_ELEMENTS;
+    const int numSimdFilters =  1 + (numChannels - 1) / filterRegisterSize;
     gainChannelPointer = gains.getChannelPointer(0);
   
     tempBuffer.clear();
@@ -520,15 +520,15 @@ void MultiBandCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer,
     inputPeak = Decibels::gainToDecibels (buffer.getMagnitude (0, 0, L));
 
     // Interleave
-    int partial = numChannels % MUCO_FLOAT_ELEMENTS;
+    int partial = numChannels % filterRegisterSize;
     if (partial == 0)
     {
         for (int i = 0; i < numSimdFilters; ++i)
         {
             interleaved[i]->clear();
-            AudioDataConverters::interleaveSamples (buffer.getArrayOfReadPointers() + i* MUCO_FLOAT_ELEMENTS,
+            AudioDataConverters::interleaveSamples (buffer.getArrayOfReadPointers() + i* filterRegisterSize,
                                                     reinterpret_cast<float*> (interleaved[i]->getChannelPointer (0)),
-                                                    L, MUCO_FLOAT_ELEMENTS);
+                                                    L, filterRegisterSize);
         }
     }
     else
@@ -537,25 +537,25 @@ void MultiBandCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer,
         for (i = 0; i < numSimdFilters-1; ++i)
         {
             interleaved[i]->clear();
-            AudioDataConverters::interleaveSamples (buffer.getArrayOfReadPointers() + i* MUCO_FLOAT_ELEMENTS,
+            AudioDataConverters::interleaveSamples (buffer.getArrayOfReadPointers() + i* filterRegisterSize,
                                                     reinterpret_cast<float*> (interleaved[i]->getChannelPointer (0)),
-                                                    L, MUCO_FLOAT_ELEMENTS);
+                                                    L, filterRegisterSize);
         }
 
-        const float* addr[MUCO_FLOAT_ELEMENTS];
+        const float* addr[filterRegisterSize];
         int ch;
         for (ch = 0; ch < partial; ++ch)
         {
-            addr[ch] = buffer.getReadPointer (i * MUCO_FLOAT_ELEMENTS + ch);
+            addr[ch] = buffer.getReadPointer (i * filterRegisterSize + ch);
         }
-        for (; ch < MUCO_FLOAT_ELEMENTS; ++ch)
+        for (; ch < filterRegisterSize; ++ch)
         {
             addr[ch] = zero.getChannelPointer(ch);
         }
         interleaved[i]->clear();
         AudioDataConverters::interleaveSamples (addr,
                                                 reinterpret_cast<float*> (interleaved[i]->getChannelPointer (0)),
-                                                L, MUCO_FLOAT_ELEMENTS);
+                                                L, filterRegisterSize);
     }
 
 
@@ -569,30 +569,30 @@ void MultiBandCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer,
     //                                | ---> LP1 ---> |
     for (int i = 0; i < numSimdFilters; ++i)
     {
-        iirLP[1][i]->process (ProcessContextNonReplacing<MUCO_FLOAT_TYPE> (*interleaved[i], *freqBands[static_cast<int>(FilterBands::Low)][i]));
-        iirHP[1][i]->process (ProcessContextNonReplacing<MUCO_FLOAT_TYPE> (*interleaved[i], *freqBands[static_cast<int>(FilterBands::High)][i]));
-        iirLP2[1][i]->process (ProcessContextReplacing<MUCO_FLOAT_TYPE> (*freqBands[static_cast<int>(FilterBands::Low)][i]));
-        iirHP2[1][i]->process (ProcessContextReplacing<MUCO_FLOAT_TYPE> (*freqBands[static_cast<int>(FilterBands::High)][i]));
+        iirLP[1][i]->process (ProcessContextNonReplacing<filterFloatType> (*interleaved[i], *freqBands[FrequencyBands::Low][i]));
+        iirHP[1][i]->process (ProcessContextNonReplacing<filterFloatType> (*interleaved[i], *freqBands[FrequencyBands::High][i]));
+        iirLP2[1][i]->process (ProcessContextReplacing<filterFloatType> (*freqBands[FrequencyBands::Low][i]));
+        iirHP2[1][i]->process (ProcessContextReplacing<filterFloatType> (*freqBands[FrequencyBands::High][i]));
 
-        iirAP[2][i]->process (ProcessContextReplacing<MUCO_FLOAT_TYPE> (*freqBands[static_cast<int>(FilterBands::Low)][i]));
-        iirAP[0][i]->process (ProcessContextReplacing<MUCO_FLOAT_TYPE> (*freqBands[static_cast<int>(FilterBands::High)][i]));
+        iirAP[2][i]->process (ProcessContextReplacing<filterFloatType> (*freqBands[FrequencyBands::Low][i]));
+        iirAP[0][i]->process (ProcessContextReplacing<filterFloatType> (*freqBands[FrequencyBands::High][i]));
 
-        iirHP[0][i]->process (ProcessContextNonReplacing<MUCO_FLOAT_TYPE> (*freqBands[static_cast<int>(FilterBands::Low)][i], *freqBands[static_cast<int>(FilterBands::MidLow)][i]));
-        iirHP2[0][i]->process (ProcessContextReplacing<MUCO_FLOAT_TYPE> (*freqBands[static_cast<int>(FilterBands::MidLow)][i]));
+        iirHP[0][i]->process (ProcessContextNonReplacing<filterFloatType> (*freqBands[FrequencyBands::Low][i], *freqBands[FrequencyBands::MidLow][i]));
+        iirHP2[0][i]->process (ProcessContextReplacing<filterFloatType> (*freqBands[FrequencyBands::MidLow][i]));
 
-        iirLP[0][i]->process (ProcessContextReplacing<MUCO_FLOAT_TYPE> (*freqBands[static_cast<int>(FilterBands::Low)][i]));
-        iirLP2[0][i]->process (ProcessContextReplacing<MUCO_FLOAT_TYPE> (*freqBands[static_cast<int>(FilterBands::Low)][i]));
+        iirLP[0][i]->process (ProcessContextReplacing<filterFloatType> (*freqBands[FrequencyBands::Low][i]));
+        iirLP2[0][i]->process (ProcessContextReplacing<filterFloatType> (*freqBands[FrequencyBands::Low][i]));
 
-        iirLP[2][i]->process (ProcessContextNonReplacing<MUCO_FLOAT_TYPE> (*freqBands[static_cast<int>(FilterBands::High)][i], *freqBands[static_cast<int>(FilterBands::MidHigh)][i]));
-        iirLP2[2][i]->process (ProcessContextReplacing<MUCO_FLOAT_TYPE> (*freqBands[static_cast<int>(FilterBands::MidHigh)][i]));
+        iirLP[2][i]->process (ProcessContextNonReplacing<filterFloatType> (*freqBands[FrequencyBands::High][i], *freqBands[FrequencyBands::MidHigh][i]));
+        iirLP2[2][i]->process (ProcessContextReplacing<filterFloatType> (*freqBands[FrequencyBands::MidHigh][i]));
 
-        iirHP[2][i]->process (ProcessContextReplacing<MUCO_FLOAT_TYPE> (*freqBands[static_cast<int>(FilterBands::High)][i]));
-        iirHP2[2][i]->process (ProcessContextReplacing<MUCO_FLOAT_TYPE> (*freqBands[static_cast<int>(FilterBands::High)][i]));
+        iirHP[2][i]->process (ProcessContextReplacing<filterFloatType> (*freqBands[FrequencyBands::High][i]));
+        iirHP2[2][i]->process (ProcessContextReplacing<filterFloatType> (*freqBands[FrequencyBands::High][i]));
 
     }
   
   
-    for (int i = 0; i < numFilterBands; ++i)
+    for (int i = 0; i < numFreqBands; ++i)
     {
         if (!(soloArray.empty()))
         {
@@ -615,8 +615,8 @@ void MultiBandCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer,
             for (int n = 0; n < numSimdFilters; ++n)
             {
                   AudioDataConverters::deinterleaveSamples(reinterpret_cast<float*>(freqBands[i][n]->getChannelPointer(0)),
-                                                           const_cast<float**>(inout + n*MUCO_FLOAT_ELEMENTS),
-                                                           L, MUCO_FLOAT_ELEMENTS);
+                                                           const_cast<float**>(inout + n*filterRegisterSize),
+                                                           L, filterRegisterSize);
             }
         }
         else
@@ -625,21 +625,21 @@ void MultiBandCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer,
             for (n = 0; n < numSimdFilters-1; ++n)
             {
                 AudioDataConverters::deinterleaveSamples (reinterpret_cast<float*> (freqBands[i][n]->getChannelPointer (0)),
-                                                          const_cast<float**>(inout + n*MUCO_FLOAT_ELEMENTS),
-                                                          L, MUCO_FLOAT_ELEMENTS);
+                                                          const_cast<float**>(inout + n*filterRegisterSize),
+                                                          L, filterRegisterSize);
             }
 
-            float* addr[MUCO_FLOAT_ELEMENTS];
+            float* addr[filterRegisterSize];
             int ch;
             for (ch = 0; ch < partial; ++ch)
             {
-                addr[ch] = const_cast<float*> (inout[n*MUCO_FLOAT_ELEMENTS + ch]);
+                addr[ch] = const_cast<float*> (inout[n*filterRegisterSize + ch]);
             }
-            for (; ch < MUCO_FLOAT_ELEMENTS; ++ch)
+            for (; ch < filterRegisterSize; ++ch)
             {
                 addr[ch] = zero.getChannelPointer (ch);
             }
-            AudioDataConverters::deinterleaveSamples (reinterpret_cast<float*> (freqBands[i][n]->getChannelPointer (0)), addr, L, MUCO_FLOAT_ELEMENTS);
+            AudioDataConverters::deinterleaveSamples (reinterpret_cast<float*> (freqBands[i][n]->getChannelPointer (0)), addr, L, filterRegisterSize);
             zero.clear();
         }
       
@@ -649,7 +649,6 @@ void MultiBandCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer,
             compressors[i].getGainFromSidechainSignal(inout[0], gainChannelPointer, L);
             maxGR[i] = Decibels::gainToDecibels(FloatVectorOperations::findMinimum(gainChannelPointer, L)) - *makeUpGain[i];
             maxPeak[i] = compressors[i].getMaxLevelInDecibels();
-//            bypassedForGui[i] = false;
           
             for (int ch = 0; ch < numChannels; ++ch)
             {
@@ -664,7 +663,6 @@ void MultiBandCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer,
             }
             maxGR[i] = 0.0f;
             maxPeak[i] = Decibels::gainToDecibels (-INFINITY);
-//            bypassedForGui[i] = true;
         }
     }
   
@@ -724,8 +722,8 @@ void MultiBandCompressorAudioProcessor::parameterChanged (const String &paramete
     if (parameterID.startsWith("crossover"))
     {
         calculateCoefficients(parameterID.getLastCharacters(1).getIntValue());
-//        repaintFilterVisualization = true;
         userChangedFilterSettings = true;
+        repaintFilterVisualization = true;
     }
     else if (parameterID.startsWith("threshold"))
     {
@@ -764,11 +762,6 @@ void MultiBandCompressorAudioProcessor::parameterChanged (const String &paramete
         {
             soloArray.erase(parameterID.getLastCharacters(1).getIntValue());
         }
-    }
-    else if (parameterID.startsWith("bypass"))
-    {
-        bypassedForGui[parameterID.getLastCharacters(1).getIntValue()] = (newValue <= 0.5f ? false : true);
-        repaintFilterVisualization = true;
     }
     else if (parameterID == "orderSetting")
     {
