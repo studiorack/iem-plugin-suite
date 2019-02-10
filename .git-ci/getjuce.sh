@@ -6,7 +6,10 @@ OUTDIR=$2
 rm -rf "${OUTDIR}"
 mkdir -p "${OUTDIR}"
 
-curl -o juce.zip https://d30pueezughrda.cloudfront.net/juce/juce-${JUCEFLAVOUR}.zip
+URL=https://d30pueezughrda.cloudfront.net/juce/juce-${JUCEFLAVOUR}.zip
+echo "getting juce.zip from ${URL}"
+
+curl -o juce.zip "${URL}"
 unzip -q juce.zip -d "${OUTDIR}"
 mv "${OUTDIR}"/JUCE/* "${OUTDIR}" || true
 
