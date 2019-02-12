@@ -727,11 +727,15 @@ void MultiBandCompressorAudioProcessor::parameterChanged (const String &paramete
     }
     else if (parameterID.startsWith("threshold"))
     {
-        compressors[parameterID.getLastCharacters(1).getIntValue()].setThreshold(newValue);
+        const int compId = parameterID.getLastCharacters(1).getIntValue();
+        compressors[compId].setThreshold(newValue);
+        characteristicHasChanged[compId] = true;
     }
     else if (parameterID.startsWith("knee"))
     {
-        compressors[parameterID.getLastCharacters(1).getIntValue()].setKnee(newValue);
+        const int compId = parameterID.getLastCharacters(1).getIntValue();
+        compressors[compId].setKnee(newValue);
+        characteristicHasChanged[compId] = true;
     }
     else if (parameterID.startsWith("attack"))
     {
@@ -743,14 +747,19 @@ void MultiBandCompressorAudioProcessor::parameterChanged (const String &paramete
     }
     else if (parameterID.startsWith("ratio"))
     {
+        const int compId = parameterID.getLastCharacters(1).getIntValue();
         if (newValue > 15.9f)
-            compressors[parameterID.getLastCharacters(1).getIntValue()].setRatio(INFINITY);
+            compressors[compId].setRatio(INFINITY);
         else
-            compressors[parameterID.getLastCharacters(1).getIntValue()].setRatio(newValue);
+            compressors[compId].setRatio(newValue);
+
+        characteristicHasChanged[compId] = true;
     }
     else if (parameterID.startsWith("makeUpGain"))
     {
-        compressors[parameterID.getLastCharacters(1).getIntValue()].setMakeUpGain(newValue);
+        const int compId = parameterID.getLastCharacters(1).getIntValue();
+        compressors[compId].setMakeUpGain(newValue);
+        characteristicHasChanged[compId] = true;
     }
     else if (parameterID.startsWith("solo"))
     {

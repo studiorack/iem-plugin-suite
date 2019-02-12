@@ -278,7 +278,7 @@ MultiBandCompressorAudioProcessorEditor::MultiBandCompressorAudioProcessorEditor
     resized ();
   
     // start timer after everything is set up properly
-    startTimer (30);
+    startTimer (50);
 }
 
 MultiBandCompressorAudioProcessorEditor::~MultiBandCompressorAudioProcessorEditor()
@@ -539,14 +539,19 @@ void MultiBandCompressorAudioProcessorEditor::timerCallback()
     omniInputMeter.setLevel (processor.inputPeak.get());
     omniOutputMeter.setLevel (processor.outputPeak.get());
   
-    float gainReduction;
+
     for (int i = 0; i < numFreqBands; ++i)
     {
-        gainReduction = processor.maxGR[i].get();
+        const auto gainReduction = processor.maxGR[i].get();
 
         filterBankVisualizer.updateGainReduction (i, gainReduction);
         compressorVisualizers[i]->setMarkerLevels(processor.maxPeak[i].get(), gainReduction);
-        compressorVisualizers[i]->updateCharacteristic();
+
+        if (processor.characteristicHasChanged[i].get())
+        {
+            compressorVisualizers[i]->updateCharacteristic();
+            processor.characteristicHasChanged[i] = false;
+        }
         compressorVisualizers[i]->repaint();
       
         GRmeter[i].setLevel(gainReduction);

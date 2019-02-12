@@ -132,7 +132,10 @@ public:
     Atomic<bool> repaintFilterVisualization = false;
     Atomic<float> inputPeak = Decibels::gainToDecibels (-INFINITY), outputPeak = Decibels::gainToDecibels (-INFINITY);
     Atomic<float> maxGR[numFreqBands], maxPeak[numFreqBands];
-  
+
+    Atomic<bool> characteristicHasChanged[numFreqBands];
+
+    
     Compressor* getCompressor(const int i) {return &compressors[i];};
 
 private:
