@@ -22,7 +22,7 @@
 
 #pragma once
 #include "../JuceLibraryCode/JuceHeader.h"
-
+#include "../../resources/customComponents/ReverseSlider.h"
 
 
 //==============================================================================
@@ -52,9 +52,21 @@ public:
     {
         repaint();
     }
+  
+    void mouseMove (const MouseEvent& e) override
+    {
+        if (triangleUp.contains (e.position))
+            isOverTriangle = 1;
+        else if (triangleDown.contains (e.position))
+            isOverTriangle = -1;
+        else
+            isOverTriangle = 0;
+    }
 
     void mouseDrag (const MouseEvent& e) override
     {
+        isDragging = true;
+    
         auto drag = e.getOffsetFromDragStart();
         DBG (drag.getX() << " - " << drag.getY());
 
@@ -79,6 +91,8 @@ public:
 
     void mouseWheelMove (const MouseEvent& e, const MouseWheelDetails& wheel) override
     {
+        isDragging = true;
+      
         for (int i = 0; i < elements.size(); ++i)
         {
             if (elements[i] != nullptr)
@@ -88,12 +102,23 @@ public:
 
     void mouseDown (const MouseEvent& e) override
     {
-        isDragging = true;
-
         for (int i = 0; i < elements.size(); ++i)
         {
-            if (elements[i] != nullptr)
-                elements[i]->mouseDown (e);
+            if (elements[i] == nullptr)
+                continue;
+          
+            if (auto* slider = dynamic_cast<ReverseSlider*> (elements[i]))
+            {
+                if (isOverTriangle == 1)
+                {
+                    slider->increment();
+                }
+                else if (isOverTriangle == -1)
+                {
+                    slider->decrement();
+                }
+            }
+            elements[i]->mouseDown (e);
         }
     }
 
@@ -127,13 +152,11 @@ public:
         const bool isDragginUp = dragDirection == 1;
         const bool isDragginDown = dragDirection == -1;
 
-
         auto upThickness = isDragginUp ? 1.0f : thickness;
         auto downThickness = isDragginDown ? 1.0f : thickness;
 
         g.strokePath (triangleUp, PathStrokeType (upThickness));
         g.strokePath (triangleDown, PathStrokeType (downThickness));
-
 
         g.setColour (Colours::steelblue.withMultipliedAlpha (isDragginUp ? 0.9f : 0.3f));
         g.fillPath (triangleUp);
@@ -173,6 +196,7 @@ private:
 
     bool isDragging = false;
     int dragDirection = 0;
+    int isOverTriangle = 0;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MasterControl)
 };
