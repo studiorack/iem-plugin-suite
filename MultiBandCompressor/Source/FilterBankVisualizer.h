@@ -475,7 +475,7 @@ template <typename T>
 class FilterBankVisualizer : public Component
 {
 public:
-    FilterBankVisualizer (float fMin, float fMax, float dbMin, float dbMax, float gridDiv, double& sampleRate, int numBands) : s {fMin, fMax, dbMin, dbMax, gridDiv, sampleRate}, filterBackdrop (s), overallMagnitude (s, numBands), overallGainInDb (0.0), numFreqBands (numBands)
+    FilterBankVisualizer (float fMin, float fMax, float dbMin, float dbMax, float gridDiv, double& sampleRate, int numBands, bool overallMagnitude=false) : s {fMin, fMax, dbMin, dbMax, gridDiv, sampleRate}, filterBackdrop (s), overallMagnitude (s, numBands), numFreqBands (numBands), displayOverallMagnitude (overallMagnitude)
     {
         init();
     };
@@ -492,9 +492,11 @@ public:
         {
             freqBands.add (new FrequencyBand<T> (s));
             addAndMakeVisible (freqBands[i]);
+            freqBands.getLast()->addMouseListener (this, true);
         }
-        addAndMakeVisible (&overallMagnitude);
-        overallMagnitude.addMouseListener (this, true);
+      
+        if (displayOverallMagnitude)
+            activateOverallMagnitude ();
       
         freqBandColours.resize (numFreqBands);
     }
@@ -531,11 +533,11 @@ public:
         for (int i = 0; i < crossoverSliders.size(); ++i)
         {
             float xPos = crossoverSliders[i] == nullptr ? s.xMin : s.hzToX (crossoverSliders[i]->getValue());
-            Path freqBandSeparator;
-            freqBandSeparator.startNewSubPath (xPos, s.yMin);
-            freqBandSeparator.lineTo (xPos, s.yMax + s.yMin);
+            Line<float> freqBandSeparator;
+            freqBandSeparator.setStart (xPos, s.yMin);
+            freqBandSeparator.setEnd (xPos, s.yMax + s.yMin);
             g.setColour (activeElem == i ? colour.brighter() : colour.withMultipliedAlpha (0.8));
-            g.strokePath (freqBandSeparator, PathStrokeType (i == activeElem ? 2.5f : 2.0f));
+            g.drawLine (freqBandSeparator, i == activeElem ? 2.5f : 2.0f);
             prevXPos = xPos;
           
             g.setColour (Colours::black);
@@ -557,7 +559,13 @@ public:
             freqBands[i]->setBounds (area);
             freqBands[i]->updateFilterResponse();
         }
-        overallMagnitude.setBounds (area);
+      
+        if (displayOverallMagnitude)
+        {
+            overallMagnitude.setBounds (area);
+            overallMagnitude.updateOverallMagnitude();
+        }
+      
     }
   
     void setNumFreqBands (const int newValue)
@@ -643,16 +651,20 @@ public:
         else
             soloSet.erase (i);
       
-        if (! soloSet.empty())
-            for (int i = 0; i < numFreqBands; ++i)
+      
+        for (int i = 0; i < numFreqBands; ++i)
+        {
+            Colour colour = freqBandColours[i];
+          
+            if (! soloSet.empty())
             {
-                freqBands[i]->setColour (soloSet.count (i) ? freqBandColours[i] : freqBandColours[i].withMultipliedSaturation (0.4f));
+                if (! soloSet.count (i))
+                    colour = colour.withMultipliedSaturation (0.4f);
             }
-        else
-            for (int i = 0; i < numFreqBands; ++i)
-            {
-                freqBands[i]->setColour (freqBandColours[i]);
-            }
+          
+            freqBands[i]->setColour (colour);
+            freqBands[i]->repaint ();
+        }
     }
   
     void setFrequencyBand (const int i, typename dsp::IIR::Coefficients<T>::Ptr coeffs1, typename  dsp::IIR::Coefficients<T>::Ptr coeffs2, Colour colour)
@@ -672,11 +684,29 @@ public:
         freqBandColours.add (colour);
     }
   
-    void initOverallMagnitude (const float gain=0.0f)
+    void activateOverallMagnitude (const float gain=0.0f)
     {
+        displayOverallMagnitude = true;
         overallMagnitude.setFreqBands (&freqBands);
         overallMagnitude.setOverallGain (gain);
-        overallMagnitude.updateOverallMagnitude();
+        addAndMakeVisible (&overallMagnitude);
+        overallMagnitude.setBounds (getLocalBounds ());
+        overallMagnitude.resized();
+        overallMagnitude.addMouseListener (this, true);
+    }
+  
+    void deactivateOverallMagnitude ()
+    {
+        displayOverallMagnitude = false;
+        overallMagnitude.removeMouseListener (this);
+        overallMagnitude.setVisible (false);
+        removeChildComponent (&overallMagnitude);
+        displayOverallMagnitude = false;
+    }
+  
+    void setOverallGain (const float gain=0.0f)
+    {
+        overallMagnitude.setOverallGain (gain);
     }
   
     void addCrossover (Slider* crossoverSlider = nullptr)
@@ -694,8 +724,8 @@ private:
   
     Array<Slider*> crossoverSliders;
   
-    float overallGainInDb = 0.0f;
-    int numFreqBands, activeElem = -1;
+    int numFreqBands, activeElem {-1};
+    bool displayOverallMagnitude {false};
   
     Colour colour {0xFFD8D8D8};
     Array<Colour> freqBandColours;

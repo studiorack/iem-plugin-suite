@@ -30,7 +30,7 @@ MultiBandCompressorAudioProcessorEditor::MultiBandCompressorAudioProcessorEditor
 {
     // ============== BEGIN: essentials ======================
     // set GUI size and lookAndFeel
-    setResizeLimits (1000, 1000*0.54, 1600, 1600*0.54); // use this to create a resizable GUI
+    setResizeLimits (980, 980*0.6, 1600, 1600*0.6); // use this to create a resizable GUI
     setLookAndFeel (&globalLaF);
 
     // make title and footer visible, and set the PluginName
@@ -152,8 +152,8 @@ MultiBandCompressorAudioProcessorEditor::MultiBandCompressorAudioProcessorEditor
         tbSolo[i].setClickingTogglesState (true);
         tbSolo[i].addListener(this);
         addAndMakeVisible (&tbSolo[i]);
-      
-        tbBypass[i].setColour (ToggleButton::tickColourId, Colours::steelblue.withMultipliedAlpha (0.85f));
+
+        tbBypass[i].setColour (ToggleButton::tickColourId, Colour (0xFF5bAE87).withMultipliedAlpha (0.85f));
         tbBypass[i].setScaleFontSize (0.75f);
         tbBypass[i].setButtonText ("B");
         tbBypass[i].setName ("bypass" + String (i));
@@ -193,10 +193,19 @@ MultiBandCompressorAudioProcessorEditor::MultiBandCompressorAudioProcessorEditor
         filterBankVisualizer.setFrequencyBand (i, coeffs1, coeffs2, colours[i]);
         filterBankVisualizer.setBypassed (i, tbBypass[i].getToggleState());
         filterBankVisualizer.setSolo (i, tbSolo[i].getToggleState());
+        filterBankVisualizer.updateMakeUpGain (i, slMakeUpGain[i].getValue());
     }
 
-    filterBankVisualizer.initOverallMagnitude (0.0f);
     addAndMakeVisible (&filterBankVisualizer);
+  
+  
+    // SHOW OVERALL MAGNITUDE BUTTON
+    tbOverallMagnitude.setColour (ToggleButton::tickColourId, Colours::white);
+    tbOverallMagnitude.setButtonText ("show total magnitude");
+    tbOverallMagnitude.setName ("overallMagnitude");
+    tbOverallMagnitude.setClickingTogglesState (true);
+    tbOverallMagnitude.addListener(this);
+    addAndMakeVisible (&tbOverallMagnitude);
   
   
     // ==== CROSSOVER SLIDERS ====
@@ -313,15 +322,13 @@ void MultiBandCompressorAudioProcessorEditor::resized()
     // =========== END: header and footer =================
 
 
-    // ==== SPLIT INTO 5 BASIC SECTIONS ====
-    const float leftToRightRatio = 0.85;
-    const int leftToRightGap = 6;
-    const float filterBankToLowerRatio = 0.35f;
-    const float meterToMasterRatio = 0.42f;
-    const float crossoverAndButtonToCompressorsRatio = 0.16f;
-    const int filterToCrossoverAndButtonGap = 4;
-    const int compressorToCrossoverAndButtonGap = 4;
-    const int meterToMasterGap = 16;
+    // ==== SPLIT INTO 4 BASIC SECTIONS ====
+    const float leftToRightRatio = 0.87;
+    const int leftToRightGap = 10;
+    const float filterBankToLowerRatio = 0.34f;
+    const float crossoverAndButtonToCompressorsRatio = 0.1645f;
+    const int filterToCrossoverAndButtonGap = 2;
+    const int compressorToCrossoverAndButtonGap = 2;
   
     // split
     Rectangle<int> leftArea = area.removeFromLeft (area.proportionOfWidth (leftToRightRatio));
@@ -331,16 +338,12 @@ void MultiBandCompressorAudioProcessorEditor::resized()
     Rectangle<int> filterBankArea = leftArea.removeFromTop (leftArea.proportionOfHeight (filterBankToLowerRatio));
     Rectangle<int> compressorArea = leftArea;
     Rectangle<int> crossoverAndButtonArea = compressorArea.removeFromTop (compressorArea.proportionOfHeight (crossoverAndButtonToCompressorsRatio));
-    Rectangle<int> meterArea = rightArea.removeFromTop (rightArea.proportionOfHeight (meterToMasterRatio));
-    Rectangle<int> masterArea (rightArea);
   
     // safeguard against haphephobia
     filterBankArea.removeFromBottom (filterToCrossoverAndButtonGap / 2);
     crossoverAndButtonArea.removeFromTop (filterToCrossoverAndButtonGap / 2);
     crossoverAndButtonArea.removeFromBottom (compressorToCrossoverAndButtonGap / 2);
     compressorArea.removeFromTop (compressorToCrossoverAndButtonGap / 2);
-    meterArea.removeFromBottom (meterToMasterGap / 2);
-    masterArea.removeFromTop (meterToMasterGap / 2);
   
   
     // ==== FILTER VISUALIZATION ====
@@ -348,11 +351,11 @@ void MultiBandCompressorAudioProcessorEditor::resized()
 
 
     // ==== BUTTONS AND CROSSOVER SLIDERS ====
-    const int crossoverToButtonGap = 4;
-    const int buttonToButtonGap = 10;
-    const float crossoverToButtonsRatio = 0.65f;
-    const float trimButtonsHeight = 0.125f;
-    const float trimButtonsWidth = 0.125f;
+    const int crossoverToButtonGap = 32;
+    const int buttonToButtonGap = 0;
+    const float crossoverToButtonsRatio = 0.85f;
+    const float trimButtonsHeight = 0.17f;
+    const float trimButtonsWidth = 0.17f;
     Rectangle<int> soloButtonArea;
     Rectangle<int> bypassButtonArea;
     Rectangle<int> crossoverArea;
@@ -379,32 +382,14 @@ void MultiBandCompressorAudioProcessorEditor::resized()
             slCrossover[i].setBounds (crossoverArea.reduced (crossoverToButtonGap / 2, 0));
         }
     }
-
-  
-    // ==== INPUT & OUTPUT METER
-    const float labelToMeterRatio = 0.1f;
-    const int meterToMeterGap = 8;
-  
-    meterArea.reduce (meterArea.proportionOfWidth (0.2f), 0);
-    Rectangle<int> inputMeterArea = meterArea.removeFromLeft (meterArea.proportionOfWidth (0.5f));
-    Rectangle<int> outputMeterArea = meterArea;
-    inputMeterArea.removeFromRight (meterToMeterGap / 2);
-    outputMeterArea.removeFromLeft (meterToMeterGap / 2);
-    Rectangle<int> inputMeterLabelArea = inputMeterArea.removeFromBottom (inputMeterArea.proportionOfHeight (labelToMeterRatio));
-    Rectangle<int> outputMeterLabelArea = outputMeterArea.removeFromBottom (outputMeterArea.proportionOfHeight (labelToMeterRatio));
-  
-    omniInputMeter.setBounds (inputMeterArea);
-    omniOutputMeter.setBounds (outputMeterArea);
-    lbInput.setBounds (inputMeterLabelArea);
-    lbOutput.setBounds (outputMeterLabelArea);
   
   
     // ==== COMPRESSOR VISUALIZATION ====
-    const float paramToCharacteristiscRatio = 0.48f;
+    const float paramToCharacteristiscRatio = 0.47f;
     const float meterToCharacteristicRatio = 0.175f;
-    const float labelToParamRatio = 0.15f;
-    const int paramRowToRowGap = 4;
-    const int paramToCharacteristicGap = 4;
+    const float labelToParamRatio = 0.17f;
+    const int paramRowToRowGap = 2;
+    const int paramToCharacteristicGap = 2;
     const int bandToBandGap = 6;
     const int meterToCharacteristicGap = 6;
     const float trimMeterHeightRatio = 0.02f;
@@ -461,14 +446,35 @@ void MultiBandCompressorAudioProcessorEditor::resized()
     }
   
   
+    // ==== INPUT & OUTPUT METER ====
+    const float labelToMeterRatio = 0.1f;
+    const int meterToMeterGap = 10;
+  
+    Rectangle<int> meterArea = rightArea.removeFromTop (rightArea.proportionOfHeight (filterBankToLowerRatio));
+    meterArea.reduce (meterArea.proportionOfWidth (0.18f), 0);
+    Rectangle<int> inputMeterArea = meterArea.removeFromLeft (meterArea.proportionOfWidth (0.5f));
+    Rectangle<int> outputMeterArea = meterArea;
+    inputMeterArea.removeFromRight (meterToMeterGap / 2);
+    outputMeterArea.removeFromLeft (meterToMeterGap / 2);
+    Rectangle<int> inputMeterLabelArea = inputMeterArea.removeFromBottom (inputMeterArea.proportionOfHeight (labelToMeterRatio));
+    Rectangle<int> outputMeterLabelArea = outputMeterArea.removeFromBottom (outputMeterArea.proportionOfHeight (labelToMeterRatio));
+  
+    omniInputMeter.setBounds (inputMeterArea);
+    omniOutputMeter.setBounds (outputMeterArea);
+    lbInput.setBounds (inputMeterLabelArea);
+    lbOutput.setBounds (outputMeterLabelArea);
+  
+  
     // ==== MASTER SLIDERS + LABELS ====
-    const float labelToSliderRatio = 0.2f;
-    const int trimFromTop = 30;
+    const float masterToUpperArea =  0.5;
+    const float labelToSliderRatio = 0.24f;
     const int trimFromGroupComponentHeader = 25;
     const float trimSliderHeight = 0.125f;
-    const float trimSliderWidth = 0.05f;
+    const float trimSliderWidth = 0.00f;
+    const int masterToCompressorSectionGap = 18;
   
-    masterArea.removeFromTop (trimFromTop);
+    Rectangle<int> masterArea = rightArea.removeFromBottom (rightArea.proportionOfHeight (masterToUpperArea));
+    masterArea.removeFromLeft (masterToCompressorSectionGap);
     gcMasterControls.setBounds (masterArea);
     masterArea.removeFromTop (trimFromGroupComponentHeader);
   
@@ -491,6 +497,16 @@ void MultiBandCompressorAudioProcessorEditor::resized()
     lbAttack[numFreqBands].setBounds (labelRow.removeFromLeft (sliderWidth));
     lbRelease[numFreqBands].setBounds (labelRow.removeFromLeft (sliderWidth));
   
+  
+    // ==== FILTERBANKVISUALIZER SETTINGS ====
+    const float trimHeight = 0.4f;
+    const int trimFromLeft = 5;
+  
+    rightArea.removeFromLeft (trimFromLeft);
+    rightArea.reduce (0, rightArea.proportionOfHeight (trimHeight));
+    Rectangle<int> totalMagnitudeButtonArea = rightArea.removeFromTop (rightArea.proportionOfHeight (0.5));
+    tbOverallMagnitude.setBounds (totalMagnitudeButtonArea);
+  
 }
 
 
@@ -499,7 +515,6 @@ void MultiBandCompressorAudioProcessorEditor::sliderValueChanged(Slider *slider)
     if (slider->getName().startsWith("MakeUpGain"))
     {
         filterBankVisualizer.updateMakeUpGain (slider->getName().getLastCharacters(1).getIntValue(), slider->getValue());
-        filterBankVisualizer.updateOverallMagnitude ();
         return;
     }
 }
@@ -512,10 +527,18 @@ void MultiBandCompressorAudioProcessorEditor::buttonClicked (Button* button)
         int i = button->getName().getLastCharacters(1).getIntValue();
         filterBankVisualizer.setBypassed (i, button->getToggleState());
     }
-    else // solo button
+    else if (button->getName().startsWith ("solo"))
     {
         int i = button->getName().getLastCharacters(1).getIntValue();
         filterBankVisualizer.setSolo (i, button->getToggleState());
+    }
+    else // overall magnitude button
+    {
+        displayOverallMagnitude = button->getToggleState();
+        if (displayOverallMagnitude)
+            filterBankVisualizer.activateOverallMagnitude ();
+        else
+            filterBankVisualizer.deactivateOverallMagnitude ();
     }
 
 }
@@ -533,7 +556,6 @@ void MultiBandCompressorAudioProcessorEditor::timerCallback()
     {
         processor.repaintFilterVisualization = false;
         filterBankVisualizer.updateFreqBandResponses ();
-        filterBankVisualizer.updateOverallMagnitude();
     }
 
     omniInputMeter.setLevel (processor.inputPeak.get());
@@ -557,5 +579,6 @@ void MultiBandCompressorAudioProcessorEditor::timerCallback()
         GRmeter[i].setLevel(gainReduction);
     }
   
-    filterBankVisualizer.updateOverallMagnitude();
+    if (displayOverallMagnitude)
+        filterBankVisualizer.updateOverallMagnitude();
 }

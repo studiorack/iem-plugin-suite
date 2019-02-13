@@ -114,6 +114,10 @@ private:
     // Meters
     LevelMeter GRmeter[numFreqBands], omniInputMeter, omniOutputMeter;
   
+    // Toggle Buttons
+    ToggleButton tbOverallMagnitude;
+    bool displayOverallMagnitude {false};
+  
     // Labels
     SimpleLabel lbKnee[numFreqBands+1], lbThreshold[numFreqBands+1], lbMakeUpGain[numFreqBands+1], lbRatio[numFreqBands+1], lbAttack[numFreqBands+1], lbRelease[numFreqBands+1], lbInput, lbOutput;
   
