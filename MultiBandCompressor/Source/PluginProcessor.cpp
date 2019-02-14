@@ -141,10 +141,7 @@ ParameterLayout MultiBandCompressorAudioProcessor::createParameterLayout()
     std::vector<std::unique_ptr<RangedAudioParameter>> params;
     const float crossoverPresets [numFreqBands-1] = { 80.0f, 440.0f, 2200.0f };
   
-    std::unique_ptr<AudioParameterFloat> floatParam;
-    std::unique_ptr<AudioParameterBool> boolParam;
-
-    floatParam = std::make_unique<AudioParameterFloat> ("orderSetting",
+    auto floatParam = std::make_unique<AudioParameterFloat> ("orderSetting",
                                                         "Ambisonics Order",
                                                         NormalisableRange<float>(0.0f, 8.0f, 1.0f), 0.0f,
                                                         "",
@@ -260,7 +257,7 @@ ParameterLayout MultiBandCompressorAudioProcessor::createParameterLayout()
         params.push_back( std::move (floatParam));
       
       
-        boolParam = std::make_unique<AudioParameterBool>("bypass" + String(i),
+        auto boolParam = std::make_unique<AudioParameterBool>("bypass" + String(i),
                                                            "Compression on band " + String(i) + " enabled",
                                                            false);
         params.push_back( std::move (boolParam));
@@ -513,9 +510,7 @@ void MultiBandCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer,
     
     // update iir filter coefficients
     if (userChangedFilterSettings.get())
-    {
         copyCoeffsToProcessor();
-    }
 
     inputPeak = Decibels::gainToDecibels (buffer.getMagnitude (0, 0, L));
 

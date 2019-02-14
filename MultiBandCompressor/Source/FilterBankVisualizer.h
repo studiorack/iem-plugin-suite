@@ -362,6 +362,7 @@ public:
     void setBypassed (bool newBypassed)
     {
         bypassed = newBypassed;
+        updatePath();
     }
   
     void addCoeffs (typename dsp::IIR::Coefficients<coeffType>::Ptr coeffs1, typename dsp::IIR::Coefficients<coeffType>::Ptr coeffs2)
