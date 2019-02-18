@@ -244,6 +244,7 @@ public:
     {
         addAndMakeVisible(gridAndLabels);
         addAndMakeVisible(characteristic);
+        updateCharacteristic();
     }
 
     void updateCharacteristic ()
