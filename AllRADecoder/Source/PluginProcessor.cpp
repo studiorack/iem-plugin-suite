@@ -1018,7 +1018,7 @@ void AllRADecoderAudioProcessor::saveConfigurationToFile (File destination)
         DBG("Configuration successfully written to file.");
         MailBox::Message newMessage;
         newMessage.messageColour = Colours::green;
-        newMessage.headline = "Configuration export successfully";
+        newMessage.headline = "Configuration exported successfully";
         newMessage.text = "The decoder was successfully written to " + destination.getFileName() + ".";
         messageToEditor = newMessage;
         updateMessage = true;
