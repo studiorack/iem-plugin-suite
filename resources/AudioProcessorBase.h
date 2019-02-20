@@ -37,16 +37,15 @@ template <class inputType, class outputType>
 class AudioProcessorBase :  public AudioProcessor,
                             public VSTCallbackHandler,
                             public OSCReceiver::Listener<OSCReceiver::RealtimeCallback>,
-                            public IOHelper<inputType, outputType>
+                            public IOHelper<inputType, outputType>,
+                            public AudioProcessorValueTreeState::Listener
 {
 public:
 
     AudioProcessorBase () : AudioProcessor(),
                             oscParameterInterface (parameters),
                             parameters (*this, nullptr, String (JucePlugin_Name), {})
-
     {
-
     };
 
     AudioProcessorBase (ParameterList parameterLayout) :
@@ -54,7 +53,6 @@ public:
                             parameters (*this, nullptr, String (JucePlugin_Name), {parameterLayout.begin(), parameterLayout.end()}),
                             oscParameterInterface (parameters)
     {
-
     };
 
     AudioProcessorBase (const BusesProperties& ioLayouts, ParameterList parameterLayout) :
@@ -148,17 +146,17 @@ public:
 
     // ========================= OSC ===============================================
 
-    /*
+    /**
      This method is exptected to return true, if the OSCMessage is considered to have been consumed, and should not be passed on.
      */
-    virtual inline const bool interceptOSCMessage (const OSCMessage &message)
+    virtual inline const bool interceptOSCMessage (OSCMessage &message)
     {
-        return false; // not processed
+        return false; // not consumed
     };
 
 
-    /*
-     This method will be called if the OSC message wasn't consumed by both 'interceptOscMessage(...)' and the oscParameterInterface.processOSCmessage(...)'.
+    /**
+     This method will be called if the OSC message wasn't consumed by both 'interceptOscMessage(...)' and the oscParameterInterface.processOSCmessage(...)' method.
      The method is expected to return true, if the SOCMessage is considered to have been consumed, and should not be passed on.
      */
 
@@ -169,7 +167,8 @@ public:
 
     void oscMessageReceived (const OSCMessage &message) override
     {
-        if (! interceptOSCMessage (message))
+        OSCMessage messageCopy (message);
+        if (! interceptOSCMessage (messageCopy))
         {
             String prefix ("/" + String (JucePlugin_Name));
             if (message.getAddressPattern().toString().startsWith (prefix))
