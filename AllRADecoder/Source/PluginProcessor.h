@@ -24,7 +24,8 @@
 
 
 #include "../JuceLibraryCode/JuceHeader.h"
-#include "../../resources/IOHelper.h"
+#include "../../resources/AudioProcessorBase.h"
+
 #include "../../resources/customComponents/MailBox.h"
 #include "../../resources/NewtonApple/NewtonApple_hull3D.h"
 #include "tDesign5200.h"
@@ -40,12 +41,6 @@
 #include "NoiseBurst.h"
 #include "AmbisonicNoiseBurst.h"
 
-// ==== OSC
-#include "../../resources/OSCParameterInterface.h"
-#include "../../resources/OSCReceiverPlus.h"
-
-#include "../../resources/OSCInputStream.h"
-
 
 //==============================================================================
 /**
@@ -57,11 +52,8 @@
 */
 
 using namespace dsp;
-class AllRADecoderAudioProcessor  : public AudioProcessor,
-                                        public AudioProcessorValueTreeState::Listener,
-                                        public IOHelper<IOTypes::Ambisonics<7>, IOTypes::AudioChannels<64>>,
-                                        public ValueTree::Listener, public VSTCallbackHandler,
-                                        private OSCReceiver::Listener<OSCReceiver::RealtimeCallback>
+class AllRADecoderAudioProcessor  : public AudioProcessorBase<IOTypes::Ambisonics<7>, IOTypes::AudioChannels<64>>,
+                                        public ValueTree::Listener
 {
 public:
     //==============================================================================
@@ -72,23 +64,12 @@ public:
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;
 
-   #ifndef JucePlugin_PreferredChannelConfigurations
-    bool isBusesLayoutSupported (const BusesLayout& layouts) const override;
-   #endif
-
     void processBlock (AudioSampleBuffer&, MidiBuffer&) override;
 
     //==============================================================================
     AudioProcessorEditor* createEditor() override;
     bool hasEditor() const override;
 
-    //==============================================================================
-    const String getName() const override;
-
-    bool acceptsMidi() const override;
-    bool producesMidi() const override;
-    bool isMidiEffect () const override;
-    double getTailLengthSeconds() const override;
 
     //==============================================================================
     int getNumPrograms() override;
@@ -104,13 +85,6 @@ public:
     //==============================================================================
     void parameterChanged (const String &parameterID, float newValue) override;
     void updateBuffers() override; // use this to implement a buffer update method
-
-    //======== PluginCanDo =========================================================
-    pointer_sized_int handleVstManufacturerSpecific (int32 index, pointer_sized_int value,
-                                                     void* ptr, float opt) override;
-    pointer_sized_int handleVstPluginCanDo (int32 index, pointer_sized_int value,
-                                            void* ptr, float opt) override;
-
 
     //==============================================================================
     void valueTreePropertyChanged (ValueTree &treeWhosePropertyHasChanged, const Identifier &property) override;
@@ -159,23 +133,15 @@ public:
 
     MailBox::Message messageToEditor;
 
-    //======== OSC =================================================================
-    void oscMessageReceived (const OSCMessage &message) override;
-    void oscBundleReceived (const OSCBundle &bundle) override;
-    OSCReceiverPlus& getOSCReceiver () { return oscReceiver; }
-    //==============================================================================
-
     //======= Parameters ===========================================================
-    AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
-    //==============================================================================
+    std::vector<std::unique_ptr<RangedAudioParameter>> createParameterLayout();
 
+    //==============================================================================
+    inline const bool interceptOSCMessage (OSCMessage &message) override;
+    inline const bool processNotYetConsumedOSCMessage (const OSCMessage &message) override;
 
 private:
-    // ====== parameters and osc
-    OSCParameterInterface oscParams;
-    OSCReceiverPlus oscReceiver;
-    AudioProcessorValueTreeState parameters;
-
+    //==============================================================================
     // list of used audio parameters
     float* inputOrderSetting;
     float* useSN3D;

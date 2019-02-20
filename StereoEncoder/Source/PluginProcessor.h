@@ -36,8 +36,7 @@
 //==============================================================================
 /**
 */
-class StereoEncoderAudioProcessor  : public AudioProcessorBase<IOTypes::AudioChannels<2>, IOTypes::Ambisonics<>>,
-                                     public AudioProcessorValueTreeState::Listener
+class StereoEncoderAudioProcessor  : public AudioProcessorBase<IOTypes::AudioChannels<2>, IOTypes::Ambisonics<>>
 {
 public:
     //==============================================================================
@@ -69,8 +68,7 @@ public:
     void parameterChanged (const String &parameterID, float newValue) override;
 
 
-
-    // ====== OSC ======
+    // ====== OSC ==================================================================
     const bool processNotYetConsumedOSCMessage (const OSCMessage &message) override;
     // =================
 

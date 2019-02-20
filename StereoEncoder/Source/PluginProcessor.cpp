@@ -34,11 +34,9 @@ StereoEncoderAudioProcessor::StereoEncoderAudioProcessor()
 #endif
                  .withOutput ("Output", AudioChannelSet::discreteChannels (64), true)
 #endif
-                      ,
+                 ,
 #endif
 createParameterLayout()),
-                 
-
 posC(1.0f, 0.0f, 0.0f),
 posL(1.0f, 0.0f, 0.0f),
 posR(1.0f, 0.0f, 0.0f),
