@@ -28,9 +28,6 @@
 #include "../../resources/AudioProcessorBase.h"
 #include "../../resources/Conversions.h"
 
-// ===== OSC ====
-#include "../../resources/OSCParameterInterface.h"
-#include "../../resources/OSCReceiverPlus.h"
 
 //==============================================================================
 /**

@@ -35,13 +35,6 @@
 
 using namespace dsp;
 //==============================================================================
-/**
- Use the IOHelper to detect which amount of channels or which Ambisonic order is possible with the current bus layout.
- The available IOTypes are:
-    - AudioChannels<maxChannelCount>
-    - Ambisonics<maxOrder> (can also be used for directivity signals)
- You can leave `maxChannelCount` and `maxOrder` empty for default values (64 channels and 7th order)
-*/
 class SimpleDecoderAudioProcessor  :   public AudioProcessorBase<IOTypes::Ambisonics<>, IOTypes::AudioChannels<>>
 {
 public:
