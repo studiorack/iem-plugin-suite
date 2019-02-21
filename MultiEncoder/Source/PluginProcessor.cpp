@@ -26,18 +26,18 @@
 
 //==============================================================================
 MultiEncoderAudioProcessor::MultiEncoderAudioProcessor()
-
+: AudioProcessorBase (
 #ifndef JucePlugin_PreferredChannelConfigurations
-:AudioProcessor (BusesProperties()
+                 BusesProperties()
 #if ! JucePlugin_IsMidiEffect
 #if ! JucePlugin_IsSynth
                  .withInput  ("Input",  AudioChannelSet::discreteChannels(maxNumberOfInputs), true)
 #endif
                  .withOutput ("Output", AudioChannelSet::discreteChannels(64), true)
 #endif
-                 ),
+                 ,
 #endif
-oscParams (parameters), parameters (*this, nullptr, "MultiEncoder", createParameterLayout())
+createParameterLayout())
 {
     parameters.addParameterListener("masterAzimuth", this);
     parameters.addParameterListener("masterElevation", this);
@@ -100,34 +100,6 @@ MultiEncoderAudioProcessor::~MultiEncoderAudioProcessor()
 {
 }
 
-//==============================================================================
-const String MultiEncoderAudioProcessor::getName() const
-{
-    return JucePlugin_Name;
-}
-
-bool MultiEncoderAudioProcessor::acceptsMidi() const
-{
-#if JucePlugin_WantsMidiInput
-    return true;
-#else
-    return false;
-#endif
-}
-
-bool MultiEncoderAudioProcessor::producesMidi() const
-{
-#if JucePlugin_ProducesMidiOutput
-    return true;
-#else
-    return false;
-#endif
-}
-
-double MultiEncoderAudioProcessor::getTailLengthSeconds() const
-{
-    return 0.0;
-}
 
 int MultiEncoderAudioProcessor::getNumPrograms()
 {
@@ -164,13 +136,6 @@ void MultiEncoderAudioProcessor::releaseResources()
     // When playback stops, you can use this as an opportunity to free up any
     // spare memory, etc.
 }
-
-#ifndef JucePlugin_PreferredChannelConfigurations
-bool MultiEncoderAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
-{
-    return true;
-}
-#endif
 
 void MultiEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
@@ -405,53 +370,18 @@ void MultiEncoderAudioProcessor::updateQuaternions()
     }
 }
 
-//==============================================================================
-pointer_sized_int MultiEncoderAudioProcessor::handleVstPluginCanDo (int32 index,
-                                                                     pointer_sized_int value, void* ptr, float opt)
-{
-    auto text = (const char*) ptr;
-    auto matches = [=](const char* s) { return strcmp (text, s) == 0; };
-
-    if (matches ("wantsChannelCountNotifications"))
-        return 1;
-    return 0;
-}
 
 //==============================================================================
-void MultiEncoderAudioProcessor::oscMessageReceived (const OSCMessage &message)
-{
-    String prefix ("/" + String(JucePlugin_Name));
-    if (! message.getAddressPattern().toString().startsWith (prefix))
-        return;
-
-    OSCMessage msg (message);
-    msg.setAddressPattern (message.getAddressPattern().toString().substring(String(JucePlugin_Name).length() + 1));
-    oscParams.processOSCMessage (msg);
-}
-
-void MultiEncoderAudioProcessor::oscBundleReceived (const OSCBundle &bundle)
-{
-    for (int i = 0; i < bundle.size(); ++i)
-    {
-        auto elem = bundle[i];
-        if (elem.isMessage())
-            oscMessageReceived (elem.getMessage());
-        else if (elem.isBundle())
-            oscBundleReceived (elem.getBundle());
-    }
-}
-
-//==============================================================================
-AudioProcessorValueTreeState::ParameterLayout MultiEncoderAudioProcessor::createParameterLayout()
+std::vector<std::unique_ptr<RangedAudioParameter>> MultiEncoderAudioProcessor::createParameterLayout()
 {
     // add your audio parameters here
     std::vector<std::unique_ptr<RangedAudioParameter>> params;
 
-    params.push_back (oscParams.createAndAddParameter("inputSetting", "Number of input channels ", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay("inputSetting", "Number of input channels ", "",
                                     NormalisableRange<float> (0.0f, maxNumberOfInputs, 1.0f), startNnumberOfInputs,
                                     [](float value) {return String(value);}, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("orderSetting", "Ambisonics Order", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("orderSetting", "Ambisonics Order", "",
                                      NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
                                      [](float value) {
                                          if (value >= 0.5f && value < 1.5f) return "0th";
@@ -465,7 +395,7 @@ AudioProcessorValueTreeState::ParameterLayout MultiEncoderAudioProcessor::create
                                          else return "Auto";},
                                      nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("useSN3D", "Normalization", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("useSN3D", "Normalization", "",
                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value)
                                      {
@@ -473,45 +403,45 @@ AudioProcessorValueTreeState::ParameterLayout MultiEncoderAudioProcessor::create
                                          else return "N3D";
                                      }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter("masterAzimuth", "Master azimuth angle", CharPointer_UTF8 (R"(°)"),
+    params.push_back (OSCParameterInterface::createParameterTheOldWay("masterAzimuth", "Master azimuth angle", CharPointer_UTF8 (R"(°)"),
                                     NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0f,
                                     [](float value) {return String(value, 2);}, nullptr));
-    params.push_back (oscParams.createAndAddParameter("masterElevation", "Master elevation angle", CharPointer_UTF8 (R"(°)"),
+    params.push_back (OSCParameterInterface::createParameterTheOldWay("masterElevation", "Master elevation angle", CharPointer_UTF8 (R"(°)"),
                                     NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0f,
                                     [](float value) {return String(value, 2);}, nullptr));
     
-    params.push_back (oscParams.createAndAddParameter("masterRoll", "Master roll angle", CharPointer_UTF8 (R"(°)"),
+    params.push_back (OSCParameterInterface::createParameterTheOldWay("masterRoll", "Master roll angle", CharPointer_UTF8 (R"(°)"),
                                     NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0f,
                                     [](float value) {return String(value, 2);}, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter("lockedToMaster", "Lock Directions relative to Master", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay("lockedToMaster", "Lock Directions relative to Master", "",
                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
                                     [](float value) {return (value >= 0.5f) ? "locked" : "not locked";}, nullptr));
 
     for (int i = 0; i < maxNumberOfInputs; ++i)
     {
-        params.push_back (oscParams.createAndAddParameter("azimuth" + String(i), "Azimuth angle " + String(i + 1), CharPointer_UTF8 (R"(°)"),
+        params.push_back (OSCParameterInterface::createParameterTheOldWay("azimuth" + String(i), "Azimuth angle " + String(i + 1), CharPointer_UTF8 (R"(°)"),
                                         NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
                                         [](float value) {return String(value, 2);}, nullptr));
 
-        params.push_back (oscParams.createAndAddParameter("elevation" + String(i), "Elevation angle " + String(i + 1), CharPointer_UTF8 (R"(°)"),
+        params.push_back (OSCParameterInterface::createParameterTheOldWay("elevation" + String(i), "Elevation angle " + String(i + 1), CharPointer_UTF8 (R"(°)"),
                                         NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
                                         [](float value) {return String(value, 2);}, nullptr));
 
-        params.push_back (oscParams.createAndAddParameter("gain" + String(i), "Gain " + String(i + 1), "dB",
+        params.push_back (OSCParameterInterface::createParameterTheOldWay("gain" + String(i), "Gain " + String(i + 1), "dB",
                                         NormalisableRange<float> (-60.0f, 10.0f, 0.1f), 0.0f,
                                         [](float value) {return (value >= -59.9f) ? String(value, 1) : "-inf";},
                                         nullptr));
 
-        params.push_back (oscParams.createAndAddParameter("mute" + String(i), "Mute input " + String(i + 1), "",
+        params.push_back (OSCParameterInterface::createParameterTheOldWay("mute" + String(i), "Mute input " + String(i + 1), "",
                                         NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
                                         [](float value) {return (value >= 0.5f) ? "muted" : "not muted";}, nullptr));
 
-        params.push_back (oscParams.createAndAddParameter("solo" + String(i), "Solo input " + String(i + 1), "",
+        params.push_back (OSCParameterInterface::createParameterTheOldWay("solo" + String(i), "Solo input " + String(i + 1), "",
                                         NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
                                         [](float value) {return (value >= 0.5f) ? "soloed" : "not soloed";}, nullptr));
     }
 
 
-    return { params.begin(), params.end() };
+    return params;
 }

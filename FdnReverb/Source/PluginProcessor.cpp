@@ -25,19 +25,19 @@
 
 //==============================================================================
 FdnReverbAudioProcessor::FdnReverbAudioProcessor()
-
+: AudioProcessorBase (
 #ifndef JucePlugin_PreferredChannelConfigurations
-:AudioProcessor (BusesProperties()
+                  BusesProperties()
 #if ! JucePlugin_IsMidiEffect
 #if ! JucePlugin_IsSynth
                  .withInput  ("Input",  AudioChannelSet::discreteChannels(64), true)
 #endif
                  .withOutput ("Output", AudioChannelSet::discreteChannels(64), true)
 #endif
-                 ),
+                 ,
 #endif
 
-oscParams (parameters), parameters (*this, nullptr, "FdnReverb", createParameterLayout())
+createParameterLayout())
 {
     parameters.addParameterListener ("delayLength", this);
     parameters.addParameterListener ("revTime", this);
@@ -74,34 +74,6 @@ FdnReverbAudioProcessor::~FdnReverbAudioProcessor()
 }
 
 //==============================================================================
-const String FdnReverbAudioProcessor::getName() const
-{
-    return JucePlugin_Name;
-}
-
-bool FdnReverbAudioProcessor::acceptsMidi() const
-{
-   #if JucePlugin_WantsMidiInput
-    return true;
-   #else
-    return false;
-   #endif
-}
-
-bool FdnReverbAudioProcessor::producesMidi() const
-{
-   #if JucePlugin_ProducesMidiOutput
-    return true;
-   #else
-    return false;
-   #endif
-}
-
-double FdnReverbAudioProcessor::getTailLengthSeconds() const
-{
-    return 10.0;
-}
-
 int FdnReverbAudioProcessor::getNumPrograms()
 {
     return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
@@ -214,14 +186,6 @@ void FdnReverbAudioProcessor::reset()
 }
 
 //------------------------------------------------------------------------------
-#ifndef JucePlugin_PreferredChannelConfigurations
-bool FdnReverbAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
-{
-    return true;
-}
-#endif
-
-//------------------------------------------------------------------------------
 void FdnReverbAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& midiMessages)
 {
 	const int nChannels = buffer.getNumChannels();
@@ -306,102 +270,65 @@ void FdnReverbAudioProcessor::setStateInformation (const void *data, int sizeInB
 
 
 //==============================================================================
-pointer_sized_int FdnReverbAudioProcessor::handleVstPluginCanDo (int32 index,
-                                                                     pointer_sized_int value, void* ptr, float opt)
-{
-    auto text = (const char*) ptr;
-    auto matches = [=](const char* s) { return strcmp (text, s) == 0; };
-
-    if (matches ("wantsChannelCountNotifications"))
-        return 1;
-    return 0;
-}
-
-//==============================================================================
-void FdnReverbAudioProcessor::oscMessageReceived (const OSCMessage &message)
-{
-    String prefix ("/" + String(JucePlugin_Name));
-    if (! message.getAddressPattern().toString().startsWith (prefix))
-        return;
-
-    OSCMessage msg (message);
-    msg.setAddressPattern (message.getAddressPattern().toString().substring(String(JucePlugin_Name).length() + 1));
-
-    oscParams.processOSCMessage (msg);
-}
-
-void FdnReverbAudioProcessor::oscBundleReceived (const OSCBundle &bundle)
-{
-    for (int i = 0; i < bundle.size(); ++i)
-    {
-        auto elem = bundle[i];
-        if (elem.isMessage())
-            oscMessageReceived (elem.getMessage());
-        else if (elem.isBundle())
-            oscBundleReceived (elem.getBundle());
-    }
-}
-
-//==============================================================================
-AudioProcessorValueTreeState::ParameterLayout FdnReverbAudioProcessor::createParameterLayout()
+std::vector<std::unique_ptr<RangedAudioParameter>> FdnReverbAudioProcessor::createParameterLayout()
 {
     // add your audio parameters here
     std::vector<std::unique_ptr<RangedAudioParameter>> params;
 
 
-    params.push_back (oscParams.createAndAddParameter ("delayLength", "Room Size", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("delayLength", "Room Size", "",
                                      NormalisableRange<float> (1.0f, 30.0f, 1.0f), 20.0f,
                                      [](float value) {return String (value, 0);},
                                      nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("revTime", "Reverberation Time", "s",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("revTime", "Reverberation Time", "s",
                                      NormalisableRange<float> (0.1f, 9.0f, 0.1f), 5.f,
                                      [](float value) {return String (value, 1);},
                                      nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("lowCutoff", "Lows Cutoff Frequency", "Hz",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("lowCutoff", "Lows Cutoff Frequency", "Hz",
                                      NormalisableRange<float> (20.f, 20000.f, 1.f, 0.2f), 100.f,
                                      [](float value) {return String (value, 0);},
                                      nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("lowQ", "Lows Q Factor", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("lowQ", "Lows Q Factor", "",
                                      NormalisableRange<float> (0.01f, 0.9f, 0.01f), 0.5f,
                                      [](float value) {return String (value, 2);},
                                      nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("lowGain",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("lowGain",
                                      "Lows Gain", "dB/s",
                                      NormalisableRange<float> (-80.0f, 6.0, 0.1f), 1.f,
                                      [](float value) {return String (value, 1);},
                                      nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("highCutoff", "Highs Cutoff Frequency", "Hz",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("highCutoff", "Highs Cutoff Frequency", "Hz",
                                      NormalisableRange<float> (20.f, 20000.f, 1.f, 0.2f), 2000.f,
                                      [](float value) {return String (value, 0);},
                                      nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("highQ", "Highs Q Factor", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("highQ", "Highs Q Factor", "",
                                      NormalisableRange<float> (0.01f, 0.9f, 0.01f), 0.5f,
                                      [](float value) {return String (value, 2);},
                                      nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("highGain",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("highGain",
                                      "Highs Gain", "dB/s",
                                      NormalisableRange<float> (-80.0f, 4.0f, 0.1f), -10.f,
                                      [](float value) {return String (value, 1);},
                                      nullptr));
     
-    params.push_back (oscParams.createAndAddParameter ("dryWet", "Dry/Wet", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("dryWet", "Dry/Wet", "",
                                      NormalisableRange<float> (0.f, 1.f, 0.01f), 0.5f,
                                      [](float value) {return String (value, 2);},
                                      nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("fadeInTime", "Fade-in Time", "s",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("fadeInTime", "Fade-in Time", "s",
                                      NormalisableRange<float> (0.0f, 9.0f, 0.01f), 0.f,
                                      [](float value) {return String(value, 2);},
                                      nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("fdnSize", "Fdn Size (internal)", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("fdnSize", "Fdn Size (internal)", "",
                                      NormalisableRange<float> (0.0f, 2.0f, 1.0f), 2.0f,
                                      [](float value) {
                                          if (value == 0.0f)
@@ -413,8 +340,7 @@ AudioProcessorValueTreeState::ParameterLayout FdnReverbAudioProcessor::createPar
                                      },
                                      nullptr));
 
-
-    return { params.begin(), params.end() };
+    return params;
 }
 
 //==============================================================================

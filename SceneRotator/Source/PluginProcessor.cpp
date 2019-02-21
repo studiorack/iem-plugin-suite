@@ -44,17 +44,18 @@
 
 //==============================================================================
 SceneRotatorAudioProcessor::SceneRotatorAudioProcessor()
+: AudioProcessorBase (
 #ifndef JucePlugin_PreferredChannelConfigurations
-: AudioProcessor (BusesProperties()
+                  BusesProperties()
 #if ! JucePlugin_IsMidiEffect
 #if ! JucePlugin_IsSynth
                   .withInput  ("Input",  AudioChannelSet::discreteChannels (64), true)
 #endif
                   .withOutput ("Output", AudioChannelSet::discreteChannels (64), true)
 #endif
-                  ),
+                  ,
 #endif
-oscParams (parameters), parameters (*this, nullptr, "SceneRotator", createParameterLayout())
+createParameterLayout())
 {
     // get pointers to the parameters
     orderSetting = parameters.getRawParameterValue ("orderSetting");
@@ -115,43 +116,6 @@ SceneRotatorAudioProcessor::~SceneRotatorAudioProcessor()
 }
 
 //==============================================================================
-const String SceneRotatorAudioProcessor::getName() const
-{
-    return JucePlugin_Name;
-}
-
-bool SceneRotatorAudioProcessor::acceptsMidi() const
-{
-#if JucePlugin_WantsMidiInput
-    return true;
-#else
-    return false;
-#endif
-}
-
-bool SceneRotatorAudioProcessor::producesMidi() const
-{
-#if JucePlugin_ProducesMidiOutput
-    return true;
-#else
-    return false;
-#endif
-}
-
-bool SceneRotatorAudioProcessor::isMidiEffect() const
-{
-#if JucePlugin_IsMidiEffect
-    return true;
-#else
-    return false;
-#endif
-}
-
-double SceneRotatorAudioProcessor::getTailLengthSeconds() const
-{
-    return 0.0;
-}
-
 int SceneRotatorAudioProcessor::getNumPrograms()
 {
     return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
@@ -196,13 +160,6 @@ void SceneRotatorAudioProcessor::releaseResources()
     // When playback stops, you can use this as an opportunity to free up any
     // spare memory, etc.
 }
-
-#ifndef JucePlugin_PreferredChannelConfigurations
-bool SceneRotatorAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
-{
-    return true;
-}
-#endif
 
 void SceneRotatorAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
@@ -722,80 +679,54 @@ void SceneRotatorAudioProcessor::updateBuffers()
     copyBuffer.setSize (input.getNumberOfChannels(), copyBuffer.getNumSamples());
 }
 
-//==============================================================================
-pointer_sized_int SceneRotatorAudioProcessor::handleVstPluginCanDo (int32 index,
-                                                                    pointer_sized_int value, void* ptr, float opt)
-{
-    auto text = (const char*) ptr;
-    auto matches = [=](const char* s) { return strcmp (text, s) == 0; };
-
-    if (matches ("wantsChannelCountNotifications"))
-        return 1;
-    return 0;
-}
 
 //==============================================================================
-void SceneRotatorAudioProcessor::oscMessageReceived (const OSCMessage &message)
+const bool SceneRotatorAudioProcessor::interceptOSCMessage (OSCMessage &message)
 {
     String prefix ("/" + String (JucePlugin_Name));
-    if (! message.getAddressPattern().toString().startsWith (prefix))
-        return;
-
-    OSCMessage msg (message);
-    msg.setAddressPattern (message.getAddressPattern().toString().substring (String (JucePlugin_Name).length() + 1));
-
-    if (! oscParams.processOSCMessage (msg))
+    if (message.getAddressPattern().toString().equalsIgnoreCase ("/" + String (JucePlugin_Name) + "/quaternions") && message.size() == 4)
     {
-        if (msg.getAddressPattern().toString().equalsIgnoreCase ("/quaternions") && msg.size() == 4)
-        {
-            float qs[4];
-            for (int i = 0; i < 4; ++i)
-                if (msg[i].isFloat32())
-                    qs[i] = msg[i].getFloat32();
-                else if (msg[i].isInt32())
-                    qs[i] = msg[i].getInt32();
+        float qs[4];
+        for (int i = 0; i < 4; ++i)
+            if (message[i].isFloat32())
+                qs[i] = message[i].getFloat32();
+            else if (message[i].isInt32())
+                qs[i] = message[i].getInt32();
 
-            oscParams.setValue ("qw", qs[0]);
-            oscParams.setValue ("qx", qs[1]);
-            oscParams.setValue ("qy", qs[2]);
-            oscParams.setValue ("qz", qs[3]);
-        }
-        else if (msg.getAddressPattern().toString().equalsIgnoreCase ("/ypr") && msg.size() == 3)
-        {
-            float ypr[3];
-            for (int i = 0; i < 3; ++i)
-                if (msg[i].isFloat32())
-                    ypr[i] = msg[i].getFloat32();
-                else if (msg[i].isInt32())
-                    ypr[i] = msg[i].getInt32();
-
-            oscParams.setValue ("yaw", ypr[0]);
-            oscParams.setValue ("pitch", ypr[1]);
-            oscParams.setValue ("roll", ypr[2]);
-        }
+        oscParameterInterface.setValue ("qw", qs[0]);
+        oscParameterInterface.setValue ("qx", qs[1]);
+        oscParameterInterface.setValue ("qy", qs[2]);
+        oscParameterInterface.setValue ("qz", qs[3]);
+        return true;
     }
+    else if (message.getAddressPattern().toString().equalsIgnoreCase ("/" + String (JucePlugin_Name) + "/ypr") && message.size() == 3)
+    {
+        float ypr[3];
+        for (int i = 0; i < 3; ++i)
+            if (message[i].isFloat32())
+                ypr[i] = message[i].getFloat32();
+            else if (message[i].isInt32())
+                ypr[i] = message[i].getInt32();
+
+        oscParameterInterface.setValue ("yaw", ypr[0]);
+        oscParameterInterface.setValue ("pitch", ypr[1]);
+        oscParameterInterface.setValue ("roll", ypr[2]);
+        return true;
+    }
+
+    return false;
 }
 
-void SceneRotatorAudioProcessor::oscBundleReceived (const OSCBundle &bundle)
-{
-    for (int i = 0; i < bundle.size(); ++i)
-    {
-        auto elem = bundle[i];
-        if (elem.isMessage())
-            oscMessageReceived (elem.getMessage());
-        else if (elem.isBundle())
-            oscBundleReceived (elem.getBundle());
-    }
-}
+
 
 //==============================================================================
-AudioProcessorValueTreeState::ParameterLayout SceneRotatorAudioProcessor::createParameterLayout()
+std::vector<std::unique_ptr<RangedAudioParameter>> SceneRotatorAudioProcessor::createParameterLayout()
 {
     // add your audio parameters here
     std::vector<std::unique_ptr<RangedAudioParameter>> params;
 
 
-    params.push_back (oscParams.createAndAddParameter ("orderSetting", "Ambisonics Order", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("orderSetting", "Ambisonics Order", "",
                                                        NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
                                                        [](float value) {
                                                            if (value >= 0.5f && value < 1.5f) return "0th";
@@ -809,7 +740,7 @@ AudioProcessorValueTreeState::ParameterLayout SceneRotatorAudioProcessor::create
                                                            else return "Auto";
                                                        }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("useSN3D", "Normalization", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("useSN3D", "Normalization", "",
                                                        NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                                        [](float value)
                                                        {
@@ -817,56 +748,56 @@ AudioProcessorValueTreeState::ParameterLayout SceneRotatorAudioProcessor::create
                                                            else return "N3D";
                                                        }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("yaw", "Yaw Angle", CharPointer_UTF8 (R"(°)"),
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("yaw", "Yaw Angle", CharPointer_UTF8 (R"(°)"),
                                                        NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
                                                        [](float value) { return String(value, 2); }, nullptr, true));
 
-    params.push_back (oscParams.createAndAddParameter ("pitch", "Pitch Angle", CharPointer_UTF8 (R"(°)"),
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("pitch", "Pitch Angle", CharPointer_UTF8 (R"(°)"),
                                                        NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
                                                        [](float value) { return String(value, 2); }, nullptr, true));
 
-    params.push_back (oscParams.createAndAddParameter ("roll", "Roll Angle", CharPointer_UTF8 (R"(°)"),
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("roll", "Roll Angle", CharPointer_UTF8 (R"(°)"),
                                                        NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
                                                        [](float value) { return String(value, 2); }, nullptr, true));
 
-    params.push_back (oscParams.createAndAddParameter ("qw", "Quaternion W", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("qw", "Quaternion W", "",
                                                        NormalisableRange<float> (-1.0f, 1.0f, 0.001f), 1.0,
                                                        [](float value) { return String(value, 2); }, nullptr, true));
 
-    params.push_back (oscParams.createAndAddParameter ("qx", "Quaternion X", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("qx", "Quaternion X", "",
                                                        NormalisableRange<float> (-1.0f, 1.0f, 0.001f), 0.0,
                                                        [](float value) { return String(value, 2); }, nullptr, true));
 
-    params.push_back (oscParams.createAndAddParameter ("qy", "Quaternion Y", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("qy", "Quaternion Y", "",
                                                        NormalisableRange<float> (-1.0f, 1.0f, 0.001f), 0.0,
                                                        [](float value) { return String(value, 2); }, nullptr, true));
 
-    params.push_back (oscParams.createAndAddParameter ("qz", "Quaternion Z", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("qz", "Quaternion Z", "",
                                                        NormalisableRange<float> (-1.0f, 1.0f, 0.001f), 0.0,
                                                        [](float value) { return String(value, 2); }, nullptr, true));
 
-    params.push_back (oscParams.createAndAddParameter ("invertYaw", "Invert Yaw", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("invertYaw", "Invert Yaw", "",
                                                        NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
                                                        [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("invertPitch", "Invert Pitch", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("invertPitch", "Invert Pitch", "",
                                                        NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
                                                        [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("invertRoll", "Invert Roll", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("invertRoll", "Invert Roll", "",
                                                        NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
                                                        [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("invertQuaternion", "Invert Quaternion", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("invertQuaternion", "Invert Quaternion", "",
                                                        NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
                                                        [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("rotationSequence", "Sequence of Rotations", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("rotationSequence", "Sequence of Rotations", "",
                                                        NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0,
                                                        [](float value) { return value >= 0.5f ? "Roll->Pitch->Yaw" : "Yaw->Pitch->Roll"; }, nullptr));
 
 
-    return { params.begin(), params.end() };
+    return params;
 }
 
 //==============================================================================

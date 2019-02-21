@@ -32,12 +32,12 @@
 
 typedef std::vector<std::unique_ptr<RangedAudioParameter>> ParameterList;
 
-template <class inputType, class outputType>
+template <class inputType, class outputType, bool combined = false>
 
 class AudioProcessorBase :  public AudioProcessor,
                             public VSTCallbackHandler,
                             public OSCReceiver::Listener<OSCReceiver::RealtimeCallback>,
-                            public IOHelper<inputType, outputType>,
+                            public IOHelper<inputType, outputType, combined>,
                             public AudioProcessorValueTreeState::Listener
 {
 public:

@@ -26,17 +26,18 @@
 
 //==============================================================================
 EnergyVisualizerAudioProcessor::EnergyVisualizerAudioProcessor()
+     : AudioProcessorBase (
 #ifndef JucePlugin_PreferredChannelConfigurations
-     : AudioProcessor (BusesProperties()
+                       BusesProperties()
                      #if ! JucePlugin_IsMidiEffect
                       #if ! JucePlugin_IsSynth
                        .withInput  ("Input",  AudioChannelSet::discreteChannels(64), true)
                       #endif
                        .withOutput ("Output", AudioChannelSet::discreteChannels(64), true)
                      #endif
-                       ),
+                       ,
 #endif
-oscParams (parameters), parameters (*this, nullptr, "EnergyVisualizer", createParameterLayout())
+createParameterLayout())
 {
     orderSetting = parameters.getRawParameterValue ("orderSetting");
     useSN3D = parameters.getRawParameterValue ("useSN3D");
@@ -69,43 +70,6 @@ EnergyVisualizerAudioProcessor::~EnergyVisualizerAudioProcessor()
 }
 
 //==============================================================================
-const String EnergyVisualizerAudioProcessor::getName() const
-{
-    return JucePlugin_Name;
-}
-
-bool EnergyVisualizerAudioProcessor::acceptsMidi() const
-{
-   #if JucePlugin_WantsMidiInput
-    return true;
-   #else
-    return false;
-   #endif
-}
-
-bool EnergyVisualizerAudioProcessor::producesMidi() const
-{
-   #if JucePlugin_ProducesMidiOutput
-    return true;
-   #else
-    return false;
-   #endif
-}
-
-bool EnergyVisualizerAudioProcessor::isMidiEffect() const
-{
-   #if JucePlugin_IsMidiEffect
-    return true;
-   #else
-    return false;
-   #endif
-}
-
-double EnergyVisualizerAudioProcessor::getTailLengthSeconds() const
-{
-    return 0.0;
-}
-
 int EnergyVisualizerAudioProcessor::getNumPrograms()
 {
     return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
@@ -145,12 +109,6 @@ void EnergyVisualizerAudioProcessor::releaseResources()
     // spare memory, etc.
 }
 
-#ifndef JucePlugin_PreferredChannelConfigurations
-bool EnergyVisualizerAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
-{
-    return true;
-}
-#endif
 
 void EnergyVisualizerAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
@@ -236,50 +194,14 @@ void EnergyVisualizerAudioProcessor::parameterChanged (const String &parameterID
     if (parameterID == "orderSetting") userChangedIOSettings = true;
 }
 
-//==============================================================================
-pointer_sized_int EnergyVisualizerAudioProcessor::handleVstPluginCanDo (int32 index,
-                                                                     pointer_sized_int value, void* ptr, float opt)
-{
-    auto text = (const char*) ptr;
-    auto matches = [=](const char* s) { return strcmp (text, s) == 0; };
-
-    if (matches ("wantsChannelCountNotifications"))
-        return 1;
-    return 0;
-}
 
 //==============================================================================
-void EnergyVisualizerAudioProcessor::oscMessageReceived (const OSCMessage &message)
-{
-    String prefix ("/" + String(JucePlugin_Name));
-    if (! message.getAddressPattern().toString().startsWith (prefix))
-        return;
-
-    OSCMessage msg (message);
-    msg.setAddressPattern (message.getAddressPattern().toString().substring(String(JucePlugin_Name).length() + 1));
-
-    oscParams.processOSCMessage (msg);
-}
-
-void EnergyVisualizerAudioProcessor::oscBundleReceived (const OSCBundle &bundle)
-{
-    for (int i = 0; i < bundle.size(); ++i)
-    {
-        auto elem = bundle[i];
-        if (elem.isMessage())
-            oscMessageReceived (elem.getMessage());
-        else if (elem.isBundle())
-            oscBundleReceived (elem.getBundle());
-    }
-}
-
-//==============================================================================
-AudioProcessorValueTreeState::ParameterLayout EnergyVisualizerAudioProcessor::createParameterLayout()
+std::vector<std::unique_ptr<RangedAudioParameter>> EnergyVisualizerAudioProcessor::createParameterLayout()
 {
     // add your audio parameters here
     std::vector<std::unique_ptr<RangedAudioParameter>> params;
 
-    params.push_back (oscParams.createAndAddParameter ("orderSetting", "Ambisonics Order", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("orderSetting", "Ambisonics Order", "",
                                      NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
                                      [](float value)
                                      {
@@ -294,7 +216,7 @@ AudioProcessorValueTreeState::ParameterLayout EnergyVisualizerAudioProcessor::cr
                                          else return "Auto";
                                      }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("useSN3D", "Normalization", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("useSN3D", "Normalization", "",
                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value)
                                      {
@@ -302,15 +224,15 @@ AudioProcessorValueTreeState::ParameterLayout EnergyVisualizerAudioProcessor::cr
                                          else return "N3D";
                                      }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("peakLevel", "Peak level", "dB",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("peakLevel", "Peak level", "dB",
                                     NormalisableRange<float> (-50.0f, 10.0f, 0.1f), 0.0,
                                     [](float value) {return String(value, 1);}, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("dynamicRange", "Dynamic Range", "dB",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("dynamicRange", "Dynamic Range", "dB",
                                                        NormalisableRange<float> (10.0f, 60.0f, 1.f), 35.0,
                                                        [](float value) {return String (value, 0);}, nullptr));
 
-    return { params.begin(), params.end() };
+    return params;
 }
 
 
