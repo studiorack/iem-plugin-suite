@@ -8,7 +8,7 @@
               pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
               pluginAUExportPrefix="StereoEncoderAU" aaxIdentifier="at.iem.StereoEncoder"
-              pluginAAXCategory="2" jucerVersion="5.4.1" companyName="IEM"
+              pluginAAXCategory="2" jucerVersion="5.4.3" companyName="IEM"
               companyWebsite="iem.at" displaySplashScreen="0" reportAppUsage="0"
               splashScreenColour="Dark" buildStandalone="1" enableIAA="0" cppLanguageStandard="11"
               companyCopyright="IEM - Daniel Rudrich" headerPath="../../../resources/"
@@ -39,6 +39,8 @@
           file="../resources/OSCParameterInterface.h"/>
     <FILE id="IXrAWH" name="OSCStatus.h" compile="0" resource="0" file="../resources/customComponents/OSCStatus.h"/>
     <FILE id="KzVW9N" name="SpherePanner.h" compile="0" resource="0" file="../resources/customComponents/SpherePanner.h"/>
+    <FILE id="KGgn5i" name="AudioProcessorBase.h" compile="0" resource="0"
+          file="../resources/AudioProcessorBase.h"/>
   </MAINGROUP>
   <EXPORTFORMATS>
     <XCODE_MAC targetFolder="Builds/MacOSX">

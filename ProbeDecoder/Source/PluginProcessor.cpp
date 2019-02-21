@@ -25,17 +25,18 @@
 
 //==============================================================================
 ProbeDecoderAudioProcessor::ProbeDecoderAudioProcessor()
+: AudioProcessorBase (
 #ifndef JucePlugin_PreferredChannelConfigurations
-: AudioProcessor (BusesProperties()
+                      BusesProperties()
 #if ! JucePlugin_IsMidiEffect
 #if ! JucePlugin_IsSynth
                   .withInput  ("Input",  AudioChannelSet::discreteChannels(64), true)
 #endif
                   .withOutput ("Output", AudioChannelSet::mono(), true)
 #endif
-                  ),
+                  ,
 #endif
-parameters (*this, nullptr, "ProbeDecoder", createParameterLayout()), oscParams (parameters)
+createParameterLayout())
 {
     orderSetting = parameters.getRawParameterValue("orderSetting");
     useSN3D = parameters.getRawParameterValue("useSN3D");
@@ -55,29 +56,6 @@ ProbeDecoderAudioProcessor::~ProbeDecoderAudioProcessor()
 = default;
 
 //==============================================================================
-const String ProbeDecoderAudioProcessor::getName() const {
-    return JucePlugin_Name;
-}
-
-bool ProbeDecoderAudioProcessor::acceptsMidi() const {
-#if JucePlugin_WantsMidiInput
-    return true;
-#else
-    return false;
-#endif
-}
-
-bool ProbeDecoderAudioProcessor::producesMidi() const {
-#if JucePlugin_ProducesMidiOutput
-    return true;
-#else
-    return false;
-#endif
-}
-
-double ProbeDecoderAudioProcessor::getTailLengthSeconds() const {
-    return 0.0;
-}
 
 int ProbeDecoderAudioProcessor::getNumPrograms() {
     return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
@@ -108,13 +86,6 @@ void ProbeDecoderAudioProcessor::releaseResources() {
     // spare memory, etc.
 }
 
-#ifndef JucePlugin_PreferredChannelConfigurations
-
-bool ProbeDecoderAudioProcessor::isBusesLayoutSupported(const BusesLayout &layouts) const {
-    return true;
-}
-
-#endif
 
 void ProbeDecoderAudioProcessor::processBlock(AudioSampleBuffer &buffer, MidiBuffer &midiMessages) {
     checkInputAndOutput(this, *orderSetting, 1);
@@ -186,51 +157,15 @@ void ProbeDecoderAudioProcessor::setStateInformation (const void *data, int size
         }
 }
 
-//==============================================================================
-pointer_sized_int ProbeDecoderAudioProcessor::handleVstPluginCanDo (int32 index,
-                                                                     pointer_sized_int value, void* ptr, float opt)
-{
-    auto text = (const char*) ptr;
-    auto matches = [=](const char* s) { return strcmp (text, s) == 0; };
-
-    if (matches ("wantsChannelCountNotifications"))
-        return 1;
-    return 0;
-}
 
 //==============================================================================
-void ProbeDecoderAudioProcessor::oscMessageReceived (const OSCMessage &message)
-{
-    String prefix ("/" + String(JucePlugin_Name));
-    if (! message.getAddressPattern().toString().startsWith (prefix))
-        return;
-
-    OSCMessage msg (message);
-    msg.setAddressPattern (message.getAddressPattern().toString().substring(String(JucePlugin_Name).length() + 1));
-
-    oscParams.processOSCMessage (msg);
-}
-
-void ProbeDecoderAudioProcessor::oscBundleReceived (const OSCBundle &bundle)
-{
-    for (int i = 0; i < bundle.size(); ++i)
-    {
-        auto elem = bundle[i];
-        if (elem.isMessage())
-            oscMessageReceived (elem.getMessage());
-        else if (elem.isBundle())
-            oscBundleReceived (elem.getBundle());
-    }
-}
-
-//==============================================================================
-AudioProcessorValueTreeState::ParameterLayout ProbeDecoderAudioProcessor::createParameterLayout()
+std::vector<std::unique_ptr<RangedAudioParameter>> ProbeDecoderAudioProcessor::createParameterLayout()
 {
     // add your audio parameters here
     std::vector<std::unique_ptr<RangedAudioParameter>> params;
 
 
-    params.push_back (oscParams.createAndAddParameter ("orderSetting", "Ambisonics Order", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("orderSetting", "Ambisonics Order", "",
                                      NormalisableRange<float>(0.0f, 8.0f, 1.0f), 0.0f,
                                      [](float value) {
                                          if (value >= 0.5f && value < 1.5f) return "0th";
@@ -244,23 +179,23 @@ AudioProcessorValueTreeState::ParameterLayout ProbeDecoderAudioProcessor::create
                                          else return "Auto";
                                      }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("useSN3D", "Normalization", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("useSN3D", "Normalization", "",
                                      NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value) {
                                          if (value >= 0.5f) return "SN3D";
                                          else return "N3D";
                                      }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("azimuth", "Azimuth angle", CharPointer_UTF8 (R"(°)"),
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("azimuth", "Azimuth angle", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
                                      [](float value) { return String(value, 2); }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("elevation", "Elevation angle", CharPointer_UTF8 (R"(°)"),
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("elevation", "Elevation angle", CharPointer_UTF8 (R"(°)"),
                                      NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
                                      [](float value) { return String(value, 2); }, nullptr));
 
 
-    return { params.begin(), params.end() };
+    return params;
 }
 
 //==============================================================================

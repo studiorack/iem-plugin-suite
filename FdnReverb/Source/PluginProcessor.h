@@ -24,18 +24,12 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "../../resources/FeedbackDelayNetwork.h"
-
-// ===== OSC ====
-#include "../../resources/OSCParameterInterface.h"
-#include "../../resources/OSCReceiverPlus.h"
+#include "../../resources/AudioProcessorBase.h"
 
 //==============================================================================
 /**
 */
-class FdnReverbAudioProcessor  : public AudioProcessor,
-                                public AudioProcessorValueTreeState::Listener,
-                                public VSTCallbackHandler,
-                                private OSCReceiver::Listener<OSCReceiver::RealtimeCallback>
+class FdnReverbAudioProcessor  : public AudioProcessorBase<IOTypes::Nothing, IOTypes::Nothing>
 {
 public:
 //==============================================================================
@@ -47,22 +41,11 @@ public:
     void releaseResources() override;
     void reset() override;
 
-   #ifndef JucePlugin_PreferredChannelConfigurations
-    bool isBusesLayoutSupported (const BusesLayout& layouts) const override;
-   #endif
-
     void processBlock (AudioBuffer<float>& buffer, MidiBuffer& midiMessages) override;
 
 //==============================================================================
     AudioProcessorEditor* createEditor() override;
     bool hasEditor() const override;
-
-//==============================================================================
-    const String getName() const override;
-
-    bool acceptsMidi() const override;
-    bool producesMidi() const override;
-    double getTailLengthSeconds() const override;
 
 //==============================================================================
     int getNumPrograms() override;
@@ -71,31 +54,17 @@ public:
     const String getProgramName (int index) override;
     void changeProgramName (int index, const String& newName) override;
 
-//==============================================================================
+    //==============================================================================
     void getStateInformation (MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
     void parameterChanged (const String &parameterID, float newValue) override;
 
-    //======== PluginCanDo =========================================================
-    pointer_sized_int handleVstManufacturerSpecific (int32 index, pointer_sized_int value,
-                                                     void* ptr, float opt) override { return 0; };
-    pointer_sized_int handleVstPluginCanDo (int32 index, pointer_sized_int value,
-                                            void* ptr, float opt) override;
-    //==============================================================================
-
-    //======== OSC =================================================================
-    void oscMessageReceived (const OSCMessage &message) override;
-    void oscBundleReceived (const OSCBundle &bundle) override;
-    OSCReceiverPlus& getOSCReceiver () { return oscReceiver; }
-    //==============================================================================
 
     //======= Parameters ===========================================================
-    AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
-    //==============================================================================
+    std::vector<std::unique_ptr<RangedAudioParameter>> createParameterLayout();
 
 
-//==============================================================================
 
     int maxPossibleChannels = 64;
 
@@ -105,10 +74,6 @@ public:
 
 private:
     //==============================================================================
-    OSCParameterInterface oscParams;
-    OSCReceiverPlus oscReceiver;
-    AudioProcessorValueTreeState parameters;
-
 	AudioBuffer<float> copyBuffer;
 
     // parameters (from GUI)
@@ -123,7 +88,6 @@ private:
     float *lowQ;
     float *lowGain;
     float *wet;
-
 
     FeedbackDelayNetwork fdn, fdnFade;
 

@@ -24,17 +24,18 @@
 
 //==============================================================================
 RoomEncoderAudioProcessor::RoomEncoderAudioProcessor()
+: AudioProcessorBase (
 #ifndef JucePlugin_PreferredChannelConfigurations
-: AudioProcessor (BusesProperties()
+                  BusesProperties()
 #if ! JucePlugin_IsMidiEffect
 #if ! JucePlugin_IsSynth
                   .withInput  ("Input",  AudioChannelSet::discreteChannels(64), true)
 #endif
                   .withOutput ("Output", AudioChannelSet::discreteChannels(64), true)
 #endif
-                  ),
+                  ,
 #endif
-oscParams (parameters), parameters (*this, nullptr, "RoomEncoder", createParameterLayout())
+createParameterLayout())
 {
     directivityOrderSetting = parameters.getRawParameterValue ("directivityOrderSetting");
     inputIsSN3D = parameters.getRawParameterValue ("inputIsSN3D");
@@ -126,34 +127,6 @@ RoomEncoderAudioProcessor::~RoomEncoderAudioProcessor()
 }
 
 //==============================================================================
-const String RoomEncoderAudioProcessor::getName() const
-{
-    return JucePlugin_Name;
-}
-
-bool RoomEncoderAudioProcessor::acceptsMidi() const
-{
-#if JucePlugin_WantsMidiInput
-    return true;
-#else
-    return false;
-#endif
-}
-
-bool RoomEncoderAudioProcessor::producesMidi() const
-{
-#if JucePlugin_ProducesMidiOutput
-    return true;
-#else
-    return false;
-#endif
-}
-
-double RoomEncoderAudioProcessor::getTailLengthSeconds() const
-{
-    return 0.0;
-}
-
 int RoomEncoderAudioProcessor::getNumPrograms()
 {
     return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
@@ -211,13 +184,6 @@ void RoomEncoderAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
 void RoomEncoderAudioProcessor::releaseResources()
 {
 }
-
-#ifndef JucePlugin_PreferredChannelConfigurations
-bool RoomEncoderAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
-{
-    return true;
-}
-#endif
 
 
 void RoomEncoderAudioProcessor::parameterChanged (const String &parameterID, float newValue)
@@ -332,7 +298,7 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
         size_t ch;
         for (ch = 0; ch < partial; ++ch)
         {
-            addr[ch] = buffer.getReadPointer(i * IIRfloat_elements() + ch);
+            addr[ch] = buffer.getReadPointer(i * static_cast<int> (IIRfloat_elements() + ch));
         }
         for (; ch < IIRfloat_elements(); ++ch)
         {
@@ -789,7 +755,8 @@ void RoomEncoderAudioProcessor::timerCallback()
 }
 
 
-void RoomEncoderAudioProcessor::updateBuffers() {
+void RoomEncoderAudioProcessor::updateBuffers()
+{
     DBG("IOHelper:  input size: " << input.getSize());
     DBG("IOHelper: output size: " << output.getSize());
 
@@ -816,52 +783,11 @@ void RoomEncoderAudioProcessor::updateBuffers() {
 }
 
 //==============================================================================
-pointer_sized_int RoomEncoderAudioProcessor::handleVstPluginCanDo (int32 index,
-                                                                     pointer_sized_int value, void* ptr, float opt)
+std::vector<std::unique_ptr<RangedAudioParameter>> RoomEncoderAudioProcessor::createParameterLayout()
 {
-    auto text = (const char*) ptr;
-    auto matches = [=](const char* s) { return strcmp (text, s) == 0; };
-
-    if (matches ("wantsChannelCountNotifications"))
-        return 1;
-    return 0;
-}
-
-//==============================================================================
-void RoomEncoderAudioProcessor::oscMessageReceived (const OSCMessage &message)
-{
-    String prefix ("/" + String(JucePlugin_Name));
-    if (! message.getAddressPattern().toString().startsWith (prefix))
-        return;
-
-    OSCMessage msg (message);
-    msg.setAddressPattern (message.getAddressPattern().toString().substring(String(JucePlugin_Name).length() + 1));
-
-    oscParams.processOSCMessage (msg);
-}
-
-void RoomEncoderAudioProcessor::oscBundleReceived (const OSCBundle &bundle)
-{
-    for (int i = 0; i < bundle.size(); ++i)
-    {
-        auto elem = bundle[i];
-        if (elem.isMessage())
-            oscMessageReceived (elem.getMessage());
-        else if (elem.isBundle())
-            oscBundleReceived (elem.getBundle());
-    }
-}
-
-//==============================================================================
-AudioProcessorValueTreeState::ParameterLayout RoomEncoderAudioProcessor::createParameterLayout()
-{
-    // add your audio parameters here
     std::vector<std::unique_ptr<RangedAudioParameter>> params;
 
-
-
-
-    params.push_back (oscParams.createAndAddParameter ("directivityOrderSetting", "Input Directivity Order", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("directivityOrderSetting", "Input Directivity Order", "",
                                      NormalisableRange<float> (0.0f, 8.0f, 1.0f), 1.0f,
                                      [](float value) {
                                          if (value >= 0.5f && value < 1.5f) return "0th";
@@ -875,13 +801,13 @@ AudioProcessorValueTreeState::ParameterLayout RoomEncoderAudioProcessor::createP
                                          else return "Auto"; },
                                      nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("inputIsSN3D", "Input Directivity Normalization", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("inputIsSN3D", "Input Directivity Normalization", "",
                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value) { if (value >= 0.5f ) return "SN3D";
                                          else return "N3D"; },
                                      nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("orderSetting", "Output Ambisonics Order", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("orderSetting", "Output Ambisonics Order", "",
                                      NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
                                      [](float value) {
                                          if (value >= 0.5f && value < 1.5f) return "0th";
@@ -894,65 +820,65 @@ AudioProcessorValueTreeState::ParameterLayout RoomEncoderAudioProcessor::createP
                                          else if (value >= 7.5f) return "7th";
                                          else return "Auto"; },
                                      nullptr));
-    params.push_back (oscParams.createAndAddParameter ("useSN3D", "Normalization", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("useSN3D", "Normalization", "",
                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value) { if (value >= 0.5f ) return "SN3D";
                                          else return "N3D"; },
                                      nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("roomX", "room size x", "m",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("roomX", "room size x", "m",
                                      NormalisableRange<float> (1.0f, 30.0f, 0.01f), 10.0f,
                                      [](float value) { return String(value, 2); }, nullptr));
-    params.push_back (oscParams.createAndAddParameter ("roomY", "room size y", "m",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("roomY", "room size y", "m",
                                      NormalisableRange<float> (1.0f, 30.0f, 0.01f), 11.0f,
                                      [](float value) { return String(value, 2); }, nullptr));
-    params.push_back (oscParams.createAndAddParameter ("roomZ", "room size z", "m",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("roomZ", "room size z", "m",
                                      NormalisableRange<float> (1.0f, 20.0f, 0.01f), 7.0f,
                                      [](float value) { return String(value, 2); }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("sourceX", "source position x", "m",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("sourceX", "source position x", "m",
                                      NormalisableRange<float> (-15.0f, 15.0f, 0.001f), 1.0f,
                                      [](float value) { return String(value, 3); }, nullptr));
-    params.push_back (oscParams.createAndAddParameter ("sourceY", "source position y", "m",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("sourceY", "source position y", "m",
                                      NormalisableRange<float> (-15.0f, 15.0f, 0.001f), 1.0f,
                                      [](float value) { return String(value, 3); }, nullptr));
-    params.push_back (oscParams.createAndAddParameter ("sourceZ", "source position z", "m",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("sourceZ", "source position z", "m",
                                      NormalisableRange<float> (-10.0f, 10.0f, 0.001f), -1.0f,
                                      [](float value) { return String(value, 3); }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("listenerX", "listener position x", "m",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("listenerX", "listener position x", "m",
                                      NormalisableRange<float> (-15.0f, 15.0f, 0.001f), -1.0f,
                                      [](float value) { return String(value, 3); }, nullptr));
-    params.push_back (oscParams.createAndAddParameter ("listenerY", "listener position y", "m",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("listenerY", "listener position y", "m",
                                      NormalisableRange<float> (-15.0f, 15.0f, 0.001f), -1.0f,
                                      [](float value) { return String(value, 3); }, nullptr));
-    params.push_back (oscParams.createAndAddParameter ("listenerZ", "listener position z", "m",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("listenerZ", "listener position z", "m",
                                      NormalisableRange<float> (-10.0f, 10.0f, 0.001f), -1.0f,
                                      [](float value) { return String(value, 3); }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("numRefl", "number of reflections", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("numRefl", "number of reflections", "",
                                      NormalisableRange<float> (0.0f, nImgSrc-1, 1.0f), 33.0f,
                                      [](float value) { return String((int) value); }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("lowShelfFreq", "LowShelf Frequency", "Hz",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("lowShelfFreq", "LowShelf Frequency", "Hz",
                                      NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.2f), 100.0,
                                      [](float value) { return String((int) value); }, nullptr));
-    params.push_back (oscParams.createAndAddParameter ("lowShelfGain", "LowShelf Gain", "dB",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("lowShelfGain", "LowShelf Gain", "dB",
                                      NormalisableRange<float> (-15.0f, 5.0f, 0.1f), -5.0f,
                                      [](float value) { return String(value, 1); }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("highShelfFreq", "HighShelf Frequency", "Hz",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("highShelfFreq", "HighShelf Frequency", "Hz",
                                      NormalisableRange<float> (20., 20000.0f, 1.0f, 0.2f), 8000.0,
                                      [](float value) { return String((int) value); }, nullptr));
-    params.push_back (oscParams.createAndAddParameter ("highShelfGain", "HighShelf Gain", "dB",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("highShelfGain", "HighShelf Gain", "dB",
                                      NormalisableRange<float> (-15.0f, 5.0f, 0.1f), -5.0f,
                                      [](float value) { return String(value, 1); }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("reflCoeff", "Reflection Coefficient", "dB",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("reflCoeff", "Reflection Coefficient", "dB",
                                      NormalisableRange<float> (-15.0f, 0.0f, 0.01f), -1.0f,
                                      [](float value) { return String(value, 2); }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("syncChannel", "Synchronize to Channel", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("syncChannel", "Synchronize to Channel", "",
                                      NormalisableRange<float> (0.0f, 4.0f, 1.0f), 0.0f,
                                      [](float value) {
                                          if (value >= 0.5f && value < 1.5f) return "Channel 1";
@@ -962,40 +888,35 @@ AudioProcessorValueTreeState::ParameterLayout RoomEncoderAudioProcessor::createP
                                          else return "None"; },
                                      nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("syncRoomSize", "Synchronize Room Dimensions", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("syncRoomSize", "Synchronize Room Dimensions", "",
                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value) {
                                          if (value >= 0.5f) return "YES";
                                          else return "NO"; },
                                      nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("syncReflection", "Synchronize Reflection Properties", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("syncReflection", "Synchronize Reflection Properties", "",
                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value) {
                                          if (value >= 0.5f) return "YES";
                                          else return "NO"; },
                                      nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("syncListener", "Synchronize Listener Position", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("syncListener", "Synchronize Listener Position", "",
                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value) {
                                          if (value >= 0.5f) return "YES";
                                          else return "NO"; },
                                      nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("renderDirectPath", "Render Direct Path", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("renderDirectPath", "Render Direct Path", "",
                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value) {
                                          if (value >= 0.5f) return "YES";
                                          else return "NO"; },
                                      nullptr));
 
-
-
-
-
-
-    return { params.begin(), params.end() };
+    return params;
 }
 
 //==============================================================================

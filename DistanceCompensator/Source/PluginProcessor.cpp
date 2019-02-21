@@ -26,17 +26,18 @@
 
 //==============================================================================
 DistanceCompensatorAudioProcessor::DistanceCompensatorAudioProcessor()
+: AudioProcessorBase (
 #ifndef JucePlugin_PreferredChannelConfigurations
-: AudioProcessor (BusesProperties()
+                      BusesProperties()
 #if ! JucePlugin_IsMidiEffect
 #if ! JucePlugin_IsSynth
                   .withInput  ("Input",  AudioChannelSet::discreteChannels(10), true)
 #endif
                   .withOutput ("Output", AudioChannelSet::discreteChannels(64), true)
 #endif
-                  ),
+                  ,
 #endif
-oscParams (parameters), parameters (*this, nullptr, "DistanceCompensator", createParameterLayout())
+createParameterLayout())
 {
     // get pointers to the parameters
     inputChannelsSetting = parameters.getRawParameterValue ("inputChannelsSetting");
@@ -74,7 +75,7 @@ oscParams (parameters), parameters (*this, nullptr, "DistanceCompensator", creat
     options.osxLibrarySubFolder = "Preferences";
 
     properties = new PropertiesFile (options);
-    lastDir = File (properties->getValue("presetFolder"));
+    lastDir = File (properties->getValue ("presetFolder"));
 
     tempValues.resize(64);
 
@@ -155,43 +156,6 @@ void DistanceCompensatorAudioProcessor::loadConfiguration (const File& configFil
 }
 
 //==============================================================================
-const String DistanceCompensatorAudioProcessor::getName() const
-{
-    return JucePlugin_Name;
-}
-
-bool DistanceCompensatorAudioProcessor::acceptsMidi() const
-{
-#if JucePlugin_WantsMidiInput
-    return true;
-#else
-    return false;
-#endif
-}
-
-bool DistanceCompensatorAudioProcessor::producesMidi() const
-{
-#if JucePlugin_ProducesMidiOutput
-    return true;
-#else
-    return false;
-#endif
-}
-
-bool DistanceCompensatorAudioProcessor::isMidiEffect() const
-{
-#if JucePlugin_IsMidiEffect
-    return true;
-#else
-    return false;
-#endif
-}
-
-double DistanceCompensatorAudioProcessor::getTailLengthSeconds() const
-{
-    return 0.0;
-}
-
 int DistanceCompensatorAudioProcessor::getNumPrograms()
 {
     return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
@@ -238,13 +202,6 @@ void DistanceCompensatorAudioProcessor::releaseResources()
     // When playback stops, you can use this as an opportunity to free up any
     // spare memory, etc.
 }
-
-#ifndef JucePlugin_PreferredChannelConfigurations
-bool DistanceCompensatorAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
-{
-    return true;
-}
-#endif
 
 void DistanceCompensatorAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
@@ -480,126 +437,104 @@ void DistanceCompensatorAudioProcessor::updateBuffers()
     updateGains();
 }
 
-//==============================================================================
-pointer_sized_int DistanceCompensatorAudioProcessor::handleVstPluginCanDo (int32 index,
-                                                                           pointer_sized_int value, void* ptr, float opt)
-{
-    auto text = (const char*) ptr;
-    auto matches = [=](const char* s) { return strcmp (text, s) == 0; };
-
-    if (matches ("wantsChannelCountNotifications"))
-        return 1;
-    return 0;
-}
 
 //==============================================================================
-void DistanceCompensatorAudioProcessor::oscMessageReceived (const OSCMessage &message)
+const bool DistanceCompensatorAudioProcessor::processNotYetConsumedOSCMessage (const OSCMessage &message)
 {
     String prefix ("/" + String (JucePlugin_Name));
     if (! message.getAddressPattern().toString().startsWith (prefix))
-        return;
+        return false;
 
     OSCMessage msg (message);
-    msg.setAddressPattern (message.getAddressPattern().toString().substring(String(JucePlugin_Name).length() + 1));
+    msg.setAddressPattern (message.getAddressPattern().toString().substring (String (JucePlugin_Name).length() + 1));
 
-    if (! oscParams.processOSCMessage (msg))
+    if (msg.getAddressPattern().toString ().equalsIgnoreCase ("/loadFile") && msg.size() >= 1)
     {
-        // Load configuration file
-        if (msg.getAddressPattern().toString ().equalsIgnoreCase("/loadFile") && msg.size() >= 1)
+        if (msg[0].isString ())
         {
-            if (msg[0].isString ())
-            {
-                File fileToLoad (msg[0].getString ());
-                loadConfiguration (fileToLoad);
-            }
+            File fileToLoad (msg[0].getString ());
+            loadConfiguration (fileToLoad);
         }
-        else if (msg.getAddressPattern().toString ().equalsIgnoreCase("/updateReference"))
-        {
-            updateParameters();
-        }
+        return true;
     }
+    else if (msg.getAddressPattern().toString ().equalsIgnoreCase ("/updateReference"))
+    {
+        updateParameters();
+        return true;
+    }
+
+    return false;
 }
 
-void DistanceCompensatorAudioProcessor::oscBundleReceived (const OSCBundle &bundle)
-{
-    for (int i = 0; i < bundle.size(); ++i)
-    {
-        auto elem = bundle[i];
-        if (elem.isMessage())
-            oscMessageReceived (elem.getMessage());
-        else if (elem.isBundle())
-            oscBundleReceived (elem.getBundle());
-    }
-}
+
 
 //==============================================================================
-AudioProcessorValueTreeState::ParameterLayout DistanceCompensatorAudioProcessor::createParameterLayout()
+std::vector<std::unique_ptr<RangedAudioParameter>> DistanceCompensatorAudioProcessor::createParameterLayout()
 {
     // add your audio parameters here
     std::vector<std::unique_ptr<RangedAudioParameter>> params;
 
 
-    params.push_back (oscParams.createAndAddParameter ("inputChannelsSetting", "Number of input channels ", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("inputChannelsSetting", "Number of input channels ", "",
                                      NormalisableRange<float> (0.0f, 64.0f, 1.0f), 0.0f,
                                      [](float value) {return value < 0.5f ? "Auto" : String (value);}, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("enableGains", "Enable Gain Compensation", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("enableGains", "Enable Gain Compensation", "",
                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value) {
                                          if (value >= 0.5f) return "Yes";
                                          else return "No";
                                      }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("enableDelays", "Enable Delay Compensation", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("enableDelays", "Enable Delay Compensation", "",
                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value) {
                                          if (value >= 0.5f) return "Yes";
                                          else return "No";
                                      }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("speedOfSound", "Speed of Sound", "m/s",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("speedOfSound", "Speed of Sound", "m/s",
                                      NormalisableRange<float> (330.0, 350.0, 0.1f), 343.2f,
                                      [](float value) {return String (value, 1);}, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("distanceExponent", "Distance-Gain Exponent", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("distanceExponent", "Distance-Gain Exponent", "",
                                      NormalisableRange<float> (0.5f, 1.5f, 0.1f), 1.0f,
                                      [](float value) {return String (value, 1);}, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("gainNormalization", "Gain Normalization", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("gainNormalization", "Gain Normalization", "",
                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
                                      [](float value) {
                                          if (value >= 0.5f) return "Zero-mean";
                                          else return "Attenuation only";
                                      }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("referenceX", "Reference position x", "m",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("referenceX", "Reference position x", "m",
                                      NormalisableRange<float> (-20.0f, 20.0f, 0.01f), 0.0f,
                                      [](float value) {return String (value, 2);}, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("referenceY", "Reference position x", "m",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("referenceY", "Reference position x", "m",
                                      NormalisableRange<float> (-20.0f, 20.0f, 0.01f), 0.0f,
                                      [](float value) {return String (value, 2);}, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("referenceZ", "Reference position x", "m",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("referenceZ", "Reference position x", "m",
                                      NormalisableRange<float> (-20.0f, 20.0f, 0.01f), 0.0f,
                                      [](float value) {return String (value, 2);}, nullptr));
 
     for (int i = 0; i < 64; ++i)
     {
-        params.push_back (oscParams.createAndAddParameter ("enableCompensation" + String (i), "Enable Compensation of loudspeaker " + String (i + 1), "",
+        params.push_back (OSCParameterInterface::createParameterTheOldWay ("enableCompensation" + String (i), "Enable Compensation of loudspeaker " + String (i + 1), "",
                                         NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                         [](float value) {
                                             if (value >= 0.5f) return "ON";
                                             else return "OFF";
                                         }, nullptr));
 
-        params.push_back (oscParams.createAndAddParameter ("distance" + String (i), "Distance of loudspeaker " + String (i + 1), "m",
+        params.push_back (OSCParameterInterface::createParameterTheOldWay ("distance" + String (i), "Distance of loudspeaker " + String (i + 1), "m",
                                         NormalisableRange<float> (1.0f, 50.0f, 0.01f), 5.0f,
                                         [](float value) {return String (value, 2);}, nullptr));
     }
 
-
-    return { params.begin(), params.end() };
+    return params;
 }
 
 

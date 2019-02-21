@@ -10,7 +10,7 @@
               pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
               pluginAUExportPrefix="BinauralDecoderAU" aaxIdentifier="at.iem.BinauralDecoder"
-              pluginAAXCategory="2" jucerVersion="5.4.1" companyCopyright="IEM - Daniel Rudrich"
+              pluginAAXCategory="2" jucerVersion="5.4.3" companyCopyright="IEM - Daniel Rudrich"
               companyName="IEM" companyWebsite="iem.at" headerPath="../../../resources/"
               pluginFormats="buildStandalone,buildVST,buildVST3">
   <MAINGROUP id="LpzrV9" name="BinauralDecoder">

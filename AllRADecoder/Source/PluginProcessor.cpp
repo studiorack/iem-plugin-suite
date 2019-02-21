@@ -27,17 +27,19 @@
 
 //==============================================================================
 AllRADecoderAudioProcessor::AllRADecoderAudioProcessor()
+: AudioProcessorBase (
 #ifndef JucePlugin_PreferredChannelConfigurations
-: AudioProcessor (BusesProperties()
+                      BusesProperties()
 #if ! JucePlugin_IsMidiEffect
 #if ! JucePlugin_IsSynth
-                  .withInput  ("Input",  AudioChannelSet::discreteChannels(64), true)
+                  .withInput  ("Input",  AudioChannelSet::discreteChannels (64), true)
 #endif
-                  .withOutput ("Output", AudioChannelSet::discreteChannels(64), true)
+                  .withOutput ("Output", AudioChannelSet::discreteChannels (64), true)
 #endif
-                  ),
+                  ,
 #endif
-energyDistribution (Image::PixelFormat::ARGB, 200, 100, true), rEVector (Image::PixelFormat::ARGB, 200, 100, true), oscParams (parameters), parameters (*this, nullptr, "AllRADecoder", createParameterLayout())
+createParameterLayout()),
+energyDistribution (Image::PixelFormat::ARGB, 200, 100, true), rEVector (Image::PixelFormat::ARGB, 200, 100, true)
 {
     // get pointers to the parameters
     inputOrderSetting = parameters.getRawParameterValue ("inputOrderSetting");
@@ -96,43 +98,6 @@ AllRADecoderAudioProcessor::~AllRADecoderAudioProcessor()
 {
 }
 
-//==============================================================================
-const String AllRADecoderAudioProcessor::getName() const
-{
-    return JucePlugin_Name;
-}
-
-bool AllRADecoderAudioProcessor::acceptsMidi() const
-{
-#if JucePlugin_WantsMidiInput
-    return true;
-#else
-    return false;
-#endif
-}
-
-bool AllRADecoderAudioProcessor::producesMidi() const
-{
-#if JucePlugin_ProducesMidiOutput
-    return true;
-#else
-    return false;
-#endif
-}
-
-bool AllRADecoderAudioProcessor::isMidiEffect() const
-{
-#if JucePlugin_IsMidiEffect
-    return true;
-#else
-    return false;
-#endif
-}
-
-double AllRADecoderAudioProcessor::getTailLengthSeconds() const
-{
-    return 0.0;
-}
 
 int AllRADecoderAudioProcessor::getNumPrograms()
 {
@@ -220,12 +185,6 @@ void AllRADecoderAudioProcessor::releaseResources()
     // spare memory, etc.
 }
 
-#ifndef JucePlugin_PreferredChannelConfigurations
-bool AllRADecoderAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
-{
-    return true;
-}
-#endif
 
 void AllRADecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
@@ -1107,67 +1066,59 @@ void AllRADecoderAudioProcessor::rotate (const float degreesAddedToAzimuth)
     updateTable = true;
 }
 
-//==============================================================================
-pointer_sized_int AllRADecoderAudioProcessor::handleVstPluginCanDo (int32 index,
-                                                                    pointer_sized_int value, void* ptr, float opt)
-{
-    auto text = (const char*) ptr;
-    auto matches = [=](const char* s) { return strcmp (text, s) == 0; };
-
-    if (matches ("wantsChannelCountNotifications"))
-        return 1;
-    return 0;
-}
 
 //==============================================================================
-void AllRADecoderAudioProcessor::oscMessageReceived (const OSCMessage &message)
+const bool AllRADecoderAudioProcessor::interceptOSCMessage (OSCMessage &message)
 {
-    String prefix ("/" + String(JucePlugin_Name));
-    if (! message.getAddressPattern().toString().startsWith (prefix))
-        return;
-
-    OSCMessage msg (message);
-    msg.setAddressPattern (message.getAddressPattern().toString().substring(String(JucePlugin_Name).length() + 1));
-
-    if (msg.getAddressPattern().toString().equalsIgnoreCase("/decoderOrder") && msg.size() >= 1)
+    if (message.getAddressPattern().toString().equalsIgnoreCase ("/" + String (JucePlugin_Name) + "/decoderOrder") && message.size() >= 1)
     {
-        if (msg[0].isInt32())
+        if (message[0].isInt32())
         {
-            auto value = msg[0].getInt32() - 1;
-            msg.clear();
-            msg.addInt32 (value);
+            auto value = message[0].getInt32() - 1;
+            message.clear();
+            message.addInt32 (value);
         }
-        else if (msg[0].isFloat32())
+        else if (message[0].isFloat32())
         {
-            auto value = msg[0].getFloat32() - 1;
-            msg.clear();
-            msg.addFloat32 (value);
+            auto value = message[0].getFloat32() - 1;
+            message.clear();
+            message.addFloat32 (value);
         }
-
     }
 
-    if (! oscParams.processOSCMessage (msg))
+    return false;
+}
+
+const bool AllRADecoderAudioProcessor::processNotYetConsumedOSCMessage (const OSCMessage &message)
+{
+    const String prefix ("/" + String (JucePlugin_Name));
+    if (message.getAddressPattern().toString().startsWith (prefix))
     {
-        // Load configuration file
-        if (msg.getAddressPattern().toString().equalsIgnoreCase("/loadFile") && msg.size() >= 1)
+        OSCMessage msg (message);
+        msg.setAddressPattern (message.getAddressPattern().toString().substring (String (JucePlugin_Name).length() + 1));
+
+        if (msg.getAddressPattern().toString().equalsIgnoreCase ("/loadFile") && msg.size() >= 1)
         {
             if (msg[0].isString())
             {
                 File fileToLoad (msg[0].getString());
                 loadConfiguration (fileToLoad);
+                return true;
             }
         }
-        else if (msg.getAddressPattern().toString().equalsIgnoreCase("/calculate") ||
-                 msg.getAddressPattern().toString().equalsIgnoreCase("/calculateDecoder"))
+        else if (msg.getAddressPattern().toString().equalsIgnoreCase ("/calculate") ||
+                 msg.getAddressPattern().toString().equalsIgnoreCase ("/calculateDecoder"))
         {
             calculateDecoder();
+            return true;
         }
-        else if (msg.getAddressPattern().toString().equalsIgnoreCase("/export") && msg.size() >= 1)
+        else if (msg.getAddressPattern().toString().equalsIgnoreCase ("/export") && msg.size() >= 1)
         {
             if (msg[0].isString())
             {
                 File file (msg[0].getString());
                 saveConfigurationToFile (file);
+                return true;
             }
         }
         else if (msg.getAddressPattern().toString().equalsIgnoreCase ("/playNoise") && msg.size() >= 1)
@@ -1176,7 +1127,10 @@ void AllRADecoderAudioProcessor::oscMessageReceived (const OSCMessage &message)
             {
                 const int channel = msg[0].getInt32();
                 if (channel <= 64)
+                {
                     playNoiseBurst (channel);
+                    return true;
+                }
             }
         }
         else if (msg.getAddressPattern().toString().equalsIgnoreCase ("/playEncodedNoise") && msg.size() >= 2)
@@ -1189,39 +1143,31 @@ void AllRADecoderAudioProcessor::oscMessageReceived (const OSCMessage &message)
             else if (msg[0].isFloat32())
                 azimuth = msg[0].getFloat32();
             else
-                return;
+                return false;
 
             if (msg[1].isInt32())
                 elevation = msg[1].getInt32();
             else if (msg[1].isFloat32())
                 elevation = msg[1].getFloat32();
             else
-                return;
+                return false;
 
             playAmbisonicNoiseBurst (azimuth, elevation);
+            return true;
         }
     }
+
+    return false;
 }
 
-void AllRADecoderAudioProcessor::oscBundleReceived (const OSCBundle &bundle)
-{
-    for (int i = 0; i < bundle.size(); ++i)
-    {
-        auto elem = bundle[i];
-        if (elem.isMessage())
-            oscMessageReceived (elem.getMessage());
-        else if (elem.isBundle())
-            oscBundleReceived (elem.getBundle());
-    }
-}
 
 // ==============================================================================
-AudioProcessorValueTreeState::ParameterLayout AllRADecoderAudioProcessor::createParameterLayout()
+std::vector<std::unique_ptr<RangedAudioParameter>> AllRADecoderAudioProcessor::createParameterLayout()
 {
     // add your audio parameters here
     std::vector<std::unique_ptr<RangedAudioParameter>> params;
 
-    params.push_back (oscParams.createAndAddParameter ("inputOrderSetting", "Input Ambisonic Order", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("inputOrderSetting", "Input Ambisonic Order", "",
                                      NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
                                      [](float value) {
                                          if (value >= 0.5f && value < 1.5f) return "0th";
@@ -1235,14 +1181,14 @@ AudioProcessorValueTreeState::ParameterLayout AllRADecoderAudioProcessor::create
                                          else return "Auto";},
                                      nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("useSN3D", "Input Normalization", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("useSN3D", "Input Normalization", "",
                                     NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
                                     [](float value) {
                                         if (value >= 0.5f) return "SN3D";
                                         else return "N3D";
                                     }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("decoderOrder", "Decoder Order", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("decoderOrder", "Decoder Order", "",
                                      NormalisableRange<float> (0.0f, 6.0f, 1.0f), 0.0f,
                                      [](float value) {
                                          if (value >= 0.5f && value < 1.5f) return "2nd";
@@ -1254,20 +1200,19 @@ AudioProcessorValueTreeState::ParameterLayout AllRADecoderAudioProcessor::create
                                          else return "1st";},
                                      nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("exportDecoder", "Export Decoder", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("exportDecoder", "Export Decoder", "",
                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value) {
                                          if (value >= 0.5f) return "Yes";
                                          else return "No";
                                      }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("exportLayout", "Export Layout", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("exportLayout", "Export Layout", "",
                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value) {
                                          if (value >= 0.5f) return "Yes";
                                          else return "No";
                                      }, nullptr));
 
-
-    return { params.begin(), params.end() };
+    return params;
 }

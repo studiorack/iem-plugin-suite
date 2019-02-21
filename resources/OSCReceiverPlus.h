@@ -39,7 +39,7 @@ public:
         port = portNumber;
         if (portNumber == -1)
         {
-            disconnect ();
+            disconnect();
             connected = false;
             return true;
         }
