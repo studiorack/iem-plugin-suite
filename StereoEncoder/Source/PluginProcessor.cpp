@@ -111,11 +111,11 @@ void StereoEncoderAudioProcessor::prepareToPlay (double sampleRate, int samplesP
 
     bufferCopy.setSize(2, samplesPerBlock);
 
-    smoothAzimuthL.setValue(*azimuth / 180.0f * (float) MathConstants<float>::pi);
-    smoothElevationL.setValue(*elevation / 180.0f * (float) MathConstants<float>::pi);
+    smoothAzimuthL.setCurrentAndTargetValue (*azimuth / 180.0f * MathConstants<float>::pi);
+    smoothElevationL.setCurrentAndTargetValue (*elevation / 180.0f * MathConstants<float>::pi);
 
-    smoothAzimuthR.setValue(*azimuth / 180.0f * (float) MathConstants<float>::pi);
-    smoothElevationR.setValue(*elevation / 180.0f * (float) MathConstants<float>::pi);
+    smoothAzimuthR.setCurrentAndTargetValue (*azimuth / 180.0f * MathConstants<float>::pi);
+    smoothElevationR.setCurrentAndTargetValue (*elevation / 180.0f * MathConstants<float>::pi);
 
     smoothAzimuthL.reset(1, samplesPerBlock);
     smoothElevationL.reset(1, samplesPerBlock);
@@ -199,10 +199,10 @@ void StereoEncoderAudioProcessor::processBlock(AudioSampleBuffer &buffer, MidiBu
     {
         if (positionHasChanged.compareAndSetBool (false, true))
         {
-            smoothAzimuthL.setValue(azimuthL, true);
-            smoothElevationL.setValue(elevationL, true);
-            smoothAzimuthR.setValue(azimuthR, true);
-            smoothElevationR.setValue(elevationR, true);
+            smoothAzimuthL.setCurrentAndTargetValue (azimuthL);
+            smoothElevationL.setCurrentAndTargetValue (elevationL);
+            smoothAzimuthR.setCurrentAndTargetValue (azimuthR);
+            smoothElevationR.setCurrentAndTargetValue (elevationR);
 
             SHEval(ambisonicOrder, xyzL[0], xyzL[1], xyzL[2], SHL);
             SHEval(ambisonicOrder, xyzR[0], xyzR[1], xyzR[2], SHR);
@@ -224,29 +224,29 @@ void StereoEncoderAudioProcessor::processBlock(AudioSampleBuffer &buffer, MidiBu
     else // high-quality sampling
     {
         if (smoothAzimuthL.getTargetValue() - azimuthL > MathConstants<float>::pi)
-            smoothAzimuthL.setValue(smoothAzimuthL.getTargetValue() - 2.0f * MathConstants<float>::pi, true);
+            smoothAzimuthL.setCurrentAndTargetValue (smoothAzimuthL.getTargetValue() - 2.0f * MathConstants<float>::pi);
         else if (azimuthL - smoothAzimuthL.getTargetValue() > MathConstants<float>::pi)
-            smoothAzimuthL.setValue(smoothAzimuthL.getTargetValue() + 2.0f * MathConstants<float>::pi, true);
+            smoothAzimuthL.setCurrentAndTargetValue (smoothAzimuthL.getTargetValue() + 2.0f * MathConstants<float>::pi);
 
         if (smoothElevationL.getTargetValue() - elevationL > MathConstants<float>::pi)
-            smoothElevationL.setValue(smoothElevationL.getTargetValue() - 2.0f * MathConstants<float>::pi, true);
+            smoothElevationL.setCurrentAndTargetValue (smoothElevationL.getTargetValue() - 2.0f * MathConstants<float>::pi);
         else if (elevationL - smoothElevationL.getTargetValue() > MathConstants<float>::pi)
-            smoothElevationL.setValue(smoothElevationL.getTargetValue() + 2.0f * MathConstants<float>::pi, true);
+            smoothElevationL.setCurrentAndTargetValue (smoothElevationL.getTargetValue() + 2.0f * MathConstants<float>::pi);
 
         if (smoothAzimuthR.getTargetValue() - azimuthR > MathConstants<float>::pi)
-            smoothAzimuthR.setValue(smoothAzimuthR.getTargetValue() - 2.0f * MathConstants<float>::pi, true);
+            smoothAzimuthR.setCurrentAndTargetValue (smoothAzimuthR.getTargetValue() - 2.0f * MathConstants<float>::pi);
         else if (azimuthR - smoothAzimuthR.getTargetValue() > MathConstants<float>::pi)
-            smoothAzimuthR.setValue(smoothAzimuthR.getTargetValue() + 2.0f * MathConstants<float>::pi, true);
+            smoothAzimuthR.setCurrentAndTargetValue (smoothAzimuthR.getTargetValue() + 2.0f * MathConstants<float>::pi);
 
         if (smoothElevationR.getTargetValue() - elevationR > MathConstants<float>::pi)
-            smoothElevationR.setValue(smoothElevationR.getTargetValue() - 2.0f * MathConstants<float>::pi, true);
+            smoothElevationR.setCurrentAndTargetValue (smoothElevationR.getTargetValue() - 2.0f * MathConstants<float>::pi);
         else if (elevationR - smoothElevationR.getTargetValue() > MathConstants<float>::pi)
-            smoothElevationR.setValue(smoothElevationR.getTargetValue() + 2.0f * MathConstants<float>::pi, true);
+            smoothElevationR.setCurrentAndTargetValue (smoothElevationR.getTargetValue() + 2.0f * MathConstants<float>::pi);
 
-        smoothAzimuthL.setValue(azimuthL);
-        smoothElevationL.setValue(elevationL);
-        smoothAzimuthR.setValue(azimuthR);
-        smoothElevationR.setValue(elevationR);
+        smoothAzimuthL.setTargetValue (azimuthL);
+        smoothElevationL.setTargetValue (elevationL);
+        smoothAzimuthR.setTargetValue (azimuthR);
+        smoothElevationR.setTargetValue (elevationR);
 
         for (int i = 0; i < L; ++i) // left
         {
