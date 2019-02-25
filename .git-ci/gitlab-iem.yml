@@ -5,7 +5,7 @@ variables:
 #  PROJECTS: AllRADecoder BinauralDecoder DirectionalCompressor DirectivityShaper DistanceCompensator DualDelay EnergyVisualizer FdnReverb MatrixMultiplier MultiEncoder OmniCompressor ProbeDecoder RoomEncoder SimpleDecoder StereoEncoder ToolBox
 
   CONFIG: Release
-  JUCEVERSION: 5.4.1
+  JUCEVERSION: 5.4.3
 
 ###################################################
 # cleanup after the job (e.g. rename files for the artifacts...)
