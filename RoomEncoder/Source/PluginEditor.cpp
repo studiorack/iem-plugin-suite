@@ -34,7 +34,6 @@ listenerElement(*valueTreeState.getParameter("listenerX"), valueTreeState.getPar
               *valueTreeState.getParameter("listenerZ"), valueTreeState.getParameterRange("listenerZ"))
 
 {
-
     setSize (800, 600);
     setLookAndFeel (&globalLaF);
 
@@ -42,13 +41,14 @@ listenerElement(*valueTreeState.getParameter("listenerX"), valueTreeState.getPar
     toolTipWin.setMillisecondsBeforeTipAppears(500);
     toolTipWin.setOpaque (false);
 
-    addAndMakeVisible(&title);
-    title.setTitle(String("Room"),String("Encoder"));
-    title.setFont(globalLaF.robotoBold,globalLaF.robotoLight);
-    cbNormalizationAttachement = new ComboBoxAttachment(valueTreeState,"useSN3D", *title.getOutputWidgetPtr()->getNormCbPointer());
-    cbOrderAttachement = new ComboBoxAttachment(valueTreeState,"orderSetting", *title.getOutputWidgetPtr()->getOrderCbPointer());
-    cbDirectivityOrderAttachment = new ComboBoxAttachment(valueTreeState,"directivityOrderSetting", *title.getInputWidgetPtr()->getOrderCbPointer());
-    cbDirectivityNormalizationAttachment = new ComboBoxAttachment(valueTreeState, "inputIsSN3D", *title.getInputWidgetPtr()->getNormCbPointer());
+    addAndMakeVisible (&title);
+    title.setTitle (String ("Room"), String ("Encoder"));
+    title.setFont (globalLaF.robotoBold, globalLaF.robotoLight);
+
+    cbNormalizationAttachement.reset (new ComboBoxAttachment (valueTreeState, "useSN3D", *title.getOutputWidgetPtr()->getNormCbPointer()));
+    cbOrderAttachement.reset (new ComboBoxAttachment (valueTreeState, "orderSetting", *title.getOutputWidgetPtr()->getOrderCbPointer()));
+    cbDirectivityOrderAttachment.reset (new ComboBoxAttachment (valueTreeState, "directivityOrderSetting", *title.getInputWidgetPtr()->getOrderCbPointer()));
+    cbDirectivityNormalizationAttachment.reset (new ComboBoxAttachment (valueTreeState, "inputIsSN3D", *title.getInputWidgetPtr()->getNormCbPointer()));
     addAndMakeVisible (&footer);
 
 
@@ -105,7 +105,7 @@ listenerElement(*valueTreeState.getParameter("listenerX"), valueTreeState.getPar
     lbSourceZ.setText("z");
 
     addAndMakeVisible(&slRoomX);
-    slRoomXAttachment = new SliderAttachment(valueTreeState,"roomX", slRoomX);
+    slRoomXAttachment.reset (new SliderAttachment(valueTreeState,"roomX", slRoomX));
     slRoomX.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slRoomX.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slRoomX.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
@@ -114,7 +114,7 @@ listenerElement(*valueTreeState.getParameter("listenerX"), valueTreeState.getPar
     slRoomX.addListener(this);
 
     addAndMakeVisible(&slRoomY);
-    slRoomYAttachment = new SliderAttachment(valueTreeState, "roomY", slRoomY);
+    slRoomYAttachment.reset (new SliderAttachment(valueTreeState, "roomY", slRoomY));
     slRoomY.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slRoomY.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slRoomY.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
@@ -123,7 +123,7 @@ listenerElement(*valueTreeState.getParameter("listenerX"), valueTreeState.getPar
     slRoomY.addListener(this);
 
     addAndMakeVisible(&slRoomZ);
-    slRoomZAttachment = new SliderAttachment(valueTreeState, "roomZ", slRoomZ);
+    slRoomZAttachment.reset (new SliderAttachment(valueTreeState, "roomZ", slRoomZ));
     slRoomZ.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slRoomZ.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slRoomZ.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
@@ -143,7 +143,7 @@ listenerElement(*valueTreeState.getParameter("listenerX"), valueTreeState.getPar
     zyPlane.useAutoScale(false);
 
     addAndMakeVisible(&slSourceX);
-    slSourceXAttachment = new SliderAttachment(valueTreeState, "sourceX", slSourceX);
+    slSourceXAttachment.reset (new SliderAttachment(valueTreeState, "sourceX", slSourceX));
     slSourceX.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slSourceX.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slSourceX.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
@@ -152,7 +152,7 @@ listenerElement(*valueTreeState.getParameter("listenerX"), valueTreeState.getPar
     slSourceX.addListener(this);
 
     addAndMakeVisible(&slSourceY);
-    slSourceYAttachment = new SliderAttachment(valueTreeState, "sourceY", slSourceY);
+    slSourceYAttachment.reset (new SliderAttachment(valueTreeState, "sourceY", slSourceY));
     slSourceY.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slSourceY.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slSourceY.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
@@ -161,7 +161,7 @@ listenerElement(*valueTreeState.getParameter("listenerX"), valueTreeState.getPar
     slSourceY.addListener(this);
 
     addAndMakeVisible(&slSourceZ);
-    slSourceZAttachment = new SliderAttachment(valueTreeState, "sourceZ", slSourceZ);
+    slSourceZAttachment.reset (new SliderAttachment(valueTreeState, "sourceZ", slSourceZ));
     slSourceZ.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slSourceZ.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slSourceZ.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
@@ -170,7 +170,7 @@ listenerElement(*valueTreeState.getParameter("listenerX"), valueTreeState.getPar
     slSourceZ.addListener(this);
 
     addAndMakeVisible(&slListenerX);
-    slListenerXAttachment = new SliderAttachment(valueTreeState, "listenerX", slListenerX);
+    slListenerXAttachment.reset (new SliderAttachment(valueTreeState, "listenerX", slListenerX));
     slListenerX.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slListenerX.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slListenerX.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
@@ -180,7 +180,7 @@ listenerElement(*valueTreeState.getParameter("listenerX"), valueTreeState.getPar
     slListenerX.addListener(this);
 
     addAndMakeVisible(&slListenerY);
-    slListenerYAttachment = new SliderAttachment(valueTreeState,"listenerY", slListenerY);
+    slListenerYAttachment.reset (new SliderAttachment(valueTreeState,"listenerY", slListenerY));
     slListenerY.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slListenerY.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slListenerY.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
@@ -189,7 +189,7 @@ listenerElement(*valueTreeState.getParameter("listenerX"), valueTreeState.getPar
     slListenerY.addListener(this);
 
     addAndMakeVisible(&slListenerZ);
-    slListenerZAttachment = new SliderAttachment(valueTreeState,"listenerZ", slListenerZ);
+    slListenerZAttachment.reset (new SliderAttachment (valueTreeState,"listenerZ", slListenerZ));
     slListenerZ.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slListenerZ.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slListenerZ.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
@@ -203,7 +203,7 @@ listenerElement(*valueTreeState.getParameter("listenerX"), valueTreeState.getPar
     addAndMakeVisible(&lbNumReflections);
     lbNumReflections.setText("Number of Reflections");
     addAndMakeVisible(&slNumReflections);
-    slNumReflectionsAttachment = new SliderAttachment(valueTreeState,"numRefl", slNumReflections);
+    slNumReflectionsAttachment.reset (new SliderAttachment(valueTreeState,"numRefl", slNumReflections));
     slNumReflections.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slNumReflections.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slNumReflections.setColour (Slider::rotarySliderOutlineColourId, Colours::lightgrey);
@@ -213,7 +213,7 @@ listenerElement(*valueTreeState.getParameter("listenerX"), valueTreeState.getPar
     lbReflCoeff.setText("Reflection Attenuation");
 
     addAndMakeVisible(&slReflCoeff);
-    slReflCoeffAttachment = new SliderAttachment(valueTreeState,"reflCoeff", slReflCoeff);
+    slReflCoeffAttachment.reset (new SliderAttachment(valueTreeState,"reflCoeff", slReflCoeff));
     slReflCoeff.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slReflCoeff.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slReflCoeff.setColour (Slider::rotarySliderOutlineColourId, Colours::lightgrey);
@@ -229,7 +229,7 @@ listenerElement(*valueTreeState.getParameter("listenerX"), valueTreeState.getPar
     lbHSG.setText("Gain");
 
     addAndMakeVisible(&slLowShelfFreq);
-    slLowShelfFreqAttachment = new SliderAttachment(valueTreeState,"lowShelfFreq", slLowShelfFreq);
+    slLowShelfFreqAttachment.reset (new SliderAttachment(valueTreeState,"lowShelfFreq", slLowShelfFreq));
     slLowShelfFreq.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slLowShelfFreq.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slLowShelfFreq.setColour (Slider::rotarySliderOutlineColourId, Colours::cyan);
@@ -237,7 +237,7 @@ listenerElement(*valueTreeState.getParameter("listenerX"), valueTreeState.getPar
 
 
     addAndMakeVisible(&slLowShelfGain);
-    slLowShelfGainAttachment = new SliderAttachment(valueTreeState,"lowShelfGain", slLowShelfGain);
+    slLowShelfGainAttachment.reset (new SliderAttachment(valueTreeState,"lowShelfGain", slLowShelfGain));
     slLowShelfGain.setTextValueSuffix (" dB");
     slLowShelfGain.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slLowShelfGain.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
@@ -245,14 +245,14 @@ listenerElement(*valueTreeState.getParameter("listenerX"), valueTreeState.getPar
 
 
     addAndMakeVisible(&slHighShelfFreq);
-    slHighShelfFreqAttachment = new SliderAttachment(valueTreeState,"highShelfFreq", slHighShelfFreq);
+    slHighShelfFreqAttachment.reset (new SliderAttachment(valueTreeState,"highShelfFreq", slHighShelfFreq));
     slHighShelfFreq.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slHighShelfFreq.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slHighShelfFreq.setColour (Slider::rotarySliderOutlineColourId, Colours::orangered);
     slHighShelfFreq.setTooltip("high shelf freq");
 
     addAndMakeVisible(&slHighShelfGain);
-    slHighShelfGainAttachment = new SliderAttachment(valueTreeState,"highShelfGain", slHighShelfGain);
+    slHighShelfGainAttachment.reset (new SliderAttachment(valueTreeState,"highShelfGain", slHighShelfGain));
     slHighShelfGain.setTextValueSuffix (" dB");
     slHighShelfGain.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slHighShelfGain.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
@@ -277,26 +277,36 @@ listenerElement(*valueTreeState.getParameter("listenerX"), valueTreeState.getPar
     cbSyncChannel.addItem("2", 3);
     cbSyncChannel.addItem("3", 4);
     cbSyncChannel.addItem("4", 5);
-    cbSyncChannelAttachment = new ComboBoxAttachment(valueTreeState, "syncChannel", cbSyncChannel);
+    cbSyncChannelAttachment.reset (new ComboBoxAttachment(valueTreeState, "syncChannel", cbSyncChannel));
 
     addAndMakeVisible(&lbSyncChannel);
     lbSyncChannel.setText("Synchronize to Channel");
 
     addAndMakeVisible(&tbSyncRoomSize);
-    tbSyncRoomSizeAttachment = new ButtonAttachment(valueTreeState, "syncRoomSize", tbSyncRoomSize);
+    tbSyncRoomSizeAttachment.reset (new ButtonAttachment(valueTreeState, "syncRoomSize", tbSyncRoomSize));
     tbSyncRoomSize.setButtonText("Room Dimensions");
     tbSyncRoomSize.setColour (ToggleButton::tickColourId, globalLaF.ClWidgetColours[0]);
 
     addAndMakeVisible(&tbSyncListener);
-    tbSyncListenerAttachment = new ButtonAttachment(valueTreeState, "syncListener", tbSyncListener);
+    tbSyncListenerAttachment.reset (new ButtonAttachment(valueTreeState, "syncListener", tbSyncListener));
     tbSyncListener.setButtonText("Listener Position");
     tbSyncListener.setColour (ToggleButton::tickColourId, globalLaF.ClWidgetColours[1]);
 
     addAndMakeVisible(&tbSyncReflection);
-    tbSyncReflectionAttachment = new ButtonAttachment(valueTreeState, "syncReflection", tbSyncReflection);
+    tbSyncReflectionAttachment.reset (new ButtonAttachment(valueTreeState, "syncReflection", tbSyncReflection));
     tbSyncReflection.setButtonText("Reflection Properties");
     tbSyncReflection.setColour (ToggleButton::tickColourId, Colours::orangered);
 
+    addAndMakeVisible (&tbDirectPathUnityGain);
+    tbDirectPathUnityGainAttachment.reset (new ButtonAttachment (valueTreeState, "directPathUnityGain", tbDirectPathUnityGain));
+    tbDirectPathUnityGain.setButtonText ("Direct Path Unity Gain");
+    tbDirectPathUnityGain.setColour (ToggleButton::tickColourId, globalLaF.ClWidgetColours[0]);
+
+    addAndMakeVisible (&tbDirectPathZeroDelay);
+    tbDirectPathZeroDelayAttachment.reset (new ButtonAttachment (valueTreeState, "directPathZeroDelay", tbDirectPathZeroDelay));
+    tbDirectPathZeroDelay.setButtonText ("Direct Path Zero Delay");
+    tbDirectPathZeroDelay.setColour (ToggleButton::tickColourId, globalLaF.ClWidgetColours[1]);
+    tbDirectPathZeroDelay.addListener (this);
 
     startTimer(20);
 }
@@ -450,6 +460,12 @@ void RoomEncoderAudioProcessorEditor::resized()
         lbHSG.setBounds(sliderRow.removeFromRight(rotSliderWidth));
         sliderRow.removeFromRight(sliderSpacing);
         lbHSF.setBounds(sliderRow.removeFromRight(rotSliderWidth));
+
+        fvCol.removeFromTop (10);
+        sliderRow = fvCol.removeFromTop (20);
+        tbDirectPathZeroDelay.setBounds (sliderRow.removeFromLeft (150));
+        sliderRow.removeFromLeft (20);
+        tbDirectPathUnityGain.setBounds (sliderRow.removeFromLeft (150));
     }
 
     propArea.removeFromTop(20);
@@ -480,6 +496,12 @@ void RoomEncoderAudioProcessorEditor::sliderValueChanged(Slider *slider)
         xyPlane.setScale(scale);
         zyPlane.setScale(scale);
     }
+}
+
+void RoomEncoderAudioProcessorEditor::buttonStateChanged (Button *button)
+{
+    if (button == &tbDirectPathZeroDelay)
+        rv.setZeroDelay (tbDirectPathZeroDelay.getToggleState());
 }
 
 void RoomEncoderAudioProcessorEditor::timerCallback()

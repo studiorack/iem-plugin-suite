@@ -41,7 +41,7 @@ typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 /**
 */
 class RoomEncoderAudioProcessorEditor  : public AudioProcessorEditor, private Timer,
-                                        private Slider::Listener
+private Slider::Listener, private Button::Listener
 {
 public:
     RoomEncoderAudioProcessorEditor (RoomEncoderAudioProcessor&, AudioProcessorValueTreeState&);
@@ -51,9 +51,15 @@ public:
     void paint (Graphics&) override;
     void resized() override;
 
-
+    //==============================================================================
     void sliderValueChanged(Slider *slider) override;
+
+    //==============================================================================
+    void buttonClicked (Button *button) override {};
+    void buttonStateChanged (Button *button) override;
+
 private:
+    //==============================================================================
     LaF globalLaF;
     TitleBar<DirectivityIOWidget, AmbisonicIOWidget<>> title;
     OSCFooter footer;
@@ -82,8 +88,10 @@ private:
     ComboBox cbSyncChannel;
     SimpleLabel lbSyncChannel;
     ToggleButton tbSyncRoomSize, tbSyncReflection, tbSyncListener;
-    ScopedPointer<ComboBoxAttachment> cbSyncChannelAttachment;
-    ScopedPointer<ButtonAttachment> tbSyncRoomSizeAttachment, tbSyncReflectionAttachment, tbSyncListenerAttachment;
+    ToggleButton tbDirectPathUnityGain, tbDirectPathZeroDelay;
+    std::unique_ptr<ComboBoxAttachment> cbSyncChannelAttachment;
+    std::unique_ptr<ButtonAttachment> tbSyncRoomSizeAttachment, tbSyncReflectionAttachment, tbSyncListenerAttachment;
+    std::unique_ptr<ButtonAttachment> tbDirectPathUnityGainAttachment, tbDirectPathZeroDelayAttachment;
 
     GroupComponent gcRoomDimensions, gcSourcePosition, gcListenerPosition;
     GroupComponent gcReflectionProperties;
@@ -96,18 +104,18 @@ private:
     SimpleLabel lbLSF, lbLSG, lbHSF, lbHSG;
 
 
-    ScopedPointer<SliderAttachment> slSourceXAttachment, slSourceYAttachment, slSourceZAttachment;
-    ScopedPointer<SliderAttachment> slListenerXAttachment, slListenerYAttachment, slListenerZAttachment;
-    ScopedPointer<SliderAttachment> slRoomXAttachment, slRoomYAttachment, slRoomZAttachment;
+    std::unique_ptr<SliderAttachment> slSourceXAttachment, slSourceYAttachment, slSourceZAttachment;
+    std::unique_ptr<SliderAttachment> slListenerXAttachment, slListenerYAttachment, slListenerZAttachment;
+    std::unique_ptr<SliderAttachment> slRoomXAttachment, slRoomYAttachment, slRoomZAttachment;
 
-    ScopedPointer<SliderAttachment> slReflCoeffAttachment;
-    ScopedPointer<SliderAttachment> slLowShelfFreqAttachment, slLowShelfGainAttachment, slHighShelfFreqAttachment, slHighShelfGainAttachment;
-    ScopedPointer<SliderAttachment> slNumReflectionsAttachment;
+    std::unique_ptr<SliderAttachment> slReflCoeffAttachment;
+    std::unique_ptr<SliderAttachment> slLowShelfFreqAttachment, slLowShelfGainAttachment, slHighShelfFreqAttachment, slHighShelfGainAttachment;
+    std::unique_ptr<SliderAttachment> slNumReflectionsAttachment;
 
-    ScopedPointer<ComboBoxAttachment> cbNormalizationAttachement;
-    ScopedPointer<ComboBoxAttachment> cbOrderAttachement;
-    ScopedPointer<ComboBoxAttachment> cbDirectivityOrderAttachment;
-    ScopedPointer<ComboBoxAttachment> cbDirectivityNormalizationAttachment;
+    std::unique_ptr<ComboBoxAttachment> cbNormalizationAttachement;
+    std::unique_ptr<ComboBoxAttachment> cbOrderAttachement;
+    std::unique_ptr<ComboBoxAttachment> cbDirectivityOrderAttachment;
+    std::unique_ptr<ComboBoxAttachment> cbDirectivityNormalizationAttachment;
 
     PositionPlane xyPlane, zyPlane;
     PositionPlane::ParameterElement sourceElement, listenerElement;

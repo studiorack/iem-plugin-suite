@@ -91,7 +91,7 @@ public:
             float gainDb = Decibels::gainToDecibels(gainPtr[0]);
             if (gainDb > -60.0f)
             {
-                float xPos = timeToX(radiusPtr[0]*xFactor);
+                float xPos = timeToX (zeroDelay ? 0.0f : radiusPtr[0] * xFactor);
                 float yPos = dBToY(gainDb);
                 g.drawLine(xPos, yPos, xPos, mT + plotHeight, 2.0f);
             }
@@ -103,9 +103,9 @@ public:
                 float gainDb = Decibels::gainToDecibels(gainPtr[i]);
                 if (gainDb > -60.0f)
                 {
-                    float xPos = timeToX(radiusPtr[i]*xFactor);
+                    float xPos = timeToX (radiusPtr[i] * xFactor - (zeroDelay ? radiusPtr[0] : 0));
                     float yPos = dBToY(gainDb);
-                    g.drawLine(xPos, yPos, xPos, mT + plotHeight, 1.5f);
+                    g.drawLine (xPos, yPos, xPos, mT + plotHeight, 1.5f);
                 }
             }
         }
@@ -132,6 +132,15 @@ public:
         gainPtr = Gain;
         numReflPtr = NumRefl;
         radiusPtr = Radius;
+    }
+
+    void setZeroDelay (const bool shouldBeZeroDelay)
+    {
+        if (zeroDelay != shouldBeZeroDelay)
+        {
+            zeroDelay = shouldBeZeroDelay;
+            repaint();
+        }
     }
 
     void resized() override
@@ -170,4 +179,6 @@ private:
     float* numReflPtr = nullptr;
     float* gainPtr = nullptr;
     float* radiusPtr = nullptr;
+
+    bool zeroDelay = false;
 };

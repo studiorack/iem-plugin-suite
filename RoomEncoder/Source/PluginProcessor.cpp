@@ -61,6 +61,8 @@ createParameterLayout())
     syncListener = parameters.getRawParameterValue ("syncListener");
 
     renderDirectPath = parameters.getRawParameterValue ("renderDirectPath");
+    directPathZeroDelay = parameters.getRawParameterValue ("directPathZeroDelay");
+    directPathUnityGain = parameters.getRawParameterValue ("directPathUnityGain");
 
     lowShelfFreq = parameters.getRawParameterValue ("lowShelfFreq");
     lowShelfGain = parameters.getRawParameterValue ("lowShelfGain");
@@ -374,10 +376,14 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
             listenerPos = listenerSourcePos;
     }
 
-    // prevent division by zero when source is as listener's position
-    if ((listenerPos - sourcePos).lengthSquared() < 0.0001)
-        sourcePos = listenerPos + Vector3D<float> (0.01f, 0.0f, 0.0f);
 
+    const bool doRenderDirectPath = *renderDirectPath > 0.5f;
+    if (doRenderDirectPath)
+    {
+        // prevent division by zero when source is as listener's position
+        if ((listenerPos - sourcePos).lengthSquared() < 0.01)
+            sourcePos = listenerPos + Vector3D<float> (0.1f, 0.0f, 0.0f);
+    }
 
     float* pMonoBufferWrite = monoBuffer.getWritePointer(0);
 
@@ -452,16 +458,16 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
         }
 
         // ============================================
-
+        double delayOffset = *directPathZeroDelay > 0.5f ? mRadius[0] * dist2smpls : 0.0;
         double delay, delayStep;
         int firstIdx, copyL;
-        delay = mRadius[q]*dist2smpls; // dist2smpls also contains factor 128 for LUT
+        delay = mRadius[q]*dist2smpls - delayOffset; // dist2smpls also contains factor 128 for LUT
         delayStep = (delay - oldDelay[q])*oneOverL;
 
         //calculate firstIdx and copyL
         int startIdx = ((int)oldDelay[q])>>interpShift;
         int stopIdx = L-1 + (((int)(oldDelay[q] + delayStep * L-1))>>interpShift); // ((int)(startIdx + delayStep * L-1))>>7
-        firstIdx = jmin(startIdx, stopIdx) - interpOffset;
+        firstIdx = jmin (startIdx, stopIdx);
         copyL = abs(stopIdx-startIdx) + interpLength;
 
         monoBuffer.clear(0,firstIdx, copyL); //TODO: optimization idea: resample input to match delay stretching
@@ -523,10 +529,12 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
         else
             FloatVectorOperations::clear(SHcoeffs, 64);
 
-        float gain = powReflCoeff[reflList[q][3]]/mRadius[q];
+        float gain = powReflCoeff[reflList[q][3]] / mRadius[q];
+        if (*directPathUnityGain > 0.5f)
+            gain *= mRadius[0];
 
         // direct path rendering
-        if (q == 0 && *renderDirectPath < 0.5f)
+        if (q == 0 && ! doRenderDirectPath)
             gain = 0.0f;
 
         allGains[q] = gain; // for reflectionVisualizer
@@ -912,6 +920,21 @@ std::vector<std::unique_ptr<RangedAudioParameter>> RoomEncoderAudioProcessor::cr
                                          if (value >= 0.5f) return "YES";
                                          else return "NO"; },
                                      nullptr));
+
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("directPathZeroDelay", "Zero-Delay for Direct Path", "",
+                                                                       NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
+                                                                       [](float value) {
+                                                                           if (value >= 0.5f) return "ON";
+                                                                           else return "OFF"; },
+                                                                       nullptr));
+
+
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("directPathUnityGain", "Unity-Gain for Direct Path", "",
+                                                                       NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
+                                                                       [](float value) {
+                                                                           if (value >= 0.5f) return "ON";
+                                                                           else return "OFF"; },
+                                                                       nullptr));
 
     return params;
 }

@@ -174,6 +174,8 @@ private:
     float* syncListener;
 
     float* renderDirectPath;
+    float* directPathZeroDelay;
+    float* directPathUnityGain;
 
     int _numRefl;
 
