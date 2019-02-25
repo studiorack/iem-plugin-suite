@@ -6,12 +6,21 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
 ## untagged changes
 - general changes
     - Linux Builds: JACK clients name will be the plug-in's name
+    - all parameters can be controlled via vendorSpecific calls
+    - OSCPort can be opened via vendorSpecific calls
     
 - plug-in specific changes
     - **Fdn**Reverb
         - reverberation time visualization bug fixed
+    - **Room**Encoder
+        - restraining source and listener positions to room boundaries
+        - increases minimum distance between source and listener to 0.1m
+        - deactivates minimum distance control, if direct path isn't renderer
+        - added direct path unity-gain option
+        - added direct path zero-delay option
     - **Scene**Rotator
         - MIDI Devices can now be opened directly to receive rotation data (for now support for MrHeadTracker only, more will follow)
+
     
 ## v1.9.0
 - general changes
