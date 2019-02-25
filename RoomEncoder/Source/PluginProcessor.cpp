@@ -85,9 +85,6 @@ createParameterLayout())
     parameters.addParameterListener ("roomY", this);
     parameters.addParameterListener ("roomZ", this);
 
-    t = *roomX;
-    b = *roomY;
-    h = *roomZ;
 
     _numRefl = 0;
 
@@ -247,6 +244,32 @@ void RoomEncoderAudioProcessor::updateFilterCoefficients(double sampleRate) {
     updateFv = true;
 }
 
+void RoomEncoderAudioProcessor::calculateImageSourcePositions()
+{
+    const float t = *roomX;
+    const float b = *roomY;
+    const float h = *roomZ;
+
+    for (int q = 0; q < nImgSrc; ++q)
+    {
+        int m = reflList[q][0];
+        int n = reflList[q][1];
+        int o = reflList[q][2];
+        mx[q] = m * t + mSig[m&1] * sourcePos.x - listenerPos.x;
+        my[q] = n * b + mSig[n&1] * sourcePos.y - listenerPos.y;
+        mz[q] = o * h + mSig[o&1] * sourcePos.z - listenerPos.z;
+
+        mRadius[q] = sqrt (mx[q] * mx[q] + my[q] * my[q]+ mz[q] * mz[q]);
+        mx[q] /= mRadius[q];
+        my[q] /= mRadius[q];
+        mz[q] /= mRadius[q];
+
+        smx[q] = -mSig[m & 1] * mx[q];
+        smy[q] = -mSig[n & 1] * my[q];
+        smz[q] = -mSig[o & 1] * mz[q];
+    }
+}
+
 void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
     ScopedNoDenormals noDenormals;
@@ -325,66 +348,40 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
         }
     }
 
-    // ======================================== LIMIT MOVING SPEED OF SOURCE AND LISTENER
-    float maxDist = 30.0 / sampleRate * L; // 30 meters per second
+    //===== LIMIT MOVING SPEED OF SOURCE AND LISTENER ===============================
+    const float maxDist = 30.0f / sampleRate * L; // 30 meters per second
     {
-        Vector3D<float> posDiff;
-        float posDiffLength;
-        posDiff = Vector3D<float>(*sourceX, *sourceY, *sourceZ) - sourcePos;
-        posDiffLength = posDiff.length();
+        const Vector3D<float> targetSourcePos (jlimit (-*roomX / 2, *roomX / 2, *sourceX),
+                                               jlimit (-*roomY / 2, *roomY / 2, *sourceY),
+                                               jlimit (-*roomZ / 2, *roomZ / 2, *sourceZ));
+        const auto sourcePosDiff = targetSourcePos - sourcePos;
+        const float sourcePosDiffLength = sourcePosDiff.length();
 
-        if (posDiffLength > maxDist)
-        {
-            posDiff *= maxDist/posDiffLength;
-            sourcePos += posDiff;
-        }
+        if (sourcePosDiffLength > maxDist)
+            sourcePos += sourcePosDiff * maxDist / sourcePosDiffLength;
         else
-        {
-            sourcePos = Vector3D<float>(*sourceX, *sourceY, *sourceZ);
-        }
+            sourcePos = targetSourcePos;
 
-        posDiff = Vector3D<float>(*listenerX, *listenerY, *listenerZ) - listenerPos;
-        posDiffLength = posDiff.length();
+        const Vector3D<float> listenerSourcePos (jlimit (-*roomX / 2, *roomX / 2, *listenerX),
+                                                 jlimit (-*roomY / 2, *roomY / 2, *listenerY),
+                                                 jlimit (-*roomZ / 2, *roomZ / 2, *listenerZ));
+        const auto listenerPosDiff = listenerSourcePos - listenerPos;
+        const float listenerPosDiffLength = listenerPosDiff.length();
 
-        if (posDiffLength > maxDist)
-        {
-            posDiff *= maxDist/posDiffLength;
-            listenerPos += posDiff;
-        }
+        if (listenerPosDiffLength > maxDist)
+            listenerPos += listenerPosDiff * maxDist / listenerPosDiffLength;
         else
-        {
-            listenerPos = Vector3D<float>(*listenerX, *listenerY, *listenerZ);
-        }
+            listenerPos = listenerSourcePos;
     }
 
     // prevent division by zero when source is as listener's position
-    if ((listenerPos-sourcePos).lengthSquared() < 0.0001) {sourcePos = listenerPos + Vector3D<float>(0.01f, 0.0f, 0.0f); }
+    if ((listenerPos - sourcePos).lengthSquared() < 0.0001)
+        sourcePos = listenerPos + Vector3D<float> (0.01f, 0.0f, 0.0f);
 
 
     float* pMonoBufferWrite = monoBuffer.getWritePointer(0);
 
-    t = *roomX;
-    b = *roomY;
-    h = *roomZ;
-
-    for (int q = 0; q<nImgSrc; ++q) //process all, because we can (and it avoids artefacts when adding img sources)
-    {
-        int m = reflList[q][0];
-        int n = reflList[q][1];
-        int o = reflList[q][2];
-        mx[q] = m*t + mSig[m&1]*sourcePos.x - listenerPos.x;
-        my[q] = n*b + mSig[n&1]*sourcePos.y - listenerPos.y;
-        mz[q] = o*h + mSig[o&1]*sourcePos.z - listenerPos.z;
-
-        mRadius[q] = sqrt(mx[q]*mx[q] + my[q]*my[q]+ mz[q]*mz[q]);
-        mx[q] /= mRadius[q];
-        my[q] /= mRadius[q];
-        mz[q] /= mRadius[q];
-
-        smx[q] = - mSig[m&1] * mx[q];
-        smy[q] = - mSig[n&1] * my[q];
-        smz[q] = - mSig[o&1] * mz[q];
-    }
+    calculateImageSourcePositions();
 
 
     for (int q=0; q<workingNumRefl+1; ++q) {

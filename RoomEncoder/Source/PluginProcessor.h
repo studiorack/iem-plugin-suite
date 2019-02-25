@@ -85,6 +85,10 @@ public:
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;
 
+    void extracted(float maxDist);
+    
+    void extracted();
+    
     void processBlock (AudioSampleBuffer&, MidiBuffer&) override;
 
     //==============================================================================
@@ -121,7 +125,8 @@ public:
 
     void timerCallback() override;
 
-    void updateFilterCoefficients(double sampleRate);
+    void updateFilterCoefficients (double sampleRate);
+    void calculateImageSourcePositions();
 
     float* numRefl;
     float mRadius[nImgSrc];
