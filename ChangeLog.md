@@ -18,6 +18,7 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
         - deactivates minimum distance control, if direct path isn't renderer
         - added direct path unity-gain option
         - added direct path zero-delay option
+        - added button to deactivate direct path rendering (feature was hidden before)
     - **Scene**Rotator
         - MIDI Devices can now be opened directly to receive rotation data (for now support for MrHeadTracker only, more will follow)
 
