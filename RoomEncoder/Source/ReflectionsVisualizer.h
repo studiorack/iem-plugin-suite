@@ -91,8 +91,8 @@ public:
             float gainDb = Decibels::gainToDecibels(gainPtr[0]);
             if (gainDb > -60.0f)
             {
-                float xPos = timeToX (zeroDelay ? 0.0f : radiusPtr[0] * xFactor);
-                float yPos = dBToY(gainDb);
+                const float xPos = timeToX (zeroDelay ? 0.0f : radiusPtr[0] * xFactor);
+                const float yPos = dBToY(gainDb);
                 g.drawLine(xPos, yPos, xPos, mT + plotHeight, 2.0f);
             }
 
@@ -103,8 +103,9 @@ public:
                 float gainDb = Decibels::gainToDecibels(gainPtr[i]);
                 if (gainDb > -60.0f)
                 {
-                    float xPos = timeToX (radiusPtr[i] * xFactor - (zeroDelay ? radiusPtr[0] : 0));
-                    float yPos = dBToY(gainDb);
+                    const float radius = radiusPtr[i] - (zeroDelay ? radiusPtr[0] : 0.0f);
+                    const float xPos = timeToX (radius* xFactor);
+                    const float yPos = dBToY (gainDb);
                     g.drawLine (xPos, yPos, xPos, mT + plotHeight, 1.5f);
                 }
             }
