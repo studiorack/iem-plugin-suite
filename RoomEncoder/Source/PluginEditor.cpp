@@ -308,6 +308,12 @@ listenerElement(*valueTreeState.getParameter("listenerX"), valueTreeState.getPar
     tbDirectPathZeroDelay.setColour (ToggleButton::tickColourId, globalLaF.ClWidgetColours[1]);
     tbDirectPathZeroDelay.addListener (this);
 
+    addAndMakeVisible (&tbRenderDirectPath);
+    tbRenderDirectPathAttachment.reset (new ButtonAttachment (valueTreeState, "renderDirectPath", tbRenderDirectPath));
+    tbRenderDirectPath.setButtonText ("Render Direct Path");
+    tbRenderDirectPath.setColour (ToggleButton::tickColourId, globalLaF.ClWidgetColours[2]);
+    tbRenderDirectPath.addListener (this);
+
     startTimer(20);
 }
 
@@ -428,9 +434,18 @@ void RoomEncoderAudioProcessorEditor::resized()
         lbListenerZ.setBounds (listenerArea.removeFromLeft(rotSliderWidth));
     }
 
-    propArea.removeFromTop(20);
+    propArea.removeFromTop (20);
     gcReflectionProperties.setBounds(propArea);
-    propArea.removeFromTop(20);
+    propArea.removeFromTop (20);
+
+    auto buttonRow = propArea.removeFromBottom (20);
+    tbDirectPathZeroDelay.setBounds (buttonRow.removeFromLeft (120));
+    buttonRow.removeFromLeft (10);
+    tbDirectPathUnityGain.setBounds (buttonRow.removeFromLeft (120));
+    buttonRow.removeFromLeft (10);
+    tbRenderDirectPath.setBounds (buttonRow.removeFromLeft (120));
+
+
     Rectangle<int> fvCol (propArea.removeFromLeft(330));
 
     { // 120
@@ -460,12 +475,6 @@ void RoomEncoderAudioProcessorEditor::resized()
         lbHSG.setBounds(sliderRow.removeFromRight(rotSliderWidth));
         sliderRow.removeFromRight(sliderSpacing);
         lbHSF.setBounds(sliderRow.removeFromRight(rotSliderWidth));
-
-        fvCol.removeFromTop (10);
-        sliderRow = fvCol.removeFromTop (20);
-        tbDirectPathZeroDelay.setBounds (sliderRow.removeFromLeft (150));
-        sliderRow.removeFromLeft (20);
-        tbDirectPathUnityGain.setBounds (sliderRow.removeFromLeft (150));
     }
 
     propArea.removeFromTop(20);

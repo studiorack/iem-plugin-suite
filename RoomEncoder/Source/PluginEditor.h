@@ -88,10 +88,10 @@ private:
     ComboBox cbSyncChannel;
     SimpleLabel lbSyncChannel;
     ToggleButton tbSyncRoomSize, tbSyncReflection, tbSyncListener;
-    ToggleButton tbDirectPathUnityGain, tbDirectPathZeroDelay;
+    ToggleButton tbDirectPathUnityGain, tbDirectPathZeroDelay, tbRenderDirectPath;
     std::unique_ptr<ComboBoxAttachment> cbSyncChannelAttachment;
     std::unique_ptr<ButtonAttachment> tbSyncRoomSizeAttachment, tbSyncReflectionAttachment, tbSyncListenerAttachment;
-    std::unique_ptr<ButtonAttachment> tbDirectPathUnityGainAttachment, tbDirectPathZeroDelayAttachment;
+    std::unique_ptr<ButtonAttachment> tbDirectPathUnityGainAttachment, tbDirectPathZeroDelayAttachment, tbRenderDirectPathAttachment;
 
     GroupComponent gcRoomDimensions, gcSourcePosition, gcListenerPosition;
     GroupComponent gcReflectionProperties;
