@@ -494,7 +494,7 @@ private:
 
     double sampleRate;
 
-    int activeElem = 0;
+    int activeElem = -1;
 
     float dyn, zero, scale;
 

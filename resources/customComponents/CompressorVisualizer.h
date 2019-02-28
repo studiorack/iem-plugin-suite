@@ -22,7 +22,8 @@
 
 #pragma once
 
-#include "../../OmniCompressor/JuceLibraryCode/JuceHeader.h"
+//#include "../../OmniCompressor/JuceLibraryCode/JuceHeader.h"
+#include "../JuceLibraryCode/JuceHeader.h"
 #include "../Compressor.h"
 
 //==============================================================================
@@ -139,7 +140,7 @@ class CompressorVisualizer    : public Component
     class Characteristic : public Component
     {
     public:
-        Characteristic (Compressor& compressorToGetCharacteristicFrom, float minDB) : compressor(compressorToGetCharacteristicFrom), minDecibels (minDB)
+        Characteristic (Compressor* compressorToGetCharacteristicFrom, float minDB) : compressor(compressorToGetCharacteristicFrom), minDecibels (minDB)
         {
             setBufferedToImage(true);
         }
@@ -151,17 +152,17 @@ class CompressorVisualizer    : public Component
 
         void updateCharacteristic ()
         {
-            const float threshold = compressor.getTreshold();
-            const float knee = compressor.getKnee();
+            const float threshold = compressor->getTreshold();
+            const float knee = compressor->getKnee();
 
             const float kneeStart = threshold - knee / 2.0f;
             const float kneeEnd = threshold + knee / 2.0f;
 
             characteristic.clear();
             characteristic.startNewSubPath (minDecibels - 1.0f, minDecibels - 1.0f);
-            characteristic.lineTo (minDecibels, compressor.getCharacteristicSample(minDecibels));
+            characteristic.lineTo (minDecibels, compressor->getCharacteristicSample(minDecibels));
 
-            characteristic.lineTo (kneeStart, compressor.getCharacteristicSample(kneeStart));
+            characteristic.lineTo (kneeStart, compressor->getCharacteristicSample(kneeStart));
 
             const int kneeSamples = jmax(1, static_cast<int> (knee));
             float val = kneeStart;
@@ -169,11 +170,11 @@ class CompressorVisualizer    : public Component
             for (int i = 0; i < kneeSamples; ++i)
             {
                 val += step;
-                characteristic.lineTo (val, compressor.getCharacteristicSample(val));
+                characteristic.lineTo (val, compressor->getCharacteristicSample(val));
             }
-            characteristic.lineTo (kneeEnd, compressor.getCharacteristicSample(kneeEnd));
-            characteristic.lineTo (0.0f, compressor.getCharacteristicSample(0.0f));
-            characteristic.lineTo (1.0f, compressor.getCharacteristicSample(0.0f));
+            characteristic.lineTo (kneeEnd, compressor->getCharacteristicSample(kneeEnd));
+            characteristic.lineTo (0.0f, compressor->getCharacteristicSample(0.0f));
+            characteristic.lineTo (1.0f, compressor->getCharacteristicSample(0.0f));
             characteristic.lineTo (1.0f, minDecibels - 1.0f);
             characteristic.closeSubPath();
 
@@ -197,9 +198,14 @@ class CompressorVisualizer    : public Component
         {
             transform = newTransform;
         }
+      
+        void setCompressorToVisualize (Compressor *compressorToVisualize)
+        {
+            compressor = compressorToVisualize;
+        }
 
     private:
-        Compressor& compressor;
+        Compressor* compressor;
         const float minDecibels;
 
         Path characteristic;
@@ -209,12 +215,23 @@ class CompressorVisualizer    : public Component
 
 
 public:
-    CompressorVisualizer (Compressor& compressorToVisualize) : compressor(compressorToVisualize), minDecibels(-60.0f), gridAndLabels(minDecibels), characteristic(compressor, minDecibels)
+    CompressorVisualizer (Compressor* compressorToVisualize) : compressor(compressorToVisualize), minDecibels(-60.0f), gridAndLabels(minDecibels), characteristic(compressor, minDecibels)
+    {
+        init();
+    }
+  
+    CompressorVisualizer (Compressor& compressorToVisualize) : compressor(&compressorToVisualize), minDecibels(-60.0f), gridAndLabels(minDecibels), characteristic(compressor, minDecibels)
     {
         init();
     }
 
-    CompressorVisualizer (Compressor& compressorToVisualize, const float rangeInDecibels) : compressor(compressorToVisualize), minDecibels (-1.0f * rangeInDecibels), gridAndLabels(minDecibels), characteristic(compressor, minDecibels)
+
+    CompressorVisualizer (Compressor* compressorToVisualize, const float rangeInDecibels) : compressor(compressorToVisualize), minDecibels (-1.0f * rangeInDecibels), gridAndLabels(minDecibels), characteristic(compressor, minDecibels)
+    {
+        init();
+    }
+
+    CompressorVisualizer (Compressor& compressorToVisualize, const float rangeInDecibels) : compressor(&compressorToVisualize), minDecibels (-1.0f * rangeInDecibels), gridAndLabels(minDecibels), characteristic(compressor, minDecibels)
     {
         init();
     }
@@ -227,6 +244,7 @@ public:
     {
         addAndMakeVisible(gridAndLabels);
         addAndMakeVisible(characteristic);
+        updateCharacteristic();
     }
 
     void updateCharacteristic ()
@@ -236,9 +254,15 @@ public:
 
     void setMarkerLevels (const float inputLevel, const float gainReduction)
     {
-        const float makeUpGain = compressor.getMakeUpGain();
-        inLevel = inputLevel;
-        outLevel = inLevel + gainReduction + makeUpGain;
+        const float makeUpGain = compressor->getMakeUpGain();
+        const auto tempOutLevel = inputLevel + gainReduction + makeUpGain;
+
+        if (inLevel != inputLevel || outLevel != tempOutLevel)
+        {
+            inLevel = inputLevel;
+            outLevel = tempOutLevel;
+            repaint();
+        }
     }
 
     void paint (Graphics& g) override
@@ -269,9 +293,15 @@ public:
         characteristic.setTransformForContent (transform.translated(- contentBounds.getX(), - contentBounds.getY()));
         characteristic.setBounds (contentBounds);
     }
+  
+    void setCompressorToVisualize(Compressor *compressorToVisualize)
+    {
+        compressor = compressorToVisualize;
+        characteristic.setCompressorToVisualize(compressor);
+    }
 
 private:
-    Compressor& compressor;
+    Compressor* compressor;
     const float minDecibels;
     GridAndLabels gridAndLabels;
     Characteristic characteristic;
@@ -279,7 +309,6 @@ private:
 
     float inLevel = 0.0f;
     float outLevel = 0.0f;
-
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (CompressorVisualizer)
 };

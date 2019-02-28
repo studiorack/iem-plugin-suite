@@ -27,92 +27,125 @@
 //==============================================================================
 /*
 */
-class LevelMeter    : public Component
+class LevelMeter : public Component
 {
+    class Overlay : public Component
+    {
+    public:
+        Overlay() { setBufferedToImage (true); };
+        ~Overlay() {};
+
+        const float decibelsToY (const float dB)
+        {
+            return offset - scale * std::tanh (dB / minLevel * -2.0f);
+        }
+
+        void setMinLevel (float newMinLevel)
+        {
+            minLevel = newMinLevel;
+            repaint();
+        }
+
+        const float getOffset() { return offset; }
+
+        const float getMeterHeight() { return getHeight() - 2; }
+
+        const Rectangle<int> getMeterArea() { return meterArea; }
+
+    private:
+        void paint (Graphics& g) override
+        {
+            Path bg;
+            Rectangle<int> meterArea (0, 0, getWidth(), getHeight());
+            meterArea.reduce (2,2);
+            int width = meterArea.getWidth();
+            int xPos = meterArea.getX();
+            bg.addRoundedRectangle (meterArea, 2);
+
+            g.setColour (Colour (0xFF212121));
+            g.strokePath (bg, PathStrokeType(2.f));
+
+
+            g.setColour (Colours::white);
+            g.setFont (getLookAndFeel().getTypefaceForFont (Font (12.0f, 0)));
+            g.setFont (9.0f);
+
+            int lastTextDrawPos = -1;
+            drawLevelMark (g, xPos, width, 0, "0");
+            drawLevelMark (g, xPos, width, -3, "3");
+            drawLevelMark (g, xPos, width, -6, "6");
+
+
+            for (float dB = -10.0f; dB >= minLevel; dB -= 5.0f)
+                lastTextDrawPos = drawLevelMark (g, xPos, width, dB, String (roundToInt (-dB)), lastTextDrawPos);
+        }
+
+        void resized() override
+        {
+            offset = 0.1 * getHeight();
+            scale = getHeight() - offset;
+
+            meterArea = Rectangle<int> (0, 0, getWidth(), getHeight()).reduced (2, 2);
+        }
+
+        const int inline drawLevelMark (Graphics& g, int x, int width, const int level, const String& label, int lastTextDrawPos = -1)
+        {
+            float yPos = decibelsToY (level);
+            x = x + 1.0f;
+            width = width - 2.0f;
+
+            g.drawLine (x, yPos, x + 2, yPos);
+            g.drawLine (x + width - 2, yPos, x + width, yPos);
+
+            if (yPos - 4 > lastTextDrawPos)
+            {
+                g.drawText (label, x + 2, yPos - 4, width - 4, 9, Justification::centred, false);
+                return yPos + 5;
+            }
+            return lastTextDrawPos;
+        }
+
+        Rectangle<int> meterArea;
+        float minLevel = -60.0f;
+        float scale = 0.0f;
+        float offset = 0.0f;
+    };
 
 public:
     LevelMeter()
     {
-
+        addAndMakeVisible (overlay);
     }
 
     ~LevelMeter()
     {
     }
 
-    void setGainReductionMeter (bool isGainReductionMeter) {
+    void setGainReductionMeter (bool isGainReductionMeter)
+    {
         isGRmeter = isGainReductionMeter;
         repaint();
     }
 
-    float decibelsToY (float dB) {
-        return offset - scale * std::tanh(dB / minLevel * -2.0f);
-    }
-
     void paint (Graphics& g) override
     {
-        int height = getHeight();
-        Path bg;
-        Rectangle<int> meterArea(0, 0, getWidth(), getHeight());
-        meterArea.reduce(2,2);
-        int width = meterArea.getWidth();
-        int xPos = meterArea.getX();
-        bg.addRoundedRectangle(meterArea, 2);
+        const int height = overlay.getMeterHeight();
 
-        g.setColour(Colour(0xFF212121));
-        g.strokePath(bg, PathStrokeType(2.f));
+        auto meterArea = overlay.getMeterArea();
 
-        g.setColour(Colour(0XFF272727));
-        g.setColour(Colours::black);
-        g.fillPath(bg);
-
+        g.setColour (Colours::black);
+        g.fillRect (meterArea);
 
         Rectangle<int> lvlRect;
+        if (isGRmeter)
+            lvlRect = Rectangle<int> (Point<int> (meterArea.getX(), overlay.getOffset()), Point<int> (meterArea.getRight(), overlay.decibelsToY (level)));
+        else
+            lvlRect = Rectangle<int> (Point<int> (meterArea.getX(), height), Point<int> (meterArea.getRight(), overlay.decibelsToY (level)));
+
         g.setColour (levelColour);
-        if (isGRmeter) {
-            lvlRect = Rectangle<int>(Point<int>(meterArea.getX(), offset), Point<int>(meterArea.getRight(), decibelsToY(level)));
-        }
-        else {
-            lvlRect = Rectangle<int>(Point<int>(meterArea.getX(), height), Point<int>(meterArea.getRight(), decibelsToY(level)));
-        }
-
-        g.fillRect(lvlRect);
-
-
-        g.setColour(Colours::white);
-        g.setFont(getLookAndFeel().getTypefaceForFont (Font(12.0f, 0)));
-        g.setFont(9.0f);
-
-        int lastTextDrawPos = -1;
-        drawLevelMark(g, xPos, width, 0, "0");
-        drawLevelMark(g, xPos, width, -3, "3");
-        drawLevelMark(g, xPos, width, -6, "6");
-
-
-        for (float dB = -10.0f; dB >= minLevel; dB -= 5.0f) {
-            lastTextDrawPos = drawLevelMark (g, xPos, width, dB, String ((int) -dB), lastTextDrawPos);
-        }
-
-
-
-
+        g.fillRect (lvlRect);
     }
 
-    int inline drawLevelMark(Graphics& g, int x, int width, const int level, const String& label, int lastTextDrawPos = -1)
-    {
-        float yPos = decibelsToY(level);
-        x = x + 1.0f;
-        width = width - 2.0f;
-
-        g.drawLine (x, yPos, x + 2, yPos);
-        g.drawLine (x + width - 2, yPos, x + width, yPos);
-        if (yPos-4 > lastTextDrawPos)
-        {
-            g.drawText (label, x + 2, yPos - 4, width - 4, 9, Justification::centred, false);
-            return yPos + 5;
-        }
-        return lastTextDrawPos;
-    }
 
     void setColour (Colour newColour)
     {
@@ -120,33 +153,34 @@ public:
         repaint();
     }
 
-    void setLevel (float newLevel)
+    void setLevel (const float newLevel)
     {
-        level = newLevel;
-        repaint();
+        if (level != newLevel)
+        {
+            level = newLevel;
+            repaint();
+        }
     }
 
-    void setMinLevel ( float newMinLevel)
+    void setMinLevel (float newMinLevel)
     {
-        minLevel = newMinLevel;
+        overlay.setMinLevel (newMinLevel);
         repaint();
     }
 
     void resized() override
     {
-        offset = 0.1*getHeight();
-        scale = 0.9*getHeight();
+        overlay.setBounds (getLocalBounds());
     }
 
-private:
 
-    Colour levelColour = Colour(Colours::green);
+private:
+    Overlay overlay;
+
+    Colour levelColour = Colour (Colours::green);
 
     bool isGRmeter = false;
-    float minLevel = -60.0f;
     float level = 0.0f;
-    float scale = 0.0f;
-    float offset = 0.0f;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (LevelMeter)
 };

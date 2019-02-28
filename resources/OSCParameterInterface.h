@@ -68,6 +68,15 @@ public:
                                                                           isMetaParameter, isAutomatableParameter, isDiscrete,
                                                                           category, isBoolean);
     }
+  
+    /**
+    Adds the ID of an (already created) AudioProcessorParameter to the StringArray.
+    Useful when constructing an APVTS with a ParameterLayout.
+     */
+    void addParameterID (const String& parameterID)
+    {
+        parameterIDs.add (parameterID);
+    }
 
 
     /**
