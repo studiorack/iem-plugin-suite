@@ -26,7 +26,7 @@
 
 //==============================================================================
 MultiBandCompressorAudioProcessorEditor::MultiBandCompressorAudioProcessorEditor (MultiBandCompressorAudioProcessor& p, AudioProcessorValueTreeState& vts)
-    : AudioProcessorEditor (&p), processor (p), valueTreeState (vts), footer (p.getOSCReceiver()), filterBankVisualizer(20.0f, 20000.0f, -15.0f, 20.0f, 5.0f, p.getSampleRate(), numFreqBands)
+    : AudioProcessorEditor (&p), processor (p), valueTreeState (vts), footer (p.getOSCReceiver()), filterBankVisualizer (20.0f, 20000.0f, -15.0f, 20.0f, 5.0f, p.getSampleRate(), numFreqBands)
 {
     // ============== BEGIN: essentials ======================
     // set GUI size and lookAndFeel
@@ -39,14 +39,14 @@ MultiBandCompressorAudioProcessorEditor::MultiBandCompressorAudioProcessorEditor
     title.setFont (globalLaF.robotoBold, globalLaF.robotoLight);
     addAndMakeVisible (&footer);
     // ============= END: essentials ========================
-  
+
     cbNormalizationAtachement = std::make_unique<ComboBoxAttachment> (valueTreeState, "useSN3D", *title.getInputWidgetPtr()->getNormCbPointer());
     cbOrderAtachement = std::make_unique<ComboBoxAttachment> (valueTreeState,"orderSetting", *title.getInputWidgetPtr()->getOrderCbPointer());
-  
-    tooltips.setMillisecondsBeforeTipAppears(800);
+
+    tooltips.setMillisecondsBeforeTipAppears (800);
     tooltips.setOpaque (false);
-  
-  
+
+
     const Colour colours[numFreqBands] =
     {
         Colours::cornflowerblue,
@@ -55,116 +55,116 @@ MultiBandCompressorAudioProcessorEditor::MultiBandCompressorAudioProcessorEditor
         Colours::orangered
     };
 
-  
+
     for (int i = 0; i < numFreqBands; ++i)
     {
-    
+
         // ==== COMPRESSOR VISUALIZATION ====
         compressorVisualizers.add (new CompressorVisualizer (p.getCompressor (i)));
-        addAndMakeVisible(compressorVisualizers[i]);
-      
-      
+        addAndMakeVisible (compressorVisualizers[i]);
+
+
         // ===== GR METERS =====
-        addAndMakeVisible(&GRmeter[i]);
-        GRmeter[i].setMinLevel(-25.0f);
-        GRmeter[i].setColour(Colours::red.withMultipliedAlpha(0.8f));
-        GRmeter[i].setGainReductionMeter(true);
-      
-      
+        addAndMakeVisible (&GRmeter[i]);
+        GRmeter[i].setMinLevel (-25.0f);
+        GRmeter[i].setColour (Colours::red.withMultipliedAlpha (0.8f));
+        GRmeter[i].setGainReductionMeter (true);
+
+
         // ==== SLIDERS ====
-        addAndMakeVisible(&slThreshold[i]);
-        slThresholdAttachment[i] = std::make_unique<SliderAttachment> (valueTreeState, "threshold" + String(i), slThreshold[i]);
+        addAndMakeVisible (&slThreshold[i]);
+        slThresholdAttachment[i] = std::make_unique<SliderAttachment> (valueTreeState, "threshold" + String (i), slThreshold[i]);
         slThreshold[i].setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
         slThreshold[i].setTextBoxStyle (Slider::TextBoxBelow, false, 50, 12);
         slThreshold[i].setColour (Slider::rotarySliderOutlineColourId, colours[i]);
-        slThreshold[i].setTextValueSuffix(" dB");
-      
-        addAndMakeVisible(&slKnee[i]);
-        slKneeAttachment[i] = std::make_unique<SliderAttachment> (valueTreeState, "knee" + String(i), slKnee[i]);
+        slThreshold[i].setTextValueSuffix (" dB");
+
+        addAndMakeVisible (&slKnee[i]);
+        slKneeAttachment[i] = std::make_unique<SliderAttachment> (valueTreeState, "knee" + String (i), slKnee[i]);
         slKnee[i].setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
         slKnee[i].setTextBoxStyle (Slider::TextBoxBelow, false, 50, 12);
         slKnee[i].setColour (Slider::rotarySliderOutlineColourId, colours[i]);
-        slKnee[i].setTextValueSuffix(" dB");
+        slKnee[i].setTextValueSuffix (" dB");
 
-        addAndMakeVisible(&slRatio[i]);
+        addAndMakeVisible (&slRatio[i]);
         slRatioAttachment[i] = std::make_unique<SliderAttachment> (valueTreeState, "ratio" + String (i), slRatio[i]);
         slRatio[i].setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
         slRatio[i].setTextBoxStyle (Slider::TextBoxBelow, false, 50, 12);
         slRatio[i].setColour (Slider::rotarySliderOutlineColourId, colours[i]);
 
-        addAndMakeVisible(&slAttackTime[i]);
-        slAttackTimeAttachment[i] = std::make_unique<SliderAttachment> (valueTreeState, "attack" + String(i), slAttackTime[i]);
+        addAndMakeVisible (&slAttackTime[i]);
+        slAttackTimeAttachment[i] = std::make_unique<SliderAttachment> (valueTreeState, "attack" + String (i), slAttackTime[i]);
         slAttackTime[i].setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
         slAttackTime[i].setTextBoxStyle (Slider::TextBoxBelow, false, 50, 12);
         slAttackTime[i].setColour (Slider::rotarySliderOutlineColourId, colours[i]);
-        slRatio[i].setTextValueSuffix(" ms");
+        slRatio[i].setTextValueSuffix (" ms");
 
-        addAndMakeVisible(&slReleaseTime[i]);
-        slReleaseTimeAttachment[i] = std::make_unique<SliderAttachment> (valueTreeState, "release" + String(i), slReleaseTime[i]);
+        addAndMakeVisible (&slReleaseTime[i]);
+        slReleaseTimeAttachment[i] = std::make_unique<SliderAttachment> (valueTreeState, "release" + String (i), slReleaseTime[i]);
         slReleaseTime[i].setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
         slReleaseTime[i].setTextBoxStyle (Slider::TextBoxBelow, false, 50, 12);
         slReleaseTime[i].setColour (Slider::rotarySliderOutlineColourId, colours[i]);
-        slReleaseTime[i].setTextValueSuffix(" ms");
+        slReleaseTime[i].setTextValueSuffix (" ms");
 
-        addAndMakeVisible(&slMakeUpGain[i]);
-        slMakeUpGainAttachment[i] = std::make_unique<SliderAttachment> (valueTreeState, "makeUpGain" + String(i), slMakeUpGain[i]);
+        addAndMakeVisible (&slMakeUpGain[i]);
+        slMakeUpGainAttachment[i] = std::make_unique<SliderAttachment> (valueTreeState, "makeUpGain" + String (i), slMakeUpGain[i]);
         slMakeUpGain[i].setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
         slMakeUpGain[i].setTextBoxStyle (Slider::TextBoxBelow, false, 50, 12);
         slMakeUpGain[i].setColour (Slider::rotarySliderOutlineColourId, colours[i]);
-        slMakeUpGain[i].setTextValueSuffix(" dB");
-        slMakeUpGain[i].setName(String ("MakeUpGain" + String(i)));
-        slMakeUpGain[i].addListener(this);
-      
+        slMakeUpGain[i].setTextValueSuffix (" dB");
+        slMakeUpGain[i].setName (String ("MakeUpGain" + String (i)));
+        slMakeUpGain[i].addListener (this);
+
 
         // ===== LABELS =====
-        addAndMakeVisible(&lbKnee[i]);
-        lbKnee[i].setText("Knee");
+        addAndMakeVisible (&lbKnee[i]);
+        lbKnee[i].setText ("Knee");
         lbKnee[i].setTextColour (globalLaF.ClFace);
 
-        addAndMakeVisible(&lbThreshold[i]);
-        lbThreshold[i].setText("Threshold");
+        addAndMakeVisible (&lbThreshold[i]);
+        lbThreshold[i].setText ("Threshold");
         lbThreshold[i].setTextColour (globalLaF.ClFace);
 
-        addAndMakeVisible(&lbMakeUpGain[i]);
-        lbMakeUpGain[i].setText("Makeup");
+        addAndMakeVisible (&lbMakeUpGain[i]);
+        lbMakeUpGain[i].setText ("Makeup");
         lbMakeUpGain[i].setTextColour (globalLaF.ClFace);
-      
-        addAndMakeVisible(&lbRatio[i]);
-        lbRatio[i].setText("Ratio");
+
+        addAndMakeVisible (&lbRatio[i]);
+        lbRatio[i].setText ("Ratio");
         lbRatio[i].setTextColour (globalLaF.ClFace);
-      
-        addAndMakeVisible(&lbAttack[i]);
-        lbAttack[i].setText("Attack");
+
+        addAndMakeVisible (&lbAttack[i]);
+        lbAttack[i].setText ("Attack");
         lbAttack[i].setTextColour (globalLaF.ClFace);
-      
-        addAndMakeVisible(&lbRelease[i]);
-        lbRelease[i].setText("Release");
+
+        addAndMakeVisible (&lbRelease[i]);
+        lbRelease[i].setText ("Release");
         lbRelease[i].setTextColour (globalLaF.ClFace);
-      
-      
+
+
         // ==== BUTTONS ====
         tbSolo[i].setColour (ToggleButton::tickColourId, Colour (0xFFFFFF66).withMultipliedAlpha (0.85f));
         tbSolo[i].setScaleFontSize (0.75f);
         tbSolo[i].setButtonText ("S");
         tbSolo[i].setName ("solo" + String (i));
-        tbSolo[i].setTooltip ("Solo band #" + String(i));
-        soloAttachment[i]  = std::make_unique<AudioProcessorValueTreeState::ButtonAttachment> (valueTreeState, "solo" + String(i), tbSolo[i]);
+        tbSolo[i].setTooltip ("Solo band #" + String (i));
+        soloAttachment[i]  = std::make_unique<AudioProcessorValueTreeState::ButtonAttachment> (valueTreeState, "solo" + String (i), tbSolo[i]);
         tbSolo[i].setClickingTogglesState (true);
-        tbSolo[i].addListener(this);
+        tbSolo[i].addListener (this);
         addAndMakeVisible (&tbSolo[i]);
 
         tbBypass[i].setColour (ToggleButton::tickColourId, Colour (0xFF5bAE87).withMultipliedAlpha (0.85f));
         tbBypass[i].setScaleFontSize (0.75f);
         tbBypass[i].setButtonText ("B");
         tbBypass[i].setName ("bypass" + String (i));
-        tbBypass[i].setTooltip ("Bypass band #" + String(i));
-        bypassAttachment[i] = std::make_unique<AudioProcessorValueTreeState::ButtonAttachment> (valueTreeState, "bypass" + String(i), tbBypass[i]);
+        tbBypass[i].setTooltip ("Bypass band #" + String (i));
+        bypassAttachment[i] = std::make_unique<AudioProcessorValueTreeState::ButtonAttachment> (valueTreeState, "bypass" + String (i), tbBypass[i]);
         tbBypass[i].setClickingTogglesState (true);
-        tbBypass[i].addListener(this);
+        tbBypass[i].addListener (this);
         addAndMakeVisible (&tbBypass[i]);
     }
-  
-  
+
+
     // ==== FILTER VISUALIZATION ====
     dsp::IIR::Coefficients<double>::Ptr coeffs1;
     dsp::IIR::Coefficients<double>::Ptr coeffs2;
@@ -189,7 +189,7 @@ MultiBandCompressorAudioProcessorEditor::MultiBandCompressorAudioProcessorEditor
                 coeffs2 = processor.highPassLRCoeffs[2];
                 break;
         }
-      
+
         filterBankVisualizer.setFrequencyBand (i, coeffs1, coeffs2, colours[i]);
         filterBankVisualizer.setBypassed (i, tbBypass[i].getToggleState());
         filterBankVisualizer.setSolo (i, tbSolo[i].getToggleState());
@@ -197,57 +197,57 @@ MultiBandCompressorAudioProcessorEditor::MultiBandCompressorAudioProcessorEditor
     }
 
     addAndMakeVisible (&filterBankVisualizer);
-  
-  
+
+
     // SHOW OVERALL MAGNITUDE BUTTON
     tbOverallMagnitude.setColour (ToggleButton::tickColourId, Colours::white);
     tbOverallMagnitude.setButtonText ("show total magnitude");
     tbOverallMagnitude.setName ("overallMagnitude");
     tbOverallMagnitude.setClickingTogglesState (true);
-    tbOverallMagnitude.addListener(this);
+    tbOverallMagnitude.addListener (this);
     addAndMakeVisible (&tbOverallMagnitude);
-  
-  
+
+
     // ==== CROSSOVER SLIDERS ====
     for (int i = 0; i < numFreqBands-1; ++i)
     {
-        slCrossoverAttachment[i] = std::make_unique<SliderAttachment> (valueTreeState, "crossover" + String(i), slCrossover[i]);
-        addAndMakeVisible(&slCrossover[i]);
+        slCrossoverAttachment[i] = std::make_unique<SliderAttachment> (valueTreeState, "crossover" + String (i), slCrossover[i]);
+        addAndMakeVisible (&slCrossover[i]);
         slCrossover[i].setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
         slCrossover[i].setTextBoxStyle (Slider::TextBoxBelow, false, 50, 12);
         slCrossover[i].setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClRotSliderArrow);
-        slCrossover[i].setTooltip ("Crossover Frequency " + String(i+1));
-        slCrossover[i].setName ("Crossover" + String(i));
+        slCrossover[i].setTooltip ("Crossover Frequency " + String (i+1));
+        slCrossover[i].setName ("Crossover" + String (i));
         slCrossover[i].addListener (this);
-      
+
         // add crossover to visualizer
         filterBankVisualizer.addCrossover (&slCrossover[i]);
     }
-  
-  
+
+
     // ==== METERS - INPUT/OUTPUT ====
-    addAndMakeVisible(&omniInputMeter);
-    omniInputMeter.setMinLevel(-60.0f);
-    omniInputMeter.setColour(Colours::green.withMultipliedAlpha(0.8f));
-    omniInputMeter.setGainReductionMeter(false);
-    addAndMakeVisible(&lbInput);
+    addAndMakeVisible (&omniInputMeter);
+    omniInputMeter.setMinLevel (-60.0f);
+    omniInputMeter.setColour (Colours::green.withMultipliedAlpha (0.8f));
+    omniInputMeter.setGainReductionMeter (false);
+    addAndMakeVisible (&lbInput);
     lbInput.setText ("Input");
     lbInput.setTextColour (globalLaF.ClFace);
-  
-    addAndMakeVisible(&omniOutputMeter);
-    omniOutputMeter.setMinLevel(-60.0f);
-    omniOutputMeter.setColour(Colours::green.withMultipliedAlpha(0.8f));
-    omniOutputMeter.setGainReductionMeter(false);
-    addAndMakeVisible(&lbOutput);
+
+    addAndMakeVisible (&omniOutputMeter);
+    omniOutputMeter.setMinLevel (-60.0f);
+    omniOutputMeter.setColour (Colours::green.withMultipliedAlpha (0.8f));
+    omniOutputMeter.setGainReductionMeter (false);
+    addAndMakeVisible (&lbOutput);
     lbOutput.setText ("Output");
     lbOutput.setTextColour (globalLaF.ClFace);
-  
-  
+
+
     // ==== MASTER CONTROLS ====
     addAndMakeVisible (&slMasterThreshold);
     slMasterThreshold.setName ("MasterThreshold");
     addAndMakeVisible (&lbThreshold[numFreqBands]);
-    lbThreshold[numFreqBands].setText("Thresh.");
+    lbThreshold[numFreqBands].setText ("Thresh.");
     lbThreshold[numFreqBands].setTextColour (globalLaF.ClFace);
 
     addAndMakeVisible (&slMasterKnee);
@@ -258,8 +258,8 @@ MultiBandCompressorAudioProcessorEditor::MultiBandCompressorAudioProcessorEditor
 
     addAndMakeVisible (&slMasterMakeUpGain);
     slMasterMakeUpGain.setName ("MasterMakeUpGain");
-    addAndMakeVisible(&lbMakeUpGain[numFreqBands]);
-    lbMakeUpGain[numFreqBands].setText("Gain");
+    addAndMakeVisible (&lbMakeUpGain[numFreqBands]);
+    lbMakeUpGain[numFreqBands].setText ("Gain");
     lbMakeUpGain[numFreqBands].setTextColour (globalLaF.ClFace);
 
     addAndMakeVisible (&slMasterRatio);
@@ -270,19 +270,19 @@ MultiBandCompressorAudioProcessorEditor::MultiBandCompressorAudioProcessorEditor
 
     addAndMakeVisible (&slMasterAttackTime);
     slMasterAttackTime.setName ("MasterAttackTime");
-    addAndMakeVisible(&lbAttack[numFreqBands]);
-    lbAttack[numFreqBands].setText("Attack");
+    addAndMakeVisible (&lbAttack[numFreqBands]);
+    lbAttack[numFreqBands].setText ("Attack");
     lbAttack[numFreqBands].setTextColour (globalLaF.ClFace);
-  
+
     addAndMakeVisible (&slMasterReleaseTime);
     slMasterReleaseTime.setName ("MasterReleaseTime");
-    addAndMakeVisible(&lbRelease[numFreqBands]);
-    lbRelease[numFreqBands].setText("Rel.");
+    addAndMakeVisible (&lbRelease[numFreqBands]);
+    lbRelease[numFreqBands].setText ("Rel.");
     lbRelease[numFreqBands].setTextColour (globalLaF.ClFace);
-  
+
     gcMasterControls.setText ("Master controls");
     addAndMakeVisible (&gcMasterControls);
-  
+
     // add sliders to master controls
     for (int i = 0; i < numFreqBands; ++i)
     {
@@ -298,7 +298,7 @@ MultiBandCompressorAudioProcessorEditor::MultiBandCompressorAudioProcessorEditor
     /* resized () is called here, because otherwise the compressorVisualizers won't be drawn to the GUI until one manually resizes the window.
     It seems resized() somehow gets called *before* the constructor and therefore OwnedArray<CompressorVisualizers> is still empty on the first resized call... */
     resized ();
-  
+
     // start timer after everything is set up properly
     startTimer (50);
 }
@@ -312,7 +312,7 @@ MultiBandCompressorAudioProcessorEditor::~MultiBandCompressorAudioProcessorEdito
 void MultiBandCompressorAudioProcessorEditor::paint (Graphics& g)
 {
     g.fillAll (globalLaF.ClBackground);
-  
+
 }
 
 void MultiBandCompressorAudioProcessorEditor::resized()
@@ -342,7 +342,7 @@ void MultiBandCompressorAudioProcessorEditor::resized()
     const float crossoverAndButtonToCompressorsRatio = 0.1645f;
     const int filterToCrossoverAndButtonGap = 2;
     const int compressorToCrossoverAndButtonGap = 2;
-  
+
     // split
 //    Rectangle<int> leftArea = area.removeFromLeft (area.proportionOfWidth (leftToRightRatio));
 //    Rectangle<int> rightArea (area);
@@ -357,14 +357,14 @@ void MultiBandCompressorAudioProcessorEditor::resized()
     Rectangle<int> filterBankArea = leftArea.removeFromTop (leftArea.proportionOfHeight (filterBankToLowerRatio));
     Rectangle<int> compressorArea = leftArea;
     Rectangle<int> crossoverAndButtonArea = compressorArea.removeFromTop (compressorArea.proportionOfHeight (crossoverAndButtonToCompressorsRatio));
-  
+
     // safeguard against haphephobia
     filterBankArea.removeFromBottom (filterToCrossoverAndButtonGap / 2);
     crossoverAndButtonArea.removeFromTop (filterToCrossoverAndButtonGap / 2);
     crossoverAndButtonArea.removeFromBottom (compressorToCrossoverAndButtonGap / 2);
     compressorArea.removeFromTop (compressorToCrossoverAndButtonGap / 2);
-  
-  
+
+
     // ==== FILTER VISUALIZATION ====
     filterBankVisualizer.setBounds (filterBankArea);
 
@@ -378,7 +378,7 @@ void MultiBandCompressorAudioProcessorEditor::resized()
     Rectangle<int> soloButtonArea;
     Rectangle<int> bypassButtonArea;
     Rectangle<int> crossoverArea;
-  
+
     const int buttonsWidth = crossoverAndButtonArea.getWidth () / (numFreqBands + (numFreqBands-1)*crossoverToButtonsRatio);
     const int crossoverSliderWidth = buttonsWidth * crossoverToButtonsRatio;
 
@@ -393,7 +393,7 @@ void MultiBandCompressorAudioProcessorEditor::resized()
         bypassButtonArea.removeFromLeft (buttonToButtonGap / 2);
         tbSolo[i].setBounds (soloButtonArea.reduced (soloButtonArea.proportionOfWidth (trimButtonsWidth), soloButtonArea.proportionOfHeight (trimButtonsHeight)));
         tbBypass[i].setBounds  (bypassButtonArea.reduced (bypassButtonArea.proportionOfWidth (trimButtonsWidth), bypassButtonArea.proportionOfHeight (trimButtonsHeight)));
-      
+
         // Sliders
         if (i < numFreqBands - 1)
         {
@@ -415,7 +415,7 @@ void MultiBandCompressorAudioProcessorEditor::resized()
     compressorArea.reduce (((compressorArea.getWidth() - (numFreqBands-1) * bandToBandGap) % numFreqBands) / 2, 0);
     const int widthPerBand = ((compressorArea.getWidth() - (numFreqBands-1) * bandToBandGap) / numFreqBands);
     Rectangle<int> characteristicArea, paramArea, paramRow1, paramRow2, labelRow1, labelRow2, grMeterArea;
-  
+
     for (int i = 0; i < numFreqBands; ++i)
     {
         characteristicArea = compressorArea.removeFromLeft (widthPerBand);
@@ -424,37 +424,37 @@ void MultiBandCompressorAudioProcessorEditor::resized()
         paramArea = characteristicArea.removeFromBottom (characteristicArea.proportionOfHeight (paramToCharacteristiscRatio));
         paramArea.removeFromTop (paramToCharacteristicGap / 2);
         characteristicArea.removeFromBottom (paramToCharacteristicGap / 2);
-      
+
         paramArea.reduce ((paramArea.getWidth() % 3) / 2, 0);
         const int sliderWidth = paramArea.getWidth() / 3;
-      
+
         paramRow1 = paramArea.removeFromTop (paramArea.proportionOfHeight (0.5f));
         paramRow2 = paramArea;
         paramRow1.removeFromBottom (paramRowToRowGap / 2);
         paramRow2.removeFromTop (paramRowToRowGap / 2);
         labelRow1 = paramRow1.removeFromBottom (paramRow1.proportionOfHeight (labelToParamRatio));
         labelRow2 = paramRow2.removeFromBottom (paramRow2.proportionOfHeight (labelToParamRatio));
-      
+
         lbThreshold[i].setBounds (labelRow1.removeFromLeft (sliderWidth));
         lbKnee[i].setBounds (labelRow1.removeFromLeft (sliderWidth));
         lbMakeUpGain[i].setBounds (labelRow1.removeFromLeft (sliderWidth));
         slThreshold[i].setBounds (paramRow1.removeFromLeft (sliderWidth));
         slKnee[i].setBounds (paramRow1.removeFromLeft (sliderWidth));
         slMakeUpGain[i].setBounds (paramRow1.removeFromLeft (sliderWidth));
-      
+
         lbRatio[i].setBounds (labelRow2.removeFromLeft (sliderWidth));
         lbAttack[i].setBounds (labelRow2.removeFromLeft (sliderWidth));
         lbRelease[i].setBounds (labelRow2.removeFromLeft (sliderWidth));
         slRatio[i].setBounds (paramRow2.removeFromLeft (sliderWidth));
         slAttackTime[i].setBounds (paramRow2.removeFromLeft (sliderWidth));
         slReleaseTime[i].setBounds (paramRow2.removeFromLeft (sliderWidth));
-      
+
         // Gain-Reduction meter
         grMeterArea = characteristicArea.removeFromRight (characteristicArea.proportionOfWidth (meterToCharacteristicRatio));
         grMeterArea.removeFromLeft (meterToCharacteristicGap / 2);
         characteristicArea.removeFromRight (meterToCharacteristicGap / 2);
         GRmeter[i].setBounds (grMeterArea.reduced (0, grMeterArea.proportionOfHeight (trimMeterHeightRatio)));
-      
+
         // Compressor characteristic
         if (!(compressorVisualizers.isEmpty()))
             compressorVisualizers[i]->setBounds (characteristicArea);
@@ -462,12 +462,12 @@ void MultiBandCompressorAudioProcessorEditor::resized()
         if (i < numFreqBands-1)
             compressorArea.removeFromLeft (bandToBandGap);
     }
-  
-  
+
+
     // ==== INPUT & OUTPUT METER ====
     const float labelToMeterRatio = 0.1f;
     const int meterToMeterGap = 10;
-  
+
     Rectangle<int> meterArea = rightArea.removeFromTop (rightArea.proportionOfHeight (filterBankToLowerRatio));
     meterArea.reduce (meterArea.proportionOfWidth (0.18f), 0);
     Rectangle<int> inputMeterArea = meterArea.removeFromLeft (meterArea.proportionOfWidth (0.5f));
@@ -476,13 +476,13 @@ void MultiBandCompressorAudioProcessorEditor::resized()
     outputMeterArea.removeFromLeft (meterToMeterGap / 2);
     Rectangle<int> inputMeterLabelArea = inputMeterArea.removeFromBottom (inputMeterArea.proportionOfHeight (labelToMeterRatio));
     Rectangle<int> outputMeterLabelArea = outputMeterArea.removeFromBottom (outputMeterArea.proportionOfHeight (labelToMeterRatio));
-  
+
     omniInputMeter.setBounds (inputMeterArea);
     omniOutputMeter.setBounds (outputMeterArea);
     lbInput.setBounds (inputMeterLabelArea);
     lbOutput.setBounds (outputMeterLabelArea);
-  
-  
+
+
     // ==== MASTER SLIDERS + LABELS ====
     const float masterToUpperArea =  0.5;
     const float labelToSliderRatio = 0.24f;
@@ -490,19 +490,19 @@ void MultiBandCompressorAudioProcessorEditor::resized()
     const float trimSliderHeight = 0.125f;
     const float trimSliderWidth = 0.00f;
     const int masterToCompressorSectionGap = 18;
-  
+
     Rectangle<int> masterArea = rightArea.removeFromBottom (rightArea.proportionOfHeight (masterToUpperArea));
     masterArea.removeFromLeft (masterToCompressorSectionGap);
     gcMasterControls.setBounds (masterArea);
     masterArea.removeFromTop (trimFromGroupComponentHeader);
-  
+
     Rectangle<int> sliderRow = masterArea.removeFromTop (masterArea.proportionOfHeight (0.5f));
 //    sliderRow.reduce (sliderRow.proportionOfWidth (trimSliderWidth), sliderRow.proportionOfHeight (trimSliderHeight));
     Rectangle<int> labelRow = sliderRow.removeFromBottom (sliderRow.proportionOfHeight (labelToSliderRatio));
 
     const int masterSliderWidth = 35;
     DBG (sliderRow.getWidth());
-  
+
     slMasterThreshold.setBounds (sliderRow.removeFromLeft (masterSliderWidth));
     slMasterKnee.setBounds (sliderRow.removeFromLeft (masterSliderWidth));
     slMasterMakeUpGain.setBounds (sliderRow.removeFromLeft (masterSliderWidth));
@@ -520,25 +520,25 @@ void MultiBandCompressorAudioProcessorEditor::resized()
     lbRatio[numFreqBands].setBounds (labelRow.removeFromLeft (masterSliderWidth));
     lbAttack[numFreqBands].setBounds (labelRow.removeFromLeft (masterSliderWidth));
     lbRelease[numFreqBands].setBounds (labelRow.removeFromLeft (masterSliderWidth));
-  
-  
+
+
     // ==== FILTERBANKVISUALIZER SETTINGS ====
     const float trimHeight = 0.4f;
     const int trimFromLeft = 5;
-  
+
     rightArea.removeFromLeft (trimFromLeft);
     rightArea.reduce (0, rightArea.proportionOfHeight (trimHeight));
     Rectangle<int> totalMagnitudeButtonArea = rightArea.removeFromTop (rightArea.proportionOfHeight (0.5));
     tbOverallMagnitude.setBounds (totalMagnitudeButtonArea);
-  
+
 }
 
 
-void MultiBandCompressorAudioProcessorEditor::sliderValueChanged(Slider *slider)
+void MultiBandCompressorAudioProcessorEditor::sliderValueChanged (Slider *slider)
 {
-    if (slider->getName().startsWith("MakeUpGain"))
+    if (slider->getName().startsWith ("MakeUpGain"))
     {
-        filterBankVisualizer.updateMakeUpGain (slider->getName().getLastCharacters(1).getIntValue(), slider->getValue());
+        filterBankVisualizer.updateMakeUpGain (slider->getName().getLastCharacters (1).getIntValue(), slider->getValue());
         return;
     }
 }
@@ -548,12 +548,12 @@ void MultiBandCompressorAudioProcessorEditor::buttonClicked (Button* button)
 
     if (button->getName().startsWith ("bypass"))
     {
-        int i = button->getName().getLastCharacters(1).getIntValue();
+        int i = button->getName().getLastCharacters (1).getIntValue();
         filterBankVisualizer.setBypassed (i, button->getToggleState());
     }
     else if (button->getName().startsWith ("solo"))
     {
-        int i = button->getName().getLastCharacters(1).getIntValue();
+        int i = button->getName().getLastCharacters (1).getIntValue();
         filterBankVisualizer.setSolo (i, button->getToggleState());
     }
     else // overall magnitude button
@@ -584,14 +584,14 @@ void MultiBandCompressorAudioProcessorEditor::timerCallback()
 
     omniInputMeter.setLevel (processor.inputPeak.get());
     omniOutputMeter.setLevel (processor.outputPeak.get());
-  
+
 
     for (int i = 0; i < numFreqBands; ++i)
     {
         const auto gainReduction = processor.maxGR[i].get();
 
         filterBankVisualizer.updateGainReduction (i, gainReduction);
-        compressorVisualizers[i]->setMarkerLevels(processor.maxPeak[i].get(), gainReduction);
+        compressorVisualizers[i]->setMarkerLevels (processor.maxPeak[i].get(), gainReduction);
 
         if (processor.characteristicHasChanged[i].get())
         {
@@ -601,7 +601,7 @@ void MultiBandCompressorAudioProcessorEditor::timerCallback()
 
         GRmeter[i].setLevel (gainReduction);
     }
-  
+
     if (displayOverallMagnitude)
         filterBankVisualizer.updateOverallMagnitude();
 }
