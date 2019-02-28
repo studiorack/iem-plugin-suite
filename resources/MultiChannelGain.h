@@ -37,7 +37,7 @@ public:
     void setGainLinear (const int channel, FloatType newGain) noexcept
     {
         if (channel < gains.size())
-            gains.getUnchecked (channel)->setValue (newGain);
+            gains.getUnchecked (channel)->setTargetValue (newGain);
     }
 
     /** Applies a new gain as a decibel value. */
