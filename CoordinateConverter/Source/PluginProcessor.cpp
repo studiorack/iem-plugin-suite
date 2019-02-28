@@ -81,8 +81,6 @@ createParameterLayout())
     parameters.addParameterListener ("xFlip", this);
     parameters.addParameterListener ("yFlip", this);
     parameters.addParameterListener ("zFlip", this);
-
-    oscReceiver.addListener (this);
 }
 
 CoordinateConverterAudioProcessor::~CoordinateConverterAudioProcessor()

@@ -68,11 +68,8 @@ updatedPositionData (true)
 
     sphericalInput = true; //input from ypr
 
-    oscReceiver.addListener (this);
-
     FloatVectorOperations::clear(SHL, 64);
     FloatVectorOperations::clear(SHR, 64);
-
 }
 
 StereoEncoderAudioProcessor::~StereoEncoderAudioProcessor()

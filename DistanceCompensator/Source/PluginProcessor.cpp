@@ -78,8 +78,6 @@ createParameterLayout())
     lastDir = File (properties->getValue ("presetFolder"));
 
     tempValues.resize(64);
-
-    oscReceiver.addListener (this);
 }
 
 DistanceCompensatorAudioProcessor::~DistanceCompensatorAudioProcessor()

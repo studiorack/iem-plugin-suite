@@ -53,8 +53,6 @@ PluginTemplateAudioProcessor::PluginTemplateAudioProcessor()
     parameters.addParameterListener ("useSN3D", this);
     parameters.addParameterListener ("param1", this);
     parameters.addParameterListener ("param2", this);
-
-    oscReceiver.addListener (this);
 }
 
 PluginTemplateAudioProcessor::~PluginTemplateAudioProcessor()

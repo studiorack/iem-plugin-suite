@@ -60,8 +60,6 @@ createParameterLayout())
 //    DBG(hammerAitovSampleX[218] << " - " << hammerAitovSampleY[218] << " - " << hammerAitovSampleZ[218]);
     rms.resize(nSamplePoints);
 
-    oscReceiver.addListener (this);
-
     startTimer (200);
 }
 

@@ -48,8 +48,6 @@ createParameterLayout())
     parameters.addParameterListener("elevation", this);
 
     FloatVectorOperations::clear(previousSH, 64);
-
-    oscReceiver.addListener (this);
 }
 
 ProbeDecoderAudioProcessor::~ProbeDecoderAudioProcessor()

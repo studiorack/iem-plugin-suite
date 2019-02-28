@@ -55,8 +55,6 @@ createParameterLayout())
 
     delay.setDelayTime (0.005f);
     grProcessing.setDelayTime (0.005f);
-
-    oscReceiver.addListener (this);
 }
 
 

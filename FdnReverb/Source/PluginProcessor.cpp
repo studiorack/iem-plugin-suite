@@ -65,8 +65,6 @@ createParameterLayout())
     fdn.setFdnSize(FeedbackDelayNetwork::big);
 	fdnFade.setFdnSize(FeedbackDelayNetwork::big);
 	fdnFade.setDryWet(1.0f);
-
-    oscReceiver.addListener (this);
 }
 
 FdnReverbAudioProcessor::~FdnReverbAudioProcessor()

@@ -75,8 +75,6 @@ createParameterLayout()), flipXMask (int64 (0)), flipYMask (int64 (0)), flipZMas
         if ((l + m) % 2)
             flipZMask.setBit(ch);
     }
-
-    oscReceiver.addListener (this);
 }
 
 ToolBoxAudioProcessor::~ToolBoxAudioProcessor()

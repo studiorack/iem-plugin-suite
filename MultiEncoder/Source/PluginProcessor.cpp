@@ -92,8 +92,6 @@ createParameterLayout())
     }
 
     updateQuaternions();
-
-    oscReceiver.addListener (this);
 }
 
 MultiEncoderAudioProcessor::~MultiEncoderAudioProcessor()

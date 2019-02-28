@@ -105,8 +105,6 @@ createParameterLayout())
         elemCopy->clear();
     }
 
-    oscReceiver.addListener (this);
-
     startTimer (500);
 }
 

@@ -86,8 +86,6 @@ createParameterLayout())
 
     Y *= sqrt(4 * MathConstants<float>::pi / tDesignN) / decodeCorrection(7); // reverting 7th order correction
     YH = Y.transpose();
-
-    oscReceiver.addListener (this);
 }
 
 

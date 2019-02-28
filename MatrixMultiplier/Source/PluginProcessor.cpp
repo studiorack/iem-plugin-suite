@@ -47,8 +47,6 @@ createParameterLayout())
 
     properties = new PropertiesFile(options);
     lastDir = File(properties->getValue("configurationFolder"));
-
-    oscReceiver.addListener (this);
 }
 
 MatrixMultiplierAudioProcessor::~MatrixMultiplierAudioProcessor()

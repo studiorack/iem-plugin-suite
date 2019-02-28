@@ -92,8 +92,6 @@ createParameterLayout())
 
     lowPass1 = new IIR::Filter<float>(lowPassCoeffs);
     lowPass2 = new IIR::Filter<float>(lowPassCoeffs);
-
-    oscReceiver.addListener (this);
 }
 
 SimpleDecoderAudioProcessor::~SimpleDecoderAudioProcessor()

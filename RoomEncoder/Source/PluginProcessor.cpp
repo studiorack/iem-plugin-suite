@@ -117,8 +117,6 @@ createParameterLayout())
     }
 
     startTimer(50);
-
-    oscReceiver.addListener (this);
 }
 
 RoomEncoderAudioProcessor::~RoomEncoderAudioProcessor()

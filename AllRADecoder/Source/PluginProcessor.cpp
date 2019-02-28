@@ -90,8 +90,6 @@ energyDistribution (Image::PixelFormat::ARGB, 200, 100, true), rEVector (Image::
 
     loudspeakers.addListener(this);
     prepareLayout();
-
-    oscReceiver.addListener (this);
 }
 
 AllRADecoderAudioProcessor::~AllRADecoderAudioProcessor()

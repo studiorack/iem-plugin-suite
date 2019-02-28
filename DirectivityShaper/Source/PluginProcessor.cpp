@@ -89,8 +89,6 @@ createParameterLayout())
     {
         filter[i].coefficients = createFilterCoefficients(roundToInt(*filterType[i]), 44100, *filterFrequency[i], *filterQ[i]);
     }
-
-    oscReceiver.addListener (this);
 }
 
 inline dsp::IIR::Coefficients<float>::Ptr DirectivityShaperAudioProcessor::createFilterCoefficients(int type, double sampleRate, double frequency, double Q)

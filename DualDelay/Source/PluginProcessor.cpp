@@ -64,8 +64,6 @@ createParameterLayout()), LFOLeft ([] (float phi) { return std::sin(phi); }), LF
     sin_z.resize(8);
     cos_z.set(0, 1.f);
     sin_z.set(0, 0.f);
-
-    oscReceiver.addListener (this);
 }
 
 DualDelayAudioProcessor::~DualDelayAudioProcessor()

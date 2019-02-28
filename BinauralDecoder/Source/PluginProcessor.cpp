@@ -72,8 +72,6 @@ createParameterLayout())
         reader->read(&irs[i], 0, irLength, 0, true, false);
         irs[i].applyGain (0.3f);
     }
-
-    oscReceiver.addListener (this);
 }
 
 BinauralDecoderAudioProcessor::~BinauralDecoderAudioProcessor()

@@ -94,9 +94,6 @@ createParameterLayout())
     additionalFilterArrays[1].clear();
     for (int ch = 0; ch < ceil (64 / IIRfloat_elements()); ++ch)
         additionalFilterArrays[1].add (new IIR::Filter<IIRfloat> (additionalProcessorCoefficients[1]));
-
-
-    oscReceiver.addListener (this);
 }
 
 
