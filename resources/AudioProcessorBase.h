@@ -46,6 +46,7 @@ public:
                             oscParameterInterface (parameters),
                             parameters (*this, nullptr, String (JucePlugin_Name), {})
     {
+        oscReceiver.addListener (this);
     };
 
     AudioProcessorBase (ParameterList parameterLayout) :
@@ -53,6 +54,7 @@ public:
                             parameters (*this, nullptr, String (JucePlugin_Name), {parameterLayout.begin(), parameterLayout.end()}),
                             oscParameterInterface (parameters)
     {
+        oscReceiver.addListener (this);
     };
 
     AudioProcessorBase (const BusesProperties& ioLayouts, ParameterList parameterLayout) :
@@ -60,6 +62,7 @@ public:
                             parameters (*this, nullptr, String (JucePlugin_Name), { parameterLayout.begin(), parameterLayout.end() }),
                             oscParameterInterface (parameters)
     {
+        oscReceiver.addListener (this);
     };
 
     ~AudioProcessorBase() {};
