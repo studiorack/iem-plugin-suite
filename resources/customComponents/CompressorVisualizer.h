@@ -22,7 +22,6 @@
 
 #pragma once
 
-//#include "../../OmniCompressor/JuceLibraryCode/JuceHeader.h"
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "../Compressor.h"
 
