@@ -25,23 +25,23 @@
 
 //==============================================================================
 MultiBandCompressorAudioProcessor::MultiBandCompressorAudioProcessor()
+     : AudioProcessorBase (
 #ifndef JucePlugin_PreferredChannelConfigurations
-     : AudioProcessor (BusesProperties()
-                     #if ! JucePlugin_IsMidiEffect
-                      #if ! JucePlugin_IsSynth
-                       .withInput  ("Input",  AudioChannelSet::discreteChannels (64), true)
-                      #endif
-                       .withOutput ("Output", AudioChannelSet::discreteChannels (64), true)
-                     #endif
-                       ),
-       parameters (*this, nullptr, "PARAMETERS", createParameterLayout()),
-       oscParams (parameters), maxNumFilters (ceil (64 / filterRegisterSize))
+                           BusesProperties()
+#if ! JucePlugin_IsMidiEffect
+#if ! JucePlugin_IsSynth
+                           .withInput  ("Input",  AudioChannelSet::discreteChannels (64), true)
 #endif
+                           .withOutput ("Output", AudioChannelSet::discreteChannels (64), true)
+#endif
+                           ,
+#endif
+                           createParameterLayout()),
+       maxNumFilters (ceil (64 / filterRegisterSize))
 {  
     const String inputSettingID = "orderSetting";
     orderSetting = parameters.getRawParameterValue (inputSettingID);
     parameters.addParameterListener (inputSettingID, this);
-    oscParams.addParameterID(inputSettingID);
   
   
     for (int i = 0; i < numFreqBands-1; ++i)
@@ -60,7 +60,6 @@ MultiBandCompressorAudioProcessor::MultiBandCompressorAudioProcessor()
         iirAPCoefficients[i] = IIR::Coefficients<float>::makeAllPass(lastSampleRate, *crossovers[i]);
       
         parameters.addParameterListener(crossoverID, this);
-        oscParams.addParameterID(crossoverID);
       
         iirLP[i].clear();
         iirLP2[i].clear();
@@ -111,15 +110,6 @@ MultiBandCompressorAudioProcessor::MultiBandCompressorAudioProcessor()
         parameters.addParameterListener(makeUpGainID, this);
         parameters.addParameterListener(bypassID, this);
         parameters.addParameterListener(soloID, this);
-
-        oscParams.addParameterID(thresholdID);
-        oscParams.addParameterID(kneeID);
-        oscParams.addParameterID(attackID);
-        oscParams.addParameterID(releaseID);
-        oscParams.addParameterID(ratioID);
-        oscParams.addParameterID(makeUpGainID);
-        oscParams.addParameterID(bypassID);
-        oscParams.addParameterID(soloID);
     }
   
     copyCoeffsToProcessor();
@@ -136,7 +126,7 @@ MultiBandCompressorAudioProcessor::~MultiBandCompressorAudioProcessor()
 {
 }
 
-ParameterLayout MultiBandCompressorAudioProcessor::createParameterLayout()
+std::vector<std::unique_ptr<RangedAudioParameter>> MultiBandCompressorAudioProcessor::createParameterLayout()
 {
     std::vector<std::unique_ptr<RangedAudioParameter>> params;
     const float crossoverPresets [numFreqBands-1] = { 80.0f, 440.0f, 2200.0f };
@@ -183,7 +173,7 @@ ParameterLayout MultiBandCompressorAudioProcessor::createParameterLayout()
                                                             AudioProcessorParameter::genericParameter,
                                                             std::function <String (float value, int maximumStringLength)> ([](float v, int m) {return String (v, m);}),
                                                             std::function< float(const String &text)> ([](const String &t){return t.getFloatValue();}));
-        params.push_back( std::move (floatParam));
+        params.push_back (std::move (floatParam));
     }
 
 
@@ -198,7 +188,7 @@ ParameterLayout MultiBandCompressorAudioProcessor::createParameterLayout()
                                                            std::function <String (float value, int maximumStringLength)> ([](float v, int m){return String(v, 1);}),
                                                            std::function< float(const String &text)> ([](const String &t){return t.getFloatValue();})
                                                           );
-        params.push_back( std::move (floatParam));
+        params.push_back (std::move (floatParam));
       
         // knee
         floatParam = std::make_unique<AudioParameterFloat>("knee" + String(i),
@@ -209,7 +199,7 @@ ParameterLayout MultiBandCompressorAudioProcessor::createParameterLayout()
                                                            std::function <String (float value, int maximumStringLength)> ([](float v, int m){return String(v, 1);}),
                                                            std::function< float(const String &text)> ([](const String &t){return t.getFloatValue();})
                                                           );
-        params.push_back( std::move (floatParam));
+        params.push_back (std::move (floatParam));
       
         // attack
         floatParam = std::make_unique<AudioParameterFloat>("attack" + String(i),
@@ -220,7 +210,7 @@ ParameterLayout MultiBandCompressorAudioProcessor::createParameterLayout()
                                                            std::function <String (float value, int maximumStringLength)> ([](float v, int m){return String(v, 1);}),
                                                            std::function< float(const String &text)> ([](const String &t){return t.getFloatValue();})
                                                           );
-        params.push_back( std::move (floatParam));
+        params.push_back (std::move (floatParam));
 
         // release
         floatParam = std::make_unique<AudioParameterFloat>("release" + String(i),
@@ -231,7 +221,7 @@ ParameterLayout MultiBandCompressorAudioProcessor::createParameterLayout()
                                                            std::function <String (float value, int maximumStringLength)> ([](float v, int m){return String(v, 1);}),
                                                            std::function< float(const String &text)> ([](const String &t){return t.getFloatValue();})
                                                           );
-        params.push_back( std::move (floatParam));
+        params.push_back (std::move (floatParam));
       
         // ratio
         floatParam = std::make_unique<AudioParameterFloat>("ratio" + String(i),
@@ -243,7 +233,7 @@ ParameterLayout MultiBandCompressorAudioProcessor::createParameterLayout()
                                                              return (v > 15.9f) ? String("inf") : String(v, 1);}),
                                                            std::function< float(const String &text)> ([](const String &t){return t.getFloatValue();})
                                                           );
-        params.push_back( std::move (floatParam));
+        params.push_back (std::move (floatParam));
       
         // makeUpGain
         floatParam = std::make_unique<AudioParameterFloat>("makeUpGain" + String(i),
@@ -254,22 +244,22 @@ ParameterLayout MultiBandCompressorAudioProcessor::createParameterLayout()
                                                            std::function <String (float value, int maximumStringLength)> ([](float v, int m){return String(v, 1);}),
                                                            std::function< float(const String &text)> ([](const String &t){return t.getFloatValue();})
                                                           );
-        params.push_back( std::move (floatParam));
+        params.push_back (std::move (floatParam));
       
       
         auto boolParam = std::make_unique<AudioParameterBool>("bypass" + String(i),
                                                            "Compression on band " + String(i) + " enabled",
                                                            false);
-        params.push_back( std::move (boolParam));
+        params.push_back (std::move (boolParam));
 
       
         boolParam = std::make_unique<AudioParameterBool>("solo" + String(i),
                                                            "Put band " + String(i) + " in Solo mode",
                                                            false);
-        params.push_back( std::move (boolParam));
+        params.push_back (std::move (boolParam));
     }
   
-    return { params.begin(), params.end() };
+    return params;
 }
 
 void MultiBandCompressorAudioProcessor::calculateCoefficients(const int i)
@@ -332,43 +322,6 @@ void MultiBandCompressorAudioProcessor::copyCoeffsToProcessor()
 }
 
 //==============================================================================
-const String MultiBandCompressorAudioProcessor::getName() const
-{
-    return JucePlugin_Name;
-}
-
-bool MultiBandCompressorAudioProcessor::acceptsMidi() const
-{
-   #if JucePlugin_WantsMidiInput
-    return true;
-   #else
-    return false;
-   #endif
-}
-
-bool MultiBandCompressorAudioProcessor::producesMidi() const
-{
-   #if JucePlugin_ProducesMidiOutput
-    return true;
-   #else
-    return false;
-   #endif
-}
-
-bool MultiBandCompressorAudioProcessor::isMidiEffect() const
-{
-   #if JucePlugin_IsMidiEffect
-    return true;
-   #else
-    return false;
-   #endif
-}
-
-double MultiBandCompressorAudioProcessor::getTailLengthSeconds() const
-{
-    return 0.0;
-}
-
 int MultiBandCompressorAudioProcessor::getNumPrograms()
 {
     return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
@@ -778,43 +731,6 @@ void MultiBandCompressorAudioProcessor::updateBuffers()
 {
     DBG ("IOHelper:  input size: " << input.getSize());
     DBG ("IOHelper: output size: " << output.getSize());
-}
-
-//==============================================================================
-pointer_sized_int MultiBandCompressorAudioProcessor::handleVstPluginCanDo (int32 index,
-                                                                     pointer_sized_int value, void* ptr, float opt)
-{
-    auto text = (const char*) ptr;
-    auto matches = [=](const char* s) { return strcmp (text, s) == 0; };
-
-    if (matches ("wantsChannelCountNotifications"))
-        return 1;
-    return 0;
-}
-
-//==============================================================================
-void MultiBandCompressorAudioProcessor::oscMessageReceived (const OSCMessage &message)
-{
-    String prefix ("/" + String (JucePlugin_Name));
-    if (! message.getAddressPattern().toString().startsWith (prefix))
-        return;
-
-    OSCMessage msg (message);
-    msg.setAddressPattern (message.getAddressPattern().toString().substring (String (JucePlugin_Name).length() + 1));
-
-    oscParams.processOSCMessage (msg);
-}
-
-void MultiBandCompressorAudioProcessor::oscBundleReceived (const OSCBundle &bundle)
-{
-    for (int i = 0; i < bundle.size(); ++i)
-    {
-        auto elem = bundle[i];
-        if (elem.isMessage())
-            oscMessageReceived (elem.getMessage());
-        else if (elem.isBundle())
-            oscBundleReceived (elem.getBundle());
-    }
 }
 
 //==============================================================================

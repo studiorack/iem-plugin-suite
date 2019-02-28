@@ -68,16 +68,6 @@ public:
                                                                           isMetaParameter, isAutomatableParameter, isDiscrete,
                                                                           category, isBoolean);
     }
-  
-    /**
-    Adds the ID of an (already created) AudioProcessorParameter to the StringArray.
-    Useful when constructing an APVTS with a ParameterLayout.
-     */
-    void addParameterID (const String& parameterID)
-    {
-        parameterIDs.add (parameterID);
-    }
-
 
     /**
      Checks whether the OSCAdressPattern of the OSCMessage matches one of the ParameterID's and changes the parameter on success. Returns true, if there is a match. Make sure the plugin-name-prefix was trimmed.

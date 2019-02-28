@@ -23,15 +23,13 @@
 #pragma once
 
 #include "../JuceLibraryCode/JuceHeader.h"
+#include "../../resources/AudioProcessorBase.h"
 #include <set>
-#include <vector>
-#include "../../resources/IOHelper.h"
+//#include <vector>
+
 #include "../../resources/FilterVisualizerHelper.h"
 #include "../../resources/Compressor.h"
 
-// ===== OSC ====
-#include "../../resources/OSCParameterInterface.h"
-#include "../../resources/OSCReceiverPlus.h"
 
 using namespace juce::dsp;
 using ParameterLayout = AudioProcessorValueTreeState::ParameterLayout;
@@ -44,11 +42,7 @@ using ParameterLayout = AudioProcessorValueTreeState::ParameterLayout;
     - Ambisonics<maxOrder> (can also be used for directivity signals)
  You can leave `maxChannelCount` and `maxOrder` empty for default values (64 channels and 7th order)
 */
-class MultiBandCompressorAudioProcessor  : public AudioProcessor,
-                                           public AudioProcessorValueTreeState::Listener,
-                                           public IOHelper<IOTypes::Ambisonics<>, IOTypes:: Ambisonics<>>,
-                                           public VSTCallbackHandler,
-                                           private OSCReceiver::Listener<OSCReceiver::RealtimeCallback>
+class MultiBandCompressorAudioProcessor  : public AudioProcessorBase<IOTypes::Ambisonics<>, IOTypes:: Ambisonics<>>
 {
 public:
     //==============================================================================
@@ -70,14 +64,6 @@ public:
     bool hasEditor() const override;
 
     //==============================================================================
-    const String getName() const override;
-
-    bool acceptsMidi() const override;
-    bool producesMidi() const override;
-    bool isMidiEffect () const override;
-    double getTailLengthSeconds() const override;
-
-    //==============================================================================
     int getNumPrograms() override;
     int getCurrentProgram() override;
     void setCurrentProgram (int index) override;
@@ -92,22 +78,11 @@ public:
     void parameterChanged (const String &parameterID, float newValue) override;
     void updateBuffers() override;
 
-    //======== PluginCanDo =========================================================
-    pointer_sized_int handleVstManufacturerSpecific (int32 index, pointer_sized_int value,
-                                                     void* ptr, float opt) override { return 0; };
 
-    pointer_sized_int handleVstPluginCanDo (int32 index, pointer_sized_int value,
-                                            void* ptr, float opt) override;
-    //==============================================================================
+    //======= Parameters ===========================================================
+    std::vector<std::unique_ptr<RangedAudioParameter>> createParameterLayout();
 
 
-    //======== OSC =================================================================
-    void oscMessageReceived (const OSCMessage &message) override;
-    void oscBundleReceived (const OSCBundle &bundle) override;
-    OSCReceiverPlus& getOSCReceiver () { return oscReceiver; }
-    //==============================================================================
-  
-  
     #if JUCE_USE_SIMD
       using filterFloatType = SIMDRegister<float>;
       const int filterRegisterSize = SIMDRegister<float>::size();
@@ -139,12 +114,6 @@ public:
     Compressor* getCompressor(const int i) {return &compressors[i];};
 
 private:
-    // ====== parameters
-    AudioProcessorValueTreeState parameters;
-    OSCParameterInterface oscParams;
-    OSCReceiverPlus oscReceiver;
-  
-    ParameterLayout createParameterLayout();
     void calculateCoefficients(const int index);
     void copyCoeffsToProcessor();
   
