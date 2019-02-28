@@ -24,8 +24,6 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "../../resources/AudioProcessorBase.h"
-#include <set>
-//#include <vector>
 
 #include "../../resources/FilterVisualizerHelper.h"
 #include "../../resources/Compressor.h"
@@ -90,9 +88,9 @@ public:
       using filterFloatType = float;
       const int filterRegisterSize = 1;
     #endif
-  
+
     static constexpr int numFreqBands {4};
-  
+
     enum FrequencyBands
     {
         Low, MidLow, MidHigh, High
@@ -103,25 +101,25 @@ public:
     double& getSampleRate() { return lastSampleRate; };
     IIR::Coefficients<double>::Ptr lowPassLRCoeffs[numFreqBands-1];
     IIR::Coefficients<double>::Ptr highPassLRCoeffs[numFreqBands-1];
-  
+
     Atomic<bool> repaintFilterVisualization = false;
     Atomic<float> inputPeak = Decibels::gainToDecibels (-INFINITY), outputPeak = Decibels::gainToDecibels (-INFINITY);
     Atomic<float> maxGR[numFreqBands], maxPeak[numFreqBands];
 
     Atomic<bool> characteristicHasChanged[numFreqBands];
 
-    
-    Compressor* getCompressor(const int i) {return &compressors[i];};
+
+    Compressor* getCompressor (const int i) {return &compressors[i];};
 
 private:
-    void calculateCoefficients(const int index);
+    void calculateCoefficients (const int index);
     void copyCoeffsToProcessor();
-  
+
     double lastSampleRate {48000};
     int numChannels;
     const int maxNumFilters;
-  
-  
+
+
     // list of used audio parameters
     float* orderSetting,
            *crossovers[numFreqBands-1],
@@ -129,8 +127,8 @@ private:
            *makeUpGain[numFreqBands], *ratio[numFreqBands],
            *attack[numFreqBands], *release[numFreqBands],
            *bypass[numFreqBands];
-  
-    std::set<int> soloArray;
+
+    BigInteger soloArray;
 
     Compressor compressors[numFreqBands];
 
@@ -139,21 +137,21 @@ private:
                                   iirAPCoefficients[numFreqBands-1],
                                   iirTempLPCoefficients[numFreqBands-1],
                                   iirTempHPCoefficients[numFreqBands-1], iirTempAPCoefficients[numFreqBands-1];
-  
+
     // filters (cascaded butterworth/linkwitz-riley filters + allpass)
     OwnedArray<IIR::Filter<filterFloatType>> iirLP[numFreqBands-1], iirHP[numFreqBands-1],
                                              iirLP2[numFreqBands-1], iirHP2[numFreqBands-1],
                                              iirAP[numFreqBands-1];
-  
+
     OwnedArray<AudioBlock<filterFloatType>> interleaved, freqBands[numFreqBands];
     AudioBlock<float> zero, temp, gains;
     AudioBuffer<float> tempBuffer;
     float* gainChannelPointer;
-  
+
     std::vector<HeapBlock<char>> interleavedBlockData,  freqBandsBlocks[numFreqBands];
     HeapBlock<char> zeroData, tempData, gainData;
     HeapBlock<const float*> channelPointers { 64 };
-  
+
     Atomic<bool> userChangedFilterSettings = true;
 
     //==============================================================================
