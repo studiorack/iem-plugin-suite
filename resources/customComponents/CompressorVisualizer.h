@@ -255,8 +255,14 @@ public:
     void setMarkerLevels (const float inputLevel, const float gainReduction)
     {
         const float makeUpGain = compressor->getMakeUpGain();
-        inLevel = inputLevel;
-        outLevel = inLevel + gainReduction + makeUpGain;
+        const auto tempOutLevel = inputLevel + gainReduction + makeUpGain;
+
+        if (inLevel != inputLevel || outLevel != tempOutLevel)
+        {
+            inLevel = inputLevel;
+            outLevel = tempOutLevel;
+            repaint();
+        }
     }
 
     void paint (Graphics& g) override

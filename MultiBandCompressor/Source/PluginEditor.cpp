@@ -246,16 +246,27 @@ MultiBandCompressorAudioProcessorEditor::MultiBandCompressorAudioProcessorEditor
     // ==== MASTER CONTROLS ====
     addAndMakeVisible (&slMasterThreshold);
     slMasterThreshold.setName ("MasterThreshold");
-
-    addAndMakeVisible(&lbThreshold[numFreqBands]);
-    lbThreshold[numFreqBands].setText("Threshold");
+    addAndMakeVisible (&lbThreshold[numFreqBands]);
+    lbThreshold[numFreqBands].setText("Thresh.");
     lbThreshold[numFreqBands].setTextColour (globalLaF.ClFace);
+
+    addAndMakeVisible (&slMasterKnee);
+    slMasterKnee.setName ("MasterKnee");
+    addAndMakeVisible (&lbKnee[numFreqBands]);
+    lbKnee[numFreqBands].setText ("Knee");
+    lbKnee[numFreqBands].setTextColour (globalLaF.ClFace);
 
     addAndMakeVisible (&slMasterMakeUpGain);
     slMasterMakeUpGain.setName ("MasterMakeUpGain");
     addAndMakeVisible(&lbMakeUpGain[numFreqBands]);
-    lbMakeUpGain[numFreqBands].setText("Makeup");
+    lbMakeUpGain[numFreqBands].setText("Gain");
     lbMakeUpGain[numFreqBands].setTextColour (globalLaF.ClFace);
+
+    addAndMakeVisible (&slMasterRatio);
+    slMasterRatio.setName ("MasterMakeUpGain");
+    addAndMakeVisible (&lbRatio[numFreqBands]);
+    lbRatio[numFreqBands].setText ("Ratio");
+    lbRatio[numFreqBands].setTextColour (globalLaF.ClFace);
 
     addAndMakeVisible (&slMasterAttackTime);
     slMasterAttackTime.setName ("MasterAttackTime");
@@ -266,7 +277,7 @@ MultiBandCompressorAudioProcessorEditor::MultiBandCompressorAudioProcessorEditor
     addAndMakeVisible (&slMasterReleaseTime);
     slMasterReleaseTime.setName ("MasterReleaseTime");
     addAndMakeVisible(&lbRelease[numFreqBands]);
-    lbRelease[numFreqBands].setText("Release");
+    lbRelease[numFreqBands].setText("Rel.");
     lbRelease[numFreqBands].setTextColour (globalLaF.ClFace);
   
     gcMasterControls.setText ("Master controls");
@@ -276,7 +287,9 @@ MultiBandCompressorAudioProcessorEditor::MultiBandCompressorAudioProcessorEditor
     for (int i = 0; i < numFreqBands; ++i)
     {
         slMasterThreshold.addSlave (slThreshold[i]);
-        slMasterMakeUpGain.addSlave (slMakeUpGain[ i]);
+        slMasterKnee.addSlave (slKnee[i]);
+        slMasterMakeUpGain.addSlave (slMakeUpGain[i]);
+        slMasterRatio.addSlave (slRatio[i]);
         slMasterAttackTime.addSlave (slAttackTime[i]);
         slMasterReleaseTime.addSlave (slReleaseTime[i]);
     }
@@ -323,18 +336,24 @@ void MultiBandCompressorAudioProcessorEditor::resized()
 
 
     // ==== SPLIT INTO 4 BASIC SECTIONS ====
-    const float leftToRightRatio = 0.87;
-    const int leftToRightGap = 10;
+//    const float leftToRightRatio = 0.87;
+    const int leftToRightGap = 6;
     const float filterBankToLowerRatio = 0.34f;
     const float crossoverAndButtonToCompressorsRatio = 0.1645f;
     const int filterToCrossoverAndButtonGap = 2;
     const int compressorToCrossoverAndButtonGap = 2;
   
     // split
-    Rectangle<int> leftArea = area.removeFromLeft (area.proportionOfWidth (leftToRightRatio));
-    Rectangle<int> rightArea (area);
-    leftArea.removeFromRight (leftToRightGap / 2);
-    rightArea.removeFromLeft (leftToRightGap / 2);
+//    Rectangle<int> leftArea = area.removeFromLeft (area.proportionOfWidth (leftToRightRatio));
+//    Rectangle<int> rightArea (area);
+
+    Rectangle<int> rightArea = area.removeFromRight (130);
+    area.removeFromRight (leftToRightGap);
+    Rectangle<int> leftArea (area);
+
+
+//    leftArea.removeFromRight (leftToRightGap / 2);
+//    rightArea.removeFromLeft (leftToRightGap / 2);
     Rectangle<int> filterBankArea = leftArea.removeFromTop (leftArea.proportionOfHeight (filterBankToLowerRatio));
     Rectangle<int> compressorArea = leftArea;
     Rectangle<int> crossoverAndButtonArea = compressorArea.removeFromTop (compressorArea.proportionOfHeight (crossoverAndButtonToCompressorsRatio));
@@ -382,8 +401,7 @@ void MultiBandCompressorAudioProcessorEditor::resized()
             slCrossover[i].setBounds (crossoverArea.reduced (crossoverToButtonGap / 2, 0));
         }
     }
-  
-  
+
     // ==== COMPRESSOR VISUALIZATION ====
     const float paramToCharacteristiscRatio = 0.47f;
     const float meterToCharacteristicRatio = 0.175f;
@@ -479,23 +497,29 @@ void MultiBandCompressorAudioProcessorEditor::resized()
     masterArea.removeFromTop (trimFromGroupComponentHeader);
   
     Rectangle<int> sliderRow = masterArea.removeFromTop (masterArea.proportionOfHeight (0.5f));
-    sliderRow.reduce (sliderRow.proportionOfWidth (trimSliderWidth), sliderRow.proportionOfHeight (trimSliderHeight));
+//    sliderRow.reduce (sliderRow.proportionOfWidth (trimSliderWidth), sliderRow.proportionOfHeight (trimSliderHeight));
     Rectangle<int> labelRow = sliderRow.removeFromBottom (sliderRow.proportionOfHeight (labelToSliderRatio));
-    const int sliderWidth = sliderRow.proportionOfWidth (0.5f);
+
+    const int masterSliderWidth = 35;
+    DBG (sliderRow.getWidth());
   
-    slMasterThreshold.setBounds (sliderRow.removeFromLeft (sliderWidth));
-    slMasterMakeUpGain.setBounds (sliderRow.removeFromLeft (sliderWidth));
-    lbThreshold[numFreqBands].setBounds (labelRow.removeFromLeft (sliderWidth));
-    lbMakeUpGain[numFreqBands].setBounds (labelRow.removeFromLeft (sliderWidth));
+    slMasterThreshold.setBounds (sliderRow.removeFromLeft (masterSliderWidth));
+    slMasterKnee.setBounds (sliderRow.removeFromLeft (masterSliderWidth));
+    slMasterMakeUpGain.setBounds (sliderRow.removeFromLeft (masterSliderWidth));
+    lbThreshold[numFreqBands].setBounds (labelRow.removeFromLeft (masterSliderWidth));
+    lbKnee[numFreqBands].setBounds (labelRow.removeFromLeft (masterSliderWidth));
+    lbMakeUpGain[numFreqBands].setBounds (labelRow.removeFromLeft (masterSliderWidth));
 
     sliderRow = masterArea;
     sliderRow.reduce (sliderRow.proportionOfWidth (trimSliderWidth), sliderRow.proportionOfHeight (trimSliderHeight));
     labelRow = sliderRow.removeFromBottom (sliderRow.proportionOfHeight (labelToSliderRatio));
 
-    slMasterAttackTime.setBounds (sliderRow.removeFromLeft (sliderWidth));
-    slMasterReleaseTime.setBounds (sliderRow.removeFromLeft (sliderWidth));
-    lbAttack[numFreqBands].setBounds (labelRow.removeFromLeft (sliderWidth));
-    lbRelease[numFreqBands].setBounds (labelRow.removeFromLeft (sliderWidth));
+    slMasterRatio.setBounds (sliderRow.removeFromLeft (masterSliderWidth));
+    slMasterAttackTime.setBounds (sliderRow.removeFromLeft (masterSliderWidth));
+    slMasterReleaseTime.setBounds (sliderRow.removeFromLeft (masterSliderWidth));
+    lbRatio[numFreqBands].setBounds (labelRow.removeFromLeft (masterSliderWidth));
+    lbAttack[numFreqBands].setBounds (labelRow.removeFromLeft (masterSliderWidth));
+    lbRelease[numFreqBands].setBounds (labelRow.removeFromLeft (masterSliderWidth));
   
   
     // ==== FILTERBANKVISUALIZER SETTINGS ====
@@ -574,9 +598,8 @@ void MultiBandCompressorAudioProcessorEditor::timerCallback()
             compressorVisualizers[i]->updateCharacteristic();
             processor.characteristicHasChanged[i] = false;
         }
-        compressorVisualizers[i]->repaint();
-      
-        GRmeter[i].setLevel(gainReduction);
+
+        GRmeter[i].setLevel (gainReduction);
     }
   
     if (displayOverallMagnitude)
