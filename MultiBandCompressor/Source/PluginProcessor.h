@@ -83,10 +83,10 @@ public:
 
     #if JUCE_USE_SIMD
       using filterFloatType = SIMDRegister<float>;
-      const int filterRegisterSize = SIMDRegister<float>::size();
+      static constexpr int filterRegisterSize = SIMDRegister<float>::size();
     #else /* !JUCE_USE_SIMD */
       using filterFloatType = float;
-      const int filterRegisterSize = 1;
+      static constexpr int filterRegisterSize = 1;
     #endif
 
     static constexpr int numFreqBands {4};
