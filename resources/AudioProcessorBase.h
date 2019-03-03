@@ -112,7 +112,7 @@ public:
     pointer_sized_int handleVstManufacturerSpecific (int32 index, pointer_sized_int value,
                                                      void* ptr, float opt) override
     {
-        if (index == 0) // let's make this the OSCMessage selector for now
+        if (index == 0x4F5343)  // hex code for `OSC` in ASCII
         {
             try
             {
