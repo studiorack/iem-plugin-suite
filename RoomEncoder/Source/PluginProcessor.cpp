@@ -244,11 +244,11 @@ void RoomEncoderAudioProcessor::updateFilterCoefficients(double sampleRate) {
     updateFv = true;
 }
 
-void RoomEncoderAudioProcessor::calculateImageSourcePositions()
+void RoomEncoderAudioProcessor::calculateImageSourcePositions (const float t, const float b, const float h)
 {
-    const float t = *roomX;
-    const float b = *roomY;
-    const float h = *roomZ;
+//    const float t = *roomX;
+//    const float b = *roomY;
+//    const float h = *roomZ;
 
     for (int q = 0; q < nImgSrc; ++q)
     {
@@ -264,6 +264,7 @@ void RoomEncoderAudioProcessor::calculateImageSourcePositions()
         my[q] /= mRadius[q];
         mz[q] /= mRadius[q];
 
+        jassert (mRadius[q] >= mRadius[0]);
         smx[q] = -mSig[m & 1] * mx[q];
         smy[q] = -mSig[n & 1] * my[q];
         smz[q] = -mSig[o & 1] * mz[q];
@@ -348,12 +349,17 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
         }
     }
 
+    const float rX = *roomX;
+    const float rY = *roomY;
+    const float rZ = *roomZ;
+
+    const float rXHalfBound = rX / 2 - 0.01f;
+    const float rYHalfBound = rY / 2 - 0.01f;
+    const float rZHalfBound = rZ / 2 - 0.01f;
     //===== LIMIT MOVING SPEED OF SOURCE AND LISTENER ===============================
     const float maxDist = 30.0f / sampleRate * L; // 30 meters per second
     {
-        const Vector3D<float> targetSourcePos (jlimit (-*roomX / 2, *roomX / 2, *sourceX),
-                                               jlimit (-*roomY / 2, *roomY / 2, *sourceY),
-                                               jlimit (-*roomZ / 2, *roomZ / 2, *sourceZ));
+        const Vector3D<float> targetSourcePos (*sourceX, *sourceY, *sourceZ);
         const auto sourcePosDiff = targetSourcePos - sourcePos;
         const float sourcePosDiffLength = sourcePosDiff.length();
 
@@ -362,9 +368,12 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
         else
             sourcePos = targetSourcePos;
 
-        const Vector3D<float> listenerSourcePos (jlimit (-*roomX / 2, *roomX / 2, *listenerX),
-                                                 jlimit (-*roomY / 2, *roomY / 2, *listenerY),
-                                                 jlimit (-*roomZ / 2, *roomZ / 2, *listenerZ));
+        sourcePos = Vector3D<float> (jlimit (-rXHalfBound, rXHalfBound, sourcePos.x),
+                                     jlimit (-rYHalfBound, rYHalfBound, sourcePos.y),
+                                     jlimit (-rZHalfBound, rZHalfBound, sourcePos.z));
+
+
+        const Vector3D<float> listenerSourcePos (*listenerX, *listenerY, *listenerZ);
         const auto listenerPosDiff = listenerSourcePos - listenerPos;
         const float listenerPosDiffLength = listenerPosDiff.length();
 
@@ -372,6 +381,10 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
             listenerPos += listenerPosDiff * maxDist / listenerPosDiffLength;
         else
             listenerPos = listenerSourcePos;
+
+        listenerPos = Vector3D<float> (jlimit (-rXHalfBound, rXHalfBound, listenerPos.x),
+                                       jlimit (-rYHalfBound, rYHalfBound, listenerPos.y),
+                                       jlimit (-rZHalfBound, rZHalfBound, listenerPos.z));
     }
 
 
@@ -379,13 +392,17 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
     if (doRenderDirectPath)
     {
         // prevent division by zero when source is as listener's position
-        if ((listenerPos - sourcePos).lengthSquared() < 0.01)
+        auto difPos = sourcePos - listenerPos;
+        const auto length = difPos.length();
+        if (length == 0.0)
             sourcePos = listenerPos + Vector3D<float> (0.1f, 0.0f, 0.0f);
+        else if (length < 0.1)
+            sourcePos = listenerPos + difPos * 0.1f / length;
     }
 
     float* pMonoBufferWrite = monoBuffer.getWritePointer(0);
 
-    calculateImageSourcePositions();
+    calculateImageSourcePositions (rX, rY, rZ);
 
 
     for (int q=0; q<workingNumRefl+1; ++q) {
@@ -533,7 +550,10 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
 
         // direct path rendering
         if (q == 0 && ! doRenderDirectPath)
+        {
             gain = 0.0f;
+            continue;
+        }
 
         allGains[q] = gain; // for reflectionVisualizer
 
