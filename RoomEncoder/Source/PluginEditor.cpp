@@ -306,6 +306,7 @@ listenerElement(*valueTreeState.getParameter("listenerX"), valueTreeState.getPar
     tbDirectPathZeroDelayAttachment.reset (new ButtonAttachment (valueTreeState, "directPathZeroDelay", tbDirectPathZeroDelay));
     tbDirectPathZeroDelay.setButtonText ("Direct Path Zero Delay");
     tbDirectPathZeroDelay.setColour (ToggleButton::tickColourId, globalLaF.ClWidgetColours[1]);
+    rv.setZeroDelay (tbDirectPathZeroDelay.getToggleState());
     tbDirectPathZeroDelay.addListener (this);
 
     addAndMakeVisible (&tbRenderDirectPath);
