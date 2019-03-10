@@ -112,7 +112,8 @@ public:
     pointer_sized_int handleVstManufacturerSpecific (int32 index, pointer_sized_int value,
                                                      void* ptr, float opt) override
     {
-        if (index == 0x4F5343)  // hex code for `OSC` in ASCII
+        //0x69656D is hex code for `IEM` in ASCII
+        if (index == 0x0069656D)  // prefix 00 chooses OSC message
         {
             try
             {
@@ -141,6 +142,10 @@ public:
 
         if (matches ("wantsChannelCountNotifications"))
             return 1;
+
+        if (matches ("hasIEMExtensions"))
+            return 1;
+
         return 0;
     };
     //==============================================================================
