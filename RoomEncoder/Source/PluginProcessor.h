@@ -126,7 +126,7 @@ public:
     void timerCallback() override;
 
     void updateFilterCoefficients (double sampleRate);
-    void calculateImageSourcePositions();
+    void calculateImageSourcePositions (const float t, const float b, const float h);
 
     float* numRefl;
     float mRadius[nImgSrc];

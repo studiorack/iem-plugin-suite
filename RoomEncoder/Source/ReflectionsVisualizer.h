@@ -89,7 +89,7 @@ public:
             int numRef = roundToInt(*numReflPtr);
 
             float gainDb = Decibels::gainToDecibels(gainPtr[0]);
-            if (gainDb > -60.0f)
+            if (gainDb > -60.0f && gainDb < 20.0f)
             {
                 const float xPos = timeToX (zeroDelay ? 0.0f : radiusPtr[0] * xFactor);
                 const float yPos = dBToY(gainDb);
@@ -101,7 +101,7 @@ public:
             for (int i = 1; i <= numRef; ++i)
             {
                 float gainDb = Decibels::gainToDecibels(gainPtr[i]);
-                if (gainDb > -60.0f)
+                if (gainDb > -60.0f && gainDb < 20.0f)
                 {
                     const float radius = radiusPtr[i] - (zeroDelay ? radiusPtr[0] : 0.0f);
                     const float xPos = timeToX (radius* xFactor);
