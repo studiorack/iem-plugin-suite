@@ -270,16 +270,15 @@ void MultiBandCompressorAudioProcessor::calculateCoefficients (const int i)
 
     double b0, b1, b2, a0, a1, a2;
     double K = std::tan (MathConstants<double>::pi * (*crossovers[i]) / lastSampleRate);
-    double Q = 1 / MathConstants<double>::sqrt2;
-    double den = Q*pow (K, double (2.0)) + K + Q;
+    double den = 1 + MathConstants<double>::sqrt2 * K + pow (K, double (2.0));
 
     // calculate coeffs for 2nd order Butterworth
     a0 = 1.0;
-    a1 = (2*Q*(pow (K,2.0) - 1)) / den;
-    a2 = (Q*pow (K,2.0) - K + Q) / den;
+    a1 = (2*(pow (K,2.0) - 1)) / den;
+    a2 = (1 - MathConstants<double>::sqrt2*K + pow (K,2.0)) / den;
 
     // HP
-    b0 = Q / den;
+    b0 = 1.0 / den;
     b1 = -2.0 * b0;
     b2 = b0;
     iirTempHPCoefficients[i] = new IIR::Coefficients<float>(b0, b1, b2, a0, a1, a2);
@@ -290,7 +289,7 @@ void MultiBandCompressorAudioProcessor::calculateCoefficients (const int i)
     *highPassLRCoeffs[i] = *coeffs;
 
     // LP
-    b0 = b0 * pow (K,2.0);
+    b0 = pow (K,2.0) /   den;
     b1 = 2.0 * b0;
     b2 = b0;
     iirTempLPCoefficients[i] = new IIR::Coefficients<float>(b0, b1, b2, a0, a1, a2);
@@ -300,12 +299,7 @@ void MultiBandCompressorAudioProcessor::calculateCoefficients (const int i)
     coeffs->coefficients = FilterVisualizerHelper<double>::cascadeSecondOrderCoefficients (coeffs->coefficients, coeffs->coefficients);
     *lowPassLRCoeffs[i] = *coeffs;
 
-    // Allpass equivalent to 4th order Linkwitz-Riley
-    double re = -(a1/2.0);
-    double im = sqrt (abs (pow(-re,2.0) - a2));
-    a0 = 1.0;
-    a1 = -2.0 * re;
-    a2 = pow (re,2.0) + pow (im,2.0);
+    // Allpass equivalent to 4th order Linkwitz-Riley crossover
     iirTempAPCoefficients[i] = new IIR::Coefficients<float>(a2, a1, a0, a0, a1, a2);
 
 }
