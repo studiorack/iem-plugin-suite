@@ -26,17 +26,18 @@
 
 //==============================================================================
 OmniCompressorAudioProcessor::OmniCompressorAudioProcessor()
+: AudioProcessorBase (
 #ifndef JucePlugin_PreferredChannelConfigurations
-: AudioProcessor (BusesProperties()
+                  BusesProperties()
 #if ! JucePlugin_IsMidiEffect
 #if ! JucePlugin_IsSynth
                   .withInput  ("Input",  AudioChannelSet::discreteChannels(64), true)
 #endif
                   .withOutput ("Output", AudioChannelSet::discreteChannels(64), true)
 #endif
-                  ),
+                  ,
 #endif
-oscParams (parameters), parameters (*this, nullptr, "OmniCompressor", createParameterLayout())
+createParameterLayout())
 {
     parameters.addParameterListener("orderSetting", this);
 
@@ -54,8 +55,6 @@ oscParams (parameters), parameters (*this, nullptr, "OmniCompressor", createPara
 
     delay.setDelayTime (0.005f);
     grProcessing.setDelayTime (0.005f);
-
-    oscReceiver.addListener (this);
 }
 
 
@@ -65,34 +64,6 @@ OmniCompressorAudioProcessor::~OmniCompressorAudioProcessor()
 }
 
 //==============================================================================
-const String OmniCompressorAudioProcessor::getName() const
-{
-    return JucePlugin_Name;
-}
-
-bool OmniCompressorAudioProcessor::acceptsMidi() const
-{
-#if JucePlugin_WantsMidiInput
-    return true;
-#else
-    return false;
-#endif
-}
-
-bool OmniCompressorAudioProcessor::producesMidi() const
-{
-#if JucePlugin_ProducesMidiOutput
-    return true;
-#else
-    return false;
-#endif
-}
-
-double OmniCompressorAudioProcessor::getTailLengthSeconds() const
-{
-    return 0.0;
-}
-
 int OmniCompressorAudioProcessor::getNumPrograms()
 {
     return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
@@ -154,12 +125,6 @@ void OmniCompressorAudioProcessor::releaseResources()
     // spare memory, etc.
 }
 
-#ifndef JucePlugin_PreferredChannelConfigurations
-bool OmniCompressorAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
-{
-    return true;
-}
-#endif
 
 void OmniCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
@@ -264,50 +229,14 @@ void OmniCompressorAudioProcessor::setStateInformation (const void *data, int si
         }
 }
 
-//==============================================================================
-pointer_sized_int OmniCompressorAudioProcessor::handleVstPluginCanDo (int32 index,
-                                                                     pointer_sized_int value, void* ptr, float opt)
-{
-    auto text = (const char*) ptr;
-    auto matches = [=](const char* s) { return strcmp (text, s) == 0; };
-
-    if (matches ("wantsChannelCountNotifications"))
-        return 1;
-    return 0;
-}
 
 //==============================================================================
-void OmniCompressorAudioProcessor::oscMessageReceived (const OSCMessage &message)
-{
-    String prefix ("/" + String(JucePlugin_Name));
-    if (! message.getAddressPattern().toString().startsWith (prefix))
-        return;
-
-    OSCMessage msg (message);
-    msg.setAddressPattern (message.getAddressPattern().toString().substring(String(JucePlugin_Name).length() + 1));
-
-    oscParams.processOSCMessage (msg);
-}
-
-void OmniCompressorAudioProcessor::oscBundleReceived (const OSCBundle &bundle)
-{
-    for (int i = 0; i < bundle.size(); ++i)
-    {
-        auto elem = bundle[i];
-        if (elem.isMessage())
-            oscMessageReceived (elem.getMessage());
-        else if (elem.isBundle())
-            oscBundleReceived (elem.getBundle());
-    }
-}
-
-//==============================================================================
-AudioProcessorValueTreeState::ParameterLayout OmniCompressorAudioProcessor::createParameterLayout()
+std::vector<std::unique_ptr<RangedAudioParameter>> OmniCompressorAudioProcessor::createParameterLayout()
 {
     // add your audio parameters here
     std::vector<std::unique_ptr<RangedAudioParameter>> params;
 
-    params.push_back (oscParams.createAndAddParameter ("orderSetting", "Ambisonics Order", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("orderSetting", "Ambisonics Order", "",
                                      NormalisableRange<float>(0.0f, 8.0f, 1.0f), 0.0f,
                                      [](float value) {
                                          if (value >= 0.5f && value < 1.5f) return "0th";
@@ -321,30 +250,30 @@ AudioProcessorValueTreeState::ParameterLayout OmniCompressorAudioProcessor::crea
                                          else return "Auto";
                                      }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("useSN3D", "Normalization", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("useSN3D", "Normalization", "",
                                      NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value) {
                                          if (value >= 0.5f) return "SN3D";
                                          else return "N3D";
                                      }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("threshold", "Threshold", "dB",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("threshold", "Threshold", "dB",
                                      NormalisableRange<float> (-50.0f, 10.0f, 0.1f), -10.0,
                                      [](float value) {return String(value, 1);}, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("knee", "Knee", "dB",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("knee", "Knee", "dB",
                                      NormalisableRange<float> (0.0f, 30.0f, 0.1f), 0.0f,
                                      [](float value) {return String(value, 1);}, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("attack", "Attack Time", "ms",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("attack", "Attack Time", "ms",
                                      NormalisableRange<float> (0.0f, 100.0f, 0.1f), 30.0,
                                      [](float value) {return String(value, 1);}, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("release", "Release Time", "ms",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("release", "Release Time", "ms",
                                      NormalisableRange<float> (0.0f, 500.0f, 0.1f), 150.0,
                                      [](float value) {return String(value, 1);}, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("ratio", "Ratio", " : 1",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("ratio", "Ratio", " : 1",
                                      NormalisableRange<float> (1.0f, 16.0f, .2f), 4.0,
                                      [](float value) {
                                          if (value > 15.9f)
@@ -353,15 +282,15 @@ AudioProcessorValueTreeState::ParameterLayout OmniCompressorAudioProcessor::crea
 
                                      }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("outGain", "MakeUp Gain", "dB",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("outGain", "MakeUp Gain", "dB",
                                      NormalisableRange<float> (-10.0f, 20.0f, 0.1f), 0.0,
                                      [](float value) {return String(value, 1);}, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("lookAhead", "LookAhead", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("lookAhead", "LookAhead", "",
                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
                                      [](float value) {return value >= 0.5f ? "ON (5ms)" : "OFF";}, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("reportLatency", "Report Latency to DAW", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("reportLatency", "Report Latency to DAW", "",
                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value) {
                                          if (value >= 0.5f) return "Yes";
@@ -370,7 +299,7 @@ AudioProcessorValueTreeState::ParameterLayout OmniCompressorAudioProcessor::crea
 
 
 
-    return { params.begin(), params.end() };
+    return params;
 }
 
 //==============================================================================

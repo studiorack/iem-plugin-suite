@@ -25,23 +25,22 @@
 
 //==============================================================================
 StereoEncoderAudioProcessor::StereoEncoderAudioProcessor()
-
-#ifndef JucePlugin_PreferredChannelConfigurations
-: AudioProcessor(BusesProperties()
+: AudioProcessorBase (
+                      #ifndef JucePlugin_PreferredChannelConfigurations
+                      BusesProperties()
 #if !JucePlugin_IsMidiEffect
 #if !JucePlugin_IsSynth
-                 .withInput("Input", AudioChannelSet::stereo(), true)
+                 .withInput ("Input", AudioChannelSet::stereo(), true)
 #endif
-                 .withOutput("Output", AudioChannelSet::discreteChannels(64), true)
+                 .withOutput ("Output", AudioChannelSet::discreteChannels (64), true)
 #endif
-                 ),
+                 ,
 #endif
+createParameterLayout()),
 posC(1.0f, 0.0f, 0.0f),
 posL(1.0f, 0.0f, 0.0f),
 posR(1.0f, 0.0f, 0.0f),
-updatedPositionData(true),
-oscParams (parameters),
-parameters (*this, nullptr, "StereoEncoder", createParameterLayout())
+updatedPositionData (true)
 {
     parameters.addParameterListener("qw", this);
     parameters.addParameterListener("qx", this);
@@ -69,72 +68,51 @@ parameters (*this, nullptr, "StereoEncoder", createParameterLayout())
 
     sphericalInput = true; //input from ypr
 
-    oscReceiver.addListener (this);
-
     FloatVectorOperations::clear(SHL, 64);
     FloatVectorOperations::clear(SHR, 64);
-
 }
 
 StereoEncoderAudioProcessor::~StereoEncoderAudioProcessor()
 = default;
 
 //==============================================================================
-const String StereoEncoderAudioProcessor::getName() const {
-    return JucePlugin_Name;
-}
 
-bool StereoEncoderAudioProcessor::acceptsMidi() const {
-#if JucePlugin_WantsMidiInput
-    return true;
-#else
-    return false;
-#endif
-}
-
-bool StereoEncoderAudioProcessor::producesMidi() const {
-#if JucePlugin_ProducesMidiOutput
-    return true;
-#else
-    return false;
-#endif
-}
-
-double StereoEncoderAudioProcessor::getTailLengthSeconds() const {
-    return 0.0;
-}
-
-int StereoEncoderAudioProcessor::getNumPrograms() {
+int StereoEncoderAudioProcessor::getNumPrograms()
+{
     return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
     // so this should be at least 1, even if you're not really implementing programs.
 }
 
-int StereoEncoderAudioProcessor::getCurrentProgram() {
+int StereoEncoderAudioProcessor::getCurrentProgram()
+{
     return 0;
 }
 
-void StereoEncoderAudioProcessor::setCurrentProgram(int index) {
+void StereoEncoderAudioProcessor::setCurrentProgram (int index)
+{
 }
 
-const String StereoEncoderAudioProcessor::getProgramName(int index) {
+const String StereoEncoderAudioProcessor::getProgramName (int index)
+{
     return String();
 }
 
-void StereoEncoderAudioProcessor::changeProgramName(int index, const String &newName) {
+void StereoEncoderAudioProcessor::changeProgramName (int index, const String &newName)
+{
 }
 
 //==============================================================================
-void StereoEncoderAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
+void StereoEncoderAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    checkInputAndOutput(this, 2, *orderSetting, true);
+    checkInputAndOutput (this, 2, *orderSetting, true);
 
     bufferCopy.setSize(2, samplesPerBlock);
 
-    smoothAzimuthL.setValue(*azimuth / 180.0f * (float) MathConstants<float>::pi);
-    smoothElevationL.setValue(*elevation / 180.0f * (float) MathConstants<float>::pi);
+    smoothAzimuthL.setCurrentAndTargetValue (*azimuth / 180.0f * MathConstants<float>::pi);
+    smoothElevationL.setCurrentAndTargetValue (*elevation / 180.0f * MathConstants<float>::pi);
 
-    smoothAzimuthR.setValue(*azimuth / 180.0f * (float) MathConstants<float>::pi);
-    smoothElevationR.setValue(*elevation / 180.0f * (float) MathConstants<float>::pi);
+    smoothAzimuthR.setCurrentAndTargetValue (*azimuth / 180.0f * MathConstants<float>::pi);
+    smoothElevationR.setCurrentAndTargetValue (*elevation / 180.0f * MathConstants<float>::pi);
 
     smoothAzimuthL.reset(1, samplesPerBlock);
     smoothElevationL.reset(1, samplesPerBlock);
@@ -149,13 +127,6 @@ void StereoEncoderAudioProcessor::releaseResources() {
     // spare memory, etc.
 }
 
-#ifndef JucePlugin_PreferredChannelConfigurations
-
-bool StereoEncoderAudioProcessor::isBusesLayoutSupported(const BusesLayout &layouts) const {
-    return true;
-}
-
-#endif
 
 inline void StereoEncoderAudioProcessor::updateQuaternions ()
 {
@@ -225,10 +196,10 @@ void StereoEncoderAudioProcessor::processBlock(AudioSampleBuffer &buffer, MidiBu
     {
         if (positionHasChanged.compareAndSetBool (false, true))
         {
-            smoothAzimuthL.setValue(azimuthL, true);
-            smoothElevationL.setValue(elevationL, true);
-            smoothAzimuthR.setValue(azimuthR, true);
-            smoothElevationR.setValue(elevationR, true);
+            smoothAzimuthL.setCurrentAndTargetValue (azimuthL);
+            smoothElevationL.setCurrentAndTargetValue (elevationL);
+            smoothAzimuthR.setCurrentAndTargetValue (azimuthR);
+            smoothElevationR.setCurrentAndTargetValue (elevationR);
 
             SHEval(ambisonicOrder, xyzL[0], xyzL[1], xyzL[2], SHL);
             SHEval(ambisonicOrder, xyzR[0], xyzR[1], xyzR[2], SHR);
@@ -250,29 +221,29 @@ void StereoEncoderAudioProcessor::processBlock(AudioSampleBuffer &buffer, MidiBu
     else // high-quality sampling
     {
         if (smoothAzimuthL.getTargetValue() - azimuthL > MathConstants<float>::pi)
-            smoothAzimuthL.setValue(smoothAzimuthL.getTargetValue() - 2.0f * MathConstants<float>::pi, true);
+            smoothAzimuthL.setCurrentAndTargetValue (smoothAzimuthL.getTargetValue() - 2.0f * MathConstants<float>::pi);
         else if (azimuthL - smoothAzimuthL.getTargetValue() > MathConstants<float>::pi)
-            smoothAzimuthL.setValue(smoothAzimuthL.getTargetValue() + 2.0f * MathConstants<float>::pi, true);
+            smoothAzimuthL.setCurrentAndTargetValue (smoothAzimuthL.getTargetValue() + 2.0f * MathConstants<float>::pi);
 
         if (smoothElevationL.getTargetValue() - elevationL > MathConstants<float>::pi)
-            smoothElevationL.setValue(smoothElevationL.getTargetValue() - 2.0f * MathConstants<float>::pi, true);
+            smoothElevationL.setCurrentAndTargetValue (smoothElevationL.getTargetValue() - 2.0f * MathConstants<float>::pi);
         else if (elevationL - smoothElevationL.getTargetValue() > MathConstants<float>::pi)
-            smoothElevationL.setValue(smoothElevationL.getTargetValue() + 2.0f * MathConstants<float>::pi, true);
+            smoothElevationL.setCurrentAndTargetValue (smoothElevationL.getTargetValue() + 2.0f * MathConstants<float>::pi);
 
         if (smoothAzimuthR.getTargetValue() - azimuthR > MathConstants<float>::pi)
-            smoothAzimuthR.setValue(smoothAzimuthR.getTargetValue() - 2.0f * MathConstants<float>::pi, true);
+            smoothAzimuthR.setCurrentAndTargetValue (smoothAzimuthR.getTargetValue() - 2.0f * MathConstants<float>::pi);
         else if (azimuthR - smoothAzimuthR.getTargetValue() > MathConstants<float>::pi)
-            smoothAzimuthR.setValue(smoothAzimuthR.getTargetValue() + 2.0f * MathConstants<float>::pi, true);
+            smoothAzimuthR.setCurrentAndTargetValue (smoothAzimuthR.getTargetValue() + 2.0f * MathConstants<float>::pi);
 
         if (smoothElevationR.getTargetValue() - elevationR > MathConstants<float>::pi)
-            smoothElevationR.setValue(smoothElevationR.getTargetValue() - 2.0f * MathConstants<float>::pi, true);
+            smoothElevationR.setCurrentAndTargetValue (smoothElevationR.getTargetValue() - 2.0f * MathConstants<float>::pi);
         else if (elevationR - smoothElevationR.getTargetValue() > MathConstants<float>::pi)
-            smoothElevationR.setValue(smoothElevationR.getTargetValue() + 2.0f * MathConstants<float>::pi, true);
+            smoothElevationR.setCurrentAndTargetValue (smoothElevationR.getTargetValue() + 2.0f * MathConstants<float>::pi);
 
-        smoothAzimuthL.setValue(azimuthL);
-        smoothElevationL.setValue(elevationL);
-        smoothAzimuthR.setValue(azimuthR);
-        smoothElevationR.setValue(elevationR);
+        smoothAzimuthL.setTargetValue (azimuthL);
+        smoothElevationL.setTargetValue (elevationL);
+        smoothAzimuthR.setTargetValue (azimuthR);
+        smoothElevationR.setTargetValue (elevationR);
 
         for (int i = 0; i < L; ++i) // left
         {
@@ -379,66 +350,48 @@ void StereoEncoderAudioProcessor::setStateInformation (const void *data, int siz
 
 
 //==============================================================================
-pointer_sized_int StereoEncoderAudioProcessor::handleVstPluginCanDo (int32 index,
-                                                                     pointer_sized_int value, void* ptr, float opt)
-{
-    auto text = (const char*) ptr;
-    auto matches = [=](const char* s) { return strcmp (text, s) == 0; };
 
-    if (matches ("wantsChannelCountNotifications"))
-        return 1;
-    return 0;
-}
 
-void StereoEncoderAudioProcessor::oscMessageReceived (const OSCMessage &message)
+const bool StereoEncoderAudioProcessor::processNotYetConsumedOSCMessage (const OSCMessage &message)
 {
-    String prefix ("/" + String(JucePlugin_Name));
+    String prefix ("/" + String (JucePlugin_Name));
     if (! message.getAddressPattern().toString().startsWith (prefix))
-        return;
+        return false;
 
     OSCMessage msg (message);
-    msg.setAddressPattern (message.getAddressPattern().toString().substring(String(JucePlugin_Name).length() + 1));
+    msg.setAddressPattern (message.getAddressPattern().toString().substring (String (JucePlugin_Name).length() + 1));
 
-    if (! oscParams.processOSCMessage (msg))
+    if (msg.getAddressPattern().toString().equalsIgnoreCase ("/quaternions") && msg.size() == 4)
     {
-        if (msg.getAddressPattern().toString().equalsIgnoreCase("/quaternions") && msg.size() == 4)
-        {
-            float qs[4];
-            for (int i = 0; i < 4; ++i)
-                if (msg[i].isFloat32())
-                    qs[i] = msg[i].getFloat32();
-                else if (msg[i].isInt32())
-                    qs[i] = msg[i].getInt32();
+        float qs[4];
+        for (int i = 0; i < 4; ++i)
+            if (msg[i].isFloat32())
+                qs[i] = msg[i].getFloat32();
+            else if (msg[i].isInt32())
+                qs[i] = msg[i].getInt32();
 
-            oscParams.setValue("qw", qs[0]);
-            oscParams.setValue("qx", qs[1]);
-            oscParams.setValue("qy", qs[2]);
-            oscParams.setValue("qz", qs[3]);
-        }
+        oscParameterInterface.setValue ("qw", qs[0]);
+        oscParameterInterface.setValue ("qx", qs[1]);
+        oscParameterInterface.setValue ("qy", qs[2]);
+        oscParameterInterface.setValue ("qz", qs[3]);
+
+        return true;
     }
+
+    return false;
 }
 
-void StereoEncoderAudioProcessor::oscBundleReceived (const OSCBundle &bundle)
-{
-    for (int i = 0; i < bundle.size(); ++i)
-    {
-        auto elem = bundle[i];
-        if (elem.isMessage())
-            oscMessageReceived (elem.getMessage());
-        else if (elem.isBundle())
-            oscBundleReceived (elem.getBundle());
-    }
-}
+
 
 //==============================================================================
-AudioProcessorValueTreeState::ParameterLayout StereoEncoderAudioProcessor::createParameterLayout()
+std::vector<std::unique_ptr<RangedAudioParameter>> StereoEncoderAudioProcessor::createParameterLayout()
 {
     // add your audio parameters here
     std::vector<std::unique_ptr<RangedAudioParameter>> params;
 
 
 
-    params.push_back (oscParams.createAndAddParameter ("orderSetting", "Ambisonics Order", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("orderSetting", "Ambisonics Order", "",
                                                  NormalisableRange<float>(0.0f, 8.0f, 1.0f), 0.0f,
                                                  [](float value) {
                                                      if (value >= 0.5f && value < 1.5f) return "0th";
@@ -453,51 +406,51 @@ AudioProcessorValueTreeState::ParameterLayout StereoEncoderAudioProcessor::creat
                                                  }, nullptr));
 
 
-    params.push_back (oscParams.createAndAddParameter ("useSN3D", "Normalization", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("useSN3D", "Normalization", "",
                                                  NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
                                                  [](float value) {
                                                      if (value >= 0.5f) return "SN3D";
                                                      else return "N3D";
                                                  }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("qw", "Quaternion W", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("qw", "Quaternion W", "",
                                                  NormalisableRange<float>(-1.0f, 1.0f, 0.001f), 1.0,
                                                  [](float value) { return String(value, 2); }, nullptr, true));
 
-    params.push_back (oscParams.createAndAddParameter ("qx", "Quaternion X", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("qx", "Quaternion X", "",
                                                  NormalisableRange<float>(-1.0f, 1.0f, 0.001f), 0.0,
                                                  [](float value) { return String(value, 2); }, nullptr, true));
 
-    params.push_back (oscParams.createAndAddParameter ("qy", "Quaternion Y", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("qy", "Quaternion Y", "",
                                                  NormalisableRange<float>(-1.0f, 1.0f, 0.001f), 0.0,
                                                  [](float value) { return String(value, 2); }, nullptr, true));
 
-    params.push_back (oscParams.createAndAddParameter ("qz", "Quaternion Z", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("qz", "Quaternion Z", "",
                                                  NormalisableRange<float>(-1.0f, 1.0f, 0.001f), 0.0,
                                                  [](float value) { return String(value, 2); }, nullptr, true));
 
-    params.push_back (oscParams.createAndAddParameter ("azimuth", "Azimuth Angle", CharPointer_UTF8 (R"(°)"),
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("azimuth", "Azimuth Angle", CharPointer_UTF8 (R"(°)"),
                                                  NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
                                                  [](float value) { return String(value, 2); }, nullptr, true));
 
-    params.push_back (oscParams.createAndAddParameter ("elevation", "Elevation Angle", CharPointer_UTF8 (R"(°)"),
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("elevation", "Elevation Angle", CharPointer_UTF8 (R"(°)"),
                                                  NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
                                                  [](float value) { return String(value, 2); }, nullptr, true));
 
-    params.push_back (oscParams.createAndAddParameter ("roll", "Roll Angle", CharPointer_UTF8 (R"(°)"),
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("roll", "Roll Angle", CharPointer_UTF8 (R"(°)"),
                                                  NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
                                                  [](float value) { return String(value, 2); }, nullptr, true));
 
-    params.push_back (oscParams.createAndAddParameter ("width", "Stereo Width", CharPointer_UTF8 (R"(°)"),
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("width", "Stereo Width", CharPointer_UTF8 (R"(°)"),
                                                  NormalisableRange<float>(-360.0f, 360.0f, 0.01f), 0.0,
                                                  [](float value) { return String(value, 2); }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("highQuality", "Sample-wise Panning", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("highQuality", "Sample-wise Panning", "",
                                                  NormalisableRange<float>(0.0f, 1.0f, 1.0f), 0.0f,
                                                  [](float value) { return value < 0.5f ? "OFF" : "ON"; }, nullptr));
 
 
-    return { params.begin(), params.end() };
+    return params;
 }
 
 //==============================================================================

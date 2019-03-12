@@ -41,7 +41,7 @@ typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 //==============================================================================
 /**
 */
-class SceneRotatorAudioProcessorEditor  : public AudioProcessorEditor, private Timer
+class SceneRotatorAudioProcessorEditor  : public AudioProcessorEditor, private Timer, private ComboBox::Listener
 {
 public:
     SceneRotatorAudioProcessorEditor (SceneRotatorAudioProcessor&, AudioProcessorValueTreeState&);
@@ -53,12 +53,17 @@ public:
 
 
     void timerCallback() override;
+    void comboBoxChanged (ComboBox *comboBoxThatHasChanged) override;
+
+    void refreshMidiDeviceList();
+    void updateSelectedMidiScheme();
 
 private:
     // ====================== begin essentials ==================
     // lookAndFeel class with the IEM plug-in suite design
     LaF globalLaF;
-
+    TooltipWindow tooltipWin;
+    
     // stored references to the AudioProcessor and ValueTreeState holding all the parameters
     SceneRotatorAudioProcessor& processor;
     AudioProcessorValueTreeState& valueTreeState;
@@ -94,6 +99,15 @@ private:
 
     ToggleButton tbInvertYaw, tbInvertPitch, tbInvertRoll, tbInvertQuaternion;
     ScopedPointer<ButtonAttachment> tbInvertYawAttachment, tbInvertPitchAttachment, tbRollFlipAttachment, tbInvertQuaternionAttachment;
+
+
+    // MIDI Section
+    GroupComponent midiGroup;
+    SimpleLabel slMidiDevices, slMidiScheme;
+    ComboBox cbMidiDevices, cbMidiScheme;
+    
+    Atomic<bool> refreshingMidiDevices = false;
+    Atomic<bool> updatingMidiScheme = false;
 
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SceneRotatorAudioProcessorEditor)

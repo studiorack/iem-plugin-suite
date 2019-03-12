@@ -60,7 +60,8 @@ StereoEncoderAudioProcessorEditor::StereoEncoderAudioProcessorEditor (StereoEnco
 
     addAndMakeVisible(&footer);
 
-    toolTipWin.setMillisecondsBeforeTipAppears(500);
+    toolTipWin.setLookAndFeel (&globalLaF);
+    toolTipWin.setMillisecondsBeforeTipAppears (500);
     toolTipWin.setOpaque (false);
 
 

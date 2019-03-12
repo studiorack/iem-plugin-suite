@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <JUCERPROJECT id="mbpAgi" name="ToolBox" displaySplashScreen="0" reportAppUsage="0"
-              splashScreenColour="Dark" projectType="audioplug" version="0.3.2"
+              splashScreenColour="Dark" projectType="audioplug" version="0.3.3"
               bundleIdentifier="at.iem.ToolBox" includeBinaryInAppConfig="1"
               cppLanguageStandard="14" buildVST="1" buildVST3="1" buildAU="0"
               buildAUv3="0" buildRTAS="0" buildAAX="0" buildStandalone="1"
@@ -9,7 +9,7 @@
               pluginManufacturerCode="IEMA" pluginCode="ToBo" pluginChannelConfigs=""
               pluginIsSynth="0" pluginWantsMidiIn="0" pluginProducesMidiOut="0"
               pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0" pluginAUExportPrefix="ToolBoxAU"
-              aaxIdentifier="at.iem.ToolBox" pluginAAXCategory="2" jucerVersion="5.4.1"
+              aaxIdentifier="at.iem.ToolBox" pluginAAXCategory="2" jucerVersion="5.4.3"
               companyCopyright="IEM - Daniel Rudrich" companyName="IEM" companyWebsite="iem.at"
               headerPath="../../../resources/" pluginFormats="buildStandalone,buildVST,buildVST3">
   <MAINGROUP id="LpzrV9" name="ToolBox">
@@ -95,7 +95,7 @@
         <MODULEPATH id="juce_osc" path="../../../../../Applications/JUCE/modules"/>
       </MODULEPATHS>
     </VS2017>
-    <LINUX_MAKE targetFolder="Builds/LinuxMakefile">
+    <LINUX_MAKE targetFolder="Builds/LinuxMakefile" extraDefs="JUCE_JACK=1, JUCE_JACK_CLIENT_NAME=JucePlugin_Name">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="ToolBox"/>
         <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="ToolBox"/>

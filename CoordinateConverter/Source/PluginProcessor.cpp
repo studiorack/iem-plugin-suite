@@ -26,17 +26,18 @@
 
 //==============================================================================
 CoordinateConverterAudioProcessor::CoordinateConverterAudioProcessor()
-#ifndef JucePlugin_PreferredChannelConfigurations
-     : AudioProcessor (BusesProperties()
+     : AudioProcessorBase (
+                       #ifndef JucePlugin_PreferredChannelConfigurations
+                       BusesProperties()
                      #if ! JucePlugin_IsMidiEffect
                       #if ! JucePlugin_IsSynth
                        .withInput  ("Input",  AudioChannelSet::discreteChannels(10), true)
                       #endif
                        .withOutput ("Output", AudioChannelSet::discreteChannels(64), true)
                      #endif
-                       ),
+                       ,
 #endif
-oscParams (parameters), parameters (*this, nullptr, "CoordinateConverter", createParameterLayout())
+createParameterLayout())
 {
     // get pointers to the parameters
     azimuth = parameters.getRawParameterValue ("azimuth");
@@ -80,8 +81,6 @@ oscParams (parameters), parameters (*this, nullptr, "CoordinateConverter", creat
     parameters.addParameterListener ("xFlip", this);
     parameters.addParameterListener ("yFlip", this);
     parameters.addParameterListener ("zFlip", this);
-
-    oscReceiver.addListener (this);
 }
 
 CoordinateConverterAudioProcessor::~CoordinateConverterAudioProcessor()
@@ -89,43 +88,6 @@ CoordinateConverterAudioProcessor::~CoordinateConverterAudioProcessor()
 }
 
 //==============================================================================
-const String CoordinateConverterAudioProcessor::getName() const
-{
-    return JucePlugin_Name;
-}
-
-bool CoordinateConverterAudioProcessor::acceptsMidi() const
-{
-   #if JucePlugin_WantsMidiInput
-    return true;
-   #else
-    return false;
-   #endif
-}
-
-bool CoordinateConverterAudioProcessor::producesMidi() const
-{
-   #if JucePlugin_ProducesMidiOutput
-    return true;
-   #else
-    return false;
-   #endif
-}
-
-bool CoordinateConverterAudioProcessor::isMidiEffect() const
-{
-   #if JucePlugin_IsMidiEffect
-    return true;
-   #else
-    return false;
-   #endif
-}
-
-double CoordinateConverterAudioProcessor::getTailLengthSeconds() const
-{
-    return 0.0;
-}
-
 int CoordinateConverterAudioProcessor::getNumPrograms()
 {
     return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
@@ -160,13 +122,6 @@ void CoordinateConverterAudioProcessor::releaseResources()
     // When playback stops, you can use this as an opportunity to free up any
     // spare memory, etc.
 }
-
-#ifndef JucePlugin_PreferredChannelConfigurations
-bool CoordinateConverterAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
-{
-    return true;
-}
-#endif
 
 void CoordinateConverterAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
@@ -309,127 +264,91 @@ void CoordinateConverterAudioProcessor::updateBuffers()
     DBG("IOHelper: output size: " << output.getSize());
 }
 
-//==============================================================================
-pointer_sized_int CoordinateConverterAudioProcessor::handleVstPluginCanDo (int32 index,
-                                                                     pointer_sized_int value, void* ptr, float opt)
-{
-    auto text = (const char*) ptr;
-    auto matches = [=](const char* s) { return strcmp (text, s) == 0; };
-
-    if (matches ("wantsChannelCountNotifications"))
-        return 1;
-    return 0;
-}
 
 //==============================================================================
-void CoordinateConverterAudioProcessor::oscMessageReceived (const OSCMessage &message)
-{
-    String prefix ("/" + String(JucePlugin_Name));
-    if (! message.getAddressPattern().toString().startsWith (prefix))
-        return;
-
-    OSCMessage msg (message);
-    msg.setAddressPattern (message.getAddressPattern().toString().substring(String(JucePlugin_Name).length() + 1));
-
-    oscParams.processOSCMessage (msg);
-}
-
-void CoordinateConverterAudioProcessor::oscBundleReceived (const OSCBundle &bundle)
-{
-    for (int i = 0; i < bundle.size(); ++i)
-    {
-        auto elem = bundle[i];
-        if (elem.isMessage())
-            oscMessageReceived (elem.getMessage());
-        else if (elem.isBundle())
-            oscBundleReceived (elem.getBundle());
-    }
-}
-
-//==============================================================================
-AudioProcessorValueTreeState::ParameterLayout CoordinateConverterAudioProcessor::createParameterLayout()
+std::vector<std::unique_ptr<RangedAudioParameter>> CoordinateConverterAudioProcessor::createParameterLayout()
 {
     // add your audio parameters here
     std::vector<std::unique_ptr<RangedAudioParameter>> params;
 
-    params.push_back (oscParams.createAndAddParameter ("azimuth", "Azimuth Angle", CharPointer_UTF8 (R"(°)"),
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("azimuth", "Azimuth Angle", CharPointer_UTF8 (R"(°)"),
                                                        NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
                                                        [](float value) { return String(value, 2); }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("elevation", "Elevation Angle", CharPointer_UTF8 (R"(°)"),
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("elevation", "Elevation Angle", CharPointer_UTF8 (R"(°)"),
                                                        NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
                                                        [](float value) { return String(value, 2); }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("radius", "Radius", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("radius", "Radius", "",
                                                        NormalisableRange<float>(0.0f, 1.0f, 0.001f), 1.0,
                                                        [](float value) { return String(value, 3); }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("xPos", "X Coordinate", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("xPos", "X Coordinate", "",
                                                        NormalisableRange<float>(-1.0f, 1.0f, 0.0001f), 1.0,
                                                        [](float value) { return String(value, 4); }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("yPos", "Y Coordinate", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("yPos", "Y Coordinate", "",
                                                        NormalisableRange<float>(-1.0f, 1.0f, 0.0001f), 0.0,
                                                        [](float value) { return String(value, 4); }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("zPos", "Z Coordinate", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("zPos", "Z Coordinate", "",
                                                        NormalisableRange<float>(-1.0f, 1.0f, 0.0001f), 0.0,
                                                        [](float value) { return String(value, 4); }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("xReference", "X Reference", "m",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("xReference", "X Reference", "m",
                                                        NormalisableRange<float>(-50.0f, 50.0f, 0.001f), 0.0,
                                                        [](float value) { return String(value, 3); }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("yReference", "Y Reference", "m",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("yReference", "Y Reference", "m",
                                                        NormalisableRange<float>(-50.0f, 50.0f, 0.001f), 0.0,
                                                        [](float value) { return String(value, 3); }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("zReference", "Z Reference", "m",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("zReference", "Z Reference", "m",
                                                        NormalisableRange<float>(-50.0f, 50.0f, 0.001f), 0.0,
                                                        [](float value) { return String(value, 3); }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("radiusRange", "Radius Range", "m",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("radiusRange", "Radius Range", "m",
                                                        NormalisableRange<float>(0.1f, 50.0f, 0.01f), 1.0,
                                                        [](float value) { return String(value, 2); }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("xRange", "X Range", "m",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("xRange", "X Range", "m",
                                                        NormalisableRange<float>(0.1f, 50.0f, 0.01f), 1.0,
                                                        [](float value) { return String(value, 2); }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("yRange", "Y Range", "m",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("yRange", "Y Range", "m",
                                                        NormalisableRange<float>(0.1f, 50.0f, 0.01f), 1.0,
                                                        [](float value) { return String(value, 2); }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("zRange", "Z Range", "m",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("zRange", "Z Range", "m",
                                                        NormalisableRange<float>(0.1f, 50.0f, 0.01f), 1.0,
                                                        [](float value) { return String(value, 2); }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("azimuthFlip", "Invert Azimuth", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("azimuthFlip", "Invert Azimuth", "",
                                                        NormalisableRange<float>(0.0f, 1.0f, 1.0f), 0.0,
                                                        [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("elevationFlip", "Invert Elevation", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("elevationFlip", "Invert Elevation", "",
                                                        NormalisableRange<float>(0.0f, 1.0f, 1.0f), 0.0,
                                                        [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("radiusFlip", "Invert Radius Axis", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("radiusFlip", "Invert Radius Axis", "",
                                                        NormalisableRange<float>(0.0f, 1.0f, 1.0f), 0.0,
                                                        [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("xFlip", "Invert X Axis", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("xFlip", "Invert X Axis", "",
                                                        NormalisableRange<float>(0.0f, 1.0f, 1.0f), 0.0,
                                                        [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("yFlip", "Invert Y Axis", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("yFlip", "Invert Y Axis", "",
                                                        NormalisableRange<float>(0.0f, 1.0f, 1.0f), 0.0,
                                                        [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("zFlip", "Invert Z Axis", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("zFlip", "Invert Z Axis", "",
                                                        NormalisableRange<float>(0.0f, 1.0f, 1.0f), 0.0,
                                                        [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr));
 
 
-    return { params.begin(), params.end() };
+    return params;
 }
 
 

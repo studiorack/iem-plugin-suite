@@ -33,35 +33,40 @@ class OSCParameterInterface
 public:
     OSCParameterInterface (AudioProcessorValueTreeState &valueTreeState) : parameters (valueTreeState)
     {
+#ifdef DEBUG_PARAMETERS_FOR_DOCUMENTATION
+        auto& params = parameters.processor.getParameters();
+        for (auto& item : params)
+        {
+            if (auto* ptr = dynamic_cast<AudioProcessorParameterWithID*> (item)) // that's maybe not the best solution, but it does the job for now
+            {
+                auto parameterID = ptr->paramID;
+                auto parameterName = ptr->name;
+                auto range = parameters.getParameterRange (parameterID);
+                DBG ("| " << parameterID << " | " << range.getRange().getStart() << " : " << range.getRange().getEnd() <<  " | " << parameterName <<" | |");
+            }
+        }
+#endif
     }
 
-    /**
-     Creates and AudioProcessorParameter and adds it to the AudioProcessorValueTreeState. Additionally, the parameterID will added to a StringArray.
-     */
-    std::unique_ptr<RangedAudioParameter> createAndAddParameter (const String& parameterID,
-                                                 const String& parameterName,
-                                                 const String& labelText,
-                                                 NormalisableRange<float> valueRange,
-                                                 float defaultValue,
-                                                 std::function<String (float)> valueToTextFunction = nullptr,
-                                                 std::function<float (const String&)> textToValueFunction = nullptr,
-                                                 bool isMetaParameter = false,
-                                                 bool isAutomatableParameter = true,
-                                                 bool isDiscrete = false,
-                                                 AudioProcessorParameter::Category category
-                                                 = AudioProcessorParameter::genericParameter,
-                                                 bool isBoolean = false)
+
+    static std::unique_ptr<RangedAudioParameter> createParameterTheOldWay (const String& parameterID,
+                                                                 const String& parameterName,
+                                                                 const String& labelText,
+                                                                 NormalisableRange<float> valueRange,
+                                                                 float defaultValue,
+                                                                 std::function<String (float)> valueToTextFunction = nullptr,
+                                                                 std::function<float (const String&)> textToValueFunction = nullptr,
+                                                                 bool isMetaParameter = false,
+                                                                 bool isAutomatableParameter = true,
+                                                                 bool isDiscrete = false,
+                                                                 AudioProcessorParameter::Category category
+                                                                 = AudioProcessorParameter::genericParameter,
+                                                                 bool isBoolean = false)
     {
-#ifdef DEBUG_PARAMETERS_FOR_DOCUMENTATION
-        DBG ("| " << parameterID << " | " << valueRange.getRange().getStart() << " : " << valueRange.getRange().getEnd() <<  " | " << parameterName <<" | |");
-#endif
-
-        parameterIDs.add (parameterID);
         return std::make_unique<AudioProcessorValueTreeState::Parameter> (parameterID, parameterName, labelText, valueRange, defaultValue,
-                                          valueToTextFunction, textToValueFunction,
-                                          isMetaParameter, isAutomatableParameter, isDiscrete,
-                                                 category, isBoolean);
-
+                                                                          valueToTextFunction, textToValueFunction,
+                                                                          isMetaParameter, isAutomatableParameter, isDiscrete,
+                                                                          category, isBoolean);
     }
 
     /**
@@ -72,30 +77,34 @@ public:
         auto pattern = oscMessage.getAddressPattern();
         if (pattern.containsWildcards())
         {
-            for (int i = 0; i < parameterIDs.size(); ++i)
+            auto& params = parameters.processor.getParameters();
+            for (auto& item : params)
             {
-                String address = parameterIDs.getReference(i);
-                if (pattern.matches (OSCAddress ("/" + address)))
+                if (auto* ptr = dynamic_cast<AudioProcessorParameterWithID*> (item)) // that's maybe not the best solution, but it does the job for now
                 {
-                    if (oscMessage.size() > 0)
+                    auto address = ptr->paramID;
+                    if (pattern.matches (OSCAddress ("/" + address)))
                     {
-                        auto arg = oscMessage[0];
-                        float value = 0.0f;
-                        if (arg.isInt32())
-                            value = arg.getInt32();
-                        else if (arg.isFloat32())
-                            value = arg.getFloat32();
-                        else
-                            return true;
+                        if (oscMessage.size() > 0)
+                        {
+                            auto arg = oscMessage[0];
+                            float value = 0.0f;
+                            if (arg.isInt32())
+                                value = arg.getInt32();
+                            else if (arg.isFloat32())
+                                value = arg.getFloat32();
+                            else
+                                return true;
 
-                        setValue (address, value);
+                            setValue (address, value);
+                        }
                     }
                 }
             }
         }
 
         String address = oscMessage.getAddressPattern().toString().substring(1); // trimming forward slash
-        if (parameterIDs.contains (address))
+        if (auto parameter = parameters.getParameter (address))
         {
             if (oscMessage.size() > 0)
             {
@@ -124,5 +133,4 @@ public:
 
 private:
     AudioProcessorValueTreeState &parameters;
-    StringArray parameterIDs;
 };

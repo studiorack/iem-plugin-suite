@@ -121,7 +121,8 @@ public:
         }
 
         if (params.needParameterUpdate)
-            updateParameterSettings(); params.needParameterUpdate = false;
+            updateParameterSettings();
+        params.needParameterUpdate = false;
 
 
         AudioBlock<float>& buffer = context.getOutputBlock();

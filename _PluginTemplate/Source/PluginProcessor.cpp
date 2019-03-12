@@ -26,17 +26,18 @@
 
 //==============================================================================
 PluginTemplateAudioProcessor::PluginTemplateAudioProcessor()
-#ifndef JucePlugin_PreferredChannelConfigurations
-     : AudioProcessor (BusesProperties()
-                     #if ! JucePlugin_IsMidiEffect
-                      #if ! JucePlugin_IsSynth
-                       .withInput  ("Input",  AudioChannelSet::discreteChannels (10), true)
-                      #endif
-                       .withOutput ("Output", AudioChannelSet::discreteChannels (64), true)
-                     #endif
-                       ),
+: AudioProcessorBase (
+                      #ifndef JucePlugin_PreferredChannelConfigurations
+                      BusesProperties()
+#if ! JucePlugin_IsMidiEffect
+#if ! JucePlugin_IsSynth
+                      .withInput ("Input",  AudioChannelSet::discreteChannels (10), true)
 #endif
-oscParams (parameters), parameters (*this, nullptr, "PluginTemplate", createParameterLayout())
+                      .withOutput ("Output", AudioChannelSet::discreteChannels (64), true)
+#endif
+                       ,
+#endif
+                       createParameterLayout())
 {
     // get pointers to the parameters
     inputChannelsSetting = parameters.getRawParameterValue ("inputChannelsSetting");
@@ -52,8 +53,6 @@ oscParams (parameters), parameters (*this, nullptr, "PluginTemplate", createPara
     parameters.addParameterListener ("useSN3D", this);
     parameters.addParameterListener ("param1", this);
     parameters.addParameterListener ("param2", this);
-
-    oscReceiver.addListener (this);
 }
 
 PluginTemplateAudioProcessor::~PluginTemplateAudioProcessor()
@@ -61,43 +60,6 @@ PluginTemplateAudioProcessor::~PluginTemplateAudioProcessor()
 }
 
 //==============================================================================
-const String PluginTemplateAudioProcessor::getName() const
-{
-    return JucePlugin_Name;
-}
-
-bool PluginTemplateAudioProcessor::acceptsMidi() const
-{
-   #if JucePlugin_WantsMidiInput
-    return true;
-   #else
-    return false;
-   #endif
-}
-
-bool PluginTemplateAudioProcessor::producesMidi() const
-{
-   #if JucePlugin_ProducesMidiOutput
-    return true;
-   #else
-    return false;
-   #endif
-}
-
-bool PluginTemplateAudioProcessor::isMidiEffect() const
-{
-   #if JucePlugin_IsMidiEffect
-    return true;
-   #else
-    return false;
-   #endif
-}
-
-double PluginTemplateAudioProcessor::getTailLengthSeconds() const
-{
-    return 0.0;
-}
-
 int PluginTemplateAudioProcessor::getNumPrograms()
 {
     return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
@@ -130,8 +92,6 @@ void PluginTemplateAudioProcessor::prepareToPlay (double sampleRate, int samples
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
 
-
-
 }
 
 void PluginTemplateAudioProcessor::releaseResources()
@@ -139,13 +99,6 @@ void PluginTemplateAudioProcessor::releaseResources()
     // When playback stops, you can use this as an opportunity to free up any
     // spare memory, etc.
 }
-
-#ifndef JucePlugin_PreferredChannelConfigurations
-bool PluginTemplateAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
-{
-    return true;
-}
-#endif
 
 void PluginTemplateAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
@@ -229,54 +182,18 @@ void PluginTemplateAudioProcessor::updateBuffers()
     DBG ("IOHelper: output size: " << output.getSize());
 }
 
-//==============================================================================
-pointer_sized_int PluginTemplateAudioProcessor::handleVstPluginCanDo (int32 index,
-                                                                     pointer_sized_int value, void* ptr, float opt)
-{
-    auto text = (const char*) ptr;
-    auto matches = [=](const char* s) { return strcmp (text, s) == 0; };
-
-    if (matches ("wantsChannelCountNotifications"))
-        return 1;
-    return 0;
-}
 
 //==============================================================================
-void PluginTemplateAudioProcessor::oscMessageReceived (const OSCMessage &message)
-{
-    String prefix ("/" + String (JucePlugin_Name));
-    if (! message.getAddressPattern().toString().startsWith (prefix))
-        return;
-
-    OSCMessage msg (message);
-    msg.setAddressPattern (message.getAddressPattern().toString().substring (String (JucePlugin_Name).length() + 1));
-
-    oscParams.processOSCMessage (msg);
-}
-
-void PluginTemplateAudioProcessor::oscBundleReceived (const OSCBundle &bundle)
-{
-    for (int i = 0; i < bundle.size(); ++i)
-    {
-        auto elem = bundle[i];
-        if (elem.isMessage())
-            oscMessageReceived (elem.getMessage());
-        else if (elem.isBundle())
-            oscBundleReceived (elem.getBundle());
-    }
-}
-
-//==============================================================================
-AudioProcessorValueTreeState::ParameterLayout PluginTemplateAudioProcessor::createParameterLayout()
+std::vector<std::unique_ptr<RangedAudioParameter>> PluginTemplateAudioProcessor::createParameterLayout()
 {
     // add your audio parameters here
     std::vector<std::unique_ptr<RangedAudioParameter>> params;
 
-    params.push_back (oscParams.createAndAddParameter ("inputChannelsSetting", "Number of input channels ", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("inputChannelsSetting", "Number of input channels ", "",
                                                        NormalisableRange<float> (0.0f, 10.0f, 1.0f), 0.0f,
                                                        [](float value) {return value < 0.5f ? "Auto" : String (value);}, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("outputOrderSetting", "Ambisonic Order", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("outputOrderSetting", "Ambisonic Order", "",
                                                        NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
                                                        [](float value) {
                                                            if (value >= 0.5f && value < 1.5f) return "0th";
@@ -290,23 +207,22 @@ AudioProcessorValueTreeState::ParameterLayout PluginTemplateAudioProcessor::crea
                                                            else return "Auto";},
                                                        nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("useSN3D", "Normalization", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("useSN3D", "Normalization", "",
                                                        NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
                                                        [](float value) {
                                                            if (value >= 0.5f) return "SN3D";
                                                            else return "N3D";
                                                        }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("param1", "Parameter 1", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("param1", "Parameter 1", "",
                                                        NormalisableRange<float> (-10.0f, 10.0f, 0.1f), 0.0,
                                                        [](float value) {return String (value);}, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("param2", "Parameter 2", "dB",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("param2", "Parameter 2", "dB",
                                                        NormalisableRange<float> (-50.0f, 0.0f, 0.1f), -10.0,
                                                        [](float value) {return String (value, 1);}, nullptr));
 
-
-    return { params.begin(), params.end() };
+    return params;
 }
 
 

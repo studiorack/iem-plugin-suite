@@ -23,7 +23,7 @@
 #pragma once
 
 #include "../JuceLibraryCode/JuceHeader.h"
-#include "../../resources/IOHelper.h"
+#include "../../resources/AudioProcessorBase.h"
 #include "../../resources/AmbisonicDecoder.h"
 
 #define CONFIGURATIONHELPER_ENABLE_DECODER_METHODS 1
@@ -32,24 +32,10 @@
 #include "../../resources/ReferenceCountedDecoder.h"
 #include "../../resources/FilterVisualizerHelper.h"
 
-// ===== OSC ====
-#include "../../resources/OSCParameterInterface.h"
-#include "../../resources/OSCReceiverPlus.h"
 
 using namespace dsp;
 //==============================================================================
-/**
- Use the IOHelper to detect which amount of channels or which Ambisonic order is possible with the current bus layout.
- The available IOTypes are:
-    - AudioChannels<maxChannelCount>
-    - Ambisonics<maxOrder> (can also be used for directivity signals)
- You can leave `maxChannelCount` and `maxOrder` empty for default values (64 channels and 7th order)
-*/
-class SimpleDecoderAudioProcessor  :    public AudioProcessor,
-                                        public AudioProcessorValueTreeState::Listener,
-                                        public IOHelper<IOTypes::Ambisonics<>, IOTypes::AudioChannels<>>,
-                                        public VSTCallbackHandler,
-                                        private OSCReceiver::Listener<OSCReceiver::RealtimeCallback>
+class SimpleDecoderAudioProcessor  :   public AudioProcessorBase<IOTypes::Ambisonics<>, IOTypes::AudioChannels<>>
 {
 public:
     //==============================================================================
@@ -60,23 +46,11 @@ public:
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;
 
-   #ifndef JucePlugin_PreferredChannelConfigurations
-    bool isBusesLayoutSupported (const BusesLayout& layouts) const override;
-   #endif
-
     void processBlock (AudioSampleBuffer&, MidiBuffer&) override;
 
     //==============================================================================
     AudioProcessorEditor* createEditor() override;
     bool hasEditor() const override;
-
-    //==============================================================================
-    const String getName() const override;
-
-    bool acceptsMidi() const override;
-    bool producesMidi() const override;
-    bool isMidiEffect () const override;
-    double getTailLengthSeconds() const override;
 
     //==============================================================================
     int getNumPrograms() override;
@@ -93,23 +67,14 @@ public:
     void parameterChanged (const String &parameterID, float newValue) override;
     void updateBuffers() override; // use this to implement a buffer update method
 
-    //======== PluginCanDo =========================================================
-    pointer_sized_int handleVstManufacturerSpecific (int32 index, pointer_sized_int value,
-                                                     void* ptr, float opt) override { return 0; };
-    pointer_sized_int handleVstPluginCanDo (int32 index, pointer_sized_int value,
-                                            void* ptr, float opt) override;
-    //==============================================================================
-
-    //======== OSC =================================================================
-    void oscMessageReceived (const OSCMessage &message) override;
-    void oscBundleReceived (const OSCBundle &bundle) override;
-    OSCReceiverPlus& getOSCReceiver () { return oscReceiver; }
-    //==============================================================================
 
     //======= Parameters ===========================================================
-    AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
-    //==============================================================================
+    std::vector<std::unique_ptr<RangedAudioParameter>> createParameterLayout();
 
+    //======= OSC ==================================================================
+    inline const bool processNotYetConsumedOSCMessage (const OSCMessage &message) override;
+
+    //==============================================================================
     File getLastDir() {return lastDir;}
     void setLastDir(File newLastDir);
     void loadConfiguration(const File& presetFile);
@@ -129,11 +94,7 @@ public:
     Atomic<bool> guiUpdateLowPassGain = true;
 
 private:
-    // ====== parameters
-    OSCParameterInterface oscParams;
-    OSCReceiverPlus oscReceiver;
-    AudioProcessorValueTreeState parameters;
-
+    //==============================================================================
     void updateLowPassCoefficients (double sampleRate, float frequency);
     void updateHighPassCoefficients (double sampleRate, float frequency);
 

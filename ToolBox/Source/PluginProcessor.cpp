@@ -26,17 +26,18 @@
 
 //==============================================================================
 ToolBoxAudioProcessor::ToolBoxAudioProcessor()
+: AudioProcessorBase (
 #ifndef JucePlugin_PreferredChannelConfigurations
-     : AudioProcessor (BusesProperties()
+                       BusesProperties()
                      #if ! JucePlugin_IsMidiEffect
                       #if ! JucePlugin_IsSynth
                        .withInput  ("Input",  AudioChannelSet::discreteChannels(64), true)
                       #endif
                        .withOutput ("Output", AudioChannelSet::discreteChannels(64), true)
                      #endif
-                       ),
+                       ,
 #endif
-oscParams (parameters), parameters (*this, nullptr, "ToolBox", createParameterLayout()), flipXMask (int64 (0)), flipYMask (int64 (0)), flipZMask (int64 (0))
+createParameterLayout()), flipXMask (int64 (0)), flipYMask (int64 (0)), flipZMask (int64 (0))
 {
     // get pointers to the parameters
     inputOrderSetting = parameters.getRawParameterValue("inputOrderSetting");
@@ -74,8 +75,6 @@ oscParams (parameters), parameters (*this, nullptr, "ToolBox", createParameterLa
         if ((l + m) % 2)
             flipZMask.setBit(ch);
     }
-
-    oscReceiver.addListener (this);
 }
 
 ToolBoxAudioProcessor::~ToolBoxAudioProcessor()
@@ -83,43 +82,6 @@ ToolBoxAudioProcessor::~ToolBoxAudioProcessor()
 }
 
 //==============================================================================
-const String ToolBoxAudioProcessor::getName() const
-{
-    return JucePlugin_Name;
-}
-
-bool ToolBoxAudioProcessor::acceptsMidi() const
-{
-   #if JucePlugin_WantsMidiInput
-    return true;
-   #else
-    return false;
-   #endif
-}
-
-bool ToolBoxAudioProcessor::producesMidi() const
-{
-   #if JucePlugin_ProducesMidiOutput
-    return true;
-   #else
-    return false;
-   #endif
-}
-
-bool ToolBoxAudioProcessor::isMidiEffect() const
-{
-   #if JucePlugin_IsMidiEffect
-    return true;
-   #else
-    return false;
-   #endif
-}
-
-double ToolBoxAudioProcessor::getTailLengthSeconds() const
-{
-    return 0.0;
-}
-
 int ToolBoxAudioProcessor::getNumPrograms()
 {
     return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
@@ -160,12 +122,6 @@ void ToolBoxAudioProcessor::releaseResources()
     // spare memory, etc.
 }
 
-#ifndef JucePlugin_PreferredChannelConfigurations
-bool ToolBoxAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
-{
-    return true;
-}
-#endif
 
 void ToolBoxAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
@@ -309,50 +265,13 @@ void ToolBoxAudioProcessor::updateBuffers()
 }
 
 //==============================================================================
-pointer_sized_int ToolBoxAudioProcessor::handleVstPluginCanDo (int32 index,
-                                                                     pointer_sized_int value, void* ptr, float opt)
-{
-    auto text = (const char*) ptr;
-    auto matches = [=](const char* s) { return strcmp (text, s) == 0; };
-
-    if (matches ("wantsChannelCountNotifications"))
-        return 1;
-    return 0;
-}
-
-//==============================================================================
-void ToolBoxAudioProcessor::oscMessageReceived (const OSCMessage &message)
-{
-    String prefix ("/" + String(JucePlugin_Name));
-    if (! message.getAddressPattern().toString().startsWith (prefix))
-        return;
-
-    OSCMessage msg (message);
-    msg.setAddressPattern (message.getAddressPattern().toString().substring(String(JucePlugin_Name).length() + 1));
-
-    oscParams.processOSCMessage (msg);
-}
-
-void ToolBoxAudioProcessor::oscBundleReceived (const OSCBundle &bundle)
-{
-    for (int i = 0; i < bundle.size(); ++i)
-    {
-        auto elem = bundle[i];
-        if (elem.isMessage())
-            oscMessageReceived (elem.getMessage());
-        else if (elem.isBundle())
-            oscBundleReceived (elem.getBundle());
-    }
-}
-
-//==============================================================================
-AudioProcessorValueTreeState::ParameterLayout ToolBoxAudioProcessor::createParameterLayout()
+std::vector<std::unique_ptr<RangedAudioParameter>> ToolBoxAudioProcessor::createParameterLayout()
 {
     // add your audio parameters here
     std::vector<std::unique_ptr<RangedAudioParameter>> params;
 
 
-    params.push_back (oscParams.createAndAddParameter ("inputOrderSetting", "Input Ambisonic Order", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("inputOrderSetting", "Input Ambisonic Order", "",
                                      NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
                                      [](float value) {
                                          if (value >= 0.5f && value < 1.5f) return "0th";
@@ -366,14 +285,14 @@ AudioProcessorValueTreeState::ParameterLayout ToolBoxAudioProcessor::createParam
                                          else return "Auto";},
                                      nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("useSn3dInput", "Input Normalization", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("useSn3dInput", "Input Normalization", "",
                                      NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value) {
                                          if (value >= 0.5f) return "SN3D";
                                          else return "N3D";
                                      }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("outputOrderSetting", "Output Ambisonic Order", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("outputOrderSetting", "Output Ambisonic Order", "",
                                      NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
                                      [](float value) {
                                          if (value >= 0.5f && value < 1.5f) return "0th";
@@ -387,38 +306,37 @@ AudioProcessorValueTreeState::ParameterLayout ToolBoxAudioProcessor::createParam
                                          else return "Auto";},
                                      nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("useSn3dOutput", "Output Normalization", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("useSn3dOutput", "Output Normalization", "",
                                      NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value) {
                                          if (value >= 0.5f) return "SN3D";
                                          else return "N3D";
                                      }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("flipX", "Flip X axis", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("flipX", "Flip X axis", "",
                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
                                      [](float value) {if (value >= 0.5f) return "ON";
                                          else return "OFF";}, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("flipY", "Flip Y axis", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("flipY", "Flip Y axis", "",
                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
                                      [](float value) {if (value >= 0.5f) return "ON";
                                          else return "OFF";}, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("flipZ", "Flip Z axis", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("flipZ", "Flip Z axis", "",
                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
                                      [](float value) {if (value >= 0.5f) return "ON";
                                          else return "OFF";}, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("loaWeights", "Lower Order Ambisonic Weighting", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("loaWeights", "Lower Order Ambisonic Weighting", "",
                                      NormalisableRange<float> (0.0f, 2.0f, 1.0f), 0.0f,
                                      [](float value) {
                                          if (value >= 0.5f && value < 1.5f) return "maxrE";
                                          else if (value >= 1.5f) return "inPhase";
                                          else return "none";},
                                      nullptr));
-    
 
-    return { params.begin(), params.end() };
+    return params;
 }
 
 //==============================================================================

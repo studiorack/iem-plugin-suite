@@ -24,19 +24,22 @@
 #include "PluginEditor.h"
 
 
+const StringArray BinauralDecoderAudioProcessor::headphoneEQs = StringArray ("AKG-K141MK2", "AKG-K240DF", "AKG-K240MK2", "AKG-K271MK2", "AKG-K271STUDIO", "AKG-K601", "AKG-K701", "AKG-K702", "AKG-K1000-Closed", "AKG-K1000-Open", "AudioTechnica-ATH-M50", "Beyerdynamic-DT250", "Beyerdynamic-DT770PRO-250Ohms", "Beyerdynamic-DT880", "Beyerdynamic-DT990PRO", "Presonus-HD7", "Sennheiser-HD430", "Sennheiser-HD480", "Sennheiser-HD560ovationII", "Sennheiser-HD565ovation", "Sennheiser-HD600", "Sennheiser-HD650", "SHURE-SRH940");
+
 //==============================================================================
 BinauralDecoderAudioProcessor::BinauralDecoderAudioProcessor()
+: AudioProcessorBase (
 #ifndef JucePlugin_PreferredChannelConfigurations
-: AudioProcessor (BusesProperties()
+                      BusesProperties()
 #if ! JucePlugin_IsMidiEffect
 #if ! JucePlugin_IsSynth
                   .withInput  ("Input",  AudioChannelSet::discreteChannels(64), true)
 #endif
                   .withOutput ("Output", AudioChannelSet::discreteChannels(64), true)
 #endif
-                  ),
+                  ,
 #endif
-oscParams (parameters), parameters(*this, nullptr, "BinauralDecoder", createParameterLayout())
+createParameterLayout())
 {
     // get pointers to the parameters
     inputOrderSetting = parameters.getRawParameterValue("inputOrderSetting");
@@ -69,8 +72,6 @@ oscParams (parameters), parameters(*this, nullptr, "BinauralDecoder", createPara
         reader->read(&irs[i], 0, irLength, 0, true, false);
         irs[i].applyGain (0.3f);
     }
-
-    oscReceiver.addListener (this);
 }
 
 BinauralDecoderAudioProcessor::~BinauralDecoderAudioProcessor()
@@ -97,43 +98,6 @@ BinauralDecoderAudioProcessor::~BinauralDecoderAudioProcessor()
         fftwf_free(ifftOutputSide);
 }
 
-//==============================================================================
-const String BinauralDecoderAudioProcessor::getName() const
-{
-    return JucePlugin_Name;
-}
-
-bool BinauralDecoderAudioProcessor::acceptsMidi() const
-{
-#if JucePlugin_WantsMidiInput
-    return true;
-#else
-    return false;
-#endif
-}
-
-bool BinauralDecoderAudioProcessor::producesMidi() const
-{
-#if JucePlugin_ProducesMidiOutput
-    return true;
-#else
-    return false;
-#endif
-}
-
-bool BinauralDecoderAudioProcessor::isMidiEffect() const
-{
-#if JucePlugin_IsMidiEffect
-    return true;
-#else
-    return false;
-#endif
-}
-
-double BinauralDecoderAudioProcessor::getTailLengthSeconds() const
-{
-    return 0.0;
-}
 
 int BinauralDecoderAudioProcessor::getNumPrograms()
 {
@@ -180,13 +144,6 @@ void BinauralDecoderAudioProcessor::releaseResources()
     // When playback stops, you can use this as an opportunity to free up any
     // spare memory, etc.
 }
-
-#ifndef JucePlugin_PreferredChannelConfigurations
-bool BinauralDecoderAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
-{
-    return true;
-}
-#endif
 
 void BinauralDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
@@ -467,57 +424,14 @@ void BinauralDecoderAudioProcessor::updateBuffers()
     nMidCh = square(order + 1) - nSideCh;   //nMidCh = nCh - nSideCh; //nCh should be equalt to (order+1)^2
 }
 
-//==============================================================================
-// This creates new instances of the plugin..
-AudioProcessor* JUCE_CALLTYPE createPluginFilter()
-{
-    return new BinauralDecoderAudioProcessor();
-}
 
 //==============================================================================
-pointer_sized_int BinauralDecoderAudioProcessor::handleVstPluginCanDo (int32 index,
-                                                                     pointer_sized_int value, void* ptr, float opt)
-{
-    auto text = (const char*) ptr;
-    auto matches = [=](const char* s) { return strcmp (text, s) == 0; };
-
-    if (matches ("wantsChannelCountNotifications"))
-        return 1;
-    return 0;
-}
-
-//==============================================================================
-void BinauralDecoderAudioProcessor::oscMessageReceived (const OSCMessage &message)
-{
-    String prefix ("/" + String(JucePlugin_Name));
-    if (! message.getAddressPattern().toString().startsWith (prefix))
-        return;
-
-    OSCMessage msg (message);
-    msg.setAddressPattern (message.getAddressPattern().toString().substring(String(JucePlugin_Name).length() + 1));
-
-    oscParams.processOSCMessage (msg);
-}
-
-void BinauralDecoderAudioProcessor::oscBundleReceived (const OSCBundle &bundle)
-{
-    for (int i = 0; i < bundle.size(); ++i)
-    {
-        auto elem = bundle[i];
-        if (elem.isMessage())
-            oscMessageReceived (elem.getMessage());
-        else if (elem.isBundle())
-            oscBundleReceived (elem.getBundle());
-    }
-}
-
-//==============================================================================
-AudioProcessorValueTreeState::ParameterLayout BinauralDecoderAudioProcessor::createParameterLayout()
+std::vector<std::unique_ptr<RangedAudioParameter>> BinauralDecoderAudioProcessor::createParameterLayout()
 {
     // add your audio parameters here
     std::vector<std::unique_ptr<RangedAudioParameter>> params;
 
-    params.push_back (oscParams.createAndAddParameter ("inputOrderSetting", "Input Ambisonic Order", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("inputOrderSetting", "Input Ambisonic Order", "",
                                                          NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
                                                          [](float value) {
                                                              if (value >= 0.5f && value < 1.5f) return "0th";
@@ -531,19 +445,26 @@ AudioProcessorValueTreeState::ParameterLayout BinauralDecoderAudioProcessor::cre
                                                              else return "Auto";},
                                                          nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("useSN3D", "Input Normalization", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("useSN3D", "Input Normalization", "",
                                                        NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
                                                        [](float value) {
                                                            if (value >= 0.5f) return "SN3D";
                                                            else return "N3D";
                                                        }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("applyHeadphoneEq", "Headphone Equalization", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("applyHeadphoneEq", "Headphone Equalization", "",
                                                        NormalisableRange<float>(0.0f, float(headphoneEQs.size()), 1.0f), 0.0f,
                                                        [this](float value) {
                                                            if (value < 0.5f) return String("OFF");
                                                            else return String(this->headphoneEQs[roundToInt(value)-1]);
                                                        }, nullptr));
 
-    return { params.begin(), params.end() };
+    return params;
+}
+
+//==============================================================================
+// This creates new instances of the plugin..
+AudioProcessor* JUCE_CALLTYPE createPluginFilter()
+{
+    return new BinauralDecoderAudioProcessor();
 }

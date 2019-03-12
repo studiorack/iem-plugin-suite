@@ -25,17 +25,18 @@
 
 //==============================================================================
 DirectionalCompressorAudioProcessor::DirectionalCompressorAudioProcessor()
+: AudioProcessorBase (
 #ifndef JucePlugin_PreferredChannelConfigurations
-: AudioProcessor (BusesProperties()
+                  BusesProperties()
 #if ! JucePlugin_IsMidiEffect
 #if ! JucePlugin_IsSynth
                   .withInput  ("Input",  AudioChannelSet::discreteChannels(64), true)
 #endif
                   .withOutput ("Output", AudioChannelSet::discreteChannels(64), true)
 #endif
-                  ),
+                  ,
 #endif
-oscParams (parameters), parameters (*this, nullptr, "DirectionalCompressor", createParameterLayout())
+createParameterLayout())
 {
     parameters.addParameterListener ("azimuth", this);
     parameters.addParameterListener ("elevation", this);
@@ -85,8 +86,6 @@ oscParams (parameters), parameters (*this, nullptr, "DirectionalCompressor", cre
 
     Y *= sqrt(4 * MathConstants<float>::pi / tDesignN) / decodeCorrection(7); // reverting 7th order correction
     YH = Y.transpose();
-
-    oscReceiver.addListener (this);
 }
 
 
@@ -95,34 +94,6 @@ DirectionalCompressorAudioProcessor::~DirectionalCompressorAudioProcessor()
 }
 
 //==============================================================================
-const String DirectionalCompressorAudioProcessor::getName() const
-{
-    return JucePlugin_Name;
-}
-
-bool DirectionalCompressorAudioProcessor::acceptsMidi() const
-{
-#if JucePlugin_WantsMidiInput
-    return true;
-#else
-    return false;
-#endif
-}
-
-bool DirectionalCompressorAudioProcessor::producesMidi() const
-{
-#if JucePlugin_ProducesMidiOutput
-    return true;
-#else
-    return false;
-#endif
-}
-
-double DirectionalCompressorAudioProcessor::getTailLengthSeconds() const
-{
-    return 0.0;
-}
-
 int DirectionalCompressorAudioProcessor::getNumPrograms()
 {
     return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
@@ -186,12 +157,6 @@ void DirectionalCompressorAudioProcessor::releaseResources()
     // spare memory, etc.
 }
 
-#ifndef JucePlugin_PreferredChannelConfigurations
-bool DirectionalCompressorAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
-{
-    return true;
-}
-#endif
 
 void DirectionalCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
@@ -458,49 +423,12 @@ void DirectionalCompressorAudioProcessor::updateBuffers()
 }
 
 //==============================================================================
-pointer_sized_int DirectionalCompressorAudioProcessor::handleVstPluginCanDo (int32 index,
-                                                                     pointer_sized_int value, void* ptr, float opt)
-{
-    auto text = (const char*) ptr;
-    auto matches = [=](const char* s) { return strcmp (text, s) == 0; };
-
-    if (matches ("wantsChannelCountNotifications"))
-        return 1;
-    return 0;
-}
-
-//==============================================================================
-void DirectionalCompressorAudioProcessor::oscMessageReceived (const OSCMessage &message)
-{
-    String prefix ("/" + String(JucePlugin_Name));
-    if (! message.getAddressPattern().toString().startsWith (prefix))
-        return;
-
-    OSCMessage msg (message);
-    msg.setAddressPattern (message.getAddressPattern().toString().substring(String(JucePlugin_Name).length() + 1));
-
-    oscParams.processOSCMessage (msg);
-}
-
-void DirectionalCompressorAudioProcessor::oscBundleReceived (const OSCBundle &bundle)
-{
-    for (int i = 0; i < bundle.size(); ++i)
-    {
-        auto elem = bundle[i];
-        if (elem.isMessage())
-            oscMessageReceived (elem.getMessage());
-        else if (elem.isBundle())
-            oscBundleReceived (elem.getBundle());
-    }
-}
-
-//==============================================================================
-AudioProcessorValueTreeState::ParameterLayout DirectionalCompressorAudioProcessor::createParameterLayout()
+std::vector<std::unique_ptr<RangedAudioParameter>> DirectionalCompressorAudioProcessor::createParameterLayout()
 {
     // add your audio parameters here
     std::vector<std::unique_ptr<RangedAudioParameter>> params;
 
-    params.push_back (oscParams.createAndAddParameter ("orderSetting", "Ambisonics Order", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("orderSetting", "Ambisonics Order", "",
                                     NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
                                     [](float value) {
                                         if (value >= 0.5f && value < 1.5f) return "0th";
@@ -514,19 +442,19 @@ AudioProcessorValueTreeState::ParameterLayout DirectionalCompressorAudioProcesso
                                         else return "Auto";
                                     }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("useSN3D", "Normalization", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("useSN3D", "Normalization", "",
                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                     [](float value) {
                                         if (value >= 0.5f) return "SN3D";
                                         else return "N3D";
                                     }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("preGain", "Input Gain ", "dB",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("preGain", "Input Gain ", "dB",
                                     NormalisableRange<float> (-10.0f, 10.0f, 0.1f), 0.0f,
                                     [](float value) {return String(value, 1);}, nullptr));
 
     // compressor 1
-    params.push_back (oscParams.createAndAddParameter ("c1Enabled", "Enable Compressor 1", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("c1Enabled", "Enable Compressor 1", "",
                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0,
                                     [](float value)
                                     {
@@ -534,7 +462,7 @@ AudioProcessorValueTreeState::ParameterLayout DirectionalCompressorAudioProcesso
                                         else return "OFF";
                                     }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("c1DrivingSignal", "Compressor 1 Driving Signal", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("c1DrivingSignal", "Compressor 1 Driving Signal", "",
                                     NormalisableRange<float> (0.0f, 2.0f, 1.0f), 1.0,
                                     [](float value)
                                     {
@@ -543,7 +471,7 @@ AudioProcessorValueTreeState::ParameterLayout DirectionalCompressorAudioProcesso
                                         else return "Full";
                                     }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("c1Apply", "Apply compression 1 to", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("c1Apply", "Apply compression 1 to", "",
                                     NormalisableRange<float> (0.0f, 2.0f, 1.0f), 1.0,
                                     [](float value)
                                     {
@@ -552,23 +480,23 @@ AudioProcessorValueTreeState::ParameterLayout DirectionalCompressorAudioProcesso
                                         else return "Full";
                                     }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("c1Threshold", "Threshold 1", "dB",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("c1Threshold", "Threshold 1", "dB",
                                     NormalisableRange<float> (-50.0f, 10.0f, 0.1f), -10.0,
                                     [](float value) {return String(value, 1);}, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("c1Knee", "Knee 1", "dB",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("c1Knee", "Knee 1", "dB",
                                     NormalisableRange<float> (0.0f, 10.0f, 0.1f), 0.0f,
                                     [](float value) {return String(value, 1);}, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("c1Attack", "Attack Time 1", "ms",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("c1Attack", "Attack Time 1", "ms",
                                     NormalisableRange<float> (0.0f, 100.0f, 0.1f), 30.0,
                                     [](float value) {return String(value, 1);}, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("c1Release", "Release Time 1", "ms",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("c1Release", "Release Time 1", "ms",
                                     NormalisableRange<float> (0.0f, 500.0f, 0.1f), 150.0,
                                     [](float value) {return String(value, 1);}, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("c1Ratio", "Ratio 1", " : 1",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("c1Ratio", "Ratio 1", " : 1",
                                     NormalisableRange<float> (1.0f, 16.0f, .2f), 4.0,
                                     [](float value) {
                                         if (value > 15.9f)
@@ -576,12 +504,12 @@ AudioProcessorValueTreeState::ParameterLayout DirectionalCompressorAudioProcesso
                                         return String(value, 1);
                                     }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("c1Makeup", "MakeUp Gain 1", "dB",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("c1Makeup", "MakeUp Gain 1", "dB",
                                     NormalisableRange<float> (-10.0f, 20.0f, 0.10f), 0.0,
                                     [](float value) {return String(value, 1);}, nullptr));
 
     // compressor 2
-    params.push_back (oscParams.createAndAddParameter ("c2Enabled", "Enable Compressor 2", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("c2Enabled", "Enable Compressor 2", "",
                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0,
                                     [](float value)
                                     {
@@ -589,7 +517,7 @@ AudioProcessorValueTreeState::ParameterLayout DirectionalCompressorAudioProcesso
                                         else return "OFF";
                                     }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("c2DrivingSignal", "Compressor 2 Driving Signal", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("c2DrivingSignal", "Compressor 2 Driving Signal", "",
                                     NormalisableRange<float> (0.0f, 2.0f, 1.0f), 1.0,
                                     [](float value)
                                     {
@@ -598,7 +526,7 @@ AudioProcessorValueTreeState::ParameterLayout DirectionalCompressorAudioProcesso
                                         else return "Full";
                                     }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("c2Apply", "Apply compression 2 to", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("c2Apply", "Apply compression 2 to", "",
                                     NormalisableRange<float> (0.0f, 2.0f, 1.0f), 1.0,
                                     [](float value)
                                     {
@@ -607,23 +535,23 @@ AudioProcessorValueTreeState::ParameterLayout DirectionalCompressorAudioProcesso
                                         else return "Full";
                                     }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("c2Threshold", "Threshold 2", "dB",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("c2Threshold", "Threshold 2", "dB",
                                     NormalisableRange<float> (-50.0f, 10.0f, 0.1f), -10.0,
                                     [](float value) {return String(value, 1);}, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("c2Knee", "Knee 2", "dB",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("c2Knee", "Knee 2", "dB",
                                     NormalisableRange<float> (0.0f, 10.0f, 0.1f), 0.0f,
                                     [](float value) {return String(value, 1);}, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("c2Attack", "Attack Time 2", "ms",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("c2Attack", "Attack Time 2", "ms",
                                     NormalisableRange<float> (0.0f, 100.0f, 0.1f), 30.0,
                                     [](float value) {return String(value, 1);}, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("c2Release", "Release Time 2", "ms",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("c2Release", "Release Time 2", "ms",
                                     NormalisableRange<float> (0.0f, 500.0f, 0.1f), 150.0,
                                     [](float value) {return String(value, 1);}, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("c2Ratio", "Ratio 2", " : 1",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("c2Ratio", "Ratio 2", " : 1",
                                     NormalisableRange<float> (1.0f, 16.0f, .2f), 4.0,
                                     [](float value) {
                                         if (value > 15.9f)
@@ -631,24 +559,24 @@ AudioProcessorValueTreeState::ParameterLayout DirectionalCompressorAudioProcesso
                                         return String(value, 1);
                                     }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("c2Makeup", "MakeUp Gain 2", "dB",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("c2Makeup", "MakeUp Gain 2", "dB",
                                     NormalisableRange<float> (-10.0f, 20.0f, 0.10f), 0.0,
                                     [](float value) { return String(value, 1); }, nullptr));
 
 
-    params.push_back (oscParams.createAndAddParameter ("azimuth", "Azimuth of mask", CharPointer_UTF8 (R"(°)"),
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("azimuth", "Azimuth of mask", CharPointer_UTF8 (R"(°)"),
                                     NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
                                     [](float value) { return String(value, 2); }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("elevation", "Elevation of mask", CharPointer_UTF8 (R"(°)"),
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("elevation", "Elevation of mask", CharPointer_UTF8 (R"(°)"),
                                     NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
                                     [](float value) { return String(value, 2); }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("width", "Width of mask", CharPointer_UTF8 (R"(°)"),
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("width", "Width of mask", CharPointer_UTF8 (R"(°)"),
                                     NormalisableRange<float> (10.0f, 180.0f, 0.01f), 40.0f,
                                     [](float value) { return String(value, 2); }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("listen", "Listen to", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("listen", "Listen to", "",
                                     NormalisableRange<float> (0.0f, 2.0f, 1.0f), 0.0,
                                     [](float value)
                                     {
@@ -658,7 +586,7 @@ AudioProcessorValueTreeState::ParameterLayout DirectionalCompressorAudioProcesso
                                     }, nullptr));
 
 
-    return { params.begin(), params.end() };
+    return params;
 }
 
 //==============================================================================

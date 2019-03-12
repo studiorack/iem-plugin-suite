@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <JUCERPROJECT id="Az27uX" name="FdnReverb" displaySplashScreen="0" reportAppUsage="0"
-              splashScreenColour="Dark" projectType="audioplug" version="1.1.1"
+              splashScreenColour="Dark" projectType="audioplug" version="1.1.2"
               bundleIdentifier="at.iem.FdnReverb" includeBinaryInAppConfig="1"
               buildVST="1" buildVST3="1" buildAU="0" buildAUv3="0" buildRTAS="0"
               buildAAX="0" buildStandalone="1" enableIAA="0" pluginName="FdnReverb"
@@ -9,7 +9,7 @@
               pluginCode="FdRe" pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
               pluginAUExportPrefix="FdnReverbAU" aaxIdentifier="at.IEM.FdnReverb"
-              pluginAAXCategory="2" jucerVersion="5.4.1" companyName="IEM"
+              pluginAAXCategory="2" jucerVersion="5.4.3" companyName="IEM"
               companyWebsite="iem.at" cppLanguageStandard="14" companyCopyright="IEM - Sebastian Grill"
               headerPath="../../../resources/" pluginFormats="buildStandalone,buildVST,buildVST3">
   <MAINGROUP id="IWaAhA" name="FdnReverb">
@@ -96,7 +96,7 @@
         <MODULEPATH id="juce_osc" path="../../../../../Applications/JUCE/modules"/>
       </MODULEPATHS>
     </VS2017>
-    <XCODE_MAC targetFolder="Builds/MacOSX">
+    <XCODE_MAC targetFolder="Builds/MacOSX" extraDefs="JUCE_JACK=1, JUCE_JACK_CLIENT_NAME=JucePlugin_Name">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" enablePluginBinaryCopyStep="1" isDebug="1" optimisation="1"
                        linkTimeOptimisation="0" targetName="FdnReverb" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"

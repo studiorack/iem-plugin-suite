@@ -26,17 +26,18 @@
 
 //==============================================================================
 SimpleDecoderAudioProcessor::SimpleDecoderAudioProcessor()
+: AudioProcessorBase (
 #ifndef JucePlugin_PreferredChannelConfigurations
-: AudioProcessor (BusesProperties()
+                  BusesProperties()
 #if ! JucePlugin_IsMidiEffect
 #if ! JucePlugin_IsSynth
                   .withInput  ("Input",  AudioChannelSet::discreteChannels(64), true)
 #endif
                   .withOutput ("Output", AudioChannelSet::discreteChannels(64), true)
 #endif
-                  ),
+                  ,
 #endif
-oscParams (parameters), parameters(*this, nullptr, "Decoder", createParameterLayout())
+createParameterLayout())
 {
     // dummy values
     cascadedLowPassCoeffs = IIR::Coefficients<double>::makeLowPass(48000.0, 100.0f);
@@ -91,8 +92,6 @@ oscParams (parameters), parameters(*this, nullptr, "Decoder", createParameterLay
 
     lowPass1 = new IIR::Filter<float>(lowPassCoeffs);
     lowPass2 = new IIR::Filter<float>(lowPassCoeffs);
-
-    oscReceiver.addListener (this);
 }
 
 SimpleDecoderAudioProcessor::~SimpleDecoderAudioProcessor()
@@ -129,43 +128,6 @@ void SimpleDecoderAudioProcessor::setLastDir(File newLastDir)
 
 
 //==============================================================================
-const String SimpleDecoderAudioProcessor::getName() const
-{
-    return JucePlugin_Name;
-}
-
-bool SimpleDecoderAudioProcessor::acceptsMidi() const
-{
-#if JucePlugin_WantsMidiInput
-    return true;
-#else
-    return false;
-#endif
-}
-
-bool SimpleDecoderAudioProcessor::producesMidi() const
-{
-#if JucePlugin_ProducesMidiOutput
-    return true;
-#else
-    return false;
-#endif
-}
-
-bool SimpleDecoderAudioProcessor::isMidiEffect() const
-{
-#if JucePlugin_IsMidiEffect
-    return true;
-#else
-    return false;
-#endif
-}
-
-double SimpleDecoderAudioProcessor::getTailLengthSeconds() const
-{
-    return 0.0;
-}
-
 int SimpleDecoderAudioProcessor::getNumPrograms()
 {
     return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
@@ -247,12 +209,6 @@ void SimpleDecoderAudioProcessor::releaseResources()
     // spare memory, etc.
 }
 
-#ifndef JucePlugin_PreferredChannelConfigurations
-bool SimpleDecoderAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
-{
-    return true;
-}
-#endif
 
 void SimpleDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
@@ -369,9 +325,10 @@ void SimpleDecoderAudioProcessor::getStateInformation (MemoryBlock& destData)
     // You should use this method to store your parameters in the memory block.
     // You could do that either as raw data, or use the XML or ValueTree classes
     // as intermediaries to make it easy to save and load complex data.
-    parameters.state.setProperty("lastOpenedPresetFile", var(lastFile.getFullPathName()), nullptr);
-    parameters.state.setProperty ("OSCPort", var(oscReceiver.getPortNumber()), nullptr);
+    parameters.state.setProperty ("lastOpenedPresetFile", var (lastFile.getFullPathName()), nullptr);
+    parameters.state.setProperty ("OSCPort", var (oscReceiver.getPortNumber()), nullptr);
     ScopedPointer<XmlElement> xml (parameters.state.createXml());
+    xml->setTagName (String (JucePlugin_Name)); // converts old "Decoder" state to "SimpleDecoder" state
     copyXmlToBinary (*xml, destData);
 }
 
@@ -383,11 +340,11 @@ void SimpleDecoderAudioProcessor::setStateInformation (const void* data, int siz
     // whose contents will have been created by the getStateInformation() call.
     ScopedPointer<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
     if (xmlState != nullptr)
-        if (xmlState->hasTagName (parameters.state.getType()))
+        if (xmlState->hasTagName (parameters.state.getType()) || xmlState->hasTagName ("Decoder")) // compatibility for old "Decoder" state tagName
             parameters.state = ValueTree::fromXml (*xmlState);
-    if (parameters.state.hasProperty("lastOpenedPresetFile"))
+    if (parameters.state.hasProperty ("lastOpenedPresetFile"))
     {
-        Value val = parameters.state.getPropertyAsValue("lastOpenedPresetFile", nullptr);
+        Value val = parameters.state.getPropertyAsValue ("lastOpenedPresetFile", nullptr);
         if (val.getValue().toString() != "")
         {
             const File f (val.getValue().toString());
@@ -451,61 +408,30 @@ void SimpleDecoderAudioProcessor::loadConfiguration (const File& presetFile)
     messageChanged = true;
 }
 
-//==============================================================================
-pointer_sized_int SimpleDecoderAudioProcessor::handleVstPluginCanDo (int32 index,
-                                                                     pointer_sized_int value, void* ptr, float opt)
-{
-    auto text = (const char*) ptr;
-    auto matches = [=](const char* s) { return strcmp (text, s) == 0; };
-
-    if (matches ("wantsChannelCountNotifications"))
-        return 1;
-    return 0;
-}
 
 //==============================================================================
-void SimpleDecoderAudioProcessor::oscMessageReceived (const OSCMessage &message)
+const bool SimpleDecoderAudioProcessor::processNotYetConsumedOSCMessage (const OSCMessage &message)
 {
-    String prefix ("/" + String(JucePlugin_Name));
-    if (! message.getAddressPattern().toString().startsWith (prefix))
-        return;
-
-    OSCMessage msg (message);
-    msg.setAddressPattern (message.getAddressPattern().toString().substring(String(JucePlugin_Name).length() + 1));
-
-    if (! oscParams.processOSCMessage (msg))
+    if (message.getAddressPattern().toString().equalsIgnoreCase ("/" + String (JucePlugin_Name) + "/loadFile") && message.size() >= 1)
     {
-        // Load configuration file
-        if (msg.getAddressPattern().toString().equalsIgnoreCase("/loadFile") && msg.size() >= 1)
+        if (message[0].isString())
         {
-            if (msg[0].isString())
-            {
-                File fileToLoad (msg[0].getString());
-                loadConfiguration (fileToLoad);
-            }
+            File fileToLoad (message[0].getString());
+            loadConfiguration (fileToLoad);
+            return true;
         }
     }
-}
 
-void SimpleDecoderAudioProcessor::oscBundleReceived (const OSCBundle &bundle)
-{
-    for (int i = 0; i < bundle.size(); ++i)
-    {
-        auto elem = bundle[i];
-        if (elem.isMessage())
-            oscMessageReceived (elem.getMessage());
-        else if (elem.isBundle())
-            oscBundleReceived (elem.getBundle());
-    }
+    return false;
 }
 
 //==============================================================================
-AudioProcessorValueTreeState::ParameterLayout SimpleDecoderAudioProcessor::createParameterLayout()
+std::vector<std::unique_ptr<RangedAudioParameter>> SimpleDecoderAudioProcessor::createParameterLayout()
 {
     // add your audio parameters here
     std::vector<std::unique_ptr<RangedAudioParameter>> params;
 
-    params.push_back (oscParams.createAndAddParameter ("inputOrderSetting", "Ambisonic Order", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("inputOrderSetting", "Ambisonic Order", "",
                                      NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
                                      [](float value) {
                                          if (value >= 0.5f && value < 1.5f) return "0th";
@@ -519,41 +445,40 @@ AudioProcessorValueTreeState::ParameterLayout SimpleDecoderAudioProcessor::creat
                                          else return "Auto";},
                                      nullptr));
 
-    params.push_back (oscParams.createAndAddParameter("useSN3D", "Normalization", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay("useSN3D", "Normalization", "",
                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                     [](float value) {
                                         if (value >= 0.5f) return "SN3D";
                                         else return "N3D";
                                     }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("lowPassFrequency", "LowPass Cutoff Frequency", "Hz",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("lowPassFrequency", "LowPass Cutoff Frequency", "Hz",
                                      NormalisableRange<float> (20.f, 300.f, 1.0f), 80.f,
                                      [](float value) {return String ((int) value);},
                                      nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("lowPassGain", "LowPass Gain", "dB",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("lowPassGain", "LowPass Gain", "dB",
                                      NormalisableRange<float> (-20.0f, 10.0, 0.1f), 0.0f,
                                      [](float value) {return String (value, 1);},
                                      nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("highPassFrequency", "HighPass Cutoff Frequency", "Hz",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("highPassFrequency", "HighPass Cutoff Frequency", "Hz",
                                      NormalisableRange<float> (20.f, 300.f, 1.f), 80.f,
                                      [](float value) {return String ((int) value);},
                                      nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("swMode", "Subwoofer Mode", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("swMode", "Subwoofer Mode", "",
                                      NormalisableRange<float> (0.0f, 2.0f, 1.0f), 0.0f,
                                      [](float value) {
                                          if (value < 0.5f) return "none";
                                          else if (value >= 0.5f && value < 1.5f) return "Discrete SW";
                                          else return "Virtual SW";}, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("swChannel", "SW Channel Number", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("swChannel", "SW Channel Number", "",
                                      NormalisableRange<float> (1.0f, 64.0f, 1.0f), 1.0f,
                                      [](float value) { return String ((int) value);}, nullptr));
 
-
-    return { params.begin(), params.end() };
+    return params;
 }
 
 //==============================================================================

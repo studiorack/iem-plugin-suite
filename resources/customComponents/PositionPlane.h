@@ -215,6 +215,7 @@ public:
 
         switch(drawPlane)
         {
+            default:
             case xy:
                 drawH = dimensions.x;
                 drawW = dimensions.y;
@@ -256,6 +257,7 @@ public:
         g.setFont(10.0f);
         switch(drawPlane)
         {
+            default:
             case xy:
                 g.drawArrow(Line<float>(centreX, centreY, centreX, centreY - 20.0f * xFactor), 1.0f, 4.0f, 4.0f);
                 g.drawArrow(Line<float>(centreX, centreY, centreX - 20.0f * yFactor, centreY), 1.0f, 4.0f, 4.0f);
@@ -295,6 +297,7 @@ public:
             float posH, posW;
             switch(drawPlane)
             {
+                default:
                 case xy:
                     posH = position.x * xFactor;
                     posW = position.y * yFactor;
@@ -328,6 +331,7 @@ public:
         float tempScale;
         switch(drawPlane)
         {
+            default:
             case xy:
                 drawH = dimensions.x;
                 drawW = dimensions.y;
@@ -362,7 +366,7 @@ public:
     bool usingAutoScale() {return autoScale;}
 
     void setScale(float newScale) {
-        if (~autoScale)
+        if (!autoScale)
             scale = newScale;
     }
 
@@ -401,6 +405,7 @@ public:
                 Vector3D<float> position = handle->getPosition();
                 switch (drawPlane)
                 {
+                    default:
                     case xy:
                         posH = position.x * xFactor;
                         posW = position.y * yFactor;

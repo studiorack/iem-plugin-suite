@@ -91,7 +91,7 @@ private:
     ScopedPointer<ComboBoxAttachment> cbNumInputChannelsAttachment;
 
     FilterVisualizer<double> fv;
-    TooltipWindow tooltips;
+    TooltipWindow tooltipWin;
     OnOffButton tbFilterOn[numFilterBands];
     ComboBox cbFilterType[numFilterBands];
     ReverseSlider slFilterFrequency[numFilterBands];

@@ -5,7 +5,7 @@ variables:
 #  PROJECTS: AllRADecoder BinauralDecoder DirectionalCompressor DirectivityShaper DistanceCompensator DualDelay EnergyVisualizer FdnReverb MatrixMultiplier MultiEncoder OmniCompressor ProbeDecoder RoomEncoder SimpleDecoder StereoEncoder ToolBox
 
   CONFIG: Release
-  JUCEVERSION: 5.4.1
+  JUCEVERSION: 5.4.3
 
 ###################################################
 # cleanup after the job (e.g. rename files for the artifacts...)
@@ -91,6 +91,8 @@ variables:
 # install dependencies
     - .git-ci/getjuce.sh "${JUCEVERSION}-windows" /c/JUCE
     - .git-ci/fftw4win.sh $BITS
+# tell JUCE where to look for the vstheaders
+    - /c/JUCE/Projucer --set-global-search-path windows vst3Path ";C:/JUCE/modules/juce_audio_processors/format_types/VST3_SDK/"
 # run the actual build
     - test -z "${PROJECTS}" && PROJECTS=$(make showprojects)
     - make system CONFIG=$CONFIG BITS=$BITS PROJUCER="/c/JUCE/Projucer.exe"

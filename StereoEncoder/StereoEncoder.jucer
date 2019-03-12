@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<JUCERPROJECT id="cBXtXS" name="StereoEncoder" projectType="audioplug" version="1.3.6"
+<JUCERPROJECT id="cBXtXS" name="StereoEncoder" projectType="audioplug" version="1.3.7"
               bundleIdentifier="at.iem.StereoEncoder" includeBinaryInAppConfig="1"
               buildVST="1" buildVST3="1" buildAU="0" buildAUv3="0" buildRTAS="0"
               buildAAX="0" pluginName="StereoEncoder" pluginDesc="StereoEncoder"
@@ -8,7 +8,7 @@
               pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
               pluginAUExportPrefix="StereoEncoderAU" aaxIdentifier="at.iem.StereoEncoder"
-              pluginAAXCategory="2" jucerVersion="5.4.1" companyName="IEM"
+              pluginAAXCategory="2" jucerVersion="5.4.3" companyName="IEM"
               companyWebsite="iem.at" displaySplashScreen="0" reportAppUsage="0"
               splashScreenColour="Dark" buildStandalone="1" enableIAA="0" cppLanguageStandard="11"
               companyCopyright="IEM - Daniel Rudrich" headerPath="../../../resources/"
@@ -39,6 +39,8 @@
           file="../resources/OSCParameterInterface.h"/>
     <FILE id="IXrAWH" name="OSCStatus.h" compile="0" resource="0" file="../resources/customComponents/OSCStatus.h"/>
     <FILE id="KzVW9N" name="SpherePanner.h" compile="0" resource="0" file="../resources/customComponents/SpherePanner.h"/>
+    <FILE id="KGgn5i" name="AudioProcessorBase.h" compile="0" resource="0"
+          file="../resources/AudioProcessorBase.h"/>
   </MAINGROUP>
   <EXPORTFORMATS>
     <XCODE_MAC targetFolder="Builds/MacOSX">
@@ -98,7 +100,7 @@
         <MODULEPATH id="juce_osc" path="../../../../../Applications/JUCE/modules"/>
       </MODULEPATHS>
     </VS2017>
-    <LINUX_MAKE targetFolder="Builds/LinuxMakefile">
+    <LINUX_MAKE targetFolder="Builds/LinuxMakefile" extraDefs="JUCE_JACK=1, JUCE_JACK_CLIENT_NAME=JucePlugin_Name">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" isDebug="1" optimisation="1" linkTimeOptimisation="0"
                        targetName="StereoEncoder"/>

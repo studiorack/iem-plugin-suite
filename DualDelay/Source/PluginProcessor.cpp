@@ -25,17 +25,18 @@
 
 //==============================================================================
 DualDelayAudioProcessor::DualDelayAudioProcessor()
+: AudioProcessorBase (
 #ifndef JucePlugin_PreferredChannelConfigurations
-: AudioProcessor (BusesProperties()
+                  BusesProperties()
 #if ! JucePlugin_IsMidiEffect
 #if ! JucePlugin_IsSynth
                   .withInput  ("Input",  AudioChannelSet::discreteChannels(64), true)
 #endif
                   .withOutput ("Output", AudioChannelSet::discreteChannels(64), true)
 #endif
-                  ),
+                  ,
 #endif
-oscParams (parameters), parameters (*this, nullptr, "DualDelay", createParameterLayout()), LFOLeft ([] (float phi) { return std::sin(phi); }), LFORight ([] (float phi) { return std::sin (phi); })
+createParameterLayout()), LFOLeft ([] (float phi) { return std::sin(phi); }), LFORight ([] (float phi) { return std::sin (phi); })
 {
     dryGain = parameters.getRawParameterValue("dryGain");
     wetGainL = parameters.getRawParameterValue("wetGainL");
@@ -63,8 +64,6 @@ oscParams (parameters), parameters (*this, nullptr, "DualDelay", createParameter
     sin_z.resize(8);
     cos_z.set(0, 1.f);
     sin_z.set(0, 0.f);
-
-    oscReceiver.addListener (this);
 }
 
 DualDelayAudioProcessor::~DualDelayAudioProcessor()
@@ -72,34 +71,6 @@ DualDelayAudioProcessor::~DualDelayAudioProcessor()
 }
 
 //==============================================================================
-const String DualDelayAudioProcessor::getName() const
-{
-    return JucePlugin_Name;
-}
-
-bool DualDelayAudioProcessor::acceptsMidi() const
-{
-#if JucePlugin_WantsMidiInput
-    return true;
-#else
-    return false;
-#endif
-}
-
-bool DualDelayAudioProcessor::producesMidi() const
-{
-#if JucePlugin_ProducesMidiOutput
-    return true;
-#else
-    return false;
-#endif
-}
-
-double DualDelayAudioProcessor::getTailLengthSeconds() const
-{
-    return 0.0;
-}
-
 int DualDelayAudioProcessor::getNumPrograms()
 {
     return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
@@ -174,13 +145,6 @@ void DualDelayAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBl
 }
 
 void DualDelayAudioProcessor::releaseResources() { }
-
-#ifndef JucePlugin_PreferredChannelConfigurations
-bool DualDelayAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
-{
-    return true;
-}
-#endif
 
 void DualDelayAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
@@ -629,55 +593,14 @@ void DualDelayAudioProcessor::updateBuffers()
     delayInRight.clear();
 }
 
-//==============================================================================
-pointer_sized_int DualDelayAudioProcessor::handleVstPluginCanDo (int32 index,
-                                                                     pointer_sized_int value, void* ptr, float opt)
-{
-    auto text = (const char*) ptr;
-    auto matches = [=](const char* s) { return strcmp (text, s) == 0; };
-
-    if (matches ("wantsChannelCountNotifications"))
-        return 1;
-    return 0;
-}
 
 //==============================================================================
-void DualDelayAudioProcessor::oscMessageReceived (const OSCMessage &message)
-{
-    String prefix ("/" + String(JucePlugin_Name));
-    if (! message.getAddressPattern().toString().startsWith (prefix))
-        return;
-
-    OSCMessage msg (message);
-    msg.setAddressPattern (message.getAddressPattern().toString().substring(String(JucePlugin_Name).length() + 1));
-
-    oscParams.processOSCMessage (msg);
-}
-
-void DualDelayAudioProcessor::oscBundleReceived (const OSCBundle &bundle)
-{
-    for (int i = 0; i < bundle.size(); ++i)
-    {
-        auto elem = bundle[i];
-        if (elem.isMessage())
-            oscMessageReceived (elem.getMessage());
-        else if (elem.isBundle())
-            oscBundleReceived (elem.getBundle());
-    }
-}
-
-
-//==============================================================================
-AudioProcessorValueTreeState::ParameterLayout DualDelayAudioProcessor::createParameterLayout()
+std::vector<std::unique_ptr<RangedAudioParameter>> DualDelayAudioProcessor::createParameterLayout()
 {
     // add your audio parameters here
     std::vector<std::unique_ptr<RangedAudioParameter>> params;
 
-
-
-
-
-    params.push_back (oscParams.createAndAddParameter ("orderSetting", "Ambisonics Order", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("orderSetting", "Ambisonics Order", "",
                                     NormalisableRange<float>(0.0f, 8.0f, 1.0f), 0.0f,
                                     [](float value) {
                                         if (value >= 0.5f && value < 1.5f) return "0th";
@@ -691,7 +614,7 @@ AudioProcessorValueTreeState::ParameterLayout DualDelayAudioProcessor::createPar
                                         else return "Auto";
                                     }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("useSN3D", "Normalization", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("useSN3D", "Normalization", "",
                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value)
                                      {
@@ -700,75 +623,73 @@ AudioProcessorValueTreeState::ParameterLayout DualDelayAudioProcessor::createPar
                                      }, nullptr));
 
 
-    params.push_back (oscParams.createAndAddParameter ("dryGain", "Dry amount", "dB",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("dryGain", "Dry amount", "dB",
                                     NormalisableRange<float> (-60.0f, 0.0f, 0.1f), 0.0f,
                                     [](float value) { return (value >= -59.9f) ? String(value, 1) : "-inf"; }, nullptr));
-    params.push_back (oscParams.createAndAddParameter ("wetGainL", "Wet amount left", "dB",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("wetGainL", "Wet amount left", "dB",
                                     NormalisableRange<float> (-60.0f, 0.0f, 0.1f), -6.0f,
                                     [](float value) { return (value >= -59.9f) ? String(value, 1) : "-inf"; }, nullptr));
-    params.push_back (oscParams.createAndAddParameter ("wetGainR", "Wet amount right", "dB",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("wetGainR", "Wet amount right", "dB",
                                     NormalisableRange<float> (-60.0f, 0.0f, 0.1f), -6.0f,
                                     [](float value) { return (value >= -59.9f) ? String(value, 1) : "-inf"; }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("delayTimeL", "delay time left", "ms",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("delayTimeL", "delay time left", "ms",
                                     NormalisableRange<float> (10.0f, 500.0f, 0.1f), 500.0f,
                                     [](float value) { return String(value, 1); }, nullptr));
-    params.push_back (oscParams.createAndAddParameter ("delayTimeR", "delay time right", "ms",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("delayTimeR", "delay time right", "ms",
                                     NormalisableRange<float> (10.0f, 500.0f, 0.1f), 375.0f,
                                     [](float value) { return String(value, 1); }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("rotationL", "rotation left", CharPointer_UTF8 (R"(°)"),
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("rotationL", "rotation left", CharPointer_UTF8 (R"(°)"),
                                     NormalisableRange<float> (-180.0f, 180.0f, 0.1f), 10.0f,
                                     [](float value) { return String(value, 1); }, nullptr));
-    params.push_back (oscParams.createAndAddParameter ("rotationR", "rotation right", CharPointer_UTF8 (R"(°)"),
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("rotationR", "rotation right", CharPointer_UTF8 (R"(°)"),
                                     NormalisableRange<float> (-180.0f, 180.0f, 0.1f), -7.5f,
                                     [](float value) { return String(value, 1); }, nullptr));
 
 
-    params.push_back (oscParams.createAndAddParameter ("LPcutOffL", "lowpass frequency left", "Hz",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("LPcutOffL", "lowpass frequency left", "Hz",
                                     NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.2), 100.0f,
                                     [](float value) { return String(value, 1); }, nullptr));
-    params.push_back (oscParams.createAndAddParameter ("LPcutOffR", "lowpass frequency right", "Hz",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("LPcutOffR", "lowpass frequency right", "Hz",
                                     NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.2), 100.0f,
                                     [](float value) { return String(value, 1); }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("HPcutOffL", "highpass frequency left", "Hz",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("HPcutOffL", "highpass frequency left", "Hz",
                                     NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.2), 20000.0f,
                                     [](float value) { return String(value, 1); }, nullptr));
-    params.push_back (oscParams.createAndAddParameter ("HPcutOffR", "highpass frequency right", "Hz",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("HPcutOffR", "highpass frequency right", "Hz",
                                     NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.2), 20000.0f,
                                     [](float value) { return String(value, 1); }, nullptr));
 
 
-    params.push_back (oscParams.createAndAddParameter ("feedbackL", "feedback left", "dB",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("feedbackL", "feedback left", "dB",
                                     NormalisableRange<float> (-60.0f, 0.0f, 0.1f), -8.0f,
                                     [](float value) { return (value >= -59.9f) ? String(value, 1) : "-inf"; }, nullptr));
-    params.push_back (oscParams.createAndAddParameter ("feedbackR", "feedback right", "dB",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("feedbackR", "feedback right", "dB",
                                     NormalisableRange<float> (-60.0f, 0.0f, 0.1f), -8.0f,
                                     [](float value) { return (value >= -59.9f) ? String(value, 1) : "-inf"; }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("xfeedbackL", "cross feedback left", "dB",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("xfeedbackL", "cross feedback left", "dB",
                                     NormalisableRange<float> (-60.0f, 0.0f, 0.1f), -20.0f,
                                     [](float value) { return (value >= -59.9f) ? String(value, 1) : "-inf"; }, nullptr));
-    params.push_back (oscParams.createAndAddParameter ("xfeedbackR", "cross feedback right", "dB",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("xfeedbackR", "cross feedback right", "dB",
                                     NormalisableRange<float> (-60.0f, 0.0f, 0.1f), -20.0f,
                                     [](float value) { return (value >= -59.9f) ? String(value, 1) : "-inf"; }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("lfoRateL", "LFO left rate", "Hz",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("lfoRateL", "LFO left rate", "Hz",
                                     NormalisableRange<float> (0.0f, 10.0f, 0.01f), 0.0f,
                                     [](float value) { return String(value, 2); }, nullptr));
-    params.push_back (oscParams.createAndAddParameter ("lfoRateR", "LFO right rate", "Hz",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("lfoRateR", "LFO right rate", "Hz",
                                     NormalisableRange<float> (0.0f, 10.0f, 0.01f), 0.0f,
                                     [](float value) { return String(value, 2); }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("lfoDepthL", "LFO left depth", "ms",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("lfoDepthL", "LFO left depth", "ms",
                                     NormalisableRange<float> (0.0f, 1.0f, 0.01f), 0.0f,
                                     [](float value) { return String(value, 2); }, nullptr));
-    params.push_back (oscParams.createAndAddParameter ("lfoDepthR", "LFO right depth", "ms",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("lfoDepthR", "LFO right depth", "ms",
                                     NormalisableRange<float> (0.0f, 1.0f, 0.01f), 0.0f,
                                     [](float value) { return String(value, 2); }, nullptr));
 
-
-
-    return { params.begin(), params.end() };
+    return params;
 }

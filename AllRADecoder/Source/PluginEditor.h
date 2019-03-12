@@ -87,7 +87,7 @@ private:
     OSCFooter footer;
     // =============== end essentials ============
 
-    TooltipWindow tooltip;
+    TooltipWindow tooltipWin;
     
     // Attachments to create a connection between IOWidgets comboboxes
     // and the associated parameters

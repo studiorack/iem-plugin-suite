@@ -260,7 +260,7 @@ inline void multiplyInPhase(const int N, float *data) {
         case 6: FloatVectorOperations::multiply (data, inPhase6, 47); break;
         case 7: FloatVectorOperations::multiply (data, inPhase7, 64); break;
     }
-};
+}
 
 inline void copyInPhase(const int N, float *data) {
     switch (N) {
@@ -273,7 +273,7 @@ inline void copyInPhase(const int N, float *data) {
         case 6: FloatVectorOperations::copy (data, inPhase6, 47); break;
         case 7: FloatVectorOperations::copy (data, inPhase7, 64); break;
     }
-};
+}
 
 inline const float* getInPhaseLUT(const int N) {
     switch (N) {
@@ -286,4 +286,4 @@ inline const float* getInPhaseLUT(const int N) {
         case 7: return &inPhase7[0];
         default: return &inPhase0;
     }
-};
+}

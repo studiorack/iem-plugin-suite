@@ -85,7 +85,7 @@ private:
     Viewport viewport;
     EncoderList encoderList;
 
-    TooltipWindow toolTipWin;
+    TooltipWindow tooltipWin;
 
     int maxPossibleOrder = -1;
     int maxNumInputs = -1;

@@ -29,17 +29,18 @@ static constexpr float filterFrequencyPresets[] = {200.0f, 300.0f, 1600.0f, 2200
 
 //==============================================================================
 DirectivityShaperAudioProcessor::DirectivityShaperAudioProcessor()
+: AudioProcessorBase (
 #ifndef JucePlugin_PreferredChannelConfigurations
-: AudioProcessor (BusesProperties()
+                      BusesProperties()
 #if ! JucePlugin_IsMidiEffect
 #if ! JucePlugin_IsSynth
                   .withInput  ("Input",  AudioChannelSet::mono(), true)
 #endif
                   .withOutput ("Output", AudioChannelSet::discreteChannels(64), true)
 #endif
-                  ),
+                  ,
 #endif
-oscParams (parameters), parameters (*this, nullptr, "DirectivityShaper", createParameterLayout())
+createParameterLayout())
 {
     orderSetting = parameters.getRawParameterValue ("orderSetting");
     useSN3D = parameters.getRawParameterValue ("useSN3D");
@@ -88,8 +89,6 @@ oscParams (parameters), parameters (*this, nullptr, "DirectivityShaper", createP
     {
         filter[i].coefficients = createFilterCoefficients(roundToInt(*filterType[i]), 44100, *filterFrequency[i], *filterQ[i]);
     }
-
-    oscReceiver.addListener (this);
 }
 
 inline dsp::IIR::Coefficients<float>::Ptr DirectivityShaperAudioProcessor::createFilterCoefficients(int type, double sampleRate, double frequency, double Q)
@@ -114,43 +113,6 @@ DirectivityShaperAudioProcessor::~DirectivityShaperAudioProcessor()
 }
 
 //==============================================================================
-const String DirectivityShaperAudioProcessor::getName() const
-{
-    return JucePlugin_Name;
-}
-
-bool DirectivityShaperAudioProcessor::acceptsMidi() const
-{
-#if JucePlugin_WantsMidiInput
-    return true;
-#else
-    return false;
-#endif
-}
-
-bool DirectivityShaperAudioProcessor::producesMidi() const
-{
-#if JucePlugin_ProducesMidiOutput
-    return true;
-#else
-    return false;
-#endif
-}
-
-bool DirectivityShaperAudioProcessor::isMidiEffect() const
-{
-#if JucePlugin_IsMidiEffect
-    return true;
-#else
-    return false;
-#endif
-}
-
-double DirectivityShaperAudioProcessor::getTailLengthSeconds() const
-{
-    return 0.0;
-}
-
 int DirectivityShaperAudioProcessor::getNumPrograms()
 {
     return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
@@ -195,12 +157,6 @@ void DirectivityShaperAudioProcessor::releaseResources()
     // spare memory, etc.
 }
 
-#ifndef JucePlugin_PreferredChannelConfigurations
-bool DirectivityShaperAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
-{
-    return true;
-}
-#endif
 
 void DirectivityShaperAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
@@ -291,7 +247,6 @@ void DirectivityShaperAudioProcessor::processBlock (AudioSampleBuffer& buffer, M
         FloatVectorOperations::copy(shOld[b], shTemp, 64);
     }
 
-
     if (changeWeights)
     {
         changeWeights = false;
@@ -299,7 +254,6 @@ void DirectivityShaperAudioProcessor::processBlock (AudioSampleBuffer& buffer, M
         repaintXY = true;
         repaintFV = true;
     }
-
 }
 
 //==============================================================================
@@ -439,50 +393,14 @@ void DirectivityShaperAudioProcessor::parameterChanged (const String &parameterI
         changeWeights = true;
 }
 
-//==============================================================================
-pointer_sized_int DirectivityShaperAudioProcessor::handleVstPluginCanDo (int32 index,
-                                                                     pointer_sized_int value, void* ptr, float opt)
-{
-    auto text = (const char*) ptr;
-    auto matches = [=](const char* s) { return strcmp (text, s) == 0; };
-
-    if (matches ("wantsChannelCountNotifications"))
-        return 1;
-    return 0;
-}
 
 //==============================================================================
-void DirectivityShaperAudioProcessor::oscMessageReceived (const OSCMessage &message)
-{
-    String prefix ("/" + String(JucePlugin_Name));
-    if (! message.getAddressPattern().toString().startsWith (prefix))
-        return;
-
-    OSCMessage msg (message);
-    msg.setAddressPattern (message.getAddressPattern().toString().substring(String(JucePlugin_Name).length() + 1));
-
-    oscParams.processOSCMessage (msg);
-}
-
-void DirectivityShaperAudioProcessor::oscBundleReceived (const OSCBundle &bundle)
-{
-    for (int i = 0; i < bundle.size(); ++i)
-    {
-        auto elem = bundle[i];
-        if (elem.isMessage())
-            oscMessageReceived (elem.getMessage());
-        else if (elem.isBundle())
-            oscBundleReceived (elem.getBundle());
-    }
-}
-
-//==============================================================================
-AudioProcessorValueTreeState::ParameterLayout DirectivityShaperAudioProcessor::createParameterLayout()
+std::vector<std::unique_ptr<RangedAudioParameter>> DirectivityShaperAudioProcessor::createParameterLayout()
 {
     // add your audio parameters here
     std::vector<std::unique_ptr<RangedAudioParameter>> params;
 
-    params.push_back (oscParams.createAndAddParameter ("orderSetting", "Directivity Order", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("orderSetting", "Directivity Order", "",
                                      NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
                                      [](float value) {
                                          if (value >= 0.5f && value < 1.5f) return "0th";
@@ -496,29 +414,29 @@ AudioProcessorValueTreeState::ParameterLayout DirectivityShaperAudioProcessor::c
                                          else return "Auto";},
                                      nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("useSN3D", "Directivity Normalization", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("useSN3D", "Directivity Normalization", "",
                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value) { if (value >= 0.5f ) return "SN3D";
                                          else return "N3D"; },
                                      nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("probeAzimuth", "probe Azimuth", CharPointer_UTF8 (R"(°)"),
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("probeAzimuth", "probe Azimuth", CharPointer_UTF8 (R"(°)"),
                                     NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
                                     [](float value) {return String(value, 2);}, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("probeElevation", "probe Elevation", CharPointer_UTF8 (R"(°)"),
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("probeElevation", "probe Elevation", CharPointer_UTF8 (R"(°)"),
                                     NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
                                     [](float value) {return String(value, 2);}, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("probeRoll", "probe Roll", CharPointer_UTF8 (R"(°)"),
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("probeRoll", "probe Roll", CharPointer_UTF8 (R"(°)"),
                                     NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
                                     [](float value) {return String(value, 2);}, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("probeLock", "Lock Directions", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("probeLock", "Lock Directions", "",
                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
                                     [](float value) {return (value >= 0.5f) ? "locked" : "not locked";}, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("normalization", "Directivity Normalization", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("normalization", "Directivity Normalization", "",
                                     NormalisableRange<float> (0.0f, 2.0f, 1.0f), 1.0,
                                     [](float value) {
                                         if (value >= 0.5f && value < 1.5f) return "on axis";
@@ -528,7 +446,7 @@ AudioProcessorValueTreeState::ParameterLayout DirectivityShaperAudioProcessor::c
 
     for (int i = 0; i < numberOfBands; ++i)
     {
-        params.push_back (oscParams.createAndAddParameter ("filterType" + String(i), "Filter Type " + String(i+1), "",
+        params.push_back (OSCParameterInterface::createParameterTheOldWay ("filterType" + String(i), "Filter Type " + String(i+1), "",
                                         NormalisableRange<float> (0.0f, 3.0f, 1.0f),  filterTypePresets[i],
                                         [](float value) {
                                             if (value >= 0.5f && value < 1.5f) return "Low-pass";
@@ -537,40 +455,38 @@ AudioProcessorValueTreeState::ParameterLayout DirectivityShaperAudioProcessor::c
                                             else return "All-pass";},
                                         nullptr));
 
-        params.push_back (oscParams.createAndAddParameter ("filterFrequency" + String(i), "Filter Frequency " + String(i+1), "Hz",
+        params.push_back (OSCParameterInterface::createParameterTheOldWay ("filterFrequency" + String(i), "Filter Frequency " + String(i+1), "Hz",
                                         NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.4f), filterFrequencyPresets[i],
                                         [](float value) { return String((int) value); }, nullptr));
 
-        params.push_back (oscParams.createAndAddParameter ("filterQ" + String(i), "Filter Q " + String(i+1), "",
+        params.push_back (OSCParameterInterface::createParameterTheOldWay ("filterQ" + String(i), "Filter Q " + String(i+1), "",
                                         NormalisableRange<float> (0.05f, 10.0f, 0.05f), 0.5f,
                                         [](float value) { return String(value, 2); },
                                         nullptr));
 
-        params.push_back (oscParams.createAndAddParameter ("filterGain" + String(i), "Filter Gain " + String(i+1), "dB",
+        params.push_back (OSCParameterInterface::createParameterTheOldWay ("filterGain" + String(i), "Filter Gain " + String(i+1), "dB",
                                         NormalisableRange<float> (-60.0f, 10.0f, 0.1f), 0.0f,
                                         [](float value) { return (value >= -59.9f) ? String(value, 1) : "-inf"; },
                                         nullptr));
 
-        params.push_back (oscParams.createAndAddParameter ("order" + String(i), "Order Band " + String(i+1), "",
+        params.push_back (OSCParameterInterface::createParameterTheOldWay ("order" + String(i), "Order Band " + String(i+1), "",
                                         NormalisableRange<float> (0.0f, 7.0f, 0.01f), 0.0,
                                         [](float value) { return String(value, 2); }, nullptr));
 
-        params.push_back (oscParams.createAndAddParameter ("shape" + String(i), "Shape Band " + String(i+1), "",
+        params.push_back (OSCParameterInterface::createParameterTheOldWay ("shape" + String(i), "Shape Band " + String(i+1), "",
                                         NormalisableRange<float> (0.0f, 1.0f, 0.01f), 0.0,
                                         [](float value) { return String(value, 2); }, nullptr));
 
-        params.push_back (oscParams.createAndAddParameter ("azimuth" + String(i), "Azimuth Band " + String(i+1), CharPointer_UTF8 (R"(°)"),
+        params.push_back (OSCParameterInterface::createParameterTheOldWay ("azimuth" + String(i), "Azimuth Band " + String(i+1), CharPointer_UTF8 (R"(°)"),
                                         NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
                                         [](float value) { return String(value, 2); }, nullptr));
 
-        params.push_back (oscParams.createAndAddParameter ("elevation" + String(i), "Elevation Band " + String(i+1), CharPointer_UTF8 (R"(°)"),
+        params.push_back (OSCParameterInterface::createParameterTheOldWay ("elevation" + String(i), "Elevation Band " + String(i+1), CharPointer_UTF8 (R"(°)"),
                                         NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
                                         [](float value) {return String(value, 2);}, nullptr));
     }
 
-
-
-    return { params.begin(), params.end() };
+    return params;
 }
 
 //==============================================================================

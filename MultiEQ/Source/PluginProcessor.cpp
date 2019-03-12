@@ -29,17 +29,18 @@ static constexpr float filterFrequencyPresets[] = {80.0f, 120.0f, 1600.0f, 2200.
 
 //==============================================================================
 MultiEQAudioProcessor::MultiEQAudioProcessor()
+     : AudioProcessorBase (
 #ifndef JucePlugin_PreferredChannelConfigurations
-     : AudioProcessor (BusesProperties()
+                           BusesProperties()
                      #if ! JucePlugin_IsMidiEffect
                       #if ! JucePlugin_IsSynth
                        .withInput  ("Input",  AudioChannelSet::discreteChannels (64), true)
                       #endif
                        .withOutput ("Output", AudioChannelSet::discreteChannels (64), true)
                      #endif
-                       ),
+                       ,
 #endif
-oscParams (parameters), parameters (*this, nullptr, "MultiEQ", createParameterLayout())
+createParameterLayout())
 {
     // get pointers to the parameters
     inputChannelsSetting = parameters.getRawParameterValue ("inputChannelsSetting");
@@ -93,9 +94,6 @@ oscParams (parameters), parameters (*this, nullptr, "MultiEQ", createParameterLa
     additionalFilterArrays[1].clear();
     for (int ch = 0; ch < ceil (64 / IIRfloat_elements()); ++ch)
         additionalFilterArrays[1].add (new IIR::Filter<IIRfloat> (additionalProcessorCoefficients[1]));
-
-
-    oscReceiver.addListener (this);
 }
 
 
@@ -332,43 +330,6 @@ void MultiEQAudioProcessor::copyFilterCoefficientsToProcessor()
 
 
 //==============================================================================
-const String MultiEQAudioProcessor::getName() const
-{
-    return JucePlugin_Name;
-}
-
-bool MultiEQAudioProcessor::acceptsMidi() const
-{
-   #if JucePlugin_WantsMidiInput
-    return true;
-   #else
-    return false;
-   #endif
-}
-
-bool MultiEQAudioProcessor::producesMidi() const
-{
-   #if JucePlugin_ProducesMidiOutput
-    return true;
-   #else
-    return false;
-   #endif
-}
-
-bool MultiEQAudioProcessor::isMidiEffect() const
-{
-   #if JucePlugin_IsMidiEffect
-    return true;
-   #else
-    return false;
-   #endif
-}
-
-double MultiEQAudioProcessor::getTailLengthSeconds() const
-{
-    return 0.0;
-}
-
 int MultiEQAudioProcessor::getNumPrograms()
 {
     return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
@@ -429,12 +390,6 @@ void MultiEQAudioProcessor::releaseResources()
     // spare memory, etc.
 }
 
-#ifndef JucePlugin_PreferredChannelConfigurations
-bool MultiEQAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
-{
-    return true;
-}
-#endif
 
 void MultiEQAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
@@ -628,61 +583,24 @@ void MultiEQAudioProcessor::updateBuffers()
 }
 
 //==============================================================================
-pointer_sized_int MultiEQAudioProcessor::handleVstPluginCanDo (int32 index,
-                                                                     pointer_sized_int value, void* ptr, float opt)
-{
-    auto text = (const char*) ptr;
-    auto matches = [=](const char* s) { return strcmp (text, s) == 0; };
-
-    if (matches ("wantsChannelCountNotifications"))
-        return 1;
-    return 0;
-}
-
-//==============================================================================
-void MultiEQAudioProcessor::oscMessageReceived (const OSCMessage &message)
-{
-    String prefix ("/" + String (JucePlugin_Name));
-    if (! message.getAddressPattern().toString().startsWith (prefix))
-        return;
-
-    OSCMessage msg (message);
-    msg.setAddressPattern (message.getAddressPattern().toString().substring (String (JucePlugin_Name).length() + 1));
-
-    oscParams.processOSCMessage (msg);
-}
-
-void MultiEQAudioProcessor::oscBundleReceived (const OSCBundle &bundle)
-{
-    for (int i = 0; i < bundle.size(); ++i)
-    {
-        auto elem = bundle[i];
-        if (elem.isMessage())
-            oscMessageReceived (elem.getMessage());
-        else if (elem.isBundle())
-            oscBundleReceived (elem.getBundle());
-    }
-}
-
-//==============================================================================
-AudioProcessorValueTreeState::ParameterLayout MultiEQAudioProcessor::createParameterLayout()
+std::vector<std::unique_ptr<RangedAudioParameter>> MultiEQAudioProcessor::createParameterLayout()
 {
     // add your audio parameters here
     std::vector<std::unique_ptr<RangedAudioParameter>> params;
 
 
 
-    params.push_back (oscParams.createAndAddParameter ("inputChannelsSetting", "Number of input channels ", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("inputChannelsSetting", "Number of input channels ", "",
                                      NormalisableRange<float> (0.0f, 64.0f, 1.0f), 0.0f,
                                      [](float value) {return value < 0.5f ? "Auto" : String (value);}, nullptr));
 
 
     int i = 0;
-    params.push_back (oscParams.createAndAddParameter ("filterEnabled" + String (i), "Filter Enablement " + String (i + 1), "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("filterEnabled" + String (i), "Filter Enablement " + String (i + 1), "",
                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value) { return value < 0.5 ? String ("OFF") : String ("ON");}, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("filterType" + String (i), "Filter Type " + String (i + 1), "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("filterType" + String (i), "Filter Type " + String (i + 1), "",
                                      NormalisableRange<float> (0.0f, 3.0f, 1.0f),  filterTypePresets[i],
                                      [](float value) {
                                          if (value < 0.5f) return "HP (6dB/oct)";
@@ -691,16 +609,16 @@ AudioProcessorValueTreeState::ParameterLayout MultiEQAudioProcessor::createParam
                                          else return "Low-shelf";},
                                      nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("filterFrequency" + String (i), "Filter Frequency " + String (i + 1), "Hz",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("filterFrequency" + String (i), "Filter Frequency " + String (i + 1), "Hz",
                                      NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.4f), filterFrequencyPresets[i],
                                      [](float value) { return String(value, 0); }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("filterQ" + String (i), "Filter Q " + String (i+1), "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("filterQ" + String (i), "Filter Q " + String (i+1), "",
                                      NormalisableRange<float> (0.05f, 8.0f, 0.05f), 0.7f,
                                      [](float value) { return String (value, 2); },
                                      nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("filterGain" + String (i), "Filter Gain " + String (i + 1), "dB",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("filterGain" + String (i), "Filter Gain " + String (i + 1), "dB",
                                      NormalisableRange<float> (-60.0f, 15.0f, 0.1f), 0.0f,
                                      [](float value) { return String (value, 1); },
                                      nullptr));
@@ -708,11 +626,11 @@ AudioProcessorValueTreeState::ParameterLayout MultiEQAudioProcessor::createParam
 
     for (int i = 1; i < numFilterBands - 1; ++i)
     {
-        params.push_back (oscParams.createAndAddParameter ("filterEnabled" + String (i), "Filter Enablement " + String (i + 1), "",
+        params.push_back (OSCParameterInterface::createParameterTheOldWay ("filterEnabled" + String (i), "Filter Enablement " + String (i + 1), "",
                                          NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                          [](float value) { return value < 0.5 ? String ("OFF") : String ("ON");}, nullptr));
 
-        params.push_back (oscParams.createAndAddParameter ("filterType" + String (i), "Filter Type " + String (i + 1), "",
+        params.push_back (OSCParameterInterface::createParameterTheOldWay ("filterType" + String (i), "Filter Type " + String (i + 1), "",
                                          NormalisableRange<float> (0.0f, 2.0f, 1.0f),  filterTypePresets[i],
                                          [](float value) {
                                              if (value < 0.5f) return "Low-shelf";
@@ -720,16 +638,16 @@ AudioProcessorValueTreeState::ParameterLayout MultiEQAudioProcessor::createParam
                                              else return "High-shelf";},
                                          nullptr));
 
-        params.push_back (oscParams.createAndAddParameter ("filterFrequency" + String (i), "Filter Frequency " + String (i + 1), "Hz",
+        params.push_back (OSCParameterInterface::createParameterTheOldWay ("filterFrequency" + String (i), "Filter Frequency " + String (i + 1), "Hz",
                                          NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.4f), filterFrequencyPresets[i],
                                          [](float value) { return String(value, 0); }, nullptr));
 
-        params.push_back (oscParams.createAndAddParameter ("filterQ" + String (i), "Filter Q " + String (i+1), "",
+        params.push_back (OSCParameterInterface::createParameterTheOldWay ("filterQ" + String (i), "Filter Q " + String (i+1), "",
                                          NormalisableRange<float> (0.05f, 8.0f, 0.05f), 0.7f,
                                          [](float value) { return String (value, 2); },
                                          nullptr));
 
-        params.push_back (oscParams.createAndAddParameter ("filterGain" + String (i), "Filter Gain " + String (i + 1), "dB",
+        params.push_back (OSCParameterInterface::createParameterTheOldWay ("filterGain" + String (i), "Filter Gain " + String (i + 1), "dB",
                                          NormalisableRange<float> (-60.0f, 15.0f, 0.1f), 0.0f,
                                          [](float value) { return String (value, 1); },
                                          nullptr));
@@ -737,11 +655,11 @@ AudioProcessorValueTreeState::ParameterLayout MultiEQAudioProcessor::createParam
 
     i = numFilterBands - 1;
 
-    params.push_back (oscParams.createAndAddParameter ("filterEnabled" + String (i), "Filter Enablement " + String (i + 1), "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("filterEnabled" + String (i), "Filter Enablement " + String (i + 1), "",
                                      NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value) { return value < 0.5 ? String ("OFF") : String ("ON");}, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("filterType" + String (i), "Filter Type " + String (i + 1), "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("filterType" + String (i), "Filter Type " + String (i + 1), "",
                                      NormalisableRange<float> (0.0f, 3.0f, 1.0f),  filterTypePresets[i],
                                      [](float value) {
                                          if (value < 0.5f) return "LP (6dB/Oct)";
@@ -750,24 +668,22 @@ AudioProcessorValueTreeState::ParameterLayout MultiEQAudioProcessor::createParam
                                          else return "High-shelf";},
                                      nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("filterFrequency" + String (i), "Filter Frequency " + String (i + 1), "Hz",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("filterFrequency" + String (i), "Filter Frequency " + String (i + 1), "Hz",
                                      NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.4f), filterFrequencyPresets[i],
                                      [](float value) { return String(value, 0); }, nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("filterQ" + String (i), "Filter Q " + String (i+1), "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("filterQ" + String (i), "Filter Q " + String (i+1), "",
                                      NormalisableRange<float> (0.05f, 8.0f, 0.05f), 0.7f,
                                      [](float value) { return String (value, 2); },
                                      nullptr));
 
-    params.push_back (oscParams.createAndAddParameter ("filterGain" + String (i), "Filter Gain " + String (i + 1), "dB",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("filterGain" + String (i), "Filter Gain " + String (i + 1), "dB",
                                      NormalisableRange<float> (-60.0f, 15.0f, 0.1f), 0.0f,
                                      [](float value) { return String (value, 1); },
                                      nullptr));
 
 
-
-
-    return { params.begin(), params.end() };
+    return params;
 }
 
 //==============================================================================

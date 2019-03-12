@@ -261,12 +261,15 @@ public:
         return s.fMin * powf ((s.fMax / s.fMin), ((x - mL) / width));
     }
 
-    void setSampleRate(int newSampleRate) {
+    void setSampleRate (int newSampleRate)
+    {
         sampleRate = newSampleRate;
     }
 
-    void setOverallGain(float newGain) {
-        overallGainInDb = Decibels::gainToDecibels(newGain, -500.0f);
+    void setOverallGain (float newGain)
+    {
+        overallGainInDb = Decibels::gainToDecibels (newGain, -500.0f);
+        repaint();
     }
 
     void mouseDrag(const MouseEvent &event) override
