@@ -325,9 +325,10 @@ void SimpleDecoderAudioProcessor::getStateInformation (MemoryBlock& destData)
     // You should use this method to store your parameters in the memory block.
     // You could do that either as raw data, or use the XML or ValueTree classes
     // as intermediaries to make it easy to save and load complex data.
-    parameters.state.setProperty("lastOpenedPresetFile", var(lastFile.getFullPathName()), nullptr);
-    parameters.state.setProperty ("OSCPort", var(oscReceiver.getPortNumber()), nullptr);
+    parameters.state.setProperty ("lastOpenedPresetFile", var (lastFile.getFullPathName()), nullptr);
+    parameters.state.setProperty ("OSCPort", var (oscReceiver.getPortNumber()), nullptr);
     ScopedPointer<XmlElement> xml (parameters.state.createXml());
+    xml->setTagName (String (JucePlugin_Name)); // converts old "Decoder" state to "SimpleDecoder" state
     copyXmlToBinary (*xml, destData);
 }
 
@@ -339,11 +340,11 @@ void SimpleDecoderAudioProcessor::setStateInformation (const void* data, int siz
     // whose contents will have been created by the getStateInformation() call.
     ScopedPointer<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
     if (xmlState != nullptr)
-        if (xmlState->hasTagName (parameters.state.getType()))
+        if (xmlState->hasTagName (parameters.state.getType()) || xmlState->hasTagName ("Decoder")) // compatibility for old "Decoder" state tagName
             parameters.state = ValueTree::fromXml (*xmlState);
-    if (parameters.state.hasProperty("lastOpenedPresetFile"))
+    if (parameters.state.hasProperty ("lastOpenedPresetFile"))
     {
-        Value val = parameters.state.getPropertyAsValue("lastOpenedPresetFile", nullptr);
+        Value val = parameters.state.getPropertyAsValue ("lastOpenedPresetFile", nullptr);
         if (val.getValue().toString() != "")
         {
             const File f (val.getValue().toString());
