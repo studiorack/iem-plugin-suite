@@ -77,7 +77,7 @@ private:
         - DirectivitiyIOWidget
      */
 
-    TitleBar<AmbisonicIOWidget<0>, AudioChannelsIOWidget<0,false>> title;
+    TitleBar<AmbisonicIOWidget<>, AudioChannelsIOWidget<0,false>> title;
     OSCFooter footer;
     // =============== end essentials ============
 
