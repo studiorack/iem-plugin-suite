@@ -649,17 +649,17 @@ std::vector<std::unique_ptr<RangedAudioParameter>> DualDelayAudioProcessor::crea
 
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("LPcutOffL", "lowpass frequency left", "Hz",
-                                    NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.2), 100.0f,
+                                    NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.2), 20000.0f,
                                     [](float value) { return String(value, 1); }, nullptr));
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("LPcutOffR", "lowpass frequency right", "Hz",
-                                    NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.2), 100.0f,
+                                    NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.2), 20000.0f,
                                     [](float value) { return String(value, 1); }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("HPcutOffL", "highpass frequency left", "Hz",
-                                    NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.2), 20000.0f,
+                                    NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.2), 100.0f,
                                     [](float value) { return String(value, 1); }, nullptr));
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("HPcutOffR", "highpass frequency right", "Hz",
-                                    NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.2), 20000.0f,
+                                    NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.2), 100.0f,
                                     [](float value) { return String(value, 1); }, nullptr));
 
 
