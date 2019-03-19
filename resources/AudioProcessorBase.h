@@ -112,7 +112,7 @@ public:
     pointer_sized_int handleVstManufacturerSpecific (int32 index, pointer_sized_int value,
                                                      void* ptr, float opt) override
     {
-        //0x69656D is hex code for `IEM` in ASCII
+        //0x69656D is hex code for `iem` in ASCII
         if (index == 0x0069656D)  // prefix 00 chooses OSC message
         {
             try
