@@ -20,6 +20,8 @@
  ==============================================================================
  */
 
+#include "../JuceLibraryCode/JuceHeader.h"
+
 void SHEval0(const float fX, const float fY, const float fZ, float *SHcoeffs);
 void SHEval1(const float fX, const float fY, const float fZ, float *SHcoeffs);
 void SHEval2(const float fX, const float fY, const float fZ, float *SHcoeffs);

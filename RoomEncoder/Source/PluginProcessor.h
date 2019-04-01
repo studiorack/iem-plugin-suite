@@ -25,7 +25,6 @@
 #pragma once
 
 #include "../JuceLibraryCode/JuceHeader.h"
-#include "../../resources/Quaternion.h"
 #include "../../resources/interpLagrangeWeights.h"
 #include "../../resources/efficientSHvanilla.h"
 #include "reflections.h"

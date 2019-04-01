@@ -337,15 +337,10 @@ public:
             quat.fromYPR(ypr);
             quat.conjugate();
 
-            float xyz[3];
-            xyz[0] = posXYZ.x;
-            xyz[1] = posXYZ.y;
-            xyz[2] = posXYZ.z;
+            const auto rotated = quat.rotateVector (posXYZ);
 
-            quat.rotateVector(xyz, xyz);
-
-            float rollInRadians = atan2 (xyz[2], xyz[1]);
-            if (isMirrored) rollInRadians = atan2 (-xyz[2], -xyz[1]);
+            float rollInRadians = atan2 (rotated.z, rotated.y);
+            if (isMirrored) rollInRadians = atan2 (- rotated.z, - rotated.y);
 
             roll.setValueNotifyingHost (rollRange.convertTo0to1 (Conversions<float>::radiansToDegrees (rollInRadians)));
         }
@@ -368,7 +363,7 @@ public:
 
             //updating not active params
             iem::Quaternion<float> quat;
-            quat.fromYPR(ypr);
+            quat.fromYPR (ypr);
 
             const float widthInRadiansQuarter (Conversions<float>::degreesToRadians(widthRange.convertFrom0to1 (width.getValue())) / 4.0f);
 
@@ -378,10 +373,7 @@ public:
 
             iem::Quaternion<float> quatL = quat * quatLRot;
 
-            float xyz[3];
-            quatL.toCartesian (xyz);
-
-            return Vector3D<float> (xyz[0], xyz[1], xyz[2]);
+            return quatL.getCartesian();
         };
 
         void setMirrored (bool mirrored) { isMirrored = mirrored; }

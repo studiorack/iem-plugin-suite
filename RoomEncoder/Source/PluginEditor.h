@@ -24,7 +24,6 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "PluginProcessor.h"
-#include "../../resources/Quaternion.h"
 #include "../../resources/customComponents/ReverseSlider.h"
 #include "../../resources/lookAndFeel/IEM_LaF.h"
 #include "../../resources/customComponents/TitleBar.h"
