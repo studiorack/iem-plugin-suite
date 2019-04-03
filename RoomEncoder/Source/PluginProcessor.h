@@ -69,6 +69,20 @@ struct SharedParams {
     Array<RoomParams> rooms;
 };
 
+struct ReflectionProperty
+{
+    const int x; // coordinate in image source space
+    const int y; // coordinate in image source space
+    const int z; // coordinate in image source space
+    const int order; // image source order
+    const int xPlusReflections; // number of reflections at front wall
+    const int xMinusReflections; // number of reflections at back wall
+    const int yPlusReflections; // number of reflections at left wall
+    const int yMinusReflections; // number of reflections at right wall
+    const int zPlusReflections; // number of reflections at ceiling
+    const int zMinusReflections; // number of reflections at floor
+};
+
 //==============================================================================
 /**
 */
@@ -221,7 +235,7 @@ private:
     AudioBuffer<float> delayBuffer;
     AudioBuffer<float> monoBuffer;
 
-    float** delayBufferWritePtrArray;
-
+    OwnedArray<ReflectionProperty> reflectionList;
+    
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (RoomEncoderAudioProcessor)
 };

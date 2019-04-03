@@ -246,15 +246,11 @@ void RoomEncoderAudioProcessor::updateFilterCoefficients(double sampleRate) {
 
 void RoomEncoderAudioProcessor::calculateImageSourcePositions (const float t, const float b, const float h)
 {
-//    const float t = *roomX;
-//    const float b = *roomY;
-//    const float h = *roomZ;
-
     for (int q = 0; q < nImgSrc; ++q)
     {
-        int m = reflList[q][0];
-        int n = reflList[q][1];
-        int o = reflList[q][2];
+        const int m = reflectionList[q]->x;
+        const int n = reflectionList[q]->y;
+        const int o = reflectionList[q]->z;
         mx[q] = m * t + mSig[m&1] * sourcePos.x - listenerPos.x;
         my[q] = n * b + mSig[n&1] * sourcePos.y - listenerPos.y;
         mz[q] = o * h + mSig[o&1] * sourcePos.z - listenerPos.z;
@@ -292,6 +288,8 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
     const float* pBufferRead = buffer.getReadPointer(0);
 
     const int nSIMDFilters = 1 + (maxNChIn-1)/IIRfloat_elements();
+
+    const auto delayBufferWritePtrArray = delayBuffer.getArrayOfWritePointers();
 
     // update iir filter coefficients
     if (userChangedFilterSettings) updateFilterCoefficients(sampleRate);
@@ -544,7 +542,7 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
         else
             FloatVectorOperations::clear(SHcoeffs, 64);
 
-        float gain = powReflCoeff[reflList[q][3]] / mRadius[q];
+        float gain = powReflCoeff[reflectionList[q]->order] / mRadius[q];
         if (*directPathUnityGain > 0.5f)
             gain *= mRadius[0];
 
@@ -558,7 +556,6 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
         allGains[q] = gain; // for reflectionVisualizer
 
         FloatVectorOperations::multiply(SHcoeffs, gain, maxNChOut);
-        //FloatVectorOperations::multiply(SHcoeffs, mSig[reflList[q][3]&1]*gain, maxNChOut);
         FloatVectorOperations::subtract(SHcoeffsStep, SHcoeffs, SHcoeffsOld[q], maxNChOut);
         FloatVectorOperations::multiply(SHcoeffsStep, 1.0f/copyL, maxNChOut);
 
@@ -794,7 +791,6 @@ void RoomEncoderAudioProcessor::updateBuffers()
 
     delayBuffer.setSize(nChOut, bufferSize);
     delayBuffer.clear();
-    delayBufferWritePtrArray = delayBuffer.getArrayOfWritePointers();
 
     if (input.getSize() != input.getPreviousSize())
     {
