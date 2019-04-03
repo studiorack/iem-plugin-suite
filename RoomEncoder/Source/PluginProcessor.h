@@ -190,6 +190,13 @@ private:
     float* directPathZeroDelay;
     float* directPathUnityGain;
 
+    float* wallAttenuationFront;
+    float* wallAttenuationBack;
+    float* wallAttenuationLeft;
+    float* wallAttenuationRight;
+    float* wallAttenuationCeiling;
+    float* wallAttenuationFloor;
+
     int _numRefl;
 
     SharedResourcePointer<SharedParams> sharedParams;

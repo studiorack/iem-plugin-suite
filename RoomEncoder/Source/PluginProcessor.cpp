@@ -71,6 +71,13 @@ createParameterLayout())
     highShelfFreq = parameters.getRawParameterValue ("highShelfFreq");
     highShelfGain = parameters.getRawParameterValue ("highShelfGain");
 
+    wallAttenuationFront = parameters.getRawParameterValue ("wallAttenuationFront");
+    wallAttenuationBack = parameters.getRawParameterValue ("wallAttenuationBack");
+    wallAttenuationLeft = parameters.getRawParameterValue ("wallAttenuationLeft");
+    wallAttenuationRight = parameters.getRawParameterValue ("wallAttenuationRight");
+    wallAttenuationCeiling = parameters.getRawParameterValue ("wallAttenuationCeiling");
+    wallAttenuationFloor = parameters.getRawParameterValue ("wallAttenuationFloor");
+
     parameters.addParameterListener ("directivityOrderSetting", this);
     parameters.addParameterListener ("orderSetting", this);
     parameters.addParameterListener ("lowShelfFreq", this);
@@ -189,7 +196,7 @@ void RoomEncoderAudioProcessor::initializeReflectionList()
                 ++i;
                 ++zNegRefl;
             }
-            
+
             i *= -1;
         }
 
@@ -621,6 +628,17 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
         if (*directPathUnityGain > 0.5f)
             gain *= mRadius[0];
 
+        // additional wall attenuations
+        float extraAttenuationInDb = 0.0f;
+        auto reflProp = *reflectionList[q];
+        extraAttenuationInDb += reflProp.xPlusReflections * *wallAttenuationFront;
+        extraAttenuationInDb += reflProp.xMinusReflections * *wallAttenuationBack;
+        extraAttenuationInDb += reflProp.yPlusReflections * *wallAttenuationLeft;
+        extraAttenuationInDb += reflProp.yMinusReflections * *wallAttenuationRight;
+        extraAttenuationInDb += reflProp.zPlusReflections * *wallAttenuationCeiling;
+        extraAttenuationInDb += reflProp.zMinusReflections * *wallAttenuationFloor;
+        gain *= Decibels::decibelsToGain (extraAttenuationInDb);
+
         // direct path rendering
         if (q == 0 && ! doRenderDirectPath)
         {
@@ -1024,6 +1042,32 @@ std::vector<std::unique_ptr<RangedAudioParameter>> RoomEncoderAudioProcessor::cr
                                                                            if (value >= 0.5f) return "ON";
                                                                            else return "OFF"; },
                                                                        nullptr));
+
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("wallAttenuationFront", "Front wall attenuation", "dB",
+                                                                       NormalisableRange<float> (-50.0f, 0.0f, 0.01f), 0.0f,
+                                                                       [](float value) { return String (value, 2); }, nullptr));
+
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("wallAttenuationBack", "Back wall attenuation", "dB",
+                                                                       NormalisableRange<float> (-50.0f, 0.0f, 0.01f), 0.0f,
+                                                                       [](float value) { return String (value, 2); }, nullptr));
+
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("wallAttenuationLeft", "Left wall attenuation", "dB",
+                                                                       NormalisableRange<float> (-50.0f, 0.0f, 0.01f), 0.0f,
+                                                                       [](float value) { return String (value, 2); }, nullptr));
+
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("wallAttenuationRight", "Right wall attenuation", "dB",
+                                                                       NormalisableRange<float> (-50.0f, 0.0f, 0.01f), 0.0f,
+                                                                       [](float value) { return String (value, 2); }, nullptr));
+
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("wallAttenuationCeiling", "Ceiling attenuation", "dB",
+                                                                       NormalisableRange<float> (-50.0f, 0.0f, 0.01f), 0.0f,
+                                                                       [](float value) { return String (value, 2); }, nullptr));
+
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("wallAttenuationFloor", "Floor attenuation", "dB",
+                                                                       NormalisableRange<float> (-50.0f, 0.0f, 0.01f), 0.0f,
+                                                                       [](float value) { return String (value, 2); }, nullptr));
+
+
 
     return params;
 }
