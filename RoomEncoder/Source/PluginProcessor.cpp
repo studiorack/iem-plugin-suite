@@ -549,7 +549,7 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
         // direct path rendering
         if (q == 0 && ! doRenderDirectPath)
         {
-            gain = 0.0f;
+            allGains[0] = 0.0f;
             continue;
         }
 
