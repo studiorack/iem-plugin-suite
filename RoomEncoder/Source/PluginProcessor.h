@@ -95,12 +95,12 @@ public:
     ~RoomEncoderAudioProcessor();
 
     //==============================================================================
+
+    void initializeReflectionList();
+    
+    //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;
-
-    void extracted(float maxDist);
-    
-    void extracted();
     
     void processBlock (AudioSampleBuffer&, MidiBuffer&) override;
 

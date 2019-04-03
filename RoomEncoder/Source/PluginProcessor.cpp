@@ -37,6 +37,8 @@ RoomEncoderAudioProcessor::RoomEncoderAudioProcessor()
 #endif
 createParameterLayout())
 {
+    initializeReflectionList();
+
     directivityOrderSetting = parameters.getRawParameterValue ("directivityOrderSetting");
     inputIsSN3D = parameters.getRawParameterValue ("inputIsSN3D");
     orderSetting = parameters.getRawParameterValue ("orderSetting");
@@ -121,6 +123,79 @@ createParameterLayout())
 
 RoomEncoderAudioProcessor::~RoomEncoderAudioProcessor()
 {
+}
+
+//==============================================================================
+void RoomEncoderAudioProcessor::initializeReflectionList()
+{
+    reflectionList.clear(); // just to be save
+
+    for (int i = 0; i < nImgSrc; ++i)
+    {
+        const int x = reflList[i][0];
+        const int y = reflList[i][1];
+        const int z = reflList[i][2];
+        const int order = reflList[i][3];
+
+
+        int xPosRefl = 0;
+        int xNegRefl = 0;
+        int yPosRefl = 0;
+        int yNegRefl = 0;
+        int zPosRefl = 0;
+        int zNegRefl = 0;
+
+        for (int i = x; i != 0;)
+        {
+            if (i > 0)
+            {
+                --i;
+                ++xPosRefl;
+            }
+            else
+            {
+                ++i;
+                ++xNegRefl;
+            }
+
+            i *= -1;
+        }
+
+        for (int i = y; i != 0;)
+        {
+            if (i > 0)
+            {
+                --i;
+                ++yPosRefl;
+            }
+            else
+            {
+                ++i;
+                ++yNegRefl;
+            }
+
+            i *= -1;
+        }
+
+        for (int i = z; i != 0;)
+        {
+            if (i > 0)
+            {
+                --i;
+                ++zPosRefl;
+            }
+            else
+            {
+                ++i;
+                ++zNegRefl;
+            }
+            
+            i *= -1;
+        }
+
+        reflectionList.add (new ReflectionProperty {x, y, z, order, xPosRefl, xNegRefl, yPosRefl, yNegRefl, zPosRefl, zNegRefl});
+//        DBG (xPosRefl << " " << xNegRefl << " " << yPosRefl << " " << yNegRefl << " " << zPosRefl << " " << zNegRefl);
+    }
 }
 
 //==============================================================================
