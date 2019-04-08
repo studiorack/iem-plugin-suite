@@ -212,7 +212,6 @@ private:
 
 
     Vector3D<float> sourcePos, listenerPos;
-    float h,b,t;
 
     float mx[nImgSrc];
     float my[nImgSrc];
@@ -221,23 +220,16 @@ private:
     float smy[nImgSrc];
     float smz[nImgSrc];
 
-
-    float hypxy;
     int bufferSize;
     int bufferReadIdx;
-    int overflow;
-    int temp;
-
 
     int readOffset;
 
     float powReflCoeff[maxOrderImgSrc+1];
     double dist2smpls;
 
-    float *tempAddr;
     float SHcoeffsOld[nImgSrc][64];
     IIRfloat SHsampleOld[nImgSrc][16]; //TODO: can be smaller: (N+1)^2/IIRfloat_elements()
-    float weightedSample;
 
     AudioBuffer<float> delayBuffer;
     AudioBuffer<float> monoBuffer;
