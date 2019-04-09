@@ -34,7 +34,7 @@ listenerElement(*valueTreeState.getParameter("listenerX"), valueTreeState.getPar
               *valueTreeState.getParameter("listenerZ"), valueTreeState.getParameterRange("listenerZ"))
 
 {
-    setSize (800, 600);
+    setSize (820, 600);
     setLookAndFeel (&globalLaF);
 
     toolTipWin.setLookAndFeel (&globalLaF);
@@ -206,11 +206,62 @@ listenerElement(*valueTreeState.getParameter("listenerX"), valueTreeState.getPar
     slNumReflectionsAttachment.reset (new SliderAttachment(valueTreeState,"numRefl", slNumReflections));
     slNumReflections.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slNumReflections.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slNumReflections.setColour (Slider::rotarySliderOutlineColourId, Colours::lightgrey);
+    slNumReflections.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
 
+
+    addAndMakeVisible (lbWallAttenuation);
+    lbWallAttenuation.setText ("Additional Attenuation", true, Justification::left);
+
+    addAndMakeVisible (slWallAttenuationFront);
+    slWallAttenuationFrontAttachment.reset (new SliderAttachment (valueTreeState, "wallAttenuationFront", slWallAttenuationFront));
+    slWallAttenuationFront.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
+    slWallAttenuationFront.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
+    slWallAttenuationFront.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
+    addAndMakeVisible (lbWallAttenuationFront);
+    lbWallAttenuationFront.setText ("Front");
+
+    addAndMakeVisible (slWallAttenuationBack);
+    slWallAttenuationBackAttachment.reset (new SliderAttachment (valueTreeState, "wallAttenuationBack", slWallAttenuationBack));
+    slWallAttenuationBack.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
+    slWallAttenuationBack.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
+    slWallAttenuationBack.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
+    addAndMakeVisible (lbWallAttenuationBack);
+    lbWallAttenuationBack.setText ("Back");
+
+    addAndMakeVisible (slWallAttenuationLeft);
+    slWallAttenuationLeftAttachment.reset (new SliderAttachment (valueTreeState, "wallAttenuationLeft", slWallAttenuationLeft));
+    slWallAttenuationLeft.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
+    slWallAttenuationLeft.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
+    slWallAttenuationLeft.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
+    addAndMakeVisible (lbWallAttenuationLeft);
+    lbWallAttenuationLeft.setText ("Left");
+
+    addAndMakeVisible (slWallAttenuationRight);
+    slWallAttenuationRightAttachment.reset (new SliderAttachment (valueTreeState, "wallAttenuationRight", slWallAttenuationRight));
+    slWallAttenuationRight.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
+    slWallAttenuationRight.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
+    slWallAttenuationRight.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
+    addAndMakeVisible (lbWallAttenuationRight);
+    lbWallAttenuationRight.setText ("Right");
+
+    addAndMakeVisible (slWallAttenuationCeiling);
+    slWallAttenuationCeilingAttachment.reset (new SliderAttachment (valueTreeState, "wallAttenuationCeiling", slWallAttenuationCeiling));
+    slWallAttenuationCeiling.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
+    slWallAttenuationCeiling.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
+    slWallAttenuationCeiling.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
+    addAndMakeVisible (lbWallAttenuationCeiling);
+    lbWallAttenuationCeiling.setText ("Ceiling");
+
+    addAndMakeVisible (slWallAttenuationFloor);
+    slWallAttenuationFloorAttachment.reset (new SliderAttachment (valueTreeState, "wallAttenuationFloor", slWallAttenuationFloor));
+    slWallAttenuationFloor.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
+    slWallAttenuationFloor.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
+    slWallAttenuationFloor.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
+    addAndMakeVisible (lbWallAttenuationFloor);
+    lbWallAttenuationFloor.setText ("Floor");
 
     addAndMakeVisible(&lbReflCoeff);
-    lbReflCoeff.setText("Reflection Attenuation");
+    lbReflCoeff.setText("Overall Attenuation");
 
     addAndMakeVisible(&slReflCoeff);
     slReflCoeffAttachment.reset (new SliderAttachment(valueTreeState,"reflCoeff", slReflCoeff));
@@ -354,7 +405,7 @@ void RoomEncoderAudioProcessorEditor::resized()
 
     area.removeFromLeft(leftRightMargin);
     area.removeFromRight(leftRightMargin);
-    Rectangle<int> headerArea = area.removeFromTop    (headerHeight);
+    Rectangle<int> headerArea = area.removeFromTop (headerHeight);
     title.setBounds (headerArea);
     area.removeFromTop(10);
 
@@ -377,7 +428,7 @@ void RoomEncoderAudioProcessorEditor::resized()
 
 
 
-    Rectangle<int> propArea (area.removeFromRight(9*rotSliderWidth+8*rotSliderSpacing));
+    Rectangle<int> propArea (area.removeFromRight (9 * rotSliderWidth + 8 * rotSliderSpacing + 20));
     {
         Rectangle<int> coordinateArea (propArea.removeFromTop(100));
 
@@ -398,7 +449,7 @@ void RoomEncoderAudioProcessorEditor::resized()
         roomArea.removeFromLeft(rotSliderSpacing);
         lbRoomZ.setBounds (roomArea.removeFromLeft(rotSliderWidth));
 
-        coordinateArea.removeFromLeft(rotSliderSpacing);
+        coordinateArea.removeFromLeft (20);
         Rectangle<int> sourceArea (coordinateArea.removeFromLeft(3*rotSliderWidth+2*rotSliderSpacing));
         gcSourcePosition.setBounds (sourceArea);
         sourceArea.removeFromTop(25);
@@ -416,7 +467,7 @@ void RoomEncoderAudioProcessorEditor::resized()
         sourceArea.removeFromLeft(rotSliderSpacing);
         lbSourceZ.setBounds (sourceArea.removeFromLeft(rotSliderWidth));
 
-        coordinateArea.removeFromLeft(rotSliderSpacing);
+        coordinateArea.removeFromLeft (20);
         Rectangle<int> listenerArea (coordinateArea.removeFromLeft(3*rotSliderWidth+2*rotSliderSpacing));
         gcListenerPosition.setBounds (listenerArea);
         listenerArea.removeFromTop(25);
@@ -435,7 +486,7 @@ void RoomEncoderAudioProcessorEditor::resized()
         lbListenerZ.setBounds (listenerArea.removeFromLeft(rotSliderWidth));
     }
 
-    propArea.removeFromTop (20);
+    propArea.removeFromTop (10);
     gcReflectionProperties.setBounds(propArea);
     propArea.removeFromTop (20);
 
@@ -450,7 +501,7 @@ void RoomEncoderAudioProcessorEditor::resized()
     Rectangle<int> fvCol (propArea.removeFromLeft(330));
 
     { // 120
-        Rectangle<int> fvRow (fvCol.removeFromTop(120));
+        Rectangle<int> fvRow (fvCol.removeFromTop(130));
         fv.setBounds(fvRow);
 
         fvCol.removeFromTop(10);
@@ -466,6 +517,8 @@ void RoomEncoderAudioProcessorEditor::resized()
         sliderRow.removeFromRight(sliderSpacing);
         slHighShelfFreq.setBounds(sliderRow.removeFromRight(rotSliderWidth));
 
+        slReflCoeff.setBounds (sliderRow);
+
         sliderRow = fvCol.removeFromTop(labelHeight);
         sliderRow.removeFromLeft(20);
         lbLSF.setBounds(sliderRow.removeFromLeft(rotSliderWidth));
@@ -476,14 +529,44 @@ void RoomEncoderAudioProcessorEditor::resized()
         lbHSG.setBounds(sliderRow.removeFromRight(rotSliderWidth));
         sliderRow.removeFromRight(sliderSpacing);
         lbHSF.setBounds(sliderRow.removeFromRight(rotSliderWidth));
+
+        lbReflCoeff.setBounds (sliderRow);
     }
 
-    propArea.removeFromTop(20);
-    slReflCoeff.setBounds(propArea.removeFromTop(rotSliderHeight+10));
-    lbReflCoeff.setBounds(propArea.removeFromTop(labelHeight));
-    propArea.removeFromTop(20);
-    slNumReflections.setBounds(propArea.removeFromTop(rotSliderHeight+10));
-    lbNumReflections.setBounds(propArea.removeFromTop(labelHeight));
+    auto wallAttenArea = propArea.removeFromTop (135);
+    lbWallAttenuation.setBounds (wallAttenArea.removeFromTop (20));
+    auto sliderRow = wallAttenArea.removeFromTop (rotSliderHeight - 10);
+    slWallAttenuationFront.setBounds (sliderRow.removeFromLeft (rotSliderWidth));
+    sliderRow.removeFromLeft (5);
+    slWallAttenuationLeft.setBounds (sliderRow.removeFromLeft (rotSliderWidth));
+    sliderRow.removeFromLeft (5);
+    slWallAttenuationRight.setBounds (sliderRow.removeFromLeft (rotSliderWidth));
+
+    sliderRow = wallAttenArea.removeFromTop (12);
+    lbWallAttenuationFront.setBounds (sliderRow.removeFromLeft (rotSliderWidth));
+    sliderRow.removeFromLeft (5);
+    lbWallAttenuationLeft.setBounds (sliderRow.removeFromLeft (rotSliderWidth));
+    sliderRow.removeFromLeft (5);
+    lbWallAttenuationRight.setBounds (sliderRow.removeFromLeft (rotSliderWidth));
+
+    sliderRow = wallAttenArea.removeFromTop (rotSliderHeight - 10);
+    slWallAttenuationBack.setBounds (sliderRow.removeFromLeft (rotSliderWidth));
+    sliderRow.removeFromLeft (5);
+    slWallAttenuationCeiling.setBounds (sliderRow.removeFromLeft (rotSliderWidth));
+    sliderRow.removeFromLeft (5);
+    slWallAttenuationFloor.setBounds (sliderRow.removeFromLeft (rotSliderWidth));
+
+    sliderRow = wallAttenArea.removeFromTop (12);
+    lbWallAttenuationBack.setBounds (sliderRow.removeFromLeft (rotSliderWidth));
+    sliderRow.removeFromLeft (5);
+    lbWallAttenuationCeiling.setBounds (sliderRow.removeFromLeft (rotSliderWidth));
+    sliderRow.removeFromLeft (5);
+    lbWallAttenuationFloor.setBounds (sliderRow.removeFromLeft (rotSliderWidth));
+
+
+    propArea.removeFromTop (5);
+    slNumReflections.setBounds (propArea.removeFromTop (rotSliderHeight));
+    lbNumReflections.setBounds (propArea.removeFromTop (labelHeight));
 
 
     area.removeFromRight(10);
