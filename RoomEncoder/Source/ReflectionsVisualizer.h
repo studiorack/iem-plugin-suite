@@ -89,7 +89,7 @@ public:
             int numRef = roundToInt(*numReflPtr);
 
             float gainDb = Decibels::gainToDecibels(gainPtr[0]);
-            if (gainDb > -60.0f && gainDb < 20.0f)
+            if (gainDb > -60.0f && gainDb <= 20.0f)
             {
                 const float xPos = timeToX (zeroDelay ? 0.0f : radiusPtr[0] * xFactor);
                 const float yPos = dBToY(gainDb);

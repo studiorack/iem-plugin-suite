@@ -433,9 +433,9 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
     const float rY = *roomY;
     const float rZ = *roomZ;
 
-    const float rXHalfBound = rX / 2 - 0.01f;
-    const float rYHalfBound = rY / 2 - 0.01f;
-    const float rZHalfBound = rZ / 2 - 0.01f;
+    const float rXHalfBound = rX / 2 - 0.1f;
+    const float rYHalfBound = rY / 2 - 0.1f;
+    const float rZHalfBound = rZ / 2 - 0.1f;
     //===== LIMIT MOVING SPEED OF SOURCE AND LISTENER ===============================
     const float maxDist = 30.0f / sampleRate * L; // 30 meters per second
     {
@@ -475,7 +475,7 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
         auto difPos = sourcePos - listenerPos;
         const auto length = difPos.length();
         if (length == 0.0)
-            sourcePos = listenerPos + Vector3D<float> (0.1f, 0.0f, 0.0f);
+            sourcePos = listenerPos - sourcePos * 0.1f / sourcePos.length(); //Vector3D<float> (0.1f, 0.0f, 0.0f);
         else if (length < 0.1)
             sourcePos = listenerPos + difPos * 0.1f / length;
     }
