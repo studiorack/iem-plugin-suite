@@ -3,6 +3,12 @@ For a list of all changes and bugfixes see the git log.
 
 Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They might lead to an unexpected behaviour and might not be compatible with your previous projects without making some adaptions. See the [Breaking changes article](https://plugins.iem.at/docs/breakingchanges/) for more information.
 
+## untagged changes
+- plug-in specific changes
+    - **Room**Encoder
+        - hides direct path visualization when disabled
+        - adds extra parameters (not yet in the GUI) to adjust an additional attenuation per wall
+        
 ## v1.10.0
 - new plug-ins
     - **MultiBand**Compressor

@@ -68,16 +68,6 @@ private:
     RoomEncoderAudioProcessor& processor;
     AudioProcessorValueTreeState& valueTreeState;
 
-    ReverseSlider slSourceX, slSourceY, slSourceZ;
-    ReverseSlider slListenerX, slListenerY, slListenerZ;
-    ReverseSlider slRoomX, slRoomY, slRoomZ;
-
-    ReverseSlider slReflCoeff;
-
-    ReverseSlider slLowShelfFreq, slLowShelfGain, slHighShelfFreq, slHighShelfGain;
-
-    ReverseSlider slNumReflections;
-
     SimpleLabel lbReflCoeff, lbNumReflections;
     TripleLabel lbRoomDim;
 
@@ -102,14 +92,29 @@ private:
 
     SimpleLabel lbLSF, lbLSG, lbHSF, lbHSG;
 
+    SimpleLabel lbWallAttenuation;
+    SimpleLabel lbWallAttenuationFront, lbWallAttenuationBack, lbWallAttenuationLeft, lbWallAttenuationRight, lbWallAttenuationCeiling, lbWallAttenuationFloor;
+
+
+    ReverseSlider slSourceX, slSourceY, slSourceZ;
+    ReverseSlider slListenerX, slListenerY, slListenerZ;
+    ReverseSlider slRoomX, slRoomY, slRoomZ;
+
+    ReverseSlider slReflCoeff, slLowShelfFreq, slLowShelfGain, slHighShelfFreq, slHighShelfGain;
+    ReverseSlider slNumReflections;
+
+    ReverseSlider slWallAttenuationFront, slWallAttenuationBack, slWallAttenuationLeft, slWallAttenuationRight, slWallAttenuationCeiling, slWallAttenuationFloor;
+
 
     std::unique_ptr<SliderAttachment> slSourceXAttachment, slSourceYAttachment, slSourceZAttachment;
     std::unique_ptr<SliderAttachment> slListenerXAttachment, slListenerYAttachment, slListenerZAttachment;
     std::unique_ptr<SliderAttachment> slRoomXAttachment, slRoomYAttachment, slRoomZAttachment;
 
-    std::unique_ptr<SliderAttachment> slReflCoeffAttachment;
-    std::unique_ptr<SliderAttachment> slLowShelfFreqAttachment, slLowShelfGainAttachment, slHighShelfFreqAttachment, slHighShelfGainAttachment;
+    std::unique_ptr<SliderAttachment> slReflCoeffAttachment, slLowShelfFreqAttachment, slLowShelfGainAttachment, slHighShelfFreqAttachment, slHighShelfGainAttachment;
     std::unique_ptr<SliderAttachment> slNumReflectionsAttachment;
+
+    std::unique_ptr<SliderAttachment> slWallAttenuationFrontAttachment, slWallAttenuationBackAttachment, slWallAttenuationLeftAttachment, slWallAttenuationRightAttachment, slWallAttenuationCeilingAttachment, slWallAttenuationFloorAttachment;
+
 
     std::unique_ptr<ComboBoxAttachment> cbNormalizationAttachement;
     std::unique_ptr<ComboBoxAttachment> cbOrderAttachement;

@@ -37,6 +37,8 @@ RoomEncoderAudioProcessor::RoomEncoderAudioProcessor()
 #endif
 createParameterLayout())
 {
+    initializeReflectionList();
+
     directivityOrderSetting = parameters.getRawParameterValue ("directivityOrderSetting");
     inputIsSN3D = parameters.getRawParameterValue ("inputIsSN3D");
     orderSetting = parameters.getRawParameterValue ("orderSetting");
@@ -69,6 +71,13 @@ createParameterLayout())
     highShelfFreq = parameters.getRawParameterValue ("highShelfFreq");
     highShelfGain = parameters.getRawParameterValue ("highShelfGain");
 
+    wallAttenuationFront = parameters.getRawParameterValue ("wallAttenuationFront");
+    wallAttenuationBack = parameters.getRawParameterValue ("wallAttenuationBack");
+    wallAttenuationLeft = parameters.getRawParameterValue ("wallAttenuationLeft");
+    wallAttenuationRight = parameters.getRawParameterValue ("wallAttenuationRight");
+    wallAttenuationCeiling = parameters.getRawParameterValue ("wallAttenuationCeiling");
+    wallAttenuationFloor = parameters.getRawParameterValue ("wallAttenuationFloor");
+
     parameters.addParameterListener ("directivityOrderSetting", this);
     parameters.addParameterListener ("orderSetting", this);
     parameters.addParameterListener ("lowShelfFreq", this);
@@ -86,6 +95,13 @@ createParameterLayout())
     parameters.addParameterListener ("roomX", this);
     parameters.addParameterListener ("roomY", this);
     parameters.addParameterListener ("roomZ", this);
+
+    parameters.addParameterListener ("wallAttenuationFront", this);
+    parameters.addParameterListener ("wallAttenuationBack", this);
+    parameters.addParameterListener ("wallAttenuationLeft", this);
+    parameters.addParameterListener ("wallAttenuationRight", this);
+    parameters.addParameterListener ("wallAttenuationCeiling", this);
+    parameters.addParameterListener ("wallAttenuationFloor", this);
 
 
     _numRefl = 0;
@@ -121,6 +137,79 @@ createParameterLayout())
 
 RoomEncoderAudioProcessor::~RoomEncoderAudioProcessor()
 {
+}
+
+//==============================================================================
+void RoomEncoderAudioProcessor::initializeReflectionList()
+{
+    reflectionList.clear(); // just to be save
+
+    for (int i = 0; i < nImgSrc; ++i)
+    {
+        const int x = reflList[i][0];
+        const int y = reflList[i][1];
+        const int z = reflList[i][2];
+        const int order = reflList[i][3];
+
+
+        int xPosRefl = 0;
+        int xNegRefl = 0;
+        int yPosRefl = 0;
+        int yNegRefl = 0;
+        int zPosRefl = 0;
+        int zNegRefl = 0;
+
+        for (int i = x; i != 0;)
+        {
+            if (i > 0)
+            {
+                --i;
+                ++xPosRefl;
+            }
+            else
+            {
+                ++i;
+                ++xNegRefl;
+            }
+
+            i *= -1;
+        }
+
+        for (int i = y; i != 0;)
+        {
+            if (i > 0)
+            {
+                --i;
+                ++yPosRefl;
+            }
+            else
+            {
+                ++i;
+                ++yNegRefl;
+            }
+
+            i *= -1;
+        }
+
+        for (int i = z; i != 0;)
+        {
+            if (i > 0)
+            {
+                --i;
+                ++zPosRefl;
+            }
+            else
+            {
+                ++i;
+                ++zNegRefl;
+            }
+
+            i *= -1;
+        }
+
+        reflectionList.add (new ReflectionProperty {x, y, z, order, xPosRefl, xNegRefl, yPosRefl, yNegRefl, zPosRefl, zNegRefl});
+//        DBG (xPosRefl << " " << xNegRefl << " " << yPosRefl << " " << yNegRefl << " " << zPosRefl << " " << zNegRefl);
+    }
 }
 
 //==============================================================================
@@ -221,7 +310,10 @@ void RoomEncoderAudioProcessor::parameterChanged (const String &parameterID, flo
         }
         else if (sReflections && (parameterID == "reflCoeff" || parameterID == "numRefl" ||
                                   parameterID == "lowShelfFreq" || parameterID == "lowShelfGain" ||
-                                  parameterID == "highShelfFreq" || parameterID == "highShelfGain"))
+                                  parameterID == "highShelfFreq" || parameterID == "highShelfGain" ||
+                                  parameterID == "wallAttenuationFront" || parameterID == "wallAttenuationBack" ||
+                                  parameterID == "wallAttenuationLeft" || parameterID == "wallAttenuationRight" ||
+                                  parameterID == "wallAttenuationCeiling" || parameterID == "wallAttenuationFloor"))
         {
             roomParam.reflCoeff = *reflCoeff;
             roomParam.numRefl = *numRefl;
@@ -229,6 +321,12 @@ void RoomEncoderAudioProcessor::parameterChanged (const String &parameterID, flo
             roomParam.lowShelfGain = *lowShelfGain;
             roomParam.highShelfFreq = *highShelfFreq;
             roomParam.highShelfGain = *highShelfGain;
+            roomParam.wallAttenuationFront = *wallAttenuationFront;
+            roomParam.wallAttenuationBack = *wallAttenuationBack;
+            roomParam.wallAttenuationLeft = *wallAttenuationLeft;
+            roomParam.wallAttenuationRight = *wallAttenuationRight;
+            roomParam.wallAttenuationCeiling = *wallAttenuationCeiling;
+            roomParam.wallAttenuationFloor = *wallAttenuationFloor;
 
             roomParam.validReflectionData = true;
         }
@@ -246,15 +344,11 @@ void RoomEncoderAudioProcessor::updateFilterCoefficients(double sampleRate) {
 
 void RoomEncoderAudioProcessor::calculateImageSourcePositions (const float t, const float b, const float h)
 {
-//    const float t = *roomX;
-//    const float b = *roomY;
-//    const float h = *roomZ;
-
     for (int q = 0; q < nImgSrc; ++q)
     {
-        int m = reflList[q][0];
-        int n = reflList[q][1];
-        int o = reflList[q][2];
+        const int m = reflectionList[q]->x;
+        const int n = reflectionList[q]->y;
+        const int o = reflectionList[q]->z;
         mx[q] = m * t + mSig[m&1] * sourcePos.x - listenerPos.x;
         my[q] = n * b + mSig[n&1] * sourcePos.y - listenerPos.y;
         mz[q] = o * h + mSig[o&1] * sourcePos.z - listenerPos.z;
@@ -292,6 +386,8 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
     const float* pBufferRead = buffer.getReadPointer(0);
 
     const int nSIMDFilters = 1 + (maxNChIn-1)/IIRfloat_elements();
+
+    const auto delayBufferWritePtrArray = delayBuffer.getArrayOfWritePointers();
 
     // update iir filter coefficients
     if (userChangedFilterSettings) updateFilterCoefficients(sampleRate);
@@ -353,9 +449,9 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
     const float rY = *roomY;
     const float rZ = *roomZ;
 
-    const float rXHalfBound = rX / 2 - 0.01f;
-    const float rYHalfBound = rY / 2 - 0.01f;
-    const float rZHalfBound = rZ / 2 - 0.01f;
+    const float rXHalfBound = rX / 2 - 0.1f;
+    const float rYHalfBound = rY / 2 - 0.1f;
+    const float rZHalfBound = rZ / 2 - 0.1f;
     //===== LIMIT MOVING SPEED OF SOURCE AND LISTENER ===============================
     const float maxDist = 30.0f / sampleRate * L; // 30 meters per second
     {
@@ -395,7 +491,7 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
         auto difPos = sourcePos - listenerPos;
         const auto length = difPos.length();
         if (length == 0.0)
-            sourcePos = listenerPos + Vector3D<float> (0.1f, 0.0f, 0.0f);
+            sourcePos = listenerPos - sourcePos * 0.1f / sourcePos.length(); //Vector3D<float> (0.1f, 0.0f, 0.0f);
         else if (length < 0.1)
             sourcePos = listenerPos + difPos * 0.1f / length;
     }
@@ -544,21 +640,31 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
         else
             FloatVectorOperations::clear(SHcoeffs, 64);
 
-        float gain = powReflCoeff[reflList[q][3]] / mRadius[q];
+        float gain = powReflCoeff[reflectionList[q]->order] / mRadius[q];
         if (*directPathUnityGain > 0.5f)
             gain *= mRadius[0];
+
+        // additional wall attenuations
+        float extraAttenuationInDb = 0.0f;
+        auto reflProp = *reflectionList[q];
+        extraAttenuationInDb += reflProp.xPlusReflections * *wallAttenuationFront;
+        extraAttenuationInDb += reflProp.xMinusReflections * *wallAttenuationBack;
+        extraAttenuationInDb += reflProp.yPlusReflections * *wallAttenuationLeft;
+        extraAttenuationInDb += reflProp.yMinusReflections * *wallAttenuationRight;
+        extraAttenuationInDb += reflProp.zPlusReflections * *wallAttenuationCeiling;
+        extraAttenuationInDb += reflProp.zMinusReflections * *wallAttenuationFloor;
+        gain *= Decibels::decibelsToGain (extraAttenuationInDb);
 
         // direct path rendering
         if (q == 0 && ! doRenderDirectPath)
         {
-            gain = 0.0f;
+            allGains[0] = 0.0f;
             continue;
         }
 
         allGains[q] = gain; // for reflectionVisualizer
 
         FloatVectorOperations::multiply(SHcoeffs, gain, maxNChOut);
-        //FloatVectorOperations::multiply(SHcoeffs, mSig[reflList[q][3]&1]*gain, maxNChOut);
         FloatVectorOperations::subtract(SHcoeffsStep, SHcoeffs, SHcoeffsOld[q], maxNChOut);
         FloatVectorOperations::multiply(SHcoeffsStep, 1.0f/copyL, maxNChOut);
 
@@ -761,6 +867,13 @@ void RoomEncoderAudioProcessor::timerCallback()
                 parameters.getParameter ("lowShelfGain")->setValueNotifyingHost (parameters.getParameterRange ("lowShelfGain").convertTo0to1 (roomParam.lowShelfGain));
                 parameters.getParameter ("highShelfFreq")->setValueNotifyingHost (parameters.getParameterRange ("highShelfFreq").convertTo0to1 (roomParam.highShelfFreq));
                 parameters.getParameter ("highShelfGain")->setValueNotifyingHost (parameters.getParameterRange ("highShelfGain").convertTo0to1 (roomParam.highShelfGain));
+
+                parameters.getParameter ("wallAttenuationFront")->setValueNotifyingHost (parameters.getParameterRange ("wallAttenuationFront").convertTo0to1 (roomParam.wallAttenuationFront));
+                parameters.getParameter ("wallAttenuationBack")->setValueNotifyingHost (parameters.getParameterRange ("wallAttenuationBack").convertTo0to1 (roomParam.wallAttenuationBack));
+                parameters.getParameter ("wallAttenuationLeft")->setValueNotifyingHost (parameters.getParameterRange ("wallAttenuationLeft").convertTo0to1 (roomParam.wallAttenuationLeft));
+                parameters.getParameter ("wallAttenuationRight")->setValueNotifyingHost (parameters.getParameterRange ("wallAttenuationRight").convertTo0to1 (roomParam.wallAttenuationRight));
+                parameters.getParameter ("wallAttenuationCeiling")->setValueNotifyingHost (parameters.getParameterRange ("wallAttenuationCeiling").convertTo0to1 (roomParam.wallAttenuationCeiling));
+                parameters.getParameter ("wallAttenuationFloor")->setValueNotifyingHost (parameters.getParameterRange ("wallAttenuationFloor").convertTo0to1 (roomParam.wallAttenuationFloor));
                 readingSharedParams = false;
             }
             else
@@ -794,7 +907,6 @@ void RoomEncoderAudioProcessor::updateBuffers()
 
     delayBuffer.setSize(nChOut, bufferSize);
     delayBuffer.clear();
-    delayBufferWritePtrArray = delayBuffer.getArrayOfWritePointers();
 
     if (input.getSize() != input.getPreviousSize())
     {
@@ -953,6 +1065,32 @@ std::vector<std::unique_ptr<RangedAudioParameter>> RoomEncoderAudioProcessor::cr
                                                                            if (value >= 0.5f) return "ON";
                                                                            else return "OFF"; },
                                                                        nullptr));
+
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("wallAttenuationFront", "Front wall attenuation", "dB",
+                                                                       NormalisableRange<float> (-50.0f, 0.0f, 0.01f), 0.0f,
+                                                                       [](float value) { return String (value, 2); }, nullptr));
+
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("wallAttenuationBack", "Back wall attenuation", "dB",
+                                                                       NormalisableRange<float> (-50.0f, 0.0f, 0.01f), 0.0f,
+                                                                       [](float value) { return String (value, 2); }, nullptr));
+
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("wallAttenuationLeft", "Left wall attenuation", "dB",
+                                                                       NormalisableRange<float> (-50.0f, 0.0f, 0.01f), 0.0f,
+                                                                       [](float value) { return String (value, 2); }, nullptr));
+
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("wallAttenuationRight", "Right wall attenuation", "dB",
+                                                                       NormalisableRange<float> (-50.0f, 0.0f, 0.01f), 0.0f,
+                                                                       [](float value) { return String (value, 2); }, nullptr));
+
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("wallAttenuationCeiling", "Ceiling attenuation", "dB",
+                                                                       NormalisableRange<float> (-50.0f, 0.0f, 0.01f), 0.0f,
+                                                                       [](float value) { return String (value, 2); }, nullptr));
+
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("wallAttenuationFloor", "Floor attenuation", "dB",
+                                                                       NormalisableRange<float> (-50.0f, 0.0f, 0.01f), 0.0f,
+                                                                       [](float value) { return String (value, 2); }, nullptr));
+
+
 
     return params;
 }

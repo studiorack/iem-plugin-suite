@@ -354,11 +354,6 @@ public:
         else
             tempScale = width/drawW;
 
-        if (dimRatio >= height/width)
-            tempScale = height/drawH;
-        else
-            tempScale = width/drawW;
-
         return tempScale;
     }
 

@@ -49,13 +49,15 @@
 const int mSig[] = {1,-1};
 using namespace juce::dsp;
 
-struct RoomParams {
+struct RoomParams
+{
     bool validRoomData = false;
     bool validListenerData = false;
     bool validReflectionData = false;
     float roomX, roomY, roomZ;
     float listenerX, listenerY, listenerZ;
     float reflCoeff, lowShelfFreq, lowShelfGain, highShelfFreq, highShelfGain, numRefl;
+    float wallAttenuationFront, wallAttenuationBack, wallAttenuationLeft, wallAttenuationRight, wallAttenuationCeiling, wallAttenuationFloor;
 };
 
 struct SharedParams {
@@ -67,6 +69,20 @@ struct SharedParams {
         rooms.add(RoomParams());
     }
     Array<RoomParams> rooms;
+};
+
+struct ReflectionProperty
+{
+    const int x; // coordinate in image source space
+    const int y; // coordinate in image source space
+    const int z; // coordinate in image source space
+    const int order; // image source order
+    const int xPlusReflections; // number of reflections at front wall
+    const int xMinusReflections; // number of reflections at back wall
+    const int yPlusReflections; // number of reflections at left wall
+    const int yMinusReflections; // number of reflections at right wall
+    const int zPlusReflections; // number of reflections at ceiling
+    const int zMinusReflections; // number of reflections at floor
 };
 
 //==============================================================================
@@ -81,12 +97,12 @@ public:
     ~RoomEncoderAudioProcessor();
 
     //==============================================================================
+
+    void initializeReflectionList();
+    
+    //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;
-
-    void extracted(float maxDist);
-    
-    void extracted();
     
     void processBlock (AudioSampleBuffer&, MidiBuffer&) override;
 
@@ -176,6 +192,13 @@ private:
     float* directPathZeroDelay;
     float* directPathUnityGain;
 
+    float* wallAttenuationFront;
+    float* wallAttenuationBack;
+    float* wallAttenuationLeft;
+    float* wallAttenuationRight;
+    float* wallAttenuationCeiling;
+    float* wallAttenuationFloor;
+
     int _numRefl;
 
     SharedResourcePointer<SharedParams> sharedParams;
@@ -191,7 +214,6 @@ private:
 
 
     Vector3D<float> sourcePos, listenerPos;
-    float h,b,t;
 
     float mx[nImgSrc];
     float my[nImgSrc];
@@ -200,28 +222,21 @@ private:
     float smy[nImgSrc];
     float smz[nImgSrc];
 
-
-    float hypxy;
     int bufferSize;
     int bufferReadIdx;
-    int overflow;
-    int temp;
-
 
     int readOffset;
 
     float powReflCoeff[maxOrderImgSrc+1];
     double dist2smpls;
 
-    float *tempAddr;
     float SHcoeffsOld[nImgSrc][64];
     IIRfloat SHsampleOld[nImgSrc][16]; //TODO: can be smaller: (N+1)^2/IIRfloat_elements()
-    float weightedSample;
 
     AudioBuffer<float> delayBuffer;
     AudioBuffer<float> monoBuffer;
 
-    float** delayBufferWritePtrArray;
-
+    OwnedArray<ReflectionProperty> reflectionList;
+    
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (RoomEncoderAudioProcessor)
 };
