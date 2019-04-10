@@ -501,7 +501,7 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
 
             int interpCoeffIdx = delayInt&interpMask;
             delayInt = delayInt>>interpShift;
-            int idx = delayInt-interpOffset;
+            int idx = delayInt;
 
 
             float* dest = tempWritePtr++ + idx;
