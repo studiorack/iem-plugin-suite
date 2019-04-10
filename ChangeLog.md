@@ -7,7 +7,8 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
 - plug-in specific changes
     - **Room**Encoder
         - hides direct path visualization when disabled
-        - adds extra parameters (not yet in the GUI) to adjust an additional attenuation per wall
+        - adds extra parameters to adjust an additional attenuation per wall
+        - fixes crackles bug
         
 ## v1.10.0
 - new plug-ins
