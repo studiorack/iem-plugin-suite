@@ -96,6 +96,13 @@ createParameterLayout())
     parameters.addParameterListener ("roomY", this);
     parameters.addParameterListener ("roomZ", this);
 
+    parameters.addParameterListener ("wallAttenuationFront", this);
+    parameters.addParameterListener ("wallAttenuationBack", this);
+    parameters.addParameterListener ("wallAttenuationLeft", this);
+    parameters.addParameterListener ("wallAttenuationRight", this);
+    parameters.addParameterListener ("wallAttenuationCeiling", this);
+    parameters.addParameterListener ("wallAttenuationFloor", this);
+
 
     _numRefl = 0;
 
@@ -303,7 +310,10 @@ void RoomEncoderAudioProcessor::parameterChanged (const String &parameterID, flo
         }
         else if (sReflections && (parameterID == "reflCoeff" || parameterID == "numRefl" ||
                                   parameterID == "lowShelfFreq" || parameterID == "lowShelfGain" ||
-                                  parameterID == "highShelfFreq" || parameterID == "highShelfGain"))
+                                  parameterID == "highShelfFreq" || parameterID == "highShelfGain" ||
+                                  parameterID == "wallAttenuationFront" || parameterID == "wallAttenuationBack" ||
+                                  parameterID == "wallAttenuationLeft" || parameterID == "wallAttenuationRight" ||
+                                  parameterID == "wallAttenuationCeiling" || parameterID == "wallAttenuationFloor"))
         {
             roomParam.reflCoeff = *reflCoeff;
             roomParam.numRefl = *numRefl;
@@ -311,6 +321,12 @@ void RoomEncoderAudioProcessor::parameterChanged (const String &parameterID, flo
             roomParam.lowShelfGain = *lowShelfGain;
             roomParam.highShelfFreq = *highShelfFreq;
             roomParam.highShelfGain = *highShelfGain;
+            roomParam.wallAttenuationFront = *wallAttenuationFront;
+            roomParam.wallAttenuationBack = *wallAttenuationBack;
+            roomParam.wallAttenuationLeft = *wallAttenuationLeft;
+            roomParam.wallAttenuationRight = *wallAttenuationRight;
+            roomParam.wallAttenuationCeiling = *wallAttenuationCeiling;
+            roomParam.wallAttenuationFloor = *wallAttenuationFloor;
 
             roomParam.validReflectionData = true;
         }
@@ -851,6 +867,13 @@ void RoomEncoderAudioProcessor::timerCallback()
                 parameters.getParameter ("lowShelfGain")->setValueNotifyingHost (parameters.getParameterRange ("lowShelfGain").convertTo0to1 (roomParam.lowShelfGain));
                 parameters.getParameter ("highShelfFreq")->setValueNotifyingHost (parameters.getParameterRange ("highShelfFreq").convertTo0to1 (roomParam.highShelfFreq));
                 parameters.getParameter ("highShelfGain")->setValueNotifyingHost (parameters.getParameterRange ("highShelfGain").convertTo0to1 (roomParam.highShelfGain));
+
+                parameters.getParameter ("wallAttenuationFront")->setValueNotifyingHost (parameters.getParameterRange ("wallAttenuationFront").convertTo0to1 (roomParam.wallAttenuationFront));
+                parameters.getParameter ("wallAttenuationBack")->setValueNotifyingHost (parameters.getParameterRange ("wallAttenuationBack").convertTo0to1 (roomParam.wallAttenuationBack));
+                parameters.getParameter ("wallAttenuationLeft")->setValueNotifyingHost (parameters.getParameterRange ("wallAttenuationLeft").convertTo0to1 (roomParam.wallAttenuationLeft));
+                parameters.getParameter ("wallAttenuationRight")->setValueNotifyingHost (parameters.getParameterRange ("wallAttenuationRight").convertTo0to1 (roomParam.wallAttenuationRight));
+                parameters.getParameter ("wallAttenuationCeiling")->setValueNotifyingHost (parameters.getParameterRange ("wallAttenuationCeiling").convertTo0to1 (roomParam.wallAttenuationCeiling));
+                parameters.getParameter ("wallAttenuationFloor")->setValueNotifyingHost (parameters.getParameterRange ("wallAttenuationFloor").convertTo0to1 (roomParam.wallAttenuationFloor));
                 readingSharedParams = false;
             }
             else

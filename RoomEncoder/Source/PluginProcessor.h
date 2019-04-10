@@ -49,13 +49,15 @@
 const int mSig[] = {1,-1};
 using namespace juce::dsp;
 
-struct RoomParams {
+struct RoomParams
+{
     bool validRoomData = false;
     bool validListenerData = false;
     bool validReflectionData = false;
     float roomX, roomY, roomZ;
     float listenerX, listenerY, listenerZ;
     float reflCoeff, lowShelfFreq, lowShelfGain, highShelfFreq, highShelfGain, numRefl;
+    float wallAttenuationFront, wallAttenuationBack, wallAttenuationLeft, wallAttenuationRight, wallAttenuationCeiling, wallAttenuationFloor;
 };
 
 struct SharedParams {
