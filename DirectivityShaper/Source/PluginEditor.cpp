@@ -163,7 +163,6 @@ fv(20.0f, 20000.0f, -50.0f, 10.0f, 10.0f)
         slElevation[i].setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
         slElevation[i].setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
         slElevation[i].setColour(Slider::rotarySliderOutlineColourId, colours[i]);
-        slElevation[i].setReverse(true);
         slElevation[i].setRotaryParameters(0.5 * MathConstants<float>::pi, 2.5 * MathConstants<float>::pi, false);
         slElevation[i].setTextValueSuffix(CharPointer_UTF8 (R"(°)"));
         slElevationAttachment[i] = new SliderAttachment(valueTreeState, "elevation" + String(i), slElevation[i]);
