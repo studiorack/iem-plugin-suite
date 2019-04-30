@@ -9,6 +9,10 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
         - hides direct path visualization when disabled
         - adds extra parameters to adjust an additional attenuation per wall
         - fixes crackles bug
+    - **Simple**Decoder
+        - fixes bug: reset of Ambisonic order when re-opening GUI 
+    - **Tool**Box
+        - adds overall gain control
         
 ## v1.10.0
 - new plug-ins
