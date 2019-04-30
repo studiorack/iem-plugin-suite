@@ -1067,27 +1067,27 @@ std::vector<std::unique_ptr<RangedAudioParameter>> RoomEncoderAudioProcessor::cr
                                                                        nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("wallAttenuationFront", "Front wall attenuation", "dB",
-                                                                       NormalisableRange<float> (-50.0f, 0.0f, 0.01f), 0.0f,
+                                                                       NormalisableRange<float> (-50.0f, 0.0f, 0.01f, 3.0f), 0.0f,
                                                                        [](float value) { return String (value, 2); }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("wallAttenuationBack", "Back wall attenuation", "dB",
-                                                                       NormalisableRange<float> (-50.0f, 0.0f, 0.01f), 0.0f,
+                                                                       NormalisableRange<float> (-50.0f, 0.0f, 0.01f, 3.0f), 0.0f,
                                                                        [](float value) { return String (value, 2); }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("wallAttenuationLeft", "Left wall attenuation", "dB",
-                                                                       NormalisableRange<float> (-50.0f, 0.0f, 0.01f), 0.0f,
+                                                                       NormalisableRange<float> (-50.0f, 0.0f, 0.01f, 3.0f), 0.0f,
                                                                        [](float value) { return String (value, 2); }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("wallAttenuationRight", "Right wall attenuation", "dB",
-                                                                       NormalisableRange<float> (-50.0f, 0.0f, 0.01f), 0.0f,
+                                                                       NormalisableRange<float> (-50.0f, 0.0f, 0.01f, 3.0f), 0.0f,
                                                                        [](float value) { return String (value, 2); }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("wallAttenuationCeiling", "Ceiling attenuation", "dB",
-                                                                       NormalisableRange<float> (-50.0f, 0.0f, 0.01f), 0.0f,
+                                                                       NormalisableRange<float> (-50.0f, 0.0f, 0.01f, 3.0f), 0.0f,
                                                                        [](float value) { return String (value, 2); }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("wallAttenuationFloor", "Floor attenuation", "dB",
-                                                                       NormalisableRange<float> (-50.0f, 0.0f, 0.01f), 0.0f,
+                                                                       NormalisableRange<float> (-50.0f, 0.0f, 0.01f, 3.0f), 0.0f,
                                                                        [](float value) { return String (value, 2); }, nullptr));
 
 
