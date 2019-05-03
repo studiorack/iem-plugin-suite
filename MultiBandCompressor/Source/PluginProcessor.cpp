@@ -249,13 +249,13 @@ std::vector<std::unique_ptr<RangedAudioParameter>> MultiBandCompressorAudioProce
 
 
         auto boolParam = std::make_unique<AudioParameterBool>("bypass" + String (i),
-                                                           "Compression on band " + String (i) + " enabled",
+                                                           "Bypass compression on band " + String (i),
                                                            false);
         params.push_back (std::move (boolParam));
 
 
         boolParam = std::make_unique<AudioParameterBool>("solo" + String (i),
-                                                           "Put band " + String (i) + " in Solo mode",
+                                                           "Solo band " + String (i),
                                                            false);
         params.push_back (std::move (boolParam));
     }
