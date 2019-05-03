@@ -301,17 +301,7 @@ bool StereoEncoderAudioProcessor::hasEditor() const {
 
 AudioProcessorEditor *StereoEncoderAudioProcessor::createEditor()
 {
-    auto editor = new StereoEncoderAudioProcessorEditor (*this, parameters);
-
-    if (wrapperType == wrapperType_Standalone)
-    {
-        if (TopLevelWindow::getNumTopLevelWindows() == 1)
-        {
-            auto* w = TopLevelWindow::getTopLevelWindow (0);
-            w->setUsingNativeTitleBar (true);
-        }
-    }
-    return editor;
+    return new StereoEncoderAudioProcessorEditor (*this, parameters);
 }
 
 void StereoEncoderAudioProcessor::parameterChanged (const String &parameterID, float newValue) {
