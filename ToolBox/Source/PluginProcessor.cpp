@@ -40,14 +40,15 @@ ToolBoxAudioProcessor::ToolBoxAudioProcessor()
 createParameterLayout()), flipXMask (int64 (0)), flipYMask (int64 (0)), flipZMask (int64 (0))
 {
     // get pointers to the parameters
-    inputOrderSetting = parameters.getRawParameterValue("inputOrderSetting");
+    inputOrderSetting = parameters.getRawParameterValue ("inputOrderSetting");
     outputOrderSetting = parameters.getRawParameterValue ("outputOrderSetting");
     useSn3dInput = parameters.getRawParameterValue ("useSn3dInput");
     useSn3dOutput = parameters.getRawParameterValue ("useSn3dOutput");
     flipX = parameters.getRawParameterValue ("flipX");
     flipY = parameters.getRawParameterValue ("flipY");
     flipZ = parameters.getRawParameterValue ("flipZ");
-    loaWeights = parameters.getRawParameterValue("loaWeights");
+    loaWeights = parameters.getRawParameterValue ("loaWeights");
+    gain = parameters.getRawParameterValue ("gain");
 
 
     // add listeners to parameter changes
@@ -109,11 +110,13 @@ void ToolBoxAudioProcessor::changeProgramName (int index, const String& newName)
 //==============================================================================
 void ToolBoxAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    checkInputAndOutput(this, *inputOrderSetting, *outputOrderSetting, true);
+    checkInputAndOutput (this, *inputOrderSetting, *outputOrderSetting, true);
 
     doFlipX = *flipX >= 0.5f;
     doFlipY = *flipY >= 0.5f;
     doFlipZ = *flipZ >= 0.5f;
+
+    calculateWeights (previousWeights, input.getNumberOfChannels(), output.getNumberOfChannels());
 }
 
 void ToolBoxAudioProcessor::releaseResources()
@@ -128,17 +131,45 @@ void ToolBoxAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
     checkInputAndOutput(this, *inputOrderSetting, *outputOrderSetting, false);
     ScopedNoDenormals noDenormals;
 
-    const int nChIn = jmin(buffer.getNumChannels(), input.getNumberOfChannels());
-    const int nChOut = jmin(buffer.getNumChannels(), output.getNumberOfChannels());
-    const int nCh = jmin(nChIn, nChOut);
+    const int nChIn = jmin (buffer.getNumChannels(), input.getNumberOfChannels());
+    const int nChOut = jmin (buffer.getNumChannels(), output.getNumberOfChannels());
+    const int nCh = jmin (nChIn, nChOut);
 
     const int L = buffer.getNumSamples();
 
+    float weights[64];
+    calculateWeights (weights, nChIn, nChOut);
+
+    // apply weights;
+    for (int ch = 0; ch < nCh; ++ch)
+    {
+        if (weights[ch] != previousWeights[ch])
+        {
+            buffer.applyGainRamp(ch, 0, L, previousWeights[ch], weights[ch]);
+            previousWeights[ch] = weights[ch];
+        }
+        else if (weights[ch] != 1.0f)
+        {
+            FloatVectorOperations::multiply (buffer.getWritePointer(ch), weights[ch], L);
+        }
+    }
+
+    // clear not used channels
+    for (int ch = nCh; ch < buffer.getNumChannels(); ++ch)
+    {
+        buffer.clear (ch, 0, L);
+        previousWeights[ch] = 0.0f;
+    }
+
+}
+
+void ToolBoxAudioProcessor::calculateWeights (float *weights, const int nChannelsIn, const int nChannelsOut)
+{
+    const int nCh = jmin (nChannelsIn, nChannelsOut);
     const int orderIn = input.getOrder();
     const int orderOut = output.getOrder();
 
-    float weights[64];
-    FloatVectorOperations::fill(weights, 1.0f, nCh);
+    FloatVectorOperations::fill (weights, Decibels::decibelsToGain (*gain), nCh);
 
     // create mask for all flips
     if (doFlipX || doFlipY || doFlipZ)
@@ -160,52 +191,34 @@ void ToolBoxAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
     // lower order ambisonics weighting
     if (orderIn < orderOut)
     {
-        const int weightType = roundToInt(*loaWeights);
+        const int weightType = roundToInt (*loaWeights);
         if (weightType == 1) // maxrE
         {
-            FloatVectorOperations::multiply(weights, getMaxRELUT(orderIn), nChIn);
-            const float* deWeights = getMaxRELUT(orderOut);
-            for (int i = 0; i < nChIn; ++i)
+            FloatVectorOperations::multiply (weights, getMaxRELUT (orderIn), nChannelsIn);
+            const float* deWeights = getMaxRELUT (orderOut);
+            for (int i = 0; i < nChannelsIn; ++i)
                 weights[i] /= deWeights[i];
         }
         else if (weightType == 2) // inPhase
         {
-            FloatVectorOperations::multiply(weights, getInPhaseLUT(orderIn), nChIn);
-            const float* deWeights = getInPhaseLUT(orderOut);
-            for (int i = 0; i < nChIn; ++i)
+            FloatVectorOperations::multiply (weights, getInPhaseLUT (orderIn), nChannelsIn);
+            const float* deWeights = getInPhaseLUT (orderOut);
+            for (int i = 0; i < nChannelsIn; ++i)
                 weights[i] /= deWeights[i];
         }
     }
 
 
     // normalization
-    bool inSN3D = *useSn3dInput >= 0.5f;
-    bool outSN3D = *useSn3dOutput >= 0.5f;
+    const bool inSN3D = *useSn3dInput >= 0.5f;
+    const bool outSN3D = *useSn3dOutput >= 0.5f;
     if (inSN3D != outSN3D)
     {
         if (inSN3D)
-            FloatVectorOperations::multiply(weights, sn3d2n3d, nCh);
+            FloatVectorOperations::multiply (weights, sn3d2n3d, nCh);
         else
-            FloatVectorOperations::multiply(weights, n3d2sn3d, nCh);
+            FloatVectorOperations::multiply (weights, n3d2sn3d, nCh);
     }
-
-
-
-    // apply weights;
-    for (int ch = 0; ch < nCh; ++ch)
-    {
-        if (weights[ch] != 1.0f)
-        {
-            FloatVectorOperations::multiply(buffer.getWritePointer(ch), weights[ch], L);
-        }
-    }
-
-    // clear not used channels
-    for (int ch = nCh; ch < buffer.getNumChannels(); ++ch)
-        buffer.clear(ch, 0, L);
-
-
-
 }
 
 //==============================================================================
@@ -335,6 +348,11 @@ std::vector<std::unique_ptr<RangedAudioParameter>> ToolBoxAudioProcessor::create
                                          else if (value >= 1.5f) return "inPhase";
                                          else return "none";},
                                      nullptr));
+
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("gain", "Gain", "dB",
+                                                                       NormalisableRange<float> (-50.0f, 24.0f, 0.01f), 0.0f,
+                                                                       [](float value) { return String (value, 2); }, nullptr));
+
 
     return params;
 }

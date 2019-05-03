@@ -3,6 +3,19 @@ For a list of all changes and bugfixes see the git log.
 
 Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They might lead to an unexpected behaviour and might not be compatible with your previous projects without making some adaptions. See the [Breaking changes article](https://plugins.iem.at/docs/breakingchanges/) for more information.
 
+## v1.10.1
+- plug-in specific changes
+    - **Room**Encoder
+        - hides direct path visualization when disabled
+        - adds extra parameters to adjust an additional attenuation per wall
+        - fixes crackles bug
+    - **Simple**Decoder
+        - fixes bug: reset of Ambisonic order when re-opening GUI 
+    - **Tool**Box
+        - adds overall gain control
+    - **Directivtiy**Shaper
+        - fixing directions of elevation sliders
+        
 ## v1.10.0
 - new plug-ins
     - **MultiBand**Compressor

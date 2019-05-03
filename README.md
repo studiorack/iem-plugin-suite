@@ -1,10 +1,13 @@
 #  IEM Plug-in Suite
 ## Overview
-The IEM Plug-in Suite is a free and Open-Source audio plugin suite including Ambisonic plug-ins up to 7th order created by staff and students of the Institute of Electronic Music and Acoustics.
+The IEM Plug-in Suite is a free and Open-Source audio plug-in suite including Ambisonic plug-ins up to 7th order created by staff and students of the Institute of Electronic Music and Acoustics.
 
-For more information, installation guides and plug-in descriptions see
-Website: https://plugins.iem.at
-Repository: https://git.iem.at/audioplugins/IEMPluginSuite/
+The suite provides plug-ins for a full Ambisonic production: encoders, reverbs, dynamics including limiter and multi-band compression, rotators, and decoders for both headphones and arbitrary loudspeaker layouts, and many more. The plug-ins are created with the JUCE framework and can be compiled to any major plug-in format (VST, VST3, AU, AAX).
+
+
+For more information, installation guides and plug-in descriptions see:
+- Website: https://plugins.iem.at
+- Repository: https://git.iem.at/audioplugins/IEMPluginSuite/
 
 
 ## Compilation Guide
@@ -27,3 +30,7 @@ Instead of building each plug-in separately, you can also use the provided shell
 
 ## Known issues
 - There's an issue with the channel-layout behavior of the VST3 versions of the plug-ins. This issue comes down to the VST3 SDK and has to be fixed by Steinberg. Already reported at their developer forum.
+
+## Related repositories
+- https://git.iem.at/pd/vstplugin/releases: to use the plug-ins in PD and SuperCollider
+- https://git.iem.at/ressi/iempluginosc: to control the plug-ins using the OSC interface but without an OSC connection

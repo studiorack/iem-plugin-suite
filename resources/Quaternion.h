@@ -28,7 +28,7 @@
 #include <stdint.h>
 #include <math.h>
 
-
+#include "../JuceLibraryCode/JuceHeader.h"
 
 namespace iem
 {
@@ -36,23 +36,22 @@ namespace iem
     class Quaternion
     {
     public:
-        Quaternion(): w(Type(1.0)), x(Type(0.0)), y(Type(0.0)), z(Type(0.0)) {}
+        Quaternion() : w (Type (1.0)), x (Type (0.0)), y (Type (0.0)), z (Type (0.0)) {}
 
-        Quaternion(Type qw, Type qx, Type qy, Type qz):
-        w(qw), x(qx), y(qy), z(qz) {}
+        Quaternion (Type qw, Type qx, Type qy, Type qz) : w( qw), x (qx), y (qy), z (qz) {}
 
         Type w, x, y, z;
 
 
         Type magnitude() const
         {
-            return sqrt(w*w + x*x + y*y + z*z);
+            return sqrt (w * w + x * x + y * y + z * z);
         }
 
         void normalize()
         {
             Type mag = magnitude();
-            if (mag != Type(0.0)) *this = this->scale(Type(Type(1.0))/mag);
+            if (mag != Type (0.0)) *this = this->scale (Type (1.0) / mag);
         }
 
         void conjugate()
@@ -64,62 +63,68 @@ namespace iem
 
         Quaternion getConjugate() const
         {
-            return Quaternion(w, -x, -y, -z);
+            return Quaternion (w, -x, -y, -z);
         }
 
-        Quaternion operator*(const Quaternion& q) const
+        Quaternion operator* (const Quaternion& q) const
         {
-            return Quaternion(
-                              w*q.w - x*q.x - y*q.y - z*q.z,
-                              w*q.x + x*q.w + y*q.z - z*q.y,
-                              w*q.y - x*q.z + y*q.w + z*q.x,
-                              w*q.z + x*q.y - y*q.x + z*q.w
-                              );
+            return Quaternion (w * q.w - x * q.x - y * q.y - z * q.z,
+                               w * q.x + x * q.w + y * q.z - z * q.y,
+                               w * q.y - x * q.z + y * q.w + z * q.x,
+                               w * q.z + x * q.y - y * q.x + z * q.w);
         }
 
-        Quaternion operator+(const Quaternion& q) const
+        Quaternion operator+ (const Quaternion& q) const
         {
-            return Quaternion(w + q.w, x + q.x, y + q.y, z + q.z);
+            return Quaternion (w + q.w, x + q.x, y + q.y, z + q.z);
         }
 
-        Quaternion operator-(const Quaternion& q) const
+        Quaternion operator- (const Quaternion& q) const
         {
-            return Quaternion(w - q.w, x - q.x, y - q.y, z - q.z);
+            return Quaternion (w - q.w, x - q.x, y - q.y, z - q.z);
         }
 
-        Quaternion operator/(Type scalar) const
+        Quaternion operator/ (Type scalar) const
         {
-            return Quaternion(w / scalar, x / scalar, y / scalar, z / scalar);
+            return scale (Type (1.0) / scalar);
         }
 
-        Quaternion operator*(Type scalar) const
+        Quaternion operator* (Type scalar) const
         {
-            return scale(scalar);
+            return scale (scalar);
         }
 
-
-        Quaternion scale(Type scalar) const
+        Quaternion scale (Type scalar) const
         {
-            return Quaternion(w * scalar, x * scalar, y * scalar, z * scalar);
+            return Quaternion (w * scalar, x * scalar, y * scalar, z * scalar);
         }
 
-        void rotateVector(Type *vec, Type *dest) { // has to be tested!
-            iem::Quaternion<Type> t(0, vec[0], vec[1], vec[2]);
-            t = *this*t;
-            t = t*(this->getConjugate());
-            dest[0] = t.x;
-            dest[1] = t.y;
-            dest[2] = t.z;
+        juce::Vector3D<Type> rotateVector (juce::Vector3D<Type> vec)
+        { // has to be tested!
+            iem::Quaternion<Type> t (0, vec.x, vec.y, vec.z);
+            t = *this * t;
+            t = t * this->getConjugate();
+
+            return {t.x, t.y, t.z};
         }
 
-        void toCartesian(Type *xyz) {
-            xyz[0] = Type(1.0) - Type(2.0)*y*y - Type(2.0)*z*z;
-            xyz[1] = Type(2.0)*x*y + Type(2.0)*w*z;
-            xyz[2] = Type(2.0)*x*z - Type(2.0)*w*y;
+        /**
+         Rotates the cartesian vector (1, 0, 0) by this quaternion and returns it.
+         */
+        juce::Vector3D<Type> getCartesian() const
+        {
+            juce::Vector3D<Type> ret;
+
+            ret.x = Type (1.0) - Type (2.0) * y * y - Type (2.0) * z * z;
+            ret.y = Type (2.0) * x * y + Type (2.0) * w * z;
+            ret.z = Type (2.0) * x * z - Type (2.0) * w * y;
+
+            return ret;
         }
 
 
-        void toYPR(Type *ypr) {
+        void toYPR (Type *ypr)
+        {
             //CONVERSION FROM QUATERNION DATA TO TAIT-BRYAN ANGLES yaw, pitch and roll
             //IMPORTANT: rotation order: yaw, pitch, roll (intrinsic rotation: z-y'-x'') !!
             //MNEMONIC: swivel on your swivel chair, look up/down, then tilt your head left/right...
@@ -143,7 +148,8 @@ namespace iem
             ypr[2] = atan2(t0, t1);
         }
 
-        void fromYPR(Type *ypr) {
+        void fromYPR (Type *ypr)
+        {
             //CONVERSION FROM TAIT-BRYAN ANGLES DATA TO QUATERNION
             //IMPORTANT: rotation order: yaw, pitch, roll (intrinsic rotation: z-y'-x'') !!
             //MNEMONIC: swivel on your swivel chair, look up/down, then tilt your head left/right...

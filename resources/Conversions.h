@@ -47,6 +47,11 @@ public:
         elevationInRadians = atan2(z, sqrt(xSquared + ySquared));
     }
 
+    static void cartesianToSpherical (const Vector3D<Type> cartesian, Type& azimuthInRadians, Type& elevationInRadians)
+    {
+        cartesianToSpherical (cartesian.x, cartesian.y, cartesian.z, azimuthInRadians, elevationInRadians);
+    }
+
     static Vector3D<Type> cartesianToSpherical (Vector3D<Type> cartvect)
     {
         const Type r = cartvect.length();

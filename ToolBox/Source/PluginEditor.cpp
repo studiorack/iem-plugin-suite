@@ -31,7 +31,7 @@ ToolBoxAudioProcessorEditor::ToolBoxAudioProcessorEditor (ToolBoxAudioProcessor&
     // ============== BEGIN: essentials ======================
     // set GUI size and lookAndFeel
     //setSize(500, 300); // use this to create a fixed-size GUI
-    setResizeLimits(400, 200, 800, 500); // use this to create a resizable GUI
+    setResizeLimits (370, 250, 800, 500); // use this to create a resizable GUI
     setLookAndFeel (&globalLaF);
 
     // make title and footer visible, and set the PluginName
@@ -43,28 +43,28 @@ ToolBoxAudioProcessorEditor::ToolBoxAudioProcessorEditor (ToolBoxAudioProcessor&
 
 
     // create the connection between title component's comboBoxes and parameters
-    cbInputOrderSettingAttachment = new ComboBoxAttachment(valueTreeState, "inputOrderSetting", *title.getInputWidgetPtr()->getOrderCbPointer());
-    cbInputNormalizationSettingAttachment = new ComboBoxAttachment(valueTreeState, "useSn3dInput", *title.getInputWidgetPtr()->getNormCbPointer());
+    cbInputOrderSettingAttachment.reset (new ComboBoxAttachment(valueTreeState, "inputOrderSetting", *title.getInputWidgetPtr()->getOrderCbPointer()));
+    cbInputNormalizationSettingAttachment.reset (new ComboBoxAttachment(valueTreeState, "useSn3dInput", *title.getInputWidgetPtr()->getNormCbPointer()));
 
-    cbOutputOrderSettingAttachment = new ComboBoxAttachment(valueTreeState, "outputOrderSetting", *title.getOutputWidgetPtr()->getOrderCbPointer());
-    cbOutputNormalizationSettingAttachment = new ComboBoxAttachment(valueTreeState, "useSn3dOutput", *title.getOutputWidgetPtr()->getNormCbPointer());
+    cbOutputOrderSettingAttachment.reset (new ComboBoxAttachment(valueTreeState, "outputOrderSetting", *title.getOutputWidgetPtr()->getOrderCbPointer()));
+    cbOutputNormalizationSettingAttachment.reset (new ComboBoxAttachment(valueTreeState, "useSn3dOutput", *title.getOutputWidgetPtr()->getNormCbPointer()));
 
     // ================= FLIPs ==================
     addAndMakeVisible(gcFlip);
     gcFlip.setText("Flip");
 
     addAndMakeVisible(tbFlipX);
-    tbFlipXAttachment = new ButtonAttachment(valueTreeState, "flipX", tbFlipX);
+    tbFlipXAttachment.reset (new ButtonAttachment(valueTreeState, "flipX", tbFlipX));
     tbFlipX.setButtonText("Flip X (front/back)");
     tbFlipX.setColour(ToggleButton::tickColourId, globalLaF.ClWidgetColours[2]);
 
     addAndMakeVisible(tbFlipY);
-    tbFlipYAttachment = new ButtonAttachment(valueTreeState, "flipY", tbFlipY);
+    tbFlipYAttachment.reset (new ButtonAttachment(valueTreeState, "flipY", tbFlipY));
     tbFlipY.setButtonText("Flip Y (left/right)");
     tbFlipY.setColour(ToggleButton::tickColourId, globalLaF.ClWidgetColours[1]);
 
     addAndMakeVisible(tbFlipZ);
-    tbFlipZAttachment = new ButtonAttachment(valueTreeState, "flipZ", tbFlipZ);
+    tbFlipZAttachment.reset (new ButtonAttachment(valueTreeState, "flipZ", tbFlipZ));
     tbFlipZ.setButtonText("Flip Z (bottom/top)");
     tbFlipZ.setColour(ToggleButton::tickColourId, globalLaF.ClWidgetColours[0]);
 
@@ -78,10 +78,21 @@ ToolBoxAudioProcessorEditor::ToolBoxAudioProcessorEditor (ToolBoxAudioProcessor&
     cbLoaWeights.addItem("none", 1);
     cbLoaWeights.addItem("maxrE", 2);
     cbLoaWeights.addItem("inPhase", 3);
-    cbLoaWeightsAttachment = new ComboBoxAttachment(valueTreeState, "loaWeights", cbLoaWeights);
+    cbLoaWeightsAttachment.reset (new ComboBoxAttachment(valueTreeState, "loaWeights", cbLoaWeights));
 
     addAndMakeVisible(lbLoaWeights);
     lbLoaWeights.setText("Weights");
+
+    // ================= GAIN =========================
+    addAndMakeVisible (gcGain);
+    gcGain.setText ("Overall Gain");
+
+    addAndMakeVisible (slGain);
+    slGainAttachment.reset (new SliderAttachment (valueTreeState, "gain", slGain));
+    slGain.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
+    slGain.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
+    slGain.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
+
 
     // start timer after everything is set up properly
     startTimer(20);
@@ -126,19 +137,25 @@ void ToolBoxAudioProcessorEditor::resized()
         tbFlipX.setBounds(flipArea.removeFromTop(20));
         tbFlipY.setBounds(flipArea.removeFromTop(20));
         tbFlipZ.setBounds(flipArea.removeFromTop(20));
+
+        leftColumn.removeFromTop (10);
+
+        Rectangle<int> loaArea = leftColumn.removeFromTop (45);
+        gcLOAWeighting.setBounds (loaArea);
+        loaArea.removeFromTop (25);
+        Rectangle<int> row = loaArea.removeFromTop (20);
+        lbLoaWeights.setBounds (row.removeFromLeft (60));
+        cbLoaWeights.setBounds (row);
     }
 
-    Rectangle<int> rightColumn = area.removeFromRight(150);
+    Rectangle<int> rightColumn = area.removeFromRight (120);
     {
-        Rectangle<int> loaArea = rightColumn.removeFromTop(85);
-        gcLOAWeighting.setBounds(loaArea);
-        loaArea.removeFromTop(25);
-        Rectangle<int> row = loaArea.removeFromTop(20);
-        lbLoaWeights.setBounds(row.removeFromLeft(60));
-        cbLoaWeights.setBounds(row);
+        Rectangle<int> gainArea = rightColumn.removeFromTop(85);
+        gcGain.setBounds (gainArea);
+        gainArea.removeFromTop (25);
+        Rectangle<int> row = gainArea.removeFromTop (80);
+        slGain.setBounds (row.removeFromLeft (100));
     }
-
-
 
 }
 

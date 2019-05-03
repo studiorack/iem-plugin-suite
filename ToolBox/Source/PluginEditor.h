@@ -77,19 +77,23 @@ private:
 
     // Attachments to create a connection between IOWidgets comboboxes
     // and the associated parameters
-    ScopedPointer<ComboBoxAttachment> cbInputOrderSettingAttachment;
-    ScopedPointer<ComboBoxAttachment> cbOutputOrderSettingAttachment;
-    ScopedPointer<ComboBoxAttachment> cbInputNormalizationSettingAttachment;
-    ScopedPointer<ComboBoxAttachment> cbOutputNormalizationSettingAttachment;
+    std::unique_ptr<ComboBoxAttachment> cbInputOrderSettingAttachment;
+    std::unique_ptr<ComboBoxAttachment> cbOutputOrderSettingAttachment;
+    std::unique_ptr<ComboBoxAttachment> cbInputNormalizationSettingAttachment;
+    std::unique_ptr<ComboBoxAttachment> cbOutputNormalizationSettingAttachment;
 
     GroupComponent gcFlip;
     ToggleButton tbFlipX, tbFlipY, tbFlipZ;
-    ScopedPointer<ButtonAttachment> tbFlipXAttachment, tbFlipYAttachment, tbFlipZAttachment;
+    std::unique_ptr<ButtonAttachment> tbFlipXAttachment, tbFlipYAttachment, tbFlipZAttachment;
 
     GroupComponent gcLOAWeighting;
     ComboBox cbLoaWeights;
-    ScopedPointer<ComboBoxAttachment> cbLoaWeightsAttachment;
+    std::unique_ptr<ComboBoxAttachment> cbLoaWeightsAttachment;
     SimpleLabel lbLoaWeights;
+
+    GroupComponent gcGain;
+    ReverseSlider slGain;
+    std::unique_ptr<SliderAttachment> slGainAttachment;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ToolBoxAudioProcessorEditor)
 };

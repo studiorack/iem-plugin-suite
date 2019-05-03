@@ -77,6 +77,11 @@ private:
     float* flipY;
     float* flipZ;
     float* loaWeights;
+    float* gain;
+
+    float previousWeights[64];
+
+    void calculateWeights (float* weights, const int nChannelsIn, const int nChannelsOut);
 
     bool doFlipX, doFlipY, doFlipZ;
     // flips

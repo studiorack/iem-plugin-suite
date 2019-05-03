@@ -119,6 +119,19 @@ void StereoEncoderAudioProcessor::prepareToPlay (double sampleRate, int samplesP
     smoothAzimuthR.reset(1, samplesPerBlock);
     smoothElevationR.reset(1, samplesPerBlock);
 
+
+
+    const float widthInRadiansQuarter {Conversions<float>::degreesToRadians (*width) / 4.0f};
+    const iem::Quaternion<float> quatLRot {iem::Quaternion<float> (cos (widthInRadiansQuarter), 0.0f, 0.0f, sin (widthInRadiansQuarter))};
+    const iem::Quaternion<float> quatL = quaternionDirection * quatLRot;
+    const iem::Quaternion<float> quatR = quaternionDirection * quatLRot.getConjugate();
+
+    const auto left = quatL.getCartesian();
+    const auto right = quatR.getCartesian();
+
+    SHEval (7, left, _SHL);
+    SHEval (7, right, _SHR);
+
     positionHasChanged = true; // just to be sure
 }
 
@@ -173,23 +186,18 @@ void StereoEncoderAudioProcessor::processBlock(AudioSampleBuffer &buffer, MidiBu
         bufferCopy.copyFrom(i, 0, buffer.getReadPointer(i), buffer.getNumSamples());
     buffer.clear();
 
-    float xyz[3];
-    float xyzL[3];
-    float xyzR[3];
-    quaternionDirection.toCartesian(xyz);
+    const float widthInRadiansQuarter {Conversions<float>::degreesToRadians (*width) / 4.0f};
+    const iem::Quaternion<float> quatLRot {iem::Quaternion<float> (cos (widthInRadiansQuarter), 0.0f, 0.0f, sin (widthInRadiansQuarter))};
+    const iem::Quaternion<float> quatL = quaternionDirection * quatLRot;
+    const iem::Quaternion<float> quatR = quaternionDirection * quatLRot.getConjugate();
 
-    const float widthInRadiansQuarter {Conversions<float>::degreesToRadians(*width) / 4.0f};
-    iem::Quaternion<float> quatLRot {iem::Quaternion<float>(cos(widthInRadiansQuarter), 0.0f, 0.0f, sin(widthInRadiansQuarter))};
-    iem::Quaternion<float> quatL = quaternionDirection * quatLRot;
-    iem::Quaternion<float> quatR = quaternionDirection * (quatLRot.getConjugate());
-
-    quatL.toCartesian(xyzL);
-    quatR.toCartesian(xyzR);
+    const auto left = quatL.getCartesian();
+    const auto right = quatR.getCartesian();
 
     //conversion to spherical for high-quality mode
     float azimuthL, azimuthR, elevationL, elevationR;
-    Conversions<float>::cartesianToSpherical(xyzL[0], xyzL[1], xyzL[2], azimuthL, elevationL);
-    Conversions<float>::cartesianToSpherical(xyzR[0], xyzR[1], xyzR[2], azimuthR, elevationR);
+    Conversions<float>::cartesianToSpherical (left, azimuthL, elevationL);
+    Conversions<float>::cartesianToSpherical (right, azimuthR, elevationR);
 
 
     if (*highQuality < 0.5f) // no high-quality
@@ -201,8 +209,8 @@ void StereoEncoderAudioProcessor::processBlock(AudioSampleBuffer &buffer, MidiBu
             smoothAzimuthR.setCurrentAndTargetValue (azimuthR);
             smoothElevationR.setCurrentAndTargetValue (elevationR);
 
-            SHEval(ambisonicOrder, xyzL[0], xyzL[1], xyzL[2], SHL);
-            SHEval(ambisonicOrder, xyzR[0], xyzR[1], xyzR[2], SHR);
+            SHEval (ambisonicOrder, left.x, left.y, left.z, SHL);
+            SHEval (ambisonicOrder, right.x, right.y, right.z, SHR);
 
             if (*useSN3D > 0.5f)
             {
@@ -291,8 +299,9 @@ bool StereoEncoderAudioProcessor::hasEditor() const {
     return true; // (change this to false if you choose to not supply an editor)
 }
 
-AudioProcessorEditor *StereoEncoderAudioProcessor::createEditor() {
-    return new StereoEncoderAudioProcessorEditor(*this, parameters);
+AudioProcessorEditor *StereoEncoderAudioProcessor::createEditor()
+{
+    return new StereoEncoderAudioProcessorEditor (*this, parameters);
 }
 
 void StereoEncoderAudioProcessor::parameterChanged (const String &parameterID, float newValue) {
