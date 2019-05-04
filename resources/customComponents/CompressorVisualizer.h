@@ -271,6 +271,9 @@ public:
 
     void paintOverChildren (Graphics& g) override
     {
+        if (inLevel < minDecibels || outLevel < minDecibels)
+            return;
+
         Rectangle<float> circle (0.0f, 0.0f, 10.0f, 10.0f);
 
         float x = inLevel;
@@ -280,7 +283,6 @@ public:
 
         g.setColour (Colours::cornflowerblue);
         g.fillRoundedRectangle(circle, 5.0f);
-
     }
 
     void resized() override
