@@ -543,8 +543,8 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
                 AudioBlock<SIMDRegister<float>> ab (const_cast<SIMDRegister<float>**> (chPtr), 1, L);
                 ProcessContextReplacing<SIMDRegister<float>> context (ab);
 
-                lowShelfArray[i]->process (context);
-                highShelfArray[i]->process (context);
+                lowShelfArray2[i]->process (context);
+                highShelfArray2[i]->process (context);
             }
         }
 
