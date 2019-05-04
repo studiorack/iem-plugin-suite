@@ -452,7 +452,9 @@ void MultiEQAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
         {
             for (int i = 0; i < nSIMDFilters; ++i)
             {
-                ProcessContextReplacing<IIRfloat> context (*interleavedData[i]);
+                const SIMDRegister<float>* chPtr[1] = {interleavedData[i]->getChannelPointer (0)};
+                AudioBlock<SIMDRegister<float>> ab (const_cast<SIMDRegister<float>**> (chPtr), 1, L);
+                ProcessContextReplacing<SIMDRegister<float>> context (ab);
                 filterArrays[f][i]->process (context);
             }
         }
@@ -463,7 +465,9 @@ void MultiEQAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
     {
         for (int i = 0; i < nSIMDFilters; ++i)
         {
-            ProcessContextReplacing<IIRfloat> context (*interleavedData[i]);
+            const SIMDRegister<float>* chPtr[1] = {chPtr[0] = interleavedData[i]->getChannelPointer (0)};
+            AudioBlock<SIMDRegister<float>> ab (const_cast<SIMDRegister<float>**> (chPtr), 1, L);
+            ProcessContextReplacing<SIMDRegister<float>> context (ab);
             additionalFilterArrays[0][i]->process (context);
         }
     }
@@ -471,7 +475,9 @@ void MultiEQAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
     {
         for (int i = 0; i < nSIMDFilters; ++i)
         {
-            ProcessContextReplacing<IIRfloat> context (*interleavedData[i]);
+            const SIMDRegister<float>* chPtr[1] = {interleavedData[i]->getChannelPointer (0)};
+            AudioBlock<SIMDRegister<float>> ab (const_cast<SIMDRegister<float>**> (chPtr), 1, L);
+            ProcessContextReplacing<SIMDRegister<float>> context (ab);
             additionalFilterArrays[1][i]->process (context);
         }
     }

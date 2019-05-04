@@ -505,16 +505,25 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
         if (q == 1) {
             for (int i = 0; i<nSIMDFilters; ++i)
             {
-                ProcessContextReplacing<IIRfloat> context (*interleavedData[i]);
-                lowShelfArray[i]->process(context);
-                highShelfArray[i]->process(context);
+                const SIMDRegister<float>* chPtr[1];
+                chPtr[0] = interleavedData[i]->getChannelPointer (0);
+                AudioBlock<SIMDRegister<float>> ab (const_cast<SIMDRegister<float>**> (chPtr), 1, L);
+                ProcessContextReplacing<SIMDRegister<float>> context (ab);
+
+                lowShelfArray[i]->process (context);
+                highShelfArray[i]->process (context);
             }
         }
         if (q == 7) {
             for (int i = 0; i<nSIMDFilters; ++i)
             {
-                lowShelfArray2[i]->process(ProcessContextReplacing<IIRfloat> (*interleavedData[i]));
-                highShelfArray2[i]->process(ProcessContextReplacing<IIRfloat> (*interleavedData[i]));
+                const SIMDRegister<float>* chPtr[1];
+                chPtr[0] = interleavedData[i]->getChannelPointer (0);
+                AudioBlock<SIMDRegister<float>> ab (const_cast<SIMDRegister<float>**> (chPtr), 1, L);
+                ProcessContextReplacing<SIMDRegister<float>> context (ab);
+
+                lowShelfArray[i]->process (context);
+                highShelfArray[i]->process (context);
             }
         }
 

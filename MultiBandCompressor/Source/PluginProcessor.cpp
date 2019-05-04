@@ -512,26 +512,42 @@ void MultiBandCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer,
     //                                | ---> LP1 ---> |
     for (int i = 0; i < numSimdFilters; ++i)
     {
-        iirLP[1][i]->process (ProcessContextNonReplacing<filterFloatType> (*interleaved[i], *freqBands[FrequencyBands::Low][i]));
-        iirHP[1][i]->process (ProcessContextNonReplacing<filterFloatType> (*interleaved[i], *freqBands[FrequencyBands::High][i]));
-        iirLP2[1][i]->process (ProcessContextReplacing<filterFloatType> (*freqBands[FrequencyBands::Low][i]));
-        iirHP2[1][i]->process (ProcessContextReplacing<filterFloatType> (*freqBands[FrequencyBands::High][i]));
+        const SIMDRegister<float>* chPtrInterleaved[1] = {interleaved[i]->getChannelPointer (0)};
+        AudioBlock<SIMDRegister<float>> abInterleaved (const_cast<SIMDRegister<float>**> (chPtrInterleaved), 1, L);
 
-        iirAP[2][i]->process (ProcessContextReplacing<filterFloatType> (*freqBands[FrequencyBands::Low][i]));
-        iirAP[0][i]->process (ProcessContextReplacing<filterFloatType> (*freqBands[FrequencyBands::High][i]));
+        const SIMDRegister<float>* chPtrLow[1] = {freqBands[FrequencyBands::Low][i]->getChannelPointer (0)};
+        AudioBlock<SIMDRegister<float>> abLow (const_cast<SIMDRegister<float>**> (chPtrLow), 1, L);
 
-        iirHP[0][i]->process (ProcessContextNonReplacing<filterFloatType> (*freqBands[FrequencyBands::Low][i], *freqBands[FrequencyBands::MidLow][i]));
-        iirHP2[0][i]->process (ProcessContextReplacing<filterFloatType> (*freqBands[FrequencyBands::MidLow][i]));
+        const SIMDRegister<float>* chPtrMidLow[1] = {freqBands[FrequencyBands::MidLow][i]->getChannelPointer (0)};
+        AudioBlock<SIMDRegister<float>> abMidLow (const_cast<SIMDRegister<float>**> (chPtrMidLow), 1, L);
 
-        iirLP[0][i]->process (ProcessContextReplacing<filterFloatType> (*freqBands[FrequencyBands::Low][i]));
-        iirLP2[0][i]->process (ProcessContextReplacing<filterFloatType> (*freqBands[FrequencyBands::Low][i]));
+        const SIMDRegister<float>* chPtrMidHigh[1] = {freqBands[FrequencyBands::MidHigh][i]->getChannelPointer (0)};
+        AudioBlock<SIMDRegister<float>> abMidHigh (const_cast<SIMDRegister<float>**> (chPtrMidHigh), 1, L);
 
-        iirLP[2][i]->process (ProcessContextNonReplacing<filterFloatType> (*freqBands[FrequencyBands::High][i], *freqBands[FrequencyBands::MidHigh][i]));
-        iirLP2[2][i]->process (ProcessContextReplacing<filterFloatType> (*freqBands[FrequencyBands::MidHigh][i]));
+        const SIMDRegister<float>* chPtrHigh[1] = {freqBands[FrequencyBands::High][i]->getChannelPointer (0)};
+        AudioBlock<SIMDRegister<float>> abHigh (const_cast<SIMDRegister<float>**> (chPtrHigh), 1, L);
 
-        iirHP[2][i]->process (ProcessContextReplacing<filterFloatType> (*freqBands[FrequencyBands::High][i]));
-        iirHP2[2][i]->process (ProcessContextReplacing<filterFloatType> (*freqBands[FrequencyBands::High][i]));
 
+        iirLP[1][i]->process (ProcessContextNonReplacing<filterFloatType> (abInterleaved, abLow));
+        iirHP[1][i]->process (ProcessContextNonReplacing<filterFloatType> (abInterleaved, abHigh));
+
+        iirLP2[1][i]->process (ProcessContextReplacing<filterFloatType> (abLow));
+        iirHP2[1][i]->process (ProcessContextReplacing<filterFloatType> (abHigh));
+
+        iirAP[2][i]->process (ProcessContextReplacing<filterFloatType> (abLow));
+        iirAP[0][i]->process (ProcessContextReplacing<filterFloatType> (abHigh));
+
+        iirHP[0][i]->process (ProcessContextNonReplacing<filterFloatType> (abLow, abMidLow));
+        iirHP2[0][i]->process (ProcessContextReplacing<filterFloatType> (abMidLow));
+
+        iirLP[0][i]->process (ProcessContextReplacing<filterFloatType> (abLow));
+        iirLP2[0][i]->process (ProcessContextReplacing<filterFloatType> (abLow));
+
+        iirLP[2][i]->process (ProcessContextNonReplacing<filterFloatType> (abHigh, abMidHigh));
+        iirLP2[2][i]->process (ProcessContextReplacing<filterFloatType> (abMidHigh));
+
+        iirHP[2][i]->process (ProcessContextReplacing<filterFloatType> (abHigh));
+        iirHP2[2][i]->process (ProcessContextReplacing<filterFloatType> (abHigh));
     }
 
 
