@@ -247,7 +247,6 @@ void RoomEncoderAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     readOffset = 0;
     bufferReadIdx = 0;
 
-
     interleavedData.clear();
 
     for (int i = 0; i<16; ++i)
@@ -265,6 +264,28 @@ void RoomEncoderAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     zero.clear();
 
     updateFv = true;
+
+    const float rX = *roomX;
+    const float rY = *roomY;
+    const float rZ = *roomZ;
+
+    const float rXHalfBound = rX / 2 - 0.1f;
+    const float rYHalfBound = rY / 2 - 0.1f;
+    const float rZHalfBound = rZ / 2 - 0.1f;
+
+    sourcePos = Vector3D<float> (jlimit (-rXHalfBound, rXHalfBound, *sourceX),
+                                 jlimit (-rYHalfBound, rYHalfBound, *sourceY),
+                                 jlimit (-rZHalfBound, rZHalfBound, *sourceZ));
+
+
+    listenerPos = Vector3D<float> (jlimit (-rXHalfBound, rXHalfBound, *listenerX),
+                                   jlimit (-rYHalfBound, rYHalfBound, *listenerY),
+                                   jlimit (-rZHalfBound, rZHalfBound, *listenerZ));
+
+    calculateImageSourcePositions (rX, rY, rZ);
+
+    for (int q = 0; q < nImgSrc; ++q)
+        oldDelay[q] = mRadius[q] * dist2smpls;
 }
 
 void RoomEncoderAudioProcessor::releaseResources()
@@ -287,7 +308,7 @@ void RoomEncoderAudioProcessor::parameterChanged (const String &parameterID, flo
 
     if (*syncChannel >= 0.5f && !readingSharedParams)
     {
-        int ch = (int) *syncChannel;
+        const int ch = (int) *syncChannel - 1;
         RoomParams& roomParam = sharedParams.get().rooms.getReference(ch);
 
         bool sRoom(*syncRoomSize>=0.5f);
@@ -505,16 +526,25 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
         if (q == 1) {
             for (int i = 0; i<nSIMDFilters; ++i)
             {
-                ProcessContextReplacing<IIRfloat> context (*interleavedData[i]);
-                lowShelfArray[i]->process(context);
-                highShelfArray[i]->process(context);
+                const SIMDRegister<float>* chPtr[1];
+                chPtr[0] = interleavedData[i]->getChannelPointer (0);
+                AudioBlock<SIMDRegister<float>> ab (const_cast<SIMDRegister<float>**> (chPtr), 1, L);
+                ProcessContextReplacing<SIMDRegister<float>> context (ab);
+
+                lowShelfArray[i]->process (context);
+                highShelfArray[i]->process (context);
             }
         }
         if (q == 7) {
             for (int i = 0; i<nSIMDFilters; ++i)
             {
-                lowShelfArray2[i]->process(ProcessContextReplacing<IIRfloat> (*interleavedData[i]));
-                highShelfArray2[i]->process(ProcessContextReplacing<IIRfloat> (*interleavedData[i]));
+                const SIMDRegister<float>* chPtr[1];
+                chPtr[0] = interleavedData[i]->getChannelPointer (0);
+                AudioBlock<SIMDRegister<float>> ab (const_cast<SIMDRegister<float>**> (chPtr), 1, L);
+                ProcessContextReplacing<SIMDRegister<float>> context (ab);
+
+                lowShelfArray2[i]->process (context);
+                highShelfArray2[i]->process (context);
             }
         }
 
@@ -815,7 +845,7 @@ void RoomEncoderAudioProcessor::timerCallback()
 {
     if (*syncChannel > 0.5f)
     {
-        int ch = (int) *syncChannel;
+        int ch = (int) *syncChannel - 1;
         bool sRoom(*syncRoomSize>=0.5f);
         bool sListener(*syncListener>=0.5f);
         bool sReflections(*syncReflection>=0.5f);
