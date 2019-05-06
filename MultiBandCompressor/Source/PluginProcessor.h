@@ -116,7 +116,6 @@ private:
     void copyCoeffsToProcessor();
 
     double lastSampleRate {48000};
-    int numChannels;
     const int maxNumFilters;
 
 

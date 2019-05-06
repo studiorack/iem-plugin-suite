@@ -607,9 +607,9 @@ void RoomEncoderAudioProcessorEditor::timerCallback()
 
     if (processor.updateFv)
     {
-        fv.setOverallGainInDecibels(*valueTreeState.getRawParameterValue("reflCoeff"));
+        fv.setOverallGainInDecibels (*valueTreeState.getRawParameterValue("reflCoeff"));
+        fv.setSampleRate (processor.getSampleRate());
         processor.updateFv = false;
-        fv.repaint();
     }
 
     if (processor.repaintPositionPlanes.get())

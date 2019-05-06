@@ -199,9 +199,7 @@ private:
 
     inline void getProcessPositions (int startIndex, int numSamples, int& blockSize1, int& blockSize2)
     {
-        const int L = buffer.getNumSamples();
-
-        jassert (startIndex >= 0 && startIndex < L);
+        jassert (startIndex >= 0 && startIndex < buffer.getNumSamples());
 
         if (numSamples <= 0)
         {

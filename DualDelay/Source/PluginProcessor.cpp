@@ -157,7 +157,7 @@ void DualDelayAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffe
 
 
     const int delayBufferLength = getSampleRate(); // not necessarily samplerate
-    const int fs = getSampleRate();
+    const double fs = getSampleRate();
 
     const float msToFractSmpls = getSampleRate() / 1000.0 * 128.0;
     const int spb = buffer.getNumSamples();
@@ -171,10 +171,10 @@ void DualDelayAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffe
 
     for (int i=0; i<nCh; ++i)
     {
-        lowPassFiltersLeft[i]->setCoefficients(IIRCoefficients::makeLowPass(fs, *LPcutOffL));
-        lowPassFiltersRight[i]->setCoefficients(IIRCoefficients::makeLowPass(fs, *LPcutOffR));
-        highPassFiltersLeft[i]->setCoefficients(IIRCoefficients::makeHighPass(fs, *HPcutOffL));
-        highPassFiltersRight[i]->setCoefficients(IIRCoefficients::makeHighPass(fs, *HPcutOffR));
+        lowPassFiltersLeft[i]->setCoefficients(IIRCoefficients::makeLowPass (fs, jmin (fs / 2.0, static_cast<double> (*LPcutOffL))));
+        lowPassFiltersRight[i]->setCoefficients(IIRCoefficients::makeLowPass (fs, jmin (fs / 2.0, static_cast<double> (*LPcutOffR))));
+        highPassFiltersLeft[i]->setCoefficients(IIRCoefficients::makeHighPass (fs, jmin (fs / 2.0, static_cast<double> (*HPcutOffL))));
+        highPassFiltersRight[i]->setCoefficients(IIRCoefficients::makeHighPass (fs, jmin (fs / 2.0, static_cast<double> (*HPcutOffR))));
     }
 
     // ==================== MAKE COPY OF INPUT BUFFER==============================

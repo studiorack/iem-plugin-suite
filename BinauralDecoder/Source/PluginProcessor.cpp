@@ -156,7 +156,6 @@ void BinauralDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, Mid
         return;
     }
 
-    const int nIRsPerChannel = input.getNumberOfChannels();
     const int nCh = jmin(buffer.getNumChannels(), input.getNumberOfChannels());
     const int L = buffer.getNumSamples();
     const int ergL = overlapBuffer.getNumSamples();
