@@ -266,10 +266,11 @@ std::vector<std::unique_ptr<RangedAudioParameter>> MultiBandCompressorAudioProce
 void MultiBandCompressorAudioProcessor::calculateCoefficients (const int i)
 {
     jassert (lastSampleRate > 0.0);
-    jassert ((*crossovers[i]) > 0 && (*crossovers[i]) <= static_cast<float> (lastSampleRate * 0.5));
+
+    const float crossoverFrequency = jmin (static_cast<float> (0.5 * lastSampleRate), *crossovers[i]);
 
     double b0, b1, b2, a0, a1, a2;
-    double K = std::tan (MathConstants<double>::pi * (*crossovers[i]) / lastSampleRate);
+    double K = std::tan (MathConstants<double>::pi * (crossoverFrequency) / lastSampleRate);
     double den = 1 + MathConstants<double>::sqrt2 * K + pow (K, double (2.0));
 
     // calculate coeffs for 2nd order Butterworth
@@ -347,7 +348,6 @@ void MultiBandCompressorAudioProcessor::prepareToPlay (double sampleRate, int sa
     checkInputAndOutput (this, *orderSetting, *orderSetting, true);
 
     lastSampleRate = sampleRate;
-    numChannels = jmin (getTotalNumInputChannels(), input.getNumberOfChannels());
 
     ProcessSpec monoSpec;
     monoSpec.sampleRate = sampleRate;
@@ -436,9 +436,9 @@ void MultiBandCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer,
     if (userChangedIOSettings)
     {
         checkInputAndOutput (this, *orderSetting, *orderSetting, false);
-        numChannels = jmin (buffer.getNumChannels(), input.getSize());
     }
 
+    const int numChannels = jmin (buffer.getNumChannels(), input.getNumberOfChannels());
     ScopedNoDenormals noDenormals;
 
     for (int i = numChannels; i < getTotalNumOutputChannels(); ++i)

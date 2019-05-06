@@ -27,6 +27,7 @@
 using namespace dsp;
 class FeedbackDelayNetwork : private ProcessorBase
 {
+    static constexpr int maxDelayLength = 30;
 public:
     enum FdnSize {
         uninitialized = 0,
@@ -38,17 +39,19 @@ public:
         small = 32,
         big = 64
     };
+
     struct FilterParameter {
         float frequency = 1000.0f;
         float linearGain = 1.0f;
         float q = 0.707f;
     };
 
-    FeedbackDelayNetwork(FdnSize size = big) {
-        updateFdnSize(size);
-        setDelayLength(20.0f);
+    FeedbackDelayNetwork (FdnSize size = big)
+    {
+        updateFdnSize (size);
+        setDelayLength (20);
         dryWet = 0.5f;
-        primeNumbers = primeNumGen(5000);
+        primeNumbers = primeNumGen (5000);
         overallGain = 0.1f;
     }
     ~FeedbackDelayNetwork() {}
@@ -239,11 +242,12 @@ public:
 //        }
     }
 
-    void setDelayLength (float newDelayLength)
+    void setDelayLength (int newDelayLength)
     {
-        params.newDelayLength = newDelayLength;
+        params.newDelayLength = jmin (newDelayLength, maxDelayLength);
         params.delayLengthChanged = true;
     }
+
     void reset() override {
 
     }
@@ -270,13 +274,13 @@ public:
 
     void getT60ForFrequencyArray(double* frequencies, double* t60Data, size_t numSamples) {
         juce::dsp::IIR::Coefficients<float> coefficients;
-        coefficients = *IIR::Coefficients<float>::makeLowShelf(spec.sampleRate, lowShelfParameters.frequency, lowShelfParameters.q, lowShelfParameters.linearGain);
+        coefficients = *IIR::Coefficients<float>::makeLowShelf (spec.sampleRate, jmin (0.5 * spec.sampleRate, static_cast<double> (lowShelfParameters.frequency)), lowShelfParameters.q, lowShelfParameters.linearGain);
 
         std::vector<double> temp;
         temp.resize(numSamples);
 
         coefficients.getMagnitudeForFrequencyArray(frequencies, t60Data, numSamples, spec.sampleRate);
-        coefficients = *IIR::Coefficients<float>::makeHighShelf(spec.sampleRate, highShelfParameters.frequency, highShelfParameters.q, highShelfParameters.linearGain);
+        coefficients = *IIR::Coefficients<float>::makeHighShelf (spec.sampleRate, jmin (0.5 * spec.sampleRate, static_cast<double> (highShelfParameters.frequency)), highShelfParameters.q, highShelfParameters.linearGain);
         coefficients.getMagnitudeForFrequencyArray(frequencies, &temp[0], numSamples, spec.sampleRate);
 
         FloatVectorOperations::multiply (&temp[0], t60Data, static_cast<int> (numSamples));
@@ -331,7 +335,8 @@ private:
     bool freeze = false;
     FdnSize fdnSize = uninitialized;
 
-    struct UpdateStruct {
+    struct UpdateStruct
+    {
         bool dryWetChanged = false;
         float newDryWet = 0;
 
@@ -340,7 +345,7 @@ private:
         FilterParameter newHighShelfParams;
 
         bool delayLengthChanged = false;
-        float newDelayLength = 20;
+        int newDelayLength = 20;
 
         bool networkSizeChanged = false;
         FdnSize newNetworkSize = FdnSize::big;
@@ -368,10 +373,10 @@ private:
         return pow (gain, length);
     }
 
-    std::vector<int> indexGen (FdnSize nChannels, float delayLength)
+    std::vector<int> indexGen (FdnSize nChannels, int delayLength)
     {
-        int firstIncrement = int (delayLength / 10.f);
-        int finalIncrement = int (delayLength);
+        const int firstIncrement = delayLength / 10;
+        const int finalIncrement = delayLength;
 
         std::vector<int> indices;
 
@@ -422,7 +427,7 @@ private:
     }
 
     //------------------------------------------------------------------------------
-    inline void updateParameterSettings ()
+    inline void updateParameterSettings()
     {
         indices = indexGen (fdnSize, delayLength);
 
@@ -430,7 +435,7 @@ private:
         {
             // update multichannel delay parameters
             int delayLenSamples = delayLengthConversion (channel);
-            delayBufferVector[channel]->setSize(1, delayLenSamples, true, true);
+            delayBufferVector[channel]->setSize (1, delayLenSamples, true, true, true);
             if (delayPositionVector[channel] >= delayBufferVector[channel]->getNumSamples())
                 delayPositionVector.set(channel, 0);
         }
@@ -456,7 +461,7 @@ private:
                 lowShelfFilters[channel]->setCoefficients (
                     IIRCoefficients::makeLowShelf (
                         spec.sampleRate,
-                        lowShelfParameters.frequency,
+                        jmin (0.5 * spec.sampleRate, static_cast<double> (lowShelfParameters.frequency)),
                         lowShelfParameters.q,
                         channelGainConversion (
                             channel,
@@ -465,7 +470,7 @@ private:
                 highShelfFilters[channel]->setCoefficients (
                     IIRCoefficients::makeHighShelf (
                         spec.sampleRate,
-                        highShelfParameters.frequency,
+                        jmin (0.5 * spec.sampleRate, static_cast<double> (highShelfParameters.frequency)),
                         highShelfParameters.q,
                         channelGainConversion (
                             channel,

@@ -406,7 +406,7 @@ void DirectivityShaperAudioProcessorEditor::timerCallback()
     if (processor.repaintFV.get())
     {
         processor.repaintFV = false;
-        fv.repaint();
+        fv.setSampleRate (processor.getSampleRate());
     }
 
 

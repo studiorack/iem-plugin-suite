@@ -286,6 +286,8 @@ void RoomEncoderAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
 
     for (int q = 0; q < nImgSrc; ++q)
         oldDelay[q] = mRadius[q] * dist2smpls;
+
+    updateFilterCoefficients (sampleRate);
 }
 
 void RoomEncoderAudioProcessor::releaseResources()
@@ -355,11 +357,15 @@ void RoomEncoderAudioProcessor::parameterChanged (const String &parameterID, flo
     }
 }
 
-void RoomEncoderAudioProcessor::updateFilterCoefficients(double sampleRate) {
-    *lowShelfCoefficients = *IIR::Coefficients<float>::makeLowShelf(sampleRate, *lowShelfFreq, 0.707f, Decibels::decibelsToGain(*lowShelfGain));
-    *highShelfCoefficients = *IIR::Coefficients<float>::makeHighShelf(sampleRate, *highShelfFreq, 0.707f, Decibels::decibelsToGain(*highShelfGain));
-    userChangedFilterSettings = false;
+void RoomEncoderAudioProcessor::updateFilterCoefficients (double sampleRate)
+{
+    const auto lowFreq = jmin (static_cast<float> (0.5 * sampleRate), *lowShelfFreq);
+    *lowShelfCoefficients = *IIR::Coefficients<float>::makeLowShelf (sampleRate, lowFreq, 0.707f, Decibels::decibelsToGain (*lowShelfGain));
 
+    const auto highFreq = jmin (static_cast<float> (0.5 * sampleRate), *highShelfFreq);
+    *highShelfCoefficients = *IIR::Coefficients<float>::makeHighShelf (sampleRate, highFreq, 0.707f, Decibels::decibelsToGain (*highShelfGain));
+
+    userChangedFilterSettings = false;
     updateFv = true;
 }
 

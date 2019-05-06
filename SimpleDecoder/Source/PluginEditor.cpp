@@ -329,6 +329,12 @@ void SimpleDecoderAudioProcessorEditor::timerCallback()
         processor.guiUpdateLowPassGain = false;
     }
 
+    if (processor.guiUpdateSampleRate.get())
+    {
+        fv.setSampleRate (processor.getSampleRate());
+        processor.guiUpdateSampleRate = false;
+    }
+
     if (changeEnablement)
     {
         slSwChannel.setEnabled(enableSubwooferChannelControls);

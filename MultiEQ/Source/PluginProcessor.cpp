@@ -104,29 +104,30 @@ MultiEQAudioProcessor::~MultiEQAudioProcessor()
 
 void MultiEQAudioProcessor::updateGuiCoefficients()
 {
-    const double sampleRate = getSampleRate();
+    const double sampleRate = getSampleRate() == 0 ? 48000.0 : getSampleRate();
 
     // Low band
+    const auto lowBandFrequency = jmin (static_cast<float> (0.5 * sampleRate), *filterFrequency[0]);
     const SpecialFilterType lowType = SpecialFilterType (static_cast<int> (*filterType[0]));
 
     switch (lowType)
     {
         case SpecialFilterType::LinkwitzRileyHighPass:
         {
-            auto coeffs = IIR::Coefficients<double>::makeHighPass (sampleRate, *filterFrequency[0]);
+            auto coeffs = IIR::Coefficients<double>::makeHighPass (sampleRate, lowBandFrequency);
             coeffs->coefficients = FilterVisualizerHelper<double>::cascadeSecondOrderCoefficients
             (coeffs->coefficients, coeffs->coefficients);
             guiCoefficients[0] = coeffs;
             break;
         }
         case SpecialFilterType::FirstOrderHighPass:
-            guiCoefficients[0] = IIR::Coefficients<double>::makeFirstOrderHighPass (sampleRate, *filterFrequency[0]);
+            guiCoefficients[0] = IIR::Coefficients<double>::makeFirstOrderHighPass (sampleRate, lowBandFrequency);
             break;
         case SpecialFilterType::SecondOrderHighPass:
-            guiCoefficients[0] = IIR::Coefficients<double>::makeHighPass (sampleRate, *filterFrequency[0], *filterQ[0]);
+            guiCoefficients[0] = IIR::Coefficients<double>::makeHighPass (sampleRate, lowBandFrequency, *filterQ[0]);
             break;
         case SpecialFilterType::LowShelf:
-            guiCoefficients[0] = IIR::Coefficients<double>::makeLowShelf (sampleRate, *filterFrequency[0], *filterQ[0], Decibels::decibelsToGain (*filterGain[0]));
+            guiCoefficients[0] = IIR::Coefficients<double>::makeLowShelf (sampleRate, lowBandFrequency, *filterQ[0], Decibels::decibelsToGain (*filterGain[0]));
             break;
         default:
             break;
@@ -134,26 +135,27 @@ void MultiEQAudioProcessor::updateGuiCoefficients()
 
 
     // High band
+    const auto highBandFrequency = jmin (static_cast<float> (0.5 * sampleRate), *filterFrequency[numFilterBands - 1]);
     const SpecialFilterType highType = SpecialFilterType (4 + static_cast<int> (*filterType[numFilterBands - 1]));
 
     switch (highType)
     {
         case SpecialFilterType::LinkwitzRileyLowPass:
         {
-            auto coeffs = IIR::Coefficients<double>::makeLowPass (sampleRate, *filterFrequency[numFilterBands - 1]);
+            auto coeffs = IIR::Coefficients<double>::makeLowPass (sampleRate, highBandFrequency);
             coeffs->coefficients = FilterVisualizerHelper<double>::cascadeSecondOrderCoefficients
             (coeffs->coefficients, coeffs->coefficients);
             guiCoefficients[numFilterBands - 1] = coeffs;
             break;
         }
         case SpecialFilterType::FirstOrderLowPass:
-            guiCoefficients[numFilterBands - 1] = IIR::Coefficients<double>::makeFirstOrderLowPass (sampleRate, *filterFrequency[numFilterBands - 1]);
+            guiCoefficients[numFilterBands - 1] = IIR::Coefficients<double>::makeFirstOrderLowPass (sampleRate, highBandFrequency);
             break;
         case SpecialFilterType::SecondOrderLowPass:
-            guiCoefficients[numFilterBands - 1] = IIR::Coefficients<double>::makeLowPass (sampleRate, *filterFrequency[numFilterBands - 1], *filterQ[numFilterBands - 1]);
+            guiCoefficients[numFilterBands - 1] = IIR::Coefficients<double>::makeLowPass (sampleRate, highBandFrequency, *filterQ[numFilterBands - 1]);
             break;
         case SpecialFilterType::HighShelf:
-            guiCoefficients[numFilterBands - 1] = IIR::Coefficients<double>::makeHighShelf (sampleRate, *filterFrequency[numFilterBands - 1], *filterQ[numFilterBands - 1], Decibels::decibelsToGain (*filterGain[numFilterBands - 1]));
+            guiCoefficients[numFilterBands - 1] = IIR::Coefficients<double>::makeHighShelf (sampleRate, highBandFrequency, *filterQ[numFilterBands - 1], Decibels::decibelsToGain (*filterGain[numFilterBands - 1]));
             break;
         default:
             break;
@@ -163,17 +165,18 @@ void MultiEQAudioProcessor::updateGuiCoefficients()
 
     for (int f = 1; f < numFilterBands - 1; ++f)
     {
+        const auto frequency = jmin (static_cast<float> (0.5 * sampleRate), *filterFrequency[f]);
         const RegularFilterType type = RegularFilterType (2 + static_cast<int>(*filterType[f]));
         switch (type)
         {
             case RegularFilterType::LowShelf:
-                guiCoefficients[f] = IIR::Coefficients<double>::makeLowShelf (sampleRate, *filterFrequency[f], *filterQ[f], Decibels::decibelsToGain (*filterGain[f]));
+                guiCoefficients[f] = IIR::Coefficients<double>::makeLowShelf (sampleRate, frequency, *filterQ[f], Decibels::decibelsToGain (*filterGain[f]));
                 break;
             case RegularFilterType::PeakFilter:
-                guiCoefficients[f] = IIR::Coefficients<double>::makePeakFilter (sampleRate, *filterFrequency[f], *filterQ[f], Decibels::decibelsToGain (*filterGain[f]));
+                guiCoefficients[f] = IIR::Coefficients<double>::makePeakFilter (sampleRate, frequency, *filterQ[f], Decibels::decibelsToGain (*filterGain[f]));
                 break;
             case RegularFilterType::HighShelf:
-                guiCoefficients[f] = IIR::Coefficients<double>::makeHighShelf (sampleRate, *filterFrequency[f], *filterQ[f], Decibels::decibelsToGain (*filterGain[f]));
+                guiCoefficients[f] = IIR::Coefficients<double>::makeHighShelf (sampleRate, frequency, *filterQ[f], Decibels::decibelsToGain (*filterGain[f]));
                 break;
             default:
                 break;
@@ -184,62 +187,64 @@ void MultiEQAudioProcessor::updateGuiCoefficients()
 
 inline dsp::IIR::Coefficients<float>::Ptr MultiEQAudioProcessor::createFilterCoefficients (const RegularFilterType type, const double sampleRate, const float frequency, const float Q, const float gain)
 {
+    const auto f = jmin (static_cast<float> (0.5 * sampleRate), frequency);
     switch (type)
     {
         case RegularFilterType::FirstOrderHighPass:
-            return IIR::Coefficients<float>::makeFirstOrderHighPass (sampleRate, frequency);
+            return IIR::Coefficients<float>::makeFirstOrderHighPass (sampleRate, f);
             break;
         case RegularFilterType::SecondOrderHighPass:
-            return IIR::Coefficients<float>::makeHighPass (sampleRate, frequency, Q);
+            return IIR::Coefficients<float>::makeHighPass (sampleRate, f, Q);
             break;
         case RegularFilterType::LowShelf:
-            return IIR::Coefficients<float>::makeLowShelf (sampleRate, frequency, Q, gain);
+            return IIR::Coefficients<float>::makeLowShelf (sampleRate, f, Q, gain);
             break;
         case RegularFilterType::PeakFilter:
-            return IIR::Coefficients<float>::makePeakFilter (sampleRate, frequency, Q, gain);
+            return IIR::Coefficients<float>::makePeakFilter (sampleRate, f, Q, gain);
             break;
         case RegularFilterType::HighShelf:
-            return IIR::Coefficients<float>::makeHighShelf (sampleRate, frequency, Q, gain);
+            return IIR::Coefficients<float>::makeHighShelf (sampleRate, f, Q, gain);
             break;
         case RegularFilterType::FirstOrderLowPass:
-            return IIR::Coefficients<float>::makeFirstOrderLowPass (sampleRate, frequency);
+            return IIR::Coefficients<float>::makeFirstOrderLowPass (sampleRate, f);
             break;
         case RegularFilterType::SecondOrderLowPass:
-            return IIR::Coefficients<float>::makeLowPass (sampleRate, frequency, Q);
+            return IIR::Coefficients<float>::makeLowPass (sampleRate, f, Q);
             break;
         default:
-            return IIR::Coefficients<float>::makeAllPass (sampleRate, frequency, Q);
+            return IIR::Coefficients<float>::makeAllPass (sampleRate, f, Q);
             break;
     }
 }
 
 inline dsp::IIR::Coefficients<double>::Ptr MultiEQAudioProcessor::createFilterCoefficientsForGui (const RegularFilterType type, const double sampleRate, const float frequency, const float Q, const float gain)
 {
+    const auto f = jmin (static_cast<float> (0.5 * sampleRate), frequency);
     switch (type)
     {
         case RegularFilterType::FirstOrderHighPass:
-            return IIR::Coefficients<double>::makeFirstOrderHighPass (sampleRate, frequency);
+            return IIR::Coefficients<double>::makeFirstOrderHighPass (sampleRate, f);
             break;
         case RegularFilterType::SecondOrderHighPass:
-            return IIR::Coefficients<double>::makeHighPass (sampleRate, frequency, Q);
+            return IIR::Coefficients<double>::makeHighPass (sampleRate, f, Q);
             break;
         case RegularFilterType::LowShelf:
-            return IIR::Coefficients<double>::makeLowShelf (sampleRate, frequency, Q, gain);
+            return IIR::Coefficients<double>::makeLowShelf (sampleRate, f, Q, gain);
             break;
         case RegularFilterType::PeakFilter:
-            return IIR::Coefficients<double>::makePeakFilter (sampleRate, frequency, Q, gain);
+            return IIR::Coefficients<double>::makePeakFilter (sampleRate, f, Q, gain);
             break;
         case RegularFilterType::HighShelf:
-            return IIR::Coefficients<double>::makeHighShelf (sampleRate, frequency, Q, gain);
+            return IIR::Coefficients<double>::makeHighShelf (sampleRate, f, Q, gain);
             break;
         case RegularFilterType::FirstOrderLowPass:
-            return IIR::Coefficients<double>::makeFirstOrderLowPass (sampleRate, frequency);
+            return IIR::Coefficients<double>::makeFirstOrderLowPass (sampleRate, f);
             break;
         case RegularFilterType::SecondOrderLowPass:
-            return IIR::Coefficients<double>::makeLowPass (sampleRate, frequency, Q);
+            return IIR::Coefficients<double>::makeLowPass (sampleRate, f, Q);
             break;
         default:
-            return IIR::Coefficients<double>::makeAllPass (sampleRate, frequency, Q);
+            return IIR::Coefficients<double>::makeAllPass (sampleRate, f, Q);
             break;
     }
 }
@@ -248,12 +253,14 @@ void MultiEQAudioProcessor::createLinkwitzRileyFilter (const bool isUpperBand)
 {
     if (isUpperBand)
     {
-        tempCoefficients[numFilterBands - 1] = IIR::Coefficients<float>::makeLowPass (getSampleRate(), *filterFrequency[numFilterBands - 1], *filterQ[numFilterBands - 1]);
+        const auto frequency = jmin (static_cast<float> (0.5 * getSampleRate()), *filterFrequency[numFilterBands - 1]);
+        tempCoefficients[numFilterBands - 1] = IIR::Coefficients<float>::makeLowPass (getSampleRate(), frequency, *filterQ[numFilterBands - 1]);
         additionalTempCoefficients[1] = processorCoefficients[numFilterBands - 1];
     }
     else
     {
-        tempCoefficients[0] = IIR::Coefficients<float>::makeHighPass (getSampleRate(), *filterFrequency[0], *filterQ[0]);
+        const auto frequency = jmin (static_cast<float> (0.5 * getSampleRate()), *filterFrequency[0]);
+        tempCoefficients[0] = IIR::Coefficients<float>::makeHighPass (getSampleRate(), frequency, *filterQ[0]);
         additionalTempCoefficients[0] = processorCoefficients[0];
     }
 }
@@ -295,7 +302,7 @@ void MultiEQAudioProcessor::createFilterCoefficients (const int filterIndex, con
                 break;
 
             default:
-                jassert (type < 2);
+                jassert (type <= 2);
                 switch (type)
                 {
                     case 0:

@@ -92,6 +92,7 @@ public:
     Atomic<bool> guiUpdateLowPassCoefficients = true;
     Atomic<bool> guiUpdateHighPassCoefficients = true;
     Atomic<bool> guiUpdateLowPassGain = true;
+    Atomic<bool> guiUpdateSampleRate = true;
 
 private:
     //==============================================================================

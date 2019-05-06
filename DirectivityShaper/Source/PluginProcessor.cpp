@@ -93,6 +93,7 @@ createParameterLayout())
 
 inline dsp::IIR::Coefficients<float>::Ptr DirectivityShaperAudioProcessor::createFilterCoefficients(int type, double sampleRate, double frequency, double Q)
 {
+    frequency = jmin (0.5 * sampleRate, frequency);
     switch (type) {
         case 1:
             return IIR::Coefficients<float>::makeLowPass(sampleRate, frequency, Q);
@@ -147,6 +148,7 @@ void DirectivityShaperAudioProcessor::prepareToPlay (double sampleRate, int samp
         *filter[i].coefficients = *createFilterCoefficients(roundToInt(*filterType[i]), sampleRate, *filterFrequency[i], *filterQ[i]);
         filter[i].reset();
     }
+    repaintFV = true;
 
     filteredBuffer.setSize(numberOfBands, samplesPerBlock);
 }

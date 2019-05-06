@@ -100,6 +100,7 @@ SimpleDecoderAudioProcessor::~SimpleDecoderAudioProcessor()
 
 void SimpleDecoderAudioProcessor::updateLowPassCoefficients (double sampleRate, float frequency)
 {
+    frequency = jmin (static_cast<float> (0.5 * sampleRate), frequency);
     *lowPassCoeffs = *IIR::Coefficients<float>::makeLowPass (sampleRate, frequency);
 
     auto newCoeffs = IIR::Coefficients<double>::makeLowPass (sampleRate, frequency);
@@ -110,6 +111,7 @@ void SimpleDecoderAudioProcessor::updateLowPassCoefficients (double sampleRate, 
 
 void SimpleDecoderAudioProcessor::updateHighPassCoefficients(double sampleRate, float frequency)
 {
+    frequency = jmin (static_cast<float> (0.5 * sampleRate), frequency);
     *highPassCoeffs = *IIR::Coefficients<float>::makeHighPass (sampleRate, frequency);
 
     auto newCoeffs = IIR::Coefficients<double>::makeHighPass (sampleRate, frequency);
@@ -200,6 +202,8 @@ void SimpleDecoderAudioProcessor::prepareToPlay (double sampleRate, int samplesP
     lowPass2->reset();
 
     decoder.setInputNormalization(*useSN3D >= 0.5f ? ReferenceCountedDecoder::Normalization::sn3d : ReferenceCountedDecoder::Normalization::n3d);
+
+    guiUpdateSampleRate = true;
 }
 
 

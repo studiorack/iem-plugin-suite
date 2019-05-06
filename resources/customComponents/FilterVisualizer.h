@@ -322,7 +322,12 @@ public:
 
     void setSampleRate (const double newSampleRate)
     {
-        sampleRate = newSampleRate;
+        if (newSampleRate == 0)
+            sampleRate = 48000.0;
+        else
+            sampleRate = newSampleRate;
+        
+        repaint();
     }
 
     void setOverallGain (float newGain)
