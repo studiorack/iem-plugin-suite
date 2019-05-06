@@ -302,7 +302,7 @@ void DistanceCompensatorAudioProcessor::updateDelays()
     if (updatingParameters.get())
         return;
 
-    tempValues.clear();
+    tempValues.clearQuick();
 
     const int selected = roundToInt(*inputChannelsSetting);
     int nCh;
@@ -319,9 +319,6 @@ void DistanceCompensatorAudioProcessor::updateDelays()
 
     const int nActive = tempValues.size();
     const float maxDelay = FloatVectorOperations::findMaximum (tempValues.getRawDataPointer(), nActive);
-    DBG("Delay max : " << maxDelay);
-    const float minDelay = FloatVectorOperations::findMinimum (tempValues.getRawDataPointer(), nActive);
-    DBG("Delay max : " << minDelay);
 
     for (int i = 0; i < nCh; ++i)
     {
@@ -336,7 +333,7 @@ void DistanceCompensatorAudioProcessor::updateGains()
 {
     if (updatingParameters.get())
         return;
-    tempValues.clear();
+    tempValues.clearQuick();
 
 
     const int selected = roundToInt(*inputChannelsSetting);
@@ -353,10 +350,7 @@ void DistanceCompensatorAudioProcessor::updateGains()
     }
     const int nActive = tempValues.size();
 
-    const float maxGain = FloatVectorOperations::findMaximum (tempValues.getRawDataPointer(), nActive);
     const float minGain = FloatVectorOperations::findMinimum (tempValues.getRawDataPointer(), nActive);
-    DBG("Gain max: " << minGain);
-    DBG("Gain min: " << maxGain);
 
     float ref = 0.0f;
     if (*gainNormalization >= 0.5f) // zero mean
