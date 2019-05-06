@@ -6,6 +6,9 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
 ## untagged changes
 - general changes
     - fixed bug in SIMD IIR processing (**MultiBand**Compressor, **Multi**EQ, **Room**Encoder), which in some constellations led to very loud output
+    - fixed FilterVisualizer-SampleRate-bug
+    - limits internal filter frequencies to Nyquist-frequency 
+    - minor fixes and improvements
 
 - plug-in specific changes
     - **Room**Encoder
