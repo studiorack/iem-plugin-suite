@@ -12,8 +12,16 @@
               companyWebsite="iem.at" displaySplashScreen="0" reportAppUsage="0"
               splashScreenColour="Dark" buildStandalone="1" enableIAA="0" cppLanguageStandard="11"
               companyCopyright="IEM - Daniel Rudrich" headerPath="../../../resources/"
-              pluginFormats="buildStandalone,buildVST,buildVST3">
+              pluginFormats="buildStandalone,buildVST,buildVST3" defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1">
   <MAINGROUP id="u5XoJ7" name="StereoEncoder">
+    <GROUP id="{C16396AC-F8D0-CC16-B74B-D4F46EC60D1D}" name="Standalone">
+      <FILE id="byKe9Q" name="MyStandaloneFilterWindow.h" compile="0" resource="0"
+            file="../resources/Standalone/MyStandaloneFilterWindow.h"/>
+      <FILE id="UcXMuR" name="StandaloneApp.cpp" compile="1" resource="0"
+            file="../resources/Standalone/StandaloneApp.cpp"/>
+      <FILE id="yDdkYV" name="IEMPluginSuiteLogo.png" compile="0" resource="1"
+            file="../resources/Standalone/IEMPluginSuiteLogo.png"/>
+    </GROUP>
     <GROUP id="{8535954E-DB57-A8DB-7C90-66B548D8B415}" name="lookAndFeel">
       <FILE id="jH6X2j" name="IEM_LaF.h" compile="0" resource="0" file="../resources/lookAndFeel/IEM_LaF.h"/>
       <FILE id="nPyPcs" name="Roboto-Bold.ttf" compile="0" resource="1" file="../resources/lookAndFeel/Roboto-Bold.ttf"/>
@@ -43,7 +51,7 @@
           file="../resources/AudioProcessorBase.h"/>
   </MAINGROUP>
   <EXPORTFORMATS>
-    <XCODE_MAC targetFolder="Builds/MacOSX">
+    <XCODE_MAC targetFolder="Builds/MacOSX" smallIcon="yDdkYV" bigIcon="yDdkYV">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="StereoEncoder"
                        enablePluginBinaryCopyStep="1" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"
