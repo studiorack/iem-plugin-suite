@@ -87,6 +87,15 @@ public:
     {
         createPlugin();
 
+        OwnedArray<AudioIODeviceType> types;
+        deviceManager.createAudioDeviceTypes (types);
+
+        for (auto* t : types)
+            deviceManager.addAudioDeviceType (t);
+
+        types.clearQuick (false);
+            deviceManager.addAudioDeviceType (new iem::JackAudioIODeviceType());
+
         auto inChannels = (channelConfiguration.size() > 0 ? channelConfiguration[0].numIns
                                                            : processor->getMainBusNumInputChannels());
 
