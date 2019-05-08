@@ -24,6 +24,10 @@
   ==============================================================================
 */
 
+#include "../lookAndFeel/IEM_LaF.h"
+#include "../customComponents/SimpleLabel.h"
+
+
 #if JUCE_MODULE_AVAILABLE_juce_audio_plugin_client
 extern juce::AudioProcessor* JUCE_API JUCE_CALLTYPE createPluginFilterOfType (juce::AudioProcessor::WrapperType type);
 #endif
@@ -594,17 +598,11 @@ public:
                             bool autoOpenMidiDevices = false
                            #endif
                             )
-        : DocumentWindow (title, backgroundColour, DocumentWindow::minimiseButton | DocumentWindow::closeButton),
-          optionsButton ("Options")
+        : DocumentWindow (title, backgroundColour, DocumentWindow::minimiseButton | DocumentWindow::closeButton)
     {
+        setLookAndFeel (&laf);
        #if JUCE_IOS || JUCE_ANDROID
         setTitleBarHeight (0);
-       #else
-        setTitleBarButtonsRequired (DocumentWindow::minimiseButton | DocumentWindow::closeButton, false);
-
-        Component::addAndMakeVisible (optionsButton);
-        optionsButton.addListener (this);
-        optionsButton.setTriggeredOnMouseDown (true);
        #endif
 
         setUsingNativeTitleBar (true);
@@ -638,6 +636,8 @@ public:
 
     ~MyStandaloneFilterWindow()
     {
+        setLookAndFeel (nullptr);
+
        #if (! JUCE_IOS) && (! JUCE_ANDROID)
         if (auto* props = pluginHolder->settings.get())
         {
@@ -688,6 +688,7 @@ public:
         m.addSeparator();
         m.addItem (4, TRANS("Reset to default state"));
 
+        m.setLookAndFeel (&laf);
         m.showMenuAsync (PopupMenu::Options(),
                          ModalCallbackFunction::forComponent (menuCallback, this));
     }
@@ -713,7 +714,6 @@ public:
     void resized() override
     {
         DocumentWindow::resized();
-        optionsButton.setBounds (8, 6, 60, getTitleBarHeight() - 8);
     }
 
     virtual MyStandalonePluginHolder* getPluginHolder()    { return pluginHolder.get(); }
@@ -724,12 +724,11 @@ private:
     //==============================================================================
     class MainContentComponent  : public Component,
                                   private Value::Listener,
-                                  private Button::Listener,
                                   private ComponentListener
     {
     public:
         MainContentComponent (MyStandaloneFilterWindow& filterWindow)
-            : owner (filterWindow), notification (this),
+            : owner (filterWindow), header (&filterWindow),
               editor (owner.getAudioProcessor()->createEditorIfNeeded())
         {
             Value& inputMutedValue = owner.pluginHolder->getMuteInputValue();
@@ -742,7 +741,7 @@ private:
                 addAndMakeVisible (editor.get());
             }
 
-            addChildComponent (notification);
+            addAndMakeVisible (header);
 
             if (owner.pluginHolder->getProcessorHasPotentialFeedbackLoop())
             {
@@ -767,96 +766,108 @@ private:
         {
             auto r = getLocalBounds();
 
-            if (shouldShowNotification)
-                notification.setBounds (r.removeFromTop (NotificationArea::height));
+            header.setBounds (r.removeFromTop (Header::height));
 
             editor->setBounds (r);
         }
 
     private:
         //==============================================================================
-        class NotificationArea : public Component
+        class Header : public Component
         {
         public:
-            enum { height = 30 };
+            enum { height = 25 };
 
-            NotificationArea (Button::Listener* settingsButtonListener)
-                : notification ("notification", "Audio input is muted to avoid feedback loop"),
+            Header (Button::Listener* settingsButtonListener)
+                :
                  #if JUCE_IOS || JUCE_ANDROID
                   settingsButton ("Unmute Input")
                  #else
-                  settingsButton ("Settings...")
+                  settingsButton ("Settings")
                  #endif
             {
+                setLookAndFeel (&laf);
                 setOpaque (true);
 
-                notification.setColour (Label::textColourId, Colours::black);
 
                 settingsButton.addListener (settingsButtonListener);
 
-                addAndMakeVisible (notification);
+                addAndMakeVisible (lbMuted);
+                lbMuted.setText ("INPUT MUTED", true);
+                lbMuted.setTextColour (Colours::red);
+                
                 addAndMakeVisible (settingsButton);
+                settingsButton.setColour(TextButton::buttonColourId, Colours::cornflowerblue);
+            }
+
+            ~Header()
+            {
+                setLookAndFeel (nullptr);
             }
 
             void paint (Graphics& g) override
             {
                 auto r = getLocalBounds();
 
-                g.setColour (Colours::darkgoldenrod);
+                g.setColour (laf.ClSeperator);
                 g.fillRect (r.removeFromBottom (1));
 
-                g.setColour (Colours::lightgoldenrodyellow);
+                g.setColour (laf.ClBackground);
                 g.fillRect (r);
             }
 
             void resized() override
             {
-                auto r = getLocalBounds().reduced (5);
+                auto r = getLocalBounds().reduced (3);
 
                 settingsButton.setBounds (r.removeFromRight (70));
-                notification.setBounds (r);
+
+                if (muted)
+                    lbMuted.setBounds (r.removeFromLeft (80));
             }
+
+            void setMuteStatus (bool muteStatus)
+            {
+                muted = muteStatus;
+                lbMuted.setVisible (muted);
+                resized();
+                repaint();
+            }
+
         private:
-            Label notification;
+            bool muted;
+            SimpleLabel lbMuted;
             TextButton settingsButton;
+            LaF laf;
         };
 
         //==============================================================================
         void inputMutedChanged (bool newInputMutedValue)
         {
-            shouldShowNotification = newInputMutedValue;
-            notification.setVisible (shouldShowNotification);
+            header.setMuteStatus (newInputMutedValue);
 
            #if JUCE_IOS || JUCE_ANDROID
             resized();
            #else
             setSize (editor->getWidth(),
                      editor->getHeight()
-                     + (shouldShowNotification ? NotificationArea::height : 0));
+                     + Header::height);
            #endif
         }
 
         void valueChanged (Value& value) override     { inputMutedChanged (value.getValue()); }
-        void buttonClicked (Button*) override
-        {
-           #if JUCE_IOS || JUCE_ANDROID
-            owner.pluginHolder->getMuteInputValue().setValue (false);
-           #else
-            owner.pluginHolder->showAudioSettingsDialog();
-           #endif
-        }
 
         //==============================================================================
         void componentMovedOrResized (Component&, bool, bool wasResized) override
         {
             if (wasResized && editor != nullptr)
                 setSize (editor->getWidth(),
-                         editor->getHeight() + (shouldShowNotification ? NotificationArea::height : 0));
+                         editor->getHeight() + Header::height);
         }
 
         //==============================================================================
         MyStandaloneFilterWindow& owner;
-        NotificationArea notification;
+        Header header;
         std::unique_ptr<AudioProcessorEditor> editor;
         bool shouldShowNotification = false;
 
@@ -864,7 +875,7 @@ private:
     };
 
     //==============================================================================
-    TextButton optionsButton;
+    LaF laf;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MyStandaloneFilterWindow)
 };
