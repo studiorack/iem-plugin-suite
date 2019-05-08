@@ -19,8 +19,8 @@
             file="../resources/Standalone/MyStandaloneFilterWindow.h"/>
       <FILE id="UcXMuR" name="StandaloneApp.cpp" compile="1" resource="0"
             file="../resources/Standalone/StandaloneApp.cpp"/>
-      <FILE id="yDdkYV" name="IEMPluginSuiteLogo.png" compile="0" resource="1"
-            file="../resources/Standalone/IEMPluginSuiteLogo.png"/>
+      <FILE id="QdzRCE" name="IEMPluginSuiteSmall.png" compile="0" resource="1"
+            file="../resources/Standalone/IEMPluginSuiteSmall.png"/>
     </GROUP>
     <GROUP id="{8535954E-DB57-A8DB-7C90-66B548D8B415}" name="lookAndFeel">
       <FILE id="jH6X2j" name="IEM_LaF.h" compile="0" resource="0" file="../resources/lookAndFeel/IEM_LaF.h"/>
@@ -51,7 +51,7 @@
           file="../resources/AudioProcessorBase.h"/>
   </MAINGROUP>
   <EXPORTFORMATS>
-    <XCODE_MAC targetFolder="Builds/MacOSX" smallIcon="yDdkYV" bigIcon="yDdkYV">
+    <XCODE_MAC targetFolder="Builds/MacOSX" smallIcon="QdzRCE" bigIcon="QdzRCE">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="StereoEncoder"
                        enablePluginBinaryCopyStep="1" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"
