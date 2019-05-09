@@ -29,12 +29,13 @@
 class SimpleLabel    : public Component
 {
 public:
-    SimpleLabel()
-    {
-        // In your constructor, you should add any child components, and
-        // initialise any special settings that your component needs.
+    SimpleLabel() {}
 
+    SimpleLabel (String textToDisplay)
+    {
+        text = textToDisplay;
     }
+
     ~SimpleLabel()
     {
     }
