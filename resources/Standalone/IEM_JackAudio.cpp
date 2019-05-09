@@ -176,7 +176,7 @@ public:
             name = iem::jack_get_client_name (client);
             // open input ports
             const StringArray inputChannels (getInputChannelNames());
-            for (int i = 0; i < 64; ++i)
+            for (int i = 0; i < ProcessorClass::numberOfInputChannels; ++i)
             {
                 String inputName;
                 inputName << "in_" << ++totalNumberOfInputChannels;
@@ -187,7 +187,7 @@ public:
 
             // open output ports
             const StringArray outputChannels (getOutputChannelNames());
-            for (int i = 0; i < 64; ++i)
+            for (int i = 0; i < ProcessorClass::numberOfOutputChannels; ++i)
             {
                 String outputName;
                 outputName << "out_" << ++totalNumberOfOutputChannels;
@@ -270,31 +270,31 @@ public:
         iem::jack_activate (client);
         deviceIsOpen = true;
 
-        if (! inputChannels.isZero())
-        {
-            for (JackPortIterator i (client, true); i.next();)
-            {
-                if (inputChannels [i.index] && i.clientName == getName())
-                {
-                    int error = iem::jack_connect (client, i.ports[i.index], iem::jack_port_name ((jack_port_t*) inputPorts[i.index]));
-                    if (error != 0)
-                        JUCE_JACK_LOG ("Cannot connect input port " + String (i.index) + " (" + i.name + "), error " + String (error));
-                }
-            }
-        }
-
-        if (! outputChannels.isZero())
-        {
-            for (JackPortIterator i (client, false); i.next();)
-            {
-                if (outputChannels [i.index] && i.clientName == getName())
-                {
-                    int error = iem::jack_connect (client, iem::jack_port_name ((jack_port_t*) outputPorts[i.index]), i.ports[i.index]);
-                    if (error != 0)
-                        JUCE_JACK_LOG ("Cannot connect output port " + String (i.index) + " (" + i.name + "), error " + String (error));
-                }
-            }
-        }
+//        if (! inputChannels.isZero())
+//        {
+//            for (JackPortIterator i (client, true); i.next();)
+//            {
+//                if (inputChannels [i.index] && i.clientName == getName())
+//                {
+//                    int error = iem::jack_connect (client, i.ports[i.index], iem::jack_port_name ((jack_port_t*) inputPorts[i.index]));
+//                    if (error != 0)
+//                        JUCE_JACK_LOG ("Cannot connect input port " + String (i.index) + " (" + i.name + "), error " + String (error));
+//                }
+//            }
+//        }
+//
+//        if (! outputChannels.isZero())
+//        {
+//            for (JackPortIterator i (client, false); i.next();)
+//            {
+//                if (outputChannels [i.index] && i.clientName == getName())
+//                {
+//                    int error = iem::jack_connect (client, iem::jack_port_name ((jack_port_t*) outputPorts[i.index]), i.ports[i.index]);
+//                    if (error != 0)
+//                        JUCE_JACK_LOG ("Cannot connect output port " + String (i.index) + " (" + i.name + "), error " + String (error));
+//                }
+//            }
+//        }
 
         updateActivePorts();
 
@@ -430,28 +430,26 @@ private:
         BigInteger newOutputChannels, newInputChannels;
 
         for (int i = 0; i < outputPorts.size(); ++i)
-            if (iem::jack_port_connected ((jack_port_t*) outputPorts.getUnchecked(i)))
-                newOutputChannels.setBit (i);
+            newOutputChannels.setBit (i);
 
         for (int i = 0; i < inputPorts.size(); ++i)
-            if (iem::jack_port_connected ((jack_port_t*) inputPorts.getUnchecked(i)))
-                newInputChannels.setBit (i);
+            newInputChannels.setBit (i);
 
-        if (newOutputChannels != activeOutputChannels
-             || newInputChannels != activeInputChannels)
-        {
-            AudioIODeviceCallback* const oldCallback = callback;
-
-            stop();
-
+//        if (newOutputChannels != activeOutputChannels
+//             || newInputChannels != activeInputChannels)
+//        {
+//            AudioIODeviceCallback* const oldCallback = callback;
+//
+//            stop();
+//
             activeOutputChannels = newOutputChannels;
             activeInputChannels  = newInputChannels;
-
-            if (oldCallback != nullptr)
-                start (oldCallback);
-
-            sendDeviceChangedCallback();
-        }
+//
+//            if (oldCallback != nullptr)
+//                start (oldCallback);
+//
+//            sendDeviceChangedCallback();
+//        }
     }
 
     static void portConnectCallback (jack_port_id_t, jack_port_id_t, int, void* arg)

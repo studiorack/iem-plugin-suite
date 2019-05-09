@@ -26,7 +26,7 @@
 
 #include "../lookAndFeel/IEM_LaF.h"
 #include "../customComponents/SimpleLabel.h"
-
+#include "IEM_AudioDeviceSelectorComponent.cpp"
 
 #if JUCE_MODULE_AVAILABLE_juce_audio_plugin_client
 extern juce::AudioProcessor* JUCE_API JUCE_CALLTYPE createPluginFilterOfType (juce::AudioProcessor::WrapperType type);
@@ -426,6 +426,8 @@ public:
     std::unique_ptr<AudioDeviceManager::AudioDeviceSetup> options;
     StringArray lastMidiDevices;
 
+    String jackClientName = "";
+
 private:
     //==============================================================================
     class SettingsComponent : public Component
@@ -490,7 +492,7 @@ private:
     private:
         //==============================================================================
         MyStandalonePluginHolder& owner;
-        AudioDeviceSelectorComponent deviceSelector;
+        iem::IEMAudioDeviceSelectorComponent deviceSelector;
         Label shouldMuteLabel;
         ToggleButton shouldMuteButton;
 
@@ -524,6 +526,11 @@ private:
 
         player.audioDeviceAboutToStart (device);
         player.setMidiOutput (deviceManager.getDefaultMidiOutput());
+
+        if (device->getTypeName() == "JACK")
+            jackClientName = device->getName();
+        else
+            jackClientName = "";
     }
 
     void audioDeviceStopped() override
@@ -733,7 +740,8 @@ private:
     //==============================================================================
     class MainContentComponent  : public Component,
                                   private Value::Listener,
-                                  private ComponentListener
+                                  private ComponentListener,
+                                  private Timer
     {
     public:
         MainContentComponent (MyStandaloneFilterWindow& filterWindow)
@@ -759,6 +767,8 @@ private:
             }
 
             inputMutedChanged (shouldShowNotification);
+
+            startTimer (500);
         }
 
         ~MainContentComponent()
@@ -774,9 +784,7 @@ private:
         void resized() override
         {
             auto r = getLocalBounds();
-
             header.setBounds (r.removeFromTop (Header::height));
-
             editor->setBounds (r);
         }
 
@@ -833,6 +841,9 @@ private:
 
                 if (muted)
                     lbMuted.setBounds (r.removeFromLeft (80));
+
+                if (jackDeviceName)
+                    jackDeviceName->setBounds (r.removeFromLeft (200));
             }
 
             void setMuteStatus (bool muteStatus)
@@ -843,12 +854,36 @@ private:
                 repaint();
             }
 
+            void setJackClientName (String jackClientName)
+            {
+                if (jackClientName.isEmpty())
+                    jackDeviceName.reset();
+                else
+                {
+                    jackDeviceName.reset (new SimpleLabel ("JACK Client: " + jackClientName));
+                    addAndMakeVisible (jackDeviceName.get());
+                }
+                resized();
+            }
+
         private:
             bool muted;
             SimpleLabel lbMuted;
+            std::unique_ptr<SimpleLabel> jackDeviceName;
             TextButton settingsButton;
             LaF laf;
         };
+
+        void timerCallback() override
+        {
+            auto* holder = owner.getPluginHolder();
+            String jackClientName = "";
+
+            if (holder)
+                jackClientName = holder->jackClientName;
+
+            header.setJackClientName (jackClientName);
+        }
 
         //==============================================================================
         void inputMutedChanged (bool newInputMutedValue)
