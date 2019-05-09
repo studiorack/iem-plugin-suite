@@ -32,6 +32,7 @@
 #include "../../resources/Conversions.h"
 
 
+#define ProcessorClass StereoEncoderAudioProcessor
 
 //==============================================================================
 /**
@@ -39,6 +40,8 @@
 class StereoEncoderAudioProcessor  : public AudioProcessorBase<IOTypes::AudioChannels<2>, IOTypes::Ambisonics<>>
 {
 public:
+    constexpr static int numberOfInputChannels = 2;
+    constexpr static int numberOfOutputChannels = 64;
     //==============================================================================
     StereoEncoderAudioProcessor();
     ~StereoEncoderAudioProcessor();
