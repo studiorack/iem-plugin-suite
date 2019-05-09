@@ -59,7 +59,8 @@
                        headerPath="/usr/local/include"/>
         <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="StereoEncoder"
                        enablePluginBinaryCopyStep="1" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"
-                       osxCompatibility="10.9 SDK" vst3BinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST3/IEM/"/>
+                       osxCompatibility="10.9 SDK" vst3BinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST3/IEM/"
+                       headerPath="/usr/local/include"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_core" path="../../../../../Applications/JUCE/modules"/>
@@ -109,7 +110,7 @@
         <MODULEPATH id="juce_osc" path="../../../../../Applications/JUCE/modules"/>
       </MODULEPATHS>
     </VS2017>
-    <LINUX_MAKE targetFolder="Builds/LinuxMakefile" extraDefs="JUCE_JACK=1, JUCE_JACK_CLIENT_NAME=JucePlugin_Name">
+    <LINUX_MAKE targetFolder="Builds/LinuxMakefile">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" isDebug="1" optimisation="1" linkTimeOptimisation="0"
                        targetName="StereoEncoder"/>
