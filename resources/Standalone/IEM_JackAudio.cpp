@@ -56,6 +56,7 @@ JUCE_DECL_JACK_FUNCTION (jack_client_t*, jack_client_open, (const char* client_n
 JUCE_DECL_JACK_FUNCTION (int, jack_client_close, (jack_client_t *client), (client));
 JUCE_DECL_JACK_FUNCTION (int, jack_activate, (jack_client_t* client), (client));
 JUCE_DECL_JACK_FUNCTION (int, jack_deactivate, (jack_client_t* client), (client));
+JUCE_DECL_JACK_FUNCTION (char*, jack_get_client_name, (jack_client_t* client), (client));
 JUCE_DECL_JACK_FUNCTION (jack_nframes_t, jack_get_buffer_size, (jack_client_t* client), (client));
 JUCE_DECL_JACK_FUNCTION (jack_nframes_t, jack_get_sample_rate, (jack_client_t* client), (client));
 JUCE_DECL_VOID_JACK_FUNCTION (jack_on_shutdown, (jack_client_t* client, void (*function)(void* arg), void* arg), (client, function, arg));
@@ -107,7 +108,7 @@ namespace
 
 //==============================================================================
 #ifndef JUCE_JACK_CLIENT_NAME
- #define JUCE_JACK_CLIENT_NAME "JUCEJack"
+ #define JUCE_JACK_CLIENT_NAME JucePlugin_Name
 #endif
 
 struct JackPortIterator
@@ -172,10 +173,10 @@ public:
         else
         {
             iem::jack_set_error_function (errorCallback);
-
+            name = iem::jack_get_client_name (client);
             // open input ports
             const StringArray inputChannels (getInputChannelNames());
-            for (int i = 0; i < inputChannels.size(); ++i)
+            for (int i = 0; i < 64; ++i)
             {
                 String inputName;
                 inputName << "in_" << ++totalNumberOfInputChannels;
@@ -186,7 +187,7 @@ public:
 
             // open output ports
             const StringArray outputChannels (getOutputChannelNames());
-            for (int i = 0; i < outputChannels.size(); ++i)
+            for (int i = 0; i < 64; ++i)
             {
                 String outputName;
                 outputName << "out_" << ++totalNumberOfOutputChannels;
@@ -522,8 +523,8 @@ public:
         outputNames.clear();
         outputIds.clear();
 
-        if (juce_libjackHandle == nullptr)  juce_libjackHandle = dlopen ("libjack.so.0", RTLD_LAZY);
-        if (juce_libjackHandle == nullptr)  juce_libjackHandle = dlopen ("libjack.so",   RTLD_LAZY);
+        if (juce_libjackHandle == nullptr)  juce_libjackHandle = dlopen ("libjack.0.dylib",  RTLD_LAZY); //"libjack.so.0",
+        if (juce_libjackHandle == nullptr)  juce_libjackHandle = dlopen ("libjack.dylib",   RTLD_LAZY);
         if (juce_libjackHandle == nullptr)  return;
 
         jack_status_t status;
@@ -534,7 +535,7 @@ public:
             // scan for output devices
             for (JackPortIterator i (client, false); i.next();)
             {
-                if (i.clientName != (JUCE_JACK_CLIENT_NAME) && ! inputNames.contains (i.clientName))
+                if (i.clientName != (currentDeviceName) && ! inputNames.contains (i.clientName))
                 {
                     inputNames.add (i.clientName);
                     inputIds.add (i.ports [i.index]);
@@ -544,7 +545,7 @@ public:
             // scan for input devices
             for (JackPortIterator i (client, true); i.next();)
             {
-                if (i.clientName != (JUCE_JACK_CLIENT_NAME) && ! outputNames.contains (i.clientName))
+                if (i.clientName != (currentDeviceName) && ! outputNames.contains (i.clientName))
                 {
                     outputNames.add (i.clientName);
                     outputIds.add (i.ports [i.index]);
@@ -593,10 +594,14 @@ public:
         const int outputIndex = outputNames.indexOf (outputDeviceName);
 
         if (inputIndex >= 0 || outputIndex >= 0)
-            return new JackAudioIODevice (outputIndex >= 0 ? outputDeviceName
+        {
+            auto device = new JackAudioIODevice (outputIndex >= 0 ? outputDeviceName
                                                            : inputDeviceName,
                                           inputIds [inputIndex],
                                           outputIds [outputIndex]);
+            currentDeviceName = device->getName();
+            return device;
+        }
 
         return nullptr;
     }
@@ -606,6 +611,7 @@ public:
 private:
     StringArray inputNames, outputNames, inputIds, outputIds;
     bool hasScanned;
+    String currentDeviceName = "";
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (JackAudioIODeviceType)
 };
@@ -623,4 +629,4 @@ void JackAudioIODevice::sendDeviceChangedCallback()
 //    return new JackAudioIODeviceType();
 //}
 
-} // namespace juce
+} // namespace iem
