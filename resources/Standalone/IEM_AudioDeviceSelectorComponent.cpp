@@ -25,6 +25,7 @@
 */
 
 #include "IEM_AudioDeviceSelectorComponent.h"
+
 namespace iem
 {
 
@@ -432,8 +433,7 @@ public:
 
         if (auto* currentDevice = setup.manager->getCurrentAudioDevice())
         {
-            if (setup.maxNumOutputChannels > 0
-                 && setup.minNumOutputChannels < setup.manager->getCurrentAudioDevice()->getOutputChannelNames().size())
+            if (setup.maxNumOutputChannels > 0)
             {
                 if (outputChanList == nullptr)
                 {
@@ -453,8 +453,7 @@ public:
                 outputChanList.reset();
             }
 
-            if (setup.maxNumInputChannels > 0
-                 && setup.minNumInputChannels < setup.manager->getCurrentAudioDevice()->getInputChannelNames().size())
+            if (setup.maxNumInputChannels > 0)
             {
                 if (inputChanList == nullptr)
                 {
@@ -883,12 +882,12 @@ public:
                     if (type == audioInputType)
                     {
                         config.useDefaultInputChannels = false;
-                        flipBit (bits, row, setup.minNumInputChannels / 2, setup.maxNumInputChannels / 2);
+                        flipBit (bits, row, setup.maxNumInputChannels / 2);
                     }
                     else
                     {
                         config.useDefaultOutputChannels = false;
-                        flipBit (bits, row, setup.minNumOutputChannels / 2, setup.maxNumOutputChannels / 2);
+                        flipBit (bits, row, setup.maxNumOutputChannels / 2);
                     }
 
                     for (int i = 0; i < 256; ++i)
@@ -899,12 +898,12 @@ public:
                     if (type == audioInputType)
                     {
                         config.useDefaultInputChannels = false;
-                        flipBit (config.inputChannels, row, setup.minNumInputChannels, setup.maxNumInputChannels);
+                        flipBit (config.inputChannels, row, setup.maxNumInputChannels);
                     }
                     else
                     {
                         config.useDefaultOutputChannels = false;
-                        flipBit (config.outputChannels, row, setup.minNumOutputChannels, setup.maxNumOutputChannels);
+                        flipBit (config.outputChannels, row, setup.maxNumOutputChannels);
                     }
                 }
 
@@ -912,15 +911,12 @@ public:
             }
         }
 
-        static void flipBit (BigInteger& chans, int index, int minNumber, int maxNumber)
+        static void flipBit (BigInteger& chans, int index, int maxNumber)
         {
             auto numActive = chans.countNumberOfSetBits();
 
             if (chans[index])
-            {
-                if (numActive > minNumber)
-                    chans.setBit (index, false);
-            }
+                chans.setBit (index, false);
             else
             {
                 if (numActive >= maxNumber)
@@ -974,7 +970,7 @@ IEMAudioDeviceSelectorComponent::IEMAudioDeviceSelectorComponent (AudioDeviceMan
 
     auto* device = deviceManager.getCurrentAudioDevice();
     if (device != nullptr)
-        jackActive = device->getName() != "JACK";
+        jackActive = device->getTypeName() == "JACK";
 
     if (types.size() > 1)
     {
