@@ -12,8 +12,21 @@
               companyWebsite="iem.at" displaySplashScreen="0" reportAppUsage="0"
               splashScreenColour="Dark" buildStandalone="1" enableIAA="0" cppLanguageStandard="11"
               companyCopyright="IEM - Daniel Rudrich" headerPath="../../../resources/"
-              pluginFormats="buildStandalone,buildVST,buildVST3">
+              pluginFormats="buildStandalone,buildVST,buildVST3" defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1">
   <MAINGROUP id="u5XoJ7" name="MultiEncoder">
+    <GROUP id="{5EAE66DB-F7CD-0EDE-FF49-2C0394D0C13A}" name="Standalone">
+      <FILE id="Y5gP4G" name="IEM_AudioDeviceSelectorComponent.cpp" compile="1"
+            resource="0" file="../resources/Standalone/IEM_AudioDeviceSelectorComponent.cpp"/>
+      <FILE id="PhHh4P" name="IEM_AudioDeviceSelectorComponent.h" compile="0"
+            resource="0" file="../resources/Standalone/IEM_AudioDeviceSelectorComponent.h"/>
+      <FILE id="reviXF" name="IEM_JackAudio.h" compile="0" resource="0" file="../resources/Standalone/IEM_JackAudio.h"/>
+      <FILE id="hl6BNJ" name="IEMPluginSuiteSmall.png" compile="0" resource="1"
+            file="../resources/Standalone/IEMPluginSuiteSmall.png"/>
+      <FILE id="q0okUs" name="MyStandaloneFilterWindow.h" compile="0" resource="0"
+            file="../resources/Standalone/MyStandaloneFilterWindow.h"/>
+      <FILE id="FdZOue" name="StandaloneApp.cpp" compile="1" resource="0"
+            file="../resources/Standalone/StandaloneApp.cpp"/>
+    </GROUP>
     <GROUP id="{F7FBCFCD-FDA3-F671-8F2C-4DF9DB5750A7}" name="lookAndFeel">
       <FILE id="HsfM83" name="IEM_LaF.h" compile="0" resource="0" file="../resources/lookAndFeel/IEM_LaF.h"/>
       <FILE id="otKbYT" name="Roboto-Bold.ttf" compile="0" resource="1" file="../resources/lookAndFeel/Roboto-Bold.ttf"/>
@@ -39,14 +52,16 @@
     <FILE id="GHvC1u" name="SpherePanner.h" compile="0" resource="0" file="../resources/customComponents/SpherePanner.h"/>
   </MAINGROUP>
   <EXPORTFORMATS>
-    <XCODE_MAC targetFolder="Builds/MacOSX">
+    <XCODE_MAC targetFolder="Builds/MacOSX" smallIcon="hl6BNJ" bigIcon="hl6BNJ">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="MultiEncoder"
                        enablePluginBinaryCopyStep="1" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"
-                       vst3BinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST3/IEM/"/>
+                       vst3BinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST3/IEM/"
+                       headerPath="/usr/local/include"/>
         <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="MultiEncoder"
                        enablePluginBinaryCopyStep="1" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"
-                       osxCompatibility="10.9 SDK" vst3BinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST3/IEM/"/>
+                       osxCompatibility="10.9 SDK" vst3BinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST3/IEM/"
+                       headerPath="/usr/local/include"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_core" path="../../../../../Applications/JUCE/modules"/>
@@ -65,7 +80,7 @@
         <MODULEPATH id="juce_osc" path="../../../../../Applications/JUCE/modules"/>
       </MODULEPATHS>
     </XCODE_MAC>
-    <VS2017 targetFolder="Builds/VisualStudio2017">
+    <VS2017 targetFolder="Builds/VisualStudio2017" smallIcon="hl6BNJ" bigIcon="hl6BNJ">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" winWarningLevel="4" generateManifest="1" winArchitecture="x64"
                        isDebug="1" optimisation="1" targetName="MultiEncoder" debugInformationFormat="ProgramDatabase"
@@ -96,12 +111,12 @@
         <MODULEPATH id="juce_osc" path="../../../../../Applications/JUCE/modules"/>
       </MODULEPATHS>
     </VS2017>
-    <LINUX_MAKE targetFolder="Builds/LinuxMakefile" extraDefs="JUCE_JACK=1, JUCE_JACK_CLIENT_NAME=JucePlugin_Name">
+    <LINUX_MAKE targetFolder="Builds/LinuxMakefile" smallIcon="hl6BNJ" bigIcon="hl6BNJ">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" isDebug="1" optimisation="1" linkTimeOptimisation="0"
-                       targetName="MultiEncoder"/>
+                       targetName="MultiEncoder" headerPath="/usr/local/include"/>
         <CONFIGURATION name="Release" isDebug="0" optimisation="3" linkTimeOptimisation="1"
-                       targetName="MultiEncoder"/>
+                       targetName="MultiEncoder" headerPath="/usr/local/include"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_opengl" path="../../../../../Applications/JUCE/modules"/>

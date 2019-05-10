@@ -12,8 +12,21 @@
               pluginAUExportPrefix="DirectivityShaperAU" aaxIdentifier="at.iem.DirectivityShaper"
               pluginAAXCategory="2" jucerVersion="5.4.3" companyCopyright="IEM - Daniel Rudrich"
               companyName="IEM" companyWebsite="IEM.at" headerPath="../../../resources/"
-              pluginFormats="buildStandalone,buildVST,buildVST3">
+              pluginFormats="buildStandalone,buildVST,buildVST3" defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1">
   <MAINGROUP id="LpzrV9" name="DirectivityShaper">
+    <GROUP id="{593BE55D-7887-2009-01B0-19A4C55BAF49}" name="Standalone">
+      <FILE id="NeuBez" name="IEM_AudioDeviceSelectorComponent.cpp" compile="1"
+            resource="0" file="../resources/Standalone/IEM_AudioDeviceSelectorComponent.cpp"/>
+      <FILE id="BTCLXx" name="IEM_AudioDeviceSelectorComponent.h" compile="0"
+            resource="0" file="../resources/Standalone/IEM_AudioDeviceSelectorComponent.h"/>
+      <FILE id="RNPdfO" name="IEM_JackAudio.h" compile="0" resource="0" file="../resources/Standalone/IEM_JackAudio.h"/>
+      <FILE id="j2eHrE" name="IEMPluginSuiteSmall.png" compile="0" resource="1"
+            file="../resources/Standalone/IEMPluginSuiteSmall.png"/>
+      <FILE id="onYRRl" name="MyStandaloneFilterWindow.h" compile="0" resource="0"
+            file="../resources/Standalone/MyStandaloneFilterWindow.h"/>
+      <FILE id="FNVjog" name="StandaloneApp.cpp" compile="1" resource="0"
+            file="../resources/Standalone/StandaloneApp.cpp"/>
+    </GROUP>
     <GROUP id="{6C542E45-7004-DFCA-1196-6CF9DECCD286}" name="lookAndFeel">
       <FILE id="PdediU" name="IEM_LaF.h" compile="0" resource="0" file="../resources/lookAndFeel/IEM_LaF.h"/>
       <FILE id="wxaMIT" name="Roboto-Bold.ttf" compile="0" resource="1" file="../resources/lookAndFeel/Roboto-Bold.ttf"/>
@@ -42,14 +55,16 @@
     <FILE id="Vfiosg" name="Weights.h" compile="0" resource="0" file="../resources/Weights.h"/>
   </MAINGROUP>
   <EXPORTFORMATS>
-    <XCODE_MAC targetFolder="Builds/MacOSX">
+    <XCODE_MAC targetFolder="Builds/MacOSX" smallIcon="j2eHrE" bigIcon="j2eHrE">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="DirectivityShaper"
                        enablePluginBinaryCopyStep="1" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"
-                       vst3BinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST3/IEM/"/>
+                       vst3BinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST3/IEM/"
+                       headerPath="/usr/local/include"/>
         <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="DirectivityShaper"
                        enablePluginBinaryCopyStep="1" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"
-                       osxCompatibility="10.9 SDK" vst3BinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST3/IEM/"/>
+                       osxCompatibility="10.9 SDK" vst3BinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST3/IEM/"
+                       headerPath="/usr/local/include"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_core" path="../../../../../Applications/JUCE/modules"/>
@@ -69,7 +84,7 @@
         <MODULEPATH id="juce_osc" path="../../../../../Applications/JUCE/modules"/>
       </MODULEPATHS>
     </XCODE_MAC>
-    <VS2017 targetFolder="Builds/VisualStudio2017">
+    <VS2017 targetFolder="Builds/VisualStudio2017" smallIcon="j2eHrE" bigIcon="j2eHrE">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" winWarningLevel="4" generateManifest="1" winArchitecture="x64"
                        isDebug="1" optimisation="1" targetName="DirectivityShaper" debugInformationFormat="ProgramDatabase"
@@ -101,10 +116,12 @@
         <MODULEPATH id="juce_osc" path="../../../../../Applications/JUCE/modules"/>
       </MODULEPATHS>
     </VS2017>
-    <LINUX_MAKE targetFolder="Builds/LinuxMakefile" extraDefs="JUCE_JACK=1, JUCE_JACK_CLIENT_NAME=JucePlugin_Name">
+    <LINUX_MAKE targetFolder="Builds/LinuxMakefile" smallIcon="j2eHrE" bigIcon="j2eHrE">
       <CONFIGURATIONS>
-        <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="DirectivityShaper"/>
-        <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="DirectivityShaper"/>
+        <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="DirectivityShaper"
+                       headerPath="/usr/local/include"/>
+        <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="DirectivityShaper"
+                       headerPath="/usr/local/include"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_core" path="../../../../../Applications/JUCE/modules"/>

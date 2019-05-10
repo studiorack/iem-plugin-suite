@@ -46,6 +46,8 @@
 # define IIRfloat_elements() 1
 #endif /* JUCE_USE_SIMD */
 
+#define ProcessorClass RoomEncoderAudioProcessor
+
 const int mSig[] = {1,-1};
 using namespace juce::dsp;
 
@@ -92,6 +94,8 @@ class RoomEncoderAudioProcessor  :  public AudioProcessorBase<IOTypes::Ambisonic
                                     private Timer
 {
 public:
+    constexpr static int numberOfInputChannels = 64;
+    constexpr static int numberOfOutputChannels = 64;
     //==============================================================================
     RoomEncoderAudioProcessor();
     ~RoomEncoderAudioProcessor();

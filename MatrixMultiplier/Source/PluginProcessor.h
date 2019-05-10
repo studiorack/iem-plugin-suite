@@ -29,12 +29,14 @@
 #define CONFIGURATIONHELPER_ENABLE_MATRIX_METHODS 1
 #include "../../resources/ConfigurationHelper.h"
 
-
+#define ProcessorClass MatrixMultiplierAudioProcessor
 
 //==============================================================================
 class MatrixMultiplierAudioProcessor  : public AudioProcessorBase<IOTypes::AudioChannels<64>, IOTypes::AudioChannels<64>>
 {
 public:
+    constexpr static int numberOfInputChannels = 64;
+    constexpr static int numberOfOutputChannels = 64;
     //==============================================================================
     MatrixMultiplierAudioProcessor();
     ~MatrixMultiplierAudioProcessor();

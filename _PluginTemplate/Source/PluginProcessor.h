@@ -25,11 +25,14 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "../../resources/AudioProcessorBase.h"
 
+#define ProcessorClass PluginTemplateAudioProcessor
 
 //==============================================================================
 class PluginTemplateAudioProcessor  :  public AudioProcessorBase<IOTypes::AudioChannels<10>, IOTypes::Ambisonics<7>>
 {
 public:
+    constexpr static int numberOfInputChannels = 10;
+    constexpr static int numberOfOutputChannels = 64;
     //==============================================================================
     PluginTemplateAudioProcessor();
     ~PluginTemplateAudioProcessor();

@@ -12,8 +12,22 @@
               pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0" pluginAUExportPrefix="MultiBandCompressorAU"
               aaxIdentifier="at.iem.MultiBandCompressor" pluginAAXCategory="2"
               jucerVersion="5.4.3" companyCopyright="IEM - Markus Huber" companyName="IEM"
-              companyWebsite="iem.at" headerPath="../../../resources/" pluginFormats="buildStandalone,buildVST">
+              companyWebsite="iem.at" headerPath="../../../resources/" pluginFormats="buildStandalone,buildVST"
+              defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1">
   <MAINGROUP id="LpzrV9" name="MultiBandCompressor">
+    <GROUP id="{DD24AA7B-644A-3C5E-9734-243C087817B2}" name="Standalone">
+      <FILE id="XzZcwL" name="IEM_AudioDeviceSelectorComponent.cpp" compile="1"
+            resource="0" file="../resources/Standalone/IEM_AudioDeviceSelectorComponent.cpp"/>
+      <FILE id="KeEAG1" name="IEM_AudioDeviceSelectorComponent.h" compile="0"
+            resource="0" file="../resources/Standalone/IEM_AudioDeviceSelectorComponent.h"/>
+      <FILE id="nKaXt8" name="IEM_JackAudio.h" compile="0" resource="0" file="../resources/Standalone/IEM_JackAudio.h"/>
+      <FILE id="nL7vaT" name="IEMPluginSuiteSmall.png" compile="0" resource="1"
+            file="../resources/Standalone/IEMPluginSuiteSmall.png"/>
+      <FILE id="vjgwL9" name="MyStandaloneFilterWindow.h" compile="0" resource="0"
+            file="../resources/Standalone/MyStandaloneFilterWindow.h"/>
+      <FILE id="xfPio2" name="StandaloneApp.cpp" compile="1" resource="0"
+            file="../resources/Standalone/StandaloneApp.cpp"/>
+    </GROUP>
     <GROUP id="{1B6BB8E4-E576-FBC7-B6B6-8603D2CEBF9D}" name="lookAndFeel">
       <FILE id="AVFaGo" name="IEM_LaF.h" compile="0" resource="0" file="../resources/lookAndFeel/IEM_LaF.h"/>
       <FILE id="zmzhlf" name="Roboto-Bold.ttf" compile="0" resource="1" file="../resources/lookAndFeel/Roboto-Bold.ttf"/>
@@ -38,13 +52,14 @@
     </GROUP>
   </MAINGROUP>
   <EXPORTFORMATS>
-    <XCODE_MAC targetFolder="Builds/MacOSX">
+    <XCODE_MAC targetFolder="Builds/MacOSX" bigIcon="nL7vaT" smallIcon="nL7vaT">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="MultiBandCompressor"
-                       enablePluginBinaryCopyStep="1" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"/>
+                       enablePluginBinaryCopyStep="1" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"
+                       headerPath="/usr/local/include"/>
         <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="MultiBandCompressor"
                        enablePluginBinaryCopyStep="1" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"
-                       osxCompatibility="10.9 SDK"/>
+                       osxCompatibility="10.9 SDK" headerPath="/usr/local/include"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_core" path="../../../../../Applications/JUCE/modules"/>
@@ -64,7 +79,7 @@
         <MODULEPATH id="juce_osc" path="../../../../../Applications/JUCE/modules"/>
       </MODULEPATHS>
     </XCODE_MAC>
-    <VS2017 targetFolder="Builds/VisualStudio2017">
+    <VS2017 targetFolder="Builds/VisualStudio2017" smallIcon="nL7vaT" bigIcon="nL7vaT">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" winWarningLevel="4" generateManifest="1" winArchitecture="x64"
                        isDebug="1" optimisation="1" targetName="MultiBandCompressor"
@@ -96,10 +111,12 @@
         <MODULEPATH id="juce_osc" path="../../../../../Applications/JUCE/modules"/>
       </MODULEPATHS>
     </VS2017>
-    <LINUX_MAKE targetFolder="Builds/LinuxMakefile" extraDefs="JUCE_JACK=1, JUCE_JACK_CLIENT_NAME=JucePlugin_Name">
+    <LINUX_MAKE targetFolder="Builds/LinuxMakefile" smallIcon="nL7vaT" bigIcon="nL7vaT">
       <CONFIGURATIONS>
-        <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="MultiBandCompressor"/>
-        <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="MultiBandCompressor"/>
+        <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="MultiBandCompressor"
+                       headerPath="/usr/local/include"/>
+        <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="MultiBandCompressor"
+                       headerPath="/usr/local/include"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_core" path="../../../../../Applications/JUCE/modules"/>

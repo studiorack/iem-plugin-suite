@@ -28,11 +28,14 @@
 #include "../../resources/inPhase.h"
 #include "../../resources/MaxRE.h"
 
+#define ProcessorClass ToolBoxAudioProcessor
 
 //==============================================================================
 class ToolBoxAudioProcessor  :  public AudioProcessorBase<IOTypes::Ambisonics<7>, IOTypes::Ambisonics<7>>
 {
 public:
+    constexpr static int numberOfInputChannels = 64;
+    constexpr static int numberOfOutputChannels = 64;
     //==============================================================================
     ToolBoxAudioProcessor();
     ~ToolBoxAudioProcessor();

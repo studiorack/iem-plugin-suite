@@ -31,6 +31,7 @@
 #include "../../resources/AudioProcessorBase.h"
 #include "../../resources/MaxRE.h"
 
+#define ProcessorClass EnergyVisualizerAudioProcessor
 
 //==============================================================================
 /**
@@ -38,6 +39,8 @@
 class EnergyVisualizerAudioProcessor  : public AudioProcessorBase<IOTypes::Ambisonics<>, IOTypes::Nothing>, private Timer
 {
 public:
+    constexpr static int numberOfInputChannels = 64;
+    constexpr static int numberOfOutputChannels = 64;
     //==============================================================================
     EnergyVisualizerAudioProcessor();
     ~EnergyVisualizerAudioProcessor();

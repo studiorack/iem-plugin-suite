@@ -15,6 +15,11 @@
               pluginFormats="buildStandalone,buildVST,buildVST3" defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1">
   <MAINGROUP id="u5XoJ7" name="StereoEncoder">
     <GROUP id="{C16396AC-F8D0-CC16-B74B-D4F46EC60D1D}" name="Standalone">
+      <FILE id="l6uY0E" name="IEM_JackAudio.h" compile="0" resource="0" file="../resources/Standalone/IEM_JackAudio.h"/>
+      <FILE id="yC3yp8" name="IEM_AudioDeviceSelectorComponent.cpp" compile="1"
+            resource="0" file="../resources/Standalone/IEM_AudioDeviceSelectorComponent.cpp"/>
+      <FILE id="aL8yY6" name="IEM_AudioDeviceSelectorComponent.h" compile="0"
+            resource="0" file="../resources/Standalone/IEM_AudioDeviceSelectorComponent.h"/>
       <FILE id="byKe9Q" name="MyStandaloneFilterWindow.h" compile="0" resource="0"
             file="../resources/Standalone/MyStandaloneFilterWindow.h"/>
       <FILE id="UcXMuR" name="StandaloneApp.cpp" compile="1" resource="0"
@@ -79,7 +84,7 @@
         <MODULEPATH id="juce_osc" path="../../../../../Applications/JUCE/modules"/>
       </MODULEPATHS>
     </XCODE_MAC>
-    <VS2017 targetFolder="Builds/VisualStudio2017">
+    <VS2017 targetFolder="Builds/VisualStudio2017" bigIcon="QdzRCE" smallIcon="QdzRCE">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" winWarningLevel="4" generateManifest="1" winArchitecture="x64"
                        isDebug="1" optimisation="1" targetName="StereoEncoder" debugInformationFormat="ProgramDatabase"
@@ -110,7 +115,7 @@
         <MODULEPATH id="juce_osc" path="../../../../../Applications/JUCE/modules"/>
       </MODULEPATHS>
     </VS2017>
-    <LINUX_MAKE targetFolder="Builds/LinuxMakefile">
+    <LINUX_MAKE targetFolder="Builds/LinuxMakefile" smallIcon="QdzRCE" bigIcon="QdzRCE">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" isDebug="1" optimisation="1" linkTimeOptimisation="0"
                        targetName="StereoEncoder"/>
@@ -158,5 +163,6 @@
   <LIVE_SETTINGS>
     <OSX/>
     <LINUX/>
+    <WINDOWS/>
   </LIVE_SETTINGS>
 </JUCERPROJECT>

@@ -11,8 +11,22 @@
               pluginAUExportPrefix="OmniCompressorAU" aaxIdentifier="at.iem.OmniCompressor"
               pluginAAXCategory="2" jucerVersion="5.4.3" cppLanguageStandard="14"
               companyName="IEM" companyWebsite="IEM.at" companyCopyright="IEM - Daniel Rudrich"
-              headerPath="../../../resources/" pluginFormats="buildStandalone,buildVST,buildVST3">
+              headerPath="../../../resources/" pluginFormats="buildStandalone,buildVST,buildVST3"
+              defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1">
   <MAINGROUP id="Ld9vSw" name="OmniCompressor">
+    <GROUP id="{F388704D-EB9A-BECC-56F7-162EE5CFB545}" name="Standalone">
+      <FILE id="GBvOwc" name="IEM_AudioDeviceSelectorComponent.cpp" compile="1"
+            resource="0" file="../resources/Standalone/IEM_AudioDeviceSelectorComponent.cpp"/>
+      <FILE id="apIpzk" name="IEM_AudioDeviceSelectorComponent.h" compile="0"
+            resource="0" file="../resources/Standalone/IEM_AudioDeviceSelectorComponent.h"/>
+      <FILE id="GgGkoJ" name="IEM_JackAudio.h" compile="0" resource="0" file="../resources/Standalone/IEM_JackAudio.h"/>
+      <FILE id="zRcVZm" name="IEMPluginSuiteSmall.png" compile="0" resource="1"
+            file="../resources/Standalone/IEMPluginSuiteSmall.png"/>
+      <FILE id="AOGUf5" name="MyStandaloneFilterWindow.h" compile="0" resource="0"
+            file="../resources/Standalone/MyStandaloneFilterWindow.h"/>
+      <FILE id="YjM8W5" name="StandaloneApp.cpp" compile="1" resource="0"
+            file="../resources/Standalone/StandaloneApp.cpp"/>
+    </GROUP>
     <GROUP id="{C32F7877-3111-BA83-FFEC-FCA65904B997}" name="customComponents"/>
     <GROUP id="{43E57791-1B63-9909-D743-639418F6864A}" name="lookAndFeel">
       <FILE id="vvTpaH" name="IEM_LaF.h" compile="0" resource="0" file="../resources/lookAndFeel/IEM_LaF.h"/>
@@ -38,14 +52,16 @@
     <FILE id="EvZHak" name="Delay.h" compile="0" resource="0" file="../resources/Delay.h"/>
   </MAINGROUP>
   <EXPORTFORMATS>
-    <XCODE_MAC targetFolder="Builds/MacOSX">
+    <XCODE_MAC targetFolder="Builds/MacOSX" smallIcon="zRcVZm" bigIcon="zRcVZm">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="OmniCompressor"
                        enablePluginBinaryCopyStep="1" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"
-                       vst3BinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST3/IEM/"/>
+                       vst3BinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST3/IEM/"
+                       headerPath="/usr/local/include"/>
         <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="OmniCompressor"
                        linkTimeOptimisation="1" enablePluginBinaryCopyStep="1" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"
-                       osxCompatibility="10.9 SDK" vst3BinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST3/IEM/"/>
+                       osxCompatibility="10.9 SDK" vst3BinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST3/IEM/"
+                       headerPath="/usr/local/include"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_core" path="../../../../../Applications/JUCE/modules"/>
@@ -64,7 +80,7 @@
         <MODULEPATH id="juce_osc" path="../../../../../Applications/JUCE/modules"/>
       </MODULEPATHS>
     </XCODE_MAC>
-    <VS2017 targetFolder="Builds/VisualStudio2017">
+    <VS2017 targetFolder="Builds/VisualStudio2017" smallIcon="zRcVZm" bigIcon="zRcVZm">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" winWarningLevel="4" generateManifest="1" winArchitecture="x64"
                        isDebug="1" optimisation="1" targetName="OmniCompressor" debugInformationFormat="ProgramDatabase"
@@ -95,12 +111,12 @@
         <MODULEPATH id="juce_osc" path="../../../../../Applications/JUCE/modules"/>
       </MODULEPATHS>
     </VS2017>
-    <LINUX_MAKE targetFolder="Builds/LinuxMakefile" extraDefs="JUCE_JACK=1, JUCE_JACK_CLIENT_NAME=JucePlugin_Name">
+    <LINUX_MAKE targetFolder="Builds/LinuxMakefile" smallIcon="zRcVZm" bigIcon="zRcVZm">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" isDebug="1" optimisation="1" linkTimeOptimisation="0"
-                       targetName="OmniCompressor"/>
+                       targetName="OmniCompressor" headerPath="/usr/local/include"/>
         <CONFIGURATION name="Release" isDebug="0" optimisation="3" linkTimeOptimisation="1"
-                       targetName="OmniCompressor"/>
+                       targetName="OmniCompressor" headerPath="/usr/local/include"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_gui_extra" path="../../../../../Applications/JUCE/modules"/>

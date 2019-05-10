@@ -12,8 +12,21 @@
               pluginAUExportPrefix="AllRADecoderAU" aaxIdentifier="at.iem.AllRADecoder"
               pluginAAXCategory="2" jucerVersion="5.4.3" companyCopyright="IEM - Daniel Rudrich, Franz Zotter"
               companyName="IEM" companyWebsite="iem.at" headerPath="../../../resources/"
-              pluginFormats="buildStandalone,buildVST,buildVST3">
+              pluginFormats="buildStandalone,buildVST,buildVST3" defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1">
   <MAINGROUP id="LpzrV9" name="AllRADecoder">
+    <GROUP id="{5802F7FD-48B6-F588-2DC5-84058836662B}" name="Standalone">
+      <FILE id="DoOO2k" name="IEM_AudioDeviceSelectorComponent.cpp" compile="1"
+            resource="0" file="../resources/Standalone/IEM_AudioDeviceSelectorComponent.cpp"/>
+      <FILE id="I7M6wC" name="IEM_AudioDeviceSelectorComponent.h" compile="0"
+            resource="0" file="../resources/Standalone/IEM_AudioDeviceSelectorComponent.h"/>
+      <FILE id="p2F7j8" name="IEM_JackAudio.h" compile="0" resource="0" file="../resources/Standalone/IEM_JackAudio.h"/>
+      <FILE id="ibr1km" name="IEMPluginSuiteSmall.png" compile="0" resource="1"
+            file="../resources/Standalone/IEMPluginSuiteSmall.png"/>
+      <FILE id="KeKlZH" name="MyStandaloneFilterWindow.h" compile="0" resource="0"
+            file="../resources/Standalone/MyStandaloneFilterWindow.h"/>
+      <FILE id="z8guJu" name="StandaloneApp.cpp" compile="1" resource="0"
+            file="../resources/Standalone/StandaloneApp.cpp"/>
+    </GROUP>
     <GROUP id="{1B6BB8E4-E576-FBC7-B6B6-8603D2CEBF9D}" name="lookAndFeel">
       <FILE id="AVFaGo" name="IEM_LaF.h" compile="0" resource="0" file="../resources/lookAndFeel/IEM_LaF.h"/>
       <FILE id="zmzhlf" name="Roboto-Bold.ttf" compile="0" resource="1" file="../resources/lookAndFeel/Roboto-Bold.ttf"/>
@@ -51,14 +64,16 @@
     <FILE id="rcRJYx" name="NoiseBurst.h" compile="0" resource="0" file="Source/NoiseBurst.h"/>
   </MAINGROUP>
   <EXPORTFORMATS>
-    <XCODE_MAC targetFolder="Builds/MacOSX">
+    <XCODE_MAC targetFolder="Builds/MacOSX" smallIcon="ibr1km" bigIcon="ibr1km">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="AllRADecoder"
                        enablePluginBinaryCopyStep="1" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"
-                       osxCompatibility="10.9 SDK" vst3BinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST3/IEM/"/>
+                       osxCompatibility="10.9 SDK" vst3BinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST3/IEM/"
+                       headerPath="/usr/local/include"/>
         <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="AllRADecoder"
                        enablePluginBinaryCopyStep="1" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"
-                       osxCompatibility="10.9 SDK" vst3BinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST3/IEM/"/>
+                       osxCompatibility="10.9 SDK" vst3BinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST3/IEM/"
+                       headerPath="/usr/local/include"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_core" path="../../../../../Applications/JUCE/modules"/>
@@ -78,7 +93,7 @@
         <MODULEPATH id="juce_osc" path="../../../../../Applications/JUCE/modules"/>
       </MODULEPATHS>
     </XCODE_MAC>
-    <VS2017 targetFolder="Builds/VisualStudio2017">
+    <VS2017 targetFolder="Builds/VisualStudio2017" smallIcon="ibr1km" bigIcon="ibr1km">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" winWarningLevel="4" generateManifest="1" winArchitecture="x64"
                        isDebug="1" optimisation="1" targetName="AllRADecoder" debugInformationFormat="ProgramDatabase"
@@ -110,10 +125,12 @@
         <MODULEPATH id="juce_osc" path="../../../../../Applications/JUCE/modules"/>
       </MODULEPATHS>
     </VS2017>
-    <LINUX_MAKE targetFolder="Builds/LinuxMakefile" extraDefs="JUCE_JACK=1, JUCE_JACK_CLIENT_NAME=JucePlugin_Name">
+    <LINUX_MAKE targetFolder="Builds/LinuxMakefile" smallIcon="ibr1km" bigIcon="ibr1km">
       <CONFIGURATIONS>
-        <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="AllRADecoder"/>
-        <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="AllRADecoder"/>
+        <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="AllRADecoder"
+                       headerPath="/usr/local/include"/>
+        <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="AllRADecoder"
+                       headerPath="/usr/local/include"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_core" path="../../../../../Applications/JUCE/modules"/>

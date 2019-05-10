@@ -11,8 +11,22 @@
               pluginAUExportPrefix="FdnReverbAU" aaxIdentifier="at.IEM.FdnReverb"
               pluginAAXCategory="2" jucerVersion="5.4.3" companyName="IEM"
               companyWebsite="iem.at" cppLanguageStandard="14" companyCopyright="IEM - Sebastian Grill"
-              headerPath="../../../resources/" pluginFormats="buildStandalone,buildVST,buildVST3">
+              headerPath="../../../resources/" pluginFormats="buildStandalone,buildVST,buildVST3"
+              defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1">
   <MAINGROUP id="IWaAhA" name="FdnReverb">
+    <GROUP id="{6F514E93-3815-8136-4E43-3D287BE1DB1F}" name="Standalone">
+      <FILE id="rUuB4k" name="IEM_AudioDeviceSelectorComponent.cpp" compile="1"
+            resource="0" file="../resources/Standalone/IEM_AudioDeviceSelectorComponent.cpp"/>
+      <FILE id="st8218" name="IEM_AudioDeviceSelectorComponent.h" compile="0"
+            resource="0" file="../resources/Standalone/IEM_AudioDeviceSelectorComponent.h"/>
+      <FILE id="iDlhSz" name="IEM_JackAudio.h" compile="0" resource="0" file="../resources/Standalone/IEM_JackAudio.h"/>
+      <FILE id="BAoonu" name="IEMPluginSuiteSmall.png" compile="0" resource="1"
+            file="../resources/Standalone/IEMPluginSuiteSmall.png"/>
+      <FILE id="GH1nOS" name="MyStandaloneFilterWindow.h" compile="0" resource="0"
+            file="../resources/Standalone/MyStandaloneFilterWindow.h"/>
+      <FILE id="ALEiDc" name="StandaloneApp.cpp" compile="1" resource="0"
+            file="../resources/Standalone/StandaloneApp.cpp"/>
+    </GROUP>
     <GROUP id="{FF79C8C1-CE70-FACC-7429-B6FE05F4C53A}" name="resources">
       <GROUP id="{5152CA90-0646-EDE3-BFDF-03793E4AC1D7}" name="WalshHadamard">
         <FILE id="ELqy4W" name="fwht.h" compile="0" resource="0" file="../resources/WalshHadamard/fwht.h"/>
@@ -40,11 +54,13 @@
     </GROUP>
   </MAINGROUP>
   <EXPORTFORMATS>
-    <LINUX_MAKE targetFolder="Builds/LinuxMakefile" vst3Folder="" cppLanguageStandard="-std=c++11">
+    <LINUX_MAKE targetFolder="Builds/LinuxMakefile" vst3Folder="" cppLanguageStandard="-std=c++11"
+                smallIcon="BAoonu" bigIcon="BAoonu">
       <CONFIGURATIONS>
-        <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="FdnReverb"/>
+        <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="FdnReverb"
+                       headerPath="/usr/local/include"/>
         <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="FdnReverb"
-                       linkTimeOptimisation="1"/>
+                       linkTimeOptimisation="1" headerPath="/usr/local/include"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_core" path="../../JUCE/modules"/>
@@ -64,7 +80,7 @@
         <MODULEPATH id="juce_osc" path="../../../../../Applications/JUCE/modules"/>
       </MODULEPATHS>
     </LINUX_MAKE>
-    <VS2017 targetFolder="Builds/VisualStudio2017">
+    <VS2017 targetFolder="Builds/VisualStudio2017" smallIcon="BAoonu" bigIcon="BAoonu">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" winWarningLevel="4" generateManifest="1" winArchitecture="x64"
                        isDebug="1" optimisation="1" targetName="FdnReverb" debugInformationFormat="ProgramDatabase"
@@ -96,11 +112,12 @@
         <MODULEPATH id="juce_osc" path="../../../../../Applications/JUCE/modules"/>
       </MODULEPATHS>
     </VS2017>
-    <XCODE_MAC targetFolder="Builds/MacOSX" extraDefs="JUCE_JACK=1, JUCE_JACK_CLIENT_NAME=JucePlugin_Name">
+    <XCODE_MAC targetFolder="Builds/MacOSX" smallIcon="BAoonu" bigIcon="BAoonu">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" enablePluginBinaryCopyStep="1" isDebug="1" optimisation="1"
                        linkTimeOptimisation="0" targetName="FdnReverb" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"
-                       vst3BinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST3/IEM/"/>
+                       vst3BinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST3/IEM/"
+                       headerPath="/usr/local/include"/>
         <CONFIGURATION name="Release" enablePluginBinaryCopyStep="1" isDebug="0" optimisation="3"
                        linkTimeOptimisation="1" targetName="FdnReverb" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"
                        osxCompatibility="10.9 SDK" vst3BinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST3/IEM/"/>

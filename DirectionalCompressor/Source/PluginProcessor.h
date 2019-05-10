@@ -32,6 +32,7 @@
 #include "../../resources/Compressor.h"
 #include "../../resources/Conversions.h"
 
+#define ProcessorClass DirectionalCompressorAudioProcessor
 
 //==============================================================================
 /**
@@ -39,6 +40,8 @@
 class DirectionalCompressorAudioProcessor  : public AudioProcessorBase<IOTypes::Ambisonics<>, IOTypes::Ambisonics<>>
 {
 public:
+    constexpr static int numberOfInputChannels = 64;
+    constexpr static int numberOfOutputChannels = 64;
     //==============================================================================
     DirectionalCompressorAudioProcessor();
     ~DirectionalCompressorAudioProcessor();

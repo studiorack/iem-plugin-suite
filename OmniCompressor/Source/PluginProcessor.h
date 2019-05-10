@@ -30,6 +30,7 @@
 #include "../../resources/Delay.h"
 #include "LookAheadGainReduction.h"
 
+#define ProcessorClass OmniCompressorAudioProcessor
 
 //==============================================================================
 /**
@@ -37,6 +38,8 @@
 class OmniCompressorAudioProcessor  :   public AudioProcessorBase<IOTypes::Ambisonics<>, IOTypes:: Ambisonics<>>
 {
 public:
+    constexpr static int numberOfInputChannels = 64;
+    constexpr static int numberOfOutputChannels = 64;
     //==============================================================================
     OmniCompressorAudioProcessor();
     ~OmniCompressorAudioProcessor();

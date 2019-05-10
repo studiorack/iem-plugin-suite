@@ -12,8 +12,20 @@
               pluginAUExportPrefix="BinauralDecoderAU" aaxIdentifier="at.iem.BinauralDecoder"
               pluginAAXCategory="2" jucerVersion="5.4.3" companyCopyright="IEM - Daniel Rudrich"
               companyName="IEM" companyWebsite="iem.at" headerPath="../../../resources/"
-              pluginFormats="buildStandalone,buildVST,buildVST3">
+              pluginFormats="buildStandalone,buildVST,buildVST3" defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1">
   <MAINGROUP id="LpzrV9" name="BinauralDecoder">
+    <GROUP id="{EF7AC960-9D48-4ED8-A418-138BEA7D0F5D}" name="Standalone">
+      <FILE id="ffzwPo" name="IEM_AudioDeviceSelectorComponent.cpp" compile="1"
+            resource="0" file="../resources/Standalone/IEM_AudioDeviceSelectorComponent.cpp"/>
+      <FILE id="c6ATG8" name="IEM_AudioDeviceSelectorComponent.h" compile="0"
+            resource="0" file="../resources/Standalone/IEM_AudioDeviceSelectorComponent.h"/>
+      <FILE id="xiu314" name="IEMPluginSuiteSmall.png" compile="0" resource="1"
+            file="../resources/Standalone/IEMPluginSuiteSmall.png"/>
+      <FILE id="ig0SgR" name="MyStandaloneFilterWindow.h" compile="0" resource="0"
+            file="../resources/Standalone/MyStandaloneFilterWindow.h"/>
+      <FILE id="j6JwV2" name="StandaloneApp.cpp" compile="1" resource="0"
+            file="../resources/Standalone/StandaloneApp.cpp"/>
+    </GROUP>
     <GROUP id="{C1C55B51-F542-B1C9-6FA4-94FB642C5EEF}" name="IRs">
       <FILE id="nHipry" name="irsOrd1.wav" compile="0" resource="1" file="Source/IRs/irsOrd1.wav"/>
       <FILE id="NdQo2E" name="irsOrd2.wav" compile="0" resource="1" file="Source/IRs/irsOrd2.wav"/>
@@ -85,7 +97,8 @@
     </GROUP>
   </MAINGROUP>
   <EXPORTFORMATS>
-    <XCODE_MAC targetFolder="Builds/MacOSX" externalLibraries="fftw3f">
+    <XCODE_MAC targetFolder="Builds/MacOSX" externalLibraries="fftw3f" smallIcon="xiu314"
+               bigIcon="xiu314">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="BinauralDecoder"
                        enablePluginBinaryCopyStep="1" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"
@@ -114,7 +127,8 @@
         <MODULEPATH id="juce_osc" path="../../../../../Applications/JUCE/modules"/>
       </MODULEPATHS>
     </XCODE_MAC>
-    <VS2017 targetFolder="Builds/VisualStudio2017" externalLibraries="libfftwf-3.3.lib">
+    <VS2017 targetFolder="Builds/VisualStudio2017" externalLibraries="libfftwf-3.3.lib"
+            smallIcon="xiu314" bigIcon="xiu314">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" winWarningLevel="4" generateManifest="1" winArchitecture="x64"
                        isDebug="1" optimisation="1" targetName="BinauralDecoder" debugInformationFormat="ProgramDatabase"
@@ -150,9 +164,10 @@
       </MODULEPATHS>
     </VS2017>
     <LINUX_MAKE targetFolder="Builds/LinuxMakefile" externalLibraries="fftw3f"
-                extraDefs="JUCE_JACK=1, JUCE_JACK_CLIENT_NAME=JucePlugin_Name">
+                smallIcon="xiu314" bigIcon="xiu314">
       <CONFIGURATIONS>
-        <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="BinauralDecoder"/>
+        <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="BinauralDecoder"
+                       headerPath="/usr/local/include" libraryPath="/usr/local/lib/"/>
         <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="BinauralDecoder"
                        headerPath="/usr/local/include" libraryPath="/usr/local/lib/"/>
       </CONFIGURATIONS>

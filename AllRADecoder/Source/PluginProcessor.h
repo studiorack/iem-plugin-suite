@@ -41,6 +41,7 @@
 #include "NoiseBurst.h"
 #include "AmbisonicNoiseBurst.h"
 
+#define ProcessorClass AllRADecoderAudioProcessor
 
 //==============================================================================
 using namespace dsp;
@@ -48,6 +49,8 @@ class AllRADecoderAudioProcessor  : public AudioProcessorBase<IOTypes::Ambisonic
                                         public ValueTree::Listener
 {
 public:
+    constexpr static int numberOfInputChannels = 64;
+    constexpr static int numberOfOutputChannels = 64;
     //==============================================================================
     AllRADecoderAudioProcessor();
     ~AllRADecoderAudioProcessor();

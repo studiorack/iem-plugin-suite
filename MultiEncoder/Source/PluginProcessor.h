@@ -29,6 +29,8 @@
 #include "../../resources/AudioProcessorBase.h"
 #include "../../resources/Conversions.h"
 
+#define ProcessorClass MultiEncoderAudioProcessor
+
 constexpr int maxNumberOfInputs = 64;
 constexpr int startNnumberOfInputs = 5;
 
@@ -38,7 +40,8 @@ constexpr int startNnumberOfInputs = 5;
 class MultiEncoderAudioProcessor  : public AudioProcessorBase<IOTypes::AudioChannels<maxNumberOfInputs>, IOTypes::Ambisonics<>>
 {
 public:
-
+    constexpr static int numberOfInputChannels = 64;
+    constexpr static int numberOfOutputChannels = 64;
     //==============================================================================
     MultiEncoderAudioProcessor();
     ~MultiEncoderAudioProcessor();

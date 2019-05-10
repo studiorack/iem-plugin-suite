@@ -32,12 +32,15 @@
 #include "../../resources/ReferenceCountedDecoder.h"
 #include "../../resources/FilterVisualizerHelper.h"
 
+#define ProcessorClass SimpleDecoderAudioProcessor
 
 using namespace dsp;
 //==============================================================================
 class SimpleDecoderAudioProcessor  :   public AudioProcessorBase<IOTypes::Ambisonics<>, IOTypes::AudioChannels<>>
 {
 public:
+    constexpr static int numberOfInputChannels = 64;
+    constexpr static int numberOfOutputChannels = 64;
     //==============================================================================
     SimpleDecoderAudioProcessor();
     ~SimpleDecoderAudioProcessor();

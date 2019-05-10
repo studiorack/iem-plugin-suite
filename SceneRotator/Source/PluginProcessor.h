@@ -29,6 +29,7 @@
 #include "../../resources/Quaternion.h"
 #include "../../resources/ReferenceCountedMatrix.h"
 
+#define ProcessorClass SceneRotatorAudioProcessor
 
 //==============================================================================
 class SceneRotatorAudioProcessor  : public AudioProcessorBase<IOTypes::Ambisonics<>, IOTypes::Ambisonics<>, true>,
@@ -36,6 +37,8 @@ class SceneRotatorAudioProcessor  : public AudioProcessorBase<IOTypes::Ambisonic
                                     private Timer
 {
 public:
+    constexpr static int numberOfInputChannels = 64;
+    constexpr static int numberOfOutputChannels = 64;
     //==============================================================================
     SceneRotatorAudioProcessor();
     ~SceneRotatorAudioProcessor();

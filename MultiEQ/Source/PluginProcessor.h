@@ -38,10 +38,14 @@ using namespace juce::dsp;
 # define IIRfloat_elements() 1
 #endif /* JUCE_USE_SIMD */
 
+#define ProcessorClass MultiEQAudioProcessor
+
 //==============================================================================
 class MultiEQAudioProcessor  : public AudioProcessorBase<IOTypes::AudioChannels<64>, IOTypes::AudioChannels<64>>
 {
 public:
+    constexpr static int numberOfInputChannels = 64;
+    constexpr static int numberOfOutputChannels = 64;
     //==============================================================================
     MultiEQAudioProcessor();
     ~MultiEQAudioProcessor();
