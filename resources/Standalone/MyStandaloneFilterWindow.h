@@ -28,12 +28,24 @@
 #include "../customComponents/SimpleLabel.h"
 #include "IEM_AudioDeviceSelectorComponent.h"
 
+#if JUCE_MAC || JUCE_LINUX
+    #define BUILD_WITH_JACK_SUPPORT 1
+#else
+    #define BUILD_WITH_JACK_SUPPORT 0
+#endif
+
+#if DONT_BUILD_WITH_JACK_SUPPORT
+    #define BUILD_WITH_JACK_SUPPORT 0
+#endif
+
+#if BUILD_WITH_JACK_SUPPORT
+    #include "IEM_JackAudio.h"
+#endif
+
 #if JUCE_MODULE_AVAILABLE_juce_audio_plugin_client
 extern juce::AudioProcessor* JUCE_API JUCE_CALLTYPE createPluginFilterOfType (juce::AudioProcessor::WrapperType type);
 #endif
 
-namespace juce
-{
 
 //==============================================================================
 /**
@@ -94,7 +106,10 @@ public:
             deviceManager.addAudioDeviceType (t);
 
         types.clearQuick (false);
-            deviceManager.addAudioDeviceType (new iem::JackAudioIODeviceType());
+#if BUILD_WITH_JACK_SUPPORT
+
+        deviceManager.addAudioDeviceType (new iem::JackAudioIODeviceType());
+#endif
 
         auto inChannels = (channelConfiguration.size() > 0 ? channelConfiguration[0].numIns
                                                            : processor->getMainBusNumInputChannels());
@@ -940,5 +955,3 @@ inline MyStandalonePluginHolder* MyStandalonePluginHolder::getInstance()
 
     return nullptr;
 }
-
-} // namespace juce
