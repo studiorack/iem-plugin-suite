@@ -29,8 +29,10 @@
 
 extern juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter();
 
+#if JUCE_MAC || JUCE_LINUX
+    #include "IEM_JackAudio.h"
+#endif
 
-#include "IEM_JackAudio.cpp"
 #include "MyStandaloneFilterWindow.h"
 
 namespace juce

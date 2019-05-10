@@ -35,6 +35,16 @@ static void* juce_loadJackFunction (const char* const name)
     return dlsym (juce_libjackHandle, name);
 }
 
+
+#if JUCE_MAC
+    #define JACK_LIB_NAME0 "libjack.0.dylib"
+    #define JACK_LIB_NAME "libjack.dylib"
+#elif JUCE_LINUX
+    #define JACK_LIB_NAME0 "libjack.so.0"
+    #define JACK_LIB_NAME "libjack.so"
+#endif
+
+
 #define JUCE_DECL_JACK_FUNCTION(return_type, fn_name, argument_types, arguments)  \
   return_type fn_name argument_types                                              \
   {                                                                               \
@@ -270,32 +280,6 @@ public:
         iem::jack_activate (client);
         deviceIsOpen = true;
 
-//        if (! inputChannels.isZero())
-//        {
-//            for (JackPortIterator i (client, true); i.next();)
-//            {
-//                if (inputChannels [i.index] && i.clientName == getName())
-//                {
-//                    int error = iem::jack_connect (client, i.ports[i.index], iem::jack_port_name ((jack_port_t*) inputPorts[i.index]));
-//                    if (error != 0)
-//                        JUCE_JACK_LOG ("Cannot connect input port " + String (i.index) + " (" + i.name + "), error " + String (error));
-//                }
-//            }
-//        }
-//
-//        if (! outputChannels.isZero())
-//        {
-//            for (JackPortIterator i (client, false); i.next();)
-//            {
-//                if (outputChannels [i.index] && i.clientName == getName())
-//                {
-//                    int error = iem::jack_connect (client, iem::jack_port_name ((jack_port_t*) outputPorts[i.index]), i.ports[i.index]);
-//                    if (error != 0)
-//                        JUCE_JACK_LOG ("Cannot connect output port " + String (i.index) + " (" + i.name + "), error " + String (error));
-//                }
-//            }
-//        }
-
         updateActivePorts();
 
         return lastError;
@@ -435,21 +419,8 @@ private:
         for (int i = 0; i < inputPorts.size(); ++i)
             newInputChannels.setBit (i);
 
-//        if (newOutputChannels != activeOutputChannels
-//             || newInputChannels != activeInputChannels)
-//        {
-//            AudioIODeviceCallback* const oldCallback = callback;
-//
-//            stop();
-//
-            activeOutputChannels = newOutputChannels;
-            activeInputChannels  = newInputChannels;
-//
-//            if (oldCallback != nullptr)
-//                start (oldCallback);
-//
-//            sendDeviceChangedCallback();
-//        }
+        activeOutputChannels = newOutputChannels;
+        activeInputChannels  = newInputChannels;
     }
 
     static void portConnectCallback (jack_port_id_t, jack_port_id_t, int, void* arg)
@@ -521,8 +492,8 @@ public:
         outputNames.clear();
         outputIds.clear();
 
-        if (juce_libjackHandle == nullptr)  juce_libjackHandle = dlopen ("libjack.0.dylib",  RTLD_LAZY); //"libjack.so.0",
-        if (juce_libjackHandle == nullptr)  juce_libjackHandle = dlopen ("libjack.dylib",   RTLD_LAZY);
+        if (juce_libjackHandle == nullptr)  juce_libjackHandle = dlopen (JACK_LIB_NAME0,  RTLD_LAZY);
+        if (juce_libjackHandle == nullptr)  juce_libjackHandle = dlopen (JACK_LIB_NAME,   RTLD_LAZY);
         if (juce_libjackHandle == nullptr)  return;
 
         jack_status_t status;
@@ -620,11 +591,5 @@ void JackAudioIODevice::sendDeviceChangedCallback()
         if (JackAudioIODeviceType* d = activeDeviceTypes[i])
             d->portConnectionChange();
 }
-
-//==============================================================================
-//AudioIODeviceType* AudioIODeviceType::createAudioIODeviceType_JACK()
-//{
-//    return new JackAudioIODeviceType();
-//}
 
 } // namespace iem
