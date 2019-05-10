@@ -11,7 +11,7 @@ For more information, installation guides and plug-in descriptions see:
 
 
 ## Compilation Guide
-All you need for compiling the IEM Plug-in Suite is the latest version of JUCE, an IDE (eg. Xcode, Microsoft Visual Studio) and the fftw3 library (http://fftw.org).
+All you need for compiling the IEM Plug-in Suite is the latest version of JUCE, an IDE (eg. Xcode, Microsoft Visual Studio), the fftw3 library (http://fftw.org), and optionally [JACK](http://jackaudio.org/) (see JACK support below).
 
 - Clone/download the IEMPluginSuite repository
 - Install the fftw3 library (you might want add the paths to the Projucer projects)
@@ -27,6 +27,9 @@ The *.jucer projects are configured to build VST2, VST3, and standalone versions
 
 Instead of building each plug-in separately, you can also use the provided shell-scripts to start a batch processing.
 **For Windows:** The .jucer projects have to opened and saved first, to create the exporters. Then the 'Developer Command Prompt' has to execute the win_compileAll.bat script. 
+
+###  JACK support
+Both on macOS and linux, the plug-in standalone version will be built with JACK support. You can disable the JACK support by adding `DONT_BUILD_WITH_JACK_SUPPORT=1` to the *Preprocessor Definitions*-field in the Projucer projects.
 
 ## Known issues
 - There's an issue with the channel-layout behavior of the VST3 versions of the plug-ins. This issue comes down to the VST3 SDK and has to be fixed by Steinberg. Already reported at their developer forum.
