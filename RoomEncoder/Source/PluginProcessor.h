@@ -204,14 +204,14 @@ private:
     SharedResourcePointer<SharedParams> sharedParams;
 
     //SIMD IIR Filter
-    OwnedArray<IIR::Filter<IIRfloat>> lowShelfArray;
-    OwnedArray<IIR::Filter<IIRfloat>> highShelfArray;
-    OwnedArray<IIR::Filter<IIRfloat>> lowShelfArray2;
-    OwnedArray<IIR::Filter<IIRfloat>> highShelfArray2;
+
+    OwnedArray<OwnedArray<IIR::Filter<IIRfloat>>> lowShelfArray;
+    OwnedArray<OwnedArray<IIR::Filter<IIRfloat>>> highShelfArray;
     HeapBlock<char> interleavedBlockData[16], zeroData; //todo: dynamically?
     OwnedArray<AudioBlock<IIRfloat>> interleavedData;
     AudioBlock<float> zero;
 
+    Array<int> filterPoints {1, 7, 25, 61, 113, 169, 213};
 
     Vector3D<float> sourcePos, listenerPos;
 

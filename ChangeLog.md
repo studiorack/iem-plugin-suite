@@ -3,6 +3,11 @@ For a list of all changes and bugfixes see the git log.
 
 Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They might lead to an unexpected behaviour and might not be compatible with your previous projects without making some adaptions. See the [Breaking changes article](https://plugins.iem.at/docs/breakingchanges/) for more information.
 
+## untagged changes
+- plug-in specific changes
+    -**Room**Encoder
+        - shelving-filters now operate on all reflection orders (not only the first two)
+        
 ## v1.10.2
 - general changes
     - fixed bug in SIMD IIR processing (**MultiBand**Compressor, **Multi**EQ, **Room**Encoder), which in some constellations led to very loud output
