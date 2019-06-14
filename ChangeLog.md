@@ -5,6 +5,8 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
 
 ## untagged changes
 - plug-in specific changes
+    - **Binaural**Decoder
+        - fixes bug which lead to +6dB per sampleRate doubling 
     -**Room**Encoder
         - shelving-filters now operate on all reflection orders (not only the first two)
         

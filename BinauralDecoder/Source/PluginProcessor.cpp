@@ -357,6 +357,9 @@ void BinauralDecoderAudioProcessor::updateBuffers()
         info.buffer = &resampledIRs;
 
         resamplingSource.getNextAudioBlock (info);
+
+        // compensate for more (correlated) samples contributing to output signal
+        resampledIRs.applyGain (irsSampleRate / sampleRate);
     }
 
     irLengthMinusOne = irLength - 1;
