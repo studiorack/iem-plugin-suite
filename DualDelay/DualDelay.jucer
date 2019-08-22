@@ -3,7 +3,7 @@
 <JUCERPROJECT id="Vwo12i" name="DualDelay" displaySplashScreen="0" reportAppUsage="0"
               splashScreenColour="Dark" projectType="audioplug" version="0.3.5"
               bundleIdentifier="at.iem.DualDelay" includeBinaryInAppConfig="1"
-              buildVST="1" buildVST3="1" buildAU="0" buildAUv3="0" buildRTAS="0"
+              buildVST="1" buildVST3="0" buildAU="0" buildAUv3="0" buildRTAS="0"
               buildAAX="0" buildStandalone="1" enableIAA="0" pluginName="DualDelay"
               pluginDesc="DualDelay" pluginManufacturer="IEM" pluginManufacturerCode="IEMA"
               pluginCode="DuDe" pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
@@ -11,7 +11,7 @@
               pluginAUExportPrefix="DualDelayAU" aaxIdentifier="at.iem.DualDelay"
               pluginAAXCategory="2" jucerVersion="5.4.4" companyName="IEM"
               companyWebsite="iem.at" cppLanguageStandard="14" companyCopyright="IEM - Daniel Rudrich"
-              headerPath="../../../resources/" pluginFormats="buildStandalone,buildVST,buildVST3">
+              headerPath="../../../resources/" pluginFormats="buildStandalone,buildVST">
   <MAINGROUP id="ie7lEF" name="DualDelay">
     <GROUP id="{733DAD44-69FE-47B0-7F02-2323D3DCB784}" name="lookAndFeel">
       <FILE id="V77kkS" name="IEM_LaF.h" compile="0" resource="0" file="../resources/lookAndFeel/IEM_LaF.h"/>

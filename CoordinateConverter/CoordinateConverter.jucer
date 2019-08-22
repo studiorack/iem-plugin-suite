@@ -4,7 +4,7 @@
               reportAppUsage="0" splashScreenColour="Dark" projectType="audioplug"
               version="0.3.5" bundleIdentifier="at.iem.CoordinateConverter"
               includeBinaryInAppConfig="1" cppLanguageStandard="14" buildVST="1"
-              buildVST3="1" buildAU="0" buildAUv3="0" buildRTAS="0" buildAAX="0"
+              buildVST3="0" buildAU="0" buildAUv3="0" buildRTAS="0" buildAAX="0"
               buildStandalone="1" enableIAA="0" pluginName="CoordinateConverter"
               pluginDesc="CoordinateConverter" pluginManufacturer="IEM" pluginManufacturerCode="IEMA"
               pluginCode="CoCo" pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
@@ -12,7 +12,7 @@
               pluginAUExportPrefix="CoordinateConverterAU" aaxIdentifier="at.iem.CoordinateConverter"
               pluginAAXCategory="2" jucerVersion="5.4.4" companyCopyright="IEM - Daniel Rudrich"
               companyName="IEM" companyWebsite="iem.at" headerPath="../../../resources/"
-              pluginFormats="buildStandalone,buildVST,buildVST3">
+              pluginFormats="buildStandalone,buildVST">
   <MAINGROUP id="LpzrV9" name="CoordinateConverter">
     <GROUP id="{1B6BB8E4-E576-FBC7-B6B6-8603D2CEBF9D}" name="lookAndFeel">
       <FILE id="AVFaGo" name="IEM_LaF.h" compile="0" resource="0" file="../resources/lookAndFeel/IEM_LaF.h"/>

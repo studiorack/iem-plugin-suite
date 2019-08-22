@@ -3,7 +3,7 @@
 <JUCERPROJECT id="PASmMZ" name="DirectionalCompressor" displaySplashScreen="0"
               reportAppUsage="0" splashScreenColour="Dark" projectType="audioplug"
               version="1.2.3" bundleIdentifier="at.iem.DirectionalCompressor"
-              includeBinaryInAppConfig="1" buildVST="1" buildVST3="1" buildAU="0"
+              includeBinaryInAppConfig="1" buildVST="1" buildVST3="0" buildAU="0"
               buildAUv3="0" buildRTAS="0" buildAAX="0" buildStandalone="1"
               enableIAA="0" pluginName="DirectionalCompressor" pluginDesc="DirectionalCompressor"
               pluginManufacturer="IEM" pluginManufacturerCode="IEMA" pluginCode="DiCo"
@@ -12,7 +12,7 @@
               pluginAUExportPrefix="DirectionalCompressorAU" aaxIdentifier="at.iem.DirectionalCompressor"
               pluginAAXCategory="2" jucerVersion="5.4.4" cppLanguageStandard="14"
               companyName="IEM" companyWebsite="IEM.at" companyCopyright="IEM - Daniel Rudrich"
-              headerPath="../../../resources/" pluginFormats="buildStandalone,buildVST,buildVST3">
+              headerPath="../../../resources/" pluginFormats="buildStandalone,buildVST">
   <MAINGROUP id="Ld9vSw" name="DirectionalCompressor">
     <GROUP id="{DCBFE562-E532-8599-82E1-FE126A7BB663}" name="lookAndFeel">
       <FILE id="IYBFfk" name="IEM_LaF.h" compile="0" resource="0" file="../resources/lookAndFeel/IEM_LaF.h"/>

@@ -11,7 +11,7 @@ For more information, installation guides and plug-in descriptions see:
 
 
 ## Compilation Guide
-All you need for compiling the IEM Plug-in Suite is the latest version of [JUCE](https://juce.com), an IDE (eg. Xcode, Microsoft Visual Studio) and the [fftw3 library](http://fftw.org).
+All you need for compiling the IEM Plug-in Suite is the the [JUCE framework](https://juce.com) with version 5.4.4, an IDE (eg. Xcode, Microsoft Visual Studio), and the [fftw3 library](http://fftw.org) (for some of the plug-ins).
 
 - Clone/download the IEMPluginSuite repository
 - Install the fftw3 library (you might want add the paths to the Projucer projects)
@@ -23,7 +23,7 @@ All you need for compiling the IEM Plug-in Suite is the latest version of [JUCE]
 - Build
 - Enjoy ;-)
 
-The *.jucer projects are configured to build VST2, VST3, and standalone versions. In order to build the VST2 versions of the plug-ins, you need to have a copy of the Steinberg VST2-SDK which no longer comes with JUCE. 
+The *.jucer projects are configured to build VST2,  and standalone versions. In order to build the VST2 versions of the plug-ins, you need to have a copy of the Steinberg VST2-SDK which no longer comes with JUCE. If you want to build VST3 versions, you'll have to enable it in the Projucer Project Settings -> Plugin Formats.
 
 #### Batch processing
 Instead of building each plug-in separately, you can also use the provided shell-scripts to start a batch processing:

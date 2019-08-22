@@ -3,7 +3,7 @@
 <JUCERPROJECT id="mbpAgi" name="DirectivityShaper" displaySplashScreen="0"
               reportAppUsage="0" splashScreenColour="Dark" projectType="audioplug"
               version="0.7.5" bundleIdentifier="at.iem.DirectivityShaper" includeBinaryInAppConfig="1"
-              cppLanguageStandard="14" buildVST="1" buildVST3="1" buildAU="0"
+              cppLanguageStandard="14" buildVST="1" buildVST3="0" buildAU="0"
               buildAUv3="0" buildRTAS="0" buildAAX="0" buildStandalone="1"
               enableIAA="0" pluginName="DirectivityShaper" pluginDesc="DirectivityShaper"
               pluginManufacturer="IEM" pluginManufacturerCode="IEMA" pluginCode="DiSh"
@@ -12,7 +12,7 @@
               pluginAUExportPrefix="DirectivityShaperAU" aaxIdentifier="at.iem.DirectivityShaper"
               pluginAAXCategory="2" jucerVersion="5.4.4" companyCopyright="IEM - Daniel Rudrich"
               companyName="IEM" companyWebsite="IEM.at" headerPath="../../../resources/"
-              pluginFormats="buildStandalone,buildVST,buildVST3">
+              pluginFormats="buildStandalone,buildVST">
   <MAINGROUP id="LpzrV9" name="DirectivityShaper">
     <GROUP id="{6C542E45-7004-DFCA-1196-6CF9DECCD286}" name="lookAndFeel">
       <FILE id="PdediU" name="IEM_LaF.h" compile="0" resource="0" file="../resources/lookAndFeel/IEM_LaF.h"/>

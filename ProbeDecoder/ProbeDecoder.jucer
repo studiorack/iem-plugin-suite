@@ -2,7 +2,7 @@
 
 <JUCERPROJECT id="cBXtXS" name="ProbeDecoder" projectType="audioplug" version="0.4.3"
               bundleIdentifier="at.iem.ProbeDecoder" includeBinaryInAppConfig="1"
-              buildVST="1" buildVST3="1" buildAU="0" buildAUv3="0" buildRTAS="0"
+              buildVST="1" buildVST3="0" buildAU="0" buildAUv3="0" buildRTAS="0"
               buildAAX="0" pluginName="ProbeDecoder" pluginDesc="Sampling Ambisonic signals at a single direction"
               pluginManufacturer="IEM" pluginManufacturerCode="IEMA" pluginCode="PrDe"
               pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
@@ -12,7 +12,7 @@
               companyWebsite="iem.at" displaySplashScreen="0" reportAppUsage="0"
               splashScreenColour="Dark" buildStandalone="1" enableIAA="0" cppLanguageStandard="14"
               companyCopyright="IEM - Daniel Rudrich" headerPath="../../../resources/"
-              pluginFormats="buildStandalone,buildVST,buildVST3">
+              pluginFormats="buildStandalone,buildVST">
   <MAINGROUP id="u5XoJ7" name="ProbeDecoder">
     <GROUP id="{8535954E-DB57-A8DB-7C90-66B548D8B415}" name="lookAndFeel">
       <FILE id="UcARlb" name="IEM_LaF.h" compile="0" resource="0" file="../resources/lookAndFeel/IEM_LaF.h"/>
