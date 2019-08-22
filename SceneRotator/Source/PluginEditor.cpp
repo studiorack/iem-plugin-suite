@@ -105,7 +105,7 @@ SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotator
 
     addAndMakeVisible (cbRotationSequence);
     cbRotationSequence.setTooltip ("Sequence of intrinsic rotations");
-    cbRotationSequence.addSectionHeading ("Rotation sequence");
+    //cbRotationSequence.addSectionHeading ("Rotation sequence");
     cbRotationSequence.addItem("Yaw -> Pitch -> Roll", 1);
     cbRotationSequence.addItem("Roll -> Pitch -> Yaw", 2);
     cbRotationSequence.setJustificationType (Justification::centred);
@@ -177,7 +177,7 @@ SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotator
 
     addAndMakeVisible (cbMidiScheme);
     cbMidiScheme.setJustificationType (Justification::centred);
-    cbMidiScheme.addSectionHeading("Select Device's MIDI Scheme");
+    //cbMidiScheme.addSectionHeading("Select Device's MIDI Scheme");
     cbMidiScheme.addItemList (processor.getMidiSchemes(), 1);
     cbMidiScheme.setSelectedId (static_cast<int> (processor.getCurrentMidiScheme()) + 1);
     updateSelectedMidiScheme();
@@ -401,10 +401,7 @@ void SceneRotatorAudioProcessorEditor::refreshMidiDeviceList()
     }
 
     cbMidiDevices.addSeparator();
-    cbMidiDevices.addSectionHeading ("Available Devices");
-
-
-
+    //cbMidiDevices.addSectionHeading ("Available Devices");
     for (int i = 0; i < devices.size(); ++i)
     {
         cbMidiDevices.addItem (devices[i], i + 1);

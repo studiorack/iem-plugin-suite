@@ -47,7 +47,7 @@ AllRADecoderAudioProcessorEditor::AllRADecoderAudioProcessorEditor (AllRADecoder
     cbOrderSettingAttachment.reset (new ComboBoxAttachment(valueTreeState, "inputOrderSetting", *title.getInputWidgetPtr()->getOrderCbPointer()));
 
     addAndMakeVisible(cbDecoderOrder);
-    cbDecoderOrder.addSectionHeading("Decoder order");
+    //cbDecoderOrder.addSectionHeading("Decoder order");
     for (int n = 1; n <= 7; ++n)
         cbDecoderOrder.addItem(getOrderString(n), n);
     cbDecoderOrderAttachment.reset (new ComboBoxAttachment(valueTreeState, "decoderOrder", cbDecoderOrder));
