@@ -77,14 +77,14 @@ private:
 
     // Attachments to create a connection between IOWidgets comboboxes
     // and the associated parameters
-    ScopedPointer<ComboBoxAttachment> cbInputChannelsSettingAttachment;
-    ScopedPointer<ComboBoxAttachment> cbOrderSettingAttachment;
-    ScopedPointer<ComboBoxAttachment> cbNormalizationSettingAttachment;
+    std::unique_ptr<ComboBoxAttachment> cbInputChannelsSettingAttachment;
+    std::unique_ptr<ComboBoxAttachment> cbOrderSettingAttachment;
+    std::unique_ptr<ComboBoxAttachment> cbNormalizationSettingAttachment;
 
     // Demo stuff
     Slider slParam1;
     ReverseSlider slParam2;
-    ScopedPointer<SliderAttachment> slParam1Attachment, slParam2Attachment;
+    std::unique_ptr<SliderAttachment> slParam1Attachment, slParam2Attachment;
 
 
 

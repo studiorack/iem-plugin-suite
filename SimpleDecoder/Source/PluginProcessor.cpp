@@ -82,7 +82,7 @@ createParameterLayout())
     options.folderName          = "IEM";
     options.osxLibrarySubFolder = "Preferences";
 
-    properties = new PropertiesFile(options);
+    properties.reset (new PropertiesFile (options));
     lastDir = File(properties->getValue("presetFolder"));
 
 
@@ -90,8 +90,8 @@ createParameterLayout())
     highPass1.state = highPassCoeffs;
     highPass2.state = highPassCoeffs;
 
-    lowPass1 = new IIR::Filter<float>(lowPassCoeffs);
-    lowPass2 = new IIR::Filter<float>(lowPassCoeffs);
+    lowPass1.reset (new IIR::Filter<float> (lowPassCoeffs));
+    lowPass2.reset (new IIR::Filter<float> (lowPassCoeffs));
 }
 
 SimpleDecoderAudioProcessor::~SimpleDecoderAudioProcessor()
@@ -285,7 +285,7 @@ void SimpleDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiB
     AudioBlock<float> inputAudioBlock = AudioBlock<float>(buffer.getArrayOfWritePointers(), nChIn, L);
     AudioBlock<float> outputAudioBlock = AudioBlock<float>(buffer.getArrayOfWritePointers(), nChOut, L);
     ProcessContextNonReplacing<float> decoderContext (inputAudioBlock, outputAudioBlock);
-    decoder.process(decoderContext);
+    decoder.process (inputAudioBlock, outputAudioBlock);
 
     for (int ch = nChOut; ch < nChIn; ++ch) // clear all not needed channels
         buffer.clear(ch, 0, buffer.getNumSamples());
@@ -331,7 +331,7 @@ void SimpleDecoderAudioProcessor::getStateInformation (MemoryBlock& destData)
     // as intermediaries to make it easy to save and load complex data.
     parameters.state.setProperty ("lastOpenedPresetFile", var (lastFile.getFullPathName()), nullptr);
     parameters.state.setProperty ("OSCPort", var (oscReceiver.getPortNumber()), nullptr);
-    ScopedPointer<XmlElement> xml (parameters.state.createXml());
+    std::unique_ptr<XmlElement> xml (parameters.state.createXml());
     xml->setTagName (String (JucePlugin_Name)); // converts old "Decoder" state to "SimpleDecoder" state
     copyXmlToBinary (*xml, destData);
 }
@@ -342,7 +342,7 @@ void SimpleDecoderAudioProcessor::setStateInformation (const void* data, int siz
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
-    ScopedPointer<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
+    std::unique_ptr<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
     if (xmlState != nullptr)
         if (xmlState->hasTagName (parameters.state.getType()) || xmlState->hasTagName ("Decoder")) // compatibility for old "Decoder" state tagName
             parameters.state = ValueTree::fromXml (*xmlState);

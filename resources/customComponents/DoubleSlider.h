@@ -31,13 +31,13 @@ class DoubleSlider    : public Component, public Slider::Listener
 public:
     DoubleSlider()
     {
-        leftSlider = new ReverseSlider("left");
-        middleSlider = new ReverseSlider("middle");
-        rightSlider = new ReverseSlider("right");
+        leftSlider.reset (new ReverseSlider("left"));
+        middleSlider.reset (new ReverseSlider("middle"));
+        rightSlider.reset (new ReverseSlider("right"));
 
-        addAndMakeVisible(leftSlider);
-        addAndMakeVisible(middleSlider);
-        addAndMakeVisible(rightSlider);
+        addAndMakeVisible (leftSlider.get());
+        addAndMakeVisible (middleSlider.get());
+        addAndMakeVisible (rightSlider.get());
 
         leftSlider->setSliderStyle(Slider::IncDecButtons);
         leftSlider->setTextBoxStyle(Slider::TextBoxLeft, false, 50, 50);
@@ -135,7 +135,7 @@ public:
 
 private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DoubleSlider)
-    ScopedPointer<ReverseSlider> leftSlider, middleSlider, rightSlider;
+    std::unique_ptr<ReverseSlider> leftSlider, middleSlider, rightSlider;
     float leftRightSliderWidth = 50;
     float minRange = 0;
     float maxRange = 1;

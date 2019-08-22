@@ -39,50 +39,50 @@ OmniCompressorAudioProcessorEditor::OmniCompressorAudioProcessorEditor (OmniComp
     addAndMakeVisible(characteristic);
 
     addAndMakeVisible(&tbLookAhead);
-    tbLookAheadAttachment = new ButtonAttachment(valueTreeState, "lookAhead", tbLookAhead);
+    tbLookAheadAttachment.reset (new ButtonAttachment (valueTreeState, "lookAhead", tbLookAhead));
     tbLookAhead.setButtonText("Look ahead (5ms)");
     tbLookAhead.setColour (ToggleButton::tickColourId, globalLaF.ClWidgetColours[0]);
 
     addAndMakeVisible(&sliderKnee);
-    KnAttachment = new SliderAttachment(valueTreeState,"knee", sliderKnee);
+    KnAttachment.reset (new SliderAttachment (valueTreeState,"knee", sliderKnee));
     sliderKnee.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     sliderKnee.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     sliderKnee.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
     sliderKnee.setTextValueSuffix(" dB");
 
-    cbNormalizationAtachement = new ComboBoxAttachment(valueTreeState,"useSN3D", *title.getInputWidgetPtr()->getNormCbPointer());
-    cbOrderAtachement = new ComboBoxAttachment(valueTreeState,"orderSetting", *title.getInputWidgetPtr()->getOrderCbPointer());
+    cbNormalizationAtachement.reset (new ComboBoxAttachment (valueTreeState,"useSN3D", *title.getInputWidgetPtr()->getNormCbPointer()));
+    cbOrderAtachement.reset (new ComboBoxAttachment (valueTreeState,"orderSetting", *title.getInputWidgetPtr()->getOrderCbPointer()));
 
     addAndMakeVisible(&sliderThreshold);
-    ThAttachment = new SliderAttachment(valueTreeState,"threshold", sliderThreshold);
+    ThAttachment.reset (new SliderAttachment (valueTreeState,"threshold", sliderThreshold));
     sliderThreshold.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     sliderThreshold.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     sliderThreshold.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
     sliderThreshold.setTextValueSuffix(" dB");
 
     addAndMakeVisible(&sliderRatio);
-    RaAttachment = new SliderAttachment(valueTreeState,"ratio", sliderRatio);
+    RaAttachment.reset (new SliderAttachment (valueTreeState,"ratio", sliderRatio));
     sliderRatio.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     sliderRatio.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     sliderRatio.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[3]);
 //    sliderRatio.setTextValueSuffix("");
 
     addAndMakeVisible(&sliderAttackTime);
-    ATAttachment = new SliderAttachment(valueTreeState,"attack", sliderAttackTime);
+    ATAttachment.reset (new SliderAttachment (valueTreeState,"attack", sliderAttackTime));
     sliderAttackTime.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     sliderAttackTime.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     sliderAttackTime.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
     sliderAttackTime.setTextValueSuffix(" ms");
 
     addAndMakeVisible(&sliderReleaseTime);
-    RTAttachment = new SliderAttachment(valueTreeState,"release", sliderReleaseTime);
+    RTAttachment.reset (new SliderAttachment (valueTreeState,"release", sliderReleaseTime));
     sliderReleaseTime.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     sliderReleaseTime.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     sliderReleaseTime.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
     sliderReleaseTime.setTextValueSuffix(" ms");
 
     addAndMakeVisible(&sliderMakeupGain);
-    MGAttachment = new SliderAttachment(valueTreeState,"outGain", sliderMakeupGain);
+    MGAttachment.reset (new SliderAttachment (valueTreeState,"outGain", sliderMakeupGain));
     sliderMakeupGain.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     sliderMakeupGain.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     sliderMakeupGain.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);

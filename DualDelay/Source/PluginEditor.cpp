@@ -35,11 +35,11 @@ DualDelayAudioProcessorEditor::DualDelayAudioProcessorEditor (DualDelayAudioProc
     title.setFont(globalLaF.robotoBold,globalLaF.robotoLight);
     addAndMakeVisible(&footer);
 
-    cbNormalizationAtachement = new ComboBoxAttachment(valueTreeState,"useSN3D", *title.getInputWidgetPtr()->getNormCbPointer());
-    cbOrderAtachement = new ComboBoxAttachment(valueTreeState,"orderSetting", *title.getInputWidgetPtr()->getOrderCbPointer());
+    cbNormalizationAtachement.reset (new ComboBoxAttachment (valueTreeState,"useSN3D", *title.getInputWidgetPtr()->getNormCbPointer()));
+    cbOrderAtachement.reset (new ComboBoxAttachment (valueTreeState,"orderSetting", *title.getInputWidgetPtr()->getOrderCbPointer()));
 
     addAndMakeVisible(&SlDryGain);
-    SlDryGainAttachment = new SliderAttachment(valueTreeState, "dryGain", SlDryGain);
+    SlDryGainAttachment.reset (new SliderAttachment (valueTreeState, "dryGain", SlDryGain));
     SlDryGain.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
     SlDryGain.setTextValueSuffix(" dB");
     SlDryGain.setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
@@ -49,7 +49,7 @@ DualDelayAudioProcessorEditor::DualDelayAudioProcessorEditor (DualDelayAudioProc
     // =========================== LEFT SIDE ==============================================================
 
     addAndMakeVisible(&SlLeftRot);
-    SlLeftRotAttachment = new SliderAttachment(valueTreeState, "rotationL", SlLeftRot);
+    SlLeftRotAttachment.reset (new SliderAttachment (valueTreeState, "rotationL", SlLeftRot));
     SlLeftRot.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
     SlLeftRot.setReverse(true);
     SlLeftRot.setTextValueSuffix(" deg");
@@ -58,14 +58,14 @@ DualDelayAudioProcessorEditor::DualDelayAudioProcessorEditor (DualDelayAudioProc
     SlLeftRot.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
 
     addAndMakeVisible(&SlLeftDelay);
-    SlLeftDelayAttachment = new SliderAttachment(valueTreeState, "delayTimeL", SlLeftDelay);
+    SlLeftDelayAttachment.reset (new SliderAttachment (valueTreeState, "delayTimeL", SlLeftDelay));
     SlLeftDelay.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
     SlLeftDelay.setTextValueSuffix(" ms");
     SlLeftDelay.setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
     SlLeftDelay.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
 
     addAndMakeVisible(&SlLeftLfoRate);
-    SlLeftLfoRateAttachment = new SliderAttachment(valueTreeState, "lfoRateL", SlLeftLfoRate);
+    SlLeftLfoRateAttachment.reset (new SliderAttachment (valueTreeState, "lfoRateL", SlLeftLfoRate));
     SlLeftLfoRate.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
     SlLeftLfoRate.setTextValueSuffix(" Hz");
     SlLeftLfoRate.setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
@@ -73,7 +73,7 @@ DualDelayAudioProcessorEditor::DualDelayAudioProcessorEditor (DualDelayAudioProc
 
 
     addAndMakeVisible(&SlLeftLfoDepth);
-    SlLeftLfoDepthAttachment = new SliderAttachment(valueTreeState, "lfoDepthL", SlLeftLfoDepth);
+    SlLeftLfoDepthAttachment.reset (new SliderAttachment (valueTreeState, "lfoDepthL", SlLeftLfoDepth));
     SlLeftLfoDepth.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
     SlLeftLfoDepth.setTextValueSuffix(" ms");
     SlLeftLfoDepth.setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
@@ -81,28 +81,28 @@ DualDelayAudioProcessorEditor::DualDelayAudioProcessorEditor (DualDelayAudioProc
 
 
     addAndMakeVisible(&dblSlLeftFilter);
-    dblSlLeftFilterHpAttachment = new SliderAttachment(valueTreeState,"HPcutOffL", *dblSlLeftFilter.getLeftSliderAddress());
-    dblSlLeftFilterLpAttachment = new SliderAttachment(valueTreeState,"LPcutOffL", *dblSlLeftFilter.getRightSliderAddress());
+    dblSlLeftFilterHpAttachment.reset (new SliderAttachment (valueTreeState,"HPcutOffL", *dblSlLeftFilter.getLeftSliderAddress()));
+    dblSlLeftFilterLpAttachment.reset (new SliderAttachment (valueTreeState,"LPcutOffL", *dblSlLeftFilter.getRightSliderAddress()));
     dblSlLeftFilter.setRangeAndPosition(valueTreeState.getParameterRange("HPcutOffL"), valueTreeState.getParameterRange("LPcutOffL"));
     dblSlLeftFilter.setColour (globalLaF.ClWidgetColours[1]);
 
 
     addAndMakeVisible(&SlLeftFb);
-    SlLeftFbAttachment = new SliderAttachment(valueTreeState, "feedbackL", SlLeftFb);
+    SlLeftFbAttachment.reset (new SliderAttachment (valueTreeState, "feedbackL", SlLeftFb));
     SlLeftFb.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
     SlLeftFb.setTextValueSuffix(" dB");
     SlLeftFb.setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
     SlLeftFb.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[3]);
 
     addAndMakeVisible(&SlLeftCrossFb);
-    SlLeftCrossFbAttachment = new SliderAttachment(valueTreeState, "xfeedbackL", SlLeftCrossFb);
+    SlLeftCrossFbAttachment.reset (new SliderAttachment (valueTreeState, "xfeedbackL", SlLeftCrossFb));
     SlLeftCrossFb.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
     SlLeftCrossFb.setTextValueSuffix(" dB");
     SlLeftCrossFb.setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
     SlLeftCrossFb.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[3]);
 
     addAndMakeVisible(&SlLeftGain);
-    SlLeftGainAttachment = new SliderAttachment(valueTreeState, "wetGainL", SlLeftGain);
+    SlLeftGainAttachment.reset (new SliderAttachment (valueTreeState, "wetGainL", SlLeftGain));
     SlLeftGain.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
     SlLeftGain.setTextValueSuffix(" dB");
     SlLeftGain.setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
@@ -115,7 +115,7 @@ DualDelayAudioProcessorEditor::DualDelayAudioProcessorEditor (DualDelayAudioProc
     // =========================== RIGHT SIDE ================================================================
 
     addAndMakeVisible(&SlRightRot);
-    SlRightRotAttachment = new SliderAttachment(valueTreeState, "rotationR", SlRightRot);
+    SlRightRotAttachment.reset (new SliderAttachment (valueTreeState, "rotationR", SlRightRot));
     SlRightRot.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
     SlRightRot.setReverse(true);
     SlRightRot.setTextValueSuffix(" deg");
@@ -124,14 +124,14 @@ DualDelayAudioProcessorEditor::DualDelayAudioProcessorEditor (DualDelayAudioProc
     SlRightRot.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
 
     addAndMakeVisible(&SlRightDelay);
-    SlRightDelayAttachment = new SliderAttachment(valueTreeState, "delayTimeR", SlRightDelay);
+    SlRightDelayAttachment.reset (new SliderAttachment (valueTreeState, "delayTimeR", SlRightDelay));
     SlRightDelay.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
     SlRightDelay.setTextValueSuffix(" ms");
     SlRightDelay.setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
     SlRightDelay.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
 
     addAndMakeVisible(&SlRightLfoRate);
-    SlRightLfoRateAttachment = new SliderAttachment(valueTreeState, "lfoRateR", SlRightLfoRate);
+    SlRightLfoRateAttachment.reset (new SliderAttachment (valueTreeState, "lfoRateR", SlRightLfoRate));
     SlRightLfoRate.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
     SlRightLfoRate.setTextValueSuffix(" Hz");
     SlRightLfoRate.setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
@@ -139,7 +139,7 @@ DualDelayAudioProcessorEditor::DualDelayAudioProcessorEditor (DualDelayAudioProc
 
 
     addAndMakeVisible(&SlRightLfoDepth);
-    SlRightLfoDepthAttachment = new SliderAttachment(valueTreeState, "lfoDepthR", SlRightLfoDepth);
+    SlRightLfoDepthAttachment.reset (new SliderAttachment (valueTreeState, "lfoDepthR", SlRightLfoDepth));
     SlRightLfoDepth.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
     SlRightLfoDepth.setTextValueSuffix(" ms");
     SlRightLfoDepth.setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
@@ -147,8 +147,8 @@ DualDelayAudioProcessorEditor::DualDelayAudioProcessorEditor (DualDelayAudioProc
 
 
     addAndMakeVisible(&dblSlRightFilter);
-    dblSlRightFilterHpAttachment = new SliderAttachment(valueTreeState,"HPcutOffR", *dblSlRightFilter.getLeftSliderAddress());
-    dblSlRightFilterLpAttachment = new SliderAttachment(valueTreeState,"LPcutOffR", *dblSlRightFilter.getRightSliderAddress());
+    dblSlRightFilterHpAttachment.reset (new SliderAttachment (valueTreeState,"HPcutOffR", *dblSlRightFilter.getLeftSliderAddress()));
+    dblSlRightFilterLpAttachment.reset (new SliderAttachment (valueTreeState,"LPcutOffR", *dblSlRightFilter.getRightSliderAddress()));
 
     dblSlRightFilter.setRangeAndPosition(valueTreeState.getParameterRange("HPcutOffR"),valueTreeState.getParameterRange("LPcutOffR"));
     dblSlRightFilter.getLeftSliderAddress()->setTextValueSuffix(" Hz");
@@ -157,21 +157,21 @@ DualDelayAudioProcessorEditor::DualDelayAudioProcessorEditor (DualDelayAudioProc
 
 
     addAndMakeVisible(&SlRightFb);
-    SlRightFbAttachment = new SliderAttachment(valueTreeState, "feedbackR", SlRightFb);
+    SlRightFbAttachment.reset (new SliderAttachment (valueTreeState, "feedbackR", SlRightFb));
     SlRightFb.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
     SlRightFb.setTextValueSuffix(" dB");
     SlRightFb.setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
     SlRightFb.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[3]);
 
     addAndMakeVisible(&SlRightCrossFb);
-    SlRightCrossFbAttachment = new SliderAttachment(valueTreeState, "xfeedbackR", SlRightCrossFb);
+    SlRightCrossFbAttachment.reset (new SliderAttachment (valueTreeState, "xfeedbackR", SlRightCrossFb));
     SlRightCrossFb.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
     SlRightCrossFb.setTextValueSuffix(" dB");
     SlRightCrossFb.setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
     SlRightCrossFb.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[3]);
 
     addAndMakeVisible(&SlRightGain);
-    SlRightGainAttachment = new SliderAttachment(valueTreeState, "wetGainR", SlRightGain);
+    SlRightGainAttachment.reset (new SliderAttachment (valueTreeState, "wetGainR", SlRightGain));
     SlRightGain.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
     SlRightGain.setTextValueSuffix(" dB");
     SlRightGain.setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);

@@ -43,8 +43,8 @@ BinauralDecoderAudioProcessorEditor::BinauralDecoderAudioProcessorEditor (Binaur
 
 
     // create the connection between title component's comboBoxes and parameters
-    cbOrderSettingAttachment = new ComboBoxAttachment(valueTreeState, "inputOrderSetting", *title.getInputWidgetPtr()->getOrderCbPointer());
-    cbNormalizationSettingAttachment = new ComboBoxAttachment(valueTreeState, "useSN3D", *title.getInputWidgetPtr()->getNormCbPointer());
+    cbOrderSettingAttachment.reset (new ComboBoxAttachment (valueTreeState, "inputOrderSetting", *title.getInputWidgetPtr()->getOrderCbPointer()));
+    cbNormalizationSettingAttachment.reset (new ComboBoxAttachment (valueTreeState, "useSN3D", *title.getInputWidgetPtr()->getNormCbPointer()));
 
     addAndMakeVisible(lbEq);
     lbEq.setText("Headphone Equalization");
@@ -52,7 +52,7 @@ BinauralDecoderAudioProcessorEditor::BinauralDecoderAudioProcessorEditor (Binaur
     addAndMakeVisible(cbEq);
     cbEq.addItem("OFF", 1);
     cbEq.addItemList(processor.headphoneEQs, 2);
-    cbEqAttachment = new ComboBoxAttachment(valueTreeState, "applyHeadphoneEq", cbEq);
+    cbEqAttachment.reset (new ComboBoxAttachment (valueTreeState, "applyHeadphoneEq", cbEq));
 
 
 

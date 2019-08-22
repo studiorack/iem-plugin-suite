@@ -241,17 +241,17 @@ public:
         "      gl_FragColor = texture2D(tex0, vec2(colormapDepthOut, colormapChooserOut));\n"
         "}";
 
-        ScopedPointer<OpenGLShaderProgram> newShader (new OpenGLShaderProgram (openGLContext));
+        std::unique_ptr<OpenGLShaderProgram> newShader (new OpenGLShaderProgram (openGLContext));
         String statusText;
 
         if (newShader->addVertexShader (OpenGLHelpers::translateVertexShaderToV3 (vertexShader))
             && newShader->addFragmentShader (OpenGLHelpers::translateFragmentShaderToV3 (fragmentShader))
             && newShader->link())
         {
-            shader = newShader;
+            shader = std::move (newShader);
             shader->use();
 
-            colormapChooser = createUniform (openGLContext, *shader, "colormapChooser");
+            colormapChooser.reset (createUniform (openGLContext, *shader, "colormapChooser"));
             statusText = "GLSL: v" + String (OpenGLShaderProgram::getLanguageVersion(), 2);
         }
         else
@@ -272,8 +272,8 @@ private:
     GLuint vertexBuffer, indexBuffer;
     const char* vertexShader;
     const char* fragmentShader;
-    ScopedPointer<OpenGLShaderProgram> shader;
-    ScopedPointer<OpenGLShaderProgram::Uniform> colormapChooser;
+    std::unique_ptr<OpenGLShaderProgram> shader;
+    std::unique_ptr<OpenGLShaderProgram::Uniform> colormapChooser;
     bool usePerceptualColormap = true;
 
     static OpenGLShaderProgram::Uniform* createUniform (OpenGLContext& openGLContext, OpenGLShaderProgram& shaderProgram, const char* uniformName)

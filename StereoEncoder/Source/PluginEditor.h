@@ -75,16 +75,16 @@ private:
     SpherePanner::RollWidthParameterElement leftElement;
     SpherePanner::RollWidthParameterElement rightElement;
 
-    ScopedPointer<SliderAttachment> qwAttachment;
-    ScopedPointer<SliderAttachment> qxAttachment;
-    ScopedPointer<SliderAttachment> qyAttachment;
-    ScopedPointer<SliderAttachment> qzAttachment;
-    ScopedPointer<SliderAttachment> azimuthAttachment;
-    ScopedPointer<SliderAttachment> elevationAttachment;
-    ScopedPointer<SliderAttachment> rollAttachment;
-    ScopedPointer<SliderAttachment> widthAttachment;
-    ScopedPointer<ComboBoxAttachment> cbNormalizationAtachement;
-    ScopedPointer<ComboBoxAttachment> cbOrderAtachement;
+    std::unique_ptr<SliderAttachment> qwAttachment;
+    std::unique_ptr<SliderAttachment> qxAttachment;
+    std::unique_ptr<SliderAttachment> qyAttachment;
+    std::unique_ptr<SliderAttachment> qzAttachment;
+    std::unique_ptr<SliderAttachment> azimuthAttachment;
+    std::unique_ptr<SliderAttachment> elevationAttachment;
+    std::unique_ptr<SliderAttachment> rollAttachment;
+    std::unique_ptr<SliderAttachment> widthAttachment;
+    std::unique_ptr<ComboBoxAttachment> cbNormalizationAtachement;
+    std::unique_ptr<ComboBoxAttachment> cbOrderAtachement;
 
     TooltipWindow toolTipWin;
 

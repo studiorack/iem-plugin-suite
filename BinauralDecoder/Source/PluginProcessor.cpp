@@ -329,16 +329,17 @@ void BinauralDecoderAudioProcessor::updateBuffers()
     DBG("order: " << order);
     DBG("nCh: " << nCh);
 
-        int tmpOrder = sqrt(nCh) - 1;
-        if (tmpOrder < order) {
-            order = tmpOrder;
-        }
+    int tmpOrder = sqrt(nCh) - 1;
+    if (tmpOrder < order) {
+        order = tmpOrder;
+    }
+    
 
     AudioBuffer<float> resampledIRs;
     bool useResampled = false;
     irLength = 236;
 
-    if (sampleRate != irsSampleRate) // do resampling!
+    if (sampleRate != irsSampleRate && order != 0) // do resampling!
     {
         useResampled = true;
         double factorReading = irsSampleRate / sampleRate;

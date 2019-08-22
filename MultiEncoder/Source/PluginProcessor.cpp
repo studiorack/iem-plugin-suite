@@ -296,13 +296,13 @@ void MultiEncoderAudioProcessor::getStateInformation (MemoryBlock& destData)
     for (int i = 0; i < maxNumberOfInputs; ++i)
         parameters.state.setProperty("colour" + String(i), elementColours[i].toString(), nullptr);
     parameters.state.setProperty ("OSCPort", var(oscReceiver.getPortNumber()), nullptr);
-    ScopedPointer<XmlElement> xml (parameters.state.createXml());
+    std::unique_ptr<XmlElement> xml (parameters.state.createXml());
     copyXmlToBinary (*xml, destData);
 }
 
 void MultiEncoderAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
-    ScopedPointer<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
+    std::unique_ptr<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
     if (xmlState != nullptr)
         if (xmlState->hasTagName (parameters.state.getType()))
         {

@@ -113,14 +113,14 @@ private:
 
     File lastDir;
     File lastFile;
-    ScopedPointer<PropertiesFile> properties;
+    std::unique_ptr<PropertiesFile> properties;
 
     AudioBuffer<float> swBuffer;
 
 
     // processors
-    ScopedPointer<IIR::Filter<float>> lowPass1;
-    ScopedPointer<IIR::Filter<float>> lowPass2;
+    std::unique_ptr<IIR::Filter<float>> lowPass1;
+    std::unique_ptr<IIR::Filter<float>> lowPass2;
     IIR::Coefficients<float>::Ptr highPassCoeffs;
     IIR::Coefficients<float>::Ptr lowPassCoeffs;
 

@@ -10,7 +10,7 @@
               pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
               pluginAUExportPrefix="MatrixMultiplierAU" aaxIdentifier="at.iem.MatrixMultiplier"
-              jucerVersion="5.4.3" companyCopyright="IEM - Daniel Rudrich"
+              jucerVersion="5.4.4" companyCopyright="IEM - Daniel Rudrich"
               companyName="IEM" companyWebsite="iem.at" headerPath="../../../resources/"
               pluginFormats="buildStandalone,buildVST,buildVST3">
   <MAINGROUP id="LpzrV9" name="MatrixMultiplier">

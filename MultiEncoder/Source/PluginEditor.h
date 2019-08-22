@@ -73,13 +73,13 @@ private:
     SpherePanner sphere;
     SpherePanner::AzimuthElevationParameterElement masterElement;
 
-    ScopedPointer<SliderAttachment> slMasterAzimuthAttachment;
-    ScopedPointer<SliderAttachment> slMasterElevationAttachment;
-    ScopedPointer<SliderAttachment> slMasterRollAttachment;
-    ScopedPointer<ButtonAttachment> tbLockedToMasterAttachment;
+    std::unique_ptr<SliderAttachment> slMasterAzimuthAttachment;
+    std::unique_ptr<SliderAttachment> slMasterElevationAttachment;
+    std::unique_ptr<SliderAttachment> slMasterRollAttachment;
+    std::unique_ptr<ButtonAttachment> tbLockedToMasterAttachment;
 
-    ScopedPointer<ComboBoxAttachment> cbNumInputChannelsAttachment, cbNormalizationAtachment;
-    ScopedPointer<ComboBoxAttachment> cbOrderAtachment;
+    std::unique_ptr<ComboBoxAttachment> cbNumInputChannelsAttachment, cbNormalizationAtachment;
+    std::unique_ptr<ComboBoxAttachment> cbOrderAtachment;
 
     Viewport viewport;
     EncoderList encoderList;

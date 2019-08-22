@@ -41,8 +41,33 @@ public:
 
         buffer.setSize(buffer.getNumChannels(), spec.maximumBlockSize);
 
-        //inputMatrix.resize(Eigen::NoChange, spec.maximumBlockSize);
         checkIfNewMatrixAvailable();
+    }
+
+    void process (const ProcessContextReplacing<float>& context)
+    {
+        checkIfNewMatrixAvailable();
+
+        ReferenceCountedMatrix::Ptr retainedCurrentMatrix (currentMatrix);
+        if (retainedCurrentMatrix == nullptr)
+        {
+            context.getOutputBlock().clear();
+            return;
+        }
+
+        auto& inputBlock = context.getInputBlock();
+        auto& T = retainedCurrentMatrix->getMatrix();
+
+        const int nInputChannels = jmin (static_cast<int> (inputBlock.getNumChannels()), static_cast<int> (T.getNumColumns()));
+        const int nSamples = static_cast<int> (inputBlock.getNumSamples());
+
+        // copy input data to buffer
+        for (int ch = 0; ch < nInputChannels; ++ch)
+            buffer.copyFrom(ch, 0, inputBlock.getChannelPointer (ch), nSamples);
+
+        AudioBlock<float> ab (buffer.getArrayOfWritePointers(), nInputChannels, 0, nSamples);
+        ProcessContextNonReplacing<float> nonReplacingContext (ab, context.getOutputBlock());
+        process (nonReplacingContext);
     }
 
     void process (const ProcessContextNonReplacing<float>& context)
@@ -61,12 +86,10 @@ public:
         auto& outputBlock = context.getOutputBlock();
         auto& T = retainedCurrentMatrix->getMatrix();
 
-        const int nInputChannels = jmin( (int) inputBlock.getNumChannels(), (int) T.getNumColumns());
-        const int nSamples = (int) inputBlock.getNumSamples();
+        const int nInputChannels = jmin (static_cast<int> (inputBlock.getNumChannels()), static_cast<int> (T.getNumColumns()));
+        const int nSamples = static_cast<int> (inputBlock.getNumSamples());
 
-        // copy input data to buffer
-        for (int ch = 0; ch < nInputChannels; ++ch)
-            buffer.copyFrom(ch, 0, inputBlock.getChannelPointer(ch), nSamples);
+
 
         for (int row = 0; row < T.getNumRows(); ++row)
         {

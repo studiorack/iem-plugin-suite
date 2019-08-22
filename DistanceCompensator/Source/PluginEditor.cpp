@@ -39,12 +39,12 @@ DistanceCompensatorAudioProcessorEditor::DistanceCompensatorAudioProcessorEditor
 
 
     // create the connection between title component's comboBoxes and parameters
-    cbInputChannelsSettingAttachment = new ComboBoxAttachment (valueTreeState, "inputChannelsSetting", *title.getInputWidgetPtr()->getChannelsCbPointer());
+    cbInputChannelsSettingAttachment.reset (new ComboBoxAttachment (valueTreeState, "inputChannelsSetting", *title.getInputWidgetPtr()->getChannelsCbPointer()));
 
     addAndMakeVisible (lbSpeedOfSound);
     lbSpeedOfSound.setEditable (true);
     lbSpeedOfSound.setJustificationType(Justification::centred);
-    lbSpeedOfSoundAttachment = new LabelAttachment (valueTreeState, "speedOfSound", lbSpeedOfSound);
+    lbSpeedOfSoundAttachment.reset (new LabelAttachment (valueTreeState, "speedOfSound", lbSpeedOfSound));
 
     addAndMakeVisible (slbSpeedOfSound);
     slbSpeedOfSound.setText ("Speed of sound");
@@ -53,7 +53,7 @@ DistanceCompensatorAudioProcessorEditor::DistanceCompensatorAudioProcessorEditor
     addAndMakeVisible (lbDistanceExponent);
     lbDistanceExponent.setEditable (true);
     lbDistanceExponent.setJustificationType(Justification::centred);
-    lbDistanceExponentAttachment = new LabelAttachment (valueTreeState, "distanceExponent", lbDistanceExponent);
+    lbDistanceExponentAttachment.reset (new LabelAttachment (valueTreeState, "distanceExponent", lbDistanceExponent));
 
     addAndMakeVisible (slbDistanceExponent);
     slbDistanceExponent.setText ("Distance-Gain exponent");
@@ -64,7 +64,7 @@ DistanceCompensatorAudioProcessorEditor::DistanceCompensatorAudioProcessorEditor
     cbGainNormalization.addItem("Attenuation only", 1);
     cbGainNormalization.addItem("Zero-mean", 2);
     cbGainNormalization.setJustificationType(Justification::centred);
-    cbGainNormalizationAttachment = new ComboBoxAttachment (valueTreeState, "gainNormalization", cbGainNormalization);
+    cbGainNormalizationAttachment.reset (new ComboBoxAttachment (valueTreeState, "gainNormalization", cbGainNormalization));
 
     addAndMakeVisible(slbGainNormalization);
     slbGainNormalization.setText ("Normalization");
@@ -73,17 +73,17 @@ DistanceCompensatorAudioProcessorEditor::DistanceCompensatorAudioProcessorEditor
     addAndMakeVisible (lbReferenceX);
     lbReferenceX.setEditable (true);
     lbReferenceX.setJustificationType(Justification::centred);
-    lbReferenceXAttachment = new LabelAttachment (valueTreeState, "referenceX", lbReferenceX);
+    lbReferenceXAttachment.reset (new LabelAttachment (valueTreeState, "referenceX", lbReferenceX));
 
     addAndMakeVisible (lbReferenceY);
     lbReferenceY.setEditable (true);
     lbReferenceY.setJustificationType(Justification::centred);
-    lbReferenceYAttachment = new LabelAttachment (valueTreeState, "referenceY", lbReferenceY);
+    lbReferenceYAttachment.reset (new LabelAttachment (valueTreeState, "referenceY", lbReferenceY));
 
     addAndMakeVisible (lbReferenceZ);
     lbReferenceZ.setEditable (true);
     lbReferenceZ.setJustificationType(Justification::centred);
-    lbReferenceZAttachment = new LabelAttachment (valueTreeState, "referenceZ", lbReferenceZ);
+    lbReferenceZAttachment.reset (new LabelAttachment (valueTreeState, "referenceZ", lbReferenceZ));
 
     addAndMakeVisible (slbReference);
     slbReference.setText ("Reference position", true);
@@ -118,12 +118,12 @@ DistanceCompensatorAudioProcessorEditor::DistanceCompensatorAudioProcessorEditor
     gcCompensation.setText ("Settings");
 
     addAndMakeVisible(tbEnableGains);
-    tbEnableGainsAttachment = new ButtonAttachment(valueTreeState, "enableGains", tbEnableGains);
+    tbEnableGainsAttachment.reset (new ButtonAttachment (valueTreeState, "enableGains", tbEnableGains));
     tbEnableGains.setButtonText("Gain compensation");
     tbEnableGains.setColour(ToggleButton::tickColourId, Colours::limegreen);
 
     addAndMakeVisible(tbEnableDelays);
-    tbEnableDelaysAttachment = new ButtonAttachment(valueTreeState, "enableDelays", tbEnableDelays);
+    tbEnableDelaysAttachment.reset (new ButtonAttachment (valueTreeState, "enableDelays", tbEnableDelays));
     tbEnableDelays.setButtonText("Delay compensation");
     tbEnableDelays.setColour(ToggleButton::tickColourId, Colours::orange);
 

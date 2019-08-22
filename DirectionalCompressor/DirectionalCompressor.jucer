@@ -10,7 +10,7 @@
               pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
               pluginAUExportPrefix="DirectionalCompressorAU" aaxIdentifier="at.iem.DirectionalCompressor"
-              pluginAAXCategory="2" jucerVersion="5.4.3" cppLanguageStandard="14"
+              pluginAAXCategory="2" jucerVersion="5.4.4" cppLanguageStandard="14"
               companyName="IEM" companyWebsite="IEM.at" companyCopyright="IEM - Daniel Rudrich"
               headerPath="../../../resources/" pluginFormats="buildStandalone,buildVST,buildVST3">
   <MAINGROUP id="Ld9vSw" name="DirectionalCompressor">

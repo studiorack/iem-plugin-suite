@@ -76,29 +76,29 @@ private:
 
     // Attachments to create a connection between IOWidgets comboboxes
     // and the associated parameters
-    ScopedPointer<ComboBoxAttachment> cbNormalizationAttachement;
-    ScopedPointer<ComboBoxAttachment> cbOrderAttachement;
+    std::unique_ptr<ComboBoxAttachment> cbNormalizationAttachement;
+    std::unique_ptr<ComboBoxAttachment> cbOrderAttachement;
 
 
     ReverseSlider slYaw, slPitch, slRoll, slQW, slQX, slQY, slQZ;
 
-    ScopedPointer<SliderAttachment> slYawAttachment;
-    ScopedPointer<SliderAttachment> slPitchAttachment;
-    ScopedPointer<SliderAttachment> slRollAttachment;
-    ScopedPointer<SliderAttachment> slQWAttachment;
-    ScopedPointer<SliderAttachment> slQXAttachment;
-    ScopedPointer<SliderAttachment> slQYAttachment;
-    ScopedPointer<SliderAttachment> slQZAttachment;
+    std::unique_ptr<SliderAttachment> slYawAttachment;
+    std::unique_ptr<SliderAttachment> slPitchAttachment;
+    std::unique_ptr<SliderAttachment> slRollAttachment;
+    std::unique_ptr<SliderAttachment> slQWAttachment;
+    std::unique_ptr<SliderAttachment> slQXAttachment;
+    std::unique_ptr<SliderAttachment> slQYAttachment;
+    std::unique_ptr<SliderAttachment> slQZAttachment;
 
     ComboBox cbRotationSequence;
-    ScopedPointer<ComboBoxAttachment> cbRotationSequenceAttachment;
+    std::unique_ptr<ComboBoxAttachment> cbRotationSequenceAttachment;
 
     // Labels and Groups
     SimpleLabel lbYaw, lbPitch, lbRoll, lbQW, lbQX, lbQY, lbQZ;
     GroupComponent quatGroup, yprGroup;
 
     ToggleButton tbInvertYaw, tbInvertPitch, tbInvertRoll, tbInvertQuaternion;
-    ScopedPointer<ButtonAttachment> tbInvertYawAttachment, tbInvertPitchAttachment, tbRollFlipAttachment, tbInvertQuaternionAttachment;
+    std::unique_ptr<ButtonAttachment> tbInvertYawAttachment, tbInvertPitchAttachment, tbRollFlipAttachment, tbInvertQuaternionAttachment;
 
 
     // MIDI Section

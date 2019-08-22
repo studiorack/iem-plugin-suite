@@ -11,7 +11,7 @@
               pluginIsSynth="0" pluginWantsMidiIn="0" pluginProducesMidiOut="0"
               pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0" pluginAUExportPrefix="MultiBandCompressorAU"
               aaxIdentifier="at.iem.MultiBandCompressor" pluginAAXCategory="2"
-              jucerVersion="5.4.3" companyCopyright="IEM - Markus Huber" companyName="IEM"
+              jucerVersion="5.4.4" companyCopyright="IEM - Markus Huber" companyName="IEM"
               companyWebsite="iem.at" headerPath="../../../resources/" pluginFormats="buildStandalone,buildVST">
   <MAINGROUP id="LpzrV9" name="MultiBandCompressor">
     <GROUP id="{1B6BB8E4-E576-FBC7-B6B6-8603D2CEBF9D}" name="lookAndFeel">

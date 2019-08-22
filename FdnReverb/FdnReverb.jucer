@@ -9,7 +9,7 @@
               pluginCode="FdRe" pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
               pluginAUExportPrefix="FdnReverbAU" aaxIdentifier="at.IEM.FdnReverb"
-              pluginAAXCategory="2" jucerVersion="5.4.3" companyName="IEM"
+              pluginAAXCategory="2" jucerVersion="5.4.4" companyName="IEM"
               companyWebsite="iem.at" cppLanguageStandard="14" companyCopyright="IEM - Sebastian Grill"
               headerPath="../../../resources/" pluginFormats="buildStandalone,buildVST,buildVST3">
   <MAINGROUP id="IWaAhA" name="FdnReverb">

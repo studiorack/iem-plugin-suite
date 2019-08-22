@@ -63,18 +63,18 @@ private:
 
     ReverseSlider sliderKnee, sliderThreshold, sliderRatio, sliderAttackTime, sliderReleaseTime, sliderMakeupGain;
 
-    ScopedPointer<ComboBoxAttachment> cbNormalizationAtachement;
-    ScopedPointer<ComboBoxAttachment> cbOrderAtachement;
+    std::unique_ptr<ComboBoxAttachment> cbNormalizationAtachement;
+    std::unique_ptr<ComboBoxAttachment> cbOrderAtachement;
 
-    ScopedPointer<SliderAttachment> KnAttachment;
-    ScopedPointer<SliderAttachment> ThAttachment;
-    ScopedPointer<SliderAttachment> RaAttachment;
-    ScopedPointer<SliderAttachment> ATAttachment;
-    ScopedPointer<SliderAttachment> RTAttachment;
-    ScopedPointer<SliderAttachment> MGAttachment;
+    std::unique_ptr<SliderAttachment> KnAttachment;
+    std::unique_ptr<SliderAttachment> ThAttachment;
+    std::unique_ptr<SliderAttachment> RaAttachment;
+    std::unique_ptr<SliderAttachment> ATAttachment;
+    std::unique_ptr<SliderAttachment> RTAttachment;
+    std::unique_ptr<SliderAttachment> MGAttachment;
 
     ToggleButton tbLookAhead;
-    ScopedPointer<ButtonAttachment> tbLookAheadAttachment;
+    std::unique_ptr<ButtonAttachment> tbLookAheadAttachment;
 
     CompressorVisualizer characteristic;
     LevelMeter inpMeter, dbGRmeter;

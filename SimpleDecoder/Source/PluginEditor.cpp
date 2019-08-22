@@ -44,8 +44,8 @@ SimpleDecoderAudioProcessorEditor::SimpleDecoderAudioProcessorEditor (SimpleDeco
     valueTreeState.addParameterListener ("swMode", this);
 
     // create the connection between title component's comboBoxes and parameters
-    cbOrderSettingAttachment = new ComboBoxAttachment(valueTreeState, "inputOrderSetting", *title.getInputWidgetPtr()->getOrderCbPointer());
-    cbNormalizationSettingAttachment = new ComboBoxAttachment(valueTreeState, "useSN3D", *title.getInputWidgetPtr()->getNormCbPointer());
+    cbOrderSettingAttachment.reset (new ComboBoxAttachment(valueTreeState, "inputOrderSetting", *title.getInputWidgetPtr()->getOrderCbPointer()));
+    cbNormalizationSettingAttachment.reset (new ComboBoxAttachment(valueTreeState, "useSN3D", *title.getInputWidgetPtr()->getNormCbPointer()));
 
 
     addAndMakeVisible(gcFilter);
@@ -60,7 +60,7 @@ SimpleDecoderAudioProcessorEditor::SimpleDecoderAudioProcessorEditor (SimpleDeco
 
     // ================= BEGIN: filter slider ================
     addAndMakeVisible(slLowPassFrequency);
-    slLowPassFrequencyAttachment = new SliderAttachment(valueTreeState, "lowPassFrequency", slLowPassFrequency);
+    slLowPassFrequencyAttachment.reset (new SliderAttachment(valueTreeState, "lowPassFrequency", slLowPassFrequency));
     slLowPassFrequency.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slLowPassFrequency.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slLowPassFrequency.setColour (Slider::rotarySliderOutlineColourId, Colours::orangered);
@@ -68,7 +68,7 @@ SimpleDecoderAudioProcessorEditor::SimpleDecoderAudioProcessorEditor (SimpleDeco
     lbLowPassFrequency.setText("Frequency");
 
     addAndMakeVisible(slLowPassGain);
-    slLowPassGainAttachment = new SliderAttachment(valueTreeState, "lowPassGain", slLowPassGain);
+    slLowPassGainAttachment.reset (new SliderAttachment(valueTreeState, "lowPassGain", slLowPassGain));
     slLowPassGain.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slLowPassGain.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slLowPassGain.setColour (Slider::rotarySliderOutlineColourId, Colours::orangered);
@@ -76,7 +76,7 @@ SimpleDecoderAudioProcessorEditor::SimpleDecoderAudioProcessorEditor (SimpleDeco
     lbLowPassGain.setText("Gain");
 
     addAndMakeVisible(slHighPassFrequency);
-    slHighPassFrequencyAttachment = new SliderAttachment(valueTreeState, "highPassFrequency", slHighPassFrequency);
+    slHighPassFrequencyAttachment.reset (new SliderAttachment(valueTreeState, "highPassFrequency", slHighPassFrequency));
     slHighPassFrequency.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slHighPassFrequency.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slHighPassFrequency.setColour (Slider::rotarySliderOutlineColourId, Colours::cyan);
@@ -91,7 +91,7 @@ SimpleDecoderAudioProcessorEditor::SimpleDecoderAudioProcessorEditor (SimpleDeco
     cbSwMode.addItem("none", 1);
     cbSwMode.addItem("discrete", 2);
     cbSwMode.addItem("virtual", 3);
-    cbSwModeAttachment = new ComboBoxAttachment(valueTreeState, "swMode", cbSwMode);
+    cbSwModeAttachment.reset (new ComboBoxAttachment(valueTreeState, "swMode", cbSwMode));
     const bool channelSelectShouldBeEnabled = (int) *valueTreeState.getRawParameterValue("swMode") == 1;
 
     addAndMakeVisible(lbSwMode);
@@ -108,7 +108,7 @@ SimpleDecoderAudioProcessorEditor::SimpleDecoderAudioProcessorEditor (SimpleDeco
     lbAlreadyUsed.setVisible(false);
 
     addAndMakeVisible(slSwChannel);
-    slSwChannelAttachment = new SliderAttachment(valueTreeState, "swChannel", slSwChannel);
+    slSwChannelAttachment.reset (new SliderAttachment(valueTreeState, "swChannel", slSwChannel));
     slSwChannel.setSliderStyle(Slider::IncDecButtons);
     slSwChannel.setTextBoxStyle (Slider::TextBoxLeft, false, 200, 20);
     slSwChannel.setEnabled(channelSelectShouldBeEnabled);

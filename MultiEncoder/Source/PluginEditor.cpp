@@ -57,9 +57,9 @@ encoderList(p, sphere, &vts)
     addAndMakeVisible(&viewport);
     viewport.setViewedComponent(&encoderList);
 
-    cbNumInputChannelsAttachment = new ComboBoxAttachment(valueTreeState,"inputSetting",*title.getInputWidgetPtr()->getChannelsCbPointer());
-    cbNormalizationAtachment = new ComboBoxAttachment(valueTreeState,"useSN3D",*title.getOutputWidgetPtr()->getNormCbPointer());
-    cbOrderAtachment = new ComboBoxAttachment(valueTreeState,"orderSetting",*title.getOutputWidgetPtr()->getOrderCbPointer());
+    cbNumInputChannelsAttachment.reset (new ComboBoxAttachment (valueTreeState,"inputSetting",*title.getInputWidgetPtr()->getChannelsCbPointer()));
+    cbNormalizationAtachment.reset (new ComboBoxAttachment (valueTreeState,"useSN3D",*title.getOutputWidgetPtr()->getNormCbPointer()));
+    cbOrderAtachment.reset (new ComboBoxAttachment (valueTreeState,"orderSetting",*title.getOutputWidgetPtr()->getOrderCbPointer()));
 
     // ======================== AZIMUTH ELEVATION ROLL GROUP
     ypGroup.setText("Encoder settings");
@@ -70,7 +70,7 @@ encoderList(p, sphere, &vts)
     ypGroup.setVisible(true);
 
     addAndMakeVisible(&slMasterAzimuth);
-    slMasterAzimuthAttachment = new SliderAttachment(valueTreeState, "masterAzimuth", slMasterAzimuth);
+    slMasterAzimuthAttachment.reset (new SliderAttachment (valueTreeState, "masterAzimuth", slMasterAzimuth));
     slMasterAzimuth.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slMasterAzimuth.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slMasterAzimuth.setReverse(true);
@@ -79,7 +79,7 @@ encoderList(p, sphere, &vts)
     slMasterAzimuth.setTooltip("Master azimuth angle");
 
     addAndMakeVisible(&slMasterElevation);
-    slMasterElevationAttachment = new SliderAttachment(valueTreeState, "masterElevation", slMasterElevation);
+    slMasterElevationAttachment.reset (new SliderAttachment (valueTreeState, "masterElevation", slMasterElevation));
     slMasterElevation.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slMasterElevation.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slMasterElevation.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
@@ -87,7 +87,7 @@ encoderList(p, sphere, &vts)
     slMasterElevation.setTooltip("Master elevation angle");
 
     addAndMakeVisible(&slMasterRoll);
-    slMasterRollAttachment = new SliderAttachment(valueTreeState, "masterRoll", slMasterRoll);
+    slMasterRollAttachment.reset (new SliderAttachment (valueTreeState, "masterRoll", slMasterRoll));
     slMasterRoll.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slMasterRoll.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slMasterRoll.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
@@ -95,7 +95,7 @@ encoderList(p, sphere, &vts)
     slMasterRoll.setTooltip("Master roll angle");
 
     addAndMakeVisible(&tbLockedToMaster);
-    tbLockedToMasterAttachment = new ButtonAttachment(valueTreeState, "lockedToMaster", tbLockedToMaster);
+    tbLockedToMasterAttachment.reset (new ButtonAttachment(valueTreeState, "lockedToMaster", tbLockedToMaster));
     tbLockedToMaster.setName("locking");
     tbLockedToMaster.setButtonText("Lock Directions");
 

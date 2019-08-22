@@ -65,8 +65,8 @@ StereoEncoderAudioProcessorEditor::StereoEncoderAudioProcessorEditor (StereoEnco
     toolTipWin.setOpaque (false);
 
 
-    cbNormalizationAtachement = new ComboBoxAttachment(valueTreeState,"useSN3D", *title.getOutputWidgetPtr()->getNormCbPointer());
-    cbOrderAtachement = new ComboBoxAttachment(valueTreeState,"orderSetting", *title.getOutputWidgetPtr()->getOrderCbPointer());
+    cbNormalizationAtachement.reset (new ComboBoxAttachment (valueTreeState,"useSN3D", *title.getOutputWidgetPtr()->getNormCbPointer()));
+    cbOrderAtachement.reset (new ComboBoxAttachment (valueTreeState,"orderSetting", *title.getOutputWidgetPtr()->getOrderCbPointer()));
 
 
     // ======================== AZIMUTH ELEVATION ROLL WIDTH GROUP
@@ -78,7 +78,7 @@ StereoEncoderAudioProcessorEditor::StereoEncoderAudioProcessorEditor (StereoEnco
     ypGroup.setVisible(true);
 
     addAndMakeVisible(&azimuthSlider);
-    azimuthAttachment = new SliderAttachment(valueTreeState,"azimuth", azimuthSlider);
+    azimuthAttachment.reset (new SliderAttachment (valueTreeState,"azimuth", azimuthSlider));
     azimuthSlider.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     azimuthSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     azimuthSlider.setReverse(true);
@@ -88,7 +88,7 @@ StereoEncoderAudioProcessorEditor::StereoEncoderAudioProcessorEditor (StereoEnco
     azimuthSlider.setTextValueSuffix(CharPointer_UTF8 (R"(°)"));
 
     addAndMakeVisible(&elevationSlider);
-    elevationAttachment = new SliderAttachment(valueTreeState,"elevation", elevationSlider);
+    elevationAttachment.reset (new SliderAttachment (valueTreeState,"elevation", elevationSlider));
     elevationSlider.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     elevationSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     elevationSlider.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
@@ -97,7 +97,7 @@ StereoEncoderAudioProcessorEditor::StereoEncoderAudioProcessorEditor (StereoEnco
     elevationSlider.setTextValueSuffix(CharPointer_UTF8 (R"(°)"));
 
     addAndMakeVisible(&rollSlider);
-    rollAttachment = new SliderAttachment(valueTreeState,"roll", rollSlider);
+    rollAttachment.reset (new SliderAttachment (valueTreeState,"roll", rollSlider));
     rollSlider.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     rollSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     rollSlider.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
@@ -117,25 +117,25 @@ StereoEncoderAudioProcessorEditor::StereoEncoderAudioProcessorEditor (StereoEnco
     quatGroup.setVisible(true);
 
     addAndMakeVisible(&qwSlider);
-    qwAttachment = new SliderAttachment(valueTreeState,"qw", qwSlider);
+    qwAttachment.reset (new SliderAttachment (valueTreeState,"qw", qwSlider));
     qwSlider.setSliderStyle (Slider::LinearHorizontal);
     qwSlider.setTextBoxStyle (Slider::TextBoxLeft, false, 50, 15);
     qwSlider.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
 
     addAndMakeVisible(&qxSlider);
-    qxAttachment = new SliderAttachment(valueTreeState,"qx", qxSlider);
+    qxAttachment.reset (new SliderAttachment (valueTreeState,"qx", qxSlider));
     qxSlider.setSliderStyle (Slider::LinearHorizontal);
     qxSlider.setTextBoxStyle (Slider::TextBoxLeft, false, 50, 15);
     qxSlider.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
 
     addAndMakeVisible(&qySlider);
-    qyAttachment = new SliderAttachment(valueTreeState,"qy", qySlider);
+    qyAttachment.reset (new SliderAttachment (valueTreeState,"qy", qySlider));
     qySlider.setSliderStyle (Slider::LinearHorizontal);
     qySlider.setTextBoxStyle (Slider::TextBoxLeft, false, 50, 15);
     qySlider.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
 
     addAndMakeVisible(&qzSlider);
-    qzAttachment = new SliderAttachment(valueTreeState,"qz", qzSlider);
+    qzAttachment.reset (new SliderAttachment (valueTreeState,"qz", qzSlider));
     qzSlider.setSliderStyle (Slider::LinearHorizontal);
     qzSlider.setTextBoxStyle (Slider::TextBoxLeft, false, 50, 15);
     qzSlider.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
@@ -150,7 +150,7 @@ StereoEncoderAudioProcessorEditor::StereoEncoderAudioProcessorEditor (StereoEnco
     settingsGroup.setVisible(true);
 
     addAndMakeVisible(&widthSlider);
-    widthAttachment = new SliderAttachment(valueTreeState,"width", widthSlider);
+    widthAttachment.reset (new SliderAttachment (valueTreeState,"width", widthSlider));
     widthSlider.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     widthSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     widthSlider.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[3]);

@@ -88,7 +88,7 @@ private:
 
     // Attachments to create a connection between IOWidgets comboboxes
     // and the associated parameters
-    ScopedPointer<ComboBoxAttachment> cbNumInputChannelsAttachment;
+    std::unique_ptr<ComboBoxAttachment> cbNumInputChannelsAttachment;
 
     FilterVisualizer<double> fv;
     TooltipWindow tooltipWin;
@@ -97,11 +97,11 @@ private:
     ReverseSlider slFilterFrequency[numFilterBands];
     ReverseSlider slFilterQ[numFilterBands];
     ReverseSlider slFilterGain[numFilterBands];
-    ScopedPointer<ButtonAttachment> tbFilterOnAttachment[numFilterBands];
-    ScopedPointer<ComboBoxAttachment> cbFilterTypeAttachment[numFilterBands];
-    ScopedPointer<SliderAttachment> slFilterFrequencyAttachment[numFilterBands];
-    ScopedPointer<SliderAttachment> slFilterQAttachment[numFilterBands];
-    ScopedPointer<SliderAttachment> slFilterGainAttachment[numFilterBands];
+    std::unique_ptr<ButtonAttachment> tbFilterOnAttachment[numFilterBands];
+    std::unique_ptr<ComboBoxAttachment> cbFilterTypeAttachment[numFilterBands];
+    std::unique_ptr<SliderAttachment> slFilterFrequencyAttachment[numFilterBands];
+    std::unique_ptr<SliderAttachment> slFilterQAttachment[numFilterBands];
+    std::unique_ptr<SliderAttachment> slFilterGainAttachment[numFilterBands];
 
     bool gainEnabled[numFilterBands];
     bool qEnabled[numFilterBands];

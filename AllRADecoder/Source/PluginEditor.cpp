@@ -43,14 +43,14 @@ AllRADecoderAudioProcessorEditor::AllRADecoderAudioProcessorEditor (AllRADecoder
 
 
     // create the connection between title component's comboBoxes and parameters
-    cbNormalizationSettingAttachment = new ComboBoxAttachment(valueTreeState, "useSN3D", *title.getInputWidgetPtr()->getNormCbPointer());
-    cbOrderSettingAttachment = new ComboBoxAttachment(valueTreeState, "inputOrderSetting", *title.getInputWidgetPtr()->getOrderCbPointer());
+    cbNormalizationSettingAttachment.reset (new ComboBoxAttachment (valueTreeState, "useSN3D", *title.getInputWidgetPtr()->getNormCbPointer()));
+    cbOrderSettingAttachment.reset (new ComboBoxAttachment(valueTreeState, "inputOrderSetting", *title.getInputWidgetPtr()->getOrderCbPointer()));
 
     addAndMakeVisible(cbDecoderOrder);
     cbDecoderOrder.addSectionHeading("Decoder order");
     for (int n = 1; n <= 7; ++n)
         cbDecoderOrder.addItem(getOrderString(n), n);
-    cbDecoderOrderAttachment = new ComboBoxAttachment(valueTreeState, "decoderOrder", cbDecoderOrder);
+    cbDecoderOrderAttachment.reset (new ComboBoxAttachment(valueTreeState, "decoderOrder", cbDecoderOrder));
 
     addAndMakeVisible(gcLayout);
     gcLayout.setText("Loudspeaker Layout");
@@ -65,12 +65,12 @@ AllRADecoderAudioProcessorEditor::AllRADecoderAudioProcessorEditor (AllRADecoder
     lbDecoderOrder.setText("Decoder Order");
 
     addAndMakeVisible(tbExportDecoder);
-    tbExportDecoderAttachment = new ButtonAttachment(valueTreeState, "exportDecoder", tbExportDecoder);
+    tbExportDecoderAttachment.reset (new ButtonAttachment(valueTreeState, "exportDecoder", tbExportDecoder));
     tbExportDecoder.setButtonText("Export Decoder");
     tbExportDecoder.setColour(ToggleButton::tickColourId, Colours::orange);
 
     addAndMakeVisible(tbExportLayout);
-    tbExportLayoutAttachment = new ButtonAttachment(valueTreeState, "exportLayout", tbExportLayout);
+    tbExportLayoutAttachment.reset (new ButtonAttachment(valueTreeState, "exportLayout", tbExportLayout));
     tbExportLayout.setButtonText("Export Layout");
     tbExportLayout.setColour(ToggleButton::tickColourId, Colours::limegreen);
 

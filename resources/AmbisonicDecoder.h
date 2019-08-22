@@ -51,7 +51,10 @@ public:
         inputNormalization = newNormalization;
     }
 
-    void process (const ProcessContextNonReplacing<float>& context)
+    /**
+     Decodes the Ambisonic input signals to loudspeaker signals using the current decoder. Keep in mind that the input data will be changed!
+     */
+    void process (AudioBlock<float> inputBlock, AudioBlock<float> outputBlock)
     {
         ScopedNoDenormals noDenormals;
         checkIfNewDecoderAvailable();
@@ -60,9 +63,9 @@ public:
 
         if (retainedDecoder != nullptr) // if decoder is available, do the pre-processing
         {
-            AudioBlock<float> inputBlock = context.getInputBlock();
-            const int order = isqrt((int) inputBlock.getNumChannels()) - 1;
-            const int chAmbi = square(order+1);
+            const int order = isqrt (static_cast<int> (inputBlock.getNumChannels())) - 1;
+            const int chAmbi = square (order + 1);
+            const int numSamples = static_cast<int> (inputBlock.getNumSamples());
 
             float weights[64];
             const float correction = sqrt((static_cast<float>(retainedDecoder->getOrder()) + 1) / (static_cast<float>(order) + 1));
@@ -80,12 +83,12 @@ public:
             }
 
             for (int ch = 0; ch < chAmbi; ++ch)
-                FloatVectorOperations::multiply(inputBlock.getChannelPointer(ch), weights[ch], (int) inputBlock.getNumSamples());
-
+                FloatVectorOperations::multiply (inputBlock.getChannelPointer (ch), weights[ch], numSamples);
         }
 
+        ProcessContextNonReplacing<float> context (inputBlock, outputBlock);
         //can be called even if there's no decoder available (will clear context then)
-        matMult.process(context);
+        matMult.process (context);
     }
 
     const bool checkIfNewDecoderAvailable()

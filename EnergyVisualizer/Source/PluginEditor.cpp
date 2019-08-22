@@ -40,14 +40,14 @@ EnergyVisualizerAudioProcessorEditor::EnergyVisualizerAudioProcessorEditor (Ener
     title.setFont(globalLaF.robotoBold,globalLaF.robotoLight);
     addAndMakeVisible (&footer);
 
-    cbNormalizationAtachement = new ComboBoxAttachment(valueTreeState,"useSN3D", *title.getInputWidgetPtr()->getNormCbPointer());
-    cbOrderAtachement = new ComboBoxAttachment(valueTreeState,"orderSetting", *title.getInputWidgetPtr()->getOrderCbPointer());
+    cbNormalizationAtachement.reset (new ComboBoxAttachment (valueTreeState,"useSN3D", *title.getInputWidgetPtr()->getNormCbPointer()));
+    cbOrderAtachement.reset (new ComboBoxAttachment (valueTreeState,"orderSetting", *title.getInputWidgetPtr()->getOrderCbPointer()));
 
 
 
 
     addAndMakeVisible(&slPeakLevel);
-    slPeakLevelAttachment = new SliderAttachment(valueTreeState, "peakLevel", slPeakLevel);
+    slPeakLevelAttachment.reset (new SliderAttachment (valueTreeState, "peakLevel", slPeakLevel));
     slPeakLevel.setSliderStyle(Slider::LinearVertical);
     slPeakLevel.setTextBoxStyle(Slider::TextBoxBelow, false, 100, 12);
     slPeakLevel.setTextValueSuffix(" dB");
@@ -56,7 +56,7 @@ EnergyVisualizerAudioProcessorEditor::EnergyVisualizerAudioProcessorEditor (Ener
     slPeakLevel.addListener(this);
 
     addAndMakeVisible(&slDynamicRange);
-    slDynamicRangeAttachment = new SliderAttachment(valueTreeState, "dynamicRange", slDynamicRange);
+    slDynamicRangeAttachment.reset (new SliderAttachment (valueTreeState, "dynamicRange", slDynamicRange));
     slDynamicRange.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
     slDynamicRange.setTextBoxStyle(Slider::TextBoxBelow, false, 100, 12);
     slDynamicRange.setTextValueSuffix(" dB");
