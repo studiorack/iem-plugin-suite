@@ -10,13 +10,9 @@
               pluginAUExportPrefix="StereoEncoderAU" aaxIdentifier="at.iem.StereoEncoder"
               pluginAAXCategory="2" jucerVersion="5.4.4" companyName="IEM"
               companyWebsite="iem.at" displaySplashScreen="0" reportAppUsage="0"
-              splashScreenColour="Dark" buildStandalone="1" enableIAA="0" cppLanguageStandard="11"
+              splashScreenColour="Dark" buildStandalone="1" enableIAA="0" cppLanguageStandard="14"
               companyCopyright="IEM - Daniel Rudrich" headerPath="../../../resources/"
-<<<<<<< HEAD
-              pluginFormats="buildStandalone,buildVST,buildVST3" defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1">
-=======
-              pluginFormats="buildStandalone,buildVST">
->>>>>>> develop
+              pluginFormats="buildStandalone,buildVST" defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1">
   <MAINGROUP id="u5XoJ7" name="StereoEncoder">
     <GROUP id="{C16396AC-F8D0-CC16-B74B-D4F46EC60D1D}" name="Standalone">
       <FILE id="l6uY0E" name="IEM_JackAudio.h" compile="0" resource="0" file="../resources/Standalone/IEM_JackAudio.h"/>

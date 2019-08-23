@@ -12,7 +12,7 @@
               pluginAUExportPrefix="EnergyVisualizerAU" aaxIdentifier="at.iem.EnergyVisualizer"
               pluginAAXCategory="2" jucerVersion="5.4.4" companyCopyright="IEM - Daniel Rudrich"
               companyName="IEM" companyWebsite="iem.at" headerPath="../../../resources/"
-              pluginFormats="buildStandalone,buildVST">
+              pluginFormats="buildStandalone,buildVST" defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1">
   <MAINGROUP id="LpzrV9" name="EnergyVisualizer">
     <GROUP id="{DF461C38-FAA0-FB07-CFAE-FB96A168C32F}" name="Standalone">
       <FILE id="la7JFo" name="IEM_AudioDeviceSelectorComponent.cpp" compile="1"

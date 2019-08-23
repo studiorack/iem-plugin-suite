@@ -12,7 +12,7 @@
               pluginAUExportPrefix="AllRADecoderAU" aaxIdentifier="at.iem.AllRADecoder"
               pluginAAXCategory="2" jucerVersion="5.4.4" companyCopyright="IEM - Daniel Rudrich, Franz Zotter"
               companyName="IEM" companyWebsite="iem.at" headerPath="../../../resources/"
-              pluginFormats="buildStandalone,buildVST">
+              pluginFormats="buildStandalone,buildVST" defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1">
   <MAINGROUP id="LpzrV9" name="AllRADecoder">
     <GROUP id="{5802F7FD-48B6-F588-2DC5-84058836662B}" name="Standalone">
       <FILE id="DoOO2k" name="IEM_AudioDeviceSelectorComponent.cpp" compile="1"

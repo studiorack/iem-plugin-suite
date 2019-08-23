@@ -12,7 +12,7 @@
               pluginAUExportPrefix="BinauralDecoderAU" aaxIdentifier="at.iem.BinauralDecoder"
               pluginAAXCategory="2" jucerVersion="5.4.4" companyCopyright="IEM - Daniel Rudrich"
               companyName="IEM" companyWebsite="iem.at" headerPath="../../../resources/"
-              pluginFormats="buildStandalone,buildVST">
+              pluginFormats="buildStandalone,buildVST" defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1">
   <MAINGROUP id="LpzrV9" name="BinauralDecoder">
     <GROUP id="{EF7AC960-9D48-4ED8-A418-138BEA7D0F5D}" name="Standalone">
       <FILE id="ffzwPo" name="IEM_AudioDeviceSelectorComponent.cpp" compile="1"

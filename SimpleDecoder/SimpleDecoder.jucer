@@ -12,11 +12,7 @@
               pluginAUExportPrefix="SimpleDecoderAU" aaxIdentifier="at.iem.SimpleDecoder"
               pluginAAXCategory="2" jucerVersion="5.4.4" companyCopyright="IEM - Daniel Rudrich"
               companyName="IEM" companyWebsite="iem.at" headerPath="../../../resources/"
-<<<<<<< HEAD
-              pluginFormats="buildStandalone,buildVST,buildVST3" defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1">
-=======
-              pluginFormats="buildStandalone,buildVST">
->>>>>>> develop
+              pluginFormats="buildStandalone,buildVST" defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1">
   <MAINGROUP id="LpzrV9" name="SimpleDecoder">
     <GROUP id="{12C8DBCA-9B7E-F989-7097-781353EC721D}" name="Standalone">
       <FILE id="CFQKlf" name="IEM_AudioDeviceSelectorComponent.cpp" compile="1"

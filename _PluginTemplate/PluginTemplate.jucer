@@ -12,7 +12,7 @@
               pluginAUExportPrefix="PluginTemplateAU" aaxIdentifier="at.iem.PluginTemplate"
               pluginAAXCategory="2" jucerVersion="5.4.4" companyCopyright="IEM - FirstName FamilyName"
               companyName="IEM" companyWebsite="iem.at" headerPath="../../../resources/"
-              pluginFormats="buildStandalone,buildVST">
+              pluginFormats="buildStandalone,buildVST" defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1">
   <MAINGROUP id="LpzrV9" name="PluginTemplate">
     <GROUP id="{DD24AA7B-644A-3C5E-9734-243C087817B2}" name="Standalone">
       <FILE id="Nl2txN" name="IEM_AudioDeviceSelectorComponent.cpp" compile="1"

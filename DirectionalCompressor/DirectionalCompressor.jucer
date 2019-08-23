@@ -12,7 +12,8 @@
               pluginAUExportPrefix="DirectionalCompressorAU" aaxIdentifier="at.iem.DirectionalCompressor"
               pluginAAXCategory="2" jucerVersion="5.4.4" cppLanguageStandard="14"
               companyName="IEM" companyWebsite="IEM.at" companyCopyright="IEM - Daniel Rudrich"
-              headerPath="../../../resources/" pluginFormats="buildStandalone,buildVST">
+              headerPath="../../../resources/" pluginFormats="buildStandalone,buildVST"
+              defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1">
   <MAINGROUP id="Ld9vSw" name="DirectionalCompressor">
     <GROUP id="{056389CC-5E71-EF31-E9BE-B7213785B02E}" name="Standalone">
       <FILE id="Tmvcfd" name="IEM_AudioDeviceSelectorComponent.cpp" compile="1"

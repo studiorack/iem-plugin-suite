@@ -12,7 +12,7 @@
               pluginAUExportPrefix="DirectivityShaperAU" aaxIdentifier="at.iem.DirectivityShaper"
               pluginAAXCategory="2" jucerVersion="5.4.4" companyCopyright="IEM - Daniel Rudrich"
               companyName="IEM" companyWebsite="IEM.at" headerPath="../../../resources/"
-              pluginFormats="buildStandalone,buildVST">
+              pluginFormats="buildStandalone,buildVST" defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1">
   <MAINGROUP id="LpzrV9" name="DirectivityShaper">
     <GROUP id="{593BE55D-7887-2009-01B0-19A4C55BAF49}" name="Standalone">
       <FILE id="NeuBez" name="IEM_AudioDeviceSelectorComponent.cpp" compile="1"

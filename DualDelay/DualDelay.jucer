@@ -11,7 +11,8 @@
               pluginAUExportPrefix="DualDelayAU" aaxIdentifier="at.iem.DualDelay"
               pluginAAXCategory="2" jucerVersion="5.4.4" companyName="IEM"
               companyWebsite="iem.at" cppLanguageStandard="14" companyCopyright="IEM - Daniel Rudrich"
-              headerPath="../../../resources/" pluginFormats="buildStandalone,buildVST">
+              headerPath="../../../resources/" pluginFormats="buildStandalone,buildVST"
+              defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1">
   <MAINGROUP id="ie7lEF" name="DualDelay">
     <GROUP id="{180F129D-953A-BDE6-F85F-076E7581F740}" name="Standalone">
       <FILE id="l5Cp8o" name="IEM_AudioDeviceSelectorComponent.cpp" compile="1"
