@@ -94,7 +94,7 @@ private:
 
     File lastDir;
     File lastFile;
-    ScopedPointer<PropertiesFile> properties;
+    std::unique_ptr<PropertiesFile> properties;
 
     String messageForEditor {"Please load a configuration."};
     //==============================================================================

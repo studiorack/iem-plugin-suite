@@ -154,7 +154,7 @@ private:
     int highestChannelNumber;
 
     File lastDir;
-    ScopedPointer<PropertiesFile> properties;
+    std::unique_ptr<PropertiesFile> properties;
 
     // ========== METHODS
     void prepareLayout();

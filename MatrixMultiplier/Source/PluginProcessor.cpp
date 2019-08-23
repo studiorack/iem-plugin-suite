@@ -45,7 +45,7 @@ createParameterLayout())
     options.folderName          = "IEM";
     options.osxLibrarySubFolder = "Preferences";
 
-    properties = new PropertiesFile(options);
+    properties.reset (new PropertiesFile(options));
     lastDir = File(properties->getValue("configurationFolder"));
 }
 
@@ -114,8 +114,8 @@ void MatrixMultiplierAudioProcessor::processBlock (AudioSampleBuffer& buffer, Mi
     ScopedNoDenormals noDenormals;
 
     AudioBlock<float> ab (buffer);
-    ProcessContextNonReplacing<float> context (ab, ab);
-    matTrans.process(context);
+    ProcessContextReplacing<float> context (ab);
+    matTrans.process (context);
 }
 
 //==============================================================================

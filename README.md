@@ -11,7 +11,7 @@ For more information, installation guides and plug-in descriptions see:
 
 
 ## Compilation Guide
-All you need for compiling the IEM Plug-in Suite is the latest version of JUCE, an IDE (eg. Xcode, Microsoft Visual Studio), the fftw3 library (http://fftw.org), and optionally [JACK](http://jackaudio.org/) (see JACK support below).
+All you need for compiling the IEM Plug-in Suite is the the [JUCE framework](https://juce.com) with version 5.4.4, an IDE (eg. Xcode, Microsoft Visual Studio), and the [fftw3 library](http://fftw.org) (for some of the plug-ins).
 
 - Clone/download the IEMPluginSuite repository
 - Install the fftw3 library (you might want add the paths to the Projucer projects)
@@ -23,10 +23,23 @@ All you need for compiling the IEM Plug-in Suite is the latest version of JUCE, 
 - Build
 - Enjoy ;-)
 
-The *.jucer projects are configured to build VST2, VST3, and standalone versions. In order to build the VST2 versions of the plug-ins, you need to have a copy of the Steinberg VST2-SDK which no longer comes with JUCE. 
+The *.jucer projects are configured to build VST2,  and standalone versions. In order to build the VST2 versions of the plug-ins, you need to have a copy of the Steinberg VST2-SDK which no longer comes with JUCE. If you want to build VST3 versions, you'll have to enable it in the Projucer Project Settings -> Plugin Formats.
 
-Instead of building each plug-in separately, you can also use the provided shell-scripts to start a batch processing.
-**For Windows:** The .jucer projects have to opened and saved first, to create the exporters. Then the 'Developer Command Prompt' has to execute the win_compileAll.bat script. 
+#### Batch processing
+Instead of building each plug-in separately, you can also use the provided shell-scripts to start a batch processing:
+- **macOS**:
+    - open terminal
+    - change the directory to the repository (e.g. `cd IEMPluginSuite-master`)
+    - execute the shell script with `./macOS_buildAll.sh`
+- **windows**:
+    - open the *Developer Command Prompt for Visual Studio*
+    - change the directoy to the repository (e.g. `cd IEMPluginSuite-master`)
+    - execute the batch script with `win_buildAll.bat <pathToProjucer.exe>`
+- **linux**:
+    - copy the `JUCE` directory into the IEM Plug-in Suite repository
+    - open terminal
+    - change the directory to the repository (e.g. `cd IEMPluginSuite-master`)
+    - execute the shell script with `./linux_buildAll.sh`
 
 ###  JACK support
 Both on macOS and linux, the plug-in standalone version will be built with JACK support. You can disable the JACK support by adding `DONT_BUILD_WITH_JACK_SUPPORT=1` to the *Preprocessor Definitions*-field in the Projucer projects.

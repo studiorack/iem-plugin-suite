@@ -124,7 +124,7 @@ private:
 
     // ===== last directory loaded from
     File lastDir;
-    ScopedPointer<PropertiesFile> properties;
+    std::unique_ptr<PropertiesFile> properties;
 
     Array<float> tempValues;
 

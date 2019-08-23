@@ -56,8 +56,8 @@ probe(*valueTreeState.getParameter("azimuth"), valueTreeState.getParameterRange(
     toolTipWin.setOpaque (false);
 
 
-    cbNormalizationAtachement = new ComboBoxAttachment(valueTreeState,"useSN3D", *title.getInputWidgetPtr()->getNormCbPointer());
-    cbOrderAtachement = new ComboBoxAttachment(valueTreeState,"orderSetting", *title.getInputWidgetPtr()->getOrderCbPointer());
+    cbNormalizationAtachement.reset (new ComboBoxAttachment (valueTreeState,"useSN3D", *title.getInputWidgetPtr()->getNormCbPointer()));
+    cbOrderAtachement.reset (new ComboBoxAttachment (valueTreeState,"orderSetting", *title.getInputWidgetPtr()->getOrderCbPointer()));
 
 
     // ======================== YAW PITCH ROLL GROUP
@@ -69,7 +69,7 @@ probe(*valueTreeState.getParameter("azimuth"), valueTreeState.getParameterRange(
     ypGroup.setVisible(true);
 
     addAndMakeVisible(&slAzimuth);
-    slAzimuthAttachment = new SliderAttachment(valueTreeState,"azimuth", slAzimuth);
+    slAzimuthAttachment.reset (new SliderAttachment (valueTreeState,"azimuth", slAzimuth));
     slAzimuth.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slAzimuth.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slAzimuth.setReverse(true);
@@ -79,7 +79,7 @@ probe(*valueTreeState.getParameter("azimuth"), valueTreeState.getParameterRange(
     slAzimuth.setTextValueSuffix(CharPointer_UTF8 (R"(°)"));
 
     addAndMakeVisible(&slElevation);
-    slElevationAttachment = new SliderAttachment(valueTreeState,"elevation", slElevation);
+    slElevationAttachment.reset (new SliderAttachment (valueTreeState,"elevation", slElevation));
     slElevation.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slElevation.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slElevation.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
@@ -94,7 +94,7 @@ probe(*valueTreeState.getParameter("azimuth"), valueTreeState.getParameterRange(
     addAndMakeVisible(&lbElevation);
     lbElevation.setText("Elevation");
 
-    startTimer(10);
+    startTimer (20);
 }
 
 

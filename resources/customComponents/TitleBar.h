@@ -129,10 +129,10 @@ public:
 
         if (selectable)
         {
-            cbChannels = new ComboBox();
-            addAndMakeVisible (cbChannels);
+            cbChannels.reset (new ComboBox());
+            addAndMakeVisible (cbChannels.get());
             cbChannels->setJustificationType (Justification::centred);
-            cbChannels->addSectionHeading ("Number of channels");
+            //cbChannels->addSectionHeading ("Number of channels");
             cbChannels->addItem ("Auto", 1);
             for (int i = 1; i <= maxChannels; ++i)
                 cbChannels->addItem (String (i), i + 1);
@@ -215,7 +215,7 @@ public:
 
     ComboBox* getChannelsCbPointer()
     {
-        if (selectable) return cbChannels;
+        if (selectable) return cbChannels.get();
         return nullptr;
     }
 
@@ -235,7 +235,7 @@ public:
     };
 
 private:
-    ScopedPointer<ComboBox> cbChannels;
+    std::unique_ptr<ComboBox> cbChannels;
     Path WaveformPath;
     int availableChannels {64};
     int channelSizeIfNotSelectable = maxChannels;
@@ -257,7 +257,7 @@ public:
 
         addAndMakeVisible(&cbNormalization);
         cbNormalization.setJustificationType (Justification::centred);
-        cbNormalization.addSectionHeading ("Normalization");
+        //cbNormalization.addSectionHeading ("Normalization");
         cbNormalization.addItem ("N3D", 1);
         cbNormalization.addItem ("SN3D", 2);
         cbNormalization.setBounds (35, 0, 70, 15);
@@ -268,7 +268,7 @@ public:
     {
         const int previousIndex = cbOrder.getSelectedItemIndex();
         cbOrder.clear();
-        cbOrder.addSectionHeading ("Ambisonic Order");
+        //cbOrder.addSectionHeading ("Ambisonic Order");
         cbOrder.addItem ("Auto", 1);
         for (int o = 0; o <= maxOrder; ++o)
             cbOrder.addItem (getOrderString(o), o + 2);
@@ -346,7 +346,7 @@ public:
 
         addAndMakeVisible (&cbOrder);
         cbOrder.setJustificationType (Justification::centred);
-        cbOrder.addSectionHeading ("Directivity Order");
+        //cbOrder.addSectionHeading ("Directivity Order");
         cbOrder.addItem ("Auto", 1);
         cbOrder.addItem ("0th", 2);
         cbOrder.addItem ("1st", 3);
@@ -360,7 +360,7 @@ public:
 
         addAndMakeVisible (&cbNormalization);
         cbNormalization.setJustificationType (Justification::centred);
-        cbNormalization.addSectionHeading ("Normalization");
+        //cbNormalization.addSectionHeading ("Normalization");
         cbNormalization.addItem ("N3D", 1);
         cbNormalization.addItem ("SN3D", 2);
         cbNormalization.setBounds (35, 0, 70, 15);

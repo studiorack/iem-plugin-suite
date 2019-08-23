@@ -43,8 +43,8 @@ SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotator
 
 
     // create the connection between title component's comboBoxes and parameters
-    cbOrderAttachement = new ComboBoxAttachment (valueTreeState, "orderSetting", *title.getInputWidgetPtr()->getOrderCbPointer());
-    cbNormalizationAttachement = new ComboBoxAttachment (valueTreeState, "useSN3D", *title.getInputWidgetPtr()->getNormCbPointer());
+    cbOrderAttachement.reset (new ComboBoxAttachment (valueTreeState, "orderSetting", *title.getInputWidgetPtr()->getOrderCbPointer()));
+    cbNormalizationAttachement.reset (new ComboBoxAttachment (valueTreeState, "useSN3D", *title.getInputWidgetPtr()->getNormCbPointer()));
 
 
 
@@ -54,7 +54,7 @@ SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotator
     addAndMakeVisible (&yprGroup);
 
     addAndMakeVisible (&slYaw);
-    slYawAttachment = new SliderAttachment (valueTreeState, "yaw", slYaw);
+    slYawAttachment.reset (new SliderAttachment (valueTreeState, "yaw", slYaw));
     slYaw.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slYaw.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slYaw.setReverse (true);
@@ -64,7 +64,7 @@ SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotator
     slYaw.setTextValueSuffix (CharPointer_UTF8 (R"(°)"));
 
     addAndMakeVisible (&slPitch);
-    slPitchAttachment = new SliderAttachment (valueTreeState, "pitch", slPitch);
+    slPitchAttachment.reset (new SliderAttachment (valueTreeState, "pitch", slPitch));
     slPitch.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slPitch.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slPitch.setReverse (true);
@@ -74,7 +74,7 @@ SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotator
     slPitch.setTextValueSuffix (CharPointer_UTF8 (R"(°)"));
 
     addAndMakeVisible (&slRoll);
-    slRollAttachment = new SliderAttachment (valueTreeState, "roll", slRoll);
+    slRollAttachment.reset (new SliderAttachment (valueTreeState, "roll", slRoll));
     slRoll.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slRoll.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slRoll.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
@@ -84,32 +84,32 @@ SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotator
     slRoll.setTextValueSuffix (CharPointer_UTF8 (R"(°)"));
 
     addAndMakeVisible (tbInvertYaw);
-    tbInvertYawAttachment = new ButtonAttachment (valueTreeState, "invertYaw", tbInvertYaw);
+    tbInvertYawAttachment.reset (new ButtonAttachment (valueTreeState, "invertYaw", tbInvertYaw));
     tbInvertYaw.setColour (ToggleButton::ColourIds::tickColourId, globalLaF.ClWidgetColours[0]);
     tbInvertYaw.setButtonText ("Flip");
 
     addAndMakeVisible (tbInvertPitch);
-    tbInvertPitchAttachment = new ButtonAttachment (valueTreeState, "invertPitch", tbInvertPitch);
+    tbInvertPitchAttachment.reset (new ButtonAttachment (valueTreeState, "invertPitch", tbInvertPitch));
     tbInvertPitch.setColour (ToggleButton::ColourIds::tickColourId, globalLaF.ClWidgetColours[1]);
     tbInvertPitch.setButtonText ("Flip");
 
     addAndMakeVisible (tbInvertRoll);
-    tbRollFlipAttachment = new ButtonAttachment (valueTreeState, "invertRoll", tbInvertRoll);
+    tbRollFlipAttachment.reset (new ButtonAttachment (valueTreeState, "invertRoll", tbInvertRoll));
     tbInvertRoll.setColour (ToggleButton::ColourIds::tickColourId, globalLaF.ClWidgetColours[2]);
     tbInvertRoll.setButtonText ("Flip");
 
     addAndMakeVisible (tbInvertQuaternion);
-    tbInvertQuaternionAttachment = new ButtonAttachment (valueTreeState, "invertQuaternion", tbInvertQuaternion);
+    tbInvertQuaternionAttachment.reset (new ButtonAttachment (valueTreeState, "invertQuaternion", tbInvertQuaternion));
     tbInvertQuaternion.setColour (ToggleButton::ColourIds::tickColourId, globalLaF.ClWidgetColours[0]);
     tbInvertQuaternion.setButtonText ("Invert Quaternions");
 
     addAndMakeVisible (cbRotationSequence);
     cbRotationSequence.setTooltip ("Sequence of intrinsic rotations");
-    cbRotationSequence.addSectionHeading ("Rotation sequence");
+    //cbRotationSequence.addSectionHeading ("Rotation sequence");
     cbRotationSequence.addItem("Yaw -> Pitch -> Roll", 1);
     cbRotationSequence.addItem("Roll -> Pitch -> Yaw", 2);
     cbRotationSequence.setJustificationType (Justification::centred);
-    cbRotationSequenceAttachment = new ComboBoxAttachment (valueTreeState, "rotationSequence", cbRotationSequence);
+    cbRotationSequenceAttachment.reset (new ComboBoxAttachment (valueTreeState, "rotationSequence", cbRotationSequence));
 
 
     // ====================== QUATERNION GROUP
@@ -118,25 +118,25 @@ SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotator
     addAndMakeVisible (&quatGroup);
 
     addAndMakeVisible (&slQW);
-    slQWAttachment = new SliderAttachment (valueTreeState, "qw", slQW);
+    slQWAttachment.reset (new SliderAttachment (valueTreeState, "qw", slQW));
     slQW.setSliderStyle (Slider::LinearHorizontal);
     slQW.setTextBoxStyle (Slider::TextBoxLeft, false, 50, 15);
     slQW.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
 
     addAndMakeVisible (&slQX);
-    slQXAttachment = new SliderAttachment (valueTreeState, "qx", slQX);
+    slQXAttachment.reset (new SliderAttachment (valueTreeState, "qx", slQX));
     slQX.setSliderStyle (Slider::LinearHorizontal);
     slQX.setTextBoxStyle (Slider::TextBoxLeft, false, 50, 15);
     slQX.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
 
     addAndMakeVisible (&slQY);
-    slQYAttachment = new SliderAttachment (valueTreeState, "qy", slQY);
+    slQYAttachment.reset (new SliderAttachment (valueTreeState, "qy", slQY));
     slQY.setSliderStyle (Slider::LinearHorizontal);
     slQY.setTextBoxStyle (Slider::TextBoxLeft, false, 50, 15);
     slQY.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
 
     addAndMakeVisible (&slQZ);
-    slQZAttachment = new SliderAttachment (valueTreeState, "qz", slQZ);
+    slQZAttachment.reset (new SliderAttachment (valueTreeState, "qz", slQZ));
     slQZ.setSliderStyle (Slider::LinearHorizontal);
     slQZ.setTextBoxStyle (Slider::TextBoxLeft, false, 50, 15);
     slQZ.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
@@ -177,7 +177,7 @@ SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotator
 
     addAndMakeVisible (cbMidiScheme);
     cbMidiScheme.setJustificationType (Justification::centred);
-    cbMidiScheme.addSectionHeading("Select Device's MIDI Scheme");
+    //cbMidiScheme.addSectionHeading("Select Device's MIDI Scheme");
     cbMidiScheme.addItemList (processor.getMidiSchemes(), 1);
     cbMidiScheme.setSelectedId (static_cast<int> (processor.getCurrentMidiScheme()) + 1);
     updateSelectedMidiScheme();
@@ -401,10 +401,7 @@ void SceneRotatorAudioProcessorEditor::refreshMidiDeviceList()
     }
 
     cbMidiDevices.addSeparator();
-    cbMidiDevices.addSectionHeading ("Available Devices");
-
-
-
+    //cbMidiDevices.addSectionHeading ("Available Devices");
     for (int i = 0; i < devices.size(); ++i)
     {
         cbMidiDevices.addItem (devices[i], i + 1);

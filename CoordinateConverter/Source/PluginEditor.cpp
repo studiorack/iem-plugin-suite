@@ -65,7 +65,7 @@ CoordinateConverterAudioProcessorEditor::CoordinateConverterAudioProcessorEditor
     // ============== BEGIN: SPHERICAL COORDINATES ============
 
     addAndMakeVisible (slAzimuth);
-    slAzimuthAttachment = new SliderAttachment (valueTreeState, "azimuth", slAzimuth);
+    slAzimuthAttachment.reset (new SliderAttachment (valueTreeState, "azimuth", slAzimuth));
     slAzimuth.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slAzimuth.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slAzimuth.setReverse (true);
@@ -74,7 +74,7 @@ CoordinateConverterAudioProcessorEditor::CoordinateConverterAudioProcessorEditor
     slAzimuth.setTooltip ("Azimuth angle");
 
     addAndMakeVisible (slElevation);
-    slElevationAttachment = new SliderAttachment(valueTreeState, "elevation", slElevation);
+    slElevationAttachment.reset (new SliderAttachment(valueTreeState, "elevation", slElevation));
     slElevation.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slElevation.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slElevation.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
@@ -82,7 +82,7 @@ CoordinateConverterAudioProcessorEditor::CoordinateConverterAudioProcessorEditor
     slElevation.setTooltip( "Elevation angle");
 
     addAndMakeVisible (slRadius);
-    slRadiusAttachment = new SliderAttachment (valueTreeState, "radius", slRadius);
+    slRadiusAttachment.reset (new SliderAttachment (valueTreeState, "radius", slRadius));
     slRadius.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slRadius.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slRadius.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
@@ -99,17 +99,17 @@ CoordinateConverterAudioProcessorEditor::CoordinateConverterAudioProcessorEditor
     lbRadius.setText ("Radius");
 
     addAndMakeVisible (tbAzimuthFlip);
-    tbAzimuthFlipAttachment = new ButtonAttachment (valueTreeState, "azimuthFlip", tbAzimuthFlip);
+    tbAzimuthFlipAttachment.reset (new ButtonAttachment (valueTreeState, "azimuthFlip", tbAzimuthFlip));
     tbAzimuthFlip.setColour (ToggleButton::ColourIds::tickColourId, globalLaF.ClWidgetColours[0]);
     tbAzimuthFlip.setButtonText ("Flip");
 
     addAndMakeVisible (tbElevationFlip);
-    tbElevationFlipAttachment = new ButtonAttachment (valueTreeState, "elevationFlip", tbElevationFlip);
+    tbElevationFlipAttachment.reset (new ButtonAttachment (valueTreeState, "elevationFlip", tbElevationFlip));
     tbElevationFlip.setColour (ToggleButton::ColourIds::tickColourId, globalLaF.ClWidgetColours[1]);
     tbElevationFlip.setButtonText ("Flip");
 
     addAndMakeVisible (tbRadiusFlip);
-    tbRadiusFlipAttachment = new ButtonAttachment (valueTreeState, "radiusFlip", tbRadiusFlip);
+    tbRadiusFlipAttachment.reset (new ButtonAttachment (valueTreeState, "radiusFlip", tbRadiusFlip));
     tbRadiusFlip.setColour (ToggleButton::ColourIds::tickColourId, globalLaF.ClWidgetColours[2]);
     tbRadiusFlip.setButtonText ("Flip");
 
@@ -130,21 +130,21 @@ CoordinateConverterAudioProcessorEditor::CoordinateConverterAudioProcessorEditor
     zyPlane.setDimensions ({2.0f, 2.0f, 2.0f});
 
     addAndMakeVisible (slXPos);
-    slXPosAttachment = new SliderAttachment(valueTreeState, "xPos", slXPos);
+    slXPosAttachment.reset (new SliderAttachment(valueTreeState, "xPos", slXPos));
     slXPos.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slXPos.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slXPos.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
     slXPos.setTooltip ("x coordinate (normalized)");
 
     addAndMakeVisible (slYPos);
-    slYPosAttachment = new SliderAttachment(valueTreeState, "yPos", slYPos);
+    slYPosAttachment.reset (new SliderAttachment(valueTreeState, "yPos", slYPos));
     slYPos.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slYPos.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slYPos.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
     slYPos.setTooltip ("y coordinate (normalized)");
 
     addAndMakeVisible (slZPos);
-    slZPosAttachment = new SliderAttachment(valueTreeState, "zPos", slZPos);
+    slZPosAttachment.reset (new SliderAttachment(valueTreeState, "zPos", slZPos));
     slZPos.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slZPos.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slZPos.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
@@ -161,19 +161,19 @@ CoordinateConverterAudioProcessorEditor::CoordinateConverterAudioProcessorEditor
     lbZPos.setText ("Z");
 
     addAndMakeVisible (tbXFlip);
-    tbXFlipAttachment = new ButtonAttachment (valueTreeState, "xFlip", tbXFlip);
+    tbXFlipAttachment.reset (new ButtonAttachment (valueTreeState, "xFlip", tbXFlip));
     tbXFlip.setColour (ToggleButton::ColourIds::tickColourId, globalLaF.ClWidgetColours[0]);
     tbXFlip.setButtonText ("Flip");
     tbXFlip.addListener (this);
 
     addAndMakeVisible (tbYFlip);
-    tbYFlipAttachment = new ButtonAttachment (valueTreeState, "yFlip", tbYFlip);
+    tbYFlipAttachment.reset (new ButtonAttachment (valueTreeState, "yFlip", tbYFlip));
     tbYFlip.setColour (ToggleButton::ColourIds::tickColourId, globalLaF.ClWidgetColours[1]);
     tbYFlip.setButtonText ("Flip");
     tbYFlip.addListener (this);
 
     addAndMakeVisible (tbZFlip);
-    tbZFlipAttachment = new ButtonAttachment (valueTreeState, "zFlip", tbZFlip);
+    tbZFlipAttachment.reset (new ButtonAttachment (valueTreeState, "zFlip", tbZFlip));
     tbZFlip.setColour (ToggleButton::ColourIds::tickColourId, globalLaF.ClWidgetColours[2]);
     tbZFlip.setButtonText ("Flip");
     tbZFlip.addListener (this);
@@ -186,17 +186,17 @@ CoordinateConverterAudioProcessorEditor::CoordinateConverterAudioProcessorEditor
     addAndMakeVisible (slXReference);
     slXReference.setJustificationType(Justification::centred);
     slXReference.setEditable (true);
-    slXReferenceAttachment = new LabelAttachment (valueTreeState, "xReference", slXReference);
+    slXReferenceAttachment.reset (new LabelAttachment (valueTreeState, "xReference", slXReference));
 
     addAndMakeVisible (slYReference);
     slYReference.setJustificationType(Justification::centred);
     slYReference.setEditable (true);
-    slYReferenceAttachment = new LabelAttachment (valueTreeState, "yReference", slYReference);
+    slYReferenceAttachment.reset (new LabelAttachment (valueTreeState, "yReference", slYReference));
 
     addAndMakeVisible (slZReference);
     slZReference.setJustificationType(Justification::centred);
     slZReference.setEditable (true);
-    slZReferenceAttachment = new LabelAttachment (valueTreeState, "zReference", slZReference);
+    slZReferenceAttachment.reset (new LabelAttachment (valueTreeState, "zReference", slZReference));
 
 
     addAndMakeVisible (lbXReference);
@@ -216,7 +216,7 @@ CoordinateConverterAudioProcessorEditor::CoordinateConverterAudioProcessorEditor
     addAndMakeVisible (slRadiusRange);
     slRadiusRange.setJustificationType(Justification::centred);
     slRadiusRange.setEditable (true);
-    slRadiusRangeAttachment = new LabelAttachment (valueTreeState, "radiusRange", slRadiusRange);
+    slRadiusRangeAttachment.reset (new LabelAttachment (valueTreeState, "radiusRange", slRadiusRange));
 
     addAndMakeVisible (lbRadiusRange);
     lbRadiusRange.setText ("Radius");
@@ -224,7 +224,7 @@ CoordinateConverterAudioProcessorEditor::CoordinateConverterAudioProcessorEditor
     addAndMakeVisible (slXRange);
     slXRange.setJustificationType(Justification::centred);
     slXRange.setEditable (true);
-    slXRangeAttachment = new LabelAttachment (valueTreeState, "xRange", slXRange);
+    slXRangeAttachment.reset (new LabelAttachment (valueTreeState, "xRange", slXRange));
 
     addAndMakeVisible (lbXRange);
     lbXRange.setText ("+/- X");
@@ -232,7 +232,7 @@ CoordinateConverterAudioProcessorEditor::CoordinateConverterAudioProcessorEditor
     addAndMakeVisible (slYRange);
     slYRange.setJustificationType(Justification::centred);
     slYRange.setEditable (true);
-    slYRangeAttachment = new LabelAttachment (valueTreeState, "yRange", slYRange);
+    slYRangeAttachment.reset (new LabelAttachment (valueTreeState, "yRange", slYRange));
 
     addAndMakeVisible (lbYRange);
     lbYRange.setText ("+/- Y");
@@ -240,7 +240,7 @@ CoordinateConverterAudioProcessorEditor::CoordinateConverterAudioProcessorEditor
     addAndMakeVisible (slZRange);
     slZRange.setJustificationType(Justification::centred);
     slZRange.setEditable (true);
-    slZRangeAttachment = new LabelAttachment (valueTreeState, "zRange", slZRange);
+    slZRangeAttachment.reset (new LabelAttachment (valueTreeState, "zRange", slZRange));
 
     addAndMakeVisible (lbZRange);
     lbZRange.setText ("+/- Z");

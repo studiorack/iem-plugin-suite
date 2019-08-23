@@ -88,7 +88,7 @@ private:
     SpherePanner::AzimuthElevationParameterElement panner;
 
     ReverseSlider slAzimuth, slElevation, slRadius;
-    ScopedPointer<SliderAttachment> slAzimuthAttachment, slElevationAttachment, slRadiusAttachment;
+    std::unique_ptr<SliderAttachment> slAzimuthAttachment, slElevationAttachment, slRadiusAttachment;
     SimpleLabel lbAzimuth, lbElevation, lbRadius;
 
     // === Cartesian
@@ -96,23 +96,23 @@ private:
     PositionPlane::ParameterElement xyzPanner;
 
     ReverseSlider slXPos, slYPos, slZPos;
-    ScopedPointer<SliderAttachment> slXPosAttachment, slYPosAttachment, slZPosAttachment;
+    std::unique_ptr<SliderAttachment> slXPosAttachment, slYPosAttachment, slZPosAttachment;
     SimpleLabel lbXPos, lbYPos, lbZPos;
 
     ToggleButton tbAzimuthFlip, tbElevationFlip, tbRadiusFlip, tbXFlip, tbYFlip, tbZFlip;
-    ScopedPointer<ButtonAttachment> tbAzimuthFlipAttachment, tbElevationFlipAttachment, tbRadiusFlipAttachment, tbXFlipAttachment, tbYFlipAttachment, tbZFlipAttachment;
+    std::unique_ptr<ButtonAttachment> tbAzimuthFlipAttachment, tbElevationFlipAttachment, tbRadiusFlipAttachment, tbXFlipAttachment, tbYFlipAttachment, tbZFlipAttachment;
 
     Label slXReference, slYReference, slZReference;
-    ScopedPointer<LabelAttachment> slXReferenceAttachment, slYReferenceAttachment, slZReferenceAttachment;
+    std::unique_ptr<LabelAttachment> slXReferenceAttachment, slYReferenceAttachment, slZReferenceAttachment;
     SimpleLabel lbXReference, lbYReference, lbZReference;
 
     // === Range Settings
     Label slRadiusRange;
-    ScopedPointer<LabelAttachment> slRadiusRangeAttachment;
+    std::unique_ptr<LabelAttachment> slRadiusRangeAttachment;
     SimpleLabel lbRadiusRange;
 
     Label slXRange, slYRange, slZRange;
-    ScopedPointer<LabelAttachment> slXRangeAttachment, slYRangeAttachment, slZRangeAttachment;
+    std::unique_ptr<LabelAttachment> slXRangeAttachment, slYRangeAttachment, slZRangeAttachment;
     SimpleLabel lbXRange, lbYRange, lbZRange;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (CoordinateConverterAudioProcessorEditor)

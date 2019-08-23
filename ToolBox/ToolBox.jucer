@@ -3,16 +3,15 @@
 <JUCERPROJECT id="mbpAgi" name="ToolBox" displaySplashScreen="0" reportAppUsage="0"
               splashScreenColour="Dark" projectType="audioplug" version="0.4.0"
               bundleIdentifier="at.iem.ToolBox" includeBinaryInAppConfig="1"
-              cppLanguageStandard="14" buildVST="1" buildVST3="1" buildAU="0"
+              cppLanguageStandard="14" buildVST="1" buildVST3="0" buildAU="0"
               buildAUv3="0" buildRTAS="0" buildAAX="0" buildStandalone="1"
               enableIAA="0" pluginName="ToolBox" pluginDesc="ToolBox" pluginManufacturer="IEM"
               pluginManufacturerCode="IEMA" pluginCode="ToBo" pluginChannelConfigs=""
               pluginIsSynth="0" pluginWantsMidiIn="0" pluginProducesMidiOut="0"
               pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0" pluginAUExportPrefix="ToolBoxAU"
-              aaxIdentifier="at.iem.ToolBox" pluginAAXCategory="2" jucerVersion="5.4.3"
+              aaxIdentifier="at.iem.ToolBox" pluginAAXCategory="2" jucerVersion="5.4.4"
               companyCopyright="IEM - Daniel Rudrich" companyName="IEM" companyWebsite="iem.at"
-              headerPath="../../../resources/" pluginFormats="buildStandalone,buildVST,buildVST3"
-              defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1">
+              headerPath="../../../resources/" pluginFormats="buildStandalone,buildVST">
   <MAINGROUP id="LpzrV9" name="ToolBox">
     <GROUP id="{DF461C38-FAA0-FB07-CFAE-FB96A168C32F}" name="Standalone">
       <FILE id="yoGjl7" name="IEM_AudioDeviceSelectorComponent.cpp" compile="1"

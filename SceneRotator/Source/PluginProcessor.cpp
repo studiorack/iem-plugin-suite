@@ -825,7 +825,7 @@ void SceneRotatorAudioProcessor::openMidiInput (String midiDeviceName, bool forc
     const int index = devices.indexOf (midiDeviceName);
     if (index != -1)
     {
-        midiInput.reset (MidiInput::openDevice (index, this));
+        midiInput = MidiInput::openDevice (index, this);
         if (midiInput == nullptr)
         {
             deviceHasChanged = true;

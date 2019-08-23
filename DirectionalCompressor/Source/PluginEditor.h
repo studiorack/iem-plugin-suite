@@ -65,8 +65,8 @@ private:
     SpherePanner::AzimuthElevationParameterElement sphereElem;
 
     int maxPossibleOrder = -1;
-    ScopedPointer<ComboBoxAttachment> cbNormalizationAtachement;
-    ScopedPointer<ComboBoxAttachment> cbOrderAtachement;
+    std::unique_ptr<ComboBoxAttachment> cbNormalizationAtachement;
+    std::unique_ptr<ComboBoxAttachment> cbOrderAtachement;
 
     void timerCallback() override;
 
@@ -86,17 +86,17 @@ private:
     ComboBox cbC2Driving, cbC2Apply;
     ComboBox cbListen;
 
-    ScopedPointer<SliderAttachment> slPreGainAttachment, slAzimuthAttachment, slElevationAttachment, slWidthAttachment;
-    ScopedPointer<SliderAttachment> slC1ThresholdAttachment, slC1KneeAttachment, slC1RatioAttachment;
-    ScopedPointer<SliderAttachment> slC1AttackAttachment, slC1ReleaseAttachment, slC1MakeupAttachment;
-    ScopedPointer<SliderAttachment> slC2ThresholdAttachment, slC2KneeAttachment, slC2RatioAttachment;
-    ScopedPointer<SliderAttachment> slC2AttackAttachment, slC2ReleaseAttachment, slC2MakeupAttachment;
+    std::unique_ptr<SliderAttachment> slPreGainAttachment, slAzimuthAttachment, slElevationAttachment, slWidthAttachment;
+    std::unique_ptr<SliderAttachment> slC1ThresholdAttachment, slC1KneeAttachment, slC1RatioAttachment;
+    std::unique_ptr<SliderAttachment> slC1AttackAttachment, slC1ReleaseAttachment, slC1MakeupAttachment;
+    std::unique_ptr<SliderAttachment> slC2ThresholdAttachment, slC2KneeAttachment, slC2RatioAttachment;
+    std::unique_ptr<SliderAttachment> slC2AttackAttachment, slC2ReleaseAttachment, slC2MakeupAttachment;
 
-    ScopedPointer<ComboBoxAttachment> cbC1DrivingAttachment, cbC1ApplyAttachment;
-    ScopedPointer<ComboBoxAttachment> cbC2DrivingAttachment, cbC2ApplyAttachment;
-    ScopedPointer<ComboBoxAttachment> cbListenAttachment;
+    std::unique_ptr<ComboBoxAttachment> cbC1DrivingAttachment, cbC1ApplyAttachment;
+    std::unique_ptr<ComboBoxAttachment> cbC2DrivingAttachment, cbC2ApplyAttachment;
+    std::unique_ptr<ComboBoxAttachment> cbListenAttachment;
 
-    ScopedPointer<ButtonAttachment> tbC1Attachment, tbC2Attachment;
+    std::unique_ptr<ButtonAttachment> tbC1Attachment, tbC2Attachment;
 
     LevelMeter dbC1GRmeter, dbC1RMSmeter;
     LevelMeter dbC2GRmeter, dbC2RMSmeter;

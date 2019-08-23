@@ -3,16 +3,15 @@
 <JUCERPROJECT id="mbpAgi" name="MultiEQ" displaySplashScreen="0" reportAppUsage="0"
               splashScreenColour="Dark" projectType="audioplug" version="0.1.4"
               bundleIdentifier="at.iem.MultiEQ" includeBinaryInAppConfig="1"
-              cppLanguageStandard="14" buildVST="1" buildVST3="1" buildAU="0"
+              cppLanguageStandard="14" buildVST="1" buildVST3="0" buildAU="0"
               buildAUv3="0" buildRTAS="0" buildAAX="0" buildStandalone="1"
               enableIAA="0" pluginName="MultiEQ" pluginDesc="MultiEQ" pluginManufacturer="IEM"
               pluginManufacturerCode="IEMA" pluginCode="MuEq" pluginChannelConfigs=""
               pluginIsSynth="0" pluginWantsMidiIn="0" pluginProducesMidiOut="0"
               pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0" pluginAUExportPrefix="MultiEQAU"
-              aaxIdentifier="at.iem.MultiEQ" pluginAAXCategory="2" jucerVersion="5.4.3"
+              aaxIdentifier="at.iem.MultiEQ" pluginAAXCategory="2" jucerVersion="5.4.4"
               companyCopyright="IEM - Daniel Rudrich" companyName="IEM" companyWebsite="iem.at"
-              headerPath="../../../resources/" pluginFormats="buildStandalone,buildVST,buildVST3"
-              defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1">
+              headerPath="../../../resources/" pluginFormats="buildStandalone,buildVST">
   <MAINGROUP id="LpzrV9" name="MultiEQ">
     <GROUP id="{DD24AA7B-644A-3C5E-9734-243C087817B2}" name="Standalone">
       <FILE id="gWkr5s" name="IEM_AudioDeviceSelectorComponent.cpp" compile="1"

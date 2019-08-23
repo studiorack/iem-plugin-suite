@@ -3,16 +3,16 @@
 <JUCERPROJECT id="mbpAgi" name="AllRADecoder" displaySplashScreen="0" reportAppUsage="0"
               splashScreenColour="Dark" projectType="audioplug" version="0.7.5"
               bundleIdentifier="at.iem.AllRADecoder" includeBinaryInAppConfig="1"
-              cppLanguageStandard="14" buildVST="1" buildVST3="1" buildAU="0"
+              cppLanguageStandard="14" buildVST="1" buildVST3="0" buildAU="0"
               buildAUv3="0" buildRTAS="0" buildAAX="0" buildStandalone="1"
               enableIAA="0" pluginName="AllRADecoder" pluginDesc="AllRADecoder"
               pluginManufacturer="IEM" pluginManufacturerCode="IEMA" pluginCode="AlDe"
               pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
               pluginAUExportPrefix="AllRADecoderAU" aaxIdentifier="at.iem.AllRADecoder"
-              pluginAAXCategory="2" jucerVersion="5.4.3" companyCopyright="IEM - Daniel Rudrich, Franz Zotter"
+              pluginAAXCategory="2" jucerVersion="5.4.4" companyCopyright="IEM - Daniel Rudrich, Franz Zotter"
               companyName="IEM" companyWebsite="iem.at" headerPath="../../../resources/"
-              pluginFormats="buildStandalone,buildVST,buildVST3" defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1">
+              pluginFormats="buildStandalone,buildVST">
   <MAINGROUP id="LpzrV9" name="AllRADecoder">
     <GROUP id="{5802F7FD-48B6-F588-2DC5-84058836662B}" name="Standalone">
       <FILE id="DoOO2k" name="IEM_AudioDeviceSelectorComponent.cpp" compile="1"

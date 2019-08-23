@@ -73,23 +73,23 @@ private:
     void updateEnableSetting (const int ch);
     void showControls (const int nCh);
     
-    ScopedPointer<ComboBoxAttachment> cbInputChannelsSettingAttachment;
+    std::unique_ptr<ComboBoxAttachment> cbInputChannelsSettingAttachment;
     
     
     Label lbSpeedOfSound;
-    ScopedPointer<LabelAttachment> lbSpeedOfSoundAttachment;
+    std::unique_ptr<LabelAttachment> lbSpeedOfSoundAttachment;
     SimpleLabel slbSpeedOfSound;
     
     Label lbDistanceExponent;
-    ScopedPointer<LabelAttachment> lbDistanceExponentAttachment;
+    std::unique_ptr<LabelAttachment> lbDistanceExponentAttachment;
     SimpleLabel slbDistanceExponent;
 
     ComboBox cbGainNormalization;
     SimpleLabel slbGainNormalization;
-    ScopedPointer<ComboBoxAttachment> cbGainNormalizationAttachment;
+    std::unique_ptr<ComboBoxAttachment> cbGainNormalizationAttachment;
     
     Label lbReferenceX, lbReferenceY, lbReferenceZ;
-    ScopedPointer<LabelAttachment> lbReferenceXAttachment, lbReferenceYAttachment, lbReferenceZAttachment;
+    std::unique_ptr<LabelAttachment> lbReferenceXAttachment, lbReferenceYAttachment, lbReferenceZAttachment;
     SimpleLabel slbReference, slbReferenceX, slbReferenceY, slbReferenceZ;
     
     
@@ -104,9 +104,9 @@ private:
     GroupComponent gcCompensation;
     ToggleButton tbEnableGains;
     ToggleButton tbEnableDelays;
-    ScopedPointer<ButtonAttachment> tbEnableGainsAttachment;
-    ScopedPointer<ButtonAttachment> tbEnableDelaysAttachment;
-    ScopedPointer<ButtonAttachment> tbEnableFiltersAttachment;
+    std::unique_ptr<ButtonAttachment> tbEnableGainsAttachment;
+    std::unique_ptr<ButtonAttachment> tbEnableDelaysAttachment;
+    std::unique_ptr<ButtonAttachment> tbEnableFiltersAttachment;
     
     int maxNumInputs = -1;
     int lastSetNumChIn = -1;

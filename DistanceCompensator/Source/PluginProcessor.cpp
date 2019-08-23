@@ -74,7 +74,7 @@ createParameterLayout())
     options.folderName          = "IEM";
     options.osxLibrarySubFolder = "Preferences";
 
-    properties = new PropertiesFile (options);
+    properties.reset (new PropertiesFile (options));
     lastDir = File (properties->getValue ("presetFolder"));
 
     tempValues.resize(64);

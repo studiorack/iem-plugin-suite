@@ -59,7 +59,7 @@ energyDistribution (Image::PixelFormat::ARGB, 200, 100, true), rEVector (Image::
     options.folderName          = "IEM";
     options.osxLibrarySubFolder = "Preferences";
 
-    properties = new PropertiesFile(options);
+    properties.reset (new PropertiesFile (options));
     lastDir = File(properties->getValue("presetFolder"));
 
     undoManager.beginNewTransaction();
@@ -210,11 +210,11 @@ void AllRADecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBu
         const int L = buffer.getNumSamples();
         AudioBlock<float> inputAudioBlock = AudioBlock<float>(buffer.getArrayOfWritePointers(), nChIn, L);
         AudioBlock<float> outputAudioBlock = AudioBlock<float>(buffer.getArrayOfWritePointers(), nChOut, L);
-        ProcessContextNonReplacing<float> decoderContext (inputAudioBlock, outputAudioBlock);
-        decoder.process(decoderContext);
 
-        for (int ch = nChOut; ch < nChIn; ++ch) // clear all not needed channels
-            buffer.clear(ch, 0, buffer.getNumSamples());
+        decoder.process (inputAudioBlock, outputAudioBlock);
+
+        for (int ch = nChOut; ch < buffer.getNumChannels(); ++ch) // clear all not needed channels
+            buffer.clear (ch, 0, buffer.getNumSamples());
 
     }
     noiseBurst.processBuffer (buffer);
@@ -242,7 +242,7 @@ void AllRADecoderAudioProcessor::getStateInformation (MemoryBlock& destData)
 
     parameters.state.setProperty ("OSCPort", var(oscReceiver.getPortNumber()), nullptr);
 
-    ScopedPointer<XmlElement> xml (parameters.state.createXml());
+    std::unique_ptr<XmlElement> xml (parameters.state.createXml());
     copyXmlToBinary (*xml, destData);
 }
 
@@ -250,7 +250,7 @@ void AllRADecoderAudioProcessor::getStateInformation (MemoryBlock& destData)
 
 void AllRADecoderAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
-    ScopedPointer<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
+    std::unique_ptr<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
     if (xmlState != nullptr)
     {
         if (xmlState->hasTagName (parameters.state.getType()))

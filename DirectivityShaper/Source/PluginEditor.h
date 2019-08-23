@@ -85,11 +85,11 @@ private:
     ReverseSlider slProbeElevation;
     ReverseSlider slProbeRoll;
     ComboBox cbDirectivityNormalization;
-    ScopedPointer<ComboBoxAttachment> cbDirectivityNormalizationAttachment; // on-axis, energy
+    std::unique_ptr<ComboBoxAttachment> cbDirectivityNormalizationAttachment; // on-axis, energy
 
 
     SpherePanner sphere;
-    ScopedPointer<SpherePanner::AzimuthElevationParameterElement> sphereElements[numberOfBands];
+    std::unique_ptr<SpherePanner::AzimuthElevationParameterElement> sphereElements[numberOfBands];
     SpherePanner::AzimuthElevationParameterElement probeElement;
 
     SimpleLabel lbAzimuth, lvElevation, lbOrder, lbShape;
@@ -99,24 +99,24 @@ private:
     GroupComponent gcFilterBands, gcOrderAndShape, gcPanning, gcSettings;
 
     ToggleButton tbProbeLock;
-    ScopedPointer<ComboBoxAttachment> cbFilterTypeAttachment[numberOfBands];
-    ScopedPointer<SliderAttachment> slFilterFrequencyAttachment[numberOfBands];
-    ScopedPointer<SliderAttachment> slFilterQAttachment[numberOfBands];
-    ScopedPointer<SliderAttachment> slFilterGainAttachment[numberOfBands];
-    ScopedPointer<SliderAttachment> slOrderAttachment[numberOfBands];
-    ScopedPointer<SliderAttachment> slShapeAttachment[numberOfBands];
-    ScopedPointer<SliderAttachment> slAzimuthAttachment[numberOfBands];
-    ScopedPointer<SliderAttachment> slElevationAttachment[numberOfBands];
-    ScopedPointer<SliderAttachment> slProbeAzimuthAttachment;
-    ScopedPointer<SliderAttachment> slProbeElevationAttachment;
-    ScopedPointer<SliderAttachment> slProbeRollAttachment;
-    ScopedPointer<ButtonAttachment> tbProbeLockAttachment;
+    std::unique_ptr<ComboBoxAttachment> cbFilterTypeAttachment[numberOfBands];
+    std::unique_ptr<SliderAttachment> slFilterFrequencyAttachment[numberOfBands];
+    std::unique_ptr<SliderAttachment> slFilterQAttachment[numberOfBands];
+    std::unique_ptr<SliderAttachment> slFilterGainAttachment[numberOfBands];
+    std::unique_ptr<SliderAttachment> slOrderAttachment[numberOfBands];
+    std::unique_ptr<SliderAttachment> slShapeAttachment[numberOfBands];
+    std::unique_ptr<SliderAttachment> slAzimuthAttachment[numberOfBands];
+    std::unique_ptr<SliderAttachment> slElevationAttachment[numberOfBands];
+    std::unique_ptr<SliderAttachment> slProbeAzimuthAttachment;
+    std::unique_ptr<SliderAttachment> slProbeElevationAttachment;
+    std::unique_ptr<SliderAttachment> slProbeRollAttachment;
+    std::unique_ptr<ButtonAttachment> tbProbeLockAttachment;
     DirectivityVisualizer dv;
     FilterVisualizer<float> fv;
 
-    ScopedPointer<SliderAttachment> slParam1Attachment, slParam2Attachment, slParam3Attachment;
-    ScopedPointer<ComboBoxAttachment> cbOrderSettingAttachment;
-    ScopedPointer<ComboBoxAttachment> cbNormalizationAttachment; // n3d, sn3d
+    std::unique_ptr<SliderAttachment> slParam1Attachment, slParam2Attachment, slParam3Attachment;
+    std::unique_ptr<ComboBoxAttachment> cbOrderSettingAttachment;
+    std::unique_ptr<ComboBoxAttachment> cbNormalizationAttachment; // n3d, sn3d
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DirectivityShaperAudioProcessorEditor)
 };

@@ -43,14 +43,14 @@ PluginTemplateAudioProcessorEditor::PluginTemplateAudioProcessorEditor (PluginTe
 
 
     // create the connection between title component's comboBoxes and parameters
-    cbInputChannelsSettingAttachment = new ComboBoxAttachment (valueTreeState, "inputChannelsSetting", *title.getInputWidgetPtr()->getChannelsCbPointer());
-    cbNormalizationSettingAttachment = new ComboBoxAttachment (valueTreeState, "useSN3D", *title.getOutputWidgetPtr()->getNormCbPointer());
-    cbOrderSettingAttachment = new ComboBoxAttachment (valueTreeState, "outputOrderSetting", *title.getOutputWidgetPtr()->getOrderCbPointer());
+    cbInputChannelsSettingAttachment.reset (new ComboBoxAttachment (valueTreeState, "inputChannelsSetting", *title.getInputWidgetPtr()->getChannelsCbPointer()));
+    cbNormalizationSettingAttachment.reset (new ComboBoxAttachment (valueTreeState, "useSN3D", *title.getOutputWidgetPtr()->getNormCbPointer()));
+    cbOrderSettingAttachment.reset (new ComboBoxAttachment (valueTreeState, "outputOrderSetting", *title.getOutputWidgetPtr()->getOrderCbPointer()));
 
     addAndMakeVisible (slParam1);
-    slParam1Attachment = new SliderAttachment (valueTreeState, "param1", slParam1);
+    slParam1Attachment.reset (new SliderAttachment (valueTreeState, "param1", slParam1));
     addAndMakeVisible (slParam2);
-    slParam2Attachment = new SliderAttachment (valueTreeState, "param2", slParam2);
+    slParam2Attachment.reset (new SliderAttachment (valueTreeState, "param2", slParam2));
 
 
     // start timer after everything is set up properly

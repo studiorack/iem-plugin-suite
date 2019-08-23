@@ -122,14 +122,16 @@ createParameterLayout())
 
     lowShelfArray.clear();
     highShelfArray.clear();
-    lowShelfArray2.clear();
-    highShelfArray2.clear();
-    for (int i = 0; i<16; ++i)
+
+    for (int o = 0; o < maxOrderImgSrc; ++o)
     {
-        lowShelfArray.add(new IIR::Filter<IIRfloat>(lowShelfCoefficients));
-        highShelfArray.add(new IIR::Filter<IIRfloat>(highShelfCoefficients));
-        lowShelfArray2.add(new IIR::Filter<IIRfloat>(lowShelfCoefficients));
-        highShelfArray2.add(new IIR::Filter<IIRfloat>(highShelfCoefficients));
+        lowShelfArray.add (new OwnedArray<IIR::Filter<IIRfloat>>);
+        highShelfArray.add (new OwnedArray<IIR::Filter<IIRfloat>>);
+        for (int i = 0; i<16; ++i)
+        {
+            lowShelfArray[o]->add (new IIR::Filter<IIRfloat> (lowShelfCoefficients));
+            highShelfArray[o]->add (new IIR::Filter<IIRfloat> (highShelfCoefficients));
+        }
     }
 
     startTimer(50);
@@ -251,12 +253,13 @@ void RoomEncoderAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
 
     for (int i = 0; i<16; ++i)
     {
-        lowShelfArray[i]->reset(IIRfloat(0.0f));
-        highShelfArray[i]->reset(IIRfloat(0.0f));
-        lowShelfArray2[i]->reset(IIRfloat(0.0f));
-        highShelfArray2[i]->reset(IIRfloat(0.0f));
+        for (int o = 0; o < maxOrderImgSrc; ++o)
+        {
+            lowShelfArray[o]->getUnchecked (i)->reset (IIRfloat(0.0f));
+            highShelfArray[o]->getUnchecked (i)->reset (IIRfloat(0.0f));
+        }
 
-        interleavedData.add(new AudioBlock<IIRfloat> (interleavedBlockData[i], 1, samplesPerBlock));
+        interleavedData.add (new AudioBlock<IIRfloat> (interleavedBlockData[i], 1, samplesPerBlock));
         interleavedData.getLast()->clear();
     }
 
@@ -528,8 +531,10 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
     calculateImageSourcePositions (rX, rY, rZ);
 
 
-    for (int q=0; q<workingNumRefl+1; ++q) {
-        if (q == 1) {
+    for (int q=0; q<workingNumRefl+1; ++q)
+    {
+        if (const int idx = filterPoints.indexOf (q); idx != -1)
+        {
             for (int i = 0; i<nSIMDFilters; ++i)
             {
                 const SIMDRegister<float>* chPtr[1];
@@ -537,23 +542,10 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
                 AudioBlock<SIMDRegister<float>> ab (const_cast<SIMDRegister<float>**> (chPtr), 1, L);
                 ProcessContextReplacing<SIMDRegister<float>> context (ab);
 
-                lowShelfArray[i]->process (context);
-                highShelfArray[i]->process (context);
+                lowShelfArray[idx]->getUnchecked (i)->process (context);
+                highShelfArray[idx]->getUnchecked (i)->process (context);
             }
         }
-        if (q == 7) {
-            for (int i = 0; i<nSIMDFilters; ++i)
-            {
-                const SIMDRegister<float>* chPtr[1];
-                chPtr[0] = interleavedData[i]->getChannelPointer (0);
-                AudioBlock<SIMDRegister<float>> ab (const_cast<SIMDRegister<float>**> (chPtr), 1, L);
-                ProcessContextReplacing<SIMDRegister<float>> context (ab);
-
-                lowShelfArray2[i]->process (context);
-                highShelfArray2[i]->process (context);
-            }
-        }
-
 
         // ========================================   CALCULATE SAMPLED MONO SIGNALS
         /* JMZ:
@@ -935,7 +927,7 @@ void RoomEncoderAudioProcessor::updateBuffers()
     const int nChOut = output.getNumberOfChannels();
     const int samplesPerBlock = getBlockSize();
 
-    bufferSize = round(180.0/343.2* getSampleRate()) + samplesPerBlock + 100;
+    bufferSize = round (180.0f / 343.2f * getSampleRate()) + samplesPerBlock + 100;
     bufferSize += samplesPerBlock - bufferSize%samplesPerBlock;
 
     monoBuffer.setSize(1, bufferSize);
