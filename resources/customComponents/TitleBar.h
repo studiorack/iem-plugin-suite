@@ -447,10 +447,10 @@ public:
         outputWidget.setBounds (getLocalBounds().removeFromRight (rightWidth).reduced (0, 15));
     }
     
-    void setMaxSize (int inputSize, int outputSize)
+    void setMaxSize (std::pair<int, int> inOutSizes)
     {
-        inputWidget.setMaxSize (inputSize);
-        outputWidget.setMaxSize (outputSize);
+        inputWidget.setMaxSize (inOutSizes.first);
+        outputWidget.setMaxSize (inOutSizes.second);
     }
 
     void paint (Graphics& g) override

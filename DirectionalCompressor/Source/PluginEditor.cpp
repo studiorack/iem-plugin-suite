@@ -414,11 +414,10 @@ void DirectionalCompressorAudioProcessorEditor::paint (Graphics& g)
 void DirectionalCompressorAudioProcessorEditor::timerCallback()
 {
     // === update titleBar widgets according to available input/output channel counts
-    int maxInSize, maxOutSize;
-    processor.getMaxSize(maxInSize, maxOutSize);
-    maxOutSize = jmin(maxInSize, maxOutSize);
-    maxInSize = maxOutSize;
-    title.setMaxSize(maxInSize, maxOutSize);
+    auto sizes = processor.getMaxSize();
+    sizes.first = jmin (sizes.first, sizes.second);
+    sizes.second = sizes.first;
+    title.setMaxSize (sizes);
     // ==========================================
 
     if (processor.updatedPositionData.get())

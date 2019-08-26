@@ -385,9 +385,7 @@ void DirectivityShaperAudioProcessorEditor::resized()
 void DirectivityShaperAudioProcessorEditor::timerCallback()
 {
     // === update titleBar widgets according to available input/output channel counts
-    int maxInSize, maxOutSize;
-    processor.getMaxSize(maxInSize, maxOutSize);
-    title.setMaxSize(maxInSize, maxOutSize);
+    title.setMaxSize (processor.getMaxSize());
     // ==========================================
 
     const int processorAmbisonicOrder = processor.output.getOrder();

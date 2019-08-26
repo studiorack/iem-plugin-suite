@@ -600,9 +600,7 @@ void RoomEncoderAudioProcessorEditor::buttonStateChanged (Button *button)
 void RoomEncoderAudioProcessorEditor::timerCallback()
 {
     // === update titleBar widgets according to available input/output channel counts
-    int maxInSize, maxOutSize;
-    processor.getMaxSize(maxInSize, maxOutSize);
-    title.setMaxSize(maxInSize, maxOutSize);
+    title.setMaxSize (processor.getMaxSize());
     // ==========================================
 
     if (processor.updateFv)

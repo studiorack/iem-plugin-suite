@@ -164,16 +164,17 @@ public:
         }
     }
 
-    void getMaxSize(int& maxInputSize, int& maxOutputSize)
+    std::pair<int, int> getMaxSize()
     {
-        maxInputSize = input.getMaxSize();
-        maxOutputSize = output.getMaxSize();
+        int maxInputSize = input.getMaxSize();
+        int maxOutputSize = output.getMaxSize();
 
         if (combined)
         {
-            maxInputSize = jmin(maxInputSize, maxOutputSize);
+            maxInputSize = jmin (maxInputSize, maxOutputSize);
             maxOutputSize = maxInputSize;
         }
+        return {maxInputSize, maxOutputSize};
     }
 
     bool userChangedIOSettings = true;

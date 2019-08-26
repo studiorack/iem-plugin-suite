@@ -139,18 +139,16 @@ void OmniCompressorAudioProcessorEditor::paint (Graphics& g)
 
 void OmniCompressorAudioProcessorEditor::timerCallback()
 {
+    // === update titleBar widgets according to available input/output channel counts
+    title.setMaxSize (processor.getMaxSize());
+    // ==========================================
+    
     characteristic.setMarkerLevels (processor.maxRMS.get(), processor.maxGR.get());
     characteristic.updateCharacteristic();
     characteristic.repaint();
 
     inpMeter.setLevel (processor.maxRMS.get());
     dbGRmeter.setLevel (processor.maxGR.get());
-
-    // === update titleBar widgets according to available input/output channel counts
-    int maxInSize, maxOutSize;
-    processor.getMaxSize(maxInSize, maxOutSize);
-    title.setMaxSize(maxInSize, maxOutSize);
-    // ==========================================
 }
 
 
