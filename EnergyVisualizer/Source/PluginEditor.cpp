@@ -149,9 +149,7 @@ void EnergyVisualizerAudioProcessorEditor::sliderValueChanged (Slider *slider)
 void EnergyVisualizerAudioProcessorEditor::timerCallback()
 {
     // === update titleBar widgets according to available input/output channel counts
-    int maxInSize, maxOutSize;
-    processor.getMaxSize(maxInSize, maxOutSize);
-    title.setMaxSize(maxInSize, maxOutSize);
+    title.setMaxSize (processor.getMaxSize());
     // ==========================================
 
     visualizer.setColormap(colormap.getColormap());

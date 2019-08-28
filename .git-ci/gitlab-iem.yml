@@ -37,7 +37,7 @@ variables:
 
 .build:linux: &build_linux
   stage: build
-  image: debian:buster
+  image: ubuntu:disco
   tags:
     - docker
   variables:
