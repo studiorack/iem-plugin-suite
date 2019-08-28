@@ -139,7 +139,7 @@ FdnReverbAudioProcessorEditor::FdnReverbAudioProcessorEditor (FdnReverbAudioProc
     highGainSlider.addListener(this);
 
     addAndMakeVisible (cbFdnSize);
-    //cbFdnSize.addSectionHeading ("Fdn Size");
+    cbFdnSize.addSectionHeading ("Fdn Size");
     cbFdnSize.addItem ("16", 1);
     cbFdnSize.addItem ("32", 2);
     cbFdnSize.addItem ("64", 3);

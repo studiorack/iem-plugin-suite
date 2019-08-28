@@ -74,7 +74,7 @@ ToolBoxAudioProcessorEditor::ToolBoxAudioProcessorEditor (ToolBoxAudioProcessor&
 
     addAndMakeVisible(cbLoaWeights);
     cbLoaWeights.setJustificationType(Justification::centred);
-    //cbLoaWeights.addSectionHeading("Target Decoder Weights");
+    cbLoaWeights.addSectionHeading ("Target Decoder Weights");
     cbLoaWeights.addItem("none", 1);
     cbLoaWeights.addItem("maxrE", 2);
     cbLoaWeights.addItem("inPhase", 3);

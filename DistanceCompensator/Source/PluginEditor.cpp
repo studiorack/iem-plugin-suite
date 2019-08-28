@@ -60,7 +60,7 @@ DistanceCompensatorAudioProcessorEditor::DistanceCompensatorAudioProcessorEditor
     slbDistanceExponent.setJustification (Justification::left);
 
     addAndMakeVisible(cbGainNormalization);
-    //cbGainNormalization.addSectionHeading("Gain normalization");
+    cbGainNormalization.addSectionHeading ("Gain normalization");
     cbGainNormalization.addItem("Attenuation only", 1);
     cbGainNormalization.addItem("Zero-mean", 2);
     cbGainNormalization.setJustificationType(Justification::centred);
