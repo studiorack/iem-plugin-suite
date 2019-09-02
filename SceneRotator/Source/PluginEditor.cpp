@@ -105,7 +105,7 @@ SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotator
 
     addAndMakeVisible (cbRotationSequence);
     cbRotationSequence.setTooltip ("Sequence of intrinsic rotations");
-    //cbRotationSequence.addSectionHeading ("Rotation sequence");
+    cbRotationSequence.addSectionHeading ("Rotation sequence");
     cbRotationSequence.addItem("Yaw -> Pitch -> Roll", 1);
     cbRotationSequence.addItem("Roll -> Pitch -> Yaw", 2);
     cbRotationSequence.setJustificationType (Justification::centred);
@@ -177,7 +177,7 @@ SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotator
 
     addAndMakeVisible (cbMidiScheme);
     cbMidiScheme.setJustificationType (Justification::centred);
-    //cbMidiScheme.addSectionHeading("Select Device's MIDI Scheme");
+    cbMidiScheme.addSectionHeading ("Select Device's MIDI Scheme");
     cbMidiScheme.addItemList (processor.getMidiSchemes(), 1);
     cbMidiScheme.setSelectedId (static_cast<int> (processor.getCurrentMidiScheme()) + 1);
     updateSelectedMidiScheme();
@@ -320,9 +320,7 @@ void SceneRotatorAudioProcessorEditor::resized()
 void SceneRotatorAudioProcessorEditor::timerCallback()
 {
     // === update titleBar widgets according to available input/output channel counts
-    int maxInSize, maxOutSize;
-    processor.getMaxSize (maxInSize, maxOutSize);
-    title.setMaxSize (maxInSize, maxOutSize);
+    title.setMaxSize (processor.getMaxSize());
     // ==========================================
 
     // insert stuff you want to do be done at every timer callback
@@ -401,7 +399,7 @@ void SceneRotatorAudioProcessorEditor::refreshMidiDeviceList()
     }
 
     cbMidiDevices.addSeparator();
-    //cbMidiDevices.addSectionHeading ("Available Devices");
+    cbMidiDevices.addSectionHeading ("Available Devices");
     for (int i = 0; i < devices.size(); ++i)
     {
         cbMidiDevices.addItem (devices[i], i + 1);

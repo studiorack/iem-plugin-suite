@@ -74,7 +74,7 @@ ToolBoxAudioProcessorEditor::ToolBoxAudioProcessorEditor (ToolBoxAudioProcessor&
 
     addAndMakeVisible(cbLoaWeights);
     cbLoaWeights.setJustificationType(Justification::centred);
-    //cbLoaWeights.addSectionHeading("Target Decoder Weights");
+    cbLoaWeights.addSectionHeading ("Target Decoder Weights");
     cbLoaWeights.addItem("none", 1);
     cbLoaWeights.addItem("maxrE", 2);
     cbLoaWeights.addItem("inPhase", 3);
@@ -162,9 +162,7 @@ void ToolBoxAudioProcessorEditor::resized()
 void ToolBoxAudioProcessorEditor::timerCallback()
 {
     // === update titleBar widgets according to available input/output channel counts
-    int maxInSize, maxOutSize;
-    processor.getMaxSize(maxInSize, maxOutSize);
-    title.setMaxSize(maxInSize, maxOutSize);
+    title.setMaxSize (processor.getMaxSize());
     // ==========================================
 
     // insert stuff you want to do be done at every timer callback

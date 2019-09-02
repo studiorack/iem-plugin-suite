@@ -99,9 +99,7 @@ void BinauralDecoderAudioProcessorEditor::resized()
 void BinauralDecoderAudioProcessorEditor::timerCallback()
 {
     // === update titleBar widgets according to available input/output channel counts
-    int maxInSize, maxOutSize;
-    processor.getMaxSize(maxInSize, maxOutSize);
-    title.setMaxSize(maxInSize, maxOutSize);
+    title.setMaxSize (processor.getMaxSize());
     // ==========================================
 
     // insert stuff you want to do be done at every timer callback

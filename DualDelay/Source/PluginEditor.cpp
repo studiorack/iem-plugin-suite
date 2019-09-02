@@ -437,11 +437,12 @@ void DualDelayAudioProcessorEditor::resized()
 
 
 }
-void DualDelayAudioProcessorEditor::timerCallback() {
+void DualDelayAudioProcessorEditor::timerCallback()
+{
     // === update titleBar widgets according to available input/output channel counts
-    int maxInSize, maxOutSize;
-    processor.getMaxSize(maxInSize, maxOutSize);
-    maxInSize = jmin(maxInSize, maxOutSize);
-    title.setMaxSize(maxInSize, maxInSize);
+    auto sizes = processor.getMaxSize();
+    sizes.first = jmin (sizes.first, sizes.second);
+    sizes.second = sizes.first;
+    title.setMaxSize (sizes);
     // ==========================================
 }
