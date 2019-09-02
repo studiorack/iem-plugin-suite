@@ -67,6 +67,7 @@ variables:
   script:
 # install dependencies
     - brew install fftw
+    - brew install jack
     - .git-ci/getjuce.sh "${JUCEVERSION}-osx" ~/JUCE
 # run the actual build
     - test -z "${PROJECTS}" && PROJECTS=$(make showprojects)
