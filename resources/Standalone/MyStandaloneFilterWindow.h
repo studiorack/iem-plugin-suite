@@ -834,7 +834,7 @@ private:
         class Header : public Component
         {
         public:
-            enum { height = 25 };
+            enum { height = 18 };
 
             Header (Button::Listener* settingsButtonListener)
                 :
@@ -847,15 +847,14 @@ private:
                 setLookAndFeel (&laf);
                 setOpaque (true);
 
-
                 settingsButton.addListener (settingsButtonListener);
 
                 addAndMakeVisible (lbMuted);
-                lbMuted.setText ("INPUT MUTED", true);
+                lbMuted.setText ("INPUT MUTED", false);
                 lbMuted.setTextColour (Colours::red);
                 
                 addAndMakeVisible (settingsButton);
-                settingsButton.setColour(TextButton::buttonColourId, Colours::cornflowerblue);
+                settingsButton.setColour (TextButton::buttonColourId, Colours::cornflowerblue);
             }
 
             ~Header()
@@ -867,16 +866,16 @@ private:
             {
                 auto r = getLocalBounds();
 
-                g.setColour (laf.ClSeperator);
-                g.fillRect (r.removeFromBottom (1));
-
                 g.setColour (laf.ClBackground);
                 g.fillRect (r);
             }
 
             void resized() override
             {
-                auto r = getLocalBounds().reduced (3);
+                auto r = getLocalBounds();
+                r.removeFromTop (2);
+                r.removeFromLeft (2);
+                r.removeFromRight (2);
 
                 settingsButton.setBounds (r.removeFromRight (70));
 
