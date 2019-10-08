@@ -89,17 +89,15 @@ public:
         const int nInputChannels = jmin (static_cast<int> (inputBlock.getNumChannels()), static_cast<int> (T.getNumColumns()));
         const int nSamples = static_cast<int> (inputBlock.getNumSamples());
 
-
-
         for (int row = 0; row < T.getNumRows(); ++row)
         {
             const int destCh = retainedCurrentMatrix->getRoutingArrayReference().getUnchecked(row);
             if (destCh < outputBlock.getNumChannels())
             {
-                float* dest = outputBlock.getChannelPointer(destCh);
-                FloatVectorOperations::multiply(dest, buffer.getReadPointer(0), T(row, 0), nSamples); // ch 0
-                for (int i = 1; i < nInputChannels; ++i) // input channels
-                    FloatVectorOperations::addWithMultiply(dest, buffer.getReadPointer(i), T(row, i), nSamples); // ch 0
+                const float* dest = outputBlock.getChannelPointer (destCh);
+                FloatVectorOperations::multiply (dest, inputBlock.getChannelPointer (0), T(row, 0), nSamples); // first channel
+                for (int i = 1; i < nInputChannels; ++i) // remaining channels
+                    FloatVectorOperations::addWithMultiply (dest, inputBlock.getChannelPointer (i), T(row, i), nSamples);
             }
         }
 
