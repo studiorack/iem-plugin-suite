@@ -50,7 +50,10 @@
           file="../resources/efficientSHvanilla.cpp"/>
     <FILE id="AG2M1I" name="OSCParameterInterface.h" compile="0" resource="0"
           file="../resources/OSCParameterInterface.h"/>
+    <FILE id="fjFEbw" name="OSCParameterInterface.cpp" compile="1" resource="0"
+          file="../resources/OSCParameterInterface.cpp"/>
     <FILE id="IXrAWH" name="OSCStatus.h" compile="0" resource="0" file="../resources/customComponents/OSCStatus.h"/>
+    <FILE id="u268ny" name="OSCUtilities.h" compile="0" resource="0" file="../resources/OSCUtilities.h"/>
     <FILE id="KzVW9N" name="SpherePanner.h" compile="0" resource="0" file="../resources/customComponents/SpherePanner.h"/>
     <FILE id="KGgn5i" name="AudioProcessorBase.h" compile="0" resource="0"
           file="../resources/AudioProcessorBase.h"/>

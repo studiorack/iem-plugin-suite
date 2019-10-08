@@ -26,7 +26,7 @@
 
 //==============================================================================
 StereoEncoderAudioProcessorEditor::StereoEncoderAudioProcessorEditor (StereoEncoderAudioProcessor& p, AudioProcessorValueTreeState& vts)
-: AudioProcessorEditor (&p), footer (p.getOSCReceiver()), processor (p), valueTreeState(vts),
+: AudioProcessorEditor (&p), footer (p.getOSCParameterInterface()), processor (p), valueTreeState(vts),
     centerElement(*valueTreeState.getParameter("azimuth"), valueTreeState.getParameterRange("azimuth"), *valueTreeState.getParameter("elevation"), valueTreeState.getParameterRange("elevation")),
     leftElement(centerElement, *valueTreeState.getParameter("roll"), valueTreeState.getParameterRange("roll"), *valueTreeState.getParameter("width"), valueTreeState.getParameterRange("width")),
     rightElement(centerElement, *valueTreeState.getParameter("roll"), valueTreeState.getParameterRange("roll"), *valueTreeState.getParameter("width"), valueTreeState.getParameterRange("width"))

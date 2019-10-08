@@ -27,7 +27,6 @@
 
 #include "../../resources/OSCInputStream.h"
 #include "../../resources/OSCParameterInterface.h"
-#include "../../resources/OSCReceiverPlus.h"
 #include "../../resources/IOHelper.h"
 
 typedef std::vector<std::unique_ptr<RangedAudioParameter>> ParameterList;
@@ -35,34 +34,34 @@ typedef std::vector<std::unique_ptr<RangedAudioParameter>> ParameterList;
 template <class inputType, class outputType, bool combined = false>
 
 class AudioProcessorBase :  public AudioProcessor,
+                            public OSCMessageInterceptor,
                             public VSTCallbackHandler,
-                            public OSCReceiver::Listener<OSCReceiver::RealtimeCallback>,
                             public IOHelper<inputType, outputType, combined>,
                             public AudioProcessorValueTreeState::Listener
 {
 public:
 
     AudioProcessorBase () : AudioProcessor(),
-                            oscParameterInterface (parameters),
+                            oscParameterInterface (*this, parameters),
                             parameters (*this, nullptr, String (JucePlugin_Name), {})
     {
-        oscReceiver.addListener (this);
+
     }
 
     AudioProcessorBase (ParameterList parameterLayout) :
                             AudioProcessor(),
                             parameters (*this, nullptr, String (JucePlugin_Name), {parameterLayout.begin(), parameterLayout.end()}),
-                            oscParameterInterface (parameters)
+                            oscParameterInterface (*this, parameters)
     {
-        oscReceiver.addListener (this);
+
     }
 
     AudioProcessorBase (const BusesProperties& ioLayouts, ParameterList parameterLayout) :
                             AudioProcessor (ioLayouts),
                             parameters (*this, nullptr, String (JucePlugin_Name), { parameterLayout.begin(), parameterLayout.end() }),
-                            oscParameterInterface (parameters)
+                            oscParameterInterface (*this, parameters)
     {
-        oscReceiver.addListener (this);
+
     }
 
     ~AudioProcessorBase() override {}
@@ -125,7 +124,7 @@ public:
                 MyOSCInputStream inputStream (ptr, size);
                 auto inMessage = inputStream.readMessage();
 
-                oscMessageReceived (inMessage);
+                oscParameterInterface.oscMessageReceived (inMessage);
                 return 1;
             }
             catch (const OSCFormatError&)
@@ -157,86 +156,13 @@ public:
 
 
 
-    // ========================= OSC ===============================================
-
-    /**
-     This method is exptected to return true, if the OSCMessage is considered to have been consumed, and should not be passed on.
-     */
-    virtual inline const bool interceptOSCMessage (OSCMessage &message)
-    {
-        ignoreUnused (message);
-        return false; // not consumed
-    }
-
-
-    /**
-     This method will be called if the OSC message wasn't consumed by both 'interceptOscMessage(...)' and the oscParameterInterface.processOSCmessage(...)' method.
-     The method is expected to return true, if the SOCMessage is considered to have been consumed, and should not be passed on.
-     */
-
-    virtual inline const bool processNotYetConsumedOSCMessage (const OSCMessage &message)
-    {
-        ignoreUnused (message);
-        return false;
-    }
-
-    void oscMessageReceived (const OSCMessage &message) override
-    {
-        OSCMessage messageCopy (message);
-        if (! interceptOSCMessage (messageCopy))
-        {
-            String prefix ("/" + String (JucePlugin_Name));
-            if (message.getAddressPattern().toString().startsWith (prefix))
-            {
-                OSCMessage msg (message);
-                msg.setAddressPattern (message.getAddressPattern().toString().substring (String (JucePlugin_Name).length() + 1));
-
-                if (oscParameterInterface.processOSCMessage (msg))
-                    return;
-            }
-
-            if (processNotYetConsumedOSCMessage (message))
-                return;
-
-            // open/change osc port
-            if (message.getAddressPattern().toString().equalsIgnoreCase ("/openOSCPort") && message.size() == 1)
-            {
-                int newPort = -1;
-                
-                if (message[0].isInt32())
-                    newPort = message[0].getInt32();
-                else if (message[0].isFloat32())
-                    newPort = static_cast<int> (message[0].getFloat32());
-
-                if (newPort > 0)
-                {
-                    newPortNumber = newPort;
-                    MessageManager::callAsync ( [this]() { oscReceiver.connect (newPortNumber); } );
-                }
-            }
-        }
-    }
-
-    void oscBundleReceived (const OSCBundle &bundle) override
-    {
-        for (int i = 0; i < bundle.size(); ++i)
-        {
-            auto elem = bundle[i];
-            if (elem.isMessage())
-                oscMessageReceived (elem.getMessage());
-            else if (elem.isBundle())
-                oscBundleReceived (elem.getBundle());
-        }
-    }
-
-    OSCReceiverPlus& getOSCReceiver () { return oscReceiver; }
+    OSCParameterInterface& getOSCParameterInterface () { return oscParameterInterface; }
 
     //==============================================================================
 
 
     AudioProcessorValueTreeState parameters;
     OSCParameterInterface oscParameterInterface;
-    OSCReceiverPlus oscReceiver;
 
 private:
 

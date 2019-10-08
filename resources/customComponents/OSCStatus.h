@@ -23,7 +23,7 @@
 #pragma once
 
 #include "SimpleLabel.h"
-#include "../OSCReceiverPlus.h"
+#include "../OSCParameterInterface.h"
 
 class OSCDialogWindow  : public Component, private Timer, private Label::Listener
 {
@@ -147,7 +147,7 @@ private:
 class OSCStatus : public Component, private Timer
 {
 public:
-    OSCStatus(OSCReceiverPlus& receiver) : oscReceiver (receiver)
+    OSCStatus (OSCParameterInterface& oscInterface) : oscReceiver (oscInterface.getOSCReceiver())
     {
         isOpen = oscReceiver.isConnected();
         startTimer (500);

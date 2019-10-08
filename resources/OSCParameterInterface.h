@@ -21,6 +21,11 @@
  */
 
 #pragma once
+#include "../JuceLibraryCode/JuceHeader.h"
+#include "OSCUtilities.h"
+
+
+
 //#define DEBUG_PARAMETERS_FOR_DOCUMENTATION
 
 /**
@@ -28,26 +33,10 @@
  */
 
 
-class OSCParameterInterface
+class OSCParameterInterface : public OSCReceiver::Listener<OSCReceiver::RealtimeCallback>, private Timer
 {
 public:
-    OSCParameterInterface (AudioProcessorValueTreeState &valueTreeState) : parameters (valueTreeState)
-    {
-#ifdef DEBUG_PARAMETERS_FOR_DOCUMENTATION
-        auto& params = parameters.processor.getParameters();
-        for (auto& item : params)
-        {
-            if (auto* ptr = dynamic_cast<AudioProcessorParameterWithID*> (item)) // that's maybe not the best solution, but it does the job for now
-            {
-                auto parameterID = ptr->paramID;
-                auto parameterName = ptr->name;
-                auto range = parameters.getParameterRange (parameterID);
-                DBG ("| " << parameterID << " | " << range.getRange().getStart() << " : " << range.getRange().getEnd() <<  " | " << parameterName <<" | |");
-            }
-        }
-#endif
-    }
-
+    OSCParameterInterface (OSCMessageInterceptor& interceptor, AudioProcessorValueTreeState &valueTreeState);
 
     static std::unique_ptr<RangedAudioParameter> createParameterTheOldWay (const String& parameterID,
                                                                  const String& parameterName,
@@ -61,76 +50,36 @@ public:
                                                                  bool isDiscrete = false,
                                                                  AudioProcessorParameter::Category category
                                                                  = AudioProcessorParameter::genericParameter,
-                                                                 bool isBoolean = false)
-    {
-        return std::make_unique<AudioProcessorValueTreeState::Parameter> (parameterID, parameterName, labelText, valueRange, defaultValue,
-                                                                          valueToTextFunction, textToValueFunction,
-                                                                          isMetaParameter, isAutomatableParameter, isDiscrete,
-                                                                          category, isBoolean);
-    }
+                                                                           bool isBoolean = false);
 
     /**
      Checks whether the OSCAdressPattern of the OSCMessage matches one of the ParameterID's and changes the parameter on success. Returns true, if there is a match. Make sure the plugin-name-prefix was trimmed.
      */
-    bool processOSCMessage (OSCMessage oscMessage)
-    {
-        auto pattern = oscMessage.getAddressPattern();
-        if (pattern.containsWildcards())
-        {
-            auto& params = parameters.processor.getParameters();
-            for (auto& item : params)
-            {
-                if (auto* ptr = dynamic_cast<AudioProcessorParameterWithID*> (item)) // that's maybe not the best solution, but it does the job for now
-                {
-                    auto address = ptr->paramID;
-                    if (pattern.matches (OSCAddress ("/" + address)))
-                    {
-                        if (oscMessage.size() > 0)
-                        {
-                            auto arg = oscMessage[0];
-                            float value = 0.0f;
-                            if (arg.isInt32())
-                                value = arg.getInt32();
-                            else if (arg.isFloat32())
-                                value = arg.getFloat32();
-                            else
-                                return true;
+    const bool processOSCMessage (OSCMessage oscMessage);
 
-                            setValue (address, value);
-                        }
-                    }
-                }
-            }
-        }
+    /**
+     Sets the value of an audio-parameter with the specified parameter ID. The provided value will be mapped to a 0-to-1 range.
+     */
+    void setValue (const String paramID, const float value);
 
-        String address = oscMessage.getAddressPattern().toString().substring(1); // trimming forward slash
-        if (auto parameter = parameters.getParameter (address))
-        {
-            if (oscMessage.size() > 0)
-            {
-                auto arg = oscMessage[0];
-                float value = 0.0f;
-                if (arg.isInt32())
-                    value = arg.getInt32();
-                else if (arg.isFloat32())
-                    value = arg.getFloat32();
-                else
-                    return true;
+    OSCReceiverPlus& getOSCReceiver() { return oscReceiver; };
+    OSCSenderPlus& getOSCSender() { return oscSender; };
 
-                setValue (address, value);
-            }
-            return true;
-        }
-        else
-            return false;
-    }
+    void oscMessageReceived (const OSCMessage &message) override;
+    void oscBundleReceived (const OSCBundle &bundle) override;
 
-    void setValue (String paramID, float value)
-    {
-        auto range (parameters.getParameterRange (paramID));
-        parameters.getParameter (paramID)->setValueNotifyingHost (range.convertTo0to1 (value));
-    }
 
+    void timerCallback() override;
+
+    void sendParameterChanges (const bool forceSend = false);
+
+    
 private:
-    AudioProcessorValueTreeState &parameters;
+    OSCMessageInterceptor& interceptor;
+    AudioProcessorValueTreeState& parameters;
+
+    OSCReceiverPlus oscReceiver;
+    OSCSenderPlus oscSender;
+
+    Array<float> lastSentValues;
 };

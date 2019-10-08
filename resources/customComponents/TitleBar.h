@@ -575,7 +575,7 @@ private:
 class  OSCFooter :  public Component
 {
 public:
-    OSCFooter (OSCReceiverPlus& oscReceiver) : oscStatus (oscReceiver)
+    OSCFooter (OSCParameterInterface& oscInterface) : oscStatus (oscInterface)
     {
         addAndMakeVisible (footer);
         addAndMakeVisible (oscStatus);
