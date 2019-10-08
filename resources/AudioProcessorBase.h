@@ -47,7 +47,7 @@ public:
                             parameters (*this, nullptr, String (JucePlugin_Name), {})
     {
         oscReceiver.addListener (this);
-    };
+    }
 
     AudioProcessorBase (ParameterList parameterLayout) :
                             AudioProcessor(),
@@ -55,7 +55,7 @@ public:
                             oscParameterInterface (parameters)
     {
         oscReceiver.addListener (this);
-    };
+    }
 
     AudioProcessorBase (const BusesProperties& ioLayouts, ParameterList parameterLayout) :
                             AudioProcessor (ioLayouts),
@@ -63,9 +63,9 @@ public:
                             oscParameterInterface (parameters)
     {
         oscReceiver.addListener (this);
-    };
+    }
 
-    ~AudioProcessorBase() {};
+    ~AudioProcessorBase() override {}
 
 
 
@@ -74,8 +74,9 @@ public:
 #ifndef JucePlugin_PreferredChannelConfigurations
     bool isBusesLayoutSupported (const BusesLayout& layouts) const override
     {
+        ignoreUnused (layouts);
         return true;
-    };
+    }
 #endif
 
 
@@ -112,6 +113,8 @@ public:
     pointer_sized_int handleVstManufacturerSpecific (int32 index, pointer_sized_int value,
                                                      void* ptr, float opt) override
     {
+        ignoreUnused (opt);
+
         //0x69656D is hex code for `iem` in ASCII
         if (index == 0x0069656D)  // prefix 00 chooses OSC message
         {
@@ -132,11 +135,13 @@ public:
         }
 
         return 0;
-    };
+    }
 
     pointer_sized_int handleVstPluginCanDo (int32 index, pointer_sized_int value,
                                             void* ptr, float opt) override
     {
+        ignoreUnused (index, value, opt);
+
         auto text = (const char*) ptr;
         auto matches = [=](const char* s) { return strcmp (text, s) == 0; };
 
@@ -147,7 +152,7 @@ public:
             return 1;
 
         return 0;
-    };
+    }
     //==============================================================================
 
 
@@ -159,8 +164,9 @@ public:
      */
     virtual inline const bool interceptOSCMessage (OSCMessage &message)
     {
+        ignoreUnused (message);
         return false; // not consumed
-    };
+    }
 
 
     /**
@@ -170,8 +176,9 @@ public:
 
     virtual inline const bool processNotYetConsumedOSCMessage (const OSCMessage &message)
     {
+        ignoreUnused (message);
         return false;
-    };
+    }
 
     void oscMessageReceived (const OSCMessage &message) override
     {
@@ -220,7 +227,7 @@ public:
             else if (elem.isBundle())
                 oscBundleReceived (elem.getBundle());
         }
-    };
+    }
 
     OSCReceiverPlus& getOSCReceiver () { return oscReceiver; }
 

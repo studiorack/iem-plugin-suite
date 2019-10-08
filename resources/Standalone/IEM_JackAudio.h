@@ -237,7 +237,7 @@ public:
         }
     }
 
-    ~JackAudioIODevice()
+    ~JackAudioIODevice() override
     {
         close();
         if (client != nullptr)
@@ -276,17 +276,17 @@ public:
         Array<int> sizes;
 
         if (client != nullptr)
-            sizes.add (iem::jack_get_buffer_size (client));
+            sizes.add (static_cast<int> (iem::jack_get_buffer_size (client)));
 
         return sizes;
     }
 
     int getDefaultBufferSize() override             { return getCurrentBufferSizeSamples(); }
-    int getCurrentBufferSizeSamples() override      { return client != nullptr ? iem::jack_get_buffer_size (client) : 0; }
-    double getCurrentSampleRate() override          { return client != nullptr ? iem::jack_get_sample_rate (client) : 0; }
+    int getCurrentBufferSizeSamples() override      { return client != nullptr ? static_cast<int> (iem::jack_get_buffer_size (client)) : 0; }
+    double getCurrentSampleRate() override          { return client != nullptr ? static_cast<int> (iem::jack_get_buffer_size (client)) : 0; }
 
 
-    String open (const BigInteger& inputChannels, const BigInteger& outputChannels,
+    String open (const BigInteger& /*inputChannels*/, const BigInteger& /*outputChannels*/,
                  double /* sampleRate */, int /* bufferSizeSamples */) override
     {
         if (client == nullptr)

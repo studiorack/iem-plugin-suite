@@ -163,7 +163,7 @@ public:
            startTimer (500);
     }
 
-    virtual ~MyStandalonePluginHolder()
+    virtual ~MyStandalonePluginHolder() override
     {
         stopTimer();
 
@@ -691,7 +691,7 @@ public:
        #endif
     }
 
-    ~MyStandaloneFilterWindow()
+    ~MyStandaloneFilterWindow() override
     {
         setLookAndFeel (nullptr);
 
@@ -812,7 +812,7 @@ private:
             startTimer (500);
         }
 
-        ~MainContentComponent()
+        ~MainContentComponent() override
         {
             if (editor != nullptr)
             {
@@ -857,7 +857,7 @@ private:
                 settingsButton.setColour (TextButton::buttonColourId, Colours::cornflowerblue);
             }
 
-            ~Header()
+            ~Header() override
             {
                 setLookAndFeel (nullptr);
             }

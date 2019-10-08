@@ -51,10 +51,6 @@ public:
         startTimer (500);
     }
 
-    ~OSCDialogWindow()
-    {
-    }
-
     void timerCallback() override
     {
         bool shouldBeConnected = receiver.isConnected();
@@ -69,6 +65,7 @@ public:
 
     void labelTextChanged (Label *labelThatHasChanged) override
     {
+        ignoreUnused (labelThatHasChanged);
         DBG ("Label changed");
         auto val = lbPort.getTextValue();
         int v = val.getValue();
@@ -156,9 +153,6 @@ public:
         startTimer (500);
     }
 
-    ~OSCStatus()
-    {
-    }
 
     void timerCallback() override
     {
@@ -174,17 +168,20 @@ public:
 
     void mouseEnter (const MouseEvent &event) override
     {
+        ignoreUnused (event);
         setMouseCursor (MouseCursor::PointingHandCursor);
         repaint();
     }
 
     void mouseExit (const MouseEvent &event) override
     {
+        ignoreUnused (event);
         repaint();
     }
 
     void mouseUp (const MouseEvent &event) override
     {
+        ignoreUnused (event);
         auto* dialogWindow = new OSCDialogWindow (oscReceiver);
         dialogWindow->setSize (110, 38);
 

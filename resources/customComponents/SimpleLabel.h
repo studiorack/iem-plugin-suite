@@ -36,10 +36,6 @@ public:
         text = textToDisplay;
     }
 
-    ~SimpleLabel()
-    {
-    }
-
     void setText(String newText)
     {
         text = newText;
@@ -77,7 +73,7 @@ public:
     void enablementChanged() override
     {
         repaint();
-    };
+    }
 
     void paint (Graphics& g) override
     {
@@ -85,13 +81,12 @@ public:
         paintSimpleLabel(g, bounds, text, isBold, justification);
     }
 
-    virtual void paintSimpleLabel(Graphics& g, Rectangle<int> bounds, String text, bool isBold, Justification justification)
+    virtual void paintSimpleLabel (Graphics& g, Rectangle<int> bounds, String labelText, bool isBoldFlag, Justification labelJustification)
     {
         g.setColour (colour.withMultipliedAlpha(this->isEnabled() ? 1.0f : 0.4f));
         g.setFont (bounds.getHeight());
-        g.setFont(getLookAndFeel().getTypefaceForFont(Font(bounds.getHeight(), isBold ? 1 : 0)));
-        g.drawText (text, bounds,
-                    justification, true);
+        g.setFont (getLookAndFeel().getTypefaceForFont (Font (bounds.getHeight(), isBoldFlag ? 1 : 0)));
+        g.drawText (labelText, bounds, labelJustification, true);
     }
 
     void resized() override
@@ -120,10 +115,6 @@ public:
 
     }
 
-    ~TripleLabel()
-    {
-    }
-
     void setText(String newLeftText, String newMiddleText, String newRightText, bool newLeftBold, bool newMiddleBold, bool newRightBold) {
         leftText = newLeftText;
         middleText = newMiddleText;
@@ -141,27 +132,27 @@ public:
         paintTripleLabel(g, bounds, leftText, middleText, rightText, leftBold, middleBold, rightBold);
     }
 
-    virtual void paintTripleLabel(Graphics& g, Rectangle<int> bounds, String leftText, String middleText, String rightText, bool leftBold, bool middleBold, bool lrightBold)
+    virtual void paintTripleLabel (Graphics& g, Rectangle<int> bounds, String leftLabelText, String middleLabelText, String rightLabelText, bool leftBoldFlag, bool middleBoldFlag, bool rightBoldFlag)
     {
         g.setColour (Colours::white);
         Font tempFont;
         tempFont.setHeight(bounds.getHeight());
         int height = bounds.getHeight();
 
-        tempFont.setStyleFlags(leftBold ? 1 : 0);
+        tempFont.setStyleFlags (leftBoldFlag ? 1 : 0);
         g.setFont(getLookAndFeel().getTypefaceForFont(tempFont));
         g.setFont(height);
-        g.drawText (leftText, bounds, Justification::left, true);
+        g.drawText (leftLabelText, bounds, Justification::left, true);
 
-        tempFont.setStyleFlags(middleBold ? 1 : 0);
+        tempFont.setStyleFlags (middleBoldFlag ? 1 : 0);
         g.setFont(getLookAndFeel().getTypefaceForFont(tempFont));
         g.setFont(height + (middleBold ? 2 : 0));
-        g.drawText (middleText, bounds, Justification::centred, true);
+        g.drawText (middleLabelText, bounds, Justification::centred, true);
 
-        tempFont.setStyleFlags(rightBold ? 1 : 0);
+        tempFont.setStyleFlags (rightBoldFlag ? 1 : 0);
         g.setFont(getLookAndFeel().getTypefaceForFont(tempFont));
         g.setFont(height);
-        g.drawText (rightText, bounds, Justification::right, true);
+        g.drawText (rightLabelText, bounds, Justification::right, true);
     }
 
 

@@ -35,7 +35,7 @@ public:
         reversed(false),
         isDual(false),
         scrollWheelEnabled(true)
-    {};
+    {}
 
     ReverseSlider (const String& componentName) :
         Slider(componentName),
@@ -43,9 +43,7 @@ public:
         reversed(false),
         isDual(false),
         scrollWheelEnabled(true)
-    {};
-
-    ~ReverseSlider () {}
+    {}
 
 public:
 
@@ -57,13 +55,13 @@ public:
                           ReverseSlider& sliderToControl) : AudioProcessorValueTreeState::SliderAttachment (stateToControl, parameterID, sliderToControl)
         {
             sliderToControl.setParameter(stateToControl.getParameter(parameterID));
-        };
+        }
 
         SliderAttachment (juce::AudioProcessorValueTreeState& stateToControl,
                           const juce::String& parameterID,
                           Slider& sliderToControl) : AudioProcessorValueTreeState::SliderAttachment (stateToControl, parameterID, sliderToControl)
         {
-        };
+        }
 
         virtual ~SliderAttachment() = default;
     };

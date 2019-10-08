@@ -45,7 +45,7 @@ class PluginTemplateAudioProcessorEditor  : public AudioProcessorEditor, private
 {
 public:
     PluginTemplateAudioProcessorEditor (PluginTemplateAudioProcessor&, AudioProcessorValueTreeState&);
-    ~PluginTemplateAudioProcessorEditor();
+    ~PluginTemplateAudioProcessorEditor() override;
 
     //==============================================================================
     void paint (Graphics&) override;
@@ -60,7 +60,7 @@ private:
     LaF globalLaF;
 
     // stored references to the AudioProcessor and ValueTreeState holding all the parameters
-    PluginTemplateAudioProcessor& processor;
+    PluginTemplateAudioProcessor& audioProcessor;
     AudioProcessorValueTreeState& valueTreeState;
 
 

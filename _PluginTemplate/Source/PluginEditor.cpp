@@ -26,7 +26,7 @@
 
 //==============================================================================
 PluginTemplateAudioProcessorEditor::PluginTemplateAudioProcessorEditor (PluginTemplateAudioProcessor& p, AudioProcessorValueTreeState& vts)
-    : AudioProcessorEditor (&p), processor (p), valueTreeState (vts), footer (p.getOSCReceiver())
+    : AudioProcessorEditor (&p), audioProcessor (p), valueTreeState (vts), footer (p.getOSCReceiver())
 {
     // ============== BEGIN: essentials ======================
     // set GUI size and lookAndFeel
@@ -101,7 +101,7 @@ void PluginTemplateAudioProcessorEditor::resized()
 void PluginTemplateAudioProcessorEditor::timerCallback()
 {
     // === update titleBar widgets according to available input/output channel counts
-    title.setMaxSize (processor.getMaxSize());
+    title.setMaxSize (audioProcessor.getMaxSize());
     // ==========================================
 
     // insert stuff you want to do be done at every timer callback

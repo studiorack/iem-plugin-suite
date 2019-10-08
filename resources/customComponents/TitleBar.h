@@ -36,9 +36,7 @@ public:
     {
         warningSign.loadPathFromData (WarningSignData, sizeof (WarningSignData));
         setBufferedToImage (true);
-    };
-
-    ~AlertSymbol() {};
+    }
 
     String getTooltip() override
     {
@@ -50,7 +48,7 @@ public:
         warningSign.applyTransform (warningSign.getTransformToScaleToFit (getLocalBounds().toFloat(), true, Justification::centred));
         g.setColour (Colours::yellow);
         g.fillPath (warningSign);
-    };
+    }
 
 private:
     Path warningSign;
@@ -63,11 +61,10 @@ public:
     {
         addChildComponent (alert);
         alert.setBounds (15, 15, 15, 15);
-    };
+    }
 
-    ~IOWidget() {};
     virtual const int getComponentSize() = 0;
-    virtual void setMaxSize (int maxSize) {};
+    virtual void setMaxSize (int maxSize) = 0;
 
     void setBusTooSmall (bool isBusTooSmall)
     {
@@ -88,8 +85,8 @@ private:
 class  NoIOWidget :  public IOWidget
 {
 public:
-    NoIOWidget() : IOWidget() {};
-    ~NoIOWidget() {};
+    NoIOWidget() {}
+    void setMaxSize (int maxSize) override { ignoreUnused (maxSize); }
     const int getComponentSize() override { return 0; }
 };
 
@@ -100,18 +97,17 @@ public:
     {
         BinauralPath.loadPathFromData (BinauralPathData, sizeof (BinauralPathData));
         setBufferedToImage (true);
-    };
+    }
 
-    ~BinauralIOWidget() {};
     const int getComponentSize() override { return 30; }
-    void setMaxSize (int maxSize) override {};
+    void setMaxSize (int maxSize) override { ignoreUnused (maxSize); }
     void paint (Graphics& g) override
     {
         BinauralPath.applyTransform (BinauralPath.getTransformToScaleToFit (0, 0, 30, 30, true,Justification::centred));
         g.setColour ((Colours::white).withMultipliedAlpha (0.5));
         g.fillPath (BinauralPath);
 
-    };
+    }
 
 private:
     Path BinauralPath;
@@ -139,9 +135,7 @@ public:
             cbChannels->setBounds (35, 8, 70, 15);
             cbChannels->addListener (this);
         }
-    };
-
-    ~AudioChannelsIOWidget() {};
+    }
 
     const int getComponentSize() override { return selectable ? 110 : 75; }
 
@@ -166,10 +160,11 @@ public:
             setBusTooSmall (true);
         else
             setBusTooSmall (false);
-    };
+    }
 
     void comboBoxChanged (ComboBox *comboBoxThatHasChanged) override
     {
+        ignoreUnused (comboBoxThatHasChanged);
         checkIfBusIsTooSmall();
     }
 
@@ -232,7 +227,7 @@ public:
             g.setFont (15.0f);
             g.drawFittedText (displayTextIfNotSelectable, 35, 0, 40, 30, Justification::centredLeft, 2);
         }
-    };
+    }
 
 private:
     std::unique_ptr<ComboBox> cbChannels;
@@ -261,8 +256,7 @@ public:
         cbNormalization.addItem ("N3D", 1);
         cbNormalization.addItem ("SN3D", 2);
         cbNormalization.setBounds (35, 0, 70, 15);
-    };
-    ~AmbisonicIOWidget() {};
+    }
 
     void updateMaxOrder()
     {
@@ -319,7 +313,7 @@ public:
         AmbiLogoPath.applyTransform (AmbiLogoPath.getTransformToScaleToFit (0, 0, 30, 30, true,Justification::centred));
         g.setColour ((Colours::white).withMultipliedAlpha (0.5));
         g.fillPath (AmbiLogoPath);
-    };
+    }
 
 private:
     ComboBox cbNormalization, cbOrder;
@@ -364,9 +358,7 @@ public:
         cbNormalization.addItem ("N3D", 1);
         cbNormalization.addItem ("SN3D", 2);
         cbNormalization.setBounds (35, 0, 70, 15);
-    };
-
-    ~DirectivityIOWidget() {};
+    }
 
     const int getComponentSize() override { return 110; }
 
@@ -401,7 +393,7 @@ public:
         DirectivityPath.applyTransform (DirectivityPath.getTransformToScaleToFit (0, 0, 30, 30, true, Justification::centred));
         g.setColour ((Colours::white).withMultipliedAlpha (0.5));
         g.fillPath (DirectivityPath);
-    };
+    }
 
 private:
     String orderStrings[8];
@@ -418,9 +410,7 @@ public:
     {
         addAndMakeVisible(&inputWidget);
         addAndMakeVisible(&outputWidget);
-    };
-
-    ~TitleBar() {};
+    }
 
     Tin* getInputWidgetPtr() { return &inputWidget; }
     Tout* getOutputWidgetPtr() { return &outputWidget; }
@@ -484,7 +474,7 @@ public:
 
         g.setColour ((Colours::white).withMultipliedAlpha (0.5));
         g.drawLine (bounds.getX(),bounds.getY() + bounds.getHeight() - 4, bounds.getX() + bounds.getWidth(), bounds.getY()+bounds.getHeight() - 4);
-    };
+    }
 
 private:
     Tin inputWidget;
@@ -505,8 +495,6 @@ public:
         url = URL("https://plugins.iem.at/");
     }
 
-    ~IEMLogo() {};
-
     void paint (Graphics& g) override
     {
         Rectangle<int> bounds = getLocalBounds();
@@ -526,18 +514,21 @@ public:
 
     void mouseEnter (const MouseEvent &event) override
     {
+        ignoreUnused (event);
         setMouseCursor (MouseCursor (MouseCursor::PointingHandCursor));
         repaint();
     }
 
     void mouseExit (const MouseEvent &event) override
     {
+        ignoreUnused (event);
         setMouseCursor (MouseCursor (MouseCursor::NormalCursor));
         repaint();
     }
 
     void mouseUp (const MouseEvent &event) override
     {
+        ignoreUnused (event);
         if (url.isWellFormed())
             url.launchInDefaultBrowser();
     }
@@ -553,9 +544,7 @@ public:
     Footer() : Component()
     {
         addAndMakeVisible(&iemLogo);
-    };
-
-    ~Footer() {};
+    }
 
     void paint (Graphics& g) override
     {
@@ -571,7 +560,7 @@ public:
         versionString.append(JucePlugin_VersionString, 6);
 
         g.drawText (versionString, 0, 0, bounds.getWidth() - 8, bounds.getHeight() - 2, Justification::bottomRight);
-    };
+    }
 
     void resized () override
     {
@@ -590,8 +579,7 @@ public:
     {
         addAndMakeVisible (footer);
         addAndMakeVisible (oscStatus);
-    };
-    ~OSCFooter() {};
+    }
 
     void resized () override
     {

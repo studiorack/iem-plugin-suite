@@ -68,7 +68,7 @@ createParameterLayout())
     for (int i = 0; i < 7; ++i)
     {
         irs[i].setSize(square(i + 2), irLength);
-        ScopedPointer<AudioFormatReader> reader = wavFormat.createReaderFor(mis[i], true);
+        std::unique_ptr<AudioFormatReader> reader (wavFormat.createReaderFor (mis[i], true));
         reader->read(&irs[i], 0, irLength, 0, true, false);
         irs[i].applyGain (0.3f);
     }

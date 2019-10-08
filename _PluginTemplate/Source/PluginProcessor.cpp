@@ -73,25 +73,27 @@ int PluginTemplateAudioProcessor::getCurrentProgram()
 
 void PluginTemplateAudioProcessor::setCurrentProgram (int index)
 {
+    ignoreUnused (index);
 }
 
 const String PluginTemplateAudioProcessor::getProgramName (int index)
 {
+    ignoreUnused (index);
     return {};
 }
 
 void PluginTemplateAudioProcessor::changeProgramName (int index, const String& newName)
 {
+    ignoreUnused (index, newName);
 }
 
 //==============================================================================
 void PluginTemplateAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    checkInputAndOutput (this, *inputChannelsSetting, *outputOrderSetting, true);
-
+    checkInputAndOutput (this, static_cast<int> (*inputChannelsSetting), static_cast<int> (*outputOrderSetting), true);
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
-
+    ignoreUnused (sampleRate, samplesPerBlock);
 }
 
 void PluginTemplateAudioProcessor::releaseResources()
@@ -100,9 +102,9 @@ void PluginTemplateAudioProcessor::releaseResources()
     // spare memory, etc.
 }
 
-void PluginTemplateAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
+void PluginTemplateAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&)
 {
-    checkInputAndOutput (this, *inputChannelsSetting, *outputOrderSetting, false);
+    checkInputAndOutput (this, static_cast<int> (*inputChannelsSetting), static_cast<int> (*outputOrderSetting), false);
     ScopedNoDenormals noDenormals;
 
     const int totalNumInputChannels  = getTotalNumInputChannels();
@@ -122,7 +124,7 @@ void PluginTemplateAudioProcessor::processBlock (AudioSampleBuffer& buffer, Midi
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
         float* channelData = buffer.getWritePointer (channel);
-
+        ignoreUnused (channelData);
         // ..do something to the data...
     }
 }

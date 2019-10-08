@@ -35,7 +35,7 @@ public:
     constexpr static int numberOfOutputChannels = 64;
     //==============================================================================
     PluginTemplateAudioProcessor();
-    ~PluginTemplateAudioProcessor();
+    ~PluginTemplateAudioProcessor() override;
 
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
