@@ -28,59 +28,166 @@
 class OSCDialogWindow  : public Component, private Timer, private Label::Listener
 {
 public:
-    OSCDialogWindow (OSCReceiverPlus& oscReceiver) : receiver (oscReceiver)
+    OSCDialogWindow (OSCParameterInterface& oscInterface, OSCReceiverPlus& oscReceiver, OSCSenderPlus& oscSender) : interface (oscInterface), receiver (oscReceiver), sender (oscSender)
     {
-        isConnected = oscReceiver.isConnected();
-        previousPort = receiver.getPortNumber();
+        //==== Receiver =====================================
+        isReceiverConnected = receiver.isConnected();
 
-        addAndMakeVisible (headline);
-        headline.setText ("OSC Receiver Port", false, Justification::centred);
+        addAndMakeVisible (receiverGroup);
+        receiverGroup.setText ("OSC Receiver");
 
-        addAndMakeVisible (lbPort);
-        const int port = receiver.getPortNumber();
-        lbPort.setText (port == -1 ? "none" : String (port), NotificationType::dontSendNotification);
-        lbPort.setEditable (true);
-        lbPort.setJustificationType (Justification::centred);
-        lbPort.addListener (this);
+        addAndMakeVisible (slRecPort);
+        slRecPort.setText ("Port #", false, Justification::centred);
 
-        addAndMakeVisible (tbOpenPort);
-        tbOpenPort.setButtonText (isConnected ? "CLOSE" : "OPEN");
-        tbOpenPort.setColour(TextButton::buttonColourId, isConnected ? Colours::orangered : Colours::limegreen);
-        tbOpenPort.onClick =  [this] () { checkPortAndConnect(); };
+
+        addAndMakeVisible (lbRPort);
+        const int receiverPort = receiver.getPortNumber();
+        lbRPort.setText (receiverPort == -1 ? "none" : String (receiverPort), NotificationType::dontSendNotification);
+        lbRPort.setEditable (true);
+        lbRPort.setJustificationType (Justification::centred);
+        lbRPort.addListener (this);
+
+        addAndMakeVisible (tbReceiverOpen);
+        tbReceiverOpen.setButtonText (isReceiverConnected ? "CLOSE" : "OPEN");
+        tbReceiverOpen.setColour(TextButton::buttonColourId, isReceiverConnected ? Colours::orangered : Colours::limegreen);
+        tbReceiverOpen.onClick =  [this] () { checkPortAndConnectReceiver(); };
+
+
+
+        //==== Receiver =====================================
+        isSenderConnected = sender.isConnected();
+
+        addAndMakeVisible (senderGroup);
+        senderGroup.setText ("OSC Sender");
+
+        addAndMakeVisible (lbSPort);
+        const int senderPort = sender.getPortNumber();
+        lbSPort.setText (senderPort == -1 ? "none" : String (senderPort), NotificationType::dontSendNotification);
+        lbSPort.setEditable (true);
+        lbSPort.setJustificationType (Justification::centred);
+        lbSPort.addListener (this);
+
+        addAndMakeVisible (lbSHostname);
+        const auto senderHostName = sender.getHostName();
+        lbSHostname.setText (senderHostName, NotificationType::dontSendNotification);
+        lbSHostname.setEditable (true);
+        lbSHostname.setJustificationType (Justification::centred);
+        lbSHostname.addListener (this);
+
+        addAndMakeVisible (lbSOSCAddress);
+        const auto senderOSCAddress = interface.getOSCAddress();
+        lbSOSCAddress.setText (senderOSCAddress, NotificationType::dontSendNotification);
+        lbSOSCAddress.setEditable (true);
+        lbSOSCAddress.setJustificationType (Justification::centred);
+        lbSOSCAddress.onTextChange = [this] () { updateOSCAddress(); };
+
+        addAndMakeVisible (tbSenderOpen);
+        tbSenderOpen.setButtonText (isSenderConnected ? "DISCONNECT" : "CONNECT");
+        tbSenderOpen.setColour (TextButton::buttonColourId, isSenderConnected ? Colours::orangered : Colours::limegreen);
+        tbSenderOpen.onClick =  [this] () { checkPortAndConnectSender(); };
+
+
+        addAndMakeVisible (slSendIP);
+        slSendIP.setText ("IP Address", false, Justification::centred);
+
+        addAndMakeVisible (slSendPort);
+        slSendPort.setText ("Port #", false, Justification::centred);
+
+        addAndMakeVisible (slSendName);
+        slSendName.setText ("OSC Address", false, Justification::centred);
 
         startTimer (500);
     }
 
     void timerCallback() override
     {
-        bool shouldBeConnected = receiver.isConnected();
-        if (isConnected != shouldBeConnected)
+        bool shouldReceiverBeConnected = receiver.isConnected();
+        if (isReceiverConnected != shouldReceiverBeConnected)
         {
-            isConnected = shouldBeConnected;
-            tbOpenPort.setButtonText (isConnected ? "CLOSE" : "OPEN");
-            tbOpenPort.setColour(TextButton::buttonColourId, isConnected ? Colours::orangered : Colours::limegreen);
+            isReceiverConnected = shouldReceiverBeConnected;
+            tbReceiverOpen.setButtonText (isReceiverConnected ? "CLOSE" : "OPEN");
+            tbReceiverOpen.setColour (TextButton::buttonColourId, isReceiverConnected ? Colours::orangered : Colours::limegreen);
+            repaint();
+        }
+
+        bool shouldSenderBeConnected = sender.isConnected();
+        if (isSenderConnected != shouldSenderBeConnected)
+        {
+            isSenderConnected = shouldSenderBeConnected;
+            tbSenderOpen.setButtonText (isSenderConnected ? "DISCONNECT" : "CONNECT");
+            tbSenderOpen.setColour (TextButton::buttonColourId, isSenderConnected ? Colours::orangered : Colours::limegreen);
             repaint();
         }
     }
 
+    void updateOSCAddress()
+    {
+        auto const newAddress = interface.setOSCAddress (lbSOSCAddress.getText());
+        lbSOSCAddress.setText (newAddress, NotificationType::dontSendNotification);
+    }
+
     void labelTextChanged (Label *labelThatHasChanged) override
     {
-        ignoreUnused (labelThatHasChanged);
-        DBG ("Label changed");
-        auto val = lbPort.getTextValue();
-        int v = val.getValue();
-
-        if (receiver.isConnected())
+        if (labelThatHasChanged == &lbRPort)
         {
-            if (v == -1 || (v > 1000 && v < 15000))
+            DBG ("Receiver label changed");
+            auto val = lbRPort.getTextValue();
+            const int v = val.getValue();
+
+            if (receiver.isConnected())
             {
-                receiver.disconnect();
-                checkPortAndConnect();
+                if (v == -1 || (v > 1000 && v < 15000))
+                {
+                    receiver.disconnect();
+                    checkPortAndConnectReceiver();
+                }
+            }
+        }
+        else if (labelThatHasChanged == &lbSPort || labelThatHasChanged == &lbSHostname)
+        {
+            DBG ("Sender label changed");
+            if (sender.isConnected())
+            {
+                sender.disconnect();
+                checkPortAndConnectSender();
             }
         }
     }
 
-    void checkPortAndConnect()
+    void checkPortAndConnectSender()
+    {
+        if (sender.isConnected())
+        {
+            sender.disconnect();
+        }
+        else
+        {
+            if (lbSPort.getText() == "none" || lbSPort.getText() == "off")
+            {
+                sender.connect ("", -1);
+                lbSPort.setText ("none", NotificationType::dontSendNotification);
+            }
+
+
+            auto val = lbSPort.getTextValue();
+            const int v = val.getValue();
+
+            const auto ip = lbSHostname.getText();
+
+            if (v == -1 || (v > 1000 && v < 15000))
+            {
+                if (! sender.connect (ip, v))
+                {
+                    AlertWindow alert ("Connection could not be established!", "Make sure the desired port is available and not already occupied by other clients. Also make sure the IP has a correct format!", AlertWindow::NoIcon, this);
+                    alert.setLookAndFeel (&getLookAndFeel());
+                    alert.addButton ("OK", 1, KeyPress (KeyPress::returnKey, 0, 0));
+                    alert.runModalLoop();
+                }
+            }
+        }
+    }
+
+    void checkPortAndConnectReceiver()
     {
         if (receiver.isConnected())
         {
@@ -88,28 +195,24 @@ public:
         }
         else
         {
-            if (lbPort.getText() == "none" || lbPort.getText() == "off")
+            if (lbRPort.getText() == "none" || lbRPort.getText() == "off")
             {
                 receiver.connect (-1);
-                lbPort.setText ("none", NotificationType::dontSendNotification);
+                lbRPort.setText ("none", NotificationType::dontSendNotification);
             }
 
-            auto val = lbPort.getTextValue();
+            auto val = lbRPort.getTextValue();
             int v = val.getValue();
 
             if (v == -1 || (v > 1000 && v < 15000))
             {
                 if (! receiver.connect (v))
                 {
-                    AlertWindow alert ("Connection could not be established!", "Make sure the desired port is available and not already occupied by other clients.", AlertWindow::NoIcon);
+                    AlertWindow alert ("Connection could not be established!", "Make sure the desired port is available and not already occupied by other clients.", AlertWindow::NoIcon, this);
                     alert.setLookAndFeel (&getLookAndFeel());
                     alert.addButton ("OK", 1, KeyPress (KeyPress::returnKey, 0, 0));
                     alert.runModalLoop();
                 }
-            }
-            else
-            {
-                lbPort.setText (previousPort == -1 ? "none" : String (previousPort), NotificationType::dontSendNotification);
             }
         }
     }
@@ -117,25 +220,62 @@ public:
     void resized() override
     {
         auto bounds = getLocalBounds();
-        headline.setBounds (bounds.removeFromTop(12));
+        auto col = bounds.removeFromLeft (100);
 
-        bounds.removeFromTop (4);
+        //==== Receiver =================
+        receiverGroup.setBounds (col.removeFromTop (25));
 
-        auto row = bounds.removeFromTop (20);
-
-        lbPort.setBounds (row.removeFromLeft (50));
-
+        auto row = col.removeFromTop (20);
+        lbRPort.setBounds (row.removeFromLeft (50));
         row.removeFromLeft (8);
-        tbOpenPort.setBounds(row);
+        tbReceiverOpen.setBounds (row);
+
+        col.removeFromTop (1);
+        row = col.removeFromTop (12);
+        slRecPort.setBounds (row.removeFromLeft (50));
+
+
+        bounds.removeFromLeft (10);
+        col = bounds;
+
+        //==== Sender =================
+        senderGroup.setBounds (col.removeFromTop (25));
+
+        row = col.removeFromTop (20);
+        lbSHostname.setBounds (row.removeFromLeft (100));
+        row.removeFromLeft (5);
+        lbSPort.setBounds (row.removeFromLeft (50));
+        row.removeFromLeft (8);
+        tbSenderOpen.setBounds (row);
+
+        col.removeFromTop (1);
+        row = col.removeFromTop (12);
+        slSendIP.setBounds (row.removeFromLeft (100));
+        row.removeFromLeft (5);
+        slSendPort.setBounds (row.removeFromLeft (50));
+
+        col.removeFromTop (5);
+        row = col.removeFromTop (20);
+        slSendName.setBounds (row.removeFromLeft (80));
+        row.removeFromLeft (5);
+        lbSOSCAddress.setBounds (row);
     }
 
 private:
+    OSCParameterInterface& interface;
     OSCReceiverPlus& receiver;
-    bool isConnected = false;
-    int previousPort = -1;
-    SimpleLabel headline;
-    Label lbPort;
-    TextButton tbOpenPort;
+    OSCSenderPlus& sender;
+
+    bool isReceiverConnected = false;
+
+    bool isSenderConnected = false;
+
+    GroupComponent receiverGroup, senderGroup;
+
+    SimpleLabel slRecPort, slSendIP, slSendPort, slSendName;
+    Label lbRPort, lbSPort, lbSHostname, lbSOSCAddress;
+
+    TextButton tbReceiverOpen, tbSenderOpen;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OSCDialogWindow)
 };
 
@@ -143,25 +283,38 @@ private:
 
 //==============================================================================
 /*
-*/
+ */
 class OSCStatus : public Component, private Timer
 {
 public:
-    OSCStatus (OSCParameterInterface& oscInterface) : oscReceiver (oscInterface.getOSCReceiver())
+    OSCStatus (OSCParameterInterface& oscInterface) : oscParameterInterface (oscInterface), oscReceiver (oscInterface.getOSCReceiver()), oscSender (oscInterface.getOSCSender())
     {
-        isOpen = oscReceiver.isConnected();
+        isReceiverOpen = oscReceiver.isConnected();
         startTimer (500);
     }
 
 
     void timerCallback() override
     {
-        const int port = oscReceiver.getPortNumber();
-        bool shouldBeConnected = oscReceiver.isConnected();
-        if (isOpen != shouldBeConnected || lastPort != port)
+        const int receiverPort = oscReceiver.getPortNumber();
+        const int senderPort = oscSender.getPortNumber();
+        const String senderHostName = oscSender.getHostName();
+
+        bool shouldReceiverBeConnected = oscReceiver.isConnected();
+        bool shouldSenderBeConnected = oscSender.isConnected();
+
+        if (isReceiverOpen != shouldReceiverBeConnected || lastReceiverPort != receiverPort)
         {
-            lastPort = port;
-            isOpen = shouldBeConnected;
+            lastReceiverPort = receiverPort;
+            isReceiverOpen = shouldReceiverBeConnected;
+            repaint();
+        }
+
+        if (isSenderOpen != shouldSenderBeConnected || lastSenderPort != senderPort || lastSenderHostName != senderHostName)
+        {
+            lastSenderPort = senderPort;
+            lastSenderHostName = senderHostName;
+            isSenderOpen = shouldSenderBeConnected;
             repaint();
         }
     }
@@ -182,16 +335,17 @@ public:
     void mouseUp (const MouseEvent &event) override
     {
         ignoreUnused (event);
-        auto* dialogWindow = new OSCDialogWindow (oscReceiver);
-        dialogWindow->setSize (110, 38);
+        auto* dialogWindow = new OSCDialogWindow (oscParameterInterface, oscReceiver, oscSender);
+        dialogWindow->setSize (360, 90);
 
-        CallOutBox& myBox = CallOutBox::launchAsynchronously (dialogWindow, getScreenBounds().removeFromLeft(14), nullptr);
-        myBox.setLookAndFeel(&getLookAndFeel());
+        CallOutBox& myBox = CallOutBox::launchAsynchronously (dialogWindow, getScreenBounds().removeFromLeft (80), nullptr);
+        myBox.setLookAndFeel (&getLookAndFeel());
     }
 
     void paint (Graphics& g) override
     {
-        Colour statusCol = oscReceiver.getPortNumber() == -1 ? Colours::white.withAlpha(0.1f) : oscReceiver.isConnected() ? Colours::limegreen : Colours::red.withAlpha (0.5f);
+        Colour receiveStatusColor = oscReceiver.getPortNumber() == -1 ? Colours::white.withAlpha(0.1f) : oscReceiver.isConnected() ? Colours::limegreen : Colours::red.withAlpha (0.5f);
+        Colour sendStatusColor = oscSender.getPortNumber() == -1 ? Colours::white.withAlpha (0.1f) : oscSender.isConnected() ? Colours::limegreen : Colours::red.withAlpha (0.5f);
 
         const float alpha = isMouseOver() ? 1.0f : 0.5f;
 
@@ -199,13 +353,21 @@ public:
         area = area.removeFromBottom (12);
 
 
-        auto circleArea = area.removeFromLeft (12).toFloat().reduced(2.0f);
+        auto circleArea = area.removeFromLeft (12).toFloat().reduced (2.0f);
         circleArea.setY (circleArea.getY() - 1.0f);
-        g.setColour (statusCol.withAlpha(alpha));
+        g.setColour (receiveStatusColor.withAlpha(alpha));
         g.drawRoundedRectangle(circleArea, 6, 1.0f);
-        g.setColour (statusCol);
+        g.setColour (receiveStatusColor);
         g.fillRoundedRectangle (circleArea.removeFromLeft(14).reduced(2.0f), 6);
 
+        area.removeFromLeft (2);
+
+        circleArea = area.removeFromLeft (12).toFloat().reduced (2.0f);
+        circleArea.setY (circleArea.getY() - 1.0f);
+        g.setColour (sendStatusColor.withAlpha(alpha));
+        g.drawRoundedRectangle(circleArea, 6, 1.0f);
+        g.setColour (sendStatusColor);
+        g.fillRoundedRectangle (circleArea.removeFromLeft(14).reduced(2.0f), 6);
 
         area.removeFromLeft (2);
 
@@ -214,19 +376,53 @@ public:
         g.setFont (14.0f);
 
         String text = "OSC";
-        if (oscReceiver.isConnected())
-            text += " (" + String (oscReceiver.getPortNumber()) + ")";
-        g.drawText (text, area, Justification::bottomLeft, true);
+        if (oscReceiver.isConnected() || oscSender.isConnected())
+        {
+            text += " (";
+            if (oscReceiver.isConnected())
+                text += "IN: " + String (oscReceiver.getPortNumber());
+
+            if (oscReceiver.isConnected() && oscSender.isConnected())
+                text += " - ";
+
+            if (oscSender.isConnected())
+                text += "OUT: " + oscSender.getHostName() + ":" + String (oscSender.getPortNumber());
+
+            text += ")";
+        }
+
+        auto textWidth = g.getCurrentFont().getStringWidthFloat (text);
+
+        const int targetSize = 12 + 2 + textWidth + 2 + 12;
+        if (getLocalBounds().getWidth() != targetSize)
+        {
+            setSize (targetSize, getHeight());
+            DBG ("resized");
+        }
+
+        g.drawText (text, area.withWidth (textWidth), Justification::bottomLeft, true);
     }
 
     void resized() override
     {
+        repaint();
+        DBG ("called repaint");
     }
 
 private:
+    OSCParameterInterface& oscParameterInterface;
     OSCReceiverPlus& oscReceiver;
-    bool isOpen = false;
-    int lastPort = -1;
+    OSCSenderPlus& oscSender;
+
+    Rectangle<int> bounds;
+    bool mouseOver = false;
+
+    bool isReceiverOpen = false;
+    int lastReceiverPort = -1;
+
+    bool isSenderOpen = false;
+    int lastSenderPort = -1;
+    String lastSenderHostName;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OSCStatus)
 };

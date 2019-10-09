@@ -338,7 +338,7 @@ void StereoEncoderAudioProcessor::parameterChanged (const String &parameterID, f
 void StereoEncoderAudioProcessor::getStateInformation (MemoryBlock &destData)
 {
     auto state = parameters.copyState();
-    /* state.setProperty ("OSCPort", var (oscReceiver.getPortNumber()), nullptr); */ static_assert ("yo", "tu das!");
+    /* state.setProperty ("OSCPort", var (oscReceiver.getPortNumber()), nullptr); */ 
     std::unique_ptr<XmlElement> xml (state.createXml());
     copyXmlToBinary (*xml, destData);
 }

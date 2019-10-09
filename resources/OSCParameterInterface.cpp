@@ -40,15 +40,17 @@ OSCParameterInterface::OSCParameterInterface (OSCMessageInterceptor &i, AudioPro
     }
 #endif
 
-
     lastSentValues.resize (parameters.processor.getParameters().size());
+    setOSCAddress (String (JucePlugin_Name));
+
     oscReceiver.addListener (this);
 
     if (! oscSender.connect ("127.0.0.1", 9001))
     {
         DBG ("Could not connect!");
     }
-    startTimer (1000);
+
+    startTimer (50);
 }
 
 
@@ -203,12 +205,34 @@ void OSCParameterInterface::sendParameterChanges (const bool forceSend)
 
                 const auto paramID = ptr->paramID;
                 auto range (parameters.getParameterRange (paramID));
-                OSCMessage message ("/StereoEncoder/" + paramID, range.convertFrom0to1 (normValue));
-                oscSender.send (message);
-            }
 
+                try
+                {
+                    OSCMessage message (address + paramID, range.convertFrom0to1 (normValue));
+                    oscSender.send (message);
+                }
+                catch (...) {};
+            }
         }
     }
 }
 
 
+const String OSCParameterInterface::setOSCAddress (String newAddress)
+{
+    if (newAddress.isEmpty())
+        address = "/";
+    else
+    {
+        newAddress = newAddress.trimCharactersAtStart ("/");
+        newAddress = newAddress.trimCharactersAtEnd ("/");
+        newAddress = newAddress.removeCharacters (" öäü#*,?[]{}");
+
+        if (newAddress.isEmpty())
+            address = "/";
+        else
+            address = "/" + newAddress + "/";
+    }
+    
+    return address;
+}

@@ -589,7 +589,7 @@ public:
         bounds.removeFromBottom (2);
         bounds = bounds.removeFromBottom (16);
         bounds.removeFromLeft (50);
-        oscStatus.setBounds (bounds.removeFromLeft (80));
+        oscStatus.setBounds (bounds);
     }
 
 private:
