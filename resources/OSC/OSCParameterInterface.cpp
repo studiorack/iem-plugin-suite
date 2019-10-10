@@ -41,6 +41,7 @@ OSCParameterInterface::OSCParameterInterface (OSCMessageInterceptor &i, AudioPro
 #endif
 
     lastSentValues.resize (parameters.processor.getParameters().size());
+    lastSentValues.fill (-1);
     setOSCAddress (String (JucePlugin_Name));
 
     oscReceiver.addListener (this);
@@ -212,6 +213,10 @@ void OSCParameterInterface::sendParameterChanges (const bool forceSend)
     }
 }
 
+void OSCParameterInterface::setInterval (const int interValInMilliseconds)
+{
+    startTimer (jlimit (1, 1000, interValInMilliseconds));
+}
 
 void OSCParameterInterface::setOSCAddress (String newAddress)
 {
@@ -228,4 +233,34 @@ void OSCParameterInterface::setOSCAddress (String newAddress)
         else
             address = "/" + newAddress + "/";
     }
+}
+
+
+ValueTree OSCParameterInterface::getConfig() const
+{
+    ValueTree config ("OSCConfig");
+
+    config.setProperty ("ReceiverPort", oscReceiver.getPortNumber(), nullptr);
+    config.setProperty ("SenderIP", oscSender.getHostName(), nullptr);
+    config.setProperty ("SenderPort", oscSender.getPortNumber(), nullptr);
+    config.setProperty ("SenderOSCAddress", getOSCAddress(), nullptr);
+    config.setProperty ("SenderInterval", getInterval(), nullptr);
+
+    for (int i = 0; i < config.getNumProperties(); ++i)
+    {
+        auto propName = config.getPropertyName (i);
+        DBG (propName << " " << config.getProperty(propName, var("invalid")).toString());
+    }
+
+    return config;
+}
+
+void OSCParameterInterface::setConfig (ValueTree config)
+{
+    jassert (config.hasType ("OSCConfig"));
+
+    oscReceiver.connect (config.getProperty ("ReceiverPort", -1));
+    setOSCAddress (config.getProperty ("SenderOSCAddress", String (JucePlugin_Name)));
+    setInterval (config.getProperty ("SenderInterval", 100));
+    oscSender.connect (config.getProperty ("SenderIP", ""), config.getProperty ("SenderPort", -1));
 }

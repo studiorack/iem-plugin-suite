@@ -76,9 +76,12 @@ public:
 
     const String getOSCAddress() const { return address; };
 
-    void setInterval (const int interValInMilliseconds) { startTimer (interValInMilliseconds); }
+    void setInterval (const int interValInMilliseconds);
     const int getInterval() const { return getTimerInterval(); }
-    
+
+    ValueTree getConfig() const;
+    void setConfig (ValueTree config);
+
 private:
     OSCMessageInterceptor& interceptor;
     AudioProcessorValueTreeState& parameters;
