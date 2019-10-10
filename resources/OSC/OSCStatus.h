@@ -53,10 +53,11 @@ private:
 
     GroupComponent receiverGroup, senderGroup;
 
-    SimpleLabel slRecPort, slSendIP, slSendPort, slSendName;
+    SimpleLabel slRecPort, slSendIP, slSendPort, slSendName, slInterval;
     Label lbRPort, lbSPort, lbSHostname, lbSOSCAddress;
 
-    TextButton tbReceiverOpen, tbSenderOpen;
+    Slider intervalSlider;
+    TextButton tbReceiverOpen, tbSenderOpen, tbFlush;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OSCDialogWindow)
 };
 

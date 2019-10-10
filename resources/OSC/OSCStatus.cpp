@@ -34,7 +34,7 @@ OSCDialogWindow::OSCDialogWindow (OSCParameterInterface& oscInterface, OSCReceiv
     receiverGroup.setText ("OSC Receiver");
 
     addAndMakeVisible (slRecPort);
-    slRecPort.setText ("Port #", false, Justification::centred);
+    slRecPort.setText ("Listen to port", false, Justification::centred);
 
 
     addAndMakeVisible (lbRPort);
@@ -85,13 +85,30 @@ OSCDialogWindow::OSCDialogWindow (OSCParameterInterface& oscInterface, OSCReceiv
 
 
     addAndMakeVisible (slSendIP);
-    slSendIP.setText ("IP Address", false, Justification::centred);
+    slSendIP.setText ("IP", false, Justification::centred);
 
     addAndMakeVisible (slSendPort);
-    slSendPort.setText ("Port #", false, Justification::centred);
+    slSendPort.setText ("Port", false, Justification::centred);
 
     addAndMakeVisible (slSendName);
-    slSendName.setText ("OSC Address", false, Justification::centred);
+    slSendName.setText ("OSC Addr.", false, Justification::centred);
+
+    addAndMakeVisible (tbFlush);
+    tbFlush.setButtonText ("Flush Params");
+    tbFlush.setColour (TextButton::buttonColourId, Colours::cornflowerblue);
+    tbFlush.onClick =  [this] () { interface.sendParameterChanges (true); };
+
+    addAndMakeVisible (intervalSlider);
+    intervalSlider.setRange (1, 1000, 1);
+    intervalSlider.setValue (interface.getInterval());
+    intervalSlider.setSliderStyle (Slider::RotaryVerticalDrag);
+    intervalSlider.setColour (Slider::rotarySliderOutlineColourId, Colours::cornflowerblue);
+    intervalSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 60, 14);
+    intervalSlider.setTextValueSuffix (" ms");
+    intervalSlider.onValueChange = [&] () { interface.setInterval (intervalSlider.getValue()); };
+
+    addAndMakeVisible (slInterval);
+    slInterval.setText ("Interval");
 
     startTimer (500);
 }
@@ -218,45 +235,53 @@ void OSCDialogWindow::checkPortAndConnectReceiver()
 void OSCDialogWindow::resized()
 {
     auto bounds = getLocalBounds();
-    auto col = bounds.removeFromLeft (100);
 
     //==== Receiver =================
-    receiverGroup.setBounds (col.removeFromTop (25));
+    receiverGroup.setBounds (bounds.removeFromTop (25));
 
-    auto row = col.removeFromTop (20);
+    auto row = bounds.removeFromTop (20);
+    slRecPort.setBounds (row.removeFromLeft (80));
+    row.removeFromLeft (3);
     lbRPort.setBounds (row.removeFromLeft (50));
     row.removeFromLeft (8);
     tbReceiverOpen.setBounds (row);
 
-    col.removeFromTop (1);
-    row = col.removeFromTop (12);
-    slRecPort.setBounds (row.removeFromLeft (50));
-
-
-    bounds.removeFromLeft (10);
-    col = bounds;
+    bounds.removeFromTop (10);
 
     //==== Sender =================
-    senderGroup.setBounds (col.removeFromTop (25));
+    senderGroup.setBounds (bounds.removeFromTop (25));
 
-    row = col.removeFromTop (20);
-    lbSHostname.setBounds (row.removeFromLeft (100));
-    row.removeFromLeft (5);
+    row = bounds.removeFromTop (20);
+    slSendIP.setBounds (row.removeFromLeft (40));
+    row.removeFromLeft (3);
+    lbSHostname.setBounds (row);
+
+    bounds.removeFromTop (5);
+    row = bounds.removeFromTop (20);
+
+    slSendPort.setBounds (row.removeFromLeft (40));
+    row.removeFromLeft (3);
     lbSPort.setBounds (row.removeFromLeft (50));
     row.removeFromLeft (8);
     tbSenderOpen.setBounds (row);
 
-    col.removeFromTop (1);
-    row = col.removeFromTop (12);
-    slSendIP.setBounds (row.removeFromLeft (100));
-    row.removeFromLeft (5);
-    slSendPort.setBounds (row.removeFromLeft (50));
 
-    col.removeFromTop (5);
-    row = col.removeFromTop (20);
-    slSendName.setBounds (row.removeFromLeft (80));
-    row.removeFromLeft (5);
+    bounds.removeFromTop (5);
+    row = bounds.removeFromTop (20);
+
+    slSendName.setBounds (row.removeFromLeft (60));
+    row.removeFromLeft (1);
     lbSOSCAddress.setBounds (row);
+
+    bounds.removeFromTop (5);
+
+    row = bounds.removeFromTop (50);
+    slInterval.setBounds (row.removeFromLeft (40));
+    row.removeFromLeft (3);
+    intervalSlider.setBounds (row.removeFromLeft (60));
+
+    row.reduce (0, 15);
+    tbFlush.setBounds (row.removeFromRight (80));
 }
 
 
@@ -315,7 +340,7 @@ void OSCStatus::mouseUp (const MouseEvent &event)
 {
     ignoreUnused (event);
     auto* dialogWindow = new OSCDialogWindow (oscParameterInterface, oscReceiver, oscSender);
-    dialogWindow->setSize (360, 90);
+    dialogWindow->setSize (200, 220);
 
     CallOutBox& myBox = CallOutBox::launchAsynchronously (dialogWindow, getScreenBounds().removeFromLeft (80), nullptr);
     myBox.setLookAndFeel (&getLookAndFeel());

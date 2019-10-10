@@ -75,6 +75,9 @@ public:
     void setOSCAddress (const String newAddress);
 
     const String getOSCAddress() const { return address; };
+
+    void setInterval (const int interValInMilliseconds) { startTimer (interValInMilliseconds); }
+    const int getInterval() const { return getTimerInterval(); }
     
 private:
     OSCMessageInterceptor& interceptor;
