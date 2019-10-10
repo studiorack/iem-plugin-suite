@@ -45,12 +45,7 @@ OSCParameterInterface::OSCParameterInterface (OSCMessageInterceptor &i, AudioPro
 
     oscReceiver.addListener (this);
 
-    if (! oscSender.connect ("127.0.0.1", 9001))
-    {
-        DBG ("Could not connect!");
-    }
-
-    startTimer (50);
+    startTimer (100);
 }
 
 
