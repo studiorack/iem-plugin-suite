@@ -26,7 +26,7 @@
 
 //==============================================================================
 MultiEncoderAudioProcessorEditor::MultiEncoderAudioProcessorEditor (MultiEncoderAudioProcessor& p, AudioProcessorValueTreeState& vts)
-: AudioProcessorEditor (&p), footer (p.getOSCReceiver()), processor (p), valueTreeState(vts),
+: AudioProcessorEditor (&p), footer (p.getOSCParameterInterface()), processor (p), valueTreeState(vts),
 masterElement(*valueTreeState.getParameter("masterAzimuth"), valueTreeState.getParameterRange("masterAzimuth"),
               *valueTreeState.getParameter("masterElevation"), valueTreeState.getParameterRange("masterElevation")),
 encoderList(p, sphere, &vts)

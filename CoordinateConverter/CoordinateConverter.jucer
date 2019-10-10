@@ -2,7 +2,7 @@
 
 <JUCERPROJECT id="mbpAgi" name="CoordinateConverter" displaySplashScreen="0"
               reportAppUsage="0" splashScreenColour="Dark" projectType="audioplug"
-              version="0.3.5" bundleIdentifier="at.iem.CoordinateConverter"
+              version="0.4.0" bundleIdentifier="at.iem.CoordinateConverter"
               includeBinaryInAppConfig="1" cppLanguageStandard="14" buildVST="1"
               buildVST3="0" buildAU="0" buildAUv3="0" buildRTAS="0" buildAAX="0"
               buildStandalone="1" enableIAA="0" pluginName="CoordinateConverter"
@@ -36,6 +36,17 @@
             file="../resources/lookAndFeel/Roboto-Medium.ttf"/>
       <FILE id="AoUkVi" name="Roboto-Regular.ttf" compile="0" resource="1"
             file="../resources/lookAndFeel/Roboto-Regular.ttf"/>
+    </GROUP>
+    <GROUP id="{A2521D39-42B0-A37D-6A1C-6E06C8AE578E}" name="OSC">
+      <FILE id="ickBEY" name="OSCInputStream.h" compile="0" resource="0"
+            file="../resources/OSC/OSCInputStream.h"/>
+      <FILE id="t2FR7Q" name="OSCParameterInterface.cpp" compile="1" resource="0"
+            file="../resources/OSC/OSCParameterInterface.cpp"/>
+      <FILE id="dqlPmi" name="OSCParameterInterface.h" compile="0" resource="0"
+            file="../resources/OSC/OSCParameterInterface.h"/>
+      <FILE id="B1ljKD" name="OSCStatus.cpp" compile="1" resource="0" file="../resources/OSC/OSCStatus.cpp"/>
+      <FILE id="i5FMZ9" name="OSCStatus.h" compile="0" resource="0" file="../resources/OSC/OSCStatus.h"/>
+      <FILE id="JWH7Vp" name="OSCUtilities.h" compile="0" resource="0" file="../resources/OSC/OSCUtilities.h"/>
     </GROUP>
     <GROUP id="{508CBC88-3E2D-B197-3051-B94590C10F68}" name="Source">
       <FILE id="SLgq9s" name="PluginProcessor.cpp" compile="1" resource="0"

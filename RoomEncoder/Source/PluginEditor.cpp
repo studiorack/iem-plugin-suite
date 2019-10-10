@@ -25,7 +25,7 @@
 
 //==============================================================================
 RoomEncoderAudioProcessorEditor::RoomEncoderAudioProcessorEditor (RoomEncoderAudioProcessor& p, AudioProcessorValueTreeState& vts)
-: AudioProcessorEditor (&p), footer (p.getOSCReceiver()), processor (p), valueTreeState(vts),
+: AudioProcessorEditor (&p), footer (p.getOSCParameterInterface()), processor (p), valueTreeState (vts),
 sourceElement(*valueTreeState.getParameter("sourceX"), valueTreeState.getParameterRange("sourceX"),
               *valueTreeState.getParameter("sourceY"), valueTreeState.getParameterRange("sourceY"),
               *valueTreeState.getParameter("sourceZ"), valueTreeState.getParameterRange("sourceZ")),

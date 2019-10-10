@@ -2,7 +2,7 @@
 
 <JUCERPROJECT id="mbpAgi" name="DirectivityShaper" displaySplashScreen="0"
               reportAppUsage="0" splashScreenColour="Dark" projectType="audioplug"
-              version="0.7.5" bundleIdentifier="at.iem.DirectivityShaper" includeBinaryInAppConfig="1"
+              version="0.8.0" bundleIdentifier="at.iem.DirectivityShaper" includeBinaryInAppConfig="1"
               cppLanguageStandard="14" buildVST="1" buildVST3="0" buildAU="0"
               buildAUv3="0" buildRTAS="0" buildAAX="0" buildStandalone="1"
               enableIAA="0" pluginName="DirectivityShaper" pluginDesc="DirectivityShaper"
@@ -36,6 +36,17 @@
             file="../resources/lookAndFeel/Roboto-Medium.ttf"/>
       <FILE id="nehZNw" name="Roboto-Regular.ttf" compile="0" resource="1"
             file="../resources/lookAndFeel/Roboto-Regular.ttf"/>
+    </GROUP>
+    <GROUP id="{316D3DD2-7213-298B-0155-2745A657BA1E}" name="OSC">
+      <FILE id="qfjrDw" name="OSCInputStream.h" compile="0" resource="0"
+            file="../resources/OSC/OSCInputStream.h"/>
+      <FILE id="mCUunq" name="OSCParameterInterface.cpp" compile="1" resource="0"
+            file="../resources/OSC/OSCParameterInterface.cpp"/>
+      <FILE id="YNFNZu" name="OSCParameterInterface.h" compile="0" resource="0"
+            file="../resources/OSC/OSCParameterInterface.h"/>
+      <FILE id="YJW0ST" name="OSCStatus.cpp" compile="1" resource="0" file="../resources/OSC/OSCStatus.cpp"/>
+      <FILE id="gHsQZ5" name="OSCStatus.h" compile="0" resource="0" file="../resources/OSC/OSCStatus.h"/>
+      <FILE id="G5gxS6" name="OSCUtilities.h" compile="0" resource="0" file="../resources/OSC/OSCUtilities.h"/>
     </GROUP>
     <GROUP id="{508CBC88-3E2D-B197-3051-B94590C10F68}" name="Source">
       <FILE id="SLgq9s" name="PluginProcessor.cpp" compile="1" resource="0"

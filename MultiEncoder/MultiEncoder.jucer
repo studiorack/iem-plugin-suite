@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<JUCERPROJECT id="cBXtXS" name="MultiEncoder" projectType="audioplug" version="0.5.3"
+<JUCERPROJECT id="cBXtXS" name="MultiEncoder" projectType="audioplug" version="0.6.0"
               bundleIdentifier="at.iem.MultiEncoder" includeBinaryInAppConfig="1"
               buildVST="1" buildVST3="0" buildAU="0" buildAUv3="0" buildRTAS="0"
               buildAAX="0" pluginName="MultiEncoder" pluginDesc="MultiEncoder"
@@ -36,6 +36,17 @@
             file="../resources/lookAndFeel/Roboto-Medium.ttf"/>
       <FILE id="dFZXsa" name="Roboto-Regular.ttf" compile="0" resource="1"
             file="../resources/lookAndFeel/Roboto-Regular.ttf"/>
+    </GROUP>
+    <GROUP id="{3DD1F6CC-71E6-552B-6A15-CE044483C565}" name="OSC">
+      <FILE id="MOUNGM" name="OSCInputStream.h" compile="0" resource="0"
+            file="../resources/OSC/OSCInputStream.h"/>
+      <FILE id="jvjF1K" name="OSCParameterInterface.cpp" compile="1" resource="0"
+            file="../resources/OSC/OSCParameterInterface.cpp"/>
+      <FILE id="Lm9wap" name="OSCParameterInterface.h" compile="0" resource="0"
+            file="../resources/OSC/OSCParameterInterface.h"/>
+      <FILE id="NoiyN1" name="OSCStatus.cpp" compile="1" resource="0" file="../resources/OSC/OSCStatus.cpp"/>
+      <FILE id="X0utzm" name="OSCStatus.h" compile="0" resource="0" file="../resources/OSC/OSCStatus.h"/>
+      <FILE id="gYILB2" name="OSCUtilities.h" compile="0" resource="0" file="../resources/OSC/OSCUtilities.h"/>
     </GROUP>
     <GROUP id="{93EB888E-6BA4-D232-5298-BD06600ED3A9}" name="Source">
       <FILE id="EYYIng" name="PluginProcessor.cpp" compile="1" resource="0"

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <JUCERPROJECT id="mbpAgi" name="AllRADecoder" displaySplashScreen="0" reportAppUsage="0"
-              splashScreenColour="Dark" projectType="audioplug" version="0.7.5"
+              splashScreenColour="Dark" projectType="audioplug" version="0.8.0"
               bundleIdentifier="at.iem.AllRADecoder" includeBinaryInAppConfig="1"
               cppLanguageStandard="14" buildVST="1" buildVST3="0" buildAU="0"
               buildAUv3="0" buildRTAS="0" buildAAX="0" buildStandalone="1"
@@ -36,6 +36,17 @@
             file="../resources/lookAndFeel/Roboto-Medium.ttf"/>
       <FILE id="AoUkVi" name="Roboto-Regular.ttf" compile="0" resource="1"
             file="../resources/lookAndFeel/Roboto-Regular.ttf"/>
+    </GROUP>
+    <GROUP id="{CA61A6F3-8F08-160D-D260-38F984917BFC}" name="OSC">
+      <FILE id="V7ph4b" name="OSCInputStream.h" compile="0" resource="0"
+            file="../resources/OSC/OSCInputStream.h"/>
+      <FILE id="v6eNn6" name="OSCParameterInterface.cpp" compile="1" resource="0"
+            file="../resources/OSC/OSCParameterInterface.cpp"/>
+      <FILE id="BHEqHf" name="OSCParameterInterface.h" compile="0" resource="0"
+            file="../resources/OSC/OSCParameterInterface.h"/>
+      <FILE id="FyhG6A" name="OSCStatus.cpp" compile="1" resource="0" file="../resources/OSC/OSCStatus.cpp"/>
+      <FILE id="lnXsC9" name="OSCStatus.h" compile="0" resource="0" file="../resources/OSC/OSCStatus.h"/>
+      <FILE id="ITMUqi" name="OSCUtilities.h" compile="0" resource="0" file="../resources/OSC/OSCUtilities.h"/>
     </GROUP>
     <GROUP id="{508CBC88-3E2D-B197-3051-B94590C10F68}" name="Source">
       <FILE id="NlkXJG" name="RotateWindow.h" compile="0" resource="0" file="Source/RotateWindow.h"/>

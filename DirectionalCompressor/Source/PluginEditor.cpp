@@ -26,7 +26,7 @@
 
 //==============================================================================
 DirectionalCompressorAudioProcessorEditor::DirectionalCompressorAudioProcessorEditor (DirectionalCompressorAudioProcessor& p,AudioProcessorValueTreeState& vts)
-    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts), footer (p.getOSCReceiver()),
+    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts), footer (p.getOSCParameterInterface()),
     sphereElem(*valueTreeState.getParameter("azimuth"), valueTreeState.getParameterRange("azimuth"), *valueTreeState.getParameter("elevation"), valueTreeState.getParameterRange("elevation"))
 {
     // Make sure that before the constructor has finished, you've set the

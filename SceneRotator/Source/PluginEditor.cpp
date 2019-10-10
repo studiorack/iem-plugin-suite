@@ -26,7 +26,7 @@
 
 //==============================================================================
 SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotatorAudioProcessor& p, AudioProcessorValueTreeState& vts)
-    : AudioProcessorEditor (&p), processor (p), valueTreeState (vts), footer (p.getOSCReceiver())
+    : AudioProcessorEditor (&p), processor (p), valueTreeState (vts), footer (p.getOSCParameterInterface())
 {
     // ============== BEGIN: essentials ======================
     // set GUI size and lookAndFeel

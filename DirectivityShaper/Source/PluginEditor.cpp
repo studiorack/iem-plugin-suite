@@ -26,7 +26,7 @@
 
 //==============================================================================
 DirectivityShaperAudioProcessorEditor::DirectivityShaperAudioProcessorEditor (DirectivityShaperAudioProcessor& p, AudioProcessorValueTreeState& vts)
-: AudioProcessorEditor (&p), processor (p), valueTreeState(vts), footer (p.getOSCReceiver()),
+: AudioProcessorEditor (&p), processor (p), valueTreeState(vts), footer (p.getOSCParameterInterface()),
 probeElement(*valueTreeState.getParameter("probeAzimuth"), valueTreeState.getParameterRange("probeAzimuth"),
               *valueTreeState.getParameter("probeElevation"), valueTreeState.getParameterRange("probeElevation")),
 fv(20.0f, 20000.0f, -50.0f, 10.0f, 10.0f)

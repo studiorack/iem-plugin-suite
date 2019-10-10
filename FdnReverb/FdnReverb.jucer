@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <JUCERPROJECT id="Az27uX" name="FdnReverb" displaySplashScreen="0" reportAppUsage="0"
-              splashScreenColour="Dark" projectType="audioplug" version="1.1.3"
+              splashScreenColour="Dark" projectType="audioplug" version="1.2.0"
               bundleIdentifier="at.iem.FdnReverb" includeBinaryInAppConfig="1"
               buildVST="1" buildVST3="0" buildAU="0" buildAUv3="0" buildRTAS="0"
               buildAAX="0" buildStandalone="1" enableIAA="0" pluginName="FdnReverb"
@@ -41,6 +41,17 @@
             file="../resources/lookAndFeel/Roboto-Medium.ttf"/>
       <FILE id="xm13gn" name="Roboto-Regular.ttf" compile="0" resource="1"
             file="../resources/lookAndFeel/Roboto-Regular.ttf"/>
+    </GROUP>
+    <GROUP id="{F4DBF94B-52AE-F0E5-FAB9-F3B9874CAF2F}" name="OSC">
+      <FILE id="NXeBOG" name="OSCInputStream.h" compile="0" resource="0"
+            file="../resources/OSC/OSCInputStream.h"/>
+      <FILE id="OxsVSO" name="OSCParameterInterface.cpp" compile="1" resource="0"
+            file="../resources/OSC/OSCParameterInterface.cpp"/>
+      <FILE id="cM2CRX" name="OSCParameterInterface.h" compile="0" resource="0"
+            file="../resources/OSC/OSCParameterInterface.h"/>
+      <FILE id="tDbi3S" name="OSCStatus.cpp" compile="1" resource="0" file="../resources/OSC/OSCStatus.cpp"/>
+      <FILE id="GBHOAT" name="OSCStatus.h" compile="0" resource="0" file="../resources/OSC/OSCStatus.h"/>
+      <FILE id="p10G4M" name="OSCUtilities.h" compile="0" resource="0" file="../resources/OSC/OSCUtilities.h"/>
     </GROUP>
     <GROUP id="{8D8C113B-FF9E-52C3-2409-C6343137B234}" name="Source">
       <FILE id="qu4XwZ" name="T60Visualizer.h" compile="0" resource="0" file="Source/T60Visualizer.h"/>

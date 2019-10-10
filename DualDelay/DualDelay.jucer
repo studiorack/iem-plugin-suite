@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <JUCERPROJECT id="Vwo12i" name="DualDelay" displaySplashScreen="0" reportAppUsage="0"
-              splashScreenColour="Dark" projectType="audioplug" version="0.3.5"
+              splashScreenColour="Dark" projectType="audioplug" version="0.4.0"
               bundleIdentifier="at.iem.DualDelay" includeBinaryInAppConfig="1"
               buildVST="1" buildVST3="0" buildAU="0" buildAUv3="0" buildRTAS="0"
               buildAAX="0" buildStandalone="1" enableIAA="0" pluginName="DualDelay"
@@ -36,6 +36,17 @@
             file="../resources/lookAndFeel/Roboto-Medium.ttf"/>
       <FILE id="r7tYAs" name="Roboto-Regular.ttf" compile="0" resource="1"
             file="../resources/lookAndFeel/Roboto-Regular.ttf"/>
+    </GROUP>
+    <GROUP id="{49E5B59F-6A08-6520-B570-A74D4DED3D92}" name="OSC">
+      <FILE id="MXLgvI" name="OSCInputStream.h" compile="0" resource="0"
+            file="../resources/OSC/OSCInputStream.h"/>
+      <FILE id="atxbzE" name="OSCParameterInterface.cpp" compile="1" resource="0"
+            file="../resources/OSC/OSCParameterInterface.cpp"/>
+      <FILE id="AR9Pzp" name="OSCParameterInterface.h" compile="0" resource="0"
+            file="../resources/OSC/OSCParameterInterface.h"/>
+      <FILE id="BhmkLS" name="OSCStatus.cpp" compile="1" resource="0" file="../resources/OSC/OSCStatus.cpp"/>
+      <FILE id="hqUywp" name="OSCStatus.h" compile="0" resource="0" file="../resources/OSC/OSCStatus.h"/>
+      <FILE id="dcCsVf" name="OSCUtilities.h" compile="0" resource="0" file="../resources/OSC/OSCUtilities.h"/>
     </GROUP>
     <GROUP id="{255913E2-061B-37F5-FE43-95312D45BDA3}" name="Source">
       <FILE id="JSjBpB" name="PluginProcessor.cpp" compile="1" resource="0"

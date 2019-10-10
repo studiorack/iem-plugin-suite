@@ -25,7 +25,7 @@
 
 //==============================================================================
 MultiBandCompressorAudioProcessorEditor::MultiBandCompressorAudioProcessorEditor (MultiBandCompressorAudioProcessor& p, AudioProcessorValueTreeState& vts)
-    : AudioProcessorEditor (&p), processor (p), valueTreeState (vts), footer (p.getOSCReceiver()), filterBankVisualizer (20.0f, 20000.0f, -15.0f, 20.0f, 5.0f, p.getSampleRate(), numFreqBands)
+    : AudioProcessorEditor (&p), processor (p), valueTreeState (vts), footer (p.getOSCParameterInterface()), filterBankVisualizer (20.0f, 20000.0f, -15.0f, 20.0f, 5.0f, p.getSampleRate(), numFreqBands)
 {
     // ============== BEGIN: essentials ======================
     // set GUI size and lookAndFeel

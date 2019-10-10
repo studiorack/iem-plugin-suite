@@ -37,6 +37,17 @@
       <FILE id="x8KZ8Y" name="Roboto-Regular.ttf" compile="0" resource="1"
             file="../resources/lookAndFeel/Roboto-Regular.ttf"/>
     </GROUP>
+    <GROUP id="{F733327A-3BDB-5B92-1A11-0F5B1EC3AB2F}" name="OSC">
+      <FILE id="PEx9Ps" name="OSCInputStream.h" compile="0" resource="0"
+            file="../resources/OSC/OSCInputStream.h"/>
+      <FILE id="DVOlS2" name="OSCParameterInterface.cpp" compile="1" resource="0"
+            file="../resources/OSC/OSCParameterInterface.cpp"/>
+      <FILE id="w5ML25" name="OSCParameterInterface.h" compile="0" resource="0"
+            file="../resources/OSC/OSCParameterInterface.h"/>
+      <FILE id="lQleND" name="OSCStatus.cpp" compile="1" resource="0" file="../resources/OSC/OSCStatus.cpp"/>
+      <FILE id="BjwCLL" name="OSCStatus.h" compile="0" resource="0" file="../resources/OSC/OSCStatus.h"/>
+      <FILE id="qO3kPl" name="OSCUtilities.h" compile="0" resource="0" file="../resources/OSC/OSCUtilities.h"/>
+    </GROUP>
     <GROUP id="{B3A47753-E05E-56F8-46DC-627A94836DBB}" name="Source">
       <FILE id="Pft4Jr" name="ReflectionsVisualizer.h" compile="0" resource="0"
             file="Source/ReflectionsVisualizer.h"/>

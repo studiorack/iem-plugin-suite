@@ -25,7 +25,7 @@
 
 //==============================================================================
 FdnReverbAudioProcessorEditor::FdnReverbAudioProcessorEditor (FdnReverbAudioProcessor& p, AudioProcessorValueTreeState& vts)
-    : AudioProcessorEditor (&p), processor (p), valueTreeState (vts), footer (p.getOSCReceiver()),
+    : AudioProcessorEditor (&p), processor (p), valueTreeState (vts), footer (p.getOSCParameterInterface()),
     tv (20.f, 20000.f, 0.1f, 25.f, 5.f),
     fv (20.f, 20000.f, -80.f, 5.f, 5.f, false)
 {

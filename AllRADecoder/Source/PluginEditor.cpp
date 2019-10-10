@@ -26,7 +26,7 @@
 
 //==============================================================================
 AllRADecoderAudioProcessorEditor::AllRADecoderAudioProcessorEditor (AllRADecoderAudioProcessor& p, AudioProcessorValueTreeState& vts)
-    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts), footer (p.getOSCReceiver()), lv(processor.points, processor.triangles, processor.normals, processor.imaginaryFlags), lspList(processor.getLoudspeakersValueTree(), lv, grid, processor.undoManager, processor), grid(processor.points, processor.imaginaryFlags, processor.energyDistribution, processor.rEVector)
+    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts), footer (p.getOSCParameterInterface()), lv(processor.points, processor.triangles, processor.normals, processor.imaginaryFlags), lspList(processor.getLoudspeakersValueTree(), lv, grid, processor.undoManager, processor), grid(processor.points, processor.imaginaryFlags, processor.energyDistribution, processor.rEVector)
 {
     // ============== BEGIN: essentials ======================
     // set GUI size and lookAndFeel

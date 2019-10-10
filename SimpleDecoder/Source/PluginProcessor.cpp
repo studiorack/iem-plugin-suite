@@ -326,12 +326,14 @@ AudioProcessorEditor* SimpleDecoderAudioProcessor::createEditor()
 //==============================================================================
 void SimpleDecoderAudioProcessor::getStateInformation (MemoryBlock& destData)
 {
-    // You should use this method to store your parameters in the memory block.
-    // You could do that either as raw data, or use the XML or ValueTree classes
-    // as intermediaries to make it easy to save and load complex data.
-    parameters.state.setProperty ("lastOpenedPresetFile", var (lastFile.getFullPathName()), nullptr);
-    parameters.state.setProperty ("OSCPort", var (oscReceiver.getPortNumber()), nullptr);
-    std::unique_ptr<XmlElement> xml (parameters.state.createXml());
+    auto state = parameters.copyState();
+
+    state.setProperty ("lastOpenedPresetFile", var (lastFile.getFullPathName()), nullptr);
+
+    auto oscConfig = state.getOrCreateChildWithName ("OSCConfig", nullptr);
+    oscConfig.copyPropertiesFrom (oscParameterInterface.getConfig(), nullptr);
+
+    std::unique_ptr<XmlElement> xml (state.createXml());
     xml->setTagName (String (JucePlugin_Name)); // converts old "Decoder" state to "SimpleDecoder" state
     copyXmlToBinary (*xml, destData);
 }
@@ -354,10 +356,15 @@ void SimpleDecoderAudioProcessor::setStateInformation (const void* data, int siz
             const File f (val.getValue().toString());
             loadConfiguration(f);
         }
-        if (parameters.state.hasProperty ("OSCPort"))
+        if (parameters.state.hasProperty ("OSCPort")) // legacy
         {
-            oscReceiver.connect (parameters.state.getProperty ("OSCPort", var (-1)));
+            oscParameterInterface.getOSCReceiver().connect (parameters.state.getProperty ("OSCPort", var (-1)));
+            parameters.state.removeProperty ("OSCPort", nullptr);
         }
+
+        auto oscConfig = parameters.state.getChildWithName ("OSCConfig");
+        if (oscConfig.isValid())
+            oscParameterInterface.setConfig (oscConfig);
     }
 }
 

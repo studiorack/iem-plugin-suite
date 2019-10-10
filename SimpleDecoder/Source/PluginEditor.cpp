@@ -26,7 +26,7 @@
 
 //==============================================================================
 SimpleDecoderAudioProcessorEditor::SimpleDecoderAudioProcessorEditor (SimpleDecoderAudioProcessor& p, AudioProcessorValueTreeState& vts)
-: AudioProcessorEditor (&p), processor (p), valueTreeState (vts), footer (p.getOSCReceiver()), fv (20, 20000, -20, 10, 5)
+: AudioProcessorEditor (&p), processor (p), valueTreeState (vts), footer (p.getOSCParameterInterface()), fv (20, 20000, -20, 10, 5)
 {
     // ============== BEGIN: essentials ======================
     // set GUI size and lookAndFeel

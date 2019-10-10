@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<JUCERPROJECT id="cBXtXS" name="ProbeDecoder" projectType="audioplug" version="0.4.3"
+<JUCERPROJECT id="cBXtXS" name="ProbeDecoder" projectType="audioplug" version="0.5.0"
               bundleIdentifier="at.iem.ProbeDecoder" includeBinaryInAppConfig="1"
               buildVST="1" buildVST3="0" buildAU="0" buildAUv3="0" buildRTAS="0"
               buildAAX="0" pluginName="ProbeDecoder" pluginDesc="Sampling Ambisonic signals at a single direction"
@@ -36,6 +36,17 @@
             file="../resources/lookAndFeel/Roboto-Medium.ttf"/>
       <FILE id="NBYvRH" name="Roboto-Regular.ttf" compile="0" resource="1"
             file="../resources/lookAndFeel/Roboto-Regular.ttf"/>
+    </GROUP>
+    <GROUP id="{F1BD1E9A-073A-28DE-CE81-BEAE92D5FD6D}" name="OSC">
+      <FILE id="vryEzO" name="OSCInputStream.h" compile="0" resource="0"
+            file="../resources/OSC/OSCInputStream.h"/>
+      <FILE id="ptgWEN" name="OSCParameterInterface.cpp" compile="1" resource="0"
+            file="../resources/OSC/OSCParameterInterface.cpp"/>
+      <FILE id="XNbjna" name="OSCParameterInterface.h" compile="0" resource="0"
+            file="../resources/OSC/OSCParameterInterface.h"/>
+      <FILE id="OP2yDo" name="OSCStatus.cpp" compile="1" resource="0" file="../resources/OSC/OSCStatus.cpp"/>
+      <FILE id="DUgabG" name="OSCStatus.h" compile="0" resource="0" file="../resources/OSC/OSCStatus.h"/>
+      <FILE id="XuZQ9l" name="OSCUtilities.h" compile="0" resource="0" file="../resources/OSC/OSCUtilities.h"/>
     </GROUP>
     <GROUP id="{93EB888E-6BA4-D232-5298-BD06600ED3A9}" name="Source">
       <FILE id="EYYIng" name="PluginProcessor.cpp" compile="1" resource="0"

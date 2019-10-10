@@ -293,10 +293,14 @@ void MultiEncoderAudioProcessor::parameterChanged (const String &parameterID, fl
 //==============================================================================
 void MultiEncoderAudioProcessor::getStateInformation (MemoryBlock& destData)
 {
+    auto state = parameters.copyState();
     for (int i = 0; i < maxNumberOfInputs; ++i)
-        parameters.state.setProperty("colour" + String(i), elementColours[i].toString(), nullptr);
-    parameters.state.setProperty ("OSCPort", var(oscReceiver.getPortNumber()), nullptr);
-    std::unique_ptr<XmlElement> xml (parameters.state.createXml());
+        state.setProperty ("colour" + String(i), elementColours[i].toString(), nullptr);
+
+    auto oscConfig = state.getOrCreateChildWithName ("OSCConfig", nullptr);
+    oscConfig.copyPropertiesFrom (oscParameterInterface.getConfig(), nullptr);
+
+    std::unique_ptr<XmlElement> xml (state.createXml());
     copyXmlToBinary (*xml, destData);
 }
 
@@ -314,10 +318,15 @@ void MultiEncoderAudioProcessor::setStateInformation (const void* data, int size
                 else elementColours[i] = Colours::cyan;
             updateColours = true;
 
-            if (parameters.state.hasProperty ("OSCPort"))
+            if (parameters.state.hasProperty ("OSCPort")) // legacy
             {
-                oscReceiver.connect (parameters.state.getProperty ("OSCPort", var (-1)));
+                oscParameterInterface.getOSCReceiver().connect (parameters.state.getProperty ("OSCPort", var (-1)));
+                parameters.state.removeProperty ("OSCPort", nullptr);
             }
+
+            auto oscConfig = parameters.state.getChildWithName ("OSCConfig");
+            if (oscConfig.isValid())
+                oscParameterInterface.setConfig (oscConfig);
         }
 }
 
@@ -407,7 +416,7 @@ std::vector<std::unique_ptr<RangedAudioParameter>> MultiEncoderAudioProcessor::c
     params.push_back (OSCParameterInterface::createParameterTheOldWay("masterElevation", "Master elevation angle", CharPointer_UTF8 (R"(°)"),
                                     NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0f,
                                     [](float value) {return String(value, 2);}, nullptr));
-    
+
     params.push_back (OSCParameterInterface::createParameterTheOldWay("masterRoll", "Master roll angle", CharPointer_UTF8 (R"(°)"),
                                     NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0f,
                                     [](float value) {return String(value, 2);}, nullptr));

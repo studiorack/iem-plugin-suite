@@ -94,7 +94,7 @@ public:
             const int destCh = retainedCurrentMatrix->getRoutingArrayReference().getUnchecked(row);
             if (destCh < outputBlock.getNumChannels())
             {
-                const float* dest = outputBlock.getChannelPointer (destCh);
+                float* dest = outputBlock.getChannelPointer (destCh);
                 FloatVectorOperations::multiply (dest, inputBlock.getChannelPointer (0), T(row, 0), nSamples); // first channel
                 for (int i = 1; i < nInputChannels; ++i) // remaining channels
                     FloatVectorOperations::addWithMultiply (dest, inputBlock.getChannelPointer (i), T(row, i), nSamples);

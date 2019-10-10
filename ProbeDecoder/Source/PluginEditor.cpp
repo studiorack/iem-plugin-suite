@@ -25,7 +25,7 @@
 
 //==============================================================================
 ProbeDecoderAudioProcessorEditor::ProbeDecoderAudioProcessorEditor (ProbeDecoderAudioProcessor& p, AudioProcessorValueTreeState& vts)
-: AudioProcessorEditor (&p), footer (p.getOSCReceiver()), processor (p), valueTreeState(vts),
+: AudioProcessorEditor (&p), footer (p.getOSCParameterInterface()), processor (p), valueTreeState(vts),
 probe(*valueTreeState.getParameter("azimuth"), valueTreeState.getParameterRange("azimuth"),
       *valueTreeState.getParameter("elevation"), valueTreeState.getParameterRange("elevation"))
 {

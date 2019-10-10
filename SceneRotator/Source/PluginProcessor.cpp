@@ -482,11 +482,11 @@ AudioProcessorEditor* SceneRotatorAudioProcessor::createEditor()
 //==============================================================================
 void SceneRotatorAudioProcessor::getStateInformation (MemoryBlock& destData)
 {
-    // You should use this method to store your parameters in the memory block.
-    // You could do that either as raw data, or use the XML or ValueTree classes
-    // as intermediaries to make it easy to save and load complex data.
     auto state = parameters.copyState();
-    state.setProperty ("OSCPort", var (oscReceiver.getPortNumber()), nullptr);
+
+    auto oscConfig = state.getOrCreateChildWithName ("OSCConfig", nullptr);
+    oscConfig.copyPropertiesFrom (oscParameterInterface.getConfig(), nullptr);
+
     state.setProperty ("MidiDeviceName", var (currentMidiDeviceName), nullptr);
     state.setProperty ("MidiDeviceScheme", var (static_cast<int> (currentMidiScheme)), nullptr);
     std::unique_ptr<XmlElement> xml (state.createXml());
@@ -503,8 +503,15 @@ void SceneRotatorAudioProcessor::setStateInformation (const void* data, int size
         if (xmlState->hasTagName (parameters.state.getType()))
         {
             parameters.replaceState (ValueTree::fromXml (*xmlState));
-            if (parameters.state.hasProperty ("OSCPort"))
-                oscReceiver.connect (parameters.state.getProperty ("OSCPort", var (-1)));
+            if (parameters.state.hasProperty ("OSCPort")) // legacy
+            {
+                oscParameterInterface.getOSCReceiver().connect (parameters.state.getProperty ("OSCPort", var (-1)));
+                parameters.state.removeProperty ("OSCPort", nullptr);
+            }
+
+            auto oscConfig = parameters.state.getChildWithName ("OSCConfig");
+            if (oscConfig.isValid())
+                oscParameterInterface.setConfig (oscConfig);
 
             if (parameters.state.hasProperty ("MidiDeviceName"))
                 openMidiInput (parameters.state.getProperty ("MidiDeviceName", var ("")), true);
@@ -597,7 +604,7 @@ inline void SceneRotatorAudioProcessor::updateQuaternions()
         qz = -qz;
     }
 
-    
+
     updatingParams = true;
     parameters.getParameter ("qw")->setValueNotifyingHost (parameters.getParameterRange ("qw").convertTo0to1 (qw));
     parameters.getParameter ("qx")->setValueNotifyingHost (parameters.getParameterRange ("qx").convertTo0to1 (qx));
@@ -864,7 +871,7 @@ void SceneRotatorAudioProcessor::closeMidiInput()
 
     currentMidiDeviceName = ""; // hoping there's not actually a MidiDevice without a name!
     deviceHasChanged = true;
-    
+
     return;
 }
 
@@ -872,12 +879,12 @@ void SceneRotatorAudioProcessor::setMidiScheme (MidiScheme newMidiScheme)
 {
     currentMidiScheme = newMidiScheme;
     DBG ("Scheme set to " << midiSchemeNames[static_cast<int> (newMidiScheme)]);
-    
+
     switch (newMidiScheme)
     {
         case MidiScheme::none:
             break;
-            
+
         case MidiScheme::mrHeadTrackerYprDir:
             parameters.getParameter ("rotationSequence")->setValueNotifyingHost (1.0f); // roll->pitch->yaw
             break;
