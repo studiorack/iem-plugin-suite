@@ -218,7 +218,7 @@ void OSCParameterInterface::sendParameterChanges (const bool forceSend)
 }
 
 
-const String OSCParameterInterface::setOSCAddress (String newAddress)
+void OSCParameterInterface::setOSCAddress (String newAddress)
 {
     if (newAddress.isEmpty())
         address = "/";
@@ -233,6 +233,4 @@ const String OSCParameterInterface::setOSCAddress (String newAddress)
         else
             address = "/" + newAddress + "/";
     }
-    
-    return address;
 }

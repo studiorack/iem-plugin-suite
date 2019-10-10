@@ -37,6 +37,17 @@
       <FILE id="mfFwBA" name="Roboto-Regular.ttf" compile="0" resource="1"
             file="../resources/lookAndFeel/Roboto-Regular.ttf"/>
     </GROUP>
+    <GROUP id="{3DD1F6CC-71E6-552B-6A15-CE044483C565}" name="OSC">
+      <FILE id="FT3GeR" name="OSCInputStream.h" compile="0" resource="0"
+            file="../resources/OSC/OSCInputStream.h"/>
+      <FILE id="LP4A3O" name="OSCParameterInterface.cpp" compile="1" resource="0"
+            file="../resources/OSC/OSCParameterInterface.cpp"/>
+      <FILE id="xYqjVD" name="OSCParameterInterface.h" compile="0" resource="0"
+            file="../resources/OSC/OSCParameterInterface.h"/>
+      <FILE id="T6xsr0" name="OSCStatus.cpp" compile="1" resource="0" file="../resources/OSC/OSCStatus.cpp"/>
+      <FILE id="wvxuGG" name="OSCStatus.h" compile="0" resource="0" file="../resources/OSC/OSCStatus.h"/>
+      <FILE id="SO16jO" name="OSCUtilities.h" compile="0" resource="0" file="../resources/OSC/OSCUtilities.h"/>
+    </GROUP>
     <GROUP id="{93EB888E-6BA4-D232-5298-BD06600ED3A9}" name="Source">
       <FILE id="EYYIng" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
@@ -48,12 +59,6 @@
     </GROUP>
     <FILE id="l94vvp" name="efficientSHvanilla.cpp" compile="1" resource="0"
           file="../resources/efficientSHvanilla.cpp"/>
-    <FILE id="AG2M1I" name="OSCParameterInterface.h" compile="0" resource="0"
-          file="../resources/OSCParameterInterface.h"/>
-    <FILE id="fjFEbw" name="OSCParameterInterface.cpp" compile="1" resource="0"
-          file="../resources/OSCParameterInterface.cpp"/>
-    <FILE id="IXrAWH" name="OSCStatus.h" compile="0" resource="0" file="../resources/customComponents/OSCStatus.h"/>
-    <FILE id="u268ny" name="OSCUtilities.h" compile="0" resource="0" file="../resources/OSCUtilities.h"/>
     <FILE id="KzVW9N" name="SpherePanner.h" compile="0" resource="0" file="../resources/customComponents/SpherePanner.h"/>
     <FILE id="KGgn5i" name="AudioProcessorBase.h" compile="0" resource="0"
           file="../resources/AudioProcessorBase.h"/>

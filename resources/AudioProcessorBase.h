@@ -25,9 +25,9 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 
-#include "../../resources/OSCInputStream.h"
-#include "../../resources/OSCParameterInterface.h"
-#include "../../resources/IOHelper.h"
+#include "OSC/OSCInputStream.h"
+#include "OSC/OSCParameterInterface.h"
+#include "IOHelper.h"
 
 typedef std::vector<std::unique_ptr<RangedAudioParameter>> ParameterList;
 

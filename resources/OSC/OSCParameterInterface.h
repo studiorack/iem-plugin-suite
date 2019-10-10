@@ -72,7 +72,7 @@ public:
     void timerCallback() override;
 
     void sendParameterChanges (const bool forceSend = false);
-    const String setOSCAddress (const String newAddress);
+    void setOSCAddress (const String newAddress);
 
     const String getOSCAddress() const { return address; };
     

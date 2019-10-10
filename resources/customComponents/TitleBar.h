@@ -26,7 +26,7 @@
 #include "../ambisonicTools.h"
 
 #ifdef JUCE_OSC_H_INCLUDED
-#include "OSCStatus.h"
+#include "../OSC/OSCStatus.h"
 #endif
 
 class AlertSymbol : public Component, public TooltipClient
