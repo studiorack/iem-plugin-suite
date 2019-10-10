@@ -160,6 +160,9 @@ void OSCParameterInterface::oscMessageReceived (const OSCMessage &message)
             if (newPort > 0)
                 MessageManager::callAsync ( [this, newPort]() { oscReceiver.connect (newPort); } );
         }
+
+        if (message.getAddressPattern().toString().equalsIgnoreCase ("/flushParams") )
+            MessageManager::callAsync ( [this]() { sendParameterChanges (true); });
     }
 }
 
