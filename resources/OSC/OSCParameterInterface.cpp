@@ -122,7 +122,7 @@ const bool OSCParameterInterface::processOSCMessage (OSCMessage oscMessage)
         return false;
 }
 
-inline void OSCParameterInterface::setValue (const String paramID, const float value)
+void OSCParameterInterface::setValue (const String paramID, const float value)
 {
     auto range (parameters.getParameterRange (paramID));
     parameters.getParameter (paramID)->setValueNotifyingHost (range.convertTo0to1 (value));
