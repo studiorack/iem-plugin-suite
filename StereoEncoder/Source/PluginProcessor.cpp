@@ -360,12 +360,6 @@ void StereoEncoderAudioProcessor::setStateInformation (const void *data, int siz
             }
 
             auto oscConfig = parameters.state.getChildWithName ("OSCConfig");
-
-            for (int i = 0; i < oscConfig.getNumProperties(); ++i)
-             {
-                 auto propName = oscConfig.getPropertyName (i);
-                 DBG (propName << " " << oscConfig.getProperty(propName, var("invalid")).toString());
-             }
             
             if (oscConfig.isValid())
                 oscParameterInterface.setConfig (oscConfig);

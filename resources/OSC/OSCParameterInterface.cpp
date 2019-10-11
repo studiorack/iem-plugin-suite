@@ -249,12 +249,6 @@ ValueTree OSCParameterInterface::getConfig() const
     config.setProperty ("SenderOSCAddress", getOSCAddress(), nullptr);
     config.setProperty ("SenderInterval", getInterval(), nullptr);
 
-    for (int i = 0; i < config.getNumProperties(); ++i)
-    {
-        auto propName = config.getPropertyName (i);
-        DBG (propName << " " << config.getProperty(propName, var("invalid")).toString());
-    }
-
     return config;
 }
 
