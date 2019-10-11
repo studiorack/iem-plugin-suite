@@ -323,27 +323,41 @@ void OSCStatus::timerCallback()
     }
 }
 
-void OSCStatus::mouseEnter (const MouseEvent &event)
+
+
+void OSCStatus::mouseMove (const MouseEvent &event)
 {
-    ignoreUnused (event);
-    setMouseCursor (MouseCursor::PointingHandCursor);
-    repaint();
+    if (! mouseOver && bounds.contains (event.getPosition()))
+    {
+        setMouseCursor (MouseCursor::PointingHandCursor);
+        mouseOver = true;
+        repaint();
+    }
+    else if (mouseOver && ! bounds.contains (event.getPosition()))
+    {
+        setMouseCursor (MouseCursor::NormalCursor);
+        mouseOver = false;
+        repaint();
+    }
 }
 
 void OSCStatus::mouseExit (const MouseEvent &event)
 {
     ignoreUnused (event);
+    mouseOver = false;
     repaint();
 }
 
 void OSCStatus::mouseUp (const MouseEvent &event)
 {
-    ignoreUnused (event);
-    auto* dialogWindow = new OSCDialogWindow (oscParameterInterface, oscReceiver, oscSender);
-    dialogWindow->setSize (200, 215);
+    if (bounds.contains (event.getPosition()))
+    {
+        auto* dialogWindow = new OSCDialogWindow (oscParameterInterface, oscReceiver, oscSender);
+        dialogWindow->setSize (211, 210);
 
-    CallOutBox& myBox = CallOutBox::launchAsynchronously (dialogWindow, getScreenBounds().removeFromBottom (20), nullptr);
-    myBox.setLookAndFeel (&getLookAndFeel());
+        CallOutBox& myBox = CallOutBox::launchAsynchronously (dialogWindow, getScreenBounds().removeFromLeft (bounds.getWidth()), nullptr);
+        myBox.setLookAndFeel (&getLookAndFeel());
+    }
 }
 
 void OSCStatus::paint (Graphics& g)
@@ -351,7 +365,7 @@ void OSCStatus::paint (Graphics& g)
     Colour receiveStatusColor = oscReceiver.getPortNumber() == -1 ? Colours::white.withAlpha(0.1f) : oscReceiver.isConnected() ? Colours::limegreen : Colours::red.withAlpha (0.5f);
     Colour sendStatusColor = oscSender.getPortNumber() == -1 ? Colours::white.withAlpha (0.1f) : oscSender.isConnected() ? Colours::limegreen : Colours::red.withAlpha (0.5f);
 
-    const float alpha = isMouseOver() ? 1.0f : 0.5f;
+    const float alpha = mouseOver ? 1.0f : 0.5f;
 
     auto area = getLocalBounds();
     area = area.removeFromBottom (12);
@@ -375,7 +389,7 @@ void OSCStatus::paint (Graphics& g)
 
     area.removeFromLeft (2);
 
-    g.setColour (Colours::white.withAlpha(isMouseOver() ? 1.0f : 0.5f));
+    g.setColour (Colours::white.withAlpha (mouseOver ? 1.0f : 0.5f));
     g.setFont (getLookAndFeel().getTypefaceForFont (Font (12.0f, 0)));
     g.setFont (14.0f);
 
@@ -398,19 +412,10 @@ void OSCStatus::paint (Graphics& g)
     auto textWidth = g.getCurrentFont().getStringWidthFloat (text);
 
     const int targetSize = 12 + 2 + textWidth + 2 + 12;
-    if (getLocalBounds().getWidth() != targetSize)
-    {
-        setSize (targetSize, getHeight());
-        DBG ("resized");
-    }
+
+    bounds = getLocalBounds().removeFromLeft (targetSize);
 
     g.drawText (text, area.withWidth (textWidth), Justification::bottomLeft, true);
-}
-
-void OSCStatus::resized()
-{
-    repaint();
-    DBG ("called repaint");
 }
 
 
