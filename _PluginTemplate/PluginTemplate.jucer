@@ -10,7 +10,7 @@
               pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
               pluginAUExportPrefix="PluginTemplateAU" aaxIdentifier="at.iem.PluginTemplate"
-              pluginAAXCategory="2" jucerVersion="5.4.4" companyCopyright="IEM - FirstName FamilyName"
+              pluginAAXCategory="2" jucerVersion="5.4.5" companyCopyright="IEM - FirstName FamilyName"
               companyName="IEM" companyWebsite="iem.at" headerPath="../../../resources/"
               pluginFormats="buildStandalone,buildVST" defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1">
   <MAINGROUP id="LpzrV9" name="PluginTemplate">
