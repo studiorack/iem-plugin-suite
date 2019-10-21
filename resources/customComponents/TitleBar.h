@@ -308,7 +308,9 @@ public:
     {
         maxOrder = newMaxOrder;
         updateMaxOrder();
-        setMaxSize (maxPossibleOrder);
+        const int savedMaxPossibleOrder = maxPossibleOrder;
+        maxPossibleOrder = -1;
+        setMaxSize (savedMaxPossibleOrder);
     }
     
     const int getComponentSize() override { return 110; }
@@ -323,21 +325,21 @@ public:
             
             if (selectable)
             {
-                maxPossibleOrder = jmin (newMaxPossibleOrder, maxOrder);
-                if (maxPossibleOrder > -1) cbOrder.changeItemText (1, "Auto (" + getOrderString (maxPossibleOrder) + ")");
-                else cbOrder.changeItemText (1, "(Auto)");
+                if (maxPossibleOrder > -1)
+                    cbOrder.changeItemText (1, "Auto (" + getOrderString (maxPossibleOrder) + ")");
+                else
+                    cbOrder.changeItemText (1, "(Auto)");
+
                 int currId = cbOrder.getSelectedId();
                 if (currId == 0) currId = 1; //bad work around
-                int i;
-                for (i = 1; i <= maxPossibleOrder; ++i)
-                {
+
+                for (int i = 1; i <= maxPossibleOrder; ++i)
                     cbOrder.changeItemText (i + 2, getOrderString (i));
-                }
-                for (i = maxPossibleOrder + 1; i<=maxOrder; ++i)
-                {
+
+                for (int i = maxPossibleOrder + 1; i<=maxOrder; ++i)
                     cbOrder.changeItemText (i + 2, getOrderString (i) + " (bus too small)");
-                }
-                
+
+                DBG (cbOrder.getItemText (cbOrder.indexOfItemId ((currId))));
                 cbOrder.setText (cbOrder.getItemText (cbOrder.indexOfItemId ((currId))));
                 if (currId - 2 > maxPossibleOrder)
                     setBusTooSmall (true);
