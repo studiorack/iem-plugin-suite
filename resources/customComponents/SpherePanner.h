@@ -426,7 +426,7 @@ public:
             g.setColour ((handle->isActive() ? handle->getColour() : Colours::grey).withMultipliedAlpha (pos.z >= -0.0f ? 1.0f : 0.4f));
             g.fillPath (panPos);
             g.setColour (handle->getTextColour());
-            g.drawFittedText (handle->getLabel(), temp.toNearestInt(), Justification::centred, 1);
+            g.drawText (handle->getLabel(), temp.toNearestInt(), Justification::centred, false);
             panPos.clear();
         }
     };
