@@ -98,7 +98,7 @@ public:
             currentDecoder = newDecoder;
 
             if (currentDecoder != nullptr)
-                currentDecoder->processAppliedWeights();
+                currentDecoder->removeAppliedWeights();
 
             matMult.setMatrix(currentDecoder, true);
 
@@ -109,7 +109,7 @@ public:
         return false;
     };
 
-    /** Giving the AmbisonicDecoder a new decoder for the audio processing. Note: The AmbisonicDecoder will call the processAppliedWeights() of the ReferenceCountedDecoder before it processes audio! The matrix elements may change due to this method.
+    /** Giving the AmbisonicDecoder a new decoder for the audio processing. Note: The AmbisonicDecoder will call the removeAppliedWeights() of the ReferenceCountedDecoder before it processes audio! The matrix elements may change due to this method.
      */
     void setDecoder (ReferenceCountedDecoder::Ptr newDecoderToUse)
     {

@@ -102,7 +102,7 @@ public:
     /**
      Applies the inverse weights to the decoder matrix, so it can be used with different orders. This method has to be called before the decoder processes audio input.
     */
-    void processAppliedWeights()
+    void removeAppliedWeights()
     {
         if (settings.weightsAlreadyApplied && settings.weights != Weights::none)
         {
