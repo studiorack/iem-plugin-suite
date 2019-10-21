@@ -479,11 +479,12 @@ Result MultiEncoderAudioProcessor::loadConfiguration (const File& configFile)
         {
             auto src = newSources.getChild (i);
             const int ch = src.getProperty ("Channel");
-            const bool isImaginary = src.getProperty ("IsImaginary");
+            const bool isImaginary = src.getProperty ("Imaginary");
             if (! isImaginary && ch > nSrc)
-                nSrc = ch - 1;
+                nSrc = ch;
         }
 
+        DBG (nSrc << " Sources!");
         parameters.getParameterAsValue ("inputSetting").setValue (nSrc);
 
         for (int s = 0; s < nSrc; ++s)
@@ -493,7 +494,7 @@ Result MultiEncoderAudioProcessor::loadConfiguration (const File& configFile)
         {
             const auto src = newSources.getChild (e);
             const int ch = static_cast<int> (src.getProperty ("Channel", 0)) - 1;
-            const bool isImaginary = src.getProperty ("IsImaginary");
+            const bool isImaginary = src.getProperty ("Imaginary");
 
             if (isImaginary || ch < 0 || ch >= 64)
                 continue;
