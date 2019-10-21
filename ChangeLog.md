@@ -5,6 +5,7 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
 
 ## untagged changes
 - general changes
+    - new standalone versions with JACK support on linux and macOS
     - adds OSC Send capabilities to each plug-in
     
 - plug-in specific changes
