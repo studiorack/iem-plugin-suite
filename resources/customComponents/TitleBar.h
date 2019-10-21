@@ -237,27 +237,61 @@ private:
     String displayTextIfNotSelectable = String(maxChannels);
 };
 
-template <int order = 7>
+template <int order = 7, bool selectable = true>
 class  AmbisonicIOWidget :  public IOWidget
 {
 public:
-    AmbisonicIOWidget() : IOWidget() {
+    AmbisonicIOWidget() : IOWidget()
+    {
         AmbiLogoPath.loadPathFromData (AmbiLogoPathData, sizeof (AmbiLogoPathData));
-        setBufferedToImage(true);
-
-        addAndMakeVisible(&cbOrder);
-        cbOrder.setJustificationType (Justification::centred);
-        cbOrder.setBounds (35, 15, 70, 15);
-        updateMaxOrder();
-
-        addAndMakeVisible(&cbNormalization);
+        setBufferedToImage (true);
+        
+        if (selectable)
+        {
+            addAndMakeVisible (&cbOrder);
+            cbOrder.setJustificationType (Justification::centred);
+            cbOrder.setBounds (35, 15, 70, 15);
+            updateMaxOrder();
+        }
+        else
+        {
+            displayTextIfNotSelectable = getOrderString (order) + " order";
+        }
+        
+        addAndMakeVisible (&cbNormalization);
         cbNormalization.setJustificationType (Justification::centred);
         cbNormalization.addSectionHeading ("Normalization");
         cbNormalization.addItem ("N3D", 1);
         cbNormalization.addItem ("SN3D", 2);
         cbNormalization.setBounds (35, 0, 70, 15);
+    };
+    
+    ~AmbisonicIOWidget() {};
+    
+    void setOrderIfUnselectable (int newOrder)
+    {
+        if (! selectable && orderIfNotSelectable != newOrder)
+        {
+            orderIfNotSelectable = newOrder;
+            updateDisplayTextIfNotSelectable();
+        }
     }
-
+    
+    void updateDisplayTextIfNotSelectable()
+    {
+        if (maxPossibleOrder < orderIfNotSelectable)
+        {
+            displayTextIfNotSelectable = getOrderString (orderIfNotSelectable) + " (bus too small)";
+            setBusTooSmall (true);
+        }
+        else
+        {
+            displayTextIfNotSelectable = getOrderString (orderIfNotSelectable) + " order";
+            setBusTooSmall (false);
+        }
+        repaint();
+    }
+    
     void updateMaxOrder()
     {
         const int previousIndex = cbOrder.getSelectedItemIndex();
@@ -266,61 +300,90 @@ public:
         cbOrder.addItem ("Auto", 1);
         for (int o = 0; o <= maxOrder; ++o)
             cbOrder.addItem (getOrderString(o), o + 2);
-
+        
         cbOrder.setSelectedItemIndex (previousIndex);
     }
-
+    
     void setMaxOrder (int newMaxOrder)
     {
         maxOrder = newMaxOrder;
         updateMaxOrder();
         setMaxSize (maxPossibleOrder);
     }
-
+    
     const int getComponentSize() override { return 110; }
-
+    
+    /** Sets the maximally available size of the processor for this Widget.
+     */
     void setMaxSize (int newMaxPossibleOrder) override
     {
-        maxPossibleOrder = jmin (newMaxPossibleOrder, maxOrder);
-        if (maxPossibleOrder > -1) cbOrder.changeItemText (1, "Auto (" + getOrderString (maxPossibleOrder) + ")");
-        else cbOrder.changeItemText (1, "(Auto)");
-        int currId = cbOrder.getSelectedId();
-        if (currId == 0) currId = 1; //bad work around
-        int i;
-
-        for (i = 1; i <= maxPossibleOrder; ++i)
+        if (maxPossibleOrder != jmin (newMaxPossibleOrder, maxOrder))
         {
-            cbOrder.changeItemText (i + 2, getOrderString(i));
+            maxPossibleOrder = jmin (newMaxPossibleOrder, maxOrder);
+            
+            if (selectable)
+            {
+                maxPossibleOrder = jmin (newMaxPossibleOrder, maxOrder);
+                if (maxPossibleOrder > -1) cbOrder.changeItemText (1, "Auto (" + getOrderString (maxPossibleOrder) + ")");
+                else cbOrder.changeItemText (1, "(Auto)");
+                int currId = cbOrder.getSelectedId();
+                if (currId == 0) currId = 1; //bad work around
+                int i;
+                for (i = 1; i <= maxPossibleOrder; ++i)
+                {
+                    cbOrder.changeItemText (i + 2, getOrderString (i));
+                }
+                for (i = maxPossibleOrder + 1; i<=maxOrder; ++i)
+                {
+                    cbOrder.changeItemText (i + 2, getOrderString (i) + " (bus too small)");
+                }
+                
+                cbOrder.setText (cbOrder.getItemText (cbOrder.indexOfItemId ((currId))));
+                if (currId - 2 > maxPossibleOrder)
+                    setBusTooSmall (true);
+                else
+                    setBusTooSmall (false);
+            }
+            else
+            {
+                updateDisplayTextIfNotSelectable();
+            }
         }
-
-        for (i = maxPossibleOrder + 1; i <= maxOrder; ++i)
-        {
-            cbOrder.changeItemText(i + 2, getOrderString (i) + " (bus too small)");
-        }
-
-        cbOrder.setText (cbOrder.getItemText (cbOrder.indexOfItemId (currId)));
-        if (currId - 2> maxPossibleOrder)
-            setBusTooSmall (true);
-        else
-            setBusTooSmall (false);
     }
-
+    
     ComboBox* getNormCbPointer() { return &cbNormalization; }
-    ComboBox* getOrderCbPointer() { return &cbOrder; }
-
+    ComboBox* getOrderCbPointer()
+    {
+        if (! selectable)
+            // There's no Ambisonic Order ComboBox, when order is not selectable!
+            jassertfalse;
+        
+        return &cbOrder;
+    }
+    
     void paint (Graphics& g) override
     {
-        AmbiLogoPath.applyTransform (AmbiLogoPath.getTransformToScaleToFit (0, 0, 30, 30, true,Justification::centred));
+        AmbiLogoPath.applyTransform (AmbiLogoPath.getTransformToScaleToFit (0, 0, 30, 30, true, Justification::centred));
         g.setColour ((Colours::white).withMultipliedAlpha (0.5));
         g.fillPath (AmbiLogoPath);
-    }
-
+        
+        if (!selectable)
+        {
+            g.setColour ((Colours::white).withMultipliedAlpha (0.5));
+            g.setFont (getLookAndFeel().getTypefaceForFont (Font (12.0f, 1)));
+            g.setFont (15.0f);
+            g.drawFittedText (displayTextIfNotSelectable, 35, 15, 55, 15, Justification::centred, 1);
+        }
+    };
+    
 private:
     ComboBox cbNormalization, cbOrder;
     Path AmbiLogoPath;
     int maxOrder = order;
+    int orderIfNotSelectable = order;
     int maxPossibleOrder = 7;
-};
+    String displayTextIfNotSelectable;
+};  
 
 class  DirectivityIOWidget :  public IOWidget
 {
