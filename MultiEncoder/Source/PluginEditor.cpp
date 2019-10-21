@@ -311,6 +311,18 @@ void MultiEncoderAudioProcessorEditor::importLayout()
     {
         File configFile (myChooser.getResult());
         processor.setLastDir (configFile.getParentDirectory());
-        processor.loadConfiguration (configFile);
+        auto result = processor.loadConfiguration (configFile);
+
+        if (! result.wasOk())
+        {
+            auto* component = new TextEditor();
+            component->setMultiLine (true, true);
+            component->setReadOnly (true);
+            component->setText (result.getErrorMessage());
+            component->setSize (200, 110);
+
+            CallOutBox& myBox = CallOutBox::launchAsynchronously (component, tbImport.getBounds(), this);
+            myBox.setLookAndFeel (&getLookAndFeel());
+        }
     }
 }
