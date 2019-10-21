@@ -23,6 +23,7 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
+const StringArray SimpleDecoderAudioProcessor::weightsStrings =  StringArray ("basic", "maxrE", "inphase");
 
 //==============================================================================
 SimpleDecoderAudioProcessor::SimpleDecoderAudioProcessor()
@@ -57,6 +58,7 @@ createParameterLayout())
 
     swMode = parameters.getRawParameterValue ("swMode");
     swChannel = parameters.getRawParameterValue("swChannel");
+    weights = parameters.getRawParameterValue ("weights");
 
     // add listeners to parameter changes
 
@@ -70,8 +72,7 @@ createParameterLayout())
     parameters.addParameterListener ("highPassQ", this);
 
     parameters.addParameterListener ("swMode", this);
-
-
+    parameters.addParameterListener ("weights", this);
 
     highPassSpecs.numChannels = 0;
 
@@ -285,6 +286,9 @@ void SimpleDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiB
     AudioBlock<float> inputAudioBlock = AudioBlock<float>(buffer.getArrayOfWritePointers(), nChIn, L);
     AudioBlock<float> outputAudioBlock = AudioBlock<float>(buffer.getArrayOfWritePointers(), nChOut, L);
     ProcessContextNonReplacing<float> decoderContext (inputAudioBlock, outputAudioBlock);
+    auto settings = retainedDecoder->getSettings();
+    settings.weights = ReferenceCountedDecoder::Weights (roundToInt (*weights));
+    retainedDecoder->setSettings (settings);
     decoder.process (inputAudioBlock, outputAudioBlock);
 
     for (int ch = nChOut; ch < nChIn; ++ch) // clear all not needed channels
@@ -412,7 +416,10 @@ void SimpleDecoderAudioProcessor::loadConfiguration (const File& presetFile)
         messageForEditor = "";
     }
 
-    decoder.setDecoder(tempDecoder);
+    tempDecoder->removeAppliedWeights();
+    parameters.getParameterAsValue ("weights").setValue (static_cast<int> (tempDecoder->getSettings().weights));
+
+    decoder.setDecoder (tempDecoder);
     decoderConfig = tempDecoder;
 
     updateDecoderInfo = true;
@@ -488,6 +495,8 @@ std::vector<std::unique_ptr<RangedAudioParameter>> SimpleDecoderAudioProcessor::
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("swChannel", "SW Channel Number", "",
                                      NormalisableRange<float> (1.0f, 64.0f, 1.0f), 1.0f,
                                      [](float value) { return String ((int) value);}, nullptr));
+
+    params.push_back (std::make_unique<AudioParameterChoice> ("weights", "Ambisonic Weights", weightsStrings, 1));
 
     return params;
 }

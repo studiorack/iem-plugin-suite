@@ -41,6 +41,8 @@ class SimpleDecoderAudioProcessor  :   public AudioProcessorBase<IOTypes::Ambiso
 public:
     constexpr static int numberOfInputChannels = 64;
     constexpr static int numberOfOutputChannels = 64;
+    static const StringArray weightsStrings;
+
     //==============================================================================
     SimpleDecoderAudioProcessor();
     ~SimpleDecoderAudioProcessor();
@@ -109,6 +111,7 @@ private:
 
     float *swMode;
     float *swChannel;
+    float *weights;
 
     // =========================================
 

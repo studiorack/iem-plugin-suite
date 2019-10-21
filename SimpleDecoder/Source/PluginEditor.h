@@ -91,7 +91,7 @@ private:
     bool enableSubwooferChannelControls;
     bool changeEnablement = false;
 
-    GroupComponent gcFilter, gcSw, gcConfiguration;
+    GroupComponent gcFilter, gcSw, gcConfiguration, gcWeights;
 
     // Filter slider
     ReverseSlider slLowPassFrequency, slHighPassFrequency, slLowPassGain;
@@ -107,6 +107,11 @@ private:
     //
     TextButton btLoadFile;
     DecoderInfoBox dcInfoBox;
+
+    // weights
+    ComboBox cbWeights;
+    std::unique_ptr<ComboBoxAttachment> cbWeightsAttachment;
+
 
     ReferenceCountedDecoder::Ptr lastDecoder = nullptr;
 

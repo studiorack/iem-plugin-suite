@@ -129,6 +129,15 @@ SimpleDecoderAudioProcessorEditor::SimpleDecoderAudioProcessorEditor (SimpleDeco
     fv.addCoefficients (processor.cascadedLowPassCoeffs, Colours::orangered, &slLowPassFrequency, &slLowPassGain);
     fv.addCoefficients (processor.cascadedHighPassCoeffs, Colours::cyan, &slHighPassFrequency);
 
+
+    addAndMakeVisible (gcWeights);
+    gcWeights.setText ("Weights");
+
+    addAndMakeVisible (cbWeights);
+    cbWeights.setJustificationType (Justification::centred);
+    cbWeights.addItemList (processor.weightsStrings, 1);
+    cbSwModeAttachment.reset (new ComboBoxAttachment (valueTreeState, "weights", cbWeights));
+
     // start timer after everything is set up properly
     startTimer(20);
 }
@@ -203,19 +212,29 @@ void SimpleDecoderAudioProcessorEditor::resized()
 
 
     { //====================== Subwoofer GROUP ==================================
-        Rectangle<int> swArea(rightSide);
+        auto swArea = rightSide.removeFromTop (130);
         gcSw.setBounds(swArea);
         swArea.removeFromTop(25);
 
         cbSwMode.setBounds(swArea.removeFromTop(20));
         lbSwMode.setBounds(swArea.removeFromTop(labelHeight));
 
-        swArea.removeFromTop(10);
+        swArea.removeFromTop (10);
 
         slSwChannel.setBounds(swArea.removeFromTop(20));
         lbSwChannel.setBounds(swArea.removeFromTop(labelHeight));
         lbAlreadyUsed.setBounds(swArea.removeFromTop(12));
     }
+
+
+    { //====================== Weights GROUP ==================================
+        auto weightsArea = rightSide.removeFromTop (50);
+        gcWeights.setBounds (weightsArea);
+        weightsArea.removeFromTop(25);
+
+        cbWeights.setBounds (weightsArea.removeFromTop (20));
+    }
+
 
     { //====================== FILTER GROUP ==================================
         Rectangle<int> filterArea(area);

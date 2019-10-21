@@ -381,7 +381,7 @@ private:
     Path AmbiLogoPath;
     int maxOrder = order;
     int orderIfNotSelectable = order;
-    int maxPossibleOrder = 7;
+    int maxPossibleOrder = -1;
     String displayTextIfNotSelectable;
 };  
 
