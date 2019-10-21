@@ -53,7 +53,8 @@ public:
     //==============================================================================
     void paint (Graphics&) override;
     void resized() override;
-    
+
+    void importLayout();
 private:
     LaF globalLaF;
     TitleBar<AudioChannelsIOWidget<maxNumberOfInputs>, AmbisonicIOWidget<>> title;
@@ -65,7 +66,9 @@ private:
     MultiEncoderAudioProcessor& processor;
     AudioProcessorValueTreeState& valueTreeState;
 
-    GroupComponent quatGroup,ypGroup,settingsGroup;
+    GroupComponent masterGroup, encoderGroup;
+    TextButton tbImport;
+
     ReverseSlider slMasterAzimuth, slMasterElevation, slMasterRoll;
 
     ToggleButton tbLockedToMaster;

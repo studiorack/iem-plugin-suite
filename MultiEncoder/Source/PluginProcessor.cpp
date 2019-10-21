@@ -39,6 +39,17 @@ MultiEncoderAudioProcessor::MultiEncoderAudioProcessor()
 #endif
 createParameterLayout())
 {
+    // global properties
+    PropertiesFile::Options options;
+    options.applicationName     = "MultiEncoder";
+    options.filenameSuffix      = "settings";
+    options.folderName          = "IEM";
+    options.osxLibrarySubFolder = "Preferences";
+
+    properties.reset (new PropertiesFile (options));
+    lastDir = File (properties->getValue ("presetFolder"));
+
+    
     parameters.addParameterListener("masterAzimuth", this);
     parameters.addParameterListener("masterElevation", this);
     parameters.addParameterListener("masterRoll", this);
@@ -49,8 +60,6 @@ createParameterLayout())
 
     muteMask.clear();
     soloMask.clear();
-
-
 
     for (int i = 0; i < maxNumberOfInputs; ++i)
     {
@@ -451,4 +460,61 @@ std::vector<std::unique_ptr<RangedAudioParameter>> MultiEncoderAudioProcessor::c
 
 
     return params;
+}
+
+//==============================================================================
+
+Result MultiEncoderAudioProcessor::loadConfiguration (const File& configFile)
+{
+    ValueTree newSources ("NewSources");
+
+    Result result = ConfigurationHelper::parseFileForLoudspeakerLayout (configFile, newSources, nullptr);
+
+    if (result.wasOk())
+    {
+        int nSrc = 0;
+        const auto nElements = newSources.getNumChildren();
+
+        for (int i = 0; i < nElements; ++i)
+        {
+            auto src = newSources.getChild (i);
+            const int ch = src.getProperty ("Channel");
+            const bool isImaginary = src.getProperty ("IsImaginary");
+            if (! isImaginary && ch > nSrc)
+                nSrc = ch - 1;
+        }
+
+        parameters.getParameterAsValue ("inputSetting").setValue (nSrc);
+
+        for (int s = 0; s < nSrc; ++s)
+            parameters.getParameterAsValue ("mute" + String (s)).setValue (1);
+
+        for (int e = 0; e < nElements; ++e)
+        {
+            const auto src = newSources.getChild (e);
+            const int ch = static_cast<int> (src.getProperty ("Channel", 0)) - 1;
+            const bool isImaginary = src.getProperty ("IsImaginary");
+
+            if (isImaginary || ch < 0 || ch >= 64)
+                continue;
+
+
+            parameters.getParameterAsValue ("mute" + String (ch)).setValue (0);
+
+            auto azi = src.getProperty ("Azimuth", 0.0f);
+            parameters.getParameterAsValue ("azimuth" + String (ch)).setValue (azi);
+            auto ele = src.getProperty ("Elevation", 0.0f);
+            parameters.getParameterAsValue ("elevation" + String (ch)).setValue (ele);
+        }
+    }
+
+    return result;
+}
+
+
+void MultiEncoderAudioProcessor::setLastDir (File newLastDir)
+{
+    lastDir = newLastDir;
+    const var v (lastDir.getFullPathName());
+    properties->setValue ("presetFolder", v);
 }
