@@ -30,6 +30,7 @@
 #include "../../resources/customComponents/SimpleLabel.h"
 #include "../../resources/customComponents/MuteSoloButton.h"
 #include "../../resources/customComponents/SpherePanner.h"
+#include "MasterControlWithText.h"
 #include "EncoderList.h"
 
 
@@ -91,7 +92,8 @@ private:
     int lastSetNumChIn = -1;
 
     // labels
-    SimpleLabel lbNum, lbAzimuth, lbElevation, lbGain;
+    SimpleLabel lbNum;
+    MasterControlWithText lbAzimuth, lbElevation, lbGain;
     SimpleLabel lbMasterAzimuth, lbMasterElevation, lbMasterRoll;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MultiEncoderAudioProcessorEditor)

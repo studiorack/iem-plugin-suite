@@ -59,6 +59,8 @@
     </GROUP>
     <FILE id="i5HVTM" name="efficientSHvanilla.cpp" compile="1" resource="0"
           file="../resources/efficientSHvanilla.cpp"/>
+    <FILE id="VJIprA" name="MasterControlWithText.h" compile="0" resource="0"
+          file="Source/MasterControlWithText.h"/>
     <FILE id="wTVWDf" name="EncoderList.h" compile="0" resource="0" file="Source/EncoderList.h"/>
     <FILE id="GHvC1u" name="SpherePanner.h" compile="0" resource="0" file="../resources/customComponents/SpherePanner.h"/>
   </MAINGROUP>

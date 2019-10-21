@@ -245,6 +245,10 @@ public:
     }
     OwnedArray<SpherePanner::AzimuthElevationParameterElement> sphereElementArray;
 
+    OwnedArray<ReverseSlider>& getAzimuthArray() { return slAzimuthArray; }
+    OwnedArray<ReverseSlider>& getElevationArray() { return slElevationArray; }
+    OwnedArray<ReverseSlider>& getGainArray() { return slGainArray; }
+
 private:
     MultiEncoderAudioProcessor& processor;
     SpherePanner& spherePanner;

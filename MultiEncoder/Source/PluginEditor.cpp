@@ -29,7 +29,10 @@ MultiEncoderAudioProcessorEditor::MultiEncoderAudioProcessorEditor (MultiEncoder
 : AudioProcessorEditor (&p), footer (p.getOSCParameterInterface()), processor (p), valueTreeState(vts),
 masterElement(*valueTreeState.getParameter("masterAzimuth"), valueTreeState.getParameterRange("masterAzimuth"),
               *valueTreeState.getParameter("masterElevation"), valueTreeState.getParameterRange("masterElevation")),
-encoderList(p, sphere, &vts)
+encoderList (p, sphere, &vts),
+lbAzimuth (encoderList.getAzimuthArray()),
+lbElevation (encoderList.getElevationArray()),
+lbGain (encoderList.getGainArray())
 {
     setLookAndFeel (&globalLaF);
 
@@ -238,13 +241,13 @@ void MultiEncoderAudioProcessorEditor::resized()
     yprArea.removeFromTop(25); //for box headline
 
 
-    sliderRow = (yprArea.removeFromTop(15));
-    lbNum.setBounds(sliderRow.removeFromLeft(22));
-    sliderRow.removeFromLeft(5);
-    lbAzimuth.setBounds(sliderRow.removeFromLeft(rotSliderWidth));
-    sliderRow.removeFromLeft(rotSliderSpacing - 5);
-    lbElevation.setBounds(sliderRow.removeFromLeft(rotSliderWidth + 10));
-    sliderRow.removeFromLeft(rotSliderSpacing - 5);
+    sliderRow = yprArea.removeFromTop (15);
+    lbNum.setBounds (sliderRow.removeFromLeft (15));
+    sliderRow.removeFromLeft (3);
+    lbAzimuth.setBounds (sliderRow.removeFromLeft (rotSliderWidth + 10));
+    sliderRow.removeFromLeft (rotSliderSpacing - 7);
+    lbElevation.setBounds (sliderRow.removeFromLeft (rotSliderWidth + 13));
+    sliderRow.removeFromLeft (rotSliderSpacing - 5);
     lbGain.setBounds(sliderRow.removeFromLeft(rotSliderWidth));
 
     viewport.setBounds(yprArea);
