@@ -270,13 +270,13 @@ void SimpleDecoderAudioProcessorEditor::timerCallback()
     title.setMaxSize (processor.getMaxSize());
     // ==========================================
 
-    if (processor.messageChanged)
+    if (processor.messageChanged.get())
     {
         dcInfoBox.setErrorMessage(processor.getMessageForEditor());
         processor.messageChanged = false;
     }
 
-    if (processor.updateDecoderInfo)
+    if (processor.updateDecoderInfo.get())
     {
         dcInfoBox.setDecoderConfig (processor.getCurrentDecoderConfig());
         processor.updateDecoderInfo = false;

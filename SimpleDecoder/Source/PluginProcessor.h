@@ -84,8 +84,8 @@ public:
     void setLastDir(File newLastDir);
     void loadConfiguration(const File& presetFile);
 
-    bool updateDecoderInfo = true;
-    bool messageChanged {true};
+    Atomic<bool> updateDecoderInfo = true;
+    Atomic<bool> messageChanged {true};
     String getMessageForEditor() {return messageForEditor;}
 
     ReferenceCountedDecoder::Ptr getCurrentDecoderConfig()
