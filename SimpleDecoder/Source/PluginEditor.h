@@ -43,7 +43,7 @@ typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 //==============================================================================
 /**
 */
-class SimpleDecoderAudioProcessorEditor  : public AudioProcessorEditor, private Timer, private Button::Listener, public AudioProcessorValueTreeState::Listener
+class SimpleDecoderAudioProcessorEditor  : public AudioProcessorEditor, private Timer, public AudioProcessorValueTreeState::Listener
 {
 public:
     SimpleDecoderAudioProcessorEditor (SimpleDecoderAudioProcessor&, AudioProcessorValueTreeState&);
@@ -55,8 +55,6 @@ public:
 
 
     void timerCallback() override;
-    void buttonClicked (Button* button) override;
-    void buttonStateChanged (Button* button) override;
     void loadPresetFile();
     void parameterChanged (const String &parameterID, float newValue) override;
 private:

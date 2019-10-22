@@ -116,7 +116,7 @@ SimpleDecoderAudioProcessorEditor::SimpleDecoderAudioProcessorEditor (SimpleDeco
 
     addAndMakeVisible(btLoadFile);
     btLoadFile.setButtonText("Load configuration");
-    btLoadFile.addListener(this);
+    btLoadFile.onClick = [&] () { loadPresetFile(); };
     btLoadFile.setColour(TextButton::buttonColourId, Colours::orange);
 
     dcInfoBox.setErrorMessage(processor.getMessageForEditor());
@@ -362,18 +362,6 @@ void SimpleDecoderAudioProcessorEditor::timerCallback()
 
 }
 
-void SimpleDecoderAudioProcessorEditor::buttonClicked(Button* button)
-{
-    if (button == &btLoadFile)
-    {
-        loadPresetFile();
-    }
-}
-
-void SimpleDecoderAudioProcessorEditor::buttonStateChanged(juce::Button *button)
-{
-
-}
 
 void SimpleDecoderAudioProcessorEditor::loadPresetFile()
 {
