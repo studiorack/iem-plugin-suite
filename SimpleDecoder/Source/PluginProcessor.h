@@ -133,6 +133,8 @@ private:
     ProcessorDuplicator<IIR::Filter<float>, IIR::Coefficients<float>> highPass1;
     ProcessorDuplicator<IIR::Filter<float>, IIR::Coefficients<float>> highPass2;
 
+    dsp::Gain<float> masterGain;
+
     ProcessSpec highPassSpecs {48000, 0, 0};
 
     AmbisonicDecoder decoder;

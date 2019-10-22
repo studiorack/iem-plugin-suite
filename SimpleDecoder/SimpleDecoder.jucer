@@ -49,6 +49,8 @@
       <FILE id="snAyVg" name="OSCUtilities.h" compile="0" resource="0" file="../resources/OSC/OSCUtilities.h"/>
     </GROUP>
     <GROUP id="{508CBC88-3E2D-B197-3051-B94590C10F68}" name="Source">
+      <FILE id="GFdSLT" name="DecoderInfoBox.h" compile="0" resource="0"
+            file="Source/DecoderInfoBox.h"/>
       <FILE id="SLgq9s" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
       <FILE id="Jc4gSH" name="PluginProcessor.h" compile="0" resource="0"
@@ -59,8 +61,6 @@
     </GROUP>
     <FILE id="A8M9Gu" name="AmbisonicDecoder.h" compile="0" resource="0"
           file="../resources/AmbisonicDecoder.h"/>
-    <FILE id="p41txy" name="DecoderInfoBox.h" compile="0" resource="0"
-          file="../resources/customComponents/DecoderInfoBox.h"/>
     <FILE id="CRfF6w" name="efficientSHvanilla.cpp" compile="1" resource="0"
           file="../resources/efficientSHvanilla.cpp"/>
     <FILE id="gPm6rV" name="MatrixMultiplication.h" compile="0" resource="0"

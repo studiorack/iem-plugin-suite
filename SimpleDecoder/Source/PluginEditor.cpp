@@ -26,7 +26,7 @@
 
 //==============================================================================
 SimpleDecoderAudioProcessorEditor::SimpleDecoderAudioProcessorEditor (SimpleDecoderAudioProcessor& p, AudioProcessorValueTreeState& vts)
-: AudioProcessorEditor (&p), processor (p), valueTreeState (vts), footer (p.getOSCParameterInterface()), fv (20, 20000, -20, 10, 5)
+: AudioProcessorEditor (&p), processor (p), valueTreeState (vts), footer (p.getOSCParameterInterface()), dcInfoBox (vts), fv (20, 20000, -20, 10, 5)
 {
     // ============== BEGIN: essentials ======================
     // set GUI size and lookAndFeel
@@ -129,14 +129,15 @@ SimpleDecoderAudioProcessorEditor::SimpleDecoderAudioProcessorEditor (SimpleDeco
     fv.addCoefficients (processor.cascadedLowPassCoeffs, Colours::orangered, &slLowPassFrequency, &slLowPassGain);
     fv.addCoefficients (processor.cascadedHighPassCoeffs, Colours::cyan, &slHighPassFrequency);
 
+    addAndMakeVisible (gcGain);
+    gcGain.setText ("Overall Gain");
 
-    addAndMakeVisible (gcWeights);
-    gcWeights.setText ("Weights");
+    addAndMakeVisible (slGain);
+    slGainAttachment.reset (new SliderAttachment (valueTreeState, "overallGain", slGain));
+    slGain.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
+    slGain.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
+    slGain.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
 
-    addAndMakeVisible (cbWeights);
-    cbWeights.setJustificationType (Justification::centred);
-    cbWeights.addItemList (processor.weightsStrings, 1);
-    cbSwModeAttachment.reset (new ComboBoxAttachment (valueTreeState, "weights", cbWeights));
 
     // start timer after everything is set up properly
     startTimer(20);
@@ -176,90 +177,79 @@ void SimpleDecoderAudioProcessorEditor::resized()
     area.removeFromBottom(5);
     // =========== END: header and footer =================
 
-
-    //const int sliderHeight = 15;
     const int rotSliderHeight = 55;
     const int rotSliderSpacing = 10;
-    //const int sliderSpacing = 3;
-    //const int rotSliderWidth = 40;
-    const int labelHeight = 20;
-    const int extraMargin = 6;
-
-    //const int width = 0.5f * (area.getWidth() - 10);
+    const int labelHeight = 12;
 
 
-    Rectangle<int> leftSide (area.removeFromLeft(280));
-    area.removeFromLeft(20);
-    Rectangle<int> rightSide (area.removeFromRight(100));
-    rightSide.removeFromTop(extraMargin);
-    area.removeFromRight(20);
+    Rectangle<int> rightCol (area.removeFromRight (100));
+    area.removeFromRight (20);
+    Rectangle<int> middleCol (area.removeFromRight (190));
+    area.removeFromRight (20);
+    Rectangle<int> leftCol (area);
 
     { //====================== CONFIGURATION GROUP ==================================
-        Rectangle<int> configArea(leftSide);
+        Rectangle<int> configArea (leftCol);
         Rectangle<int> buttonArea = configArea;
 
-        configArea.removeFromTop(extraMargin);
-        gcConfiguration.setBounds(configArea);
+        gcConfiguration.setBounds (configArea);
         configArea.removeFromTop(25);
 
         buttonArea = configArea.removeFromTop(21).removeFromLeft(130);
         btLoadFile.setBounds(buttonArea);
 
-        configArea.removeFromTop(5);
+        configArea.removeFromTop (5);
 
         dcInfoBox.setBounds(configArea);
     }
 
 
     { //====================== Subwoofer GROUP ==================================
-        auto swArea = rightSide.removeFromTop (130);
-        gcSw.setBounds(swArea);
-        swArea.removeFromTop(25);
+        auto swArea = rightCol.removeFromTop (105);
+        gcSw.setBounds (swArea);
+        swArea.removeFromTop (25);
 
-        cbSwMode.setBounds(swArea.removeFromTop(20));
-        lbSwMode.setBounds(swArea.removeFromTop(labelHeight));
+        cbSwMode.setBounds (swArea.removeFromTop (18));
+        lbSwMode.setBounds (swArea.removeFromTop (labelHeight));
 
-        swArea.removeFromTop (10);
+        swArea.removeFromTop (8);
 
-        slSwChannel.setBounds(swArea.removeFromTop(20));
-        lbSwChannel.setBounds(swArea.removeFromTop(labelHeight));
-        lbAlreadyUsed.setBounds(swArea.removeFromTop(12));
+        slSwChannel.setBounds (swArea.removeFromTop (20));
+        lbSwChannel.setBounds (swArea.removeFromTop (labelHeight));
+        lbAlreadyUsed.setBounds (swArea.removeFromTop (10));
     }
 
 
-    { //====================== Weights GROUP ==================================
-        auto weightsArea = rightSide.removeFromTop (50);
-        gcWeights.setBounds (weightsArea);
-        weightsArea.removeFromTop(25);
-
-        cbWeights.setBounds (weightsArea.removeFromTop (20));
+    { //====================== Gain GROUP ==================================
+        auto gainArea = rightCol.removeFromTop (85);
+        gcGain.setBounds (gainArea);
+        gainArea.removeFromTop (25);
+        slGain.setBounds (gainArea.removeFromTop (60));
     }
 
 
     { //====================== FILTER GROUP ==================================
-        Rectangle<int> filterArea(area);
-        filterArea.removeFromTop(extraMargin);
-        gcFilter.setBounds(filterArea);
-        filterArea.removeFromTop(25);
+        Rectangle<int> filterArea (middleCol);
+        gcFilter.setBounds (filterArea);
+        filterArea.removeFromTop (25);
 
         const int rotSliderWidth = 50;
 
-        Rectangle<int> sliderRow(filterArea.removeFromBottom(labelHeight));
-        lbLowPassGain.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
+        fv.setBounds (filterArea.removeFromTop (110));
+
+        Rectangle<int> sliderRow (filterArea.removeFromTop (rotSliderHeight - 10));
+
+        slLowPassGain.setBounds (sliderRow.removeFromLeft (rotSliderWidth));
         sliderRow.removeFromLeft (rotSliderSpacing);
-        lbLowPassFrequency.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
+        slLowPassFrequency.setBounds (sliderRow.removeFromLeft (rotSliderWidth));
+        slHighPassFrequency.setBounds (sliderRow.removeFromRight (rotSliderWidth));
 
-        lbHighPassFrequency.setBounds (sliderRow.removeFromRight(rotSliderWidth));
+        sliderRow = filterArea.removeFromTop (labelHeight);
 
-        sliderRow = filterArea.removeFromBottom(rotSliderHeight-10);
-
-        slLowPassGain.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
-        sliderRow.removeFromLeft(rotSliderSpacing);
-        slLowPassFrequency.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
-
-        slHighPassFrequency.setBounds (sliderRow.removeFromRight(rotSliderWidth));
-
-        fv.setBounds(filterArea);
+        lbLowPassGain.setBounds (sliderRow.removeFromLeft (rotSliderWidth));
+        sliderRow.removeFromLeft (rotSliderSpacing);
+        lbLowPassFrequency.setBounds (sliderRow.removeFromLeft (rotSliderWidth));
+        lbHighPassFrequency.setBounds (sliderRow.removeFromRight (rotSliderWidth));
     }
 
 }

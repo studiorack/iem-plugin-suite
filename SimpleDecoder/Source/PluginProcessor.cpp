@@ -202,6 +202,9 @@ void SimpleDecoderAudioProcessor::prepareToPlay (double sampleRate, int samplesP
     lowPass2->prepare(highPassSpecs);
     lowPass2->reset();
 
+    masterGain.setRampDurationSeconds (0.1f);
+    masterGain.prepare ({sampleRate, static_cast<uint32> (samplesPerBlock), 1});
+
     decoder.setInputNormalization(*useSN3D >= 0.5f ? ReferenceCountedDecoder::Normalization::sn3d : ReferenceCountedDecoder::Normalization::n3d);
 
     guiUpdateSampleRate = true;
@@ -313,7 +316,12 @@ void SimpleDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiB
                 buffer.addFrom(destCh, 0, swBuffer, 0, 0, buffer.getNumSamples());
         }
     }
-    // ======================================================================
+    // =================== Master Gain =========================================
+    auto overallGainInDecibels = *parameters.getRawParameterValue ("overallGain");
+    masterGain.setGainDecibels (overallGainInDecibels);
+    AudioBlock<float> ab (buffer.getArrayOfWritePointers(), nChOut,  buffer.getNumSamples());
+    ProcessContextReplacing<float> masterContext (ab);
+    masterGain.process (masterContext);
 }
 
 //==============================================================================
@@ -497,6 +505,8 @@ std::vector<std::unique_ptr<RangedAudioParameter>> SimpleDecoderAudioProcessor::
                                      [](float value) { return String ((int) value);}, nullptr));
 
     params.push_back (std::make_unique<AudioParameterChoice> ("weights", "Ambisonic Weights", weightsStrings, 1));
+
+    params.push_back (std::make_unique<AudioParameterFloat> ("overallGain", "Overall Gain", NormalisableRange<float> (-20.0f, 20.0f, 0.01f), 0.0f, "dB", AudioProcessorParameter::outputGain, [] (float value, int maximumStringLength) { return String (value, maximumStringLength); }, nullptr));
 
     return params;
 }

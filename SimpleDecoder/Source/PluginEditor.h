@@ -33,7 +33,7 @@
 #include "../../resources/customComponents/ReverseSlider.h"
 #include "../../resources/customComponents/SimpleLabel.h"
 #include "../../resources/customComponents/FilterVisualizer.h"
-#include "../../resources/customComponents/DecoderInfoBox.h"
+#include "DecoderInfoBox.h"
 
 
 typedef ReverseSlider::SliderAttachment SliderAttachment; // all ReverseSliders will make use of the parameters' valueToText() function
@@ -89,7 +89,7 @@ private:
     bool enableSubwooferChannelControls;
     bool changeEnablement = false;
 
-    GroupComponent gcFilter, gcSw, gcConfiguration, gcWeights;
+    GroupComponent gcFilter, gcSw, gcConfiguration, gcGain;
 
     // Filter slider
     ReverseSlider slLowPassFrequency, slHighPassFrequency, slLowPassGain;
@@ -106,10 +106,8 @@ private:
     TextButton btLoadFile;
     DecoderInfoBox dcInfoBox;
 
-    // weights
-    ComboBox cbWeights;
-    std::unique_ptr<ComboBoxAttachment> cbWeightsAttachment;
-
+    ReverseSlider slGain;
+    std::unique_ptr<SliderAttachment> slGainAttachment;
 
     ReferenceCountedDecoder::Ptr lastDecoder = nullptr;
 
