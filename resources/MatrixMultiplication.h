@@ -66,11 +66,10 @@ public:
             buffer.copyFrom(ch, 0, inputBlock.getChannelPointer (ch), nSamples);
 
         AudioBlock<float> ab (buffer.getArrayOfWritePointers(), nInputChannels, 0, nSamples);
-        ProcessContextNonReplacing<float> nonReplacingContext (ab, context.getOutputBlock());
-        process (nonReplacingContext);
+        processNonReplacing (ab, context.getOutputBlock());
     }
 
-    void process (const ProcessContextNonReplacing<float>& context)
+    void processNonReplacing (const AudioBlock<float> inputBlock, AudioBlock<float> outputBlock)
     {
         ScopedNoDenormals noDenormals;
         checkIfNewMatrixAvailable();
@@ -78,12 +77,10 @@ public:
         ReferenceCountedMatrix::Ptr retainedCurrentMatrix (currentMatrix);
         if (retainedCurrentMatrix == nullptr)
         {
-            context.getOutputBlock().clear();
+            outputBlock.clear();
             return;
         }
 
-        auto& inputBlock = context.getInputBlock();
-        auto& outputBlock = context.getOutputBlock();
         auto& T = retainedCurrentMatrix->getMatrix();
 
         const int nInputChannels = jmin (static_cast<int> (inputBlock.getNumChannels()), static_cast<int> (T.getNumColumns()));

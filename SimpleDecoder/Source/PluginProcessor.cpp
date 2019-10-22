@@ -285,7 +285,7 @@ void SimpleDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiB
     const int L = buffer.getNumSamples();
     AudioBlock<float> inputAudioBlock = AudioBlock<float>(buffer.getArrayOfWritePointers(), nChIn, L);
     AudioBlock<float> outputAudioBlock = AudioBlock<float>(buffer.getArrayOfWritePointers(), nChOut, L);
-    ProcessContextNonReplacing<float> decoderContext (inputAudioBlock, outputAudioBlock);
+    
     auto settings = retainedDecoder->getSettings();
     settings.weights = ReferenceCountedDecoder::Weights (roundToInt (*weights));
     retainedDecoder->setSettings (settings);
@@ -406,18 +406,18 @@ void SimpleDecoderAudioProcessor::loadConfiguration (const File& presetFile)
     ReferenceCountedDecoder::Ptr tempDecoder = nullptr;
 
     Result result = ConfigurationHelper::parseFileForDecoder (presetFile, &tempDecoder);
-    if (!result.wasOk()) {
+    if (result.failed())
         messageForEditor = result.getErrorMessage();
-    }
 
     if (tempDecoder != nullptr)
     {
         lastFile = presetFile;
         messageForEditor = "";
+
+        tempDecoder->removeAppliedWeights();
+        parameters.getParameterAsValue ("weights").setValue (static_cast<int> (tempDecoder->getSettings().weights));
     }
 
-    tempDecoder->removeAppliedWeights();
-    parameters.getParameterAsValue ("weights").setValue (static_cast<int> (tempDecoder->getSettings().weights));
 
     decoder.setDecoder (tempDecoder);
     decoderConfig = tempDecoder;

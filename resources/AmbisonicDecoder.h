@@ -86,9 +86,8 @@ public:
                 FloatVectorOperations::multiply (inputBlock.getChannelPointer (ch), weights[ch], numSamples);
         }
 
-        ProcessContextNonReplacing<float> context (inputBlock, outputBlock);
         //can be called even if there's no decoder available (will clear context then)
-        matMult.process (context);
+        matMult.processNonReplacing (inputBlock, outputBlock);
     }
 
     const bool checkIfNewDecoderAvailable()
