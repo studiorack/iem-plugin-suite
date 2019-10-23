@@ -87,7 +87,10 @@ public:
         }
 
         //can be called even if there's no decoder available (will clear context then)
-        matMult.processNonReplacing (inputBlock, outputBlock);
+        if (inputBlock == outputBlock)
+            matMult.processReplacing (inputBlock);
+        else
+            matMult.processNonReplacing (inputBlock, outputBlock);
     }
 
     const bool checkIfNewDecoderAvailable()

@@ -44,33 +44,35 @@ public:
         checkIfNewMatrixAvailable();
     }
 
-    void process (const ProcessContextReplacing<float>& context)
+    void processReplacing (AudioBlock<float> data)
     {
         checkIfNewMatrixAvailable();
 
         ReferenceCountedMatrix::Ptr retainedCurrentMatrix (currentMatrix);
         if (retainedCurrentMatrix == nullptr)
         {
-            context.getOutputBlock().clear();
+            data.clear();
             return;
         }
 
-        auto& inputBlock = context.getInputBlock();
         auto& T = retainedCurrentMatrix->getMatrix();
 
-        const int nInputChannels = jmin (static_cast<int> (inputBlock.getNumChannels()), static_cast<int> (T.getNumColumns()));
-        const int nSamples = static_cast<int> (inputBlock.getNumSamples());
+        const int nInputChannels = jmin (static_cast<int> (data.getNumChannels()), static_cast<int> (T.getNumColumns()));
+        const int nSamples = static_cast<int> (data.getNumSamples());
 
         // copy input data to buffer
         for (int ch = 0; ch < nInputChannels; ++ch)
-            buffer.copyFrom(ch, 0, inputBlock.getChannelPointer (ch), nSamples);
+            buffer.copyFrom(ch, 0, data.getChannelPointer (ch), nSamples);
 
         AudioBlock<float> ab (buffer.getArrayOfWritePointers(), nInputChannels, 0, nSamples);
-        processNonReplacing (ab, context.getOutputBlock());
+        processNonReplacing (ab, data);
     }
 
     void processNonReplacing (const AudioBlock<float> inputBlock, AudioBlock<float> outputBlock)
     {
+        // you should call the processReplacing instead, it will buffer the input data
+        jassert (inputBlock != outputBlock);
+        
         ScopedNoDenormals noDenormals;
         checkIfNewMatrixAvailable();
 
