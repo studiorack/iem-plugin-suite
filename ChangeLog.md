@@ -16,6 +16,10 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
         - adds master controls to adjust directions and gains of all sources simultaneously
     - **Room**Encoder
         - shelving-filters now operate on all reflection orders (not only the first two)
+    - **Simple**Decoder
+        - adds master gain
+        - Ambisonic weight selector: switch between basic, maxrE, and inPhase weights
+        - modified level compensation for different input orders
         
 ## v1.10.2
 - general changes
