@@ -136,18 +136,18 @@ private:
             const int numSamples = static_cast<int> (inputBlock.getNumSamples());
 
             float weights[64];
-            const float correction = sqrt((static_cast<float>(retainedDecoder->getOrder()) + 1) / (static_cast<float>(order) + 1));
+            const float correction = sqrt (sqrt ((static_cast<float>(retainedDecoder->getOrder()) + 1) / (static_cast<float>(order) + 1)));
             FloatVectorOperations::fill(weights, correction, chAmbi);
 
             if (retainedDecoder->getSettings().weights == ReferenceCountedDecoder::Weights::maxrE)
             {
                 multiplyMaxRE (order, weights);
-                FloatVectorOperations::multiply (weights, maxRECorrectionEnergy[order], chAmbi);
+                FloatVectorOperations::multiply (weights, sqrt (maxRECorrectionEnergy[order]), chAmbi);
             }
             else if (retainedDecoder->getSettings().weights == ReferenceCountedDecoder::Weights::inPhase)
             {
                 multiplyInPhase (order, weights);
-                FloatVectorOperations::multiply (weights, inPhaseCorrectionEnergy[order], chAmbi);
+                FloatVectorOperations::multiply (weights, sqrt (inPhaseCorrectionEnergy[order]), chAmbi);
             }
 
             if (retainedDecoder->getSettings().expectedNormalization != inputNormalization)
