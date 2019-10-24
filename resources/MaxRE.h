@@ -263,6 +263,21 @@ const float maxRECorrection[8] =
     2.046081944498225f
 };
 
+// energy correction
+// calculated with the Matlab RUMS toolbox: n = (N + 1)^2; correction = sqrt ((N+1) / sum (maxrE(N)));
+const float maxRECorrectionEnergy[8] =
+{
+    1.0f,
+    1.125964413f,
+    1.174001138f,
+    1.199221217f,
+    1.214732382f,
+    1.225227523f,
+    1.232798004f,
+    1.238515524f
+};
+
+
 inline void multiplyMaxRE(const int N, float *data) {
     switch (N) {
         case 0: break;
