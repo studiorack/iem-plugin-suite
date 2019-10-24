@@ -248,9 +248,11 @@ const float maxre7[64] = {
     1.5616185043093761e-01f
 };
 
-//as max re attenuates higher orders, encoding and sampling at same directions won't result the same amplitude
-//these are the correction factors for that problem
-const float maxRECorrection[8] = {
+// as max re attenuates higher orders, encoding and sampling at same directions won't result the same amplitude
+// these are the correction factors for that problem
+// calculated with the Matlab RUMS toolbox: n = (N + 1)^2; correction = n / sum (maxrE (N, true));
+const float maxRECorrection[8] =
+{
     1.0f,
     1.463794976147894f,
     1.687692544652202f,

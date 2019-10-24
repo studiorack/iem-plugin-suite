@@ -140,9 +140,15 @@ private:
             FloatVectorOperations::fill(weights, correction, chAmbi);
 
             if (retainedDecoder->getSettings().weights == ReferenceCountedDecoder::Weights::maxrE)
-                multiplyMaxRE(order, weights);
+            {
+                multiplyMaxRE (order, weights);
+                FloatVectorOperations::multiply (weights, maxRECorrection[order], chAmbi);
+            }
             else if (retainedDecoder->getSettings().weights == ReferenceCountedDecoder::Weights::inPhase)
-                multiplyInPhase(order, weights);
+            {
+                multiplyInPhase (order, weights);
+                FloatVectorOperations::multiply (weights, inPhaseCorrection[order], chAmbi);
+            }
 
             if (retainedDecoder->getSettings().expectedNormalization != inputNormalization)
             {
