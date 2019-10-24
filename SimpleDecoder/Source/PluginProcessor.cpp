@@ -285,13 +285,15 @@ void SimpleDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiB
         highPass2.process(highPassContext);
     }
 
-    const int L = buffer.getNumSamples();
-    AudioBlock<float> inputAudioBlock = AudioBlock<float>(buffer.getArrayOfWritePointers(), nChIn, L);
-    AudioBlock<float> outputAudioBlock = AudioBlock<float>(buffer.getArrayOfWritePointers(), nChOut, L);
-    
+    // update current weights setting
     auto settings = retainedDecoder->getSettings();
     settings.weights = ReferenceCountedDecoder::Weights (roundToInt (*weights));
     retainedDecoder->setSettings (settings);
+
+    // ambisonic decoding
+    const int L = buffer.getNumSamples();
+    auto inputAudioBlock = AudioBlock<float> (buffer.getArrayOfWritePointers(), nChIn, L);
+    auto outputAudioBlock = AudioBlock<float> (buffer.getArrayOfWritePointers(), nChOut, L);
     decoder.process (inputAudioBlock, outputAudioBlock);
 
     for (int ch = nChOut; ch < nChIn; ++ch) // clear all not needed channels

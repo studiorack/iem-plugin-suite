@@ -30,16 +30,22 @@ using namespace dsp;
 class MatrixMultiplication
 {
 public:
-    MatrixMultiplication() {
-    }
+    MatrixMultiplication() {}
 
-    ~MatrixMultiplication() {}
-
-    void prepare (const ProcessSpec& newSpec)
+    void prepare (const ProcessSpec& newSpec, const bool prepareInputBuffering = true)
     {
         spec = newSpec;
 
-        buffer.setSize(buffer.getNumChannels(), spec.maximumBlockSize);
+        if (prepareInputBuffering)
+        {
+            buffer.setSize (buffer.getNumChannels(), spec.maximumBlockSize);
+            bufferPrepared = true;
+        }
+        else
+        {
+            buffer.setSize (0, 0);
+            bufferPrepared = false;
+        }
 
         checkIfNewMatrixAvailable();
     }
@@ -48,8 +54,11 @@ public:
     {
         checkIfNewMatrixAvailable();
 
+        // you have to call the prepare method with prepareInputBuffering set to true in order tu use the processReplacing method
+        jassert (bufferPrepared);
+
         ReferenceCountedMatrix::Ptr retainedCurrentMatrix (currentMatrix);
-        if (retainedCurrentMatrix == nullptr)
+        if (retainedCurrentMatrix == nullptr || ! bufferPrepared)
         {
             data.clear();
             return;
@@ -65,16 +74,19 @@ public:
             buffer.copyFrom(ch, 0, data.getChannelPointer (ch), nSamples);
 
         AudioBlock<float> ab (buffer.getArrayOfWritePointers(), nInputChannels, 0, nSamples);
-        processNonReplacing (ab, data);
+        processNonReplacing (ab, data, false);
     }
 
-    void processNonReplacing (const AudioBlock<float> inputBlock, AudioBlock<float> outputBlock)
+    void processNonReplacing (const AudioBlock<float> inputBlock, AudioBlock<float> outputBlock, const bool checkNewMatrix = true)
     {
         // you should call the processReplacing instead, it will buffer the input data
+        // this is a weak check, as e.g. if number channels differ, it won't trigger
         jassert (inputBlock != outputBlock);
         
         ScopedNoDenormals noDenormals;
-        checkIfNewMatrixAvailable();
+
+        if (checkNewMatrix)
+            checkIfNewMatrixAvailable();
 
         ReferenceCountedMatrix::Ptr retainedCurrentMatrix (currentMatrix);
         if (retainedCurrentMatrix == nullptr)
@@ -121,28 +133,24 @@ public:
     {
         if (newMatrixAvailable)
         {
-            if (newMatrix == nullptr)
-            {
-                DBG("MatrixTransformer: Matrix set to nullptr");
-            }
-            else
-            {
-                DBG("MatrixTransformer: New matrix with name '" << newMatrix->getName() << "' set.");
-                //const int rows = (int) newMatrix->getMatrix().getNumRows();
-                const int cols = (int) newMatrix->getMatrix().getNumColumns();
-                buffer.setSize(cols, buffer.getNumSamples());
-                DBG("MatrixTransformer: buffer resized to " << buffer.getNumChannels() << "x" << buffer.getNumSamples());
-            }
-
+            newMatrixAvailable = false;
             currentMatrix = newMatrix;
             newMatrix = nullptr;
-            newMatrixAvailable = false;
+
+            if (currentMatrix != nullptr)
+            {
+                DBG ("MatrixTransformer: New matrix with name '" << currentMatrix->getName() << "' set.");
+                const int cols = (int) currentMatrix->getMatrix().getNumColumns();
+                buffer.setSize (cols, buffer.getNumSamples());
+                DBG ("MatrixTransformer: buffer resized to " << buffer.getNumChannels() << "x" << buffer.getNumSamples());
+            }
+
             return true;
         }
         return false;
     };
 
-    void setMatrix(ReferenceCountedMatrix::Ptr newMatrixToUse, bool force = false)
+    void setMatrix (ReferenceCountedMatrix::Ptr newMatrixToUse, bool force = false)
     {
         newMatrix = newMatrixToUse;
         newMatrixAvailable = true;
@@ -160,7 +168,10 @@ private:
     ProcessSpec spec = {-1, 0, 0};
     ReferenceCountedMatrix::Ptr currentMatrix {nullptr};
     ReferenceCountedMatrix::Ptr newMatrix {nullptr};
+
     AudioBuffer<float> buffer;
+    bool bufferPrepared {false};
+
     bool newMatrixAvailable {false};
 
 };

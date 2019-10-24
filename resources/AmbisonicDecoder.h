@@ -36,15 +36,17 @@ class AmbisonicDecoder
 public:
     AmbisonicDecoder() {}
 
-    ~AmbisonicDecoder() {}
-
     void prepare (const ProcessSpec& newSpec)
     {
         spec = newSpec;
-        matMult.prepare(newSpec);
+        matMult.prepare (newSpec, false); // we let do this class do the buffering
+
+        buffer.setSize (buffer.getNumChannels(), spec.maximumBlockSize);
+        buffer.clear();
 
         checkIfNewDecoderAvailable();
     }
+
 
     void setInputNormalization(ReferenceCountedDecoder::Normalization newNormalization)
     {
@@ -52,12 +54,78 @@ public:
     }
 
     /**
-     Decodes the Ambisonic input signals to loudspeaker signals using the current decoder. Keep in mind that the input data will be changed!
-     */
+     Decodes the Ambisonic input signals to loudspeaker signals using the current decoder.
+     This method takes care of buffering the input data, so inputBlock and outputBlock are
+     allowed to be the same or overlap.
+    */
     void process (AudioBlock<float> inputBlock, AudioBlock<float> outputBlock)
     {
-        ScopedNoDenormals noDenormals;
         checkIfNewDecoderAvailable();
+
+        ReferenceCountedDecoder::Ptr retainedDecoder = currentDecoder;
+        
+        auto& T = retainedDecoder->getMatrix();
+
+        const int nInputChannels = jmin (static_cast<int> (inputBlock.getNumChannels()), static_cast<int> (T.getNumColumns()));
+        const int nSamples = static_cast<int> (inputBlock.getNumSamples());
+
+        // copy input data to buffer
+        for (int ch = 0; ch < nInputChannels; ++ch)
+            buffer.copyFrom (ch, 0, inputBlock.getChannelPointer (ch), nSamples);
+
+        AudioBlock<float> ab (buffer.getArrayOfWritePointers(), nInputChannels, 0, nSamples);
+        processInternal (ab, outputBlock);
+    }
+
+    const bool checkIfNewDecoderAvailable()
+    {
+        if (newDecoderAvailable)
+        {
+            newDecoderAvailable = false;
+            currentDecoder = newDecoder;
+            newDecoder = nullptr;
+
+            if (currentDecoder != nullptr)
+            {
+                currentDecoder->removeAppliedWeights();
+                const int cols = (int) currentDecoder->getMatrix().getNumColumns();
+                buffer.setSize (cols, buffer.getNumSamples());
+            }
+
+            matMult.setMatrix (currentDecoder, true);
+            return true;
+        }
+        return false;
+    };
+
+    /** Giving the AmbisonicDecoder a new decoder for the audio processing. Note: The AmbisonicDecoder will call the removeAppliedWeights() of the ReferenceCountedDecoder before it processes audio! The matrix elements may change due to this method.
+     */
+    void setDecoder (ReferenceCountedDecoder::Ptr newDecoderToUse)
+    {
+        newDecoder = newDecoderToUse;
+        newDecoderAvailable = true;
+    }
+
+    ReferenceCountedDecoder::Ptr getCurrentDecoder()
+    {
+        return currentDecoder;
+    }
+
+    /** Checks if a new decoder waiting to be used.
+     */
+    const bool isNewDecoderWaiting() { return newDecoderAvailable; }
+
+private:
+    /**
+     Decodes the Ambisonic input signals to loudspeaker signals using the current decoder. Keep in mind that the input data will be changed!
+     */
+    void processInternal (AudioBlock<float> inputBlock, AudioBlock<float> outputBlock)
+    {
+        // you should call the processReplacing instead, it will buffer the input data
+        // this is a weak check, as e.g. if number channels differ, it won't trigger
+        jassert (inputBlock != outputBlock);
+
+        ScopedNoDenormals noDenormals;
 
         ReferenceCountedDecoder::Ptr retainedDecoder = currentDecoder;
 
@@ -86,49 +154,7 @@ public:
                 FloatVectorOperations::multiply (inputBlock.getChannelPointer (ch), weights[ch], numSamples);
         }
 
-        //can be called even if there's no decoder available (will clear context then)
-        if (inputBlock == outputBlock)
-            matMult.processReplacing (inputBlock);
-        else
-            matMult.processNonReplacing (inputBlock, outputBlock);
-    }
-
-    const bool checkIfNewDecoderAvailable()
-    {
-        if (newDecoderAvailable)
-        {
-            currentDecoder = newDecoder;
-
-            if (currentDecoder != nullptr)
-                currentDecoder->removeAppliedWeights();
-
-            matMult.setMatrix(currentDecoder, true);
-
-            newDecoder = nullptr;
-            newDecoderAvailable = false;
-            return true;
-        }
-        return false;
-    };
-
-    /** Giving the AmbisonicDecoder a new decoder for the audio processing. Note: The AmbisonicDecoder will call the removeAppliedWeights() of the ReferenceCountedDecoder before it processes audio! The matrix elements may change due to this method.
-     */
-    void setDecoder (ReferenceCountedDecoder::Ptr newDecoderToUse)
-    {
-        newDecoder = newDecoderToUse;
-        newDecoderAvailable = true;
-    }
-
-    ReferenceCountedDecoder::Ptr getCurrentDecoder()
-    {
-        return currentDecoder;
-    }
-
-    /** Checks if a new decoder waiting to be used.
-     */
-    const bool isNewDecoderWaiting()
-    {
-        return newDecoderAvailable;
+        matMult.processNonReplacing (inputBlock, outputBlock);
     }
 
 private:
@@ -138,9 +164,9 @@ private:
     ReferenceCountedDecoder::Ptr newDecoder {nullptr};
     bool newDecoderAvailable {false};
 
+    AudioBuffer<float> buffer;
+
     ReferenceCountedDecoder::Normalization inputNormalization {ReferenceCountedDecoder::Normalization:: sn3d};
 
     MatrixMultiplication matMult;
-
-
 };
