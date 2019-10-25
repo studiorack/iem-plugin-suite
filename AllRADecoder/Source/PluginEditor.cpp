@@ -46,11 +46,12 @@ AllRADecoderAudioProcessorEditor::AllRADecoderAudioProcessorEditor (AllRADecoder
     cbNormalizationSettingAttachment.reset (new ComboBoxAttachment (valueTreeState, "useSN3D", *title.getInputWidgetPtr()->getNormCbPointer()));
     cbOrderSettingAttachment.reset (new ComboBoxAttachment(valueTreeState, "inputOrderSetting", *title.getInputWidgetPtr()->getOrderCbPointer()));
 
-    addAndMakeVisible(cbDecoderOrder);
+    addAndMakeVisible (cbDecoderOrder);
+    cbDecoderOrder.setJustificationType (Justification::centred);
     cbDecoderOrder.addSectionHeading ("Decoder order");
     for (int n = 1; n <= 7; ++n)
-        cbDecoderOrder.addItem(getOrderString(n), n);
-    cbDecoderOrderAttachment.reset (new ComboBoxAttachment(valueTreeState, "decoderOrder", cbDecoderOrder));
+        cbDecoderOrder.addItem (getOrderString(n), n);
+    cbDecoderOrderAttachment.reset (new ComboBoxAttachment (valueTreeState, "decoderOrder", cbDecoderOrder));
 
     addAndMakeVisible (lbDecoderOrder);
     lbDecoderOrder.setText ("Decoder Order", Justification::left);
