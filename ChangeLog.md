@@ -9,6 +9,9 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
     - adds OSC Send capabilities to each plug-in
     
 - plug-in specific changes
+    -**AllRA**Decoder
+        - adds Ambisonic weight selector: switch between basic, maxrE, and inPhase weights
+        - selected weights are exported to JSON
     - **Binaural**Decoder
         - fixes bug which lead to +6dB per sampleRate doubling 
     - **Multi**Encoder
