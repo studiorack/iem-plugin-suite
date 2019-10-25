@@ -25,6 +25,8 @@
 
 #include <cfloat>
 
+const StringArray AllRADecoderAudioProcessor::weightsStrings = StringArray ("basic", "maxrE", "inphase");
+
 //==============================================================================
 AllRADecoderAudioProcessor::AllRADecoderAudioProcessor()
 : AudioProcessorBase (
@@ -47,6 +49,7 @@ energyDistribution (Image::PixelFormat::ARGB, 200, 100, true), rEVector (Image::
     decoderOrder = parameters.getRawParameterValue ("decoderOrder");
     exportDecoder = parameters.getRawParameterValue ("exportDecoder");
     exportLayout = parameters.getRawParameterValue ("exportLayout");
+    weights = parameters.getRawParameterValue ("weights");
 
     // add listeners to parameter changes
     parameters.addParameterListener ("inputOrderSetting", this);
@@ -660,6 +663,7 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
         return Result::fail("Layout not ready!");
 
     const int N = roundToInt(*decoderOrder) + 1;
+    const auto ambisonicWeights = ReferenceCountedDecoder::Weights (roundToInt (*weights));
     const int nCoeffs = square(N+1);
     const int nLsps = (int) points.size();
     const int nRealLsps = nLsps - imaginaryFlags.countNumberOfSetBits();
@@ -817,6 +821,18 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
             Vector3D<float> cart = sphericalInRadiansToCartesian(spher);
             SHEval(N, cart.x, cart.y, cart.z, &sh[0]); // encoding a source
 
+            if (ambisonicWeights == ReferenceCountedDecoder::Weights::maxrE)
+            {
+                multiplyMaxRE (N, sh.data());
+                FloatVectorOperations::multiply (sh.data(), sqrt (maxRECorrection[N]), (N + 1) * (N + 1));
+            }
+            else if (ambisonicWeights == ReferenceCountedDecoder::Weights::inPhase)
+            {
+                multiplyInPhase (N, sh.data());
+                FloatVectorOperations::multiply (sh.data(), sqrt (inPhaseCorrection[N]), (N + 1) * (N + 1));
+            }
+
+
             Vector3D<float> rE (0.0f, 0.0f, 0.0f);
             float sumOfSquares = 0.0f;
             for (int m = 0; m < nRealLsps; ++m)
@@ -871,7 +887,7 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
     newDecoder->getMatrix() = decoderMatrix;
     ReferenceCountedDecoder::Settings newSettings;
     newSettings.expectedNormalization = ReferenceCountedDecoder::Normalization::n3d;
-    newSettings.weights = ReferenceCountedDecoder::Weights::maxrE;
+    newSettings.weights = ambisonicWeights;
     newSettings.weightsAlreadyApplied = false;
 
     newDecoder->setSettings(newSettings);
@@ -1218,6 +1234,8 @@ std::vector<std::unique_ptr<RangedAudioParameter>> AllRADecoderAudioProcessor::c
                                          if (value >= 0.5f) return "Yes";
                                          else return "No";
                                      }, nullptr));
+
+    params.push_back (std::make_unique<AudioParameterChoice> ("weights", "Ambisonic Weights", weightsStrings, 1));
 
     return params;
 }

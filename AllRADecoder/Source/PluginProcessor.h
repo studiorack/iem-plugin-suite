@@ -51,6 +51,8 @@ class AllRADecoderAudioProcessor  : public AudioProcessorBase<IOTypes::Ambisonic
 public:
     constexpr static int numberOfInputChannels = 64;
     constexpr static int numberOfOutputChannels = 64;
+    static const StringArray weightsStrings;
+    
     //==============================================================================
     AllRADecoderAudioProcessor();
     ~AllRADecoderAudioProcessor();
@@ -143,6 +145,7 @@ private:
     float* decoderOrder;
     float* exportDecoder;
     float* exportLayout;
+    float* weights;
 
     ValueTree loudspeakers {"Loudspeakers"};
 

@@ -52,6 +52,17 @@ AllRADecoderAudioProcessorEditor::AllRADecoderAudioProcessorEditor (AllRADecoder
         cbDecoderOrder.addItem(getOrderString(n), n);
     cbDecoderOrderAttachment.reset (new ComboBoxAttachment(valueTreeState, "decoderOrder", cbDecoderOrder));
 
+    addAndMakeVisible (lbDecoderOrder);
+    lbDecoderOrder.setText ("Decoder Order", Justification::left);
+
+    addAndMakeVisible (cbDecoderWeights);
+    cbDecoderWeights.setJustificationType (Justification::centred);
+    cbDecoderWeights.addItemList (p.weightsStrings, 1);
+    cbDecoderWeightsAttachment.reset (new ComboBoxAttachment (valueTreeState, "weights", cbDecoderWeights));
+
+    addAndMakeVisible (lbDecoderWeights);
+    lbDecoderWeights.setText ("Weights", Justification::left);
+
     addAndMakeVisible(gcLayout);
     gcLayout.setText("Loudspeaker Layout");
 
@@ -60,9 +71,6 @@ AllRADecoderAudioProcessorEditor::AllRADecoderAudioProcessorEditor (AllRADecoder
 
     addAndMakeVisible(gcExport);
     gcExport.setText("Export Decoder/Layout");
-
-    addAndMakeVisible(lbDecoderOrder);
-    lbDecoderOrder.setText("Decoder Order");
 
     addAndMakeVisible(tbExportDecoder);
     tbExportDecoderAttachment.reset (new ButtonAttachment(valueTreeState, "exportDecoder", tbExportDecoder));
@@ -202,13 +210,17 @@ void AllRADecoderAudioProcessorEditor::resized()
     Rectangle<int> exportArea = bottomRight;
 
 
-    gcDecoder.setBounds(decoderArea);
-    decoderArea.removeFromTop(25);
-    Rectangle<int> decoderCtrlRow = decoderArea.removeFromTop(20);
-    lbDecoderOrder.setBounds(decoderCtrlRow.removeFromLeft(80));
-    cbDecoderOrder.setBounds(decoderCtrlRow.removeFromLeft(50));;
-    decoderArea.removeFromTop(5);
-    tbCalculateDecoder.setBounds(decoderArea.removeFromTop(20));
+    gcDecoder.setBounds (decoderArea);
+    decoderArea.removeFromTop (25);
+    auto decoderCtrlRow = decoderArea.removeFromTop (20);
+    lbDecoderOrder.setBounds (decoderCtrlRow.removeFromLeft (80));
+    cbDecoderOrder.setBounds (decoderCtrlRow.removeFromLeft (55));;
+    decoderArea.removeFromTop (5);
+    decoderCtrlRow = decoderArea.removeFromTop (20);
+    lbDecoderWeights.setBounds (decoderCtrlRow.removeFromLeft (55));
+    cbDecoderWeights.setBounds (decoderCtrlRow.removeFromLeft (80));;
+    decoderArea.removeFromTop (5);
+    tbCalculateDecoder.setBounds (decoderArea.removeFromTop (20));
 
 
     gcExport.setBounds(exportArea);

@@ -94,15 +94,15 @@ private:
     std::unique_ptr<ComboBoxAttachment> cbOrderSettingAttachment;
     std::unique_ptr<ComboBoxAttachment> cbNormalizationSettingAttachment;
 
-    ComboBox cbDecoderOrder;
-    std::unique_ptr<ComboBoxAttachment> cbDecoderOrderAttachment;
+    ComboBox cbDecoderOrder, cbDecoderWeights;
+    std::unique_ptr<ComboBoxAttachment> cbDecoderOrderAttachment, cbDecoderWeightsAttachment;
 
     ToggleButton tbExportDecoder, tbExportLayout;
     std::unique_ptr<ButtonAttachment> tbExportDecoderAttachment, tbExportLayoutAttachment;
 
 
     GroupComponent gcLayout, gcDecoder, gcExport;
-    SimpleLabel lbDecoderOrder;
+    SimpleLabel lbDecoderOrder, lbDecoderWeights;
 
     MailBox::Display messageDisplay;
 
