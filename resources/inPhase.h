@@ -264,17 +264,17 @@ const float inPhaseCorrection[8] =
 };
 
 // energy correction
-// calculated with the Matlab RUMS toolbox: n = (N + 1)^2; correction = sqrt ((N+1) / sum (inPhase(N)));
+// calculated with the Matlab RUMS toolbox: n = (N + 1)^2; correction = sqrt (sqrt ((N+1) / sum (inPhase(N))));
 const float inPhaseCorrectionEnergy[8] =
 {
     1.0f,
-    1.224744871f,
-    1.369306394f,
-    1.479019946f,
-     1.56873755f,
-    1.645305823f,
-    1.712488595f,
-      1.7725941f
+    1.10668192f,
+    1.17017366f,
+    1.21614964f,
+    1.252492535f,
+    1.28269475f,
+    1.308620875f,
+    1.331388035f
 };
 
 

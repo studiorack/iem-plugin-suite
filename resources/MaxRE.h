@@ -264,17 +264,17 @@ const float maxRECorrection[8] =
 };
 
 // energy correction
-// calculated with the Matlab RUMS toolbox: n = (N + 1)^2; correction = sqrt ((N+1) / sum (maxrE(N)));
+// calculated with the Matlab RUMS toolbox: n = (N + 1)^2; correction = sqrt (sqrt ((N+1) / sum (maxrE(N))));
 const float maxRECorrectionEnergy[8] =
 {
     1.0f,
-    1.125964413f,
-    1.174001138f,
-    1.199221217f,
-    1.214732382f,
-    1.225227523f,
-    1.232798004f,
-    1.238515524f
+    1.061114703f,
+    1.083513331f,
+    1.095089593f,
+    1.102148983f,
+    1.106899961f,
+    1.110314372f,
+    1.112886124f
 };
 
 
