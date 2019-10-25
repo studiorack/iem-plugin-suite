@@ -367,19 +367,24 @@ void SimpleDecoderAudioProcessor::setStateInformation (const void* data, int siz
         Value val = parameters.state.getPropertyAsValue ("lastOpenedPresetFile", nullptr);
         if (val.getValue().toString() != "")
         {
+            auto* weightsParam = parameters.getParameter ("weights");
+            const auto savedWeights = weightsParam->getValue();
             const File f (val.getValue().toString());
             loadConfiguration(f);
+            weightsParam->setValueNotifyingHost (savedWeights);
         }
-        if (parameters.state.hasProperty ("OSCPort")) // legacy
-        {
-            oscParameterInterface.getOSCReceiver().connect (parameters.state.getProperty ("OSCPort", var (-1)));
-            parameters.state.removeProperty ("OSCPort", nullptr);
-        }
-
-        auto oscConfig = parameters.state.getChildWithName ("OSCConfig");
-        if (oscConfig.isValid())
-            oscParameterInterface.setConfig (oscConfig);
     }
+
+    if (parameters.state.hasProperty ("OSCPort")) // legacy
+    {
+        oscParameterInterface.getOSCReceiver().connect (parameters.state.getProperty ("OSCPort", var (-1)));
+        parameters.state.removeProperty ("OSCPort", nullptr);
+    }
+
+    auto oscConfig = parameters.state.getChildWithName ("OSCConfig");
+    if (oscConfig.isValid())
+        oscParameterInterface.setConfig (oscConfig);
+
 }
 
 //==============================================================================
