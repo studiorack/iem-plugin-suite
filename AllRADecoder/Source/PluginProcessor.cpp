@@ -810,9 +810,10 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
     const float wHalf = w / 2;
     const int h = energyDistribution.getHeight();
     const float hHalf = h / 2;
-    float maxSumOfSquares = 0.0f;
     float minLvl = 0.0f;
     float maxLvl = 0.0f;
+    float sumLvl = 0.0f;
+    auto levelValues = Matrix<float> (w, h);
     for (int y = 0; y < h; ++y)
         for (int x = 0; x < w; ++x)
         {
@@ -822,15 +823,9 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
             SHEval(N, cart.x, cart.y, cart.z, &sh[0]); // encoding a source
 
             if (ambisonicWeights == ReferenceCountedDecoder::Weights::maxrE)
-            {
                 multiplyMaxRE (N, sh.data());
-                FloatVectorOperations::multiply (sh.data(), sqrt (maxRECorrection[N]), (N + 1) * (N + 1));
-            }
             else if (ambisonicWeights == ReferenceCountedDecoder::Weights::inPhase)
-            {
                 multiplyInPhase (N, sh.data());
-                FloatVectorOperations::multiply (sh.data(), sqrt (inPhaseCorrection[N]), (N + 1) * (N + 1));
-            }
 
 
             Vector3D<float> rE (0.0f, 0.0f, 0.0f);
@@ -841,46 +836,41 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
                 for (int n = 0; n < nCoeffs; ++n)
                     sum += (sh[n] * decoderMatrix(m, n));
                 const float sumSquared = square(sum);
-                rE = rE + realLspsCoordinates[m] * sumSquared;
+                rE += realLspsCoordinates[m] * sumSquared;
                 sumOfSquares += sumSquared;
             }
 
-            rE /= sumOfSquares + FLT_EPSILON;
-            const float width = 2.0f * acos(jmin(1.0f, rE.length()));
+            const float lvl = 0.5f * Decibels::gainToDecibels (sumOfSquares);
+            levelValues(x, y) = lvl;
+            sumLvl += lvl;
 
-            const float lvl = 0.5f * Decibels::gainToDecibels(sumOfSquares);
             if (lvl > maxLvl)
                 maxLvl = lvl;
             if (lvl < minLvl)
                 minLvl = lvl;
-            const float map = jlimit(-0.5f, 0.5f, 0.5f * 0.16666667f * Decibels::gainToDecibels(sumOfSquares)) + 0.5f;
 
-            const float reMap = jlimit(0.0f, 1.0f, width / (float) MathConstants<float>::pi);
+            rE /= sumOfSquares + FLT_EPSILON;
+            const float width = 2.0f * acos(jmin(1.0f, rE.length()));
+            const float reMap = jlimit (0.0f, 1.0f, width / MathConstants<float>::pi);
 
-            Colour rEPixelColour = Colours::limegreen.withMultipliedAlpha(reMap);
-            Colour pixelColour = Colours::red.withMultipliedAlpha(map);
-
-            rEVector.setPixelAt(x, y, rEPixelColour);
-            energyDistribution.setPixelAt(x, y, pixelColour);
-
-            if (sumOfSquares > maxSumOfSquares)
-                maxSumOfSquares = sumOfSquares;
+            const Colour rEPixelColour = Colours::limegreen.withMultipliedAlpha(reMap);
+            rEVector.setPixelAt (x, y, rEPixelColour);
         }
 
+    const float meanLvl = sumLvl / (w * h);
+    for (int y = 0; y < h; ++y)
+        for (int x = 0; x < w; ++x)
+        {
+            constexpr float plusMinusRange = 1.5f;
+            const float map = (jlimit (-plusMinusRange, plusMinusRange, levelValues(x, y) - meanLvl) + plusMinusRange) / (2 * plusMinusRange);
+
+            const Colour pixelColour = Colours::red.withMultipliedAlpha (map);
+            energyDistribution.setPixelAt (x, y, pixelColour);
+        }
 
     DBG("min: " << minLvl << " max: " << maxLvl);
 
     updateLoudspeakerVisualization = true;
-
-    Colour colormapData[8];
-    colormapData[0] = Colours::skyblue.withMultipliedAlpha(0.0f);
-    colormapData[1] = Colours::skyblue.withMultipliedAlpha(0.2f);
-    colormapData[2] = Colours::skyblue.withMultipliedAlpha(0.3f);
-    colormapData[3] = Colour::fromFloatRGBA(0.167f, 0.620f, 0.077f, 6.0f);
-    colormapData[4] = Colour::fromFloatRGBA(0.167f, 0.620f, 0.077f, 7.0f);
-    colormapData[5] = Colour::fromFloatRGBA(0.8f, 0.620f, 0.077f, 0.8f);
-    colormapData[6] = Colour::fromFloatRGBA(0.8f, 0.620f, 0.077f, 1.0f);
-    colormapData[7] = Colours::red;
 
 
     ReferenceCountedDecoder::Ptr newDecoder = new ReferenceCountedDecoder("Decoder", "A " + getOrderString(N) + " order Ambisonics decoder using the AllRAD approach.", (int) decoderMatrix.getSize()[0], (int) decoderMatrix.getSize()[1]);

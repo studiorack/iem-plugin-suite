@@ -12,6 +12,7 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
     -**AllRA**Decoder
         - adds Ambisonic weight selector: switch between basic, maxrE, and inPhase weights
         - selected weights are exported to JSON
+        - changes decibel range of energy visualization from +-/3dB to +/- 1.5dB 
     - **Binaural**Decoder
         - fixes bug which lead to +6dB per sampleRate doubling 
     - **Multi**Encoder
