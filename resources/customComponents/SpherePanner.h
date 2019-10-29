@@ -76,7 +76,7 @@ public:
             g.fillPath(circles);
         }
 
-        g.setColour (Colours::Colours::steelblue.withMultipliedAlpha (0.7f));
+        g.setColour (Colours::steelblue.withMultipliedAlpha (0.7f));
         g.strokePath (circles, PathStrokeType (.5f));
 
         ColourGradient gradient(Colours::black.withMultipliedAlpha (0.7f), centreX, centreY, Colours::black.withMultipliedAlpha (0.1f), 0, 0, true);
