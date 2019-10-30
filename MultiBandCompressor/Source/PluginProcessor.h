@@ -111,6 +111,8 @@ private:
     void calculateCoefficients (const int index);
     void copyCoeffsToProcessor();
 
+    inline void clear (AudioBlock<filterFloatType>& ab);
+
     double lastSampleRate {48000};
     const int maxNumFilters;
 

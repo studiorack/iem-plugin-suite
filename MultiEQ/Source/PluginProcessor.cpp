@@ -336,6 +336,15 @@ void MultiEQAudioProcessor::copyFilterCoefficientsToProcessor()
 }
 
 
+inline void MultiEQAudioProcessor::clear (AudioBlock<IIRfloat>& ab)
+{
+    const int N = static_cast<int> (ab.getNumSamples()) * IIRfloat_elements();
+    const int nCh = static_cast<int> (ab.getNumChannels());
+
+    for (int ch = 0; ch < nCh; ++ch)
+        FloatVectorOperations::clear (reinterpret_cast<float*> (ab.getChannelPointer (ch)), N);
+}
+
 //==============================================================================
 int MultiEQAudioProcessor::getNumPrograms()
 {
@@ -384,7 +393,8 @@ void MultiEQAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
         }
 
         interleavedData.add (new AudioBlock<IIRfloat> (interleavedBlockData[i], 1, samplesPerBlock));
-        interleavedData.getLast()->clear();
+        //interleavedData.getLast()->clear(); // this one's broken in JUCE 5.4.5
+        clear (*interleavedData.getLast());
     }
 
     zero = AudioBlock<float> (zeroData, IIRfloat_elements(), samplesPerBlock);

@@ -105,6 +105,7 @@ private:
     void createLinkwitzRileyFilter (const bool isUpperBand);
     void createFilterCoefficients (const int filterIndex, const double sampleRate);
 
+    inline void clear (AudioBlock<IIRfloat>& ab);
 
     inline dsp::IIR::Coefficients<float>::Ptr createFilterCoefficients (const RegularFilterType type, const double sampleRate, const float frequency, const float Q, const float gain);
 

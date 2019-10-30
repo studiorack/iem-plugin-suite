@@ -466,7 +466,8 @@ void MultiBandCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer,
     {
         for (int i = 0; i < numSimdFilters; ++i)
         {
-            interleaved[i]->clear();
+            // interleaved[i]->clear(); // broken with JUCE 5.4.5
+            clear (*interleaved[i]);
             AudioDataConverters::interleaveSamples (buffer.getArrayOfReadPointers() + i* filterRegisterSize,
                                                     reinterpret_cast<float*> (interleaved[i]->getChannelPointer (0)),
                                                     L, filterRegisterSize);
@@ -477,7 +478,8 @@ void MultiBandCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer,
         int i;
         for (i = 0; i < numSimdFilters-1; ++i)
         {
-            interleaved[i]->clear();
+            // interleaved[i]->clear(); // broken with JUCE 5.4.5
+            clear (*interleaved[i]);
             AudioDataConverters::interleaveSamples (buffer.getArrayOfReadPointers() + i* filterRegisterSize,
                                                     reinterpret_cast<float*> (interleaved[i]->getChannelPointer (0)),
                                                     L, filterRegisterSize);
@@ -493,7 +495,8 @@ void MultiBandCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer,
         {
             addr[ch] = zero.getChannelPointer (ch);
         }
-        interleaved[i]->clear();
+        // interleaved[i]->clear(); // broken with JUCE 5.4.5
+        clear (*interleaved[i]);
         AudioDataConverters::interleaveSamples (addr,
                                                 reinterpret_cast<float*> (interleaved[i]->getChannelPointer (0)),
                                                 L, filterRegisterSize);
@@ -746,4 +749,13 @@ void MultiBandCompressorAudioProcessor::updateBuffers()
 AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new MultiBandCompressorAudioProcessor();
+}
+
+inline void MultiBandCompressorAudioProcessor::clear (AudioBlock<filterFloatType>& ab)
+{
+    const int N = static_cast<int> (ab.getNumSamples()) * filterRegisterSize;
+    const int nCh = static_cast<int> (ab.getNumChannels());
+
+    for (int ch = 0; ch < nCh; ++ch)
+        FloatVectorOperations::clear (reinterpret_cast<float*> (ab.getChannelPointer (ch)), N);
 }
