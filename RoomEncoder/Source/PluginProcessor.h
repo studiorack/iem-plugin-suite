@@ -156,6 +156,7 @@ public:
 
 private:
     //==============================================================================
+    inline void clear (AudioBlock<IIRfloat>& ab);
     
     bool readingSharedParams = false;;
 

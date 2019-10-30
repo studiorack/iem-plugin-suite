@@ -260,7 +260,8 @@ void RoomEncoderAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
         }
 
         interleavedData.add (new AudioBlock<IIRfloat> (interleavedBlockData[i], 1, samplesPerBlock));
-        interleavedData.getLast()->clear();
+        //interleavedData.getLast()->clear(); // broken in JUCE 5.4.5
+        clear (*interleavedData.getLast());
     }
 
     zero = AudioBlock<float> (zeroData, IIRfloat_elements(), samplesPerBlock);
@@ -948,7 +949,8 @@ void RoomEncoderAudioProcessor::updateBuffers()
     {
         for (int i = 0; i<interleavedData.size(); ++i)
         {
-            interleavedData[i]->clear();
+            //interleavedData[i]->clear(); // broken in JUCE 5.4.5
+            clear (*interleavedData[i]);
         }
     }
 }
@@ -1129,6 +1131,15 @@ std::vector<std::unique_ptr<RangedAudioParameter>> RoomEncoderAudioProcessor::cr
 
 
     return params;
+}
+
+inline void RoomEncoderAudioProcessor::clear (AudioBlock<IIRfloat>& ab)
+{
+    const int N = static_cast<int> (ab.getNumSamples()) * IIRfloat_elements();
+    const int nCh = static_cast<int> (ab.getNumChannels());
+
+    for (int ch = 0; ch < nCh; ++ch)
+        FloatVectorOperations::clear (reinterpret_cast<float*> (ab.getChannelPointer (ch)), N);
 }
 
 //==============================================================================
