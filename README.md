@@ -11,7 +11,7 @@ For more information, installation guides and plug-in descriptions see:
 
 
 ## Compilation Guide
-All you need for compiling the IEM Plug-in Suite is the the [JUCE framework](https://juce.com) with version 5.4.4, an IDE (eg. Xcode, Microsoft Visual Studio), and the [fftw3 library](http://fftw.org) (for some of the plug-ins).
+All you need for compiling the IEM Plug-in Suite is the [JUCE framework](https://juce.com) with version 5.4.5, an IDE (eg. Xcode, Microsoft Visual Studio), and the [fftw3 library](http://fftw.org) (for some of the plug-ins).
 
 - Clone/download the IEMPluginSuite repository
 - Install the fftw3 library (you might want add the paths to the Projucer projects)
