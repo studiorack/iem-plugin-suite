@@ -63,7 +63,7 @@ variables:
 .build:osx: &build_osx
   stage: build
   tags:
-    - osx
+    - osx10.14
   script:
 # install dependencies
     - brew install fftw
