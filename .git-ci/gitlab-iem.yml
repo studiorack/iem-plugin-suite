@@ -53,7 +53,7 @@ variables:
     - xvfb-run -a ~/JUCE/Projucer --set-global-search-path linux defaultJuceModulePath ~/JUCE/modules/
 # run the actual build
     - make system V=1 CONFIG=${CONFIG} CPPFLAGS=-DJUCE_JACK=1 CFLAGS="$(pkg-config --cflags ${PKGLIBS})" LDFLAGS="$(pkg-config --libs ${PKGLIBS})" PARALLEL=$(nproc) TARGET_ARCH=-march=core2 PROJUCER=~/JUCE/Projucer
-    - xvfb-run -a make V=1 CONFIG=${CONFIG} CPPFLAGS=-DJUCE_JACK=1 CFLAGS="$(pkg-config --cflags ${PKGLIBS})" LDFLAGS="$(pkg-config --libs ${PKGLIBS})" PARALLEL=$(nproc) TARGET_ARCH=-march=core2 PROJUCER=~/JUCE/Projucer
+    - xvfb-run -a make V=1 CONFIG=${CONFIG} CPPFLAGS=-DJUCE_JACK=1 CFLAGS="$(pkg-config --cflags ${PKGLIBS})" LDFLAGS="$(pkg-config --libs ${PKGLIBS})" PARALLEL=$(nproc) TARGET_ARCH=-march=core2 PROJUCER=~/JUCE/Projucer remove_intermediates=yes
 
 # collect binaries for artifacts
     - mkdir -p IEM/standalone/
@@ -72,7 +72,7 @@ variables:
 # run the actual build
     - test -z "${PROJECTS}" && PROJECTS=$(make showprojects)
     - make system CONFIG=$CONFIG PROJUCER="~/JUCE/Projucer.app/Contents/MacOS/Projucer"
-    - make CONFIG=$CONFIG PROJUCER="~/JUCE/Projucer.app/Contents/MacOS/Projucer" PROJECTS="${PROJECTS}"
+    - make CONFIG=$CONFIG PROJUCER="~/JUCE/Projucer.app/Contents/MacOS/Projucer" PROJECTS="${PROJECTS}" remove_intermediates=yes
 # collect binaries for artifacts
     - mkdir -p IEM/standalone
     - cp -R -H */Builds/*/build/${CONFIG}/*.vst IEM/
@@ -97,7 +97,7 @@ variables:
 # run the actual build
     - test -z "${PROJECTS}" && PROJECTS=$(make showprojects)
     - make system CONFIG=$CONFIG BITS=$BITS PROJUCER="/c/JUCE/Projucer.exe"
-    - make CONFIG=$CONFIG BITS=$BITS PROJUCER="/c/JUCE/Projucer.exe" PROJECTS="${PROJECTS}"
+    - make CONFIG=$CONFIG BITS=$BITS PROJUCER="/c/JUCE/Projucer.exe" PROJECTS="${PROJECTS}" remove_intermediates=yes
 # collect binaries for artifacts
     - mkdir -p IEM/standalone
     - cp */Builds/*/*/*/VST/*.dll IEM/
