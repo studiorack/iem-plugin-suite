@@ -53,11 +53,14 @@ public:
         openGLContext.setRenderer(nullptr);
     }
 
-    void timerCallback() override {
+    void timerCallback() override
+    {
         openGLContext.triggerRepaint();
     }
-    void setRmsDataPtr(Array<float>* newRms) {
-        pRMS = newRms;
+
+    void setRmsDataPtr (float* rmsPtr)
+    {
+        pRMS = rmsPtr;
     }
 
     void newOpenGLContextCreated() override
@@ -124,7 +127,7 @@ public:
         static GLfloat g_colorMap_data[nSamplePoints];
         for (int i = 0; i < nSamplePoints; i++)
         {
-            const float val = (Decibels::gainToDecibels (pRMS->getUnchecked(i)) - peakLevel) / dynamicRange + 1.0f;
+            const float val = (Decibels::gainToDecibels (pRMS[i]) - peakLevel) / dynamicRange + 1.0f;
             g_colorMap_data[i] = jlimit (0.0f, 1.0f, val);;
         }
 
@@ -300,7 +303,7 @@ private:
 
     bool firstRun = true;
 
-    Array<float>* pRMS;
+    float* pRMS;
 
     OpenGLContext openGLContext;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (VisualizerComponent)

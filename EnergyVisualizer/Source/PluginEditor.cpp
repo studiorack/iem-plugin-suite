@@ -72,7 +72,7 @@ EnergyVisualizerAudioProcessorEditor::EnergyVisualizerAudioProcessorEditor (Ener
     lbDynamicRange.setText("Range");
 
     addAndMakeVisible(&visualizer);
-    visualizer.setRmsDataPtr(&p.rms);
+    visualizer.setRmsDataPtr (p.rms.data());
 
     addAndMakeVisible(&colormap);
 

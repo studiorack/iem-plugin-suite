@@ -25,7 +25,6 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "../hammerAitovSample.h"
-#include <Eigen/Dense>
 #include "../../resources/efficientSHvanilla.h"
 #include "../../resources/ambisonicTools.h"
 #include "../../resources/AudioProcessorBase.h"
@@ -77,22 +76,21 @@ public:
     const float getPeakLevelSetting() { return *peakLevel; }
     const float getDynamicRange() { return *dynamicRange; }
 
-    Array<float> rms;
+    std::vector<float> rms;
     Atomic<Time> lastEditorTime;
 
 private:
     //==============================================================================
-    Eigen::DiagonalMatrix<float, 64> maxReWeights;
+    // parameters
+    float *orderSetting, *useSN3D, *peakLevel, *dynamicRange;
 
     float timeConstant;
-    // parameter
-    float *orderSetting, *useSN3D, *peakLevel, *dynamicRange;
 
     Atomic<bool> doProcessing = true;
     
-    Eigen::Matrix<float,nSamplePoints,64,Eigen::ColMajor> YH;
-    Eigen::Matrix<float,nSamplePoints,64,Eigen::ColMajor> workingMatrix;
-    AudioSampleBuffer sampledSignals;
+    dsp::Matrix<float> decoderMatrix;
+    std::vector<float> weights;
+    std::vector<float> sampledSignal;
 
     void timerCallback() override;
     void sendAdditionalOSCMessages (OSCSender& oscSender, const OSCAddressPattern& address) override;

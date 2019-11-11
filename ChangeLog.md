@@ -15,6 +15,9 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
         - changes decibel range of energy visualization from +-/3dB to +/- 1.5dB 
     - **Binaural**Decoder
         - fixes bug which lead to +6dB per sampleRate doubling 
+    - **Energy**Visualizer
+        - performance improvements
+        - sends RMS values for 426 sample points via OSC
     - **Multi**Encoder
         - source directions can be imported via JSON config files
         - adds master controls to adjust directions and gains of all sources simultaneously
