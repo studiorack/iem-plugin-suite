@@ -152,7 +152,9 @@ void EnergyVisualizerAudioProcessorEditor::timerCallback()
     title.setMaxSize (processor.getMaxSize());
     // ==========================================
 
-    visualizer.setColormap(colormap.getColormap());
+    visualizer.setColormap (colormap.getColormap());
+    visualizer.setPeakLevel (processor.getPeakLevelSetting());
+    visualizer.setDynamicRange (processor.getDynamicRange());
 
     processor.lastEditorTime = Time::getCurrentTime();
 }

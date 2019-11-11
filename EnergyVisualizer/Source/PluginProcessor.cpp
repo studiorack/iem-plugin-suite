@@ -130,7 +130,7 @@ void EnergyVisualizerAudioProcessor::processBlock (AudioSampleBuffer& buffer, Mi
     Eigen::Map<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>> outMatrix (sampledSignals.getWritePointer(0), nSamplePoints,L);
 
     //outMatrix = YH.block(0,0,tDesignN,nCh) * inpMatrix;
-    FloatVectorOperations::clear(&maxReWeights.diagonal()[0],64);
+    //FloatVectorOperations::clear(&maxReWeights.diagonal()[0],64);
     copyMaxRE(workingOrder, &maxReWeights.diagonal()[0]);
     FloatVectorOperations::multiply(&maxReWeights.diagonal()[0], maxRECorrection[workingOrder] * decodeCorrection(workingOrder), nCh);
 
@@ -144,12 +144,9 @@ void EnergyVisualizerAudioProcessor::processBlock (AudioSampleBuffer& buffer, Mi
     outMatrix = workingMatrix.block(0, 0, nSamplePoints, nCh) * inpMatrix;
 
     float* pRms = rms.getRawDataPointer();
-    float oneMinusTimeConstant = 1.0f - timeConstant;
+    const float oneMinusTimeConstant = 1.0f - timeConstant;
     for (int i = 0; i < nSamplePoints; ++i)
-    {
-        pRms[i] = timeConstant * pRms[i] + oneMinusTimeConstant * ((Decibels::gainToDecibels(sampledSignals.getRMSLevel(i, 0, L)) - *peakLevel) / *dynamicRange + 1.0f);
-    }
-    FloatVectorOperations::clip(pRms, rms.getRawDataPointer(), 0.0f, 1.0f, nSamplePoints);
+        pRms[i] = timeConstant * pRms[i] + oneMinusTimeConstant * sampledSignals.getRMSLevel (i, 0, L);
 }
 
 //==============================================================================
@@ -252,6 +249,14 @@ void EnergyVisualizerAudioProcessor::timerCallback()
         doProcessing = true;
 }
 
+//==============================================================================
+void EnergyVisualizerAudioProcessor::sendAdditionalOSCMessages (OSCSender& oscSender, const OSCAddressPattern& address)
+{
+    OSCMessage message (address);
+    for (int i = 0; i < nSamplePoints; ++i)
+        message.addFloat32 (rms[i]);
+    oscSender.send (message);
+}
 
 //==============================================================================
 // This creates new instances of the plugin..

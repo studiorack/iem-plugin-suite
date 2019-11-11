@@ -65,6 +65,16 @@ public:
         createShaders();
     }
 
+    void setPeakLevel (const float newPeakLevel)
+    {
+        peakLevel = newPeakLevel;
+    }
+
+    void setDynamicRange (const float newDynamicRange)
+    {
+        dynamicRange = newDynamicRange;
+    }
+
     void renderOpenGL() override
     {
         jassert (OpenGLHelpers::isContextActive());
@@ -112,10 +122,10 @@ public:
         }
 
         static GLfloat g_colorMap_data[nSamplePoints];
-        for (int i = 0; i < nSamplePoints; i++){
-            //g_colorMap_data[i] = (float) rand() / RAND_MAX;
-            g_colorMap_data[i] = pRMS->getUnchecked(i);
-            //g_colorMap_data[i] = (float) i / tDesignN;
+        for (int i = 0; i < nSamplePoints; i++)
+        {
+            const float val = (Decibels::gainToDecibels (pRMS->getUnchecked(i)) - peakLevel) / dynamicRange + 1.0f;
+            g_colorMap_data[i] = jlimit (0.0f, 1.0f, val);;
         }
 
         GLuint colorBuffer;
@@ -282,6 +292,9 @@ private:
             return nullptr; // Return if error
         return new OpenGLShaderProgram::Uniform (shaderProgram, uniformName);
     }
+
+    float peakLevel = 0.0f; // dB
+    float dynamicRange = 35.0f; // dB
 
     OpenGLTexture texture;
 

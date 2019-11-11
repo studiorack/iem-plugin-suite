@@ -74,6 +74,9 @@ public:
     std::vector<std::unique_ptr<RangedAudioParameter>> createParameterLayout();
     //==============================================================================
 
+    const float getPeakLevelSetting() { return *peakLevel; }
+    const float getDynamicRange() { return *dynamicRange; }
+
     Array<float> rms;
     Atomic<Time> lastEditorTime;
 
@@ -92,6 +95,7 @@ private:
     AudioSampleBuffer sampledSignals;
 
     void timerCallback() override;
+    void sendAdditionalOSCMessages (OSCSender& oscSender, const OSCAddressPattern& address) override;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (EnergyVisualizerAudioProcessor)
