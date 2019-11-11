@@ -214,6 +214,8 @@ void OSCParameterInterface::sendParameterChanges (const bool forceSend)
             }
         }
     }
+
+    interceptor.sendAdditionalOSCMessages (oscSender, address);
 }
 
 void OSCParameterInterface::setInterval (const int interValInMilliseconds)

@@ -148,25 +148,31 @@ class OSCMessageInterceptor
 {
 public:
 
+
     virtual ~OSCMessageInterceptor() = default;
 
     /**
-      This method is exptected to return true, if the OSCMessage is considered to have been consumed, and should not be passed on.
-      */
-     virtual inline const bool interceptOSCMessage (OSCMessage &message)
-     {
-         ignoreUnused (message);
-         return false; // not consumed
-     }
+     This method is exptected to return true, if the OSCMessage is considered to have been consumed, and should not be passed on.
+     */
+    virtual inline const bool interceptOSCMessage (OSCMessage &message)
+    {
+        ignoreUnused (message);
+        return false; // not consumed
+    }
 
-     /**
-      This method will be called if the OSC message wasn't consumed by both 'interceptOscMessage(...)' and the oscParameterInterface.processOSCmessage(...)' method.
-      The method is expected to return true, if the SOCMessage is considered to have been consumed, and should not be passed on.
-      */
+    /**
+     This method will be called if the OSC message wasn't consumed by both 'interceptOscMessage(...)' and the oscParameterInterface.processOSCmessage(...)' method.
+     The method is expected to return true, if the SOCMessage is considered to have been consumed, and should not be passed on.
+     */
+    virtual inline const bool processNotYetConsumedOSCMessage (const OSCMessage &message)
+    {
+        ignoreUnused (message);
+        return false;
+    }
 
-     virtual inline const bool processNotYetConsumedOSCMessage (const OSCMessage &message)
-     {
-         ignoreUnused (message);
-         return false;
-     }
+
+    /**
+     Use this method to send additional OSCMessages during the OSCSender's send routine.
+     */
+    virtual void sendAdditionalOSCMessages (OSCSender& oscSender, const OSCAddressPattern& address) {}
 };
