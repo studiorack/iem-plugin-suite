@@ -49,7 +49,7 @@ createParameterLayout())
     properties.reset (new PropertiesFile (options));
     lastDir = File (properties->getValue ("presetFolder"));
 
-    
+
     parameters.addParameterListener("masterAzimuth", this);
     parameters.addParameterListener("masterElevation", this);
     parameters.addParameterListener("masterRoll", this);

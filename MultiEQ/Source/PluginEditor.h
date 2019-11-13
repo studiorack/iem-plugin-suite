@@ -55,10 +55,10 @@ public:
 
 
     void extracted();
-    
+
     void timerCallback() override;
     void extracted(int f, bool state);
-    
+
     void buttonClicked (Button* button) override;
     void comboBoxChanged (ComboBox *comboBoxThatHasChanged) override;
 

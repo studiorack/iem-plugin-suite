@@ -245,7 +245,7 @@ public:
     {
         AmbiLogoPath.loadPathFromData (AmbiLogoPathData, sizeof (AmbiLogoPathData));
         setBufferedToImage (true);
-        
+
         if (selectable)
         {
             addAndMakeVisible (&cbOrder);
@@ -257,7 +257,7 @@ public:
         {
             displayTextIfNotSelectable = getOrderString (order) + " order";
         }
-        
+
         addAndMakeVisible (&cbNormalization);
         cbNormalization.setJustificationType (Justification::centred);
         cbNormalization.addSectionHeading ("Normalization");
@@ -265,9 +265,9 @@ public:
         cbNormalization.addItem ("SN3D", 2);
         cbNormalization.setBounds (35, 0, 70, 15);
     };
-    
+
     ~AmbisonicIOWidget() {};
-    
+
     void setOrderIfUnselectable (int newOrder)
     {
         if (! selectable && orderIfNotSelectable != newOrder)
@@ -276,7 +276,7 @@ public:
             updateDisplayTextIfNotSelectable();
         }
     }
-    
+
     void updateDisplayTextIfNotSelectable()
     {
         if (maxPossibleOrder < orderIfNotSelectable)
@@ -291,7 +291,7 @@ public:
         }
         repaint();
     }
-    
+
     void updateMaxOrder()
     {
         const int previousIndex = cbOrder.getSelectedItemIndex();
@@ -300,10 +300,10 @@ public:
         cbOrder.addItem ("Auto", 1);
         for (int o = 0; o <= maxOrder; ++o)
             cbOrder.addItem (getOrderString(o), o + 2);
-        
+
         cbOrder.setSelectedItemIndex (previousIndex);
     }
-    
+
     void setMaxOrder (int newMaxOrder)
     {
         maxOrder = newMaxOrder;
@@ -312,9 +312,9 @@ public:
         maxPossibleOrder = -1;
         setMaxSize (savedMaxPossibleOrder);
     }
-    
+
     const int getComponentSize() override { return 110; }
-    
+
     /** Sets the maximally available size of the processor for this Widget.
      */
     void setMaxSize (int newMaxPossibleOrder) override
@@ -322,7 +322,7 @@ public:
         if (maxPossibleOrder != jmin (newMaxPossibleOrder, maxOrder))
         {
             maxPossibleOrder = jmin (newMaxPossibleOrder, maxOrder);
-            
+
             if (selectable)
             {
                 if (maxPossibleOrder > -1)
@@ -352,23 +352,23 @@ public:
             }
         }
     }
-    
+
     ComboBox* getNormCbPointer() { return &cbNormalization; }
     ComboBox* getOrderCbPointer()
     {
         if (! selectable)
             // There's no Ambisonic Order ComboBox, when order is not selectable!
             jassertfalse;
-        
+
         return &cbOrder;
     }
-    
+
     void paint (Graphics& g) override
     {
         AmbiLogoPath.applyTransform (AmbiLogoPath.getTransformToScaleToFit (0, 0, 30, 30, true, Justification::centred));
         g.setColour ((Colours::white).withMultipliedAlpha (0.5));
         g.fillPath (AmbiLogoPath);
-        
+
         if (!selectable)
         {
             g.setColour ((Colours::white).withMultipliedAlpha (0.5));
@@ -377,7 +377,7 @@ public:
             g.drawFittedText (displayTextIfNotSelectable, 35, 15, 55, 15, Justification::centred, 1);
         }
     };
-    
+
 private:
     ComboBox cbNormalization, cbOrder;
     Path AmbiLogoPath;
@@ -385,7 +385,7 @@ private:
     int orderIfNotSelectable = order;
     int maxPossibleOrder = -1;
     String displayTextIfNotSelectable;
-};  
+};
 
 class  DirectivityIOWidget :  public IOWidget
 {
@@ -501,7 +501,7 @@ public:
         inputWidget.setBounds (getLocalBounds().removeFromLeft (leftWidth).reduced (0, 15));
         outputWidget.setBounds (getLocalBounds().removeFromRight (rightWidth).reduced (0, 15));
     }
-    
+
     void setMaxSize (std::pair<int, int> inOutSizes)
     {
         inputWidget.setMaxSize (inOutSizes.first);

@@ -49,7 +49,7 @@ public:
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;
-    
+
     void processBlock (AudioSampleBuffer&, MidiBuffer&) override;
 
     //==============================================================================
@@ -116,7 +116,7 @@ private:
     Atomic<bool> positionHasChanged = true;
 
     iem::Quaternion<float> quaternionDirection;
-    
+
     AudioBuffer<float> bufferCopy;
 
     LinearSmoothedValue<float> smoothAzimuthL, smoothElevationL;

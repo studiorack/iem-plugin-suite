@@ -52,7 +52,7 @@ public:
     constexpr static int numberOfInputChannels = 64;
     constexpr static int numberOfOutputChannels = 64;
     static const StringArray weightsStrings;
-    
+
     //==============================================================================
     AllRADecoderAudioProcessor();
     ~AllRADecoderAudioProcessor();

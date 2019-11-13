@@ -47,7 +47,7 @@ public:
     {
         repaint();
     }
-  
+
     void mouseMove (const MouseEvent& e) override
     {
         if (triangleUp.contains (e.position))
@@ -61,7 +61,7 @@ public:
     void mouseDrag (const MouseEvent& e) override
     {
         isDragging = true;
-    
+
         const auto drag = e.getOffsetFromDragStart();
         const auto dist = drag.getX() - drag.getY();
 
@@ -85,7 +85,7 @@ public:
     void mouseWheelMove (const MouseEvent& e, const MouseWheelDetails& wheel) override
     {
         isDragging = true;
-      
+
         for (int i = 0; i < elements.size(); ++i)
         {
             if (elements[i] != nullptr)
@@ -99,7 +99,7 @@ public:
         {
             if (elements[i] == nullptr)
                 continue;
-          
+
             if (auto* slider = dynamic_cast<ReverseSlider*> (elements[i]))
             {
                 if (isOverTriangle == 1)

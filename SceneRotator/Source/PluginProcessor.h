@@ -106,7 +106,7 @@ public:
         "MrHT_YprInv",
         "MrHT_Quat"
     };
-    
+
     String getCurrentMidiDeviceName();
     void openMidiInput (String midiDeviceName, bool forceUpdatingCurrentMidiDeviceName = false);
     void closeMidiInput();
@@ -120,7 +120,7 @@ public:
     Atomic<bool> deviceHasChanged = false;
     Atomic<bool> showMidiOpenError = false;
     Atomic<bool> schemeHasChanged = false;
-    
+
 private:
     //==============================================================================
 
@@ -147,7 +147,7 @@ private:
     Atomic<bool> rotationParamsHaveChanged {true};
 
     AudioBuffer<float> copyBuffer;
-    
+
     OwnedArray<Matrix<float>> orderMatrices;
     OwnedArray<Matrix<float>> orderMatricesCopy;
 

@@ -136,7 +136,7 @@ AllRADecoderAudioProcessorEditor::AllRADecoderAudioProcessorEditor (AllRADecoder
 
     // start timer after everything is set up properly
     startTimer(50);
-    
+
     tooltipWin.setLookAndFeel (&globalLaF);
     tooltipWin.setMillisecondsBeforeTipAppears (500);
     tooltipWin.setOpaque (false);

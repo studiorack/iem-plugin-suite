@@ -63,7 +63,7 @@ public:
         checkIfNewDecoderAvailable();
 
         ReferenceCountedDecoder::Ptr retainedDecoder = currentDecoder;
-        
+
         auto& T = retainedDecoder->getMatrix();
 
         const int nInputChannels = jmin (static_cast<int> (inputBlock.getNumChannels()), static_cast<int> (T.getNumColumns()));
