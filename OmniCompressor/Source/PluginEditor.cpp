@@ -142,7 +142,7 @@ void OmniCompressorAudioProcessorEditor::timerCallback()
     // === update titleBar widgets according to available input/output channel counts
     title.setMaxSize (processor.getMaxSize());
     // ==========================================
-    
+
     characteristic.setMarkerLevels (processor.maxRMS.get(), processor.maxGR.get());
     characteristic.updateCharacteristic();
     characteristic.repaint();

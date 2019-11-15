@@ -87,7 +87,7 @@ private:
     float timeConstant;
 
     Atomic<bool> doProcessing = true;
-    
+
     dsp::Matrix<float> decoderMatrix;
     std::vector<float> weights;
     std::vector<float> sampledSignal;

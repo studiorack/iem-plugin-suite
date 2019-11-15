@@ -88,7 +88,7 @@ private:
     // =============== end essentials ============
 
     TooltipWindow tooltipWin;
-    
+
     // Attachments to create a connection between IOWidgets comboboxes
     // and the associated parameters
     std::unique_ptr<ComboBoxAttachment> cbOrderSettingAttachment;

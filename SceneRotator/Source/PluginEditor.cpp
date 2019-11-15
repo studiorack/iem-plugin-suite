@@ -265,7 +265,7 @@ void SceneRotatorAudioProcessorEditor::resized()
     tbInvertRoll.setBounds (sliderRow.removeFromLeft (rotSliderWidth + 5));
 
     yprArea.removeFromTop (5);
-    
+
     sliderRow = yprArea.removeFromTop (20);
     sliderRow.reduce (10, 0);
     cbRotationSequence.setBounds (sliderRow);

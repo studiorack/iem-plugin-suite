@@ -19,6 +19,8 @@ PROJUCER=Projucer
 #PARALLEL = 1
 PARALLEL =
 
+remove_intermediates = no
+
 # the buildsystem we are using
 # possible values: LinuxMakefile XCode
 uname := $(shell uname)
@@ -120,6 +122,9 @@ $(ALL_PROJECTS:%=%-clean):
 		-C $(<D) \
 		CONFIG="$(CONFIG)" \
 		$(TARGET)
+ifeq ($(remove_intermediates), yes)
+	rm -rf $(<D)/build/intermediate/
+endif
 %-LinuxMakefile-clean: %/Builds/LinuxMakefile/Makefile
 	make -C $(<D) \
 		CONFIG="$(CONFIG)" \
@@ -135,6 +140,7 @@ $(ALL_PROJECTS:%=%-clean):
 		-target "$(firstword $(subst /, ,$<)) - All" \
 		-configuration "$(CONFIG)" \
 		build
+	find $(<D)/../
 %-XCode-clean: $$(subst @,%,@/Builds/MacOSX/@.xcodeproj/project.pbxproj)
 	xcodebuild \
 		-project $(<D) \
@@ -153,6 +159,7 @@ $(ALL_PROJECTS:%=%-clean):
 	MSBuild.exe $(buildflags) \
 		-p:Configuration="$(WINTARGET)",Platform=$(WINPLATFORM) \
 		$<
+	find $(<D)/
 %-VS2017-clean: $$(subst @,%,@/Builds/VisualStudio2017/@.sln)
 	MSBuild.exe \
 		-p:Configuration="$(WINTARGET)",Platform=$(WINPLATFORM) \

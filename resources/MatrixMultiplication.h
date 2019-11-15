@@ -82,7 +82,7 @@ public:
         // you should call the processReplacing instead, it will buffer the input data
         // this is a weak check, as e.g. if number channels differ, it won't trigger
         jassert (inputBlock != outputBlock);
-        
+
         ScopedNoDenormals noDenormals;
 
         if (checkNewMatrix)

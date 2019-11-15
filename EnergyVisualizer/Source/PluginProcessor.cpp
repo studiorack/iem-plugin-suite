@@ -145,7 +145,7 @@ void EnergyVisualizerAudioProcessor::processBlock (AudioSampleBuffer& buffer, Mi
             const auto sample = sampledSignal[i];
             sum += sample * sample;
         }
-        
+
         rms[i] = timeConstant * rms[i] + oneMinusTimeConstant * std::sqrt (sum / L);
     }
 

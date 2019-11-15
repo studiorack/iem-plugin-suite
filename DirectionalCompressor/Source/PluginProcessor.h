@@ -71,7 +71,7 @@ public:
     //======= Parameters ===========================================================
     std::vector<std::unique_ptr<RangedAudioParameter>> createParameterLayout();
     //==============================================================================
-    
+
     void parameterChanged (const String &parameterID, float newValue) override;
 
     float c1MaxRMS;

@@ -134,12 +134,12 @@ public:
             ret = Slider::valueToProportionOfLength(value);
         return ret;
     }
-  
+
     void increment ()
     {
         setValue (getValue() + getInterval ());
     }
-  
+
     void decrement ()
     {
         setValue (getValue() - getInterval ());

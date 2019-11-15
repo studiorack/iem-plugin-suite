@@ -852,7 +852,7 @@ private:
                 addAndMakeVisible (lbMuted);
                 lbMuted.setText ("INPUT MUTED", false);
                 lbMuted.setTextColour (Colours::red);
-                
+
                 addAndMakeVisible (settingsButton);
                 settingsButton.setColour (TextButton::buttonColourId, Colours::cornflowerblue);
             }

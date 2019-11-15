@@ -346,7 +346,7 @@ void CoordinateConverterAudioProcessorEditor::resized()
     }
 
     area.removeFromBottom (10);
-    
+
     // ===== SPHERICAL
 
 

@@ -106,7 +106,7 @@ MultiEQAudioProcessorEditor::MultiEQAudioProcessorEditor (MultiEQAudioProcessor&
             cbFilterType[i].addItem ("Peak", 2);
             cbFilterType[i].addItem ("High-shelf", 3);
         }
-        
+
         cbFilterType[i].setJustificationType (Justification::centred);
         cbFilterTypeAttachment[i].reset (new ComboBoxAttachment (valueTreeState, "filterType" + String(i), cbFilterType[i]));
 

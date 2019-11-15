@@ -119,7 +119,7 @@ private:
     //==============================================================================
     File lastDir;
     std::unique_ptr<PropertiesFile> properties;
-    
+
     bool processorUpdatingParams;
 
     float masterYpr[3];

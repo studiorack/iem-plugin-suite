@@ -86,12 +86,12 @@ public:
 
     IIR::Coefficients<double>::Ptr getCoefficientsForGui (const int filterIndex) { return guiCoefficients[filterIndex]; };
     void updateGuiCoefficients();
-    
+
     // FV repaint flag
     Atomic<bool> repaintFV = true;
-    
+
 private:
-    
+
     enum class RegularFilterType
     {
         FirstOrderHighPass, SecondOrderHighPass, LowShelf, PeakFilter, HighShelf, FirstOrderLowPass, SecondOrderLowPass, NothingToDo
@@ -125,7 +125,7 @@ private:
     OwnedArray<AudioBlock<IIRfloat>> interleavedData;
     AudioBlock<float> zero;
 
-    
+
     // list of used audio parameters
     float *inputChannelsSetting;
     float* filterEnabled[numFilterBands];

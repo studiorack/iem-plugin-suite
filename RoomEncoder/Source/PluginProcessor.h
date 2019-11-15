@@ -103,11 +103,11 @@ public:
     //==============================================================================
 
     void initializeReflectionList();
-    
+
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;
-    
+
     void processBlock (AudioSampleBuffer&, MidiBuffer&) override;
 
     //==============================================================================
@@ -157,7 +157,7 @@ public:
 private:
     //==============================================================================
     inline void clear (AudioBlock<IIRfloat>& ab);
-    
+
     bool readingSharedParams = false;;
 
     double phi;
@@ -242,6 +242,6 @@ private:
     AudioBuffer<float> monoBuffer;
 
     OwnedArray<ReflectionProperty> reflectionList;
-    
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (RoomEncoderAudioProcessor)
 };

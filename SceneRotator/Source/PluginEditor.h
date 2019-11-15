@@ -63,7 +63,7 @@ private:
     // lookAndFeel class with the IEM plug-in suite design
     LaF globalLaF;
     TooltipWindow tooltipWin;
-    
+
     // stored references to the AudioProcessor and ValueTreeState holding all the parameters
     SceneRotatorAudioProcessor& processor;
     AudioProcessorValueTreeState& valueTreeState;
@@ -105,7 +105,7 @@ private:
     GroupComponent midiGroup;
     SimpleLabel slMidiDevices, slMidiScheme;
     ComboBox cbMidiDevices, cbMidiScheme;
-    
+
     Atomic<bool> refreshingMidiDevices = false;
     Atomic<bool> updatingMidiScheme = false;
 
