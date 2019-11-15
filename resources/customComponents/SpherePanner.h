@@ -76,7 +76,7 @@ public:
             g.fillPath(circles);
         }
 
-        g.setColour (Colours::Colours::steelblue.withMultipliedAlpha (0.7f));
+        g.setColour (Colours::steelblue.withMultipliedAlpha (0.7f));
         g.strokePath (circles, PathStrokeType (.5f));
 
         ColourGradient gradient(Colours::black.withMultipliedAlpha (0.7f), centreX, centreY, Colours::black.withMultipliedAlpha (0.1f), 0, 0, true);
@@ -403,31 +403,38 @@ public:
         const float centreX = bounds.getCentreX();
         const float centreY = bounds.getCentreY();
 
-        Path panPos;
+        g.setFont (getLookAndFeel().getTypefaceForFont (Font (12.0f, 1)));
+
         const int size = elements.size();
-        for (int i = 0; i < size; ++i) {
+        for (int i = 0; i < size; ++i)
+        {
             SpherePanner::Element* handle = elements.getUnchecked (i);
 
             Vector3D<float> pos = handle->getCoordinates();
+            const bool isUp = pos.z >= -0.0f;
 
             const float diam = 15.0f + 4.0f * pos.z;
-            g.setColour(handle->isActive() ? handle->getColour() : Colours::grey);
+            const Colour colour = handle->isActive() ? handle->getColour() : Colours::grey;
+            g.setColour (colour);
 
             if (linearElevation)
             {
-                const float r = sqrt(pos.y * pos.y + pos.x * pos.x);
-                const float factor = std::asin(r) / r / 1.570796327f; // pi / 2
+                const float r = sqrt (pos.y * pos.y + pos.x * pos.x);
+                const float factor = std::asin (r) / r / (MathConstants<float>::pi / 2);
                 pos *= factor;
             }
 
-            Rectangle<float> temp(centreX - pos.y * radius - diam / 2, centreY - pos.x * radius - diam / 2, diam, diam);
-            panPos.addEllipse (temp);
-            g.strokePath (panPos, PathStrokeType(1.0f));
-            g.setColour ((handle->isActive() ? handle->getColour() : Colours::grey).withMultipliedAlpha (pos.z >= -0.0f ? 1.0f : 0.4f));
+            const Rectangle<float> circleArea (centreX - pos.y * radius - diam / 2, centreY - pos.x * radius - diam / 2, diam, diam);
+                        Path panPos;
+
+            panPos.addEllipse (circleArea);
+            g.strokePath (panPos, PathStrokeType (1.0f));
+            g.setColour (colour.withMultipliedAlpha (isUp ? 1.0f : 0.3f));
             g.fillPath (panPos);
-            g.setColour (handle->getTextColour());
-            g.drawFittedText (handle->getLabel(), temp.toNearestInt(), Justification::centred, 1);
-            panPos.clear();
+            g.setColour (isUp ? handle->getTextColour() : colour);
+
+            g.setFont (isUp ? 15.0f : 10.0f);
+            g.drawText (handle->getLabel(), circleArea.toNearestInt(), Justification::centred, false);
         }
     };
 

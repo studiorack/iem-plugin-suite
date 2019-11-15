@@ -26,7 +26,7 @@
 
 //==============================================================================
 EnergyVisualizerAudioProcessorEditor::EnergyVisualizerAudioProcessorEditor (EnergyVisualizerAudioProcessor& p, AudioProcessorValueTreeState& vts)
-    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts), footer (p.getOSCReceiver())
+    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts), footer (p.getOSCParameterInterface())
 {
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
@@ -40,14 +40,14 @@ EnergyVisualizerAudioProcessorEditor::EnergyVisualizerAudioProcessorEditor (Ener
     title.setFont(globalLaF.robotoBold,globalLaF.robotoLight);
     addAndMakeVisible (&footer);
 
-    cbNormalizationAtachement = new ComboBoxAttachment(valueTreeState,"useSN3D", *title.getInputWidgetPtr()->getNormCbPointer());
-    cbOrderAtachement = new ComboBoxAttachment(valueTreeState,"orderSetting", *title.getInputWidgetPtr()->getOrderCbPointer());
+    cbNormalizationAtachement.reset (new ComboBoxAttachment (valueTreeState,"useSN3D", *title.getInputWidgetPtr()->getNormCbPointer()));
+    cbOrderAtachement.reset (new ComboBoxAttachment (valueTreeState,"orderSetting", *title.getInputWidgetPtr()->getOrderCbPointer()));
 
 
 
 
     addAndMakeVisible(&slPeakLevel);
-    slPeakLevelAttachment = new SliderAttachment(valueTreeState, "peakLevel", slPeakLevel);
+    slPeakLevelAttachment.reset (new SliderAttachment (valueTreeState, "peakLevel", slPeakLevel));
     slPeakLevel.setSliderStyle(Slider::LinearVertical);
     slPeakLevel.setTextBoxStyle(Slider::TextBoxBelow, false, 100, 12);
     slPeakLevel.setTextValueSuffix(" dB");
@@ -56,7 +56,7 @@ EnergyVisualizerAudioProcessorEditor::EnergyVisualizerAudioProcessorEditor (Ener
     slPeakLevel.addListener(this);
 
     addAndMakeVisible(&slDynamicRange);
-    slDynamicRangeAttachment = new SliderAttachment(valueTreeState, "dynamicRange", slDynamicRange);
+    slDynamicRangeAttachment.reset (new SliderAttachment (valueTreeState, "dynamicRange", slDynamicRange));
     slDynamicRange.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
     slDynamicRange.setTextBoxStyle(Slider::TextBoxBelow, false, 100, 12);
     slDynamicRange.setTextValueSuffix(" dB");
@@ -72,7 +72,7 @@ EnergyVisualizerAudioProcessorEditor::EnergyVisualizerAudioProcessorEditor (Ener
     lbDynamicRange.setText("Range");
 
     addAndMakeVisible(&visualizer);
-    visualizer.setRmsDataPtr(&p.rms);
+    visualizer.setRmsDataPtr (p.rms.data());
 
     addAndMakeVisible(&colormap);
 
@@ -149,12 +149,12 @@ void EnergyVisualizerAudioProcessorEditor::sliderValueChanged (Slider *slider)
 void EnergyVisualizerAudioProcessorEditor::timerCallback()
 {
     // === update titleBar widgets according to available input/output channel counts
-    int maxInSize, maxOutSize;
-    processor.getMaxSize(maxInSize, maxOutSize);
-    title.setMaxSize(maxInSize, maxOutSize);
+    title.setMaxSize (processor.getMaxSize());
     // ==========================================
 
-    visualizer.setColormap(colormap.getColormap());
+    visualizer.setColormap (colormap.getColormap());
+    visualizer.setPeakLevel (processor.getPeakLevelSetting());
+    visualizer.setDynamicRange (processor.getDynamicRange());
 
     processor.lastEditorTime = Time::getCurrentTime();
 }

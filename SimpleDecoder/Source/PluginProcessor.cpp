@@ -23,6 +23,7 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
+const StringArray SimpleDecoderAudioProcessor::weightsStrings =  StringArray ("basic", "maxrE", "inphase");
 
 //==============================================================================
 SimpleDecoderAudioProcessor::SimpleDecoderAudioProcessor()
@@ -57,6 +58,7 @@ createParameterLayout())
 
     swMode = parameters.getRawParameterValue ("swMode");
     swChannel = parameters.getRawParameterValue("swChannel");
+    weights = parameters.getRawParameterValue ("weights");
 
     // add listeners to parameter changes
 
@@ -70,8 +72,7 @@ createParameterLayout())
     parameters.addParameterListener ("highPassQ", this);
 
     parameters.addParameterListener ("swMode", this);
-
-
+    parameters.addParameterListener ("weights", this);
 
     highPassSpecs.numChannels = 0;
 
@@ -82,7 +83,7 @@ createParameterLayout())
     options.folderName          = "IEM";
     options.osxLibrarySubFolder = "Preferences";
 
-    properties = new PropertiesFile(options);
+    properties.reset (new PropertiesFile (options));
     lastDir = File(properties->getValue("presetFolder"));
 
 
@@ -90,8 +91,8 @@ createParameterLayout())
     highPass1.state = highPassCoeffs;
     highPass2.state = highPassCoeffs;
 
-    lowPass1 = new IIR::Filter<float>(lowPassCoeffs);
-    lowPass2 = new IIR::Filter<float>(lowPassCoeffs);
+    lowPass1.reset (new IIR::Filter<float> (lowPassCoeffs));
+    lowPass2.reset (new IIR::Filter<float> (lowPassCoeffs));
 }
 
 SimpleDecoderAudioProcessor::~SimpleDecoderAudioProcessor()
@@ -201,6 +202,9 @@ void SimpleDecoderAudioProcessor::prepareToPlay (double sampleRate, int samplesP
     lowPass2->prepare(highPassSpecs);
     lowPass2->reset();
 
+    masterGain.setRampDurationSeconds (0.1f);
+    masterGain.prepare ({sampleRate, static_cast<uint32> (samplesPerBlock), 1});
+
     decoder.setInputNormalization(*useSN3D >= 0.5f ? ReferenceCountedDecoder::Normalization::sn3d : ReferenceCountedDecoder::Normalization::n3d);
 
     guiUpdateSampleRate = true;
@@ -281,11 +285,16 @@ void SimpleDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiB
         highPass2.process(highPassContext);
     }
 
+    // update current weights setting
+    auto settings = retainedDecoder->getSettings();
+    settings.weights = ReferenceCountedDecoder::Weights (roundToInt (*weights));
+    retainedDecoder->setSettings (settings);
+
+    // ambisonic decoding
     const int L = buffer.getNumSamples();
-    AudioBlock<float> inputAudioBlock = AudioBlock<float>(buffer.getArrayOfWritePointers(), nChIn, L);
-    AudioBlock<float> outputAudioBlock = AudioBlock<float>(buffer.getArrayOfWritePointers(), nChOut, L);
-    ProcessContextNonReplacing<float> decoderContext (inputAudioBlock, outputAudioBlock);
-    decoder.process(decoderContext);
+    auto inputAudioBlock = AudioBlock<float> (buffer.getArrayOfWritePointers(), nChIn, L);
+    auto outputAudioBlock = AudioBlock<float> (buffer.getArrayOfWritePointers(), nChOut, L);
+    decoder.process (inputAudioBlock, outputAudioBlock);
 
     for (int ch = nChOut; ch < nChIn; ++ch) // clear all not needed channels
         buffer.clear(ch, 0, buffer.getNumSamples());
@@ -309,7 +318,12 @@ void SimpleDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiB
                 buffer.addFrom(destCh, 0, swBuffer, 0, 0, buffer.getNumSamples());
         }
     }
-    // ======================================================================
+    // =================== Master Gain =========================================
+    auto overallGainInDecibels = *parameters.getRawParameterValue ("overallGain");
+    masterGain.setGainDecibels (overallGainInDecibels);
+    AudioBlock<float> ab (buffer.getArrayOfWritePointers(), nChOut,  buffer.getNumSamples());
+    ProcessContextReplacing<float> masterContext (ab);
+    masterGain.process (masterContext);
 }
 
 //==============================================================================
@@ -326,12 +340,14 @@ AudioProcessorEditor* SimpleDecoderAudioProcessor::createEditor()
 //==============================================================================
 void SimpleDecoderAudioProcessor::getStateInformation (MemoryBlock& destData)
 {
-    // You should use this method to store your parameters in the memory block.
-    // You could do that either as raw data, or use the XML or ValueTree classes
-    // as intermediaries to make it easy to save and load complex data.
-    parameters.state.setProperty ("lastOpenedPresetFile", var (lastFile.getFullPathName()), nullptr);
-    parameters.state.setProperty ("OSCPort", var (oscReceiver.getPortNumber()), nullptr);
-    ScopedPointer<XmlElement> xml (parameters.state.createXml());
+    auto state = parameters.copyState();
+
+    state.setProperty ("lastOpenedPresetFile", var (lastFile.getFullPathName()), nullptr);
+
+    auto oscConfig = state.getOrCreateChildWithName ("OSCConfig", nullptr);
+    oscConfig.copyPropertiesFrom (oscParameterInterface.getConfig(), nullptr);
+
+    std::unique_ptr<XmlElement> xml (state.createXml());
     xml->setTagName (String (JucePlugin_Name)); // converts old "Decoder" state to "SimpleDecoder" state
     copyXmlToBinary (*xml, destData);
 }
@@ -342,7 +358,7 @@ void SimpleDecoderAudioProcessor::setStateInformation (const void* data, int siz
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
-    ScopedPointer<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
+    std::unique_ptr<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
     if (xmlState != nullptr)
         if (xmlState->hasTagName (parameters.state.getType()) || xmlState->hasTagName ("Decoder")) // compatibility for old "Decoder" state tagName
             parameters.state = ValueTree::fromXml (*xmlState);
@@ -351,14 +367,24 @@ void SimpleDecoderAudioProcessor::setStateInformation (const void* data, int siz
         Value val = parameters.state.getPropertyAsValue ("lastOpenedPresetFile", nullptr);
         if (val.getValue().toString() != "")
         {
+            auto* weightsParam = parameters.getParameter ("weights");
+            const auto savedWeights = weightsParam->getValue();
             const File f (val.getValue().toString());
             loadConfiguration(f);
-        }
-        if (parameters.state.hasProperty ("OSCPort"))
-        {
-            oscReceiver.connect (parameters.state.getProperty ("OSCPort", var (-1)));
+            weightsParam->setValueNotifyingHost (savedWeights);
         }
     }
+
+    if (parameters.state.hasProperty ("OSCPort")) // legacy
+    {
+        oscParameterInterface.getOSCReceiver().connect (parameters.state.getProperty ("OSCPort", var (-1)));
+        parameters.state.removeProperty ("OSCPort", nullptr);
+    }
+
+    auto oscConfig = parameters.state.getChildWithName ("OSCConfig");
+    if (oscConfig.isValid())
+        oscParameterInterface.setConfig (oscConfig);
+
 }
 
 //==============================================================================
@@ -395,17 +421,20 @@ void SimpleDecoderAudioProcessor::loadConfiguration (const File& presetFile)
     ReferenceCountedDecoder::Ptr tempDecoder = nullptr;
 
     Result result = ConfigurationHelper::parseFileForDecoder (presetFile, &tempDecoder);
-    if (!result.wasOk()) {
+    if (result.failed())
         messageForEditor = result.getErrorMessage();
-    }
 
     if (tempDecoder != nullptr)
     {
         lastFile = presetFile;
         messageForEditor = "";
+
+        tempDecoder->removeAppliedWeights();
+        parameters.getParameterAsValue ("weights").setValue (static_cast<int> (tempDecoder->getSettings().weights));
     }
 
-    decoder.setDecoder(tempDecoder);
+
+    decoder.setDecoder (tempDecoder);
     decoderConfig = tempDecoder;
 
     updateDecoderInfo = true;
@@ -481,6 +510,10 @@ std::vector<std::unique_ptr<RangedAudioParameter>> SimpleDecoderAudioProcessor::
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("swChannel", "SW Channel Number", "",
                                      NormalisableRange<float> (1.0f, 64.0f, 1.0f), 1.0f,
                                      [](float value) { return String ((int) value);}, nullptr));
+
+    params.push_back (std::make_unique<AudioParameterChoice> ("weights", "Ambisonic Weights", weightsStrings, 1));
+
+    params.push_back (std::make_unique<AudioParameterFloat> ("overallGain", "Overall Gain", NormalisableRange<float> (-20.0f, 20.0f, 0.01f), 0.0f, "dB", AudioProcessorParameter::outputGain, [] (float value, int maximumStringLength) { return String (value, maximumStringLength); }, nullptr));
 
     return params;
 }

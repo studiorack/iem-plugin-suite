@@ -463,22 +463,22 @@ public:
         "      gl_FragColor.w = alphaOut * gl_FragColor.w;\n"
         "}";
 
-        ScopedPointer<OpenGLShaderProgram> newShader (new OpenGLShaderProgram (openGLContext));
+        std::unique_ptr<OpenGLShaderProgram> newShader (new OpenGLShaderProgram (openGLContext));
         String statusText;
 
         if (newShader->addVertexShader (OpenGLHelpers::translateVertexShaderToV3 (vertexShader))
             && newShader->addFragmentShader (OpenGLHelpers::translateFragmentShaderToV3 (fragmentShader))
             && newShader->link())
         {
-            shader = newShader;
+            shader = std::move (newShader);
             shader->use();
             statusText = "GLSL: v" + String (OpenGLShaderProgram::getLanguageVersion(), 2);
 
-            projectionMatrix = createUniform (openGLContext, *shader, "projectionMatrix");
-            viewMatrix       = createUniform (openGLContext, *shader, "viewMatrix");
-            alpha = createUniform (openGLContext, *shader, "alpha");
-            blackFlag       = createUniform (openGLContext, *shader, "blackFlag");
-            drawPointsFlag       = createUniform (openGLContext, *shader, "drawPointsFlag");
+            projectionMatrix.reset (createUniform (openGLContext, *shader, "projectionMatrix"));
+            viewMatrix.reset (createUniform (openGLContext, *shader, "viewMatrix"));
+            alpha.reset (createUniform (openGLContext, *shader, "alpha"));
+            blackFlag.reset (createUniform (openGLContext, *shader, "blackFlag"));
+            drawPointsFlag.reset (createUniform (openGLContext, *shader, "drawPointsFlag"));
         }
         else
         {
@@ -519,8 +519,8 @@ private:
     GLuint vertexBuffer=0, indexBuffer=0, normalsBuffer=0;
     const char* vertexShader;
     const char* fragmentShader;
-    ScopedPointer<OpenGLShaderProgram> shader;
-    ScopedPointer<OpenGLShaderProgram::Uniform> projectionMatrix, viewMatrix, alpha, blackFlag, drawPointsFlag;
+    std::unique_ptr<OpenGLShaderProgram> shader;
+    std::unique_ptr<OpenGLShaderProgram::Uniform> projectionMatrix, viewMatrix, alpha, blackFlag, drawPointsFlag;
 
     static OpenGLShaderProgram::Uniform* createUniform (OpenGLContext& openGLContext, OpenGLShaderProgram& shaderProgram, const char* uniformName)
     {

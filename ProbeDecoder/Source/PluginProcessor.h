@@ -28,6 +28,7 @@
 #include "../../resources/AudioProcessorBase.h"
 #include "../../resources/Conversions.h"
 
+#define ProcessorClass ProbeDecoderAudioProcessor
 
 //==============================================================================
 /**
@@ -35,6 +36,8 @@
 class ProbeDecoderAudioProcessor  : public AudioProcessorBase<IOTypes::Ambisonics<>, IOTypes::AudioChannels<1>>
 {
 public:
+    constexpr static int numberOfInputChannels = 64;
+    constexpr static int numberOfOutputChannels = 1;
     //==============================================================================
     ProbeDecoderAudioProcessor();
     ~ProbeDecoderAudioProcessor();
@@ -73,7 +76,7 @@ public:
 
 private:
     //==============================================================================
-    
+
     float *azimuth;
     float *elevation;
 

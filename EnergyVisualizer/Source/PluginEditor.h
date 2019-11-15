@@ -73,10 +73,10 @@ private:
     ReverseSlider slDynamicRange;
     SimpleLabel lbPeakLevel;
     SimpleLabel lbDynamicRange;
-    ScopedPointer<SliderAttachment> slPeakLevelAttachment, slDynamicRangeAttachment;
+    std::unique_ptr<SliderAttachment> slPeakLevelAttachment, slDynamicRangeAttachment;
 
-    ScopedPointer<ComboBoxAttachment> cbNormalizationAtachement;
-    ScopedPointer<ComboBoxAttachment> cbOrderAtachement;
+    std::unique_ptr<ComboBoxAttachment> cbNormalizationAtachement;
+    std::unique_ptr<ComboBoxAttachment> cbOrderAtachement;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (EnergyVisualizerAudioProcessorEditor)
 };

@@ -74,7 +74,7 @@ createParameterLayout())
     options.folderName          = "IEM";
     options.osxLibrarySubFolder = "Preferences";
 
-    properties = new PropertiesFile (options);
+    properties.reset (new PropertiesFile (options));
     lastDir = File (properties->getValue ("presetFolder"));
 
     tempValues.resize(64);
@@ -235,13 +235,13 @@ AudioProcessorEditor* DistanceCompensatorAudioProcessor::createEditor()
 //==============================================================================
 void DistanceCompensatorAudioProcessor::getStateInformation (MemoryBlock& destData)
 {
-    // You should use this method to store your parameters in the memory block.
-    // You could do that either as raw data, or use the XML or ValueTree classes
-    // as intermediaries to make it easy to save and load complex data.
-    auto state = parameters.copyState();
-    state.setProperty ("OSCPort", var(oscReceiver.getPortNumber()), nullptr);
-    std::unique_ptr<XmlElement> xml (state.createXml());
-    copyXmlToBinary (*xml, destData);
+  auto state = parameters.copyState();
+
+  auto oscConfig = state.getOrCreateChildWithName ("OSCConfig", nullptr);
+  oscConfig.copyPropertiesFrom (oscParameterInterface.getConfig(), nullptr);
+
+  std::unique_ptr<XmlElement> xml (state.createXml());
+  copyXmlToBinary (*xml, destData);
 }
 
 
@@ -256,10 +256,15 @@ void DistanceCompensatorAudioProcessor::setStateInformation (const void* data, i
         {
             parameters.state = ValueTree::fromXml (*xmlState);
             loadedLoudspeakerPositions.clear();
-            if (parameters.state.hasProperty ("OSCPort"))
+            if (parameters.state.hasProperty ("OSCPort")) // legacy
             {
-                oscReceiver.connect (parameters.state.getProperty ("OSCPort", var (-1)));
+                oscParameterInterface.getOSCReceiver().connect (parameters.state.getProperty ("OSCPort", var (-1)));
+                parameters.state.removeProperty ("OSCPort", nullptr);
             }
+
+            auto oscConfig = parameters.state.getChildWithName ("OSCConfig");
+            if (oscConfig.isValid())
+                oscParameterInterface.setConfig (oscConfig);
         }
 
 }

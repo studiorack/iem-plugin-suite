@@ -45,7 +45,7 @@ createParameterLayout())
     options.folderName          = "IEM";
     options.osxLibrarySubFolder = "Preferences";
 
-    properties = new PropertiesFile(options);
+    properties.reset (new PropertiesFile(options));
     lastDir = File(properties->getValue("configurationFolder"));
 }
 
@@ -114,8 +114,7 @@ void MatrixMultiplierAudioProcessor::processBlock (AudioSampleBuffer& buffer, Mi
     ScopedNoDenormals noDenormals;
 
     AudioBlock<float> ab (buffer);
-    ProcessContextNonReplacing<float> context (ab, ab);
-    matTrans.process(context);
+    matTrans.processReplacing (ab);
 }
 
 //==============================================================================
@@ -133,8 +132,12 @@ AudioProcessorEditor* MatrixMultiplierAudioProcessor::createEditor()
 void MatrixMultiplierAudioProcessor::getStateInformation (MemoryBlock& destData)
 {
     auto state = parameters.copyState();
+
     state.setProperty("lastOpenedConfigurationFile", var(lastFile.getFullPathName()), nullptr);
-    state.setProperty ("OSCPort", var(oscReceiver.getPortNumber()), nullptr);
+
+    auto oscConfig = state.getOrCreateChildWithName ("OSCConfig", nullptr);
+    oscConfig.copyPropertiesFrom (oscParameterInterface.getConfig(), nullptr);
+
     std::unique_ptr<XmlElement> xml (state.createXml());
     copyXmlToBinary (*xml, destData);
 }
@@ -157,12 +160,15 @@ void MatrixMultiplierAudioProcessor::setStateInformation (const void* data, int 
                     loadConfiguration (f);
                 }
             }
-            if (parameters.state.hasProperty ("OSCPort"))
+            if (parameters.state.hasProperty ("OSCPort")) // legacy
             {
-                oscReceiver.connect (parameters.state.getProperty ("OSCPort", var (-1)));
+                oscParameterInterface.getOSCReceiver().connect (parameters.state.getProperty ("OSCPort", var (-1)));
+                parameters.state.removeProperty ("OSCPort", nullptr);
             }
 
-
+            auto oscConfig = parameters.state.getChildWithName ("OSCConfig");
+            if (oscConfig.isValid())
+                oscParameterInterface.setConfig (oscConfig);
         }
 }
 

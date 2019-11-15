@@ -26,7 +26,7 @@
 
 //==============================================================================
 BinauralDecoderAudioProcessorEditor::BinauralDecoderAudioProcessorEditor (BinauralDecoderAudioProcessor& p, AudioProcessorValueTreeState& vts)
-    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts), footer (p.getOSCReceiver())
+    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts), footer (p.getOSCParameterInterface())
 {
     // ============== BEGIN: essentials ======================
     // set GUI size and lookAndFeel
@@ -43,8 +43,8 @@ BinauralDecoderAudioProcessorEditor::BinauralDecoderAudioProcessorEditor (Binaur
 
 
     // create the connection between title component's comboBoxes and parameters
-    cbOrderSettingAttachment = new ComboBoxAttachment(valueTreeState, "inputOrderSetting", *title.getInputWidgetPtr()->getOrderCbPointer());
-    cbNormalizationSettingAttachment = new ComboBoxAttachment(valueTreeState, "useSN3D", *title.getInputWidgetPtr()->getNormCbPointer());
+    cbOrderSettingAttachment.reset (new ComboBoxAttachment (valueTreeState, "inputOrderSetting", *title.getInputWidgetPtr()->getOrderCbPointer()));
+    cbNormalizationSettingAttachment.reset (new ComboBoxAttachment (valueTreeState, "useSN3D", *title.getInputWidgetPtr()->getNormCbPointer()));
 
     addAndMakeVisible(lbEq);
     lbEq.setText("Headphone Equalization");
@@ -52,7 +52,7 @@ BinauralDecoderAudioProcessorEditor::BinauralDecoderAudioProcessorEditor (Binaur
     addAndMakeVisible(cbEq);
     cbEq.addItem("OFF", 1);
     cbEq.addItemList(processor.headphoneEQs, 2);
-    cbEqAttachment = new ComboBoxAttachment(valueTreeState, "applyHeadphoneEq", cbEq);
+    cbEqAttachment.reset (new ComboBoxAttachment (valueTreeState, "applyHeadphoneEq", cbEq));
 
 
 
@@ -99,9 +99,7 @@ void BinauralDecoderAudioProcessorEditor::resized()
 void BinauralDecoderAudioProcessorEditor::timerCallback()
 {
     // === update titleBar widgets according to available input/output channel counts
-    int maxInSize, maxOutSize;
-    processor.getMaxSize(maxInSize, maxOutSize);
-    title.setMaxSize(maxInSize, maxOutSize);
+    title.setMaxSize (processor.getMaxSize());
     // ==========================================
 
     // insert stuff you want to do be done at every timer callback

@@ -32,12 +32,17 @@
 #include "../../resources/ReferenceCountedDecoder.h"
 #include "../../resources/FilterVisualizerHelper.h"
 
+#define ProcessorClass SimpleDecoderAudioProcessor
 
 using namespace dsp;
 //==============================================================================
 class SimpleDecoderAudioProcessor  :   public AudioProcessorBase<IOTypes::Ambisonics<>, IOTypes::AudioChannels<>>
 {
 public:
+    constexpr static int numberOfInputChannels = 64;
+    constexpr static int numberOfOutputChannels = 64;
+    static const StringArray weightsStrings;
+
     //==============================================================================
     SimpleDecoderAudioProcessor();
     ~SimpleDecoderAudioProcessor();
@@ -79,8 +84,8 @@ public:
     void setLastDir(File newLastDir);
     void loadConfiguration(const File& presetFile);
 
-    bool updateDecoderInfo = true;
-    bool messageChanged {true};
+    Atomic<bool> updateDecoderInfo = true;
+    Atomic<bool> messageChanged {true};
     String getMessageForEditor() {return messageForEditor;}
 
     ReferenceCountedDecoder::Ptr getCurrentDecoderConfig()
@@ -106,6 +111,7 @@ private:
 
     float *swMode;
     float *swChannel;
+    float *weights;
 
     // =========================================
 
@@ -113,19 +119,21 @@ private:
 
     File lastDir;
     File lastFile;
-    ScopedPointer<PropertiesFile> properties;
+    std::unique_ptr<PropertiesFile> properties;
 
     AudioBuffer<float> swBuffer;
 
 
     // processors
-    ScopedPointer<IIR::Filter<float>> lowPass1;
-    ScopedPointer<IIR::Filter<float>> lowPass2;
+    std::unique_ptr<IIR::Filter<float>> lowPass1;
+    std::unique_ptr<IIR::Filter<float>> lowPass2;
     IIR::Coefficients<float>::Ptr highPassCoeffs;
     IIR::Coefficients<float>::Ptr lowPassCoeffs;
 
     ProcessorDuplicator<IIR::Filter<float>, IIR::Coefficients<float>> highPass1;
     ProcessorDuplicator<IIR::Filter<float>, IIR::Coefficients<float>> highPass2;
+
+    dsp::Gain<float> masterGain;
 
     ProcessSpec highPassSpecs {48000, 0, 0};
 

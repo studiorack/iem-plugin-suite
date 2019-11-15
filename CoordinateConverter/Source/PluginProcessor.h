@@ -26,11 +26,14 @@
 #include "../../resources/AudioProcessorBase.h"
 #include "../../resources/Conversions.h"
 
+#define ProcessorClass CoordinateConverterAudioProcessor
 
 //==============================================================================
 class CoordinateConverterAudioProcessor  : public AudioProcessorBase<IOTypes::AudioChannels<64>, IOTypes::AudioChannels<64>>
 {
 public:
+    constexpr static int numberOfInputChannels = 64;
+    constexpr static int numberOfOutputChannels = 64;
     //==============================================================================
     CoordinateConverterAudioProcessor();
     ~CoordinateConverterAudioProcessor();

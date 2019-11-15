@@ -33,7 +33,7 @@
 #include "../../resources/customComponents/ReverseSlider.h"
 #include "../../resources/customComponents/SimpleLabel.h"
 #include "../../resources/customComponents/FilterVisualizer.h"
-#include "../../resources/customComponents/DecoderInfoBox.h"
+#include "DecoderInfoBox.h"
 
 
 typedef ReverseSlider::SliderAttachment SliderAttachment; // all ReverseSliders will make use of the parameters' valueToText() function
@@ -43,7 +43,7 @@ typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 //==============================================================================
 /**
 */
-class SimpleDecoderAudioProcessorEditor  : public AudioProcessorEditor, private Timer, private Button::Listener, public AudioProcessorValueTreeState::Listener
+class SimpleDecoderAudioProcessorEditor  : public AudioProcessorEditor, private Timer, public AudioProcessorValueTreeState::Listener
 {
 public:
     SimpleDecoderAudioProcessorEditor (SimpleDecoderAudioProcessor&, AudioProcessorValueTreeState&);
@@ -55,8 +55,6 @@ public:
 
 
     void timerCallback() override;
-    void buttonClicked (Button* button) override;
-    void buttonStateChanged (Button* button) override;
     void loadPresetFile();
     void parameterChanged (const String &parameterID, float newValue) override;
 private:
@@ -83,30 +81,33 @@ private:
 
     // Attachments to create a connection between IOWidgets comboboxes
     // and the associated parameters
-    ScopedPointer<ComboBoxAttachment> cbOrderSettingAttachment;
-    ScopedPointer<ComboBoxAttachment> cbNormalizationSettingAttachment;
-    //ScopedPointer<ComboBoxAttachment> cbOutputChannelsSettingAttachment;
+    std::unique_ptr<ComboBoxAttachment> cbOrderSettingAttachment;
+    std::unique_ptr<ComboBoxAttachment> cbNormalizationSettingAttachment;
+    //std::unique_ptr<ComboBoxAttachment> cbOutputChannelsSettingAttachment;
 
     bool updateChannelsInWidget = false;
     bool enableSubwooferChannelControls;
     bool changeEnablement = false;
 
-    GroupComponent gcFilter, gcSw, gcConfiguration;
+    GroupComponent gcFilter, gcSw, gcConfiguration, gcGain;
 
     // Filter slider
     ReverseSlider slLowPassFrequency, slHighPassFrequency, slLowPassGain;
-    ScopedPointer<SliderAttachment> slLowPassFrequencyAttachment, slLowPassGainAttachment, slHighPassFrequencyAttachment;
+    std::unique_ptr<SliderAttachment> slLowPassFrequencyAttachment, slLowPassGainAttachment, slHighPassFrequencyAttachment;
     SimpleLabel lbLowPassFrequency, lbLowPassGain, lbHighPassFrequency;
 
     // Subwoofer mode
     ComboBox cbSwMode;
-    ScopedPointer<ComboBoxAttachment> cbSwModeAttachment;
+    std::unique_ptr<ComboBoxAttachment> cbSwModeAttachment;
     SimpleLabel lbSwMode, lbSwChannel, lbAlreadyUsed;
     ReverseSlider slSwChannel;
-    ScopedPointer<SliderAttachment> slSwChannelAttachment;
+    std::unique_ptr<SliderAttachment> slSwChannelAttachment;
     //
     TextButton btLoadFile;
     DecoderInfoBox dcInfoBox;
+
+    ReverseSlider slGain;
+    std::unique_ptr<SliderAttachment> slGainAttachment;
 
     ReferenceCountedDecoder::Ptr lastDecoder = nullptr;
 

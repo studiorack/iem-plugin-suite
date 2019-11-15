@@ -46,6 +46,8 @@
 # define IIRfloat_elements() 1
 #endif /* JUCE_USE_SIMD */
 
+#define ProcessorClass RoomEncoderAudioProcessor
+
 const int mSig[] = {1,-1};
 using namespace juce::dsp;
 
@@ -92,6 +94,8 @@ class RoomEncoderAudioProcessor  :  public AudioProcessorBase<IOTypes::Ambisonic
                                     private Timer
 {
 public:
+    constexpr static int numberOfInputChannels = 64;
+    constexpr static int numberOfOutputChannels = 64;
     //==============================================================================
     RoomEncoderAudioProcessor();
     ~RoomEncoderAudioProcessor();
@@ -99,11 +103,11 @@ public:
     //==============================================================================
 
     void initializeReflectionList();
-    
+
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;
-    
+
     void processBlock (AudioSampleBuffer&, MidiBuffer&) override;
 
     //==============================================================================
@@ -152,7 +156,8 @@ public:
 
 private:
     //==============================================================================
-    
+    inline void clear (AudioBlock<IIRfloat>& ab);
+
     bool readingSharedParams = false;;
 
     double phi;
@@ -204,14 +209,14 @@ private:
     SharedResourcePointer<SharedParams> sharedParams;
 
     //SIMD IIR Filter
-    OwnedArray<IIR::Filter<IIRfloat>> lowShelfArray;
-    OwnedArray<IIR::Filter<IIRfloat>> highShelfArray;
-    OwnedArray<IIR::Filter<IIRfloat>> lowShelfArray2;
-    OwnedArray<IIR::Filter<IIRfloat>> highShelfArray2;
+
+    OwnedArray<OwnedArray<IIR::Filter<IIRfloat>>> lowShelfArray;
+    OwnedArray<OwnedArray<IIR::Filter<IIRfloat>>> highShelfArray;
     HeapBlock<char> interleavedBlockData[16], zeroData; //todo: dynamically?
     OwnedArray<AudioBlock<IIRfloat>> interleavedData;
     AudioBlock<float> zero;
 
+    Array<int> filterPoints {1, 7, 25, 61, 113, 169, 213};
 
     Vector3D<float> sourcePos, listenerPos;
 
@@ -237,6 +242,6 @@ private:
     AudioBuffer<float> monoBuffer;
 
     OwnedArray<ReflectionProperty> reflectionList;
-    
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (RoomEncoderAudioProcessor)
 };

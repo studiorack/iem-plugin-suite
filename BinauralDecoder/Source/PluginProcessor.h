@@ -26,10 +26,15 @@
 #include "../../resources/AudioProcessorBase.h"
 #include <fftw3.h>
 
+#define ProcessorClass BinauralDecoderAudioProcessor
+
 using namespace dsp;
 class BinauralDecoderAudioProcessor  :  public AudioProcessorBase<IOTypes::Ambisonics<>, IOTypes::AudioChannels<2>>
 {
 public:
+    constexpr static int numberOfInputChannels = 64;
+    constexpr static int numberOfOutputChannels = 2;
+
     //==============================================================================
     BinauralDecoderAudioProcessor();
     ~BinauralDecoderAudioProcessor();

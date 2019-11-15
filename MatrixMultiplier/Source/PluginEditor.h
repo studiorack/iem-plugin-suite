@@ -81,8 +81,6 @@ private:
 
     // Attachments to create a connection between IOWidgets comboboxes
     // and the associated parameters
-//    ScopedPointer<ComboBoxAttachment> cbInputChannelsSettingAttachment;
-//    ScopedPointer<ComboBoxAttachment> cbOutputChannelsSettingAttachment;
 
     TextButton btLoadFile;
     TextEditor edOutput;

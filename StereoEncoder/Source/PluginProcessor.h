@@ -32,6 +32,7 @@
 #include "../../resources/Conversions.h"
 
 
+#define ProcessorClass StereoEncoderAudioProcessor
 
 //==============================================================================
 /**
@@ -39,6 +40,8 @@
 class StereoEncoderAudioProcessor  : public AudioProcessorBase<IOTypes::AudioChannels<2>, IOTypes::Ambisonics<>>
 {
 public:
+    constexpr static int numberOfInputChannels = 2;
+    constexpr static int numberOfOutputChannels = 64;
     //==============================================================================
     StereoEncoderAudioProcessor();
     ~StereoEncoderAudioProcessor();
@@ -46,7 +49,7 @@ public:
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;
-    
+
     void processBlock (AudioSampleBuffer&, MidiBuffer&) override;
 
     //==============================================================================
@@ -113,7 +116,7 @@ private:
     Atomic<bool> positionHasChanged = true;
 
     iem::Quaternion<float> quaternionDirection;
-    
+
     AudioBuffer<float> bufferCopy;
 
     LinearSmoothedValue<float> smoothAzimuthL, smoothElevationL;

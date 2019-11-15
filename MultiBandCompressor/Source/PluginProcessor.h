@@ -28,21 +28,17 @@
 #include "../../resources/FilterVisualizerHelper.h"
 #include "../../resources/Compressor.h"
 
+#define ProcessorClass MultiBandCompressorAudioProcessor
 
 using namespace juce::dsp;
 using ParameterLayout = AudioProcessorValueTreeState::ParameterLayout;
 
-//==============================================================================
-/**
- Use the IOHelper to detect which amount of channels or which Ambisonic order is possible with the current bus layout.
- The available IOTypes are:
-    - AudioChannels<maxChannelCount>
-    - Ambisonics<maxOrder> (can also be used for directivity signals)
- You can leave `maxChannelCount` and `maxOrder` empty for default values (64 channels and 7th order)
-*/
+
 class MultiBandCompressorAudioProcessor  : public AudioProcessorBase<IOTypes::Ambisonics<>, IOTypes:: Ambisonics<>>
 {
 public:
+    constexpr static int numberOfInputChannels = 64;
+    constexpr static int numberOfOutputChannels = 64;
     //==============================================================================
     MultiBandCompressorAudioProcessor();
     ~MultiBandCompressorAudioProcessor();
@@ -114,6 +110,8 @@ public:
 private:
     void calculateCoefficients (const int index);
     void copyCoeffsToProcessor();
+
+    inline void clear (AudioBlock<filterFloatType>& ab);
 
     double lastSampleRate {48000};
     const int maxNumFilters;

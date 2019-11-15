@@ -26,7 +26,7 @@
 
 //==============================================================================
 AllRADecoderAudioProcessorEditor::AllRADecoderAudioProcessorEditor (AllRADecoderAudioProcessor& p, AudioProcessorValueTreeState& vts)
-    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts), footer (p.getOSCReceiver()), lv(processor.points, processor.triangles, processor.normals, processor.imaginaryFlags), lspList(processor.getLoudspeakersValueTree(), lv, grid, processor.undoManager, processor), grid(processor.points, processor.imaginaryFlags, processor.energyDistribution, processor.rEVector)
+    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts), footer (p.getOSCParameterInterface()), lv(processor.points, processor.triangles, processor.normals, processor.imaginaryFlags), lspList(processor.getLoudspeakersValueTree(), lv, grid, processor.undoManager, processor), grid(processor.points, processor.imaginaryFlags, processor.energyDistribution, processor.rEVector)
 {
     // ============== BEGIN: essentials ======================
     // set GUI size and lookAndFeel
@@ -43,14 +43,26 @@ AllRADecoderAudioProcessorEditor::AllRADecoderAudioProcessorEditor (AllRADecoder
 
 
     // create the connection between title component's comboBoxes and parameters
-    cbNormalizationSettingAttachment = new ComboBoxAttachment(valueTreeState, "useSN3D", *title.getInputWidgetPtr()->getNormCbPointer());
-    cbOrderSettingAttachment = new ComboBoxAttachment(valueTreeState, "inputOrderSetting", *title.getInputWidgetPtr()->getOrderCbPointer());
+    cbNormalizationSettingAttachment.reset (new ComboBoxAttachment (valueTreeState, "useSN3D", *title.getInputWidgetPtr()->getNormCbPointer()));
+    cbOrderSettingAttachment.reset (new ComboBoxAttachment(valueTreeState, "inputOrderSetting", *title.getInputWidgetPtr()->getOrderCbPointer()));
 
-    addAndMakeVisible(cbDecoderOrder);
-    cbDecoderOrder.addSectionHeading("Decoder order");
+    addAndMakeVisible (cbDecoderOrder);
+    cbDecoderOrder.setJustificationType (Justification::centred);
+    cbDecoderOrder.addSectionHeading ("Decoder order");
     for (int n = 1; n <= 7; ++n)
-        cbDecoderOrder.addItem(getOrderString(n), n);
-    cbDecoderOrderAttachment = new ComboBoxAttachment(valueTreeState, "decoderOrder", cbDecoderOrder);
+        cbDecoderOrder.addItem (getOrderString(n), n);
+    cbDecoderOrderAttachment.reset (new ComboBoxAttachment (valueTreeState, "decoderOrder", cbDecoderOrder));
+
+    addAndMakeVisible (lbDecoderOrder);
+    lbDecoderOrder.setText ("Decoder Order", Justification::left);
+
+    addAndMakeVisible (cbDecoderWeights);
+    cbDecoderWeights.setJustificationType (Justification::centred);
+    cbDecoderWeights.addItemList (p.weightsStrings, 1);
+    cbDecoderWeightsAttachment.reset (new ComboBoxAttachment (valueTreeState, "weights", cbDecoderWeights));
+
+    addAndMakeVisible (lbDecoderWeights);
+    lbDecoderWeights.setText ("Weights", Justification::left);
 
     addAndMakeVisible(gcLayout);
     gcLayout.setText("Loudspeaker Layout");
@@ -61,16 +73,13 @@ AllRADecoderAudioProcessorEditor::AllRADecoderAudioProcessorEditor (AllRADecoder
     addAndMakeVisible(gcExport);
     gcExport.setText("Export Decoder/Layout");
 
-    addAndMakeVisible(lbDecoderOrder);
-    lbDecoderOrder.setText("Decoder Order");
-
     addAndMakeVisible(tbExportDecoder);
-    tbExportDecoderAttachment = new ButtonAttachment(valueTreeState, "exportDecoder", tbExportDecoder);
+    tbExportDecoderAttachment.reset (new ButtonAttachment(valueTreeState, "exportDecoder", tbExportDecoder));
     tbExportDecoder.setButtonText("Export Decoder");
     tbExportDecoder.setColour(ToggleButton::tickColourId, Colours::orange);
 
     addAndMakeVisible(tbExportLayout);
-    tbExportLayoutAttachment = new ButtonAttachment(valueTreeState, "exportLayout", tbExportLayout);
+    tbExportLayoutAttachment.reset (new ButtonAttachment(valueTreeState, "exportLayout", tbExportLayout));
     tbExportLayout.setButtonText("Export Layout");
     tbExportLayout.setColour(ToggleButton::tickColourId, Colours::limegreen);
 
@@ -127,7 +136,7 @@ AllRADecoderAudioProcessorEditor::AllRADecoderAudioProcessorEditor (AllRADecoder
 
     // start timer after everything is set up properly
     startTimer(50);
-    
+
     tooltipWin.setLookAndFeel (&globalLaF);
     tooltipWin.setMillisecondsBeforeTipAppears (500);
     tooltipWin.setOpaque (false);
@@ -202,13 +211,17 @@ void AllRADecoderAudioProcessorEditor::resized()
     Rectangle<int> exportArea = bottomRight;
 
 
-    gcDecoder.setBounds(decoderArea);
-    decoderArea.removeFromTop(25);
-    Rectangle<int> decoderCtrlRow = decoderArea.removeFromTop(20);
-    lbDecoderOrder.setBounds(decoderCtrlRow.removeFromLeft(80));
-    cbDecoderOrder.setBounds(decoderCtrlRow.removeFromLeft(50));;
-    decoderArea.removeFromTop(5);
-    tbCalculateDecoder.setBounds(decoderArea.removeFromTop(20));
+    gcDecoder.setBounds (decoderArea);
+    decoderArea.removeFromTop (25);
+    auto decoderCtrlRow = decoderArea.removeFromTop (20);
+    lbDecoderOrder.setBounds (decoderCtrlRow.removeFromLeft (80));
+    cbDecoderOrder.setBounds (decoderCtrlRow.removeFromLeft (55));;
+    decoderArea.removeFromTop (5);
+    decoderCtrlRow = decoderArea.removeFromTop (20);
+    lbDecoderWeights.setBounds (decoderCtrlRow.removeFromLeft (55));
+    cbDecoderWeights.setBounds (decoderCtrlRow.removeFromLeft (80));;
+    decoderArea.removeFromTop (5);
+    tbCalculateDecoder.setBounds (decoderArea.removeFromTop (20));
 
 
     gcExport.setBounds(exportArea);
@@ -232,9 +245,7 @@ void AllRADecoderAudioProcessorEditor::resized()
 void AllRADecoderAudioProcessorEditor::timerCallback()
 {
     // === update titleBar widgets according to available input/output channel counts
-    int maxInSize, maxOutSize;
-    processor.getMaxSize(maxInSize, maxOutSize);
-    title.setMaxSize(maxInSize, maxOutSize);
+    title.setMaxSize (processor.getMaxSize());
     // ==========================================
 
 

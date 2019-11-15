@@ -35,7 +35,7 @@ using namespace juce::dsp;
 #include "../../resources/MultiChannelGain.h"
 #include "../../resources/MultiChannelDelay.h"
 
-
+#define ProcessorClass DistanceCompensatorAudioProcessor
 
 //==============================================================================
 class DistanceCompensatorAudioProcessor  : public AudioProcessorBase<IOTypes::AudioChannels<64>, IOTypes::AudioChannels<64>>
@@ -47,6 +47,8 @@ class DistanceCompensatorAudioProcessor  : public AudioProcessorBase<IOTypes::Au
     };
 
 public:
+    constexpr static int numberOfInputChannels = 64;
+    constexpr static int numberOfOutputChannels = 64;
     //==============================================================================
     DistanceCompensatorAudioProcessor();
     ~DistanceCompensatorAudioProcessor();
@@ -122,7 +124,7 @@ private:
 
     // ===== last directory loaded from
     File lastDir;
-    ScopedPointer<PropertiesFile> properties;
+    std::unique_ptr<PropertiesFile> properties;
 
     Array<float> tempValues;
 

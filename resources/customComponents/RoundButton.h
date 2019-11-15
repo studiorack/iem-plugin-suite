@@ -52,7 +52,7 @@ public:
             buttonArea = Rectangle<float> (bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight());
             buttonArea.reduce (0.5f, 0.4f);
         }
-      
+
         const bool isButtonDown = isMouseButtonDown();
         const bool isMouseOverButton = isMouseOver();
 
@@ -72,7 +72,7 @@ public:
 
         isCircularShape == true ? g.fillEllipse (buttonArea) : g.fillRoundedRectangle (buttonArea, 10.0f);
 
-        
+
         g.setFont (getLookAndFeel().getTypefaceForFont (Font (13.0f, 1)));
         g.setFont (buttonArea.getHeight() * scaleFontSize);
         g.setColour (findColour (getToggleState() ? TextButton::textColourOnId
@@ -87,12 +87,12 @@ public:
     void resized() override
     {
     }
-  
+
     void setScaleFontSize (const float newScale)
     {
         scaleFontSize = newScale;
     }
-  
+
     void setCircularShape (bool shouldBeCircularShape)
     {
         isCircularShape = shouldBeCircularShape;

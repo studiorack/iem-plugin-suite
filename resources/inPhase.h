@@ -248,6 +248,36 @@ const float inPhase7[64] = {
     1.5540015540015540e-04f
 };
 
+// as inPhase attenuates higher orders, encoding and sampling at same directions won't result the same amplitude
+// these are the correction factors for that problem
+// calculated with the Matlab RUMS toolbox: n = (N + 1)^2; correction = n / sum (inPhase (N, true));
+const float inPhaseCorrection[8] =
+{
+    1.0f,
+    2.0f,
+    3.0f,
+    4.0f,
+    5.0f,
+    6.0f,
+    7.0f,
+    8.0f
+};
+
+// energy correction
+// calculated with the Matlab RUMS toolbox: n = (N + 1)^2; correction = sqrt (sqrt ((N+1) / sum (inPhase(N))));
+const float inPhaseCorrectionEnergy[8] =
+{
+    1.0f,
+    1.10668192f,
+    1.17017366f,
+    1.21614964f,
+    1.252492535f,
+    1.28269475f,
+    1.308620875f,
+    1.331388035f
+};
+
+
 
 inline void multiplyInPhase(const int N, float *data) {
     switch (N) {

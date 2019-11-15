@@ -25,12 +25,12 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "../hammerAitovSample.h"
-#include <Eigen/Dense>
 #include "../../resources/efficientSHvanilla.h"
 #include "../../resources/ambisonicTools.h"
 #include "../../resources/AudioProcessorBase.h"
 #include "../../resources/MaxRE.h"
 
+#define ProcessorClass EnergyVisualizerAudioProcessor
 
 //==============================================================================
 /**
@@ -38,6 +38,8 @@
 class EnergyVisualizerAudioProcessor  : public AudioProcessorBase<IOTypes::Ambisonics<>, IOTypes::Nothing>, private Timer
 {
 public:
+    constexpr static int numberOfInputChannels = 64;
+    constexpr static int numberOfOutputChannels = 64;
     //==============================================================================
     EnergyVisualizerAudioProcessor();
     ~EnergyVisualizerAudioProcessor();
@@ -71,24 +73,27 @@ public:
     std::vector<std::unique_ptr<RangedAudioParameter>> createParameterLayout();
     //==============================================================================
 
-    Array<float> rms;
+    const float getPeakLevelSetting() { return *peakLevel; }
+    const float getDynamicRange() { return *dynamicRange; }
+
+    std::vector<float> rms;
     Atomic<Time> lastEditorTime;
 
 private:
     //==============================================================================
-    Eigen::DiagonalMatrix<float, 64> maxReWeights;
-
-    float timeConstant;
-    // parameter
+    // parameters
     float *orderSetting, *useSN3D, *peakLevel, *dynamicRange;
 
+    float timeConstant;
+
     Atomic<bool> doProcessing = true;
-    
-    Eigen::Matrix<float,nSamplePoints,64,Eigen::ColMajor> YH;
-    Eigen::Matrix<float,nSamplePoints,64,Eigen::ColMajor> workingMatrix;
-    AudioSampleBuffer sampledSignals;
+
+    dsp::Matrix<float> decoderMatrix;
+    std::vector<float> weights;
+    std::vector<float> sampledSignal;
 
     void timerCallback() override;
+    void sendAdditionalOSCMessages (OSCSender& oscSender, const OSCAddressPattern& address) override;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (EnergyVisualizerAudioProcessor)

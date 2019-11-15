@@ -30,53 +30,85 @@ using namespace dsp;
 class MatrixMultiplication
 {
 public:
-    MatrixMultiplication() {
-    }
+    MatrixMultiplication() {}
 
-    ~MatrixMultiplication() {}
-
-    void prepare (const ProcessSpec& newSpec)
+    void prepare (const ProcessSpec& newSpec, const bool prepareInputBuffering = true)
     {
         spec = newSpec;
 
-        buffer.setSize(buffer.getNumChannels(), spec.maximumBlockSize);
+        if (prepareInputBuffering)
+        {
+            buffer.setSize (buffer.getNumChannels(), spec.maximumBlockSize);
+            bufferPrepared = true;
+        }
+        else
+        {
+            buffer.setSize (0, 0);
+            bufferPrepared = false;
+        }
 
-        //inputMatrix.resize(Eigen::NoChange, spec.maximumBlockSize);
         checkIfNewMatrixAvailable();
     }
 
-    void process (const ProcessContextNonReplacing<float>& context)
+    void processReplacing (AudioBlock<float> data)
     {
-        ScopedNoDenormals noDenormals;
         checkIfNewMatrixAvailable();
+
+        // you have to call the prepare method with prepareInputBuffering set to true in order tu use the processReplacing method
+        jassert (bufferPrepared);
+
+        ReferenceCountedMatrix::Ptr retainedCurrentMatrix (currentMatrix);
+        if (retainedCurrentMatrix == nullptr || ! bufferPrepared)
+        {
+            data.clear();
+            return;
+        }
+
+        auto& T = retainedCurrentMatrix->getMatrix();
+
+        const int nInputChannels = jmin (static_cast<int> (data.getNumChannels()), static_cast<int> (T.getNumColumns()));
+        const int nSamples = static_cast<int> (data.getNumSamples());
+
+        // copy input data to buffer
+        for (int ch = 0; ch < nInputChannels; ++ch)
+            buffer.copyFrom(ch, 0, data.getChannelPointer (ch), nSamples);
+
+        AudioBlock<float> ab (buffer.getArrayOfWritePointers(), nInputChannels, 0, nSamples);
+        processNonReplacing (ab, data, false);
+    }
+
+    void processNonReplacing (const AudioBlock<float> inputBlock, AudioBlock<float> outputBlock, const bool checkNewMatrix = true)
+    {
+        // you should call the processReplacing instead, it will buffer the input data
+        // this is a weak check, as e.g. if number channels differ, it won't trigger
+        jassert (inputBlock != outputBlock);
+
+        ScopedNoDenormals noDenormals;
+
+        if (checkNewMatrix)
+            checkIfNewMatrixAvailable();
 
         ReferenceCountedMatrix::Ptr retainedCurrentMatrix (currentMatrix);
         if (retainedCurrentMatrix == nullptr)
         {
-            context.getOutputBlock().clear();
+            outputBlock.clear();
             return;
         }
 
-        auto& inputBlock = context.getInputBlock();
-        auto& outputBlock = context.getOutputBlock();
         auto& T = retainedCurrentMatrix->getMatrix();
 
-        const int nInputChannels = jmin( (int) inputBlock.getNumChannels(), (int) T.getNumColumns());
-        const int nSamples = (int) inputBlock.getNumSamples();
-
-        // copy input data to buffer
-        for (int ch = 0; ch < nInputChannels; ++ch)
-            buffer.copyFrom(ch, 0, inputBlock.getChannelPointer(ch), nSamples);
+        const int nInputChannels = jmin (static_cast<int> (inputBlock.getNumChannels()), static_cast<int> (T.getNumColumns()));
+        const int nSamples = static_cast<int> (inputBlock.getNumSamples());
 
         for (int row = 0; row < T.getNumRows(); ++row)
         {
             const int destCh = retainedCurrentMatrix->getRoutingArrayReference().getUnchecked(row);
             if (destCh < outputBlock.getNumChannels())
             {
-                float* dest = outputBlock.getChannelPointer(destCh);
-                FloatVectorOperations::multiply(dest, buffer.getReadPointer(0), T(row, 0), nSamples); // ch 0
-                for (int i = 1; i < nInputChannels; ++i) // input channels
-                    FloatVectorOperations::addWithMultiply(dest, buffer.getReadPointer(i), T(row, i), nSamples); // ch 0
+                float* dest = outputBlock.getChannelPointer (destCh);
+                FloatVectorOperations::multiply (dest, inputBlock.getChannelPointer (0), T(row, 0), nSamples); // first channel
+                for (int i = 1; i < nInputChannels; ++i) // remaining channels
+                    FloatVectorOperations::addWithMultiply (dest, inputBlock.getChannelPointer (i), T(row, i), nSamples);
             }
         }
 
@@ -101,28 +133,24 @@ public:
     {
         if (newMatrixAvailable)
         {
-            if (newMatrix == nullptr)
-            {
-                DBG("MatrixTransformer: Matrix set to nullptr");
-            }
-            else
-            {
-                DBG("MatrixTransformer: New matrix with name '" << newMatrix->getName() << "' set.");
-                //const int rows = (int) newMatrix->getMatrix().getNumRows();
-                const int cols = (int) newMatrix->getMatrix().getNumColumns();
-                buffer.setSize(cols, buffer.getNumSamples());
-                DBG("MatrixTransformer: buffer resized to " << buffer.getNumChannels() << "x" << buffer.getNumSamples());
-            }
-
+            newMatrixAvailable = false;
             currentMatrix = newMatrix;
             newMatrix = nullptr;
-            newMatrixAvailable = false;
+
+            if (currentMatrix != nullptr)
+            {
+                DBG ("MatrixTransformer: New matrix with name '" << currentMatrix->getName() << "' set.");
+                const int cols = (int) currentMatrix->getMatrix().getNumColumns();
+                buffer.setSize (cols, buffer.getNumSamples());
+                DBG ("MatrixTransformer: buffer resized to " << buffer.getNumChannels() << "x" << buffer.getNumSamples());
+            }
+
             return true;
         }
         return false;
     };
 
-    void setMatrix(ReferenceCountedMatrix::Ptr newMatrixToUse, bool force = false)
+    void setMatrix (ReferenceCountedMatrix::Ptr newMatrixToUse, bool force = false)
     {
         newMatrix = newMatrixToUse;
         newMatrixAvailable = true;
@@ -140,7 +168,10 @@ private:
     ProcessSpec spec = {-1, 0, 0};
     ReferenceCountedMatrix::Ptr currentMatrix {nullptr};
     ReferenceCountedMatrix::Ptr newMatrix {nullptr};
+
     AudioBuffer<float> buffer;
+    bool bufferPrepared {false};
+
     bool newMatrixAvailable {false};
 
 };

@@ -71,8 +71,6 @@ public:
 
     }
 
-    ~LaF() {}
-
     Typeface::Ptr getTypefaceForFont (const Font& f) override
     {
         switch (f.getStyleFlags()) {
@@ -84,7 +82,7 @@ public:
     }
     Font getLabelFont (Label& label) override
     {
-        //return label.getFont();
+        ignoreUnused (label);
         return Font(robotoMedium);
     }
 
@@ -97,6 +95,7 @@ public:
 
     Font getTextButtonFont (TextButton& button, int height) override
     {
+        ignoreUnused (button, height);
         Font font(robotoMedium);
         font.setHeight(14.0f);
         return font;
@@ -199,11 +198,11 @@ public:
 
         if (! label.isBeingEdited())
         {
-            const float alpha = label.isEnabled() ? 1.0f : 0.5f;
+            const float fontAlpha = label.isEnabled() ? 1.0f : 0.5f;
             const Font font (robotoLight);
 
             //g.setColour (ClText.withMultipliedAlpha (alpha));
-            g.setColour (ClText.withMultipliedAlpha(alpha));
+            g.setColour (ClText.withMultipliedAlpha (fontAlpha));
             g.setFont (robotoMedium);
             g.setFont (13.f);
 
@@ -213,7 +212,7 @@ public:
                               jmax (1, (int) (textArea.getHeight() / font.getHeight())),
                               label.getMinimumHorizontalScale());
 
-            g.setColour (label.findColour (Label::outlineColourId).withMultipliedAlpha (alpha));
+            g.setColour (label.findColour (Label::outlineColourId).withMultipliedAlpha (fontAlpha));
         }
         else if (label.isEnabled())
         {
@@ -233,8 +232,8 @@ public:
 
         Path triangle;
         triangle.startNewSubPath(w, h);
-        triangle.lineTo(0.5 * w, h);
-        triangle.lineTo(w, 0.5 * h);
+        triangle.lineTo (0.5f * w, h);
+        triangle.lineTo(w, 0.5f * h);
         triangle.closeSubPath();
 
         g.fillPath(triangle);
@@ -270,7 +269,7 @@ public:
                 if (textEditor.hasKeyboardFocus (true) && ! textEditor.isReadOnly())
                 {
                     g.setColour (Colours::white.withMultipliedAlpha(0.8f));
-                    g.drawRoundedRectangle (0.5, 0.5, width-1, height-1, (height-1)/2.0f, 0.8);
+                    g.drawRoundedRectangle (0.5, 0.5, width-1, height-1, (height-1)/2.0f, 0.8f);
 
                 }
                 else
@@ -382,8 +381,8 @@ public:
         Colour statusColour = slider.findColour(Slider::rotarySliderOutlineColourId).withMultipliedAlpha (0.3f);
 
 
-        const float min = slider.getMinimum();
-        const float max = slider.getMaximum();
+        const float min = static_cast<float> (slider.getMinimum());
+        const float max = static_cast<float> (slider.getMaximum());
         const float zeroPos = -min/(max-min);
         bool isTwoValue = (style == Slider::SliderStyle::TwoValueVertical || style == Slider::SliderStyle::TwoValueHorizontal);
 
@@ -443,8 +442,8 @@ public:
         const float ry = centreY - radius;
         const float rw = radius * 2.0f;
 
-        const float min = slider.getMinimum();
-        const float max = slider.getMaximum();
+        const float min = static_cast<float> (slider.getMinimum());
+        const float max = static_cast<float> (slider.getMaximum());
         const float zeroPos = -min/(max-min);
         const float zeroAngle =rotaryStartAngle + zeroPos * (rotaryEndAngle - rotaryStartAngle);
         const float angle = rotaryStartAngle + sliderPos * (rotaryEndAngle - rotaryStartAngle);
@@ -702,7 +701,7 @@ public:
             g.setFont(robotoMedium);
             g.setFont(height-1);
             g.setColour (isOn ? button.findColour(ToggleButton::tickColourId) : Colours::white);
-            g.drawText(isOn ? "ON" : "OFF" , 0, 0, width, height, Justification::centred);
+            g.drawText (isOn ? "ON" : "OFF" , 0, 0, static_cast<int> (width), static_cast<int> (height), Justification::centred);
 
         }
 
@@ -743,6 +742,8 @@ public:
                       bool isMouseOverButton,
                       bool isButtonDown) override
     {
+        ignoreUnused (isEnabled);
+
         const float boxSize = w * 0.8f;
 
         Rectangle<float> buttonArea(x + (w - boxSize) * 0.5f, y + (h - boxSize) * 0.5f, boxSize, boxSize);
@@ -782,6 +783,8 @@ public:
                                     const String& text, const Justification& position,
                                     GroupComponent& group) override
     {
+        ignoreUnused (height, group);
+
         Rectangle<int> r(6,0,width-6,15);
         g.setColour(ClText);
         g.setFont(robotoMedium);
@@ -804,6 +807,7 @@ public:
                        int buttonX, int buttonY, int buttonW, int buttonH,
                        ComboBox& box) override
     {
+        ignoreUnused (width, height, isButtonDown);
         //const auto cornerSize = box.findParentComponentOfClass<ChoicePropertyComponent>() != nullptr ? 0.0f : 3.0f;
         //        const Rectangle<int> boxBounds (0, 0, width, height);
         //

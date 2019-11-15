@@ -37,7 +37,7 @@ EnergyVisualizerAudioProcessor::EnergyVisualizerAudioProcessor()
                      #endif
                        ,
 #endif
-createParameterLayout())
+createParameterLayout()), decoderMatrix (nSamplePoints, 64)
 {
     orderSetting = parameters.getRawParameterValue ("orderSetting");
     useSN3D = parameters.getRawParameterValue ("useSN3D");
@@ -46,19 +46,18 @@ createParameterLayout())
 
     parameters.addParameterListener ("orderSetting", this);
 
-
-    Eigen::Matrix<float,64,nSamplePoints> Y;
-    // calc Y and YH
-    for (int point=0; point<nSamplePoints; ++point)
+    for (int point = 0; point < nSamplePoints; ++point)
     {
-        SHEval(7, hammerAitovSampleX[point], hammerAitovSampleY[point], hammerAitovSampleZ[point], Y.data() + point * 64, false);
-        FloatVectorOperations::multiply(Y.data()+point*64, Y.data()+point*64, sn3d2n3d, 64); //expecting sn3d normalization -> converting it to n3d
+        auto* matrixRowPtr = decoderMatrix.getRawDataPointer() + point * 64;
+        SHEval (7, hammerAitovSampleX[point], hammerAitovSampleY[point], hammerAitovSampleZ[point], matrixRowPtr, false);
+        FloatVectorOperations::multiply (matrixRowPtr, matrixRowPtr, sn3d2n3d, 64); //expecting sn3d normalization -> converting it to handle n3d
     }
-    Y *= 1.0f / decodeCorrection(7); // revert 7th order correction
-    YH = Y.transpose();
+    decoderMatrix *= 1.0f / decodeCorrection(7); // revert 7th order correction
 
-//    DBG(hammerAitovSampleX[218] << " - " << hammerAitovSampleY[218] << " - " << hammerAitovSampleZ[218]);
-    rms.resize(nSamplePoints);
+    rms.resize (nSamplePoints);
+    std::fill (rms.begin(), rms.end(), 0.0f);
+
+    weights.resize (64);
 
     startTimer (200);
 }
@@ -95,10 +94,12 @@ void EnergyVisualizerAudioProcessor::changeProgramName (int index, const String&
 //==============================================================================
 void EnergyVisualizerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    checkInputAndOutput(this, *orderSetting, 0, true);
+    checkInputAndOutput (this, *orderSetting, 0, true);
 
-    timeConstant = exp(-1.0/(sampleRate*0.1/samplesPerBlock)); //multiplicated value after sampleRate is rms time
-    sampledSignals.setSize(nSamplePoints, samplesPerBlock);
+    timeConstant = exp (-1.0 / (sampleRate * 0.1 / samplesPerBlock)); // 100ms RMS averaging
+
+    sampledSignal.resize (samplesPerBlock);
+    std::fill (rms.begin(), rms.end(), 0.0f);
 }
 
 void EnergyVisualizerAudioProcessor::releaseResources()
@@ -112,44 +113,42 @@ void EnergyVisualizerAudioProcessor::processBlock (AudioSampleBuffer& buffer, Mi
 {
     ScopedNoDenormals noDenormals;
 
-    checkInputAndOutput(this, *orderSetting, 0);
+    checkInputAndOutput (this, *orderSetting, 0);
 
-    if (! doProcessing.get())
+    if (! doProcessing.get() && ! oscParameterInterface.getOSCSender().isConnected())
         return;
 
     //const int nCh = buffer.getNumChannels();
     const int L = buffer.getNumSamples();
-    const int workingOrder = jmin(isqrt(buffer.getNumChannels())-1, input.getOrder());
+    const int workingOrder = jmin (isqrt (buffer.getNumChannels()) - 1, input.getOrder());
 
     const int nCh = squares[workingOrder+1];
-    //DBG(buffer.getNumChannels() << " - " << workingOrder << " - " << nCh);
 
 
-    Eigen::Map<const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>> inpMatrix (buffer.getReadPointer(0),nCh,L);
-
-    Eigen::Map<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>> outMatrix (sampledSignals.getWritePointer(0), nSamplePoints,L);
-
-    //outMatrix = YH.block(0,0,tDesignN,nCh) * inpMatrix;
-    FloatVectorOperations::clear(&maxReWeights.diagonal()[0],64);
-    copyMaxRE(workingOrder, &maxReWeights.diagonal()[0]);
-    FloatVectorOperations::multiply(&maxReWeights.diagonal()[0], maxRECorrection[workingOrder] * decodeCorrection(workingOrder), nCh);
+    copyMaxRE (workingOrder, weights.data());
+    FloatVectorOperations::multiply (weights.data(), maxRECorrection[workingOrder] * decodeCorrection (workingOrder), nCh);
 
     if (*useSN3D < 0.5f)
-    {
-        FloatVectorOperations::multiply(&maxReWeights.diagonal()[0], n3d2sn3d, 64);
-    }
+        FloatVectorOperations::multiply (weights.data(), n3d2sn3d, nCh);
 
-    workingMatrix = YH * maxReWeights;
-    //workingMatrix = YH; // * maxReWeights;
-    outMatrix = workingMatrix.block(0, 0, nSamplePoints, nCh) * inpMatrix;
-
-    float* pRms = rms.getRawDataPointer();
-    float oneMinusTimeConstant = 1.0f - timeConstant;
+    const float oneMinusTimeConstant = 1.0f - timeConstant;
     for (int i = 0; i < nSamplePoints; ++i)
     {
-        pRms[i] = timeConstant * pRms[i] + oneMinusTimeConstant * ((Decibels::gainToDecibels(sampledSignals.getRMSLevel(i, 0, L)) - *peakLevel) / *dynamicRange + 1.0f);
+        FloatVectorOperations::copyWithMultiply (sampledSignal.data(), buffer.getReadPointer (0), decoderMatrix(i, 0) * weights[0], buffer.getNumSamples());
+        for (int ch = 1; ch < nCh; ++ch)
+            FloatVectorOperations::addWithMultiply (sampledSignal.data(), buffer.getReadPointer (ch), decoderMatrix(i, ch) * weights[ch], L);
+
+        // calculate rms
+        float sum = 0.0f;
+        for (int i = 0; i < L; ++i)
+        {
+            const auto sample = sampledSignal[i];
+            sum += sample * sample;
+        }
+
+        rms[i] = timeConstant * rms[i] + oneMinusTimeConstant * std::sqrt (sum / L);
     }
-    FloatVectorOperations::clip(pRms, rms.getRawDataPointer(), 0.0f, 1.0f, nSamplePoints);
+
 }
 
 //==============================================================================
@@ -164,6 +163,17 @@ AudioProcessorEditor* EnergyVisualizerAudioProcessor::createEditor()
 }
 
 //==============================================================================
+void EnergyVisualizerAudioProcessor::getStateInformation (MemoryBlock &destData)
+{
+  auto state = parameters.copyState();
+
+  auto oscConfig = state.getOrCreateChildWithName ("OSCConfig", nullptr);
+  oscConfig.copyPropertiesFrom (oscParameterInterface.getConfig(), nullptr);
+
+  std::unique_ptr<XmlElement> xml (state.createXml());
+  copyXmlToBinary (*xml, destData);
+}
+
 void EnergyVisualizerAudioProcessor::setStateInformation (const void *data, int sizeInBytes)
 {
     std::unique_ptr<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
@@ -171,19 +181,16 @@ void EnergyVisualizerAudioProcessor::setStateInformation (const void *data, int 
         if (xmlState->hasTagName (parameters.state.getType()))
         {
             parameters.replaceState (ValueTree::fromXml (*xmlState));
-            if (parameters.state.hasProperty ("OSCPort"))
+            if (parameters.state.hasProperty ("OSCPort")) // legacy
             {
-                oscReceiver.connect (parameters.state.getProperty ("OSCPort", var (-1)));
+                oscParameterInterface.getOSCReceiver().connect (parameters.state.getProperty ("OSCPort", var (-1)));
+                parameters.state.removeProperty ("OSCPort", nullptr);
             }
-        }
-}
 
-void EnergyVisualizerAudioProcessor::getStateInformation (MemoryBlock &destData)
-{
-    auto state = parameters.copyState();
-    state.setProperty ("OSCPort", var(oscReceiver.getPortNumber()), nullptr);
-    std::unique_ptr<XmlElement> xml (state.createXml());
-    copyXmlToBinary (*xml, destData);
+            auto oscConfig = parameters.state.getChildWithName ("OSCConfig");
+            if (oscConfig.isValid())
+                oscParameterInterface.setConfig (oscConfig);
+        }
 }
 
 //==============================================================================
@@ -244,6 +251,14 @@ void EnergyVisualizerAudioProcessor::timerCallback()
         doProcessing = true;
 }
 
+//==============================================================================
+void EnergyVisualizerAudioProcessor::sendAdditionalOSCMessages (OSCSender& oscSender, const OSCAddressPattern& address)
+{
+    OSCMessage message (address);
+    for (int i = 0; i < nSamplePoints; ++i)
+        message.addFloat32 (rms[i]);
+    oscSender.send (message);
+}
 
 //==============================================================================
 // This creates new instances of the plugin..

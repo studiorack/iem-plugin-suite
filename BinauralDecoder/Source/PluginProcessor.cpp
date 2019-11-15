@@ -68,7 +68,7 @@ createParameterLayout())
     for (int i = 0; i < 7; ++i)
     {
         irs[i].setSize(square(i + 2), irLength);
-        ScopedPointer<AudioFormatReader> reader = wavFormat.createReaderFor(mis[i], true);
+        std::unique_ptr<AudioFormatReader> reader (wavFormat.createReaderFor (mis[i], true));
         reader->read(&irs[i], 0, irLength, 0, true, false);
         irs[i].applyGain (0.3f);
     }
@@ -276,7 +276,10 @@ AudioProcessorEditor* BinauralDecoderAudioProcessor::createEditor()
 void BinauralDecoderAudioProcessor::getStateInformation (MemoryBlock& destData)
 {
     auto state = parameters.copyState();
-    state.setProperty ("OSCPort", var(oscReceiver.getPortNumber()), nullptr);
+
+    auto oscConfig = state.getOrCreateChildWithName ("OSCConfig", nullptr);
+    oscConfig.copyPropertiesFrom (oscParameterInterface.getConfig(), nullptr);
+
     std::unique_ptr<XmlElement> xml (state.createXml());
     copyXmlToBinary (*xml, destData);
 }
@@ -289,10 +292,15 @@ void BinauralDecoderAudioProcessor::setStateInformation (const void* data, int s
         if (xmlState->hasTagName (parameters.state.getType()))
         {
             parameters.replaceState (ValueTree::fromXml (*xmlState));
-            if (parameters.state.hasProperty ("OSCPort"))
+            if (parameters.state.hasProperty ("OSCPort")) // legacy
             {
-                oscReceiver.connect (parameters.state.getProperty ("OSCPort", var (-1)));
+                oscParameterInterface.getOSCReceiver().connect (parameters.state.getProperty ("OSCPort", var (-1)));
+                parameters.state.removeProperty ("OSCPort", nullptr);
             }
+
+            auto oscConfig = parameters.state.getChildWithName ("OSCConfig");
+            if (oscConfig.isValid())
+                oscParameterInterface.setConfig (oscConfig);
         }
 }
 
@@ -329,16 +337,17 @@ void BinauralDecoderAudioProcessor::updateBuffers()
     DBG("order: " << order);
     DBG("nCh: " << nCh);
 
-        int tmpOrder = sqrt(nCh) - 1;
-        if (tmpOrder < order) {
-            order = tmpOrder;
-        }
+    int tmpOrder = sqrt(nCh) - 1;
+    if (tmpOrder < order) {
+        order = tmpOrder;
+    }
+
 
     AudioBuffer<float> resampledIRs;
     bool useResampled = false;
     irLength = 236;
 
-    if (sampleRate != irsSampleRate) // do resampling!
+    if (sampleRate != irsSampleRate && order != 0) // do resampling!
     {
         useResampled = true;
         double factorReading = irsSampleRate / sampleRate;
@@ -357,6 +366,9 @@ void BinauralDecoderAudioProcessor::updateBuffers()
         info.buffer = &resampledIRs;
 
         resamplingSource.getNextAudioBlock (info);
+
+        // compensate for more (correlated) samples contributing to output signal
+        resampledIRs.applyGain (irsSampleRate / sampleRate);
     }
 
     irLengthMinusOne = irLength - 1;

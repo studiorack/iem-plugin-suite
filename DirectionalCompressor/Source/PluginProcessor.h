@@ -32,6 +32,7 @@
 #include "../../resources/Compressor.h"
 #include "../../resources/Conversions.h"
 
+#define ProcessorClass DirectionalCompressorAudioProcessor
 
 //==============================================================================
 /**
@@ -39,6 +40,8 @@
 class DirectionalCompressorAudioProcessor  : public AudioProcessorBase<IOTypes::Ambisonics<>, IOTypes::Ambisonics<>>
 {
 public:
+    constexpr static int numberOfInputChannels = 64;
+    constexpr static int numberOfOutputChannels = 64;
     //==============================================================================
     DirectionalCompressorAudioProcessor();
     ~DirectionalCompressorAudioProcessor();
@@ -68,7 +71,7 @@ public:
     //======= Parameters ===========================================================
     std::vector<std::unique_ptr<RangedAudioParameter>> createParameterLayout();
     //==============================================================================
-    
+
     void parameterChanged (const String &parameterID, float newValue) override;
 
     float c1MaxRMS;

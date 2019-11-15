@@ -26,7 +26,7 @@
 
 //==============================================================================
 DirectivityShaperAudioProcessorEditor::DirectivityShaperAudioProcessorEditor (DirectivityShaperAudioProcessor& p, AudioProcessorValueTreeState& vts)
-: AudioProcessorEditor (&p), processor (p), valueTreeState(vts), footer (p.getOSCReceiver()),
+: AudioProcessorEditor (&p), processor (p), valueTreeState(vts), footer (p.getOSCParameterInterface()),
 probeElement(*valueTreeState.getParameter("probeAzimuth"), valueTreeState.getParameterRange("probeAzimuth"),
               *valueTreeState.getParameter("probeElevation"), valueTreeState.getParameterRange("probeElevation")),
 fv(20.0f, 20000.0f, -50.0f, 10.0f, 10.0f)
@@ -63,7 +63,7 @@ fv(20.0f, 20000.0f, -50.0f, 10.0f, 10.0f)
     cbDirectivityNormalization.addItem("basic decode", 1);
     cbDirectivityNormalization.addItem("on-axis", 2);
     cbDirectivityNormalization.addItem("constant energy", 3);
-    cbDirectivityNormalizationAttachment = new ComboBoxAttachment(valueTreeState, "normalization", cbDirectivityNormalization);
+    cbDirectivityNormalizationAttachment.reset (new ComboBoxAttachment (valueTreeState, "normalization", cbDirectivityNormalization));
 
 
     addAndMakeVisible(&fv);
@@ -80,8 +80,8 @@ fv(20.0f, 20000.0f, -50.0f, 10.0f, 10.0f)
     for (int i = 0; i < numberOfBands; ++i)
         dv.addElement(weights[i], colours[i]);
 
-    cbOrderSettingAttachment = new ComboBoxAttachment(valueTreeState, "orderSetting", *title.getOutputWidgetPtr()->getOrderCbPointer());
-    cbNormalizationAttachment = new ComboBoxAttachment(valueTreeState, "useSN3D", *title.getOutputWidgetPtr()->getNormCbPointer());
+    cbOrderSettingAttachment.reset (new ComboBoxAttachment (valueTreeState, "orderSetting", *title.getOutputWidgetPtr()->getOrderCbPointer()));
+    cbNormalizationAttachment.reset (new ComboBoxAttachment (valueTreeState, "useSN3D", *title.getOutputWidgetPtr()->getNormCbPointer()));
 
     addAndMakeVisible(&slProbeAzimuth);
     slProbeAzimuth.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
@@ -89,25 +89,25 @@ fv(20.0f, 20000.0f, -50.0f, 10.0f, 10.0f)
     slProbeAzimuth.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
     slProbeAzimuth.setReverse(true);
     slProbeAzimuth.setRotaryParameters(MathConstants<float>::pi, 3*MathConstants<float>::pi, false);
-    slProbeAzimuthAttachment = new SliderAttachment(valueTreeState, "probeAzimuth", slProbeAzimuth);
+    slProbeAzimuthAttachment.reset (new SliderAttachment (valueTreeState, "probeAzimuth", slProbeAzimuth));
 
     addAndMakeVisible(&slProbeElevation);
     slProbeElevation.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
     slProbeElevation.setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
     slProbeElevation.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
     slProbeElevation.setRotaryParameters(0.5 * MathConstants<float>::pi, 2.5 * MathConstants<float>::pi, false);
-    slProbeElevationAttachment = new SliderAttachment(valueTreeState, "probeElevation", slProbeElevation);
+    slProbeElevationAttachment.reset (new SliderAttachment (valueTreeState, "probeElevation", slProbeElevation));
 
     addAndMakeVisible(&slProbeRoll);
     slProbeRoll.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
     slProbeRoll.setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
     slProbeRoll.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
     slProbeRoll.setRotaryParameters(MathConstants<float>::pi, 3*MathConstants<float>::pi, false);
-    slProbeRollAttachment = new SliderAttachment(valueTreeState, "probeRoll", slProbeRoll);
+    slProbeRollAttachment.reset (new SliderAttachment (valueTreeState, "probeRoll", slProbeRoll));
 
     addAndMakeVisible(&tbProbeLock);
     tbProbeLock.setButtonText("Lock Directions");
-    tbProbeLockAttachment = new ButtonAttachment(valueTreeState, "probeLock", tbProbeLock);
+    tbProbeLockAttachment.reset (new ButtonAttachment (valueTreeState, "probeLock", tbProbeLock));
 
 
     for (int i = 0; i < numberOfBands; ++i)
@@ -118,37 +118,37 @@ fv(20.0f, 20000.0f, -50.0f, 10.0f, 10.0f)
         cbFilterType[i].addItem("Band-pass", 3);
         cbFilterType[i].addItem("High-pass", 4);
         cbFilterType[i].setJustificationType(Justification::centred);
-        cbFilterTypeAttachment[i] = new ComboBoxAttachment(valueTreeState, "filterType" + String(i), cbFilterType[i]);
+        cbFilterTypeAttachment[i].reset (new ComboBoxAttachment (valueTreeState, "filterType" + String(i), cbFilterType[i]));
 
         addAndMakeVisible(&slFilterFrequency[i]);
         slFilterFrequency[i].setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
         slFilterFrequency[i].setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
         slFilterFrequency[i].setColour(Slider::rotarySliderOutlineColourId, colours[i]);
-        slFilterFrequencyAttachment[i] = new SliderAttachment(valueTreeState, "filterFrequency" + String(i), slFilterFrequency[i]);
+        slFilterFrequencyAttachment[i].reset (new SliderAttachment (valueTreeState, "filterFrequency" + String(i), slFilterFrequency[i]));
 
         addAndMakeVisible(&slFilterQ[i]);
         slFilterQ[i].setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
         slFilterQ[i].setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
         slFilterQ[i].setColour(Slider::rotarySliderOutlineColourId, colours[i]);
-        slFilterQAttachment[i] = new SliderAttachment(valueTreeState, "filterQ" + String(i), slFilterQ[i]);
+        slFilterQAttachment[i].reset (new SliderAttachment (valueTreeState, "filterQ" + String(i), slFilterQ[i]));
 
         addAndMakeVisible(&slFilterGain[i]);
         slFilterGain[i].setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
         slFilterGain[i].setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
         slFilterGain[i].setColour(Slider::rotarySliderOutlineColourId, colours[i]);
-        slFilterGainAttachment[i] = new SliderAttachment(valueTreeState, "filterGain" + String(i), slFilterGain[i]);
+        slFilterGainAttachment[i].reset (new SliderAttachment (valueTreeState, "filterGain" + String(i), slFilterGain[i]));
 
         addAndMakeVisible(&slOrder[i]);
         slOrder[i].setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
         slOrder[i].setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
         slOrder[i].setColour(Slider::rotarySliderOutlineColourId, colours[i]);
-        slOrderAttachment[i] = new SliderAttachment(valueTreeState, "order" + String(i), slOrder[i]);
+        slOrderAttachment[i].reset (new SliderAttachment (valueTreeState, "order" + String(i), slOrder[i]));
 
         addAndMakeVisible(&slShape[i]);
         slShape[i].setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
         slShape[i].setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
         slShape[i].setColour(Slider::rotarySliderOutlineColourId, colours[i]);
-        slShapeAttachment[i] = new SliderAttachment(valueTreeState, "shape" + String(i), slShape[i]);
+        slShapeAttachment[i].reset (new SliderAttachment (valueTreeState, "shape" + String(i), slShape[i]));
 
         addAndMakeVisible(&slAzimuth[i]);
         slAzimuth[i].setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
@@ -157,7 +157,7 @@ fv(20.0f, 20000.0f, -50.0f, 10.0f, 10.0f)
         slAzimuth[i].setReverse(true);
         slAzimuth[i].setRotaryParameters(MathConstants<float>::pi, 3*MathConstants<float>::pi, false);
         slAzimuth[i].setTextValueSuffix(CharPointer_UTF8 (R"(°)"));
-        slAzimuthAttachment[i] = new SliderAttachment(valueTreeState, "azimuth" + String(i), slAzimuth[i]);
+        slAzimuthAttachment[i].reset (new SliderAttachment (valueTreeState, "azimuth" + String(i), slAzimuth[i]));
 
         addAndMakeVisible(&slElevation[i]);
         slElevation[i].setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
@@ -165,7 +165,7 @@ fv(20.0f, 20000.0f, -50.0f, 10.0f, 10.0f)
         slElevation[i].setColour(Slider::rotarySliderOutlineColourId, colours[i]);
         slElevation[i].setRotaryParameters(0.5 * MathConstants<float>::pi, 2.5 * MathConstants<float>::pi, false);
         slElevation[i].setTextValueSuffix(CharPointer_UTF8 (R"(°)"));
-        slElevationAttachment[i] = new SliderAttachment(valueTreeState, "elevation" + String(i), slElevation[i]);
+        slElevationAttachment[i].reset (new SliderAttachment (valueTreeState, "elevation" + String(i), slElevation[i]));
     }
 
     addAndMakeVisible(&lbAzimuth);
@@ -218,9 +218,9 @@ fv(20.0f, 20000.0f, -50.0f, 10.0f, 10.0f)
     addAndMakeVisible(&sphere);
     for (int i = 0; i < numberOfBands; ++i)
     {
-        sphereElements[i] = new SpherePanner::AzimuthElevationParameterElement(*valueTreeState.getParameter("azimuth" + String(i)), valueTreeState.getParameterRange("azimuth" + String(i)), *valueTreeState.getParameter("elevation" + String(i)), valueTreeState.getParameterRange("elevation" + String(i)));
+        sphereElements[i].reset (new SpherePanner::AzimuthElevationParameterElement(*valueTreeState.getParameter("azimuth" + String(i)), valueTreeState.getParameterRange("azimuth" + String(i)), *valueTreeState.getParameter("elevation" + String(i)), valueTreeState.getParameterRange("elevation" + String(i))));
         sphereElements[i]->setColour(colours[i]);
-        sphere.addElement(sphereElements[i]);
+        sphere.addElement (sphereElements[i].get());
     }
 
     probeElement.setColour(Colours::black);
@@ -385,9 +385,7 @@ void DirectivityShaperAudioProcessorEditor::resized()
 void DirectivityShaperAudioProcessorEditor::timerCallback()
 {
     // === update titleBar widgets according to available input/output channel counts
-    int maxInSize, maxOutSize;
-    processor.getMaxSize(maxInSize, maxOutSize);
-    title.setMaxSize(maxInSize, maxOutSize);
+    title.setMaxSize (processor.getMaxSize());
     // ==========================================
 
     const int processorAmbisonicOrder = processor.output.getOrder();

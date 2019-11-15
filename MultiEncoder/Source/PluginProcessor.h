@@ -29,6 +29,11 @@
 #include "../../resources/AudioProcessorBase.h"
 #include "../../resources/Conversions.h"
 
+#define CONFIGURATIONHELPER_ENABLE_LOUDSPEAKERLAYOUT_METHODS 1
+#include "../../resources/ConfigurationHelper.h"
+
+#define ProcessorClass MultiEncoderAudioProcessor
+
 constexpr int maxNumberOfInputs = 64;
 constexpr int startNnumberOfInputs = 5;
 
@@ -38,7 +43,8 @@ constexpr int startNnumberOfInputs = 5;
 class MultiEncoderAudioProcessor  : public AudioProcessorBase<IOTypes::AudioChannels<maxNumberOfInputs>, IOTypes::Ambisonics<>>
 {
 public:
-
+    constexpr static int numberOfInputChannels = 64;
+    constexpr static int numberOfOutputChannels = 64;
     //==============================================================================
     MultiEncoderAudioProcessor();
     ~MultiEncoderAudioProcessor();
@@ -69,7 +75,11 @@ public:
 
     //======= Parameters ===========================================================
     std::vector<std::unique_ptr<RangedAudioParameter>> createParameterLayout();
+
     //==============================================================================
+    Result loadConfiguration (const File& configFile);
+    void setLastDir (File newLastDir);
+    File getLastDir() { return lastDir; };
 
     float xyzGrab[3];
     float xyz[maxNumberOfInputs][3];
@@ -107,6 +117,8 @@ public:
 
 private:
     //==============================================================================
+    File lastDir;
+    std::unique_ptr<PropertiesFile> properties;
 
     bool processorUpdatingParams;
 

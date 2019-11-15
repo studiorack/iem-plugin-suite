@@ -26,12 +26,16 @@
 #include "../../resources/FeedbackDelayNetwork.h"
 #include "../../resources/AudioProcessorBase.h"
 
+#define ProcessorClass FdnReverbAudioProcessor
+
 //==============================================================================
 /**
 */
 class FdnReverbAudioProcessor  : public AudioProcessorBase<IOTypes::Nothing, IOTypes::Nothing>
 {
 public:
+    constexpr static int numberOfInputChannels = 64;
+    constexpr static int numberOfOutputChannels = 64;
 //==============================================================================
     FdnReverbAudioProcessor();
     ~FdnReverbAudioProcessor();

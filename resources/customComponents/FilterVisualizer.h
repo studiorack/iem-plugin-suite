@@ -326,7 +326,7 @@ public:
             sampleRate = 48000.0;
         else
             sampleRate = newSampleRate;
-        
+
         repaint();
     }
 

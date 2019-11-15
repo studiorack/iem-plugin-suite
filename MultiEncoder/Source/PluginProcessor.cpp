@@ -39,6 +39,17 @@ MultiEncoderAudioProcessor::MultiEncoderAudioProcessor()
 #endif
 createParameterLayout())
 {
+    // global properties
+    PropertiesFile::Options options;
+    options.applicationName     = "MultiEncoder";
+    options.filenameSuffix      = "settings";
+    options.folderName          = "IEM";
+    options.osxLibrarySubFolder = "Preferences";
+
+    properties.reset (new PropertiesFile (options));
+    lastDir = File (properties->getValue ("presetFolder"));
+
+
     parameters.addParameterListener("masterAzimuth", this);
     parameters.addParameterListener("masterElevation", this);
     parameters.addParameterListener("masterRoll", this);
@@ -49,8 +60,6 @@ createParameterLayout())
 
     muteMask.clear();
     soloMask.clear();
-
-
 
     for (int i = 0; i < maxNumberOfInputs; ++i)
     {
@@ -293,16 +302,20 @@ void MultiEncoderAudioProcessor::parameterChanged (const String &parameterID, fl
 //==============================================================================
 void MultiEncoderAudioProcessor::getStateInformation (MemoryBlock& destData)
 {
+    auto state = parameters.copyState();
     for (int i = 0; i < maxNumberOfInputs; ++i)
-        parameters.state.setProperty("colour" + String(i), elementColours[i].toString(), nullptr);
-    parameters.state.setProperty ("OSCPort", var(oscReceiver.getPortNumber()), nullptr);
-    ScopedPointer<XmlElement> xml (parameters.state.createXml());
+        state.setProperty ("colour" + String(i), elementColours[i].toString(), nullptr);
+
+    auto oscConfig = state.getOrCreateChildWithName ("OSCConfig", nullptr);
+    oscConfig.copyPropertiesFrom (oscParameterInterface.getConfig(), nullptr);
+
+    std::unique_ptr<XmlElement> xml (state.createXml());
     copyXmlToBinary (*xml, destData);
 }
 
 void MultiEncoderAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
-    ScopedPointer<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
+    std::unique_ptr<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
     if (xmlState != nullptr)
         if (xmlState->hasTagName (parameters.state.getType()))
         {
@@ -314,10 +327,15 @@ void MultiEncoderAudioProcessor::setStateInformation (const void* data, int size
                 else elementColours[i] = Colours::cyan;
             updateColours = true;
 
-            if (parameters.state.hasProperty ("OSCPort"))
+            if (parameters.state.hasProperty ("OSCPort")) // legacy
             {
-                oscReceiver.connect (parameters.state.getProperty ("OSCPort", var (-1)));
+                oscParameterInterface.getOSCReceiver().connect (parameters.state.getProperty ("OSCPort", var (-1)));
+                parameters.state.removeProperty ("OSCPort", nullptr);
             }
+
+            auto oscConfig = parameters.state.getChildWithName ("OSCConfig");
+            if (oscConfig.isValid())
+                oscParameterInterface.setConfig (oscConfig);
         }
 }
 
@@ -407,7 +425,7 @@ std::vector<std::unique_ptr<RangedAudioParameter>> MultiEncoderAudioProcessor::c
     params.push_back (OSCParameterInterface::createParameterTheOldWay("masterElevation", "Master elevation angle", CharPointer_UTF8 (R"(°)"),
                                     NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0f,
                                     [](float value) {return String(value, 2);}, nullptr));
-    
+
     params.push_back (OSCParameterInterface::createParameterTheOldWay("masterRoll", "Master roll angle", CharPointer_UTF8 (R"(°)"),
                                     NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0f,
                                     [](float value) {return String(value, 2);}, nullptr));
@@ -442,4 +460,62 @@ std::vector<std::unique_ptr<RangedAudioParameter>> MultiEncoderAudioProcessor::c
 
 
     return params;
+}
+
+//==============================================================================
+
+Result MultiEncoderAudioProcessor::loadConfiguration (const File& configFile)
+{
+    ValueTree newSources ("NewSources");
+
+    Result result = ConfigurationHelper::parseFileForLoudspeakerLayout (configFile, newSources, nullptr);
+
+    if (result.wasOk())
+    {
+        int nSrc = 0;
+        const auto nElements = newSources.getNumChildren();
+
+        for (int i = 0; i < nElements; ++i)
+        {
+            auto src = newSources.getChild (i);
+            const int ch = src.getProperty ("Channel");
+            const bool isImaginary = src.getProperty ("Imaginary");
+            if (! isImaginary && ch > nSrc)
+                nSrc = ch;
+        }
+
+        DBG (nSrc << " Sources!");
+        parameters.getParameterAsValue ("inputSetting").setValue (nSrc);
+
+        for (int s = 0; s < nSrc; ++s)
+            parameters.getParameterAsValue ("mute" + String (s)).setValue (1);
+
+        for (int e = 0; e < nElements; ++e)
+        {
+            const auto src = newSources.getChild (e);
+            const int ch = static_cast<int> (src.getProperty ("Channel", 0)) - 1;
+            const bool isImaginary = src.getProperty ("Imaginary");
+
+            if (isImaginary || ch < 0 || ch >= 64)
+                continue;
+
+
+            parameters.getParameterAsValue ("mute" + String (ch)).setValue (0);
+
+            auto azi = src.getProperty ("Azimuth", 0.0f);
+            parameters.getParameterAsValue ("azimuth" + String (ch)).setValue (azi);
+            auto ele = src.getProperty ("Elevation", 0.0f);
+            parameters.getParameterAsValue ("elevation" + String (ch)).setValue (ele);
+        }
+    }
+
+    return result;
+}
+
+
+void MultiEncoderAudioProcessor::setLastDir (File newLastDir)
+{
+    lastDir = newLastDir;
+    const var v (lastDir.getFullPathName());
+    properties->setValue ("presetFolder", v);
 }

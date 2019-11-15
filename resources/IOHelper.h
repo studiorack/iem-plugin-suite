@@ -28,17 +28,15 @@
 
  Use this in your editor's timer callback:
  // === update titleBar widgets according to available input/output channel counts
- int maxInSize, maxOutSize;
- processor.getMaxSize(maxInSize, maxOutSize);
- title.setMaxSize(maxInSize, maxOutSize);
+    title.setMaxSize (audioProcessor.getMaxSize());
  // ==========================================
  */
 namespace IOTypes {
     class Nothing
     {
     public:
-        Nothing() {};
-        bool check(AudioProcessor* p, int setting, bool isInput) {return false;};
+        Nothing() {}
+        bool check (AudioProcessor* p, int setting, bool isInput) { ignoreUnused (p, setting, isInput); return false; }
         int getSize() { return 0; }
         int getMaxSize() {return 0; }
     };
@@ -51,9 +49,9 @@ namespace IOTypes {
         {
             nChannels = 0;
             _nChannels = 0;
-        };
+        }
 
-        ~AudioChannels() {};
+        ~AudioChannels() {}
 
         bool check(AudioProcessor* p, int setting, bool isInput)
         {
@@ -63,7 +61,7 @@ namespace IOTypes {
             else nChannels = setting;
             maxSize = maxNumInputs;
             return previous != nChannels;
-        };
+        }
 
         int getMaxSize() { return maxSize; }
         int getSize() { return nChannels; }
@@ -85,9 +83,9 @@ namespace IOTypes {
             nChannels = 0;
             _order = -1;
             _nChannels = 0;
-        };
+        }
 
-        ~Ambisonics() {};
+        ~Ambisonics() {}
 
         bool check(AudioProcessor* p, int setting, bool isInput)
         {
@@ -100,10 +98,10 @@ namespace IOTypes {
             nChannels = square(order+1);
             maxSize = maxPossibleOrder;
             return previousOrder != order;
-        };
+        }
 
         int getSize() { return getOrder(); }
-        int getPreviousSize() { return getPreviousOrder(); };
+        int getPreviousSize() { return getPreviousOrder(); }
 
         int getOrder() { return order; }
         int getPreviousOrder () { return _order; }
@@ -145,14 +143,15 @@ public:
      and at the beginning of the processBlock() with a check if
      the user has changed the input/output settings.
      */
-    void checkInputAndOutput(AudioProcessor* p, unsigned int inputSetting, unsigned int outputSetting, bool force = false) {
+    void checkInputAndOutput (AudioProcessor* p, int inputSetting, int outputSetting, bool force = false)
+    {
         if (force || userChangedIOSettings)
         {
             inputSizeHasChanged = false;
             outputSizeHasChanged = false;
             DBG("IOHelper: processors I/O channel counts: " << p->getTotalNumInputChannels() << "/" << p->getTotalNumOutputChannels());
-            inputSizeHasChanged = input.check(p, inputSetting, true);
-            outputSizeHasChanged = output.check(p, outputSetting, false);
+            inputSizeHasChanged = input.check (p, inputSetting, true);
+            outputSizeHasChanged = output.check (p, outputSetting, false);
 
             if (force || inputSizeHasChanged || outputSizeHasChanged)
             {
@@ -164,16 +163,17 @@ public:
         }
     }
 
-    void getMaxSize(int& maxInputSize, int& maxOutputSize)
+    std::pair<int, int> getMaxSize()
     {
-        maxInputSize = input.getMaxSize();
-        maxOutputSize = output.getMaxSize();
+        int maxInputSize = input.getMaxSize();
+        int maxOutputSize = output.getMaxSize();
 
         if (combined)
         {
-            maxInputSize = jmin(maxInputSize, maxOutputSize);
+            maxInputSize = jmin (maxInputSize, maxOutputSize);
             maxOutputSize = maxInputSize;
         }
+        return {maxInputSize, maxOutputSize};
     }
 
     bool userChangedIOSettings = true;
@@ -193,5 +193,5 @@ private:
     virtual void updateBuffers() {
         DBG("IOHelper:  input size: " << input.getSize());
         DBG("IOHelper: output size: " << output.getSize());
-    };
+    }
 };

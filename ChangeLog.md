@@ -3,6 +3,31 @@ For a list of all changes and bugfixes see the git log.
 
 Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They might lead to an unexpected behaviour and might not be compatible with your previous projects without making some adaptions. See the [Breaking changes article](https://plugins.iem.at/docs/breakingchanges/) for more information.
 
+## v1.11.0
+- general changes
+    - new standalone versions with JACK support on linux and macOS
+    - adds OSC Send capabilities to each plug-in
+    
+- plug-in specific changes
+    -**AllRA**Decoder
+        - adds Ambisonic weight selector: switch between basic, maxrE, and inPhase weights
+        - selected weights are exported to JSON
+        - changes decibel range of energy visualization from +-/3dB to +/- 1.5dB 
+    - **Binaural**Decoder
+        - fixes bug which lead to +6dB per sampleRate doubling 
+    - **Energy**Visualizer
+        - performance improvements
+        - sends RMS values for 426 sample points via OSC
+    - **Multi**Encoder
+        - source directions can be imported via JSON config files
+        - adds master controls to adjust directions and gains of all sources simultaneously
+    - **Room**Encoder
+        - shelving-filters now operate on all reflection orders (not only the first two)
+    - **Simple**Decoder
+        - adds master gain
+        - Ambisonic weight selector: switch between basic, maxrE, and inPhase weights
+        - modified level compensation for different input orders
+        
 ## v1.10.2
 - general changes
     - fixed bug in SIMD IIR processing (**MultiBand**Compressor, **Multi**EQ, **Room**Encoder), which in some constellations led to very loud output

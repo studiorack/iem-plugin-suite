@@ -59,30 +59,30 @@ private:
     TitleBar<AmbisonicIOWidget<>, NoIOWidget> title;
     OSCFooter footer;
 
-    ScopedPointer<ComboBoxAttachment> cbNormalizationAtachement;
-    ScopedPointer<ComboBoxAttachment> cbOrderAtachement;
+    std::unique_ptr<ComboBoxAttachment> cbNormalizationAtachement;
+    std::unique_ptr<ComboBoxAttachment> cbOrderAtachement;
     int maxPossibleOrder;
 
     ReverseSlider SlDryGain;
-    ScopedPointer<SliderAttachment> SlDryGainAttachment;
+    std::unique_ptr<SliderAttachment> SlDryGainAttachment;
 
     // elements for left side
     DoubleSlider dblSlLeftFilter;
     ReverseSlider SlLeftRot;
     ReverseSlider SlLeftDelay, SlLeftLfoRate, SlLeftLfoDepth, SlLeftFb, SlLeftCrossFb, SlLeftGain;
 
-    ScopedPointer<SliderAttachment> dblSlLeftFilterHpAttachment,dblSlLeftFilterLpAttachment;
-    ScopedPointer<SliderAttachment> SlLeftRotAttachment;
-    ScopedPointer<SliderAttachment> SlLeftDelayAttachment, SlLeftLfoRateAttachment, SlLeftLfoDepthAttachment, SlLeftFbAttachment, SlLeftCrossFbAttachment, SlLeftGainAttachment;
+    std::unique_ptr<SliderAttachment> dblSlLeftFilterHpAttachment,dblSlLeftFilterLpAttachment;
+    std::unique_ptr<SliderAttachment> SlLeftRotAttachment;
+    std::unique_ptr<SliderAttachment> SlLeftDelayAttachment, SlLeftLfoRateAttachment, SlLeftLfoDepthAttachment, SlLeftFbAttachment, SlLeftCrossFbAttachment, SlLeftGainAttachment;
 
     // elements for right side
     DoubleSlider dblSlRightFilter;
     ReverseSlider SlRightRot;
     ReverseSlider SlRightDelay, SlRightLfoRate, SlRightLfoDepth, SlRightFb, SlRightCrossFb, SlRightGain;
 
-    ScopedPointer<SliderAttachment> dblSlRightFilterHpAttachment,dblSlRightFilterLpAttachment;
-    ScopedPointer<SliderAttachment> SlRightRotAttachment;
-    ScopedPointer<SliderAttachment> SlRightDelayAttachment, SlRightLfoRateAttachment, SlRightLfoDepthAttachment, SlRightFbAttachment, SlRightCrossFbAttachment, SlRightGainAttachment;
+    std::unique_ptr<SliderAttachment> dblSlRightFilterHpAttachment,dblSlRightFilterLpAttachment;
+    std::unique_ptr<SliderAttachment> SlRightRotAttachment;
+    std::unique_ptr<SliderAttachment> SlRightDelayAttachment, SlRightLfoRateAttachment, SlRightLfoDepthAttachment, SlRightFbAttachment, SlRightCrossFbAttachment, SlRightGainAttachment;
 
     // labels and groups
     SimpleLabel lbRotL, lbDelL, lbFbL, lbXFbL;

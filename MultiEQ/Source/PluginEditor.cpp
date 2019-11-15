@@ -26,7 +26,7 @@
 
 //==============================================================================
 MultiEQAudioProcessorEditor::MultiEQAudioProcessorEditor (MultiEQAudioProcessor& p, AudioProcessorValueTreeState& vts)
-: AudioProcessorEditor (&p), processor (p), valueTreeState (vts), footer (p.getOSCReceiver())
+: AudioProcessorEditor (&p), processor (p), valueTreeState (vts), footer (p.getOSCParameterInterface())
 {
     // ============== BEGIN: essentials ======================
     // set GUI size and lookAndFeel
@@ -43,7 +43,7 @@ MultiEQAudioProcessorEditor::MultiEQAudioProcessorEditor (MultiEQAudioProcessor&
 
 
     // create the connection between title component's comboBoxes and parameters
-    cbNumInputChannelsAttachment = new ComboBoxAttachment (valueTreeState, "inputChannelsSetting", *title.getInputWidgetPtr()->getChannelsCbPointer());
+    cbNumInputChannelsAttachment.reset (new ComboBoxAttachment (valueTreeState, "inputChannelsSetting", *title.getInputWidgetPtr()->getChannelsCbPointer()));
 
     tooltipWin.setLookAndFeel (&globalLaF);
     tooltipWin.setMillisecondsBeforeTipAppears (500);
@@ -79,7 +79,7 @@ MultiEQAudioProcessorEditor::MultiEQAudioProcessorEditor (MultiEQAudioProcessor&
         addAndMakeVisible (&tbFilterOn[i]);
         tbFilterOn[i].setColour (ToggleButton::tickColourId, colours[i]);
         tbFilterOn[i].addListener (this);
-        tbFilterOnAttachment[i] = new ButtonAttachment (valueTreeState, "filterEnabled" + String(i), tbFilterOn[i]);
+        tbFilterOnAttachment[i].reset (new ButtonAttachment (valueTreeState, "filterEnabled" + String(i), tbFilterOn[i]));
 
         const bool enabled = tbFilterOn[i].getToggleState();
 
@@ -106,27 +106,27 @@ MultiEQAudioProcessorEditor::MultiEQAudioProcessorEditor (MultiEQAudioProcessor&
             cbFilterType[i].addItem ("Peak", 2);
             cbFilterType[i].addItem ("High-shelf", 3);
         }
-        
+
         cbFilterType[i].setJustificationType (Justification::centred);
-        cbFilterTypeAttachment[i] = new ComboBoxAttachment (valueTreeState, "filterType" + String(i), cbFilterType[i]);
+        cbFilterTypeAttachment[i].reset (new ComboBoxAttachment (valueTreeState, "filterType" + String(i), cbFilterType[i]));
 
         addAndMakeVisible (&slFilterFrequency[i]);
         slFilterFrequency[i].setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
         slFilterFrequency[i].setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
         slFilterFrequency[i].setColour (Slider::rotarySliderOutlineColourId, colours[i]);
-        slFilterFrequencyAttachment[i] = new SliderAttachment (valueTreeState, "filterFrequency" + String(i), slFilterFrequency[i]);
+        slFilterFrequencyAttachment[i].reset (new SliderAttachment (valueTreeState, "filterFrequency" + String(i), slFilterFrequency[i]));
 
         addAndMakeVisible(&slFilterQ[i]);
         slFilterQ[i].setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
         slFilterQ[i].setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
         slFilterQ[i].setColour (Slider::rotarySliderOutlineColourId, colours[i]);
-        slFilterQAttachment[i] = new SliderAttachment (valueTreeState, "filterQ" + String(i), slFilterQ[i]);
+        slFilterQAttachment[i].reset (new SliderAttachment (valueTreeState, "filterQ" + String(i), slFilterQ[i]));
 
         addAndMakeVisible(&slFilterGain[i]);
         slFilterGain[i].setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
         slFilterGain[i].setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
         slFilterGain[i].setColour (Slider::rotarySliderOutlineColourId, colours[i]);
-        slFilterGainAttachment[i] = new SliderAttachment (valueTreeState, "filterGain" + String(i), slFilterGain[i]);
+        slFilterGainAttachment[i].reset (new SliderAttachment (valueTreeState, "filterGain" + String(i), slFilterGain[i]));
 
         updateEnablement (i, enabled);
     }
@@ -213,9 +213,7 @@ void MultiEQAudioProcessorEditor::updateFilterVisualizer()
 void MultiEQAudioProcessorEditor::timerCallback()
 {
     // === update titleBar widgets according to available input/output channel counts
-    int maxInSize, maxOutSize;
-    processor.getMaxSize (maxInSize, maxOutSize);
-    title.setMaxSize (maxInSize, maxOutSize);
+    title.setMaxSize (processor.getMaxSize());
     // ==========================================
 
     if (processor.repaintFV.get())

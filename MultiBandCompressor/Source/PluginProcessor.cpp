@@ -119,8 +119,6 @@ MultiBandCompressorAudioProcessor::MultiBandCompressorAudioProcessor()
     {
         interleavedBlockData.push_back (HeapBlock<char> ());
     }
-
-    oscReceiver.addListener (this);
 }
 
 MultiBandCompressorAudioProcessor::~MultiBandCompressorAudioProcessor()
@@ -468,7 +466,8 @@ void MultiBandCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer,
     {
         for (int i = 0; i < numSimdFilters; ++i)
         {
-            interleaved[i]->clear();
+            // interleaved[i]->clear(); // broken with JUCE 5.4.5
+            clear (*interleaved[i]);
             AudioDataConverters::interleaveSamples (buffer.getArrayOfReadPointers() + i* filterRegisterSize,
                                                     reinterpret_cast<float*> (interleaved[i]->getChannelPointer (0)),
                                                     L, filterRegisterSize);
@@ -479,7 +478,8 @@ void MultiBandCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer,
         int i;
         for (i = 0; i < numSimdFilters-1; ++i)
         {
-            interleaved[i]->clear();
+            // interleaved[i]->clear(); // broken with JUCE 5.4.5
+            clear (*interleaved[i]);
             AudioDataConverters::interleaveSamples (buffer.getArrayOfReadPointers() + i* filterRegisterSize,
                                                     reinterpret_cast<float*> (interleaved[i]->getChannelPointer (0)),
                                                     L, filterRegisterSize);
@@ -495,7 +495,8 @@ void MultiBandCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer,
         {
             addr[ch] = zero.getChannelPointer (ch);
         }
-        interleaved[i]->clear();
+        // interleaved[i]->clear(); // broken with JUCE 5.4.5
+        clear (*interleaved[i]);
         AudioDataConverters::interleaveSamples (addr,
                                                 reinterpret_cast<float*> (interleaved[i]->getChannelPointer (0)),
                                                 L, filterRegisterSize);
@@ -647,29 +648,32 @@ AudioProcessorEditor* MultiBandCompressorAudioProcessor::createEditor()
 //==============================================================================
 void MultiBandCompressorAudioProcessor::getStateInformation (MemoryBlock& destData)
 {
-    // You should use this method to store your parameters in the memory block.
-    // You could do that either as raw data, or use the XML or ValueTree classes
-    // as intermediaries to make it easy to save and load complex data.
-    auto state = parameters.copyState();
-    state.setProperty ("OSCPort", var (oscReceiver.getPortNumber()), nullptr);
-    std::unique_ptr<XmlElement> xml (state.createXml());
-    copyXmlToBinary (*xml, destData);
+  auto state = parameters.copyState();
+
+  auto oscConfig = state.getOrCreateChildWithName ("OSCConfig", nullptr);
+  oscConfig.copyPropertiesFrom (oscParameterInterface.getConfig(), nullptr);
+
+  std::unique_ptr<XmlElement> xml (state.createXml());
+  copyXmlToBinary (*xml, destData);
 }
 
 
 void MultiBandCompressorAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
-    // You should use this method to restore your parameters from this memory block,
-    // whose contents will have been created by the getStateInformation() call.
     std::unique_ptr<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
     if (xmlState.get() != nullptr)
         if (xmlState->hasTagName (parameters.state.getType()))
         {
             parameters.replaceState (ValueTree::fromXml (*xmlState));
-            if (parameters.state.hasProperty ("OSCPort"))
+            if (parameters.state.hasProperty ("OSCPort")) // legacy
             {
-                oscReceiver.connect (parameters.state.getProperty ("OSCPort", var (-1)));
+                oscParameterInterface.getOSCReceiver().connect (parameters.state.getProperty ("OSCPort", var (-1)));
+                parameters.state.removeProperty ("OSCPort", nullptr);
             }
+
+            auto oscConfig = parameters.state.getChildWithName ("OSCConfig");
+            if (oscConfig.isValid())
+                oscParameterInterface.setConfig (oscConfig);
         }
 }
 
@@ -745,4 +749,13 @@ void MultiBandCompressorAudioProcessor::updateBuffers()
 AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new MultiBandCompressorAudioProcessor();
+}
+
+inline void MultiBandCompressorAudioProcessor::clear (AudioBlock<filterFloatType>& ab)
+{
+    const int N = static_cast<int> (ab.getNumSamples()) * filterRegisterSize;
+    const int nCh = static_cast<int> (ab.getNumChannels());
+
+    for (int ch = 0; ch < nCh; ++ch)
+        FloatVectorOperations::clear (reinterpret_cast<float*> (ab.getChannelPointer (ch)), N);
 }

@@ -41,6 +41,7 @@
 #include "NoiseBurst.h"
 #include "AmbisonicNoiseBurst.h"
 
+#define ProcessorClass AllRADecoderAudioProcessor
 
 //==============================================================================
 using namespace dsp;
@@ -48,6 +49,10 @@ class AllRADecoderAudioProcessor  : public AudioProcessorBase<IOTypes::Ambisonic
                                         public ValueTree::Listener
 {
 public:
+    constexpr static int numberOfInputChannels = 64;
+    constexpr static int numberOfOutputChannels = 64;
+    static const StringArray weightsStrings;
+
     //==============================================================================
     AllRADecoderAudioProcessor();
     ~AllRADecoderAudioProcessor();
@@ -140,6 +145,7 @@ private:
     float* decoderOrder;
     float* exportDecoder;
     float* exportLayout;
+    float* weights;
 
     ValueTree loudspeakers {"Loudspeakers"};
 
@@ -151,7 +157,7 @@ private:
     int highestChannelNumber;
 
     File lastDir;
-    ScopedPointer<PropertiesFile> properties;
+    std::unique_ptr<PropertiesFile> properties;
 
     // ========== METHODS
     void prepareLayout();

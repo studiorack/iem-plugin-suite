@@ -53,16 +53,29 @@ public:
         openGLContext.setRenderer(nullptr);
     }
 
-    void timerCallback() override {
+    void timerCallback() override
+    {
         openGLContext.triggerRepaint();
     }
-    void setRmsDataPtr(Array<float>* newRms) {
-        pRMS = newRms;
+
+    void setRmsDataPtr (float* rmsPtr)
+    {
+        pRMS = rmsPtr;
     }
 
     void newOpenGLContextCreated() override
     {
         createShaders();
+    }
+
+    void setPeakLevel (const float newPeakLevel)
+    {
+        peakLevel = newPeakLevel;
+    }
+
+    void setDynamicRange (const float newDynamicRange)
+    {
+        dynamicRange = newDynamicRange;
     }
 
     void renderOpenGL() override
@@ -112,10 +125,10 @@ public:
         }
 
         static GLfloat g_colorMap_data[nSamplePoints];
-        for (int i = 0; i < nSamplePoints; i++){
-            //g_colorMap_data[i] = (float) rand() / RAND_MAX;
-            g_colorMap_data[i] = pRMS->getUnchecked(i);
-            //g_colorMap_data[i] = (float) i / tDesignN;
+        for (int i = 0; i < nSamplePoints; i++)
+        {
+            const float val = (Decibels::gainToDecibels (pRMS[i]) - peakLevel) / dynamicRange + 1.0f;
+            g_colorMap_data[i] = jlimit (0.0f, 1.0f, val);;
         }
 
         GLuint colorBuffer;
@@ -241,17 +254,17 @@ public:
         "      gl_FragColor = texture2D(tex0, vec2(colormapDepthOut, colormapChooserOut));\n"
         "}";
 
-        ScopedPointer<OpenGLShaderProgram> newShader (new OpenGLShaderProgram (openGLContext));
+        std::unique_ptr<OpenGLShaderProgram> newShader (new OpenGLShaderProgram (openGLContext));
         String statusText;
 
         if (newShader->addVertexShader (OpenGLHelpers::translateVertexShaderToV3 (vertexShader))
             && newShader->addFragmentShader (OpenGLHelpers::translateFragmentShaderToV3 (fragmentShader))
             && newShader->link())
         {
-            shader = newShader;
+            shader = std::move (newShader);
             shader->use();
 
-            colormapChooser = createUniform (openGLContext, *shader, "colormapChooser");
+            colormapChooser.reset (createUniform (openGLContext, *shader, "colormapChooser"));
             statusText = "GLSL: v" + String (OpenGLShaderProgram::getLanguageVersion(), 2);
         }
         else
@@ -272,8 +285,8 @@ private:
     GLuint vertexBuffer, indexBuffer;
     const char* vertexShader;
     const char* fragmentShader;
-    ScopedPointer<OpenGLShaderProgram> shader;
-    ScopedPointer<OpenGLShaderProgram::Uniform> colormapChooser;
+    std::unique_ptr<OpenGLShaderProgram> shader;
+    std::unique_ptr<OpenGLShaderProgram::Uniform> colormapChooser;
     bool usePerceptualColormap = true;
 
     static OpenGLShaderProgram::Uniform* createUniform (OpenGLContext& openGLContext, OpenGLShaderProgram& shaderProgram, const char* uniformName)
@@ -283,11 +296,14 @@ private:
         return new OpenGLShaderProgram::Uniform (shaderProgram, uniformName);
     }
 
+    float peakLevel = 0.0f; // dB
+    float dynamicRange = 35.0f; // dB
+
     OpenGLTexture texture;
 
     bool firstRun = true;
 
-    Array<float>* pRMS;
+    float* pRMS;
 
     OpenGLContext openGLContext;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (VisualizerComponent)

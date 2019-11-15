@@ -1,5 +1,7 @@
 #!/bin/sh
 
+df -h
+
 JUCEFLAVOUR=$1
 OUTDIR=$2
 

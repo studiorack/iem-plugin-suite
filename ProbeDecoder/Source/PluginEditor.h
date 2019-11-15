@@ -67,11 +67,11 @@ private:
     SpherePanner sphere;
     SpherePanner::AzimuthElevationParameterElement probe;
 
-    ScopedPointer<SliderAttachment> slAzimuthAttachment;
-    ScopedPointer<SliderAttachment> slElevationAttachment;
+    std::unique_ptr<SliderAttachment> slAzimuthAttachment;
+    std::unique_ptr<SliderAttachment> slElevationAttachment;
 
-    ScopedPointer<ComboBoxAttachment> cbNormalizationAtachement;
-    ScopedPointer<ComboBoxAttachment> cbOrderAtachement;
+    std::unique_ptr<ComboBoxAttachment> cbNormalizationAtachement;
+    std::unique_ptr<ComboBoxAttachment> cbOrderAtachement;
 
     TooltipWindow toolTipWin;
 

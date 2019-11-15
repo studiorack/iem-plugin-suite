@@ -29,6 +29,7 @@
 #include "../../resources/Quaternion.h"
 #include "../../resources/ReferenceCountedMatrix.h"
 
+#define ProcessorClass SceneRotatorAudioProcessor
 
 //==============================================================================
 class SceneRotatorAudioProcessor  : public AudioProcessorBase<IOTypes::Ambisonics<>, IOTypes::Ambisonics<>, true>,
@@ -36,6 +37,8 @@ class SceneRotatorAudioProcessor  : public AudioProcessorBase<IOTypes::Ambisonic
                                     private Timer
 {
 public:
+    constexpr static int numberOfInputChannels = 64;
+    constexpr static int numberOfOutputChannels = 64;
     //==============================================================================
     SceneRotatorAudioProcessor();
     ~SceneRotatorAudioProcessor();
@@ -103,7 +106,7 @@ public:
         "MrHT_YprInv",
         "MrHT_Quat"
     };
-    
+
     String getCurrentMidiDeviceName();
     void openMidiInput (String midiDeviceName, bool forceUpdatingCurrentMidiDeviceName = false);
     void closeMidiInput();
@@ -117,7 +120,7 @@ public:
     Atomic<bool> deviceHasChanged = false;
     Atomic<bool> showMidiOpenError = false;
     Atomic<bool> schemeHasChanged = false;
-    
+
 private:
     //==============================================================================
 
@@ -144,7 +147,7 @@ private:
     Atomic<bool> rotationParamsHaveChanged {true};
 
     AudioBuffer<float> copyBuffer;
-    
+
     OwnedArray<Matrix<float>> orderMatrices;
     OwnedArray<Matrix<float>> orderMatricesCopy;
 

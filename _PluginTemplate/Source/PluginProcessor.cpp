@@ -73,25 +73,27 @@ int PluginTemplateAudioProcessor::getCurrentProgram()
 
 void PluginTemplateAudioProcessor::setCurrentProgram (int index)
 {
+    ignoreUnused (index);
 }
 
 const String PluginTemplateAudioProcessor::getProgramName (int index)
 {
+    ignoreUnused (index);
     return {};
 }
 
 void PluginTemplateAudioProcessor::changeProgramName (int index, const String& newName)
 {
+    ignoreUnused (index, newName);
 }
 
 //==============================================================================
 void PluginTemplateAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    checkInputAndOutput (this, *inputChannelsSetting, *outputOrderSetting, true);
-
+    checkInputAndOutput (this, static_cast<int> (*inputChannelsSetting), static_cast<int> (*outputOrderSetting), true);
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
-
+    ignoreUnused (sampleRate, samplesPerBlock);
 }
 
 void PluginTemplateAudioProcessor::releaseResources()
@@ -100,9 +102,9 @@ void PluginTemplateAudioProcessor::releaseResources()
     // spare memory, etc.
 }
 
-void PluginTemplateAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
+void PluginTemplateAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&)
 {
-    checkInputAndOutput (this, *inputChannelsSetting, *outputOrderSetting, false);
+    checkInputAndOutput (this, static_cast<int> (*inputChannelsSetting), static_cast<int> (*outputOrderSetting), false);
     ScopedNoDenormals noDenormals;
 
     const int totalNumInputChannels  = getTotalNumInputChannels();
@@ -122,7 +124,7 @@ void PluginTemplateAudioProcessor::processBlock (AudioSampleBuffer& buffer, Midi
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
         float* channelData = buffer.getWritePointer (channel);
-
+        ignoreUnused (channelData);
         // ..do something to the data...
     }
 }
@@ -141,13 +143,13 @@ AudioProcessorEditor* PluginTemplateAudioProcessor::createEditor()
 //==============================================================================
 void PluginTemplateAudioProcessor::getStateInformation (MemoryBlock& destData)
 {
-    // You should use this method to store your parameters in the memory block.
-    // You could do that either as raw data, or use the XML or ValueTree classes
-    // as intermediaries to make it easy to save and load complex data.
-    auto state = parameters.copyState();
-    state.setProperty ("OSCPort", var (oscReceiver.getPortNumber()), nullptr);
-    std::unique_ptr<XmlElement> xml (state.createXml());
-    copyXmlToBinary (*xml, destData);
+  auto state = parameters.copyState();
+
+  auto oscConfig = state.getOrCreateChildWithName ("OSCConfig", nullptr);
+  oscConfig.copyPropertiesFrom (oscParameterInterface.getConfig(), nullptr);
+
+  std::unique_ptr<XmlElement> xml (state.createXml());
+  copyXmlToBinary (*xml, destData);
 }
 
 
@@ -160,10 +162,15 @@ void PluginTemplateAudioProcessor::setStateInformation (const void* data, int si
         if (xmlState->hasTagName (parameters.state.getType()))
         {
             parameters.replaceState (ValueTree::fromXml (*xmlState));
-            if (parameters.state.hasProperty ("OSCPort"))
+            if (parameters.state.hasProperty ("OSCPort")) // legacy
             {
-                oscReceiver.connect (parameters.state.getProperty ("OSCPort", var (-1)));
+                oscParameterInterface.getOSCReceiver().connect (parameters.state.getProperty ("OSCPort", var (-1)));
+                parameters.state.removeProperty ("OSCPort", nullptr);
             }
+
+            auto oscConfig = parameters.state.getChildWithName ("OSCConfig");
+            if (oscConfig.isValid())
+                oscParameterInterface.setConfig (oscConfig);
         }
 }
 

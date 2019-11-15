@@ -38,10 +38,14 @@ using namespace juce::dsp;
 # define IIRfloat_elements() 1
 #endif /* JUCE_USE_SIMD */
 
+#define ProcessorClass MultiEQAudioProcessor
+
 //==============================================================================
 class MultiEQAudioProcessor  : public AudioProcessorBase<IOTypes::AudioChannels<64>, IOTypes::AudioChannels<64>>
 {
 public:
+    constexpr static int numberOfInputChannels = 64;
+    constexpr static int numberOfOutputChannels = 64;
     //==============================================================================
     MultiEQAudioProcessor();
     ~MultiEQAudioProcessor();
@@ -82,12 +86,12 @@ public:
 
     IIR::Coefficients<double>::Ptr getCoefficientsForGui (const int filterIndex) { return guiCoefficients[filterIndex]; };
     void updateGuiCoefficients();
-    
+
     // FV repaint flag
     Atomic<bool> repaintFV = true;
-    
+
 private:
-    
+
     enum class RegularFilterType
     {
         FirstOrderHighPass, SecondOrderHighPass, LowShelf, PeakFilter, HighShelf, FirstOrderLowPass, SecondOrderLowPass, NothingToDo
@@ -101,6 +105,7 @@ private:
     void createLinkwitzRileyFilter (const bool isUpperBand);
     void createFilterCoefficients (const int filterIndex, const double sampleRate);
 
+    inline void clear (AudioBlock<IIRfloat>& ab);
 
     inline dsp::IIR::Coefficients<float>::Ptr createFilterCoefficients (const RegularFilterType type, const double sampleRate, const float frequency, const float Q, const float gain);
 
@@ -120,7 +125,7 @@ private:
     OwnedArray<AudioBlock<IIRfloat>> interleavedData;
     AudioBlock<float> zero;
 
-    
+
     // list of used audio parameters
     float *inputChannelsSetting;
     float* filterEnabled[numFilterBands];

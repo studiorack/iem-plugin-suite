@@ -30,6 +30,7 @@
 #include "../../resources/customComponents/SimpleLabel.h"
 #include "../../resources/customComponents/MuteSoloButton.h"
 #include "../../resources/customComponents/SpherePanner.h"
+#include "MasterControlWithText.h"
 #include "EncoderList.h"
 
 
@@ -52,7 +53,8 @@ public:
     //==============================================================================
     void paint (Graphics&) override;
     void resized() override;
-    
+
+    void importLayout();
 private:
     LaF globalLaF;
     TitleBar<AudioChannelsIOWidget<maxNumberOfInputs>, AmbisonicIOWidget<>> title;
@@ -64,7 +66,9 @@ private:
     MultiEncoderAudioProcessor& processor;
     AudioProcessorValueTreeState& valueTreeState;
 
-    GroupComponent quatGroup,ypGroup,settingsGroup;
+    GroupComponent masterGroup, encoderGroup;
+    TextButton tbImport;
+
     ReverseSlider slMasterAzimuth, slMasterElevation, slMasterRoll;
 
     ToggleButton tbLockedToMaster;
@@ -73,13 +77,13 @@ private:
     SpherePanner sphere;
     SpherePanner::AzimuthElevationParameterElement masterElement;
 
-    ScopedPointer<SliderAttachment> slMasterAzimuthAttachment;
-    ScopedPointer<SliderAttachment> slMasterElevationAttachment;
-    ScopedPointer<SliderAttachment> slMasterRollAttachment;
-    ScopedPointer<ButtonAttachment> tbLockedToMasterAttachment;
+    std::unique_ptr<SliderAttachment> slMasterAzimuthAttachment;
+    std::unique_ptr<SliderAttachment> slMasterElevationAttachment;
+    std::unique_ptr<SliderAttachment> slMasterRollAttachment;
+    std::unique_ptr<ButtonAttachment> tbLockedToMasterAttachment;
 
-    ScopedPointer<ComboBoxAttachment> cbNumInputChannelsAttachment, cbNormalizationAtachment;
-    ScopedPointer<ComboBoxAttachment> cbOrderAtachment;
+    std::unique_ptr<ComboBoxAttachment> cbNumInputChannelsAttachment, cbNormalizationAtachment;
+    std::unique_ptr<ComboBoxAttachment> cbOrderAtachment;
 
     Viewport viewport;
     EncoderList encoderList;
@@ -91,7 +95,8 @@ private:
     int lastSetNumChIn = -1;
 
     // labels
-    SimpleLabel lbNum, lbAzimuth, lbElevation, lbGain;
+    SimpleLabel lbNum;
+    MasterControlWithText lbAzimuth, lbElevation, lbGain;
     SimpleLabel lbMasterAzimuth, lbMasterElevation, lbMasterRoll;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MultiEncoderAudioProcessorEditor)

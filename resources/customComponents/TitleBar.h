@@ -26,7 +26,7 @@
 #include "../ambisonicTools.h"
 
 #ifdef JUCE_OSC_H_INCLUDED
-#include "OSCStatus.h"
+#include "../OSC/OSCStatus.h"
 #endif
 
 class AlertSymbol : public Component, public TooltipClient
@@ -36,9 +36,7 @@ public:
     {
         warningSign.loadPathFromData (WarningSignData, sizeof (WarningSignData));
         setBufferedToImage (true);
-    };
-
-    ~AlertSymbol() {};
+    }
 
     String getTooltip() override
     {
@@ -50,7 +48,7 @@ public:
         warningSign.applyTransform (warningSign.getTransformToScaleToFit (getLocalBounds().toFloat(), true, Justification::centred));
         g.setColour (Colours::yellow);
         g.fillPath (warningSign);
-    };
+    }
 
 private:
     Path warningSign;
@@ -63,11 +61,10 @@ public:
     {
         addChildComponent (alert);
         alert.setBounds (15, 15, 15, 15);
-    };
+    }
 
-    ~IOWidget() {};
     virtual const int getComponentSize() = 0;
-    virtual void setMaxSize (int maxSize) {};
+    virtual void setMaxSize (int maxSize) = 0;
 
     void setBusTooSmall (bool isBusTooSmall)
     {
@@ -88,8 +85,8 @@ private:
 class  NoIOWidget :  public IOWidget
 {
 public:
-    NoIOWidget() : IOWidget() {};
-    ~NoIOWidget() {};
+    NoIOWidget() {}
+    void setMaxSize (int maxSize) override { ignoreUnused (maxSize); }
     const int getComponentSize() override { return 0; }
 };
 
@@ -100,18 +97,17 @@ public:
     {
         BinauralPath.loadPathFromData (BinauralPathData, sizeof (BinauralPathData));
         setBufferedToImage (true);
-    };
+    }
 
-    ~BinauralIOWidget() {};
     const int getComponentSize() override { return 30; }
-    void setMaxSize (int maxSize) override {};
+    void setMaxSize (int maxSize) override { ignoreUnused (maxSize); }
     void paint (Graphics& g) override
     {
         BinauralPath.applyTransform (BinauralPath.getTransformToScaleToFit (0, 0, 30, 30, true,Justification::centred));
         g.setColour ((Colours::white).withMultipliedAlpha (0.5));
         g.fillPath (BinauralPath);
 
-    };
+    }
 
 private:
     Path BinauralPath;
@@ -129,8 +125,8 @@ public:
 
         if (selectable)
         {
-            cbChannels = new ComboBox();
-            addAndMakeVisible (cbChannels);
+            cbChannels.reset (new ComboBox());
+            addAndMakeVisible (cbChannels.get());
             cbChannels->setJustificationType (Justification::centred);
             cbChannels->addSectionHeading ("Number of channels");
             cbChannels->addItem ("Auto", 1);
@@ -139,9 +135,7 @@ public:
             cbChannels->setBounds (35, 8, 70, 15);
             cbChannels->addListener (this);
         }
-    };
-
-    ~AudioChannelsIOWidget() {};
+    }
 
     const int getComponentSize() override { return selectable ? 110 : 75; }
 
@@ -166,10 +160,11 @@ public:
             setBusTooSmall (true);
         else
             setBusTooSmall (false);
-    };
+    }
 
     void comboBoxChanged (ComboBox *comboBoxThatHasChanged) override
     {
+        ignoreUnused (comboBoxThatHasChanged);
         checkIfBusIsTooSmall();
     }
 
@@ -215,7 +210,7 @@ public:
 
     ComboBox* getChannelsCbPointer()
     {
-        if (selectable) return cbChannels;
+        if (selectable) return cbChannels.get();
         return nullptr;
     }
 
@@ -232,37 +227,70 @@ public:
             g.setFont (15.0f);
             g.drawFittedText (displayTextIfNotSelectable, 35, 0, 40, 30, Justification::centredLeft, 2);
         }
-    };
+    }
 
 private:
-    ScopedPointer<ComboBox> cbChannels;
+    std::unique_ptr<ComboBox> cbChannels;
     Path WaveformPath;
     int availableChannels {64};
     int channelSizeIfNotSelectable = maxChannels;
     String displayTextIfNotSelectable = String(maxChannels);
 };
 
-template <int order = 7>
+template <int order = 7, bool selectable = true>
 class  AmbisonicIOWidget :  public IOWidget
 {
 public:
-    AmbisonicIOWidget() : IOWidget() {
+    AmbisonicIOWidget() : IOWidget()
+    {
         AmbiLogoPath.loadPathFromData (AmbiLogoPathData, sizeof (AmbiLogoPathData));
-        setBufferedToImage(true);
+        setBufferedToImage (true);
 
-        addAndMakeVisible(&cbOrder);
-        cbOrder.setJustificationType (Justification::centred);
-        cbOrder.setBounds (35, 15, 70, 15);
-        updateMaxOrder();
+        if (selectable)
+        {
+            addAndMakeVisible (&cbOrder);
+            cbOrder.setJustificationType (Justification::centred);
+            cbOrder.setBounds (35, 15, 70, 15);
+            updateMaxOrder();
+        }
+        else
+        {
+            displayTextIfNotSelectable = getOrderString (order) + " order";
+        }
 
-        addAndMakeVisible(&cbNormalization);
+        addAndMakeVisible (&cbNormalization);
         cbNormalization.setJustificationType (Justification::centred);
         cbNormalization.addSectionHeading ("Normalization");
         cbNormalization.addItem ("N3D", 1);
         cbNormalization.addItem ("SN3D", 2);
         cbNormalization.setBounds (35, 0, 70, 15);
     };
+
     ~AmbisonicIOWidget() {};
+
+    void setOrderIfUnselectable (int newOrder)
+    {
+        if (! selectable && orderIfNotSelectable != newOrder)
+        {
+            orderIfNotSelectable = newOrder;
+            updateDisplayTextIfNotSelectable();
+        }
+    }
+
+    void updateDisplayTextIfNotSelectable()
+    {
+        if (maxPossibleOrder < orderIfNotSelectable)
+        {
+            displayTextIfNotSelectable = getOrderString (orderIfNotSelectable) + " (bus too small)";
+            setBusTooSmall (true);
+        }
+        else
+        {
+            displayTextIfNotSelectable = getOrderString (orderIfNotSelectable) + " order";
+            setBusTooSmall (false);
+        }
+        repaint();
+    }
 
     void updateMaxOrder()
     {
@@ -280,52 +308,83 @@ public:
     {
         maxOrder = newMaxOrder;
         updateMaxOrder();
-        setMaxSize (maxPossibleOrder);
+        const int savedMaxPossibleOrder = maxPossibleOrder;
+        maxPossibleOrder = -1;
+        setMaxSize (savedMaxPossibleOrder);
     }
 
     const int getComponentSize() override { return 110; }
 
+    /** Sets the maximally available size of the processor for this Widget.
+     */
     void setMaxSize (int newMaxPossibleOrder) override
     {
-        maxPossibleOrder = jmin (newMaxPossibleOrder, maxOrder);
-        if (maxPossibleOrder > -1) cbOrder.changeItemText (1, "Auto (" + getOrderString (maxPossibleOrder) + ")");
-        else cbOrder.changeItemText (1, "(Auto)");
-        int currId = cbOrder.getSelectedId();
-        if (currId == 0) currId = 1; //bad work around
-        int i;
-
-        for (i = 1; i <= maxPossibleOrder; ++i)
+        if (maxPossibleOrder != jmin (newMaxPossibleOrder, maxOrder))
         {
-            cbOrder.changeItemText (i + 2, getOrderString(i));
-        }
+            maxPossibleOrder = jmin (newMaxPossibleOrder, maxOrder);
 
-        for (i = maxPossibleOrder + 1; i <= maxOrder; ++i)
-        {
-            cbOrder.changeItemText(i + 2, getOrderString (i) + " (bus too small)");
-        }
+            if (selectable)
+            {
+                if (maxPossibleOrder > -1)
+                    cbOrder.changeItemText (1, "Auto (" + getOrderString (maxPossibleOrder) + ")");
+                else
+                    cbOrder.changeItemText (1, "(Auto)");
 
-        cbOrder.setText (cbOrder.getItemText (cbOrder.indexOfItemId (currId)));
-        if (currId - 2> maxPossibleOrder)
-            setBusTooSmall (true);
-        else
-            setBusTooSmall (false);
+                int currId = cbOrder.getSelectedId();
+                if (currId == 0) currId = 1; //bad work around
+
+                for (int i = 1; i <= maxPossibleOrder; ++i)
+                    cbOrder.changeItemText (i + 2, getOrderString (i));
+
+                for (int i = maxPossibleOrder + 1; i<=maxOrder; ++i)
+                    cbOrder.changeItemText (i + 2, getOrderString (i) + " (bus too small)");
+
+                DBG (cbOrder.getItemText (cbOrder.indexOfItemId ((currId))));
+                cbOrder.setText (cbOrder.getItemText (cbOrder.indexOfItemId ((currId))));
+                if (currId - 2 > maxPossibleOrder)
+                    setBusTooSmall (true);
+                else
+                    setBusTooSmall (false);
+            }
+            else
+            {
+                updateDisplayTextIfNotSelectable();
+            }
+        }
     }
 
     ComboBox* getNormCbPointer() { return &cbNormalization; }
-    ComboBox* getOrderCbPointer() { return &cbOrder; }
+    ComboBox* getOrderCbPointer()
+    {
+        if (! selectable)
+            // There's no Ambisonic Order ComboBox, when order is not selectable!
+            jassertfalse;
+
+        return &cbOrder;
+    }
 
     void paint (Graphics& g) override
     {
-        AmbiLogoPath.applyTransform (AmbiLogoPath.getTransformToScaleToFit (0, 0, 30, 30, true,Justification::centred));
+        AmbiLogoPath.applyTransform (AmbiLogoPath.getTransformToScaleToFit (0, 0, 30, 30, true, Justification::centred));
         g.setColour ((Colours::white).withMultipliedAlpha (0.5));
         g.fillPath (AmbiLogoPath);
+
+        if (!selectable)
+        {
+            g.setColour ((Colours::white).withMultipliedAlpha (0.5));
+            g.setFont (getLookAndFeel().getTypefaceForFont (Font (12.0f, 1)));
+            g.setFont (15.0f);
+            g.drawFittedText (displayTextIfNotSelectable, 35, 15, 55, 15, Justification::centred, 1);
+        }
     };
 
 private:
     ComboBox cbNormalization, cbOrder;
     Path AmbiLogoPath;
     int maxOrder = order;
-    int maxPossibleOrder = 7;
+    int orderIfNotSelectable = order;
+    int maxPossibleOrder = -1;
+    String displayTextIfNotSelectable;
 };
 
 class  DirectivityIOWidget :  public IOWidget
@@ -364,9 +423,7 @@ public:
         cbNormalization.addItem ("N3D", 1);
         cbNormalization.addItem ("SN3D", 2);
         cbNormalization.setBounds (35, 0, 70, 15);
-    };
-
-    ~DirectivityIOWidget() {};
+    }
 
     const int getComponentSize() override { return 110; }
 
@@ -401,7 +458,7 @@ public:
         DirectivityPath.applyTransform (DirectivityPath.getTransformToScaleToFit (0, 0, 30, 30, true, Justification::centred));
         g.setColour ((Colours::white).withMultipliedAlpha (0.5));
         g.fillPath (DirectivityPath);
-    };
+    }
 
 private:
     String orderStrings[8];
@@ -418,9 +475,7 @@ public:
     {
         addAndMakeVisible(&inputWidget);
         addAndMakeVisible(&outputWidget);
-    };
-
-    ~TitleBar() {};
+    }
 
     Tin* getInputWidgetPtr() { return &inputWidget; }
     Tout* getOutputWidgetPtr() { return &outputWidget; }
@@ -446,11 +501,11 @@ public:
         inputWidget.setBounds (getLocalBounds().removeFromLeft (leftWidth).reduced (0, 15));
         outputWidget.setBounds (getLocalBounds().removeFromRight (rightWidth).reduced (0, 15));
     }
-    
-    void setMaxSize (int inputSize, int outputSize)
+
+    void setMaxSize (std::pair<int, int> inOutSizes)
     {
-        inputWidget.setMaxSize (inputSize);
-        outputWidget.setMaxSize (outputSize);
+        inputWidget.setMaxSize (inOutSizes.first);
+        outputWidget.setMaxSize (inOutSizes.second);
     }
 
     void paint (Graphics& g) override
@@ -484,7 +539,7 @@ public:
 
         g.setColour ((Colours::white).withMultipliedAlpha (0.5));
         g.drawLine (bounds.getX(),bounds.getY() + bounds.getHeight() - 4, bounds.getX() + bounds.getWidth(), bounds.getY()+bounds.getHeight() - 4);
-    };
+    }
 
 private:
     Tin inputWidget;
@@ -505,8 +560,6 @@ public:
         url = URL("https://plugins.iem.at/");
     }
 
-    ~IEMLogo() {};
-
     void paint (Graphics& g) override
     {
         Rectangle<int> bounds = getLocalBounds();
@@ -526,18 +579,21 @@ public:
 
     void mouseEnter (const MouseEvent &event) override
     {
+        ignoreUnused (event);
         setMouseCursor (MouseCursor (MouseCursor::PointingHandCursor));
         repaint();
     }
 
     void mouseExit (const MouseEvent &event) override
     {
+        ignoreUnused (event);
         setMouseCursor (MouseCursor (MouseCursor::NormalCursor));
         repaint();
     }
 
     void mouseUp (const MouseEvent &event) override
     {
+        ignoreUnused (event);
         if (url.isWellFormed())
             url.launchInDefaultBrowser();
     }
@@ -553,9 +609,7 @@ public:
     Footer() : Component()
     {
         addAndMakeVisible(&iemLogo);
-    };
-
-    ~Footer() {};
+    }
 
     void paint (Graphics& g) override
     {
@@ -571,7 +625,7 @@ public:
         versionString.append(JucePlugin_VersionString, 6);
 
         g.drawText (versionString, 0, 0, bounds.getWidth() - 8, bounds.getHeight() - 2, Justification::bottomRight);
-    };
+    }
 
     void resized () override
     {
@@ -586,12 +640,11 @@ private:
 class  OSCFooter :  public Component
 {
 public:
-    OSCFooter (OSCReceiverPlus& oscReceiver) : oscStatus (oscReceiver)
+    OSCFooter (OSCParameterInterface& oscInterface) : oscStatus (oscInterface)
     {
         addAndMakeVisible (footer);
         addAndMakeVisible (oscStatus);
-    };
-    ~OSCFooter() {};
+    }
 
     void resized () override
     {
@@ -601,7 +654,7 @@ public:
         bounds.removeFromBottom (2);
         bounds = bounds.removeFromBottom (16);
         bounds.removeFromLeft (50);
-        oscStatus.setBounds (bounds.removeFromLeft (80));
+        oscStatus.setBounds (bounds);
     }
 
 private:

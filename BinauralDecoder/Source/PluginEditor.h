@@ -77,12 +77,12 @@ private:
 
     // Attachments to create a connection between IOWidgets comboboxes
     // and the associated parameters
-    ScopedPointer<ComboBoxAttachment> cbOrderSettingAttachment;
-    ScopedPointer<ComboBoxAttachment> cbNormalizationSettingAttachment;
+    std::unique_ptr<ComboBoxAttachment> cbOrderSettingAttachment;
+    std::unique_ptr<ComboBoxAttachment> cbNormalizationSettingAttachment;
 
     SimpleLabel lbEq;
     ComboBox cbEq;
-    ScopedPointer<ComboBoxAttachment> cbEqAttachment;
+    std::unique_ptr<ComboBoxAttachment> cbEqAttachment;
 
 
 

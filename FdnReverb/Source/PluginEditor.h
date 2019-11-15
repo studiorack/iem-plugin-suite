@@ -80,12 +80,12 @@ private:
     ComboBox cbFdnSize;
 
     // Pointers for value tree state
-    ScopedPointer<SliderAttachment> delayAttachment, feedbackAttachment, fadeInAttachment, dryWetAttachment, highCutoffAttachment, highQAttachment, highGainAttachment, lowCutoffAttachment, lowQAttachment, lowGainAttachment;
-    ScopedPointer<ComboBoxAttachment> cbFdnSizeAttachment;
+    std::unique_ptr<SliderAttachment> delayAttachment, feedbackAttachment, fadeInAttachment, dryWetAttachment, highCutoffAttachment, highQAttachment, highGainAttachment, lowCutoffAttachment, lowQAttachment, lowGainAttachment;
+    std::unique_ptr<ComboBoxAttachment> cbFdnSizeAttachment;
 
     // Buttons
     ToggleButton networkOrder, freezeMode;
-    ScopedPointer<ButtonAttachment> networkOrderAttachment;
+    std::unique_ptr<ButtonAttachment> networkOrderAttachment;
 
     // filter visualization
     T60Visualizer tv;

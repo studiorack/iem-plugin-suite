@@ -25,6 +25,8 @@
 
 #include <cfloat>
 
+const StringArray AllRADecoderAudioProcessor::weightsStrings = StringArray ("basic", "maxrE", "inphase");
+
 //==============================================================================
 AllRADecoderAudioProcessor::AllRADecoderAudioProcessor()
 : AudioProcessorBase (
@@ -47,6 +49,7 @@ energyDistribution (Image::PixelFormat::ARGB, 200, 100, true), rEVector (Image::
     decoderOrder = parameters.getRawParameterValue ("decoderOrder");
     exportDecoder = parameters.getRawParameterValue ("exportDecoder");
     exportLayout = parameters.getRawParameterValue ("exportLayout");
+    weights = parameters.getRawParameterValue ("weights");
 
     // add listeners to parameter changes
     parameters.addParameterListener ("inputOrderSetting", this);
@@ -59,7 +62,7 @@ energyDistribution (Image::PixelFormat::ARGB, 200, 100, true), rEVector (Image::
     options.folderName          = "IEM";
     options.osxLibrarySubFolder = "Preferences";
 
-    properties = new PropertiesFile(options);
+    properties.reset (new PropertiesFile (options));
     lastDir = File(properties->getValue("presetFolder"));
 
     undoManager.beginNewTransaction();
@@ -210,11 +213,11 @@ void AllRADecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBu
         const int L = buffer.getNumSamples();
         AudioBlock<float> inputAudioBlock = AudioBlock<float>(buffer.getArrayOfWritePointers(), nChIn, L);
         AudioBlock<float> outputAudioBlock = AudioBlock<float>(buffer.getArrayOfWritePointers(), nChOut, L);
-        ProcessContextNonReplacing<float> decoderContext (inputAudioBlock, outputAudioBlock);
-        decoder.process(decoderContext);
 
-        for (int ch = nChOut; ch < nChIn; ++ch) // clear all not needed channels
-            buffer.clear(ch, 0, buffer.getNumSamples());
+        decoder.process (inputAudioBlock, outputAudioBlock);
+
+        for (int ch = nChOut; ch < buffer.getNumChannels(); ++ch) // clear all not needed channels
+            buffer.clear (ch, 0, buffer.getNumSamples());
 
     }
     noiseBurst.processBuffer (buffer);
@@ -238,11 +241,13 @@ void AllRADecoderAudioProcessor::getStateInformation (MemoryBlock& destData)
     {
         parameters.state.removeChild(parameters.state.getChildWithName("Loudspeakers"), nullptr);
     }
-    parameters.state.appendChild(loudspeakers, nullptr);
+    parameters.state.appendChild (loudspeakers, nullptr);
 
-    parameters.state.setProperty ("OSCPort", var(oscReceiver.getPortNumber()), nullptr);
+    auto state = parameters.copyState();
+    auto oscConfig = state.getOrCreateChildWithName ("OSCConfig", nullptr);
+    oscConfig.copyPropertiesFrom (oscParameterInterface.getConfig(), nullptr);
 
-    ScopedPointer<XmlElement> xml (parameters.state.createXml());
+    std::unique_ptr<XmlElement> xml (state.createXml());
     copyXmlToBinary (*xml, destData);
 }
 
@@ -250,16 +255,21 @@ void AllRADecoderAudioProcessor::getStateInformation (MemoryBlock& destData)
 
 void AllRADecoderAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
-    ScopedPointer<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
+    std::unique_ptr<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
     if (xmlState != nullptr)
     {
         if (xmlState->hasTagName (parameters.state.getType()))
         {
             parameters.replaceState (ValueTree::fromXml (*xmlState));
-            if (parameters.state.hasProperty ("OSCPort"))
+            if (parameters.state.hasProperty ("OSCPort")) // legacy
             {
-                oscReceiver.connect (parameters.state.getProperty ("OSCPort", var(-1)));
+                oscParameterInterface.getOSCReceiver().connect (parameters.state.getProperty ("OSCPort", var (-1)));
+                parameters.state.removeProperty ("OSCPort", nullptr);
             }
+
+            auto oscConfig = parameters.state.getChildWithName ("OSCConfig");
+            if (oscConfig.isValid())
+                oscParameterInterface.setConfig (oscConfig);
         }
 
         XmlElement* lsps (xmlState->getChildByName("Loudspeakers"));
@@ -653,6 +663,7 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
         return Result::fail("Layout not ready!");
 
     const int N = roundToInt(*decoderOrder) + 1;
+    const auto ambisonicWeights = ReferenceCountedDecoder::Weights (roundToInt (*weights));
     const int nCoeffs = square(N+1);
     const int nLsps = (int) points.size();
     const int nRealLsps = nLsps - imaginaryFlags.countNumberOfSetBits();
@@ -799,9 +810,10 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
     const float wHalf = w / 2;
     const int h = energyDistribution.getHeight();
     const float hHalf = h / 2;
-    float maxSumOfSquares = 0.0f;
     float minLvl = 0.0f;
     float maxLvl = 0.0f;
+    float sumLvl = 0.0f;
+    auto levelValues = Matrix<float> (w, h);
     for (int y = 0; y < h; ++y)
         for (int x = 0; x < w; ++x)
         {
@@ -809,6 +821,12 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
             HammerAitov::XYToSpherical((x - wHalf) / wHalf, (hHalf - y) / hHalf, spher.y, spher.z);
             Vector3D<float> cart = sphericalInRadiansToCartesian(spher);
             SHEval(N, cart.x, cart.y, cart.z, &sh[0]); // encoding a source
+
+            if (ambisonicWeights == ReferenceCountedDecoder::Weights::maxrE)
+                multiplyMaxRE (N, sh.data());
+            else if (ambisonicWeights == ReferenceCountedDecoder::Weights::inPhase)
+                multiplyInPhase (N, sh.data());
+
 
             Vector3D<float> rE (0.0f, 0.0f, 0.0f);
             float sumOfSquares = 0.0f;
@@ -818,53 +836,48 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
                 for (int n = 0; n < nCoeffs; ++n)
                     sum += (sh[n] * decoderMatrix(m, n));
                 const float sumSquared = square(sum);
-                rE = rE + realLspsCoordinates[m] * sumSquared;
+                rE += realLspsCoordinates[m] * sumSquared;
                 sumOfSquares += sumSquared;
             }
 
-            rE /= sumOfSquares + FLT_EPSILON;
-            const float width = 2.0f * acos(jmin(1.0f, rE.length()));
+            const float lvl = 0.5f * Decibels::gainToDecibels (sumOfSquares);
+            levelValues(x, y) = lvl;
+            sumLvl += lvl;
 
-            const float lvl = 0.5f * Decibels::gainToDecibels(sumOfSquares);
             if (lvl > maxLvl)
                 maxLvl = lvl;
             if (lvl < minLvl)
                 minLvl = lvl;
-            const float map = jlimit(-0.5f, 0.5f, 0.5f * 0.16666667f * Decibels::gainToDecibels(sumOfSquares)) + 0.5f;
 
-            const float reMap = jlimit(0.0f, 1.0f, width / (float) MathConstants<float>::pi);
+            rE /= sumOfSquares + FLT_EPSILON;
+            const float width = 2.0f * acos(jmin(1.0f, rE.length()));
+            const float reMap = jlimit (0.0f, 1.0f, width / MathConstants<float>::pi);
 
-            Colour rEPixelColour = Colours::limegreen.withMultipliedAlpha(reMap);
-            Colour pixelColour = Colours::red.withMultipliedAlpha(map);
-
-            rEVector.setPixelAt(x, y, rEPixelColour);
-            energyDistribution.setPixelAt(x, y, pixelColour);
-
-            if (sumOfSquares > maxSumOfSquares)
-                maxSumOfSquares = sumOfSquares;
+            const Colour rEPixelColour = Colours::limegreen.withMultipliedAlpha(reMap);
+            rEVector.setPixelAt (x, y, rEPixelColour);
         }
 
+    const float meanLvl = sumLvl / (w * h);
+    for (int y = 0; y < h; ++y)
+        for (int x = 0; x < w; ++x)
+        {
+            constexpr float plusMinusRange = 1.5f;
+            const float map = (jlimit (-plusMinusRange, plusMinusRange, levelValues(x, y) - meanLvl) + plusMinusRange) / (2 * plusMinusRange);
+
+            const Colour pixelColour = Colours::red.withMultipliedAlpha (map);
+            energyDistribution.setPixelAt (x, y, pixelColour);
+        }
 
     DBG("min: " << minLvl << " max: " << maxLvl);
 
     updateLoudspeakerVisualization = true;
-
-    Colour colormapData[8];
-    colormapData[0] = Colours::skyblue.withMultipliedAlpha(0.0f);
-    colormapData[1] = Colours::skyblue.withMultipliedAlpha(0.2f);
-    colormapData[2] = Colours::skyblue.withMultipliedAlpha(0.3f);
-    colormapData[3] = Colour::fromFloatRGBA(0.167f, 0.620f, 0.077f, 6.0f);
-    colormapData[4] = Colour::fromFloatRGBA(0.167f, 0.620f, 0.077f, 7.0f);
-    colormapData[5] = Colour::fromFloatRGBA(0.8f, 0.620f, 0.077f, 0.8f);
-    colormapData[6] = Colour::fromFloatRGBA(0.8f, 0.620f, 0.077f, 1.0f);
-    colormapData[7] = Colours::red;
 
 
     ReferenceCountedDecoder::Ptr newDecoder = new ReferenceCountedDecoder("Decoder", "A " + getOrderString(N) + " order Ambisonics decoder using the AllRAD approach.", (int) decoderMatrix.getSize()[0], (int) decoderMatrix.getSize()[1]);
     newDecoder->getMatrix() = decoderMatrix;
     ReferenceCountedDecoder::Settings newSettings;
     newSettings.expectedNormalization = ReferenceCountedDecoder::Normalization::n3d;
-    newSettings.weights = ReferenceCountedDecoder::Weights::maxrE;
+    newSettings.weights = ambisonicWeights;
     newSettings.weightsAlreadyApplied = false;
 
     newDecoder->setSettings(newSettings);
@@ -1211,6 +1224,8 @@ std::vector<std::unique_ptr<RangedAudioParameter>> AllRADecoderAudioProcessor::c
                                          if (value >= 0.5f) return "Yes";
                                          else return "No";
                                      }, nullptr));
+
+    params.push_back (std::make_unique<AudioParameterChoice> ("weights", "Ambisonic Weights", weightsStrings, 1));
 
     return params;
 }

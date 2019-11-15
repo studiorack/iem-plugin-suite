@@ -25,7 +25,7 @@
 
 //==============================================================================
 FdnReverbAudioProcessorEditor::FdnReverbAudioProcessorEditor (FdnReverbAudioProcessor& p, AudioProcessorValueTreeState& vts)
-    : AudioProcessorEditor (&p), processor (p), valueTreeState (vts), footer (p.getOSCReceiver()),
+    : AudioProcessorEditor (&p), processor (p), valueTreeState (vts), footer (p.getOSCParameterInterface()),
     tv (20.f, 20000.f, 0.1f, 25.f, 5.f),
     fv (20.f, 20000.f, -80.f, 5.f, 5.f, false)
 {
@@ -59,14 +59,14 @@ FdnReverbAudioProcessorEditor::FdnReverbAudioProcessorEditor (FdnReverbAudioProc
     t60Group.setVisible(true);
 
     addAndMakeVisible (&delayLengthSlider);
-    delayAttachment = new SliderAttachment (valueTreeState, "delayLength", delayLengthSlider);
+    delayAttachment.reset (new SliderAttachment (valueTreeState, "delayLength", delayLengthSlider));
     delayLengthSlider.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     delayLengthSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     delayLengthSlider.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
     delayLengthSlider.setTooltip("Room Size");
 
     addAndMakeVisible (&revTimeSlider);
-    feedbackAttachment = new SliderAttachment (valueTreeState, "revTime", revTimeSlider);
+    feedbackAttachment.reset (new SliderAttachment (valueTreeState, "revTime", revTimeSlider));
     revTimeSlider.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     revTimeSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     revTimeSlider.setColour (Slider::rotarySliderOutlineColourId, Colours::white);
@@ -74,21 +74,21 @@ FdnReverbAudioProcessorEditor::FdnReverbAudioProcessorEditor (FdnReverbAudioProc
     revTimeSlider.addListener(this);
 
 	addAndMakeVisible(&fadeInSlider);
-	fadeInAttachment = new SliderAttachment(valueTreeState, "fadeInTime", fadeInSlider);
+	fadeInAttachment.reset (new SliderAttachment (valueTreeState, "fadeInTime", fadeInSlider));
 	fadeInSlider.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
 	fadeInSlider.setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
 	fadeInSlider.setColour(Slider::rotarySliderOutlineColourId, Colours::white);
 	fadeInSlider.setTooltip("FadeIn Time");
 
     addAndMakeVisible (&dryWetSlider);
-    dryWetAttachment = new SliderAttachment (valueTreeState, "dryWet", dryWetSlider);
+    dryWetAttachment.reset (new SliderAttachment (valueTreeState, "dryWet", dryWetSlider));
     dryWetSlider.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     dryWetSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     dryWetSlider.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
     dryWetSlider.setTooltip("Dry/Wet");
 
     addAndMakeVisible (&lowCutoffSlider);
-    lowCutoffAttachment = new SliderAttachment (valueTreeState, "lowCutoff", lowCutoffSlider);
+    lowCutoffAttachment.reset (new SliderAttachment (valueTreeState, "lowCutoff", lowCutoffSlider));
     lowCutoffSlider.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     lowCutoffSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     lowCutoffSlider.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[3]);
@@ -96,7 +96,7 @@ FdnReverbAudioProcessorEditor::FdnReverbAudioProcessorEditor (FdnReverbAudioProc
     lowCutoffSlider.addListener(this);
 
     addAndMakeVisible (&lowQSlider);
-    lowQAttachment = new SliderAttachment (valueTreeState, "lowQ", lowQSlider);
+    lowQAttachment.reset (new SliderAttachment (valueTreeState, "lowQ", lowQSlider));
     lowQSlider.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     lowQSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     lowQSlider.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[3]);
@@ -104,7 +104,7 @@ FdnReverbAudioProcessorEditor::FdnReverbAudioProcessorEditor (FdnReverbAudioProc
     lowQSlider.addListener(this);
 
     addAndMakeVisible (&lowGainSlider);
-    lowGainAttachment = new SliderAttachment (valueTreeState, "lowGain", lowGainSlider);
+    lowGainAttachment.reset (new SliderAttachment (valueTreeState, "lowGain", lowGainSlider));
     lowGainSlider.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     lowGainSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     lowGainSlider.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[3]);
@@ -112,7 +112,7 @@ FdnReverbAudioProcessorEditor::FdnReverbAudioProcessorEditor (FdnReverbAudioProc
     lowGainSlider.addListener(this);
 
     addAndMakeVisible (&highCutoffSlider);
-    highCutoffAttachment = new SliderAttachment (valueTreeState, "highCutoff", highCutoffSlider);
+    highCutoffAttachment.reset (new SliderAttachment (valueTreeState, "highCutoff", highCutoffSlider));
     highCutoffSlider.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     highCutoffSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     highCutoffSlider.setColour (Slider::rotarySliderOutlineColourId,
@@ -121,7 +121,7 @@ FdnReverbAudioProcessorEditor::FdnReverbAudioProcessorEditor (FdnReverbAudioProc
     highCutoffSlider.addListener(this);
 
     addAndMakeVisible (&highQSlider);
-    highQAttachment = new SliderAttachment (valueTreeState, "highQ", highQSlider);
+    highQAttachment.reset (new SliderAttachment (valueTreeState, "highQ", highQSlider));
     highQSlider.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     highQSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     highQSlider.setColour (Slider::rotarySliderOutlineColourId,
@@ -130,7 +130,7 @@ FdnReverbAudioProcessorEditor::FdnReverbAudioProcessorEditor (FdnReverbAudioProc
     highQSlider.addListener(this);
 
     addAndMakeVisible (&highGainSlider);
-    highGainAttachment = new SliderAttachment (valueTreeState, "highGain", highGainSlider);
+    highGainAttachment.reset (new SliderAttachment (valueTreeState, "highGain", highGainSlider));
     highGainSlider.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     highGainSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     highGainSlider.setColour (Slider::rotarySliderOutlineColourId,
@@ -144,7 +144,7 @@ FdnReverbAudioProcessorEditor::FdnReverbAudioProcessorEditor (FdnReverbAudioProc
     cbFdnSize.addItem ("32", 2);
     cbFdnSize.addItem ("64", 3);
     cbFdnSize.setJustificationType (Justification::centred);
-    cbFdnSizeAttachment = new ComboBoxAttachment (valueTreeState, "fdnSize", cbFdnSize);
+    cbFdnSizeAttachment.reset (new ComboBoxAttachment (valueTreeState, "fdnSize", cbFdnSize));
 
     addAndMakeVisible (&freezeMode);
     freezeMode.setButtonText ("Freeze");

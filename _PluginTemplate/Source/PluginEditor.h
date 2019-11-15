@@ -45,7 +45,7 @@ class PluginTemplateAudioProcessorEditor  : public AudioProcessorEditor, private
 {
 public:
     PluginTemplateAudioProcessorEditor (PluginTemplateAudioProcessor&, AudioProcessorValueTreeState&);
-    ~PluginTemplateAudioProcessorEditor();
+    ~PluginTemplateAudioProcessorEditor() override;
 
     //==============================================================================
     void paint (Graphics&) override;
@@ -60,7 +60,7 @@ private:
     LaF globalLaF;
 
     // stored references to the AudioProcessor and ValueTreeState holding all the parameters
-    PluginTemplateAudioProcessor& processor;
+    PluginTemplateAudioProcessor& audioProcessor;
     AudioProcessorValueTreeState& valueTreeState;
 
 
@@ -77,14 +77,14 @@ private:
 
     // Attachments to create a connection between IOWidgets comboboxes
     // and the associated parameters
-    ScopedPointer<ComboBoxAttachment> cbInputChannelsSettingAttachment;
-    ScopedPointer<ComboBoxAttachment> cbOrderSettingAttachment;
-    ScopedPointer<ComboBoxAttachment> cbNormalizationSettingAttachment;
+    std::unique_ptr<ComboBoxAttachment> cbInputChannelsSettingAttachment;
+    std::unique_ptr<ComboBoxAttachment> cbOrderSettingAttachment;
+    std::unique_ptr<ComboBoxAttachment> cbNormalizationSettingAttachment;
 
     // Demo stuff
     Slider slParam1;
     ReverseSlider slParam2;
-    ScopedPointer<SliderAttachment> slParam1Attachment, slParam2Attachment;
+    std::unique_ptr<SliderAttachment> slParam1Attachment, slParam2Attachment;
 
 
 

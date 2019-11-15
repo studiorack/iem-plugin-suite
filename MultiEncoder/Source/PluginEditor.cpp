@@ -26,10 +26,13 @@
 
 //==============================================================================
 MultiEncoderAudioProcessorEditor::MultiEncoderAudioProcessorEditor (MultiEncoderAudioProcessor& p, AudioProcessorValueTreeState& vts)
-: AudioProcessorEditor (&p), footer (p.getOSCReceiver()), processor (p), valueTreeState(vts),
+: AudioProcessorEditor (&p), footer (p.getOSCParameterInterface()), processor (p), valueTreeState(vts),
 masterElement(*valueTreeState.getParameter("masterAzimuth"), valueTreeState.getParameterRange("masterAzimuth"),
               *valueTreeState.getParameter("masterElevation"), valueTreeState.getParameterRange("masterElevation")),
-encoderList(p, sphere, &vts)
+encoderList (p, sphere, &vts),
+lbAzimuth (encoderList.getAzimuthArray()),
+lbElevation (encoderList.getElevationArray()),
+lbGain (encoderList.getGainArray())
 {
     setLookAndFeel (&globalLaF);
 
@@ -54,23 +57,39 @@ encoderList(p, sphere, &vts)
     tooltipWin.setMillisecondsBeforeTipAppears(500);
     tooltipWin.setOpaque (false);
 
+
+
+    cbNumInputChannelsAttachment.reset (new ComboBoxAttachment (valueTreeState,"inputSetting",*title.getInputWidgetPtr()->getChannelsCbPointer()));
+    cbNormalizationAtachment.reset (new ComboBoxAttachment (valueTreeState,"useSN3D",*title.getOutputWidgetPtr()->getNormCbPointer()));
+    cbOrderAtachment.reset (new ComboBoxAttachment (valueTreeState,"orderSetting",*title.getOutputWidgetPtr()->getOrderCbPointer()));
+
+    // ======================== Encoder group
+    encoderGroup.setText("Encoder settings");
+    encoderGroup.setTextLabelPosition (Justification::centredLeft);
+    encoderGroup.setColour (GroupComponent::outlineColourId, globalLaF.ClSeperator);
+    encoderGroup.setColour (GroupComponent::textColourId, Colours::white);
+    addAndMakeVisible(&encoderGroup);
+    encoderGroup.setVisible(true);
+
+    addAndMakeVisible(tbImport);
+    tbImport.setButtonText ("IMPORT");
+    tbImport.setColour (TextButton::buttonColourId, Colours::orange);
+    tbImport.setTooltip ("Imports sources from a configuration file.");
+    tbImport.onClick = [&] () { importLayout(); };
+
     addAndMakeVisible(&viewport);
     viewport.setViewedComponent(&encoderList);
 
-    cbNumInputChannelsAttachment = new ComboBoxAttachment(valueTreeState,"inputSetting",*title.getInputWidgetPtr()->getChannelsCbPointer());
-    cbNormalizationAtachment = new ComboBoxAttachment(valueTreeState,"useSN3D",*title.getOutputWidgetPtr()->getNormCbPointer());
-    cbOrderAtachment = new ComboBoxAttachment(valueTreeState,"orderSetting",*title.getOutputWidgetPtr()->getOrderCbPointer());
-
-    // ======================== AZIMUTH ELEVATION ROLL GROUP
-    ypGroup.setText("Encoder settings");
-    ypGroup.setTextLabelPosition (Justification::centredLeft);
-    ypGroup.setColour (GroupComponent::outlineColourId, globalLaF.ClSeperator);
-    ypGroup.setColour (GroupComponent::textColourId, Colours::white);
-    addAndMakeVisible(&ypGroup);
-    ypGroup.setVisible(true);
+    // ====================== GRAB GROUP
+    masterGroup.setText("Master");
+    masterGroup.setTextLabelPosition (Justification::centredLeft);
+    masterGroup.setColour (GroupComponent::outlineColourId, globalLaF.ClSeperator);
+    masterGroup.setColour (GroupComponent::textColourId, Colours::white);
+    addAndMakeVisible(&masterGroup);
+    masterGroup.setVisible(true);
 
     addAndMakeVisible(&slMasterAzimuth);
-    slMasterAzimuthAttachment = new SliderAttachment(valueTreeState, "masterAzimuth", slMasterAzimuth);
+    slMasterAzimuthAttachment.reset (new SliderAttachment (valueTreeState, "masterAzimuth", slMasterAzimuth));
     slMasterAzimuth.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slMasterAzimuth.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slMasterAzimuth.setReverse(true);
@@ -79,7 +98,7 @@ encoderList(p, sphere, &vts)
     slMasterAzimuth.setTooltip("Master azimuth angle");
 
     addAndMakeVisible(&slMasterElevation);
-    slMasterElevationAttachment = new SliderAttachment(valueTreeState, "masterElevation", slMasterElevation);
+    slMasterElevationAttachment.reset (new SliderAttachment (valueTreeState, "masterElevation", slMasterElevation));
     slMasterElevation.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slMasterElevation.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slMasterElevation.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
@@ -87,7 +106,7 @@ encoderList(p, sphere, &vts)
     slMasterElevation.setTooltip("Master elevation angle");
 
     addAndMakeVisible(&slMasterRoll);
-    slMasterRollAttachment = new SliderAttachment(valueTreeState, "masterRoll", slMasterRoll);
+    slMasterRollAttachment.reset (new SliderAttachment (valueTreeState, "masterRoll", slMasterRoll));
     slMasterRoll.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slMasterRoll.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slMasterRoll.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
@@ -95,17 +114,9 @@ encoderList(p, sphere, &vts)
     slMasterRoll.setTooltip("Master roll angle");
 
     addAndMakeVisible(&tbLockedToMaster);
-    tbLockedToMasterAttachment = new ButtonAttachment(valueTreeState, "lockedToMaster", tbLockedToMaster);
+    tbLockedToMasterAttachment.reset (new ButtonAttachment(valueTreeState, "lockedToMaster", tbLockedToMaster));
     tbLockedToMaster.setName("locking");
     tbLockedToMaster.setButtonText("Lock Directions");
-
-    // ====================== GRAB GROUP
-    quatGroup.setText("Master");
-    quatGroup.setTextLabelPosition (Justification::centredLeft);
-    quatGroup.setColour (GroupComponent::outlineColourId, globalLaF.ClSeperator);
-    quatGroup.setColour (GroupComponent::textColourId, Colours::white);
-    addAndMakeVisible(&quatGroup);
-    quatGroup.setVisible(true);
 
 
     // ================ LABELS ===================
@@ -149,9 +160,7 @@ void MultiEncoderAudioProcessorEditor::paint (Graphics& g)
 void MultiEncoderAudioProcessorEditor::timerCallback()
 {
     // === update titleBar widgets according to available input/output channel counts
-    int maxInSize, maxOutSize;
-    processor.getMaxSize(maxInSize, maxOutSize);
-    title.setMaxSize(maxInSize, maxOutSize);
+    title.setMaxSize (processor.getMaxSize());
     // ==========================================
 
     const int nChIn = processor.input.getSize();
@@ -236,17 +245,18 @@ void MultiEncoderAudioProcessorEditor::resized()
 
     // -------------- Azimuth Elevation Roll Labels ------------------
     Rectangle<int> yprArea (sideBarArea);
-    ypGroup.setBounds (yprArea);
-    yprArea.removeFromTop(25); //for box headline
+    encoderGroup.setBounds (yprArea);
+    auto headlineArea = yprArea.removeFromTop (25); //for box headline
+    tbImport.setBounds (headlineArea.removeFromRight (60).removeFromTop (15));
 
 
-    sliderRow = (yprArea.removeFromTop(15));
-    lbNum.setBounds(sliderRow.removeFromLeft(22));
-    sliderRow.removeFromLeft(5);
-    lbAzimuth.setBounds(sliderRow.removeFromLeft(rotSliderWidth));
-    sliderRow.removeFromLeft(rotSliderSpacing - 5);
-    lbElevation.setBounds(sliderRow.removeFromLeft(rotSliderWidth + 10));
-    sliderRow.removeFromLeft(rotSliderSpacing - 5);
+    sliderRow = yprArea.removeFromTop (15);
+    lbNum.setBounds (sliderRow.removeFromLeft (15));
+    sliderRow.removeFromLeft (3);
+    lbAzimuth.setBounds (sliderRow.removeFromLeft (rotSliderWidth + 10));
+    sliderRow.removeFromLeft (rotSliderSpacing - 7);
+    lbElevation.setBounds (sliderRow.removeFromLeft (rotSliderWidth + 13));
+    sliderRow.removeFromLeft (rotSliderSpacing - 5);
     lbGain.setBounds(sliderRow.removeFromLeft(rotSliderWidth));
 
     viewport.setBounds(yprArea);
@@ -270,7 +280,7 @@ void MultiEncoderAudioProcessorEditor::resized()
 
     // ------------- Master Grabber ------------------------
     Rectangle<int> masterArea (area.removeFromTop(masterAreaHeight));
-    quatGroup.setBounds (masterArea);
+    masterGroup.setBounds (masterArea);
     masterArea.removeFromTop(25); //for box headline
 
 
@@ -290,4 +300,29 @@ void MultiEncoderAudioProcessorEditor::resized()
     slMasterRoll.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
     sliderRow.removeFromLeft(rotSliderSpacing);
     tbLockedToMaster.setBounds (sliderRow.removeFromLeft(100));
+}
+
+void MultiEncoderAudioProcessorEditor::importLayout()
+{
+    FileChooser myChooser ("Load configuration...",
+                           processor.getLastDir().exists() ? processor.getLastDir() : File::getSpecialLocation (File::userHomeDirectory),
+                           "*.json");
+    if (myChooser.browseForFileToOpen())
+    {
+        File configFile (myChooser.getResult());
+        processor.setLastDir (configFile.getParentDirectory());
+        auto result = processor.loadConfiguration (configFile);
+
+        if (! result.wasOk())
+        {
+            auto* component = new TextEditor();
+            component->setMultiLine (true, true);
+            component->setReadOnly (true);
+            component->setText (result.getErrorMessage());
+            component->setSize (200, 110);
+
+            CallOutBox& myBox = CallOutBox::launchAsynchronously (component, tbImport.getBounds(), this);
+            myBox.setLookAndFeel (&getLookAndFeel());
+        }
+    }
 }

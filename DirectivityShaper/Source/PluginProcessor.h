@@ -29,6 +29,7 @@
 #include "../../resources/Quaternion.h"
 #include "../../resources/Weights.h"
 
+#define ProcessorClass DirectivityShaperAudioProcessor
 
 #define numberOfBands 4
 using namespace juce::dsp;
@@ -39,6 +40,8 @@ using namespace juce::dsp;
 class DirectivityShaperAudioProcessor  : public AudioProcessorBase<IOTypes::AudioChannels<1>, IOTypes::Ambisonics<>>
 {
 public:
+    constexpr static int numberOfInputChannels = 1;
+    constexpr static int numberOfOutputChannels = 64;
     //==============================================================================
     DirectivityShaperAudioProcessor();
     ~DirectivityShaperAudioProcessor();

@@ -26,7 +26,7 @@
 
 //==============================================================================
 DirectionalCompressorAudioProcessorEditor::DirectionalCompressorAudioProcessorEditor (DirectionalCompressorAudioProcessor& p,AudioProcessorValueTreeState& vts)
-    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts), footer (p.getOSCReceiver()),
+    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts), footer (p.getOSCParameterInterface()),
     sphereElem(*valueTreeState.getParameter("azimuth"), valueTreeState.getParameterRange("azimuth"), *valueTreeState.getParameter("elevation"), valueTreeState.getParameterRange("elevation"))
 {
     // Make sure that before the constructor has finished, you've set the
@@ -43,8 +43,8 @@ DirectionalCompressorAudioProcessorEditor::DirectionalCompressorAudioProcessorEd
     sphere.addElement(&sphereElem);
 
 
-    cbNormalizationAtachement = new ComboBoxAttachment(valueTreeState,"useSN3D", *title.getInputWidgetPtr()->getNormCbPointer());
-    cbOrderAtachement = new ComboBoxAttachment(valueTreeState,"orderSetting", *title.getInputWidgetPtr()->getOrderCbPointer());
+    cbNormalizationAtachement.reset (new ComboBoxAttachment(valueTreeState,"useSN3D", *title.getInputWidgetPtr()->getNormCbPointer()));
+    cbOrderAtachement.reset (new ComboBoxAttachment(valueTreeState,"orderSetting", *title.getInputWidgetPtr()->getOrderCbPointer()));
 
 
 
@@ -64,14 +64,14 @@ DirectionalCompressorAudioProcessorEditor::DirectionalCompressorAudioProcessorEd
     gcSettings.setVisible(true);
 
     addAndMakeVisible(&slPreGain);
-    slPreGainAttachment = new SliderAttachment(valueTreeState,"preGain", slPreGain);
+    slPreGainAttachment.reset (new SliderAttachment(valueTreeState,"preGain", slPreGain));
     slPreGain.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slPreGain.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slPreGain.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
     slPreGain.setTooltip("PreGain");
 
     addAndMakeVisible(&slAzimuth);
-    slAzimuthAttachment = new SliderAttachment(valueTreeState,"azimuth", slAzimuth);
+    slAzimuthAttachment.reset (new SliderAttachment(valueTreeState,"azimuth", slAzimuth));
     slAzimuth.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slAzimuth.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slAzimuth.setReverse(true);
@@ -80,7 +80,7 @@ DirectionalCompressorAudioProcessorEditor::DirectionalCompressorAudioProcessorEd
     slAzimuth.setTooltip("Azimuth angle of the spatial mask");
 
     addAndMakeVisible(&slElevation);
-    slElevationAttachment = new SliderAttachment(valueTreeState,"elevation", slElevation);
+    slElevationAttachment.reset (new SliderAttachment(valueTreeState,"elevation", slElevation));
     slElevation.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slElevation.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slElevation.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
@@ -88,14 +88,14 @@ DirectionalCompressorAudioProcessorEditor::DirectionalCompressorAudioProcessorEd
     slElevation.setTooltip("Elevation angle of the spatial mask");
 
     addAndMakeVisible(&slWidth);
-    slWidthAttachment = new SliderAttachment(valueTreeState,"width", slWidth);
+    slWidthAttachment.reset (new SliderAttachment(valueTreeState,"width", slWidth));
     slWidth.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slWidth.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slWidth.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
     slWidth.setTooltip("Width of the spatial mask");
 
     addAndMakeVisible(&cbListen);
-    cbListenAttachment = new ComboBoxAttachment(valueTreeState,"listen", cbListen);
+    cbListenAttachment.reset (new ComboBoxAttachment(valueTreeState,"listen", cbListen));
     cbListen.setJustificationType(Justification::centred);
     cbListen.addSectionHeading("Listen to");
     cbListen.addItem("Full", 1);
@@ -114,14 +114,14 @@ DirectionalCompressorAudioProcessorEditor::DirectionalCompressorAudioProcessorEd
     gcC1.setVisible(true);
 
     addAndMakeVisible(&tbC1);
-    tbC1Attachment = new ButtonAttachment(valueTreeState,"c1Enabled",tbC1);
+    tbC1Attachment.reset (new ButtonAttachment(valueTreeState,"c1Enabled",tbC1));
     tbC1.setColour(ToggleButton::tickColourId, globalLaF.ClWidgetColours[0]);
     tbC1.setButtonText("ON/OFF");
     tbC1.setName("C1");
     tbC1.addListener(this);
 
     addAndMakeVisible(&cbC1Driving);
-    cbC1DrivingAttachment = new ComboBoxAttachment(valueTreeState,"c1DrivingSignal", cbC1Driving);
+    cbC1DrivingAttachment.reset (new ComboBoxAttachment(valueTreeState,"c1DrivingSignal", cbC1Driving));
     cbC1Driving.setJustificationType(Justification::centred);
     cbC1Driving.addSectionHeading("Driving signa");
     cbC1Driving.addItem("Full", 1);
@@ -131,7 +131,7 @@ DirectionalCompressorAudioProcessorEditor::DirectionalCompressorAudioProcessorEd
     cbC1Driving.setEnabled(isOn);
 
     addAndMakeVisible(&cbC1Apply);
-    cbC1ApplyAttachment = new ComboBoxAttachment(valueTreeState,"c1Apply", cbC1Apply);
+    cbC1ApplyAttachment.reset (new ComboBoxAttachment(valueTreeState,"c1Apply", cbC1Apply));
     cbC1Apply.setJustificationType(Justification::centred);
     cbC1Apply.addSectionHeading("Apply to");
     cbC1Apply.addItem("Full", 1);
@@ -141,7 +141,7 @@ DirectionalCompressorAudioProcessorEditor::DirectionalCompressorAudioProcessorEd
     cbC1Apply.setEnabled(isOn);
 
     addAndMakeVisible(&slC1Threshold);
-    slC1ThresholdAttachment = new SliderAttachment(valueTreeState,"c1Threshold", slC1Threshold);
+    slC1ThresholdAttachment.reset (new SliderAttachment(valueTreeState,"c1Threshold", slC1Threshold));
     slC1Threshold.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slC1Threshold.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slC1Threshold.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
@@ -149,14 +149,14 @@ DirectionalCompressorAudioProcessorEditor::DirectionalCompressorAudioProcessorEd
     slC1Threshold.setEnabled(isOn);
 
     addAndMakeVisible(&slC1Knee);
-    slC1KneeAttachment = new SliderAttachment(valueTreeState,"c1Knee", slC1Knee);
+    slC1KneeAttachment.reset (new SliderAttachment(valueTreeState,"c1Knee", slC1Knee));
     slC1Knee.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slC1Knee.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slC1Knee.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
     slC1Knee.setEnabled(isOn);
 
     addAndMakeVisible(&slC1Ratio);
-    slC1RatioAttachment = new SliderAttachment(valueTreeState,"c1Ratio", slC1Ratio);
+    slC1RatioAttachment.reset (new SliderAttachment(valueTreeState,"c1Ratio", slC1Ratio));
     slC1Ratio.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slC1Ratio.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slC1Ratio.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[3]);
@@ -164,7 +164,7 @@ DirectionalCompressorAudioProcessorEditor::DirectionalCompressorAudioProcessorEd
     slC1Ratio.setEnabled(isOn);
 
     addAndMakeVisible(&slC1Attack);
-    slC1AttackAttachment = new SliderAttachment(valueTreeState,"c1Attack", slC1Attack);
+    slC1AttackAttachment.reset (new SliderAttachment(valueTreeState,"c1Attack", slC1Attack));
     slC1Attack.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slC1Attack.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slC1Attack.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
@@ -172,14 +172,14 @@ DirectionalCompressorAudioProcessorEditor::DirectionalCompressorAudioProcessorEd
     slC1Attack.setEnabled(isOn);
 
     addAndMakeVisible(&slC1Release);
-    slC1ReleaseAttachment = new SliderAttachment(valueTreeState,"c1Release", slC1Release);
+    slC1ReleaseAttachment.reset (new SliderAttachment(valueTreeState,"c1Release", slC1Release));
     slC1Release.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slC1Release.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slC1Release.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
     slC1Release.setEnabled(isOn);
 
     addAndMakeVisible(&slC1Makeup);
-    slC1MakeupAttachment = new SliderAttachment(valueTreeState,"c1Makeup", slC1Makeup);
+    slC1MakeupAttachment.reset (new SliderAttachment(valueTreeState,"c1Makeup", slC1Makeup));
     slC1Makeup.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slC1Makeup.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slC1Makeup.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
@@ -232,14 +232,14 @@ DirectionalCompressorAudioProcessorEditor::DirectionalCompressorAudioProcessorEd
     gcC2.setVisible(true);
 
     addAndMakeVisible(&tbC2);
-    tbC2Attachment = new ButtonAttachment(valueTreeState,"c2Enabled",tbC2);
+    tbC2Attachment.reset (new ButtonAttachment(valueTreeState,"c2Enabled",tbC2));
     tbC2.setColour(ToggleButton::tickColourId, globalLaF.ClWidgetColours[0]);
     tbC2.setButtonText("ON/OFF");
     tbC2.setName("C2");
     tbC2.addListener(this);
 
     addAndMakeVisible(&cbC2Driving);
-    cbC2DrivingAttachment = new ComboBoxAttachment(valueTreeState,"c2DrivingSignal", cbC2Driving);
+    cbC2DrivingAttachment.reset (new ComboBoxAttachment(valueTreeState,"c2DrivingSignal", cbC2Driving));
     cbC2Driving.setJustificationType(Justification::centred);
     cbC2Driving.addSectionHeading("Driving signal");
     cbC2Driving.addItem("Full", 1);
@@ -249,7 +249,7 @@ DirectionalCompressorAudioProcessorEditor::DirectionalCompressorAudioProcessorEd
     cbC2Driving.setEnabled(isOn);
 
     addAndMakeVisible(&cbC2Apply);
-    cbC2ApplyAttachment = new ComboBoxAttachment(valueTreeState,"c2Apply", cbC2Apply);
+    cbC2ApplyAttachment.reset (new ComboBoxAttachment(valueTreeState,"c2Apply", cbC2Apply));
     cbC2Apply.setJustificationType(Justification::centred);
     cbC2Apply.addSectionHeading("Apply to");
     cbC2Apply.addItem("Full", 1);
@@ -259,7 +259,7 @@ DirectionalCompressorAudioProcessorEditor::DirectionalCompressorAudioProcessorEd
     cbC2Apply.setEnabled(isOn);
 
     addAndMakeVisible(&slC2Threshold);
-    slC2ThresholdAttachment = new SliderAttachment(valueTreeState,"c2Threshold", slC2Threshold);
+    slC2ThresholdAttachment.reset (new SliderAttachment(valueTreeState,"c2Threshold", slC2Threshold));
     slC2Threshold.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slC2Threshold.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slC2Threshold.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
@@ -267,14 +267,14 @@ DirectionalCompressorAudioProcessorEditor::DirectionalCompressorAudioProcessorEd
     slC2Threshold.setEnabled(isOn);
 
     addAndMakeVisible(&slC2Knee);
-    slC2KneeAttachment = new SliderAttachment(valueTreeState,"c2Knee", slC2Knee);
+    slC2KneeAttachment.reset (new SliderAttachment(valueTreeState,"c2Knee", slC2Knee));
     slC2Knee.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slC2Knee.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slC2Knee.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
     slC2Knee.setEnabled(isOn);
 
     addAndMakeVisible(&slC2Ratio);
-    slC2RatioAttachment = new SliderAttachment(valueTreeState,"c2Ratio", slC2Ratio);
+    slC2RatioAttachment.reset (new SliderAttachment(valueTreeState,"c2Ratio", slC2Ratio));
     slC2Ratio.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slC2Ratio.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slC2Ratio.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[3]);
@@ -282,7 +282,7 @@ DirectionalCompressorAudioProcessorEditor::DirectionalCompressorAudioProcessorEd
     slC2Ratio.setEnabled(isOn);
 
     addAndMakeVisible(&slC2Attack);
-    slC2AttackAttachment = new SliderAttachment(valueTreeState,"c2Attack", slC2Attack);
+    slC2AttackAttachment.reset (new SliderAttachment(valueTreeState,"c2Attack", slC2Attack));
     slC2Attack.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slC2Attack.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slC2Attack.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
@@ -290,7 +290,7 @@ DirectionalCompressorAudioProcessorEditor::DirectionalCompressorAudioProcessorEd
     slC2Attack.setEnabled(isOn);
 
     addAndMakeVisible(&slC2Release);
-    slC2ReleaseAttachment = new SliderAttachment(valueTreeState,"c2Release", slC2Release);
+    slC2ReleaseAttachment.reset (new SliderAttachment(valueTreeState,"c2Release", slC2Release));
     slC2Release.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slC2Release.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slC2Release.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
@@ -298,7 +298,7 @@ DirectionalCompressorAudioProcessorEditor::DirectionalCompressorAudioProcessorEd
     slC2Release.setEnabled(isOn);
 
     addAndMakeVisible(&slC2Makeup);
-    slC2MakeupAttachment = new SliderAttachment(valueTreeState,"c2Makeup", slC2Makeup);
+    slC2MakeupAttachment.reset (new SliderAttachment(valueTreeState,"c2Makeup", slC2Makeup));
     slC2Makeup.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     slC2Makeup.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
     slC2Makeup.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
@@ -414,11 +414,10 @@ void DirectionalCompressorAudioProcessorEditor::paint (Graphics& g)
 void DirectionalCompressorAudioProcessorEditor::timerCallback()
 {
     // === update titleBar widgets according to available input/output channel counts
-    int maxInSize, maxOutSize;
-    processor.getMaxSize(maxInSize, maxOutSize);
-    maxOutSize = jmin(maxInSize, maxOutSize);
-    maxInSize = maxOutSize;
-    title.setMaxSize(maxInSize, maxOutSize);
+    auto sizes = processor.getMaxSize();
+    sizes.first = jmin (sizes.first, sizes.second);
+    sizes.second = sizes.first;
+    title.setMaxSize (sizes);
     // ==========================================
 
     if (processor.updatedPositionData.get())

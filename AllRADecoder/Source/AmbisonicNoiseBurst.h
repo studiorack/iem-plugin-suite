@@ -116,7 +116,7 @@ public:
             active = true;
         }
     }
-    
+
     const bool isActive()
     {
         return active.get();
@@ -134,7 +134,7 @@ public:
             SHEval(ambisonicOrder, x, y, z, SH);
 
             if (useSN3D)
-                FloatVectorOperations::multiply(SH, n3d2sn3d, nCh);                
+                FloatVectorOperations::multiply(SH, n3d2sn3d, nCh);
 
             for (int ch = 0; ch < nCh; ++ch)
                 buffer.addFrom(ch, 0, resampledNoise, 0, currentPosition, copyL, SH[ch]);

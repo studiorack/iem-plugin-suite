@@ -88,21 +88,21 @@ private:
     // =============== end essentials ============
 
     TooltipWindow tooltipWin;
-    
+
     // Attachments to create a connection between IOWidgets comboboxes
     // and the associated parameters
-    ScopedPointer<ComboBoxAttachment> cbOrderSettingAttachment;
-    ScopedPointer<ComboBoxAttachment> cbNormalizationSettingAttachment;
+    std::unique_ptr<ComboBoxAttachment> cbOrderSettingAttachment;
+    std::unique_ptr<ComboBoxAttachment> cbNormalizationSettingAttachment;
 
-    ComboBox cbDecoderOrder;
-    ScopedPointer<ComboBoxAttachment> cbDecoderOrderAttachment;
+    ComboBox cbDecoderOrder, cbDecoderWeights;
+    std::unique_ptr<ComboBoxAttachment> cbDecoderOrderAttachment, cbDecoderWeightsAttachment;
 
     ToggleButton tbExportDecoder, tbExportLayout;
-    ScopedPointer<ButtonAttachment> tbExportDecoderAttachment, tbExportLayoutAttachment;
+    std::unique_ptr<ButtonAttachment> tbExportDecoderAttachment, tbExportLayoutAttachment;
 
 
     GroupComponent gcLayout, gcDecoder, gcExport;
-    SimpleLabel lbDecoderOrder;
+    SimpleLabel lbDecoderOrder, lbDecoderWeights;
 
     MailBox::Display messageDisplay;
 

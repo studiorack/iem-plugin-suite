@@ -27,6 +27,7 @@
 #include "../../resources/interpLagrangeWeights.h"
 #include "../../resources/AudioProcessorBase.h"
 
+#define ProcessorClass DualDelayAudioProcessor
 
 //==============================================================================
 /**
@@ -34,6 +35,8 @@
 class DualDelayAudioProcessor  : public AudioProcessorBase<IOTypes::Ambisonics<>, IOTypes::Ambisonics<>, true>
 {
 public:
+    constexpr static int numberOfInputChannels = 64;
+    constexpr static int numberOfOutputChannels = 64;
     //==============================================================================
     DualDelayAudioProcessor();
     ~DualDelayAudioProcessor();
