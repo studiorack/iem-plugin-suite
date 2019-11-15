@@ -582,12 +582,13 @@ void DualDelayAudioProcessor::updateBuffers()
     AudioIN.setSize(nChannels, samplesPerBlock);
     AudioIN.clear();
 
-    delayBufferLeft.setSize(nChannels, 50000);
-    delayBufferRight.setSize(nChannels, 50000);
+    const int maxLfoDepth = static_cast<int> (ceil (parameters.getParameterRange ("lfoDepthL").getRange().getEnd() * sampleRate / 500.0f));
+
+    delayBufferLeft.setSize (nChannels, samplesPerBlock+interpOffset-1+maxLfoDepth+sampleRate);
+    delayBufferRight.setSize (nChannels, samplesPerBlock+interpOffset-1+maxLfoDepth+sampleRate);
     delayBufferLeft.clear();
     delayBufferRight.clear();
 
-    int maxLfoDepth = (int) ceilf(parameters.getParameterRange("lfoDepthL").getRange().getEnd()*sampleRate/500.0f);
     delayTempBuffer.setSize(nChannels, samplesPerBlock+interpOffset-1+maxLfoDepth+sampleRate*0.5);
 
     delayOutLeft.setSize(nChannels, samplesPerBlock);
