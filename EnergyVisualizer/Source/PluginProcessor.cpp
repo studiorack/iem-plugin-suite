@@ -254,7 +254,7 @@ void EnergyVisualizerAudioProcessor::timerCallback()
 //==============================================================================
 void EnergyVisualizerAudioProcessor::sendAdditionalOSCMessages (OSCSender& oscSender, const OSCAddressPattern& address)
 {
-    OSCMessage message (address);
+    OSCMessage message (address.toString() + "/RMS");
     for (int i = 0; i < nSamplePoints; ++i)
         message.addFloat32 (rms[i]);
     oscSender.send (message);
