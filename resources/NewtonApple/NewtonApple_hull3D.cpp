@@ -608,6 +608,10 @@ int init_hull3D( std::vector<R3> &pts, std::vector<Tri> &hull)
                 // second side of the struck out triangle
                 
                 int ac = hull[xid].ac;     // facet adjacent to line ac
+
+                if (ac == -1) // quick fix
+                    return -1;
+
                 Tri &tAC = hull[ac];
                 
                 R1 = pts[tAC.a].x;  // point on next triangle
@@ -1475,6 +1479,10 @@ int init_hull3D_compact( std::vector<R3> &pts, std::vector<Tri> &hull)
 	    // second side of the struck out triangle
             
 	    int ac = hull[xid].ac;     // facet adjacent to line ac
+          
+          if (ac == -1) // quick fix
+              return -1;
+
 	    Tri &tAC = hull[ac];
             
 	    R1 = pts[tAC.a].x;  // point on next triangle

@@ -579,7 +579,7 @@ Result AllRADecoderAudioProcessor::checkLayout()
     const int result = NewtonApple_hull_3D(points, triangles);
     if (result != 1)
     {
-        return Result::fail("ERROR: An error occurred! The layout might be broken somehow.");
+        return Result::fail("ERROR: An error occurred! The layout might be broken somehow. Try adding additional loudspeakers (e.g. imaginary ones) or make small changes to the coordinates.");
     }
 
     // normalise normal vectors

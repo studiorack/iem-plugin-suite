@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <JUCERPROJECT id="mbpAgi" name="AllRADecoder" displaySplashScreen="0" reportAppUsage="0"
-              splashScreenColour="Dark" projectType="audioplug" version="0.8.0"
+              splashScreenColour="Dark" projectType="audioplug" version="0.8.1"
               bundleIdentifier="at.iem.AllRADecoder" includeBinaryInAppConfig="1"
               cppLanguageStandard="14" buildVST="1" buildVST3="0" buildAU="0"
               buildAUv3="0" buildRTAS="0" buildAAX="0" buildStandalone="1"
@@ -70,6 +70,8 @@
           file="Source/LoudspeakerTableComponent.h"/>
     <FILE id="F9NLCT" name="LoudspeakerVisualizer.h" compile="0" resource="0"
           file="Source/LoudspeakerVisualizer.h"/>
+    <FILE id="cHzwMk" name="NewtonApple_hull3D.h" compile="0" resource="0"
+          file="../resources/NewtonApple/NewtonApple_hull3D.h"/>
     <FILE id="F0oPvT" name="NewtonApple_hull3D.cpp" compile="1" resource="0"
           file="../resources/NewtonApple/NewtonApple_hull3D.cpp"/>
     <FILE id="rcRJYx" name="NoiseBurst.h" compile="0" resource="0" file="Source/NoiseBurst.h"/>
