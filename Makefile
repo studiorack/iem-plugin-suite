@@ -99,6 +99,9 @@ endif
 showprojects:
 	@echo $(PROJECTS)
 
+.PHONY: $(ALL_PROJECTS)
+$(ALL_PROJECTS): % : %-$(BUILDSYSTEM)-build
+
 # generic rules
 .PHONY: distclean clean all resave
 
