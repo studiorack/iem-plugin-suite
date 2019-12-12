@@ -39,11 +39,11 @@
 #endif
 
 #if JUCE_USE_SIMD
-# define IIRfloat juce::dsp::SIMDRegister<float>
-# define IIRfloat_elements() IIRfloat::size()
+    using IIRfloat = juce::dsp::SIMDRegister<float>;
+    static constexpr int IIRfloat_elements = juce::dsp::SIMDRegister<float>::size();
 #else /* !JUCE_USE_SIMD */
-# define IIRfloat float
-# define IIRfloat_elements() 1
+    using IIRfloat = float;
+    static constexpr int IIRfloat_elements = 1;
 #endif /* JUCE_USE_SIMD */
 
 #define ProcessorClass RoomEncoderAudioProcessor

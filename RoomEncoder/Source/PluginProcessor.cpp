@@ -264,7 +264,7 @@ void RoomEncoderAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
         clear (*interleavedData.getLast());
     }
 
-    zero = AudioBlock<float> (zeroData, IIRfloat_elements(), samplesPerBlock);
+    zero = AudioBlock<float> (zeroData, IIRfloat_elements, samplesPerBlock);
     zero.clear();
 
     updateFv = true;
@@ -416,7 +416,7 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
     float* pBufferWrite = buffer.getWritePointer(0);
     const float* pBufferRead = buffer.getReadPointer(0);
 
-    const int nSIMDFilters = 1 + (maxNChIn-1)/IIRfloat_elements();
+    const int nSIMDFilters = 1 + (maxNChIn-1)/IIRfloat_elements;
 
     const auto delayBufferWritePtrArray = delayBuffer.getArrayOfWritePointers();
 
@@ -425,14 +425,14 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
 
 
     //interleave input data
-    int partial = maxNChIn%IIRfloat_elements();
+    int partial = maxNChIn%IIRfloat_elements;
     if (partial == 0)
     {
         for (int i = 0; i<nSIMDFilters; ++i)
         {
-            AudioDataConverters::interleaveSamples(buffer.getArrayOfReadPointers() + i*IIRfloat_elements(),
+            AudioDataConverters::interleaveSamples(buffer.getArrayOfReadPointers() + i*IIRfloat_elements,
                                                    reinterpret_cast<float*> (interleavedData[i]->getChannelPointer (0)), L,
-                                                   static_cast<int> (IIRfloat_elements()));
+                                                   static_cast<int> (IIRfloat_elements));
         }
     }
     else
@@ -440,24 +440,24 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
         int i;
         for (i = 0; i<nSIMDFilters-1; ++i)
         {
-            AudioDataConverters::interleaveSamples(buffer.getArrayOfReadPointers() + i*IIRfloat_elements(),
+            AudioDataConverters::interleaveSamples(buffer.getArrayOfReadPointers() + i*IIRfloat_elements,
                                                    reinterpret_cast<float*> (interleavedData[i]->getChannelPointer (0)), L,
-                                                   static_cast<int> (IIRfloat_elements()));
+                                                   static_cast<int> (IIRfloat_elements));
         }
 
-        const float* addr[IIRfloat_elements()];
+        const float* addr[IIRfloat_elements];
         size_t ch;
         for (ch = 0; ch < partial; ++ch)
         {
-            addr[ch] = buffer.getReadPointer(i * static_cast<int> (IIRfloat_elements() + ch));
+            addr[ch] = buffer.getReadPointer(i * static_cast<int> (IIRfloat_elements + ch));
         }
-        for (; ch < IIRfloat_elements(); ++ch)
+        for (; ch < IIRfloat_elements; ++ch)
         {
             addr[ch] = zero.getChannelPointer(ch);
         }
         AudioDataConverters::interleaveSamples(addr,
                                                reinterpret_cast<float*> (interleavedData[i]->getChannelPointer (0)), L,
-                                               static_cast<int> (IIRfloat_elements()));
+                                               static_cast<int> (IIRfloat_elements));
     }
 
     int currNumRefl = roundToInt(*numRefl);
@@ -538,10 +538,10 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
         {
             for (int i = 0; i<nSIMDFilters; ++i)
             {
-                const SIMDRegister<float>* chPtr[1];
+                const IIRfloat* chPtr[1];
                 chPtr[0] = interleavedData[i]->getChannelPointer (0);
-                AudioBlock<SIMDRegister<float>> ab (const_cast<SIMDRegister<float>**> (chPtr), 1, L);
-                ProcessContextReplacing<SIMDRegister<float>> context (ab);
+                AudioBlock<IIRfloat> ab (const_cast<IIRfloat**> (chPtr), 1, L);
+                ProcessContextReplacing<IIRfloat> context (ab);
 
                 lowShelfArray[idx]->getUnchecked (i)->process (context);
                 highShelfArray[idx]->getUnchecked (i)->process (context);
@@ -553,15 +553,15 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
          * the following section is broken, as it hardcodes asumptions about how
          * many floats can be stored in IIRfloat
          */
-        IIRfloat SHsample[16]; //TODO: can be smaller: (N+1)^2/IIRfloat_elements()
+        IIRfloat SHsample[16]; //TODO: can be smaller: (N+1)^2/IIRfloat_elements
         IIRfloat SHsampleStep[16];
 #if JUCE_USE_SIMD
         FloatVectorOperations::clear((float *) &SHsample->value,
-                                     IIRfloat_elements() * sizeof(SHsample) / sizeof(*SHsample));
+                                     IIRfloat_elements * sizeof(SHsample) / sizeof(*SHsample));
         SHEval(directivityOrder, smx[q], smy[q], smz[q],(float *) &SHsample->value, false); // deoding -> false
 #else  /* !JUCE_USE_SIMD */
         FloatVectorOperations::clear((float *) SHsample,
-                                     IIRfloat_elements() * sizeof(SHsample) / sizeof(*SHsample));
+                                     IIRfloat_elements * sizeof(SHsample) / sizeof(*SHsample));
         SHEval(directivityOrder, smx[q], smy[q], smz[q],(float *) SHsample, false); // deoding -> false
 #endif /* JUCE_USE_SIMD */
 
@@ -1135,7 +1135,7 @@ std::vector<std::unique_ptr<RangedAudioParameter>> RoomEncoderAudioProcessor::cr
 
 inline void RoomEncoderAudioProcessor::clear (AudioBlock<IIRfloat>& ab)
 {
-    const int N = static_cast<int> (ab.getNumSamples()) * IIRfloat_elements();
+    const int N = static_cast<int> (ab.getNumSamples()) * IIRfloat_elements;
     const int nCh = static_cast<int> (ab.getNumChannels());
 
     for (int ch = 0; ch < nCh; ++ch)

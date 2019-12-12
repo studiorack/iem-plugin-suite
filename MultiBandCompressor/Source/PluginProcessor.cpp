@@ -513,20 +513,20 @@ void MultiBandCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer,
     //                                | ---> LP1 ---> |
     for (int i = 0; i < numSimdFilters; ++i)
     {
-        const SIMDRegister<float>* chPtrInterleaved[1] = {interleaved[i]->getChannelPointer (0)};
-        AudioBlock<SIMDRegister<float>> abInterleaved (const_cast<SIMDRegister<float>**> (chPtrInterleaved), 1, L);
+        const filterFloatType* chPtrInterleaved[1] = {interleaved[i]->getChannelPointer (0)};
+        AudioBlock<filterFloatType> abInterleaved (const_cast<filterFloatType**> (chPtrInterleaved), 1, L);
 
-        const SIMDRegister<float>* chPtrLow[1] = {freqBands[FrequencyBands::Low][i]->getChannelPointer (0)};
-        AudioBlock<SIMDRegister<float>> abLow (const_cast<SIMDRegister<float>**> (chPtrLow), 1, L);
+        const filterFloatType* chPtrLow[1] = {freqBands[FrequencyBands::Low][i]->getChannelPointer (0)};
+        AudioBlock<filterFloatType> abLow (const_cast<filterFloatType**> (chPtrLow), 1, L);
 
-        const SIMDRegister<float>* chPtrMidLow[1] = {freqBands[FrequencyBands::MidLow][i]->getChannelPointer (0)};
-        AudioBlock<SIMDRegister<float>> abMidLow (const_cast<SIMDRegister<float>**> (chPtrMidLow), 1, L);
+        const filterFloatType* chPtrMidLow[1] = {freqBands[FrequencyBands::MidLow][i]->getChannelPointer (0)};
+        AudioBlock<filterFloatType> abMidLow (const_cast<filterFloatType**> (chPtrMidLow), 1, L);
 
-        const SIMDRegister<float>* chPtrMidHigh[1] = {freqBands[FrequencyBands::MidHigh][i]->getChannelPointer (0)};
-        AudioBlock<SIMDRegister<float>> abMidHigh (const_cast<SIMDRegister<float>**> (chPtrMidHigh), 1, L);
+        const filterFloatType* chPtrMidHigh[1] = {freqBands[FrequencyBands::MidHigh][i]->getChannelPointer (0)};
+        AudioBlock<filterFloatType> abMidHigh (const_cast<filterFloatType**> (chPtrMidHigh), 1, L);
 
-        const SIMDRegister<float>* chPtrHigh[1] = {freqBands[FrequencyBands::High][i]->getChannelPointer (0)};
-        AudioBlock<SIMDRegister<float>> abHigh (const_cast<SIMDRegister<float>**> (chPtrHigh), 1, L);
+        const filterFloatType* chPtrHigh[1] = {freqBands[FrequencyBands::High][i]->getChannelPointer (0)};
+        AudioBlock<filterFloatType> abHigh (const_cast<filterFloatType**> (chPtrHigh), 1, L);
 
 
         iirLP[1][i]->process (ProcessContextNonReplacing<filterFloatType> (abInterleaved, abLow));
