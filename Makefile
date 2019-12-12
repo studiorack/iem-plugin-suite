@@ -100,7 +100,7 @@ showprojects:
 	@echo $(PROJECTS)
 
 # generic rules
-.PHONY: distclean clean all
+.PHONY: distclean clean all resave
 
 noop=
 space=$(noop) $(noop)
@@ -110,6 +110,7 @@ all: $(PROJECTS:%=%-$(BUILDSYSTEM)-build)
 clean: $(PROJECTS:%=%-$(BUILDSYSTEM)-clean)
 distclean:
 	rm -rf */Builds
+resave: $(PROJECTS:%=%/Builds/LinuxMakefile/Makefile)
 # aliases
 $(ALL_PROJECTS:%=%-build):
 	make $(@:%-build=%)-$(BUILDSYSTEM)-build
