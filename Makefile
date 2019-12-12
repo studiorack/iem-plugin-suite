@@ -115,10 +115,10 @@ distclean:
 	rm -rf */Builds
 resave: $(PROJECTS:%=%/Builds/LinuxMakefile/Makefile)
 # aliases
-$(ALL_PROJECTS:%=%-build):
-	make $(@:%-build=%)-$(BUILDSYSTEM)-build
-$(ALL_PROJECTS:%=%-clean):
-	make $(@:%-clean=%)-$(BUILDSYSTEM)-clean
+.PHONY: $(ALL_PROJECTS:%=%-build)
+.PHONY: $(ALL_PROJECTS:%=%-clean)
+$(ALL_PROJECTS:%=%-build): %-build : %-$(BUILDSYSTEM)-build
+$(ALL_PROJECTS:%=%-clean): %-clean : %-$(BUILDSYSTEM)-clean
 
 # LinuxMakefile based rules
 %-LinuxMakefile-build: %/Builds/LinuxMakefile/Makefile
