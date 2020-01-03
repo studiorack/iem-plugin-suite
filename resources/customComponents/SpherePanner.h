@@ -34,6 +34,7 @@ public:
     {
         setBufferedToImage(true);
     };
+
     ~SpherePannerBackground() {};
 
     void resized() override
@@ -105,7 +106,7 @@ private:
 
 
 
-class  SpherePanner :  public Component
+class SpherePanner :  public Component
 {
 public:
     SpherePanner() : Component()
@@ -150,20 +151,19 @@ public:
         Colour getColour() { return colour; }
         Colour getTextColour() { return textColour; }
 
-        void setLabel(String newLabel) {label = newLabel;}
+        void setLabel (String newLabel) {label = newLabel;}
 
         void setGrabPriority (int newPriority) { grabPriority = newPriority; }
         int getGrabPriority() {return grabPriority;}
         void setGrabRadius (float newRadius) { grabRadius = newRadius; }
         float getGrabRadius() { return grabRadius; }
 
-
         String getLabel() {return label;};
 
     private:
         bool active = true;
 
-        float grabRadius = 0.015f;
+        float grabRadius = 0.123f;
         int grabPriority = 0;
 
         Colour colour = Colours::white;
@@ -188,11 +188,13 @@ public:
             }
 
             if (linearElevation)
-                r = std::sin (r * 1.570796327f);
+                r = std::sin (r * MathConstants<float>::halfPi);
 
 
             float elevation = std::acos (r);
-            if (! upBeforeDrag) elevation *= -1.0f;
+            if (! upBeforeDrag)
+                elevation *= -1.0f;
+
             position = Conversions<float>::sphericalToCartesian (azimuth, elevation);
         }
 
@@ -213,7 +215,6 @@ public:
             }
             return false;
         }
-
 
     private:
         Vector3D<float> position;
@@ -247,7 +248,7 @@ public:
                 }
 
                 if (linearElevation)
-                    r = std::sin(r * 1.570796327f);
+                    r = std::sin(r * MathConstants<float>::halfPi);
                 float ele = std::acos (r);
                 if (! upBeforeDrag) ele *= -1.0f;
 
@@ -315,12 +316,12 @@ public:
             }
 
             if (linearElevation)
-                r = std::sin (r * 1.570796327f);
+                r = std::sin (r * MathConstants<float>::halfPi);
 
             float ele = std::acos (r);
             if (! upBeforeDrag) ele *= -1.0f;
 
-            Vector3D<float> posXYZ {Conversions<float>::sphericalToCartesian (azi, ele)};
+            Vector3D<float> posXYZ (Conversions<float>::sphericalToCartesian (azi, ele));
 
             // ==== calculate width
             Vector3D<float> dPos = posXYZ - centerElement.getCoordinates();
@@ -420,16 +421,23 @@ public:
             if (linearElevation)
             {
                 const float r = sqrt (pos.y * pos.y + pos.x * pos.x);
-                const float factor = std::asin (r) / r / (MathConstants<float>::pi / 2);
+                const float factor = std::asin (r) / r / MathConstants<float>::halfPi;
                 pos *= factor;
             }
 
             const Rectangle<float> circleArea (centreX - pos.y * radius - diam / 2, centreY - pos.x * radius - diam / 2, diam, diam);
-                        Path panPos;
+            Path panPos;
 
             panPos.addEllipse (circleArea);
             g.strokePath (panPos, PathStrokeType (1.0f));
-            g.setColour (colour.withMultipliedAlpha (isUp ? 1.0f : 0.3f));
+
+            if (i == activeElem)
+            {
+                g.setColour (colour.withAlpha (0.8f));
+                g.drawEllipse (circleArea.withSizeKeepingCentre (1.3f * diam, 1.3f * diam), 0.9f);
+            }
+
+            g.setColour (colour.withAlpha (isUp ? 1.0f : 0.3f));
             g.fillPath (panPos);
             g.setColour (isUp ? handle->getTextColour() : colour);
 
@@ -439,7 +447,7 @@ public:
     };
 
 
-    void mouseWheelMove(const MouseEvent &event, const MouseWheelDetails &wheel) override
+    void mouseWheelMove (const MouseEvent &event, const MouseWheelDetails &wheel) override
     {
         for (int i = listeners.size(); --i >= 0;)
             listeners.getUnchecked(i)->mouseWheelOnSpherePannerMoved (this, event, wheel);
@@ -447,64 +455,62 @@ public:
 
     void mouseMove (const MouseEvent &event) override
     {
-        int oldActiveElem = activeElem;
+        const int oldActiveElem = activeElem;
         activeElem = -1;
 
-        const float centreX = 0.5f * (float) getBounds().getWidth();
-        const float centreY = 0.5f * (float) getBounds().getHeight();
+        const int nElem = elements.size();
 
-        int nElem = elements.size();
+        if (nElem > 0)
+        {
+            const auto centre = getLocalBounds().getCentre();
+            const Point<int> dif = centre - event.getPosition();
+            const Point<float> mousePos (dif.y / radius, dif.x / radius); // scale and swap xy
 
-        if (nElem > 0) {
-            Point<int> pos = event.getPosition();
-
-            const float mouseX = (centreY-pos.getY()) / radius;
-            const float mouseY = (centreX-pos.getX()) / radius;
-
-            float *dist = (float*) malloc(nElem * sizeof(float));
-
-            //int nGrabed = 0;
             int highestPriority = -1;
+            int smallestDist = 123456789; // basically infinity
 
-            float tx,ty;
-            for (int i = elements.size(); --i >= 0;) {
+            for (int i = 0; i < nElem; ++i)
+            {
                 Element* handle (elements.getUnchecked (i));
-                Vector3D<float> pos = handle->getCoordinates();
+                auto elementPosition = handle->getCoordinates();
 
                 if (linearElevation)
                 {
-                    const float r = sqrt (pos.y * pos.y + pos.x * pos.x);
-                    const float factor = std::asin (r) / r / 1.570796327f; // pi / 2
-                    pos *= factor;
+                    const float r = sqrt (elementPosition.y * elementPosition.y + elementPosition.x * elementPosition.x);
+                    const float factor = std::asin (r) / r / MathConstants<float>::halfPi;
+                    elementPosition *= factor;
                 }
 
-                tx = (mouseX - pos.x);
-                ty = (mouseY - pos.y);
-                dist[i] = tx*tx + ty*ty;
+                const Point<float> connection (mousePos.x - elementPosition.x, mousePos.y - elementPosition.y);
+                const auto distance = connection.getDistanceFromOrigin();
 
-                if (dist[i] <= handle->getGrabRadius()) {
+                if (distance <= handle->getGrabRadius())
+                {
                     if (handle->getGrabPriority() > highestPriority)
                     {
                         activeElem = i;
                         highestPriority = handle->getGrabPriority();
+                        smallestDist = distance;
                     }
-                    else if (handle->getGrabPriority() == highestPriority && dist[i] < dist[activeElem])
+                    else if (handle->getGrabPriority() == highestPriority && distance < smallestDist)
                     {
                         activeElem = i;
+                        smallestDist = distance;
                     }
                 }
             }
         }
-        if (activeElem != -1)  activeElemWasUpBeforeDrag = elements.getUnchecked (activeElem)->getCoordinates().z >= 0.0f;
+
+        if (activeElem != -1) activeElemWasUpBeforeDrag = elements.getUnchecked (activeElem)->getCoordinates().z >= 0.0f;
         if (oldActiveElem != activeElem)
             repaint();
     }
+    
     void mouseDrag (const MouseEvent &event) override
     {
         const bool rightClick = event.mods.isRightButtonDown();
         if (activeElem != -1)
         {
-
             elements.getUnchecked (activeElem)->moveElement (event, centre, radius, activeElemWasUpBeforeDrag, linearElevation, rightClick);
             repaint();
         }
@@ -544,27 +550,14 @@ public:
     void addElement (Element* const element)
     {
         jassert (element != nullptr);
-        if (element !=0)
-            elements.add (element);
+        if (element != nullptr)
+            elements.addIfNotAlreadyThere (element);
     };
 
     void removeElement (Element* const element)
     {
         elements.removeFirstMatchingValue (element);
     };
-
-    int indexofSmallestElement (float *array, int size)
-    {
-        int index = 0;
-
-        for (int i = 1; i < size; i++)
-        {
-            if(array[i] < array[index])
-                index = i;
-        }
-
-        return index;
-    }
 
     void setElevationStyle (bool linear)
     {
