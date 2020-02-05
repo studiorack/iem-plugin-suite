@@ -73,26 +73,26 @@ public:
 private:
     //==============================================================================
     // parameters
-    float* dryGain;
-    float* wetGainL;
-    float* wetGainR;
-    float* delayTimeL;
-    float* delayTimeR;
-    float* rotationL;
-    float* rotationR;
-    float* LPcutOffL;
-    float* LPcutOffR;
-    float* HPcutOffL;
-    float* HPcutOffR;
-    float* feedbackL;
-    float* feedbackR;
-    float* xfeedbackL;
-    float* xfeedbackR;
-    float* lfoRateL;
-    float* lfoRateR;
-    float* lfoDepthL;
-    float* lfoDepthR;
-    float* orderSetting;
+    std::atomic<float>* dryGain;
+    std::atomic<float>* wetGainL;
+    std::atomic<float>* wetGainR;
+    std::atomic<float>* delayTimeL;
+    std::atomic<float>* delayTimeR;
+    std::atomic<float>* rotationL;
+    std::atomic<float>* rotationR;
+    std::atomic<float>* LPcutOffL;
+    std::atomic<float>* LPcutOffR;
+    std::atomic<float>* HPcutOffL;
+    std::atomic<float>* HPcutOffR;
+    std::atomic<float>* feedbackL;
+    std::atomic<float>* feedbackR;
+    std::atomic<float>* xfeedbackL;
+    std::atomic<float>* xfeedbackR;
+    std::atomic<float>* lfoRateL;
+    std::atomic<float>* lfoRateR;
+    std::atomic<float>* lfoDepthL;
+    std::atomic<float>* lfoDepthR;
+    std::atomic<float>* orderSetting;
 
     float _delayL, _delayR;
 

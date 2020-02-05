@@ -107,7 +107,7 @@ void MultiEQAudioProcessor::updateGuiCoefficients()
     const double sampleRate = getSampleRate() == 0 ? 48000.0 : getSampleRate();
 
     // Low band
-    const auto lowBandFrequency = jmin (static_cast<float> (0.5 * sampleRate), *filterFrequency[0]);
+    const auto lowBandFrequency = jmin (static_cast<float> (0.5 * sampleRate), filterFrequency[0]->load());
     const SpecialFilterType lowType = SpecialFilterType (static_cast<int> (*filterType[0]));
 
     switch (lowType)
@@ -127,7 +127,7 @@ void MultiEQAudioProcessor::updateGuiCoefficients()
             guiCoefficients[0] = IIR::Coefficients<double>::makeHighPass (sampleRate, lowBandFrequency, *filterQ[0]);
             break;
         case SpecialFilterType::LowShelf:
-            guiCoefficients[0] = IIR::Coefficients<double>::makeLowShelf (sampleRate, lowBandFrequency, *filterQ[0], Decibels::decibelsToGain (*filterGain[0]));
+            guiCoefficients[0] = IIR::Coefficients<double>::makeLowShelf (sampleRate, lowBandFrequency, *filterQ[0], Decibels::decibelsToGain (filterGain[0]->load()));
             break;
         default:
             break;
@@ -135,7 +135,7 @@ void MultiEQAudioProcessor::updateGuiCoefficients()
 
 
     // High band
-    const auto highBandFrequency = jmin (static_cast<float> (0.5 * sampleRate), *filterFrequency[numFilterBands - 1]);
+    const auto highBandFrequency = jmin (static_cast<float> (0.5 * sampleRate), filterFrequency[numFilterBands - 1]->load());
     const SpecialFilterType highType = SpecialFilterType (4 + static_cast<int> (*filterType[numFilterBands - 1]));
 
     switch (highType)
@@ -155,7 +155,7 @@ void MultiEQAudioProcessor::updateGuiCoefficients()
             guiCoefficients[numFilterBands - 1] = IIR::Coefficients<double>::makeLowPass (sampleRate, highBandFrequency, *filterQ[numFilterBands - 1]);
             break;
         case SpecialFilterType::HighShelf:
-            guiCoefficients[numFilterBands - 1] = IIR::Coefficients<double>::makeHighShelf (sampleRate, highBandFrequency, *filterQ[numFilterBands - 1], Decibels::decibelsToGain (*filterGain[numFilterBands - 1]));
+            guiCoefficients[numFilterBands - 1] = IIR::Coefficients<double>::makeHighShelf (sampleRate, highBandFrequency, *filterQ[numFilterBands - 1], Decibels::decibelsToGain (filterGain[numFilterBands - 1]->load()));
             break;
         default:
             break;
@@ -165,18 +165,18 @@ void MultiEQAudioProcessor::updateGuiCoefficients()
 
     for (int f = 1; f < numFilterBands - 1; ++f)
     {
-        const auto frequency = jmin (static_cast<float> (0.5 * sampleRate), *filterFrequency[f]);
+        const auto frequency = jmin (static_cast<float> (0.5 * sampleRate), filterFrequency[f]->load());
         const RegularFilterType type = RegularFilterType (2 + static_cast<int>(*filterType[f]));
         switch (type)
         {
             case RegularFilterType::LowShelf:
-                guiCoefficients[f] = IIR::Coefficients<double>::makeLowShelf (sampleRate, frequency, *filterQ[f], Decibels::decibelsToGain (*filterGain[f]));
+                guiCoefficients[f] = IIR::Coefficients<double>::makeLowShelf (sampleRate, frequency, *filterQ[f], Decibels::decibelsToGain (filterGain[f]->load()));
                 break;
             case RegularFilterType::PeakFilter:
-                guiCoefficients[f] = IIR::Coefficients<double>::makePeakFilter (sampleRate, frequency, *filterQ[f], Decibels::decibelsToGain (*filterGain[f]));
+                guiCoefficients[f] = IIR::Coefficients<double>::makePeakFilter (sampleRate, frequency, *filterQ[f], Decibels::decibelsToGain (filterGain[f]->load()));
                 break;
             case RegularFilterType::HighShelf:
-                guiCoefficients[f] = IIR::Coefficients<double>::makeHighShelf (sampleRate, frequency, *filterQ[f], Decibels::decibelsToGain (*filterGain[f]));
+                guiCoefficients[f] = IIR::Coefficients<double>::makeHighShelf (sampleRate, frequency, *filterQ[f], Decibels::decibelsToGain (filterGain[f]->load()));
                 break;
             default:
                 break;
@@ -253,13 +253,13 @@ void MultiEQAudioProcessor::createLinkwitzRileyFilter (const bool isUpperBand)
 {
     if (isUpperBand)
     {
-        const auto frequency = jmin (static_cast<float> (0.5 * getSampleRate()), *filterFrequency[numFilterBands - 1]);
+        const auto frequency = jmin (static_cast<float> (0.5 * getSampleRate()), filterFrequency[numFilterBands - 1]->load());
         tempCoefficients[numFilterBands - 1] = IIR::Coefficients<float>::makeLowPass (getSampleRate(), frequency, *filterQ[numFilterBands - 1]);
         additionalTempCoefficients[1] = processorCoefficients[numFilterBands - 1];
     }
     else
     {
-        const auto frequency = jmin (static_cast<float> (0.5 * getSampleRate()), *filterFrequency[0]);
+        const auto frequency = jmin (static_cast<float> (0.5 * getSampleRate()), filterFrequency[0]->load());
         tempCoefficients[0] = IIR::Coefficients<float>::makeHighPass (getSampleRate(), frequency, *filterQ[0]);
         additionalTempCoefficients[0] = processorCoefficients[0];
     }
@@ -267,7 +267,7 @@ void MultiEQAudioProcessor::createLinkwitzRileyFilter (const bool isUpperBand)
 
 void MultiEQAudioProcessor::createFilterCoefficients (const int filterIndex, const double sampleRate)
 {
-    const int type = roundToInt (*filterType[filterIndex]);
+    const int type = roundToInt (filterType[filterIndex]->load());
     if (filterIndex == 0 && type == 2)
     {
         createLinkwitzRileyFilter (false);
@@ -319,7 +319,7 @@ void MultiEQAudioProcessor::createFilterCoefficients (const int filterIndex, con
                 }
                 break;
         }
-        tempCoefficients[filterIndex] = createFilterCoefficients (filterType, sampleRate, *filterFrequency[filterIndex], *filterQ[filterIndex], Decibels::decibelsToGain (*filterGain[filterIndex]));
+        tempCoefficients[filterIndex] = createFilterCoefficients (filterType, sampleRate, *filterFrequency[filterIndex], *filterQ[filterIndex], Decibels::decibelsToGain (filterGain[filterIndex]->load()));
     }
 
 }

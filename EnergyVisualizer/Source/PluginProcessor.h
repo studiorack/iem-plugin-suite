@@ -82,7 +82,10 @@ public:
 private:
     //==============================================================================
     // parameters
-    float *orderSetting, *useSN3D, *peakLevel, *dynamicRange;
+    std::atomic<float>* orderSetting;
+    std::atomic<float>* useSN3D;
+    std::atomic<float>* peakLevel;
+    std::atomic<float>* dynamicRange;
 
     float timeConstant;
 

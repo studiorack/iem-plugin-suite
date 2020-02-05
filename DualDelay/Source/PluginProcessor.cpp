@@ -235,11 +235,11 @@ void DualDelayAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffe
     }
 
     // ========== OUTPUT
-    buffer.applyGain(Decibels::decibelsToGain(*dryGain,-59.91f)); //dry signal
+    buffer.applyGain (Decibels::decibelsToGain (dryGain->load(), -59.91f)); //dry signal
     for (int channel = 0; channel < nCh; ++channel)
     {
-        buffer.addFrom(channel, 0, delayOutLeft, channel, 0, spb, Decibels::decibelsToGain(*wetGainL,-59.91f)); //wet signal
-        buffer.addFrom(channel, 0, delayOutRight, channel, 0, spb, Decibels::decibelsToGain(*wetGainR,-59.91f)); //wet signal
+        buffer.addFrom (channel, 0, delayOutLeft, channel, 0, spb, Decibels::decibelsToGain (wetGainL->load(), -59.91f)); //wet signal
+        buffer.addFrom (channel, 0, delayOutRight, channel, 0, spb, Decibels::decibelsToGain (wetGainR->load(), -59.91f)); //wet signal
     }
 
     // ================ ADD INPUT AND FED BACK OUTPUT WITH PROCESSING ===========
@@ -247,14 +247,14 @@ void DualDelayAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffe
     for (int channel = 0; channel < nCh; ++channel) // should be optimizable with SIMD
     {
         delayInLeft.copyFrom(channel, 0, AudioIN.getReadPointer(channel), spb); // input
-        delayInLeft.addFrom(channel, 0, delayOutLeft.getReadPointer(channel), spb, Decibels::decibelsToGain(*feedbackL,-59.91f) ); // feedback gain
-        delayInLeft.addFrom(channel, 0, delayOutRight.getReadPointer(channel),  spb, Decibels::decibelsToGain(*xfeedbackR,-59.91f) ); // feedback bleed gain
+        delayInLeft.addFrom(channel, 0, delayOutLeft.getReadPointer(channel), spb, Decibels::decibelsToGain (feedbackL->load(), -59.91f) ); // feedback gain
+        delayInLeft.addFrom(channel, 0, delayOutRight.getReadPointer(channel),  spb, Decibels::decibelsToGain (xfeedbackR->load(), -59.91f) ); // feedback bleed gain
         lowPassFiltersLeft[channel]->processSamples(delayInLeft.getWritePointer(channel), spb); //filter
         highPassFiltersLeft[channel]->processSamples(delayInLeft.getWritePointer(channel), spb); //filter
 
         delayInRight.copyFrom(channel, 0, AudioIN.getReadPointer(channel), spb); // input
-        delayInRight.addFrom(channel, 0, delayOutRight.getReadPointer(channel), spb,  Decibels::decibelsToGain(*feedbackR,-59.91f) ); // feedback gain
-        delayInRight.addFrom(channel, 0, delayOutLeft.getReadPointer(channel), spb, Decibels::decibelsToGain(*xfeedbackL,-59.91f) ); // feedback bleed gain
+        delayInRight.addFrom(channel, 0, delayOutRight.getReadPointer(channel), spb, Decibels::decibelsToGain (feedbackR->load(), -59.91f) ); // feedback gain
+        delayInRight.addFrom(channel, 0, delayOutLeft.getReadPointer(channel), spb, Decibels::decibelsToGain (xfeedbackL->load(), -59.91f) ); // feedback bleed gain
         lowPassFiltersRight[channel]->processSamples(delayInRight.getWritePointer(channel), spb); //filter
         highPassFiltersRight[channel]->processSamples(delayInRight.getWritePointer(channel), spb); //filter
     }

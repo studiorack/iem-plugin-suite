@@ -9,7 +9,7 @@
               pluginCode="RoEn" pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
               pluginAUExportPrefix="RoomEncoderAU" aaxIdentifier="at.iem.RoomEncoder"
-              pluginAAXCategory="2" jucerVersion="5.4.5" companyName="IEM"
+              pluginAAXCategory="2" jucerVersion="5.4.6" companyName="IEM"
               companyWebsite="iem.at" cppLanguageStandard="latest" companyCopyright="IEM - Daniel Rudrich"
               headerPath="../../../resources/" pluginFormats="buildStandalone,buildVST"
               defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1">

@@ -72,15 +72,15 @@ public:
 private:
     //==============================================================================
     // list of used audio parameters
-    float* inputOrderSetting;
-    float* outputOrderSetting;
-    float* useSn3dInput;
-    float* useSn3dOutput;
-    float* flipX;
-    float* flipY;
-    float* flipZ;
-    float* loaWeights;
-    float* gain;
+    std::atomic<float>* inputOrderSetting;
+    std::atomic<float>* outputOrderSetting;
+    std::atomic<float>* useSn3dInput;
+    std::atomic<float>* useSn3dOutput;
+    std::atomic<float>* flipX;
+    std::atomic<float>* flipY;
+    std::atomic<float>* flipZ;
+    std::atomic<float>* loaWeights;
+    std::atomic<float>* gain;
 
     float previousWeights[64];
 

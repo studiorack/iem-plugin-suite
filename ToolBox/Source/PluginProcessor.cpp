@@ -169,7 +169,7 @@ void ToolBoxAudioProcessor::calculateWeights (float *weights, const int nChannel
     const int orderIn = input.getOrder();
     const int orderOut = output.getOrder();
 
-    FloatVectorOperations::fill (weights, Decibels::decibelsToGain (*gain), nCh);
+    FloatVectorOperations::fill (weights, Decibels::decibelsToGain (gain->load()), nCh);
 
     // create mask for all flips
     if (doFlipX || doFlipY || doFlipZ)
@@ -191,7 +191,7 @@ void ToolBoxAudioProcessor::calculateWeights (float *weights, const int nChannel
     // lower order ambisonics weighting
     if (orderIn < orderOut)
     {
-        const int weightType = roundToInt (*loaWeights);
+        const int weightType = roundToInt (loaWeights->load());
         if (weightType == 1) // maxrE
         {
             FloatVectorOperations::multiply (weights, getMaxRELUT (orderIn), nChannelsIn);

@@ -9,7 +9,7 @@
               pluginManufacturerCode="IEMA" pluginCode="MuEq" pluginChannelConfigs=""
               pluginIsSynth="0" pluginWantsMidiIn="0" pluginProducesMidiOut="0"
               pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0" pluginAUExportPrefix="MultiEQAU"
-              aaxIdentifier="at.iem.MultiEQ" pluginAAXCategory="2" jucerVersion="5.4.5"
+              aaxIdentifier="at.iem.MultiEQ" pluginAAXCategory="2" jucerVersion="5.4.6"
               companyCopyright="IEM - Daniel Rudrich" companyName="IEM" companyWebsite="iem.at"
               headerPath="../../../resources/" pluginFormats="buildStandalone,buildVST"
               defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1">

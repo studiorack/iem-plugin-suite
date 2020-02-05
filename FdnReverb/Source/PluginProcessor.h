@@ -81,17 +81,17 @@ private:
 	AudioBuffer<float> copyBuffer;
 
     // parameters (from GUI)
-    float *revTime;
-	float *fadeInTime;
-    float *delayLength;
+    std::atomic<float>* revTime;
+	std::atomic<float>* fadeInTime;
+    std::atomic<float>* delayLength;
 
-    float *highCutoff;
-    float *highQ;
-    float *highGain;
-    float *lowCutoff;
-    float *lowQ;
-    float *lowGain;
-    float *wet;
+    std::atomic<float>* highCutoff;
+    std::atomic<float>* highQ;
+    std::atomic<float>* highGain;
+    std::atomic<float>* lowCutoff;
+    std::atomic<float>* lowQ;
+    std::atomic<float>* lowGain;
+    std::atomic<float>* wet;
 
     FeedbackDelayNetwork fdn, fdnFade;
 

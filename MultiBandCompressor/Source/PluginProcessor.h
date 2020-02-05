@@ -118,12 +118,15 @@ private:
 
 
     // list of used audio parameters
-    float* orderSetting,
-           *crossovers[numFreqBands-1],
-           *threshold[numFreqBands], *knee[numFreqBands],
-           *makeUpGain[numFreqBands], *ratio[numFreqBands],
-           *attack[numFreqBands], *release[numFreqBands],
-           *bypass[numFreqBands];
+    std::atomic<float>* orderSetting;
+    std::atomic<float>* crossovers[numFreqBands-1];
+    std::atomic<float>* threshold[numFreqBands];
+    std::atomic<float>* knee[numFreqBands];
+    std::atomic<float>* makeUpGain[numFreqBands];
+    std::atomic<float>* ratio[numFreqBands];
+    std::atomic<float>* attack[numFreqBands];
+    std::atomic<float>* release[numFreqBands];
+    std::atomic<float>* bypass[numFreqBands];
 
     BigInteger soloArray;
 

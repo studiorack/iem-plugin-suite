@@ -105,13 +105,15 @@ private:
     void updateHighPassCoefficients (double sampleRate, float frequency);
 
     // list of used audio parameters
-    float *inputOrderSetting, *useSN3D;
-    float *lowPassFrequency, *lowPassGain;
-    float *highPassFrequency;
+    std::atomic<float>* inputOrderSetting;
+    std::atomic<float>* useSN3D;
+    std::atomic<float>* lowPassFrequency;
+    std::atomic<float>* lowPassGain;
+    std::atomic<float>* highPassFrequency;
 
-    float *swMode;
-    float *swChannel;
-    float *weights;
+    std::atomic<float>* swMode;
+    std::atomic<float>* swChannel;
+    std::atomic<float>* weights;
 
     // =========================================
 

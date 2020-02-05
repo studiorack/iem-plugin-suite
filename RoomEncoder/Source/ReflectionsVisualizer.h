@@ -86,7 +86,7 @@ public:
 
         if (radiusPtr != nullptr)
         {
-            int numRef = roundToInt(*numReflPtr);
+            int numRef = roundToInt (numReflPtr->load());
 
             float gainDb = Decibels::gainToDecibels(gainPtr[0]);
             if (gainDb > -60.0f && gainDb <= 20.0f)
@@ -129,7 +129,7 @@ public:
         xRangeInMs = jmin(xRangeInMs, 550);
         xRangeInMs = jmax(xRangeInMs, 40);
     }
-    void setDataPointers(float* Gain, float* Radius, float* NumRefl) {
+    void setDataPointers(float* Gain, float* Radius, std::atomic<float>* NumRefl) {
         gainPtr = Gain;
         numReflPtr = NumRefl;
         radiusPtr = Radius;
@@ -177,7 +177,7 @@ private:
     float plotWidth = 1.0f;
     float plotHeight = 1.0f;
     int xRangeInMs = 100;
-    float* numReflPtr = nullptr;
+    std::atomic<float>* numReflPtr = nullptr;
     float* gainPtr = nullptr;
     float* radiusPtr = nullptr;
 

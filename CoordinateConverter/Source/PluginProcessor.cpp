@@ -221,8 +221,8 @@ void CoordinateConverterAudioProcessor::updateCartesianCoordinates()
 {
     updatingParams = true;
 
-    auto cartesian = Conversions<float>::sphericalToCartesian (degreesToRadians (*azimuth) * azimuthFlipFactor,
-                                                               degreesToRadians (*elevation) * elevationFlipFactor,
+    auto cartesian = Conversions<float>::sphericalToCartesian (degreesToRadians (azimuth->load()) * azimuthFlipFactor,
+                                                               degreesToRadians (elevation->load()) * elevationFlipFactor,
                                                                (0.5f - radiusFlipFactor * (0.5f - *radius)) * *radiusRange);
 
     cartesian += {*xReference, *yReference, *zReference};

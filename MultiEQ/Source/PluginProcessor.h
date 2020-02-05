@@ -127,12 +127,12 @@ private:
 
 
     // list of used audio parameters
-    float *inputChannelsSetting;
-    float* filterEnabled[numFilterBands];
-    float* filterType[numFilterBands];
-    float* filterFrequency[numFilterBands];
-    float* filterQ[numFilterBands];
-    float* filterGain[numFilterBands];
+    std::atomic<float>* inputChannelsSetting;
+    std::atomic<float>* filterEnabled[numFilterBands];
+    std::atomic<float>* filterType[numFilterBands];
+    std::atomic<float>* filterFrequency[numFilterBands];
+    std::atomic<float>* filterQ[numFilterBands];
+    std::atomic<float>* filterGain[numFilterBands];
 
     // filters for processing
     OwnedArray<IIR::Filter<IIRfloat>> filterArrays[numFilterBands];

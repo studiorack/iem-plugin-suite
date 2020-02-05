@@ -163,16 +163,14 @@ void MultiEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBu
         FloatVectorOperations::copy(_SH[i], SH[i], nChOut);
         float currGain = 0.0f;
 
-        if (!soloMask.isZero()) {
-            if (soloMask[i]) currGain = Decibels::decibelsToGain(*gain[i]);
-        }
+        if (!soloMask.isZero())
+            if (soloMask[i]) currGain = Decibels::decibelsToGain (gain[i]->load());
         else
-        {
-            if (!muteMask[i]) currGain = Decibels::decibelsToGain(*gain[i]);
-        }
+            if (! muteMask[i]) currGain = Decibels::decibelsToGain (gain[i]->load());
 
-        const float azimuthInRad = degreesToRadians(*azimuth[i]);
-        const float elevationInRad = degreesToRadians(*elevation[i]);
+
+        const float azimuthInRad = degreesToRadians (azimuth[i]->load());
+        const float elevationInRad = degreesToRadians (elevation[i]->load());
 
         Vector3D<float> pos {Conversions<float>::sphericalToCartesian(azimuthInRad, elevationInRad)};
 
@@ -233,14 +231,14 @@ void MultiEncoderAudioProcessor::parameterChanged (const String &parameterID, fl
             {
                 iem::Quaternion<float> masterQuat;
                 float masterypr[3];
-                masterypr[0] = degreesToRadians(*masterAzimuth);
-                masterypr[1] = degreesToRadians(*masterElevation);
-                masterypr[2] = - degreesToRadians(*masterRoll);
+                masterypr[0] = degreesToRadians (masterAzimuth->load());
+                masterypr[1] = degreesToRadians (masterElevation->load());
+                masterypr[2] = - degreesToRadians (masterRoll->load());
                 masterQuat.fromYPR(masterypr);
                 masterQuat.conjugate();
 
-                ypr[0] = degreesToRadians(*azimuth[i]);
-                ypr[1] = degreesToRadians(*elevation[i]);
+                ypr[0] = degreesToRadians (azimuth[i]->load());
+                ypr[1] = degreesToRadians (elevation[i]->load());
                 quats[i].fromYPR(ypr);
                 quats[i] = masterQuat*quats[i];
             }
@@ -254,9 +252,9 @@ void MultiEncoderAudioProcessor::parameterChanged (const String &parameterID, fl
         moving = true;
         iem::Quaternion<float> masterQuat;
         float ypr[3];
-        ypr[0] = degreesToRadians(*masterAzimuth);
-        ypr[1] = degreesToRadians(*masterElevation);
-        ypr[2] = - degreesToRadians(*masterRoll);
+        ypr[0] = degreesToRadians (masterAzimuth->load());
+        ypr[1] = degreesToRadians (masterElevation->load());
+        ypr[2] = - degreesToRadians (masterRoll->load());
         masterQuat.fromYPR(ypr);
 
         const int nChIn = input.getSize();
@@ -279,14 +277,14 @@ void MultiEncoderAudioProcessor::parameterChanged (const String &parameterID, fl
         {
             iem::Quaternion<float> masterQuat;
             float masterypr[3];
-            masterypr[0] = degreesToRadians(*masterAzimuth);
-            masterypr[1] = degreesToRadians(*masterElevation);
-            masterypr[2] = - degreesToRadians(*masterRoll);
+            masterypr[0] = degreesToRadians (masterAzimuth->load());
+            masterypr[1] = degreesToRadians (masterElevation->load());
+            masterypr[2] = - degreesToRadians (masterRoll->load());
             masterQuat.fromYPR(masterypr);
             masterQuat.conjugate();
 
-            ypr[0] = degreesToRadians(*azimuth[i]);
-            ypr[1] = degreesToRadians(*elevation[i]);
+            ypr[0] = degreesToRadians (azimuth[i]->load());
+            ypr[1] = degreesToRadians (elevation[i]->load());
             quats[i].fromYPR(ypr);
             quats[i] = masterQuat*quats[i];
         }
@@ -371,16 +369,16 @@ void MultiEncoderAudioProcessor::updateQuaternions()
 
     iem::Quaternion<float> masterQuat;
     float masterypr[3];
-    masterypr[0] = degreesToRadians(*masterAzimuth);
-    masterypr[1] = degreesToRadians(*masterElevation);
-    masterypr[2] = - degreesToRadians(*masterRoll);
+    masterypr[0] = degreesToRadians (masterAzimuth->load());
+    masterypr[1] = degreesToRadians (masterElevation->load());
+    masterypr[2] = - degreesToRadians (masterRoll->load());
     masterQuat.fromYPR(masterypr);
     masterQuat.conjugate();
 
     for (int i = 0; i < maxNumberOfInputs; ++i)
     {
-        ypr[0] = degreesToRadians(*azimuth[i]);
-        ypr[1] = degreesToRadians(*elevation[i]);
+        ypr[0] = degreesToRadians (azimuth[i]->load());
+        ypr[1] = degreesToRadians (elevation[i]->load());
         quats[i].fromYPR(ypr);
         quats[i] = masterQuat*quats[i];
     }

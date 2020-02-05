@@ -75,9 +75,9 @@ public:
 
 private:
     // list of used audio parameters
-    float* inputOrderSetting;
-    float* useSN3D;
-    float* applyHeadphoneEq;
+    std::atomic<float>* inputOrderSetting;
+    std::atomic<float>* useSN3D;
+    std::atomic<float>* applyHeadphoneEq;
 
     Convolution EQ;
 

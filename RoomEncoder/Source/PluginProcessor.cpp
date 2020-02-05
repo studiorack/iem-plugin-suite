@@ -116,8 +116,8 @@ createParameterLayout())
         FloatVectorOperations::clear((float *) &SHsampleOld[i], 64);
     }
 
-    lowShelfCoefficients = IIR::Coefficients<float>::makeLowShelf(48000, *lowShelfFreq, 0.707f, Decibels::decibelsToGain(*lowShelfGain));
-    highShelfCoefficients = IIR::Coefficients<float>::makeHighShelf(48000, *highShelfFreq, 0.707f, Decibels::decibelsToGain(*highShelfGain));
+    lowShelfCoefficients = IIR::Coefficients<float>::makeLowShelf(48000, *lowShelfFreq, 0.707f, Decibels::decibelsToGain (lowShelfGain->load()));
+    highShelfCoefficients = IIR::Coefficients<float>::makeHighShelf(48000, *highShelfFreq, 0.707f, Decibels::decibelsToGain (highShelfGain->load()));
 
 
     lowShelfArray.clear();
@@ -277,14 +277,14 @@ void RoomEncoderAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     const float rYHalfBound = rY / 2 - 0.1f;
     const float rZHalfBound = rZ / 2 - 0.1f;
 
-    sourcePos = Vector3D<float> (jlimit (-rXHalfBound, rXHalfBound, *sourceX),
-                                 jlimit (-rYHalfBound, rYHalfBound, *sourceY),
-                                 jlimit (-rZHalfBound, rZHalfBound, *sourceZ));
+    sourcePos = Vector3D<float> (jlimit (-rXHalfBound, rXHalfBound, sourceX->load()),
+                                 jlimit (-rYHalfBound, rYHalfBound, sourceY->load()),
+                                 jlimit (-rZHalfBound, rZHalfBound, sourceZ->load()));
 
 
-    listenerPos = Vector3D<float> (jlimit (-rXHalfBound, rXHalfBound, *listenerX),
-                                   jlimit (-rYHalfBound, rYHalfBound, *listenerY),
-                                   jlimit (-rZHalfBound, rZHalfBound, *listenerZ));
+    listenerPos = Vector3D<float> (jlimit (-rXHalfBound, rXHalfBound, listenerX->load()),
+                                   jlimit (-rYHalfBound, rYHalfBound, listenerY->load()),
+                                   jlimit (-rZHalfBound, rZHalfBound, listenerZ->load()));
 
     calculateImageSourcePositions (rX, rY, rZ);
 
@@ -363,11 +363,11 @@ void RoomEncoderAudioProcessor::parameterChanged (const String &parameterID, flo
 
 void RoomEncoderAudioProcessor::updateFilterCoefficients (double sampleRate)
 {
-    const auto lowFreq = jmin (static_cast<float> (0.5 * sampleRate), *lowShelfFreq);
-    *lowShelfCoefficients = *IIR::Coefficients<float>::makeLowShelf (sampleRate, lowFreq, 0.707f, Decibels::decibelsToGain (*lowShelfGain));
+    const auto lowFreq = jmin (static_cast<float> (0.5 * sampleRate), lowShelfFreq->load());
+    *lowShelfCoefficients = *IIR::Coefficients<float>::makeLowShelf (sampleRate, lowFreq, 0.707f, Decibels::decibelsToGain (lowShelfGain->load()));
 
-    const auto highFreq = jmin (static_cast<float> (0.5 * sampleRate), *highShelfFreq);
-    *highShelfCoefficients = *IIR::Coefficients<float>::makeHighShelf (sampleRate, highFreq, 0.707f, Decibels::decibelsToGain (*highShelfGain));
+    const auto highFreq = jmin (static_cast<float> (0.5 * sampleRate), highShelfFreq->load());
+    *highShelfCoefficients = *IIR::Coefficients<float>::makeHighShelf (sampleRate, highFreq, 0.707f, Decibels::decibelsToGain (highShelfGain->load()));
 
     userChangedFilterSettings = false;
     updateFv = true;
@@ -460,12 +460,12 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
                                                static_cast<int> (IIRfloat_elements));
     }
 
-    int currNumRefl = roundToInt(*numRefl);
+    int currNumRefl = roundToInt (numRefl->load());
     int workingNumRefl = (currNumRefl < _numRefl) ? _numRefl : currNumRefl;
 
 
     // calculating reflection coefficients (only if parameter changed)
-    float reflCoeffGain = Decibels::decibelsToGain(*reflCoeff);
+    float reflCoeffGain = Decibels::decibelsToGain (reflCoeff->load());
     if (powReflCoeff[1] != reflCoeffGain)
     {
         powReflCoeff[0] = 1;

@@ -277,7 +277,7 @@ void SimpleDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiB
         ProcessContextReplacing<float> lowPassContext(lowPassAudioBlock);
         lowPass1->process(lowPassContext);
         lowPass2->process(lowPassContext);
-        swBuffer.applyGain(0, 0, swBuffer.getNumSamples(), Decibels::decibelsToGain(*lowPassGain));
+        swBuffer.applyGain(0, 0, swBuffer.getNumSamples(), Decibels::decibelsToGain (lowPassGain->load()));
 
         AudioBlock<float> highPassAudioBlock = AudioBlock<float>(buffer.getArrayOfWritePointers(), nChIn, buffer.getNumSamples());
         ProcessContextReplacing<float> highPassContext (highPassAudioBlock);
@@ -287,7 +287,7 @@ void SimpleDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiB
 
     // update current weights setting
     auto settings = retainedDecoder->getSettings();
-    settings.weights = ReferenceCountedDecoder::Weights (roundToInt (*weights));
+    settings.weights = ReferenceCountedDecoder::Weights (roundToInt (weights->load()));
     retainedDecoder->setSettings (settings);
 
     // ambisonic decoding
@@ -319,7 +319,7 @@ void SimpleDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiB
         }
     }
     // =================== Master Gain =========================================
-    auto overallGainInDecibels = *parameters.getRawParameterValue ("overallGain");
+    const float overallGainInDecibels = *parameters.getRawParameterValue ("overallGain");
     masterGain.setGainDecibels (overallGainInDecibels);
     AudioBlock<float> ab (buffer.getArrayOfWritePointers(), nChOut,  buffer.getNumSamples());
     ProcessContextReplacing<float> masterContext (ab);

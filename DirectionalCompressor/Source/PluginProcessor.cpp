@@ -201,13 +201,13 @@ void DirectionalCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffe
     const int numCh = jmin(input.getNumberOfChannels(), buffer.getNumChannels());
 
     // preGain - can be tweaked by adding gain to compressor gains
-    float preGainLinear = Decibels::decibelsToGain(*preGain);
+    float preGainLinear = Decibels::decibelsToGain (preGain->load());
 
     if (*useSN3D >= 0.5f)
         for (int i = 0; i < numCh; ++i)
             buffer.applyGain(i, 0, bufferSize, sn3d2n3d[i] * preGainLinear);
     else
-        buffer.applyGain(Decibels::decibelsToGain(*preGain));
+        buffer.applyGain (Decibels::decibelsToGain (preGain->load()));
 
 
     // --------- make copys of buffer

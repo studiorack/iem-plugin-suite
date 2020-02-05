@@ -81,25 +81,25 @@ private:
     bool cartesianWasLastUpdated = true;
 
     // list of used audio parameters
-    float *azimuth;
-    float *elevation;
-    float *radius;
-    float *xPos;
-    float *yPos;
-    float *zPos;
-    float *xReference;
-    float *yReference;
-    float *zReference;
-    float *radiusRange;
-    float *xRange;
-    float *yRange;
-    float *zRange;
-    float *azimuthFlip;
-    float *elevationFlip;
-    float *radiusFlip;
-    float *xFlip;
-    float *yFlip;
-    float *zFlip;
+    std::atomic<float>* azimuth;
+    std::atomic<float>* elevation;
+    std::atomic<float>* radius;
+    std::atomic<float>* xPos;
+    std::atomic<float>* yPos;
+    std::atomic<float>* zPos;
+    std::atomic<float>* xReference;
+    std::atomic<float>* yReference;
+    std::atomic<float>* zReference;
+    std::atomic<float>* radiusRange;
+    std::atomic<float>* xRange;
+    std::atomic<float>* yRange;
+    std::atomic<float>* zRange;
+    std::atomic<float>* azimuthFlip;
+    std::atomic<float>* elevationFlip;
+    std::atomic<float>* radiusFlip;
+    std::atomic<float>* xFlip;
+    std::atomic<float>* yFlip;
+    std::atomic<float>* zFlip;
 
     float azimuthFlipFactor = 1.0f;
     float elevationFlipFactor = 1.0f;

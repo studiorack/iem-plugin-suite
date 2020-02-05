@@ -116,32 +116,32 @@ private:
     Compressor compressor1, compressor2;
     // == PARAMETERS ==
     // settings and mask
-    float *orderSetting;
-    float *useSN3D;
-    float *preGain;
-    float *azimuth;
-    float *elevation;
-    float *width;
-    float *listen;
+    std::atomic<float>* orderSetting;
+    std::atomic<float>* useSN3D;
+    std::atomic<float>* preGain;
+    std::atomic<float>* azimuth;
+    std::atomic<float>* elevation;
+    std::atomic<float>* width;
+    std::atomic<float>* listen;
     // compressor 1
-    float *c1Enabled;
-    float *c1DrivingSignal;
-    float *c1Apply;
-    float *c1Threshold;
-    float *c1Knee;
-    float *c1Attack;
-    float *c1Release;
-    float *c1Ratio;
-    float *c1Makeup;
+    std::atomic<float>* c1Enabled;
+    std::atomic<float>* c1DrivingSignal;
+    std::atomic<float>* c1Apply;
+    std::atomic<float>* c1Threshold;
+    std::atomic<float>* c1Knee;
+    std::atomic<float>* c1Attack;
+    std::atomic<float>* c1Release;
+    std::atomic<float>* c1Ratio;
+    std::atomic<float>* c1Makeup;
     // compressor 2
-    float *c2Enabled;
-    float *c2DrivingSignal;
-    float *c2Apply;
-    float *c2Threshold;
-    float *c2Knee;
-    float *c2Attack;
-    float *c2Release;
-    float *c2Ratio;
-    float *c2Makeup;
+    std::atomic<float>* c2Enabled;
+    std::atomic<float>* c2DrivingSignal;
+    std::atomic<float>* c2Apply;
+    std::atomic<float>* c2Threshold;
+    std::atomic<float>* c2Knee;
+    std::atomic<float>* c2Attack;
+    std::atomic<float>* c2Release;
+    std::atomic<float>* c2Ratio;
+    std::atomic<float>* c2Makeup;
 
 };

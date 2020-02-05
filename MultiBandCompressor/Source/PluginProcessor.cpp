@@ -265,7 +265,7 @@ void MultiBandCompressorAudioProcessor::calculateCoefficients (const int i)
 {
     jassert (lastSampleRate > 0.0);
 
-    const float crossoverFrequency = jmin (static_cast<float> (0.5 * lastSampleRate), *crossovers[i]);
+    const float crossoverFrequency = jmin (static_cast<float> (0.5 * lastSampleRate), crossovers[i]->load());
 
     double b0, b1, b2, a0, a1, a2;
     double K = std::tan (MathConstants<double>::pi * (crossoverFrequency) / lastSampleRate);
@@ -392,7 +392,7 @@ void MultiBandCompressorAudioProcessor::prepareToPlay (double sampleRate, int sa
         compressors[i].setKnee (*knee[i]);
         compressors[i].setAttackTime (*attack[i] * 0.001f);
         compressors[i].setReleaseTime (*release[i] * 0.001f);
-        compressors[i].setRatio (*ratio[i] > 15.9f ? INFINITY :  *ratio[i]);
+        compressors[i].setRatio (*ratio[i] > 15.9f ? INFINITY :  ratio[i]->load());
         compressors[i].setMakeUpGain (*makeUpGain[i]);
 
         freqBands[i].clear();

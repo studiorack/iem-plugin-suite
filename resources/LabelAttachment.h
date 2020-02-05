@@ -63,8 +63,8 @@ public AsyncUpdater
 
     void sendInitialUpdate()
     {
-        if (float* v = state.getRawParameterValue (paramID))
-        parameterChanged (paramID, *v);
+        if (std::atomic<float>* v = state.getRawParameterValue (paramID))
+            parameterChanged (paramID, *v);
     }
 
     void parameterChanged (const String&, float newValue) override

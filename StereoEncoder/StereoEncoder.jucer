@@ -8,7 +8,7 @@
               pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
               pluginAUExportPrefix="StereoEncoderAU" aaxIdentifier="at.iem.StereoEncoder"
-              pluginAAXCategory="2" jucerVersion="5.4.5" companyName="IEM"
+              pluginAAXCategory="2" jucerVersion="5.4.6" companyName="IEM"
               companyWebsite="iem.at" displaySplashScreen="0" reportAppUsage="0"
               splashScreenColour="Dark" buildStandalone="1" enableIAA="0" cppLanguageStandard="14"
               companyCopyright="IEM - Daniel Rudrich" headerPath="../../../resources/"

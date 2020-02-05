@@ -72,7 +72,11 @@ public:
 private:
     //==============================================================================
     // list of used audio parameters
-    float *inputChannelsSetting, *outputOrderSetting, *useSN3D, *param1, *param2;
+    std::atomic<float>* inputChannelsSetting;
+    std::atomic<float>* outputOrderSetting;
+    std::atomic<float>* useSN3D;
+    std::atomic<float>* param1;
+    std::atomic<float>* param2;
 
 
     //==============================================================================

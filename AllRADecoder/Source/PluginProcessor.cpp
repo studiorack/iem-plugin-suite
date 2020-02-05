@@ -662,8 +662,8 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
     if (! isLayoutReady)
         return Result::fail("Layout not ready!");
 
-    const int N = roundToInt(*decoderOrder) + 1;
-    const auto ambisonicWeights = ReferenceCountedDecoder::Weights (roundToInt (*weights));
+    const int N = roundToInt (decoderOrder->load()) + 1;
+    const auto ambisonicWeights = ReferenceCountedDecoder::Weights (roundToInt (weights->load()));
     const int nCoeffs = square(N+1);
     const int nLsps = (int) points.size();
     const int nRealLsps = nLsps - imaginaryFlags.countNumberOfSetBits();

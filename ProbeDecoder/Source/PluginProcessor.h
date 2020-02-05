@@ -69,16 +69,16 @@ public:
     std::vector<std::unique_ptr<RangedAudioParameter>> createParameterLayout();
 
     //==============================================================================
-    float *orderSetting;
-    float *useSN3D;
+    std::atomic<float>* orderSetting;
+    std::atomic<float>* useSN3D;
 
     Atomic<bool> updatedPositionData {true};
 
 private:
     //==============================================================================
 
-    float *azimuth;
-    float *elevation;
+    std::atomic<float>* azimuth;
+    std::atomic<float>* elevation;
 
     float previousSH[64];
 
