@@ -19,6 +19,7 @@ variables:
   only:
     - master
     - develop
+    - ci-getjuce
   except:
     - tags
   artifacts: &snapshot_artifacts
