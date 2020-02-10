@@ -12,7 +12,7 @@ mkdir -p "${OUTDIR}"
 URL=https://github.com/WeAreROLI/JUCE/releases/download/${JUCEVERSION}/juce-${JUCEVERSION}-${OSFLAVOUR}.zip
 echo "getting juce.zip from ${URL}"
 
-curl -o juce.zip "${URL}"
+curl -L -o juce.zip "${URL}"
 unzip -q juce.zip -d "${OUTDIR}"
 mv "${OUTDIR}"/JUCE/* "${OUTDIR}" || true
 
