@@ -639,6 +639,7 @@ void SceneRotatorAudioProcessor::updateEuler()
 
     // pitch (y-axis rotation)
     float t0 = 2.0f * (p0 * p2 + e * p1 * p3);
+    t0 = jlimit (-1.0f, 1.0f, t0);
     ypr[1] = asin (t0);
 
     if (ypr[1] == MathConstants<float>::pi || ypr[1] == - MathConstants<float>::pi)
