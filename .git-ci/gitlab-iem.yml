@@ -5,7 +5,7 @@ variables:
 #  PROJECTS: AllRADecoder BinauralDecoder DirectionalCompressor DirectivityShaper DistanceCompensator DualDelay EnergyVisualizer FdnReverb MatrixMultiplier MultiEncoder OmniCompressor ProbeDecoder RoomEncoder SimpleDecoder StereoEncoder ToolBox
 
   CONFIG: Release
-  JUCEVERSION: 5.4.6
+  JUCEVERSION: 5.4.7
 
 ###################################################
 # cleanup after the job (e.g. rename files for the artifacts...)
@@ -19,6 +19,7 @@ variables:
   only:
     - master
     - develop
+    - ci-getjuce
   except:
     - tags
   artifacts: &snapshot_artifacts
@@ -49,7 +50,7 @@ variables:
     - apt-get install -y --no-install-recommends xvfb xauth curl unzip build-essential ca-certificates
     - apt-get install -y --no-install-recommends libwebkit2gtk-4.0-dev libasound2-dev libfreetype6-dev libcurl4-gnutls-dev libgl1-mesa-dev libx11-dev libxext-dev libxinerama-dev libxrandr-dev libgtk-3-dev
     - apt-get install -y --no-install-recommends libjack-dev libfftw3-dev
-    - .git-ci/getjuce.sh "${JUCEVERSION}-linux" ~/JUCE
+    - .git-ci/getjuce.sh "${JUCEVERSION}" linux ~/JUCE
     - xvfb-run -a ~/JUCE/Projucer --set-global-search-path linux defaultJuceModulePath ~/JUCE/modules/
 # run the actual build
     - make system V=1 CONFIG=${CONFIG} CPPFLAGS=-DJUCE_JACK=1 CFLAGS="$(pkg-config --cflags ${PKGLIBS})" LDFLAGS="$(pkg-config --libs ${PKGLIBS})" PARALLEL=$(nproc) TARGET_ARCH=-march=core2 PROJUCER=~/JUCE/Projucer
@@ -68,7 +69,7 @@ variables:
 # install dependencies
     - brew install fftw
     - brew install jack
-    - .git-ci/getjuce.sh "${JUCEVERSION}-osx" ~/JUCE
+    - .git-ci/getjuce.sh "${JUCEVERSION}" osx ~/JUCE
 # run the actual build
     - test -z "${PROJECTS}" && PROJECTS=$(make showprojects)
     - make system CONFIG=$CONFIG PROJUCER="~/JUCE/Projucer.app/Contents/MacOS/Projucer"
@@ -90,7 +91,7 @@ variables:
   script:
     - test -f .myenv && . .myenv
 # install dependencies
-    - .git-ci/getjuce.sh "${JUCEVERSION}-windows" /c/JUCE
+    - .git-ci/getjuce.sh "${JUCEVERSION}" windows /c/JUCE
     - .git-ci/fftw4win.sh $BITS
 # tell JUCE where to look for the vstheaders
     - /c/JUCE/Projucer --set-global-search-path windows vst3Path ";C:/JUCE/modules/juce_audio_processors/format_types/VST3_SDK/"

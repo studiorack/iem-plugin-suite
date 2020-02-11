@@ -2,16 +2,17 @@
 
 df -h
 
-JUCEFLAVOUR=$1
-OUTDIR=$2
+JUCEVERSION=$1
+OSFLAVOUR=$2
+OUTDIR=$3
 
 rm -rf "${OUTDIR}"
 mkdir -p "${OUTDIR}"
 
-URL=https://d30pueezughrda.cloudfront.net/juce/juce-${JUCEFLAVOUR}.zip
+URL=https://github.com/WeAreROLI/JUCE/releases/download/${JUCEVERSION}/juce-${JUCEVERSION}-${OSFLAVOUR}.zip
 echo "getting juce.zip from ${URL}"
 
-curl -o juce.zip "${URL}"
+curl -L -o juce.zip "${URL}"
 unzip -q juce.zip -d "${OUTDIR}"
 mv "${OUTDIR}"/JUCE/* "${OUTDIR}" || true
 
