@@ -11,7 +11,7 @@
               pluginIsSynth="0" pluginWantsMidiIn="0" pluginProducesMidiOut="0"
               pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0" pluginAUExportPrefix="MultiBandCompressorAU"
               aaxIdentifier="at.iem.MultiBandCompressor" pluginAAXCategory="2"
-              jucerVersion="5.4.6" companyCopyright="IEM - Markus Huber" companyName="IEM"
+              jucerVersion="5.4.7" companyCopyright="IEM - Markus Huber" companyName="IEM"
               companyWebsite="iem.at" headerPath="../../../resources/" pluginFormats="buildStandalone,buildVST"
               defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1">
   <MAINGROUP id="LpzrV9" name="MultiBandCompressor">
