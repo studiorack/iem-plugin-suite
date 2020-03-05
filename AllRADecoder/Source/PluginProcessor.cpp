@@ -643,8 +643,8 @@ Result AllRADecoderAudioProcessor::checkLayout()
         if (! points[i].isImaginary)
         {
             const int channel = points[i].channel;
-            if (channel < 1 || channel > 64)
-                return Result::fail("ERROR 8: A channel number is smaller than 1 or greater than 64.");
+            if (channel < 1)
+                return Result::fail("ERROR 8: A channel number is smaller than 1.");
 
             if (routing.contains(channel))
                 return Result::fail("ERROR 9: Channel number duplicates: a channel number may occur only once.");

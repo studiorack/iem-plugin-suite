@@ -5,6 +5,8 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
 
 ## untagged changes
 -plug-in specific changes
+    - **AllRA**Decoder
+        - removed the 64 channel number limit for loudspeakers layouts with more than 64 loudspeakers
     -**Energy**Visualizer
         - sending RMS values with OSCAddressPattern "/RMS"
 
