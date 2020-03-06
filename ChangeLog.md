@@ -7,6 +7,8 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
 -plug-in specific changes
     - **AllRA**Decoder
         - removed the 64 channel number limit for loudspeakers layouts with more than 64 loudspeakers
+    - **Simple**Decoder
+        - decoder configuration is now stored within the plug-in state when saving a session, so no need to provide the decoder file when sharing projects
     -**Energy**Visualizer
         - sending RMS values with OSCAddressPattern "/RMS"
 

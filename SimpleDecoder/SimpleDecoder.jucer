@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <JUCERPROJECT id="mbpAgi" name="SimpleDecoder" displaySplashScreen="0" reportAppUsage="0"
-              splashScreenColour="Dark" projectType="audioplug" version="0.4.1"
+              splashScreenColour="Dark" projectType="audioplug" version="0.5.0"
               bundleIdentifier="at.iem.SimpleDecoder" includeBinaryInAppConfig="1"
               cppLanguageStandard="14" buildVST="1" buildVST3="0" buildAU="0"
               buildAUv3="0" buildRTAS="0" buildAAX="0" buildStandalone="1"
@@ -14,6 +14,10 @@
               companyName="IEM" companyWebsite="iem.at" headerPath="../../../resources/"
               pluginFormats="buildStandalone,buildVST" defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1">
   <MAINGROUP id="LpzrV9" name="SimpleDecoder">
+    <GROUP id="{8445278F-ADD4-E9D2-71BE-30BC0248B2CA}" name="Presets">
+      <FILE id="lLHQ5P" name="CUBE.json" compile="0" resource="1" file="../_configurationFiles/CUBE.json"/>
+      <FILE id="hDo7JY" name="22_2_NHK.json" compile="0" resource="1" file="../_configurationFiles/22_2_NHK.json"/>
+    </GROUP>
     <GROUP id="{12C8DBCA-9B7E-F989-7097-781353EC721D}" name="Standalone">
       <FILE id="CFQKlf" name="IEM_AudioDeviceSelectorComponent.cpp" compile="1"
             resource="0" file="../resources/Standalone/IEM_AudioDeviceSelectorComponent.cpp"/>
