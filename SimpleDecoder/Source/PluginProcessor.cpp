@@ -133,7 +133,7 @@ void SimpleDecoderAudioProcessor::setLastDir(File newLastDir)
 //==============================================================================
 int SimpleDecoderAudioProcessor::getNumPrograms()
 {
-    return 3;
+    return 4;
 }
 
 int SimpleDecoderAudioProcessor::getCurrentProgram()
@@ -153,6 +153,10 @@ void SimpleDecoderAudioProcessor::setCurrentProgram (int index)
             break;
 
         case 2:
+            preset = String (BinaryData::Produktionsstudio_json, BinaryData::Produktionsstudio_jsonSize);
+            break;
+
+        case 3:
             preset = String (BinaryData::_22_2_NHK_json, BinaryData::_22_2_NHK_jsonSize);
             break;
 
@@ -171,8 +175,10 @@ const String SimpleDecoderAudioProcessor::getProgramName (int index)
         case 0:
             return "---";
         case 1:
-            return "CUBE";
+            return "IEM CUBE";
         case 2:
+            return "IEM Produktionsstudio";
+        case 3:
             return "22.2 NHK";
 
         default:
@@ -265,6 +271,8 @@ void SimpleDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiB
             parameters.getParameter ("swChannel")->setValueNotifyingHost (parameters.getParameterRange ("swChannel").convertTo0to1 (decoder.getCurrentDecoder()->getSettings().subwooferChannel));
             parameters.getParameter ("swMode")->setValueNotifyingHost (parameters.getParameterRange ("swMode").convertTo0to1 (1)); //discrete
         }
+        else
+            parameters.getParameter ("swMode")->setValueNotifyingHost (parameters.getParameterRange ("swMode").convertTo0to1 (0)); // off
 
         // calculate mean omni-signal-gain
         Matrix<float>& decoderMatrix = retainedDecoder->getMatrix();

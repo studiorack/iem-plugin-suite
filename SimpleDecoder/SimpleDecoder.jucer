@@ -15,8 +15,10 @@
               pluginFormats="buildStandalone,buildVST" defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1">
   <MAINGROUP id="LpzrV9" name="SimpleDecoder">
     <GROUP id="{8445278F-ADD4-E9D2-71BE-30BC0248B2CA}" name="Presets">
-      <FILE id="lLHQ5P" name="CUBE.json" compile="0" resource="1" file="../_configurationFiles/CUBE.json"/>
-      <FILE id="hDo7JY" name="22_2_NHK.json" compile="0" resource="1" file="../_configurationFiles/22_2_NHK.json"/>
+      <FILE id="PsBEfW" name="22_2_NHK.json" compile="0" resource="1" file="Source/Presets/22_2_NHK.json"/>
+      <FILE id="WqOQAl" name="CUBE.json" compile="0" resource="1" file="Source/Presets/CUBE.json"/>
+      <FILE id="D0QeE7" name="Produktionsstudio.json" compile="0" resource="1"
+            file="Source/Presets/Produktionsstudio.json"/>
     </GROUP>
     <GROUP id="{12C8DBCA-9B7E-F989-7097-781353EC721D}" name="Standalone">
       <FILE id="CFQKlf" name="IEM_AudioDeviceSelectorComponent.cpp" compile="1"
