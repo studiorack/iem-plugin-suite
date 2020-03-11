@@ -51,6 +51,7 @@ updatedPositionData (true)
     parameters.addParameterListener("roll", this);
     parameters.addParameterListener("width", this);
     parameters.addParameterListener("orderSetting", this);
+    parameters.addParameterListener("useSN3D", this);
 
     orderSetting = parameters.getRawParameterValue("orderSetting");
     useSN3D = parameters.getRawParameterValue("useSN3D");
@@ -330,6 +331,10 @@ void StereoEncoderAudioProcessor::parameterChanged (const String &parameterID, f
     if (parameterID == "orderSetting")
     {
         userChangedIOSettings = true;
+        positionHasChanged = true;
+    }
+    else if (parameterID == "useSN3D")
+    {
         positionHasChanged = true;
     }
 }
