@@ -146,49 +146,51 @@ void MultiEncoderAudioProcessor::releaseResources()
 
 void MultiEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
-    checkInputAndOutput(this, *inputSetting, *orderSetting);
+    checkInputAndOutput (this, *inputSetting, *orderSetting);
 
     const int nChOut = jmin(buffer.getNumChannels(), output.getNumberOfChannels());
     const int nChIn = jmin(buffer.getNumChannels(), input.getSize());
     const int ambisonicOrder = output.getOrder();
 
-    for (int i = 0; i < nChIn; ++i){
-        bufferCopy.copyFrom(i, 0, buffer.getReadPointer(i), buffer.getNumSamples());
-    }
+    for (int i = 0; i < nChIn; ++i)
+        bufferCopy.copyFrom (i, 0, buffer.getReadPointer (i), buffer.getNumSamples());
 
     buffer.clear();
 
     for (int i = 0; i < nChIn; ++i)
     {
-        FloatVectorOperations::copy(_SH[i], SH[i], nChOut);
+        FloatVectorOperations::copy (_SH[i], SH[i], nChOut);
+
         float currGain = 0.0f;
 
-        if (!soloMask.isZero())
-            if (soloMask[i]) currGain = Decibels::decibelsToGain (gain[i]->load());
+        if (! soloMask.isZero())
+        {
+            if (soloMask[i])
+                currGain = Decibels::decibelsToGain (gain[i]->load());
+        }
         else
-            if (! muteMask[i]) currGain = Decibels::decibelsToGain (gain[i]->load());
+        {
+            if (! muteMask[i])
+                currGain = Decibels::decibelsToGain (gain[i]->load());
+        }
 
 
         const float azimuthInRad = degreesToRadians (azimuth[i]->load());
         const float elevationInRad = degreesToRadians (elevation[i]->load());
 
-        Vector3D<float> pos {Conversions<float>::sphericalToCartesian(azimuthInRad, elevationInRad)};
+        const Vector3D<float> pos {Conversions<float>::sphericalToCartesian (azimuthInRad, elevationInRad)};
 
-        SHEval(ambisonicOrder, pos.x, pos.y, pos.z, SH[i]);
+        SHEval (ambisonicOrder, pos.x, pos.y, pos.z, SH[i]);
 
         if (*useSN3D >= 0.5f)
-        {
-            FloatVectorOperations::multiply(SH[i], SH[i], n3d2sn3d, nChOut);
-        }
+            FloatVectorOperations::multiply (SH[i], SH[i], n3d2sn3d, nChOut);
 
         const float* inpReadPtr = bufferCopy.getReadPointer(i);
-        for (int ch = 0; ch < nChOut; ++ch) {
-            buffer.addFromWithRamp(ch, 0, inpReadPtr, buffer.getNumSamples(), _SH[i][ch]*_gain[i], SH[i][ch]*currGain);
-        }
+        for (int ch = 0; ch < nChOut; ++ch)
+            buffer.addFromWithRamp (ch, 0, inpReadPtr, buffer.getNumSamples(), _SH[i][ch] * _gain[i], SH[i][ch] * currGain);
+
         _gain[i] = currGain;
     }
-
-
 }
 
 //==============================================================================
