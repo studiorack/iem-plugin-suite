@@ -133,7 +133,7 @@ void SimpleDecoderAudioProcessor::setLastDir(File newLastDir)
 //==============================================================================
 int SimpleDecoderAudioProcessor::getNumPrograms()
 {
-    return 4;
+    return 6;
 }
 
 int SimpleDecoderAudioProcessor::getCurrentProgram()
@@ -157,6 +157,14 @@ void SimpleDecoderAudioProcessor::setCurrentProgram (int index)
             break;
 
         case 3:
+            preset = String (BinaryData::_5point1_json, BinaryData::_5point1_jsonSize);
+            break;
+
+        case 4:
+            preset = String (BinaryData::_7point1_json, BinaryData::_7point1_jsonSize);
+            break;
+
+        case 5:
             preset = String (BinaryData::_22_2_NHK_json, BinaryData::_22_2_NHK_jsonSize);
             break;
 
@@ -179,6 +187,10 @@ const String SimpleDecoderAudioProcessor::getProgramName (int index)
         case 2:
             return "IEM Produktionsstudio";
         case 3:
+            return "5.1";
+        case 4:
+            return "7.1";
+        case 5:
             return "22.2 NHK";
 
         default:

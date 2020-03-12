@@ -15,6 +15,8 @@
               pluginFormats="buildStandalone,buildVST" defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1">
   <MAINGROUP id="LpzrV9" name="SimpleDecoder">
     <GROUP id="{8445278F-ADD4-E9D2-71BE-30BC0248B2CA}" name="Presets">
+      <FILE id="T774nW" name="5point1.json" compile="0" resource="1" file="Source/Presets/5point1.json"/>
+      <FILE id="UAlKrs" name="7point1.json" compile="0" resource="1" file="Source/Presets/7point1.json"/>
       <FILE id="PsBEfW" name="22_2_NHK.json" compile="0" resource="1" file="Source/Presets/22_2_NHK.json"/>
       <FILE id="WqOQAl" name="CUBE.json" compile="0" resource="1" file="Source/Presets/CUBE.json"/>
       <FILE id="D0QeE7" name="Produktionsstudio.json" compile="0" resource="1"
