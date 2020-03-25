@@ -2,6 +2,8 @@
 cd ${0%/*}
 rm -rf */Builds
 rm -rf */JuceLibraryCode
+rm -Rf _compiledPlugins/macOS/IEM
+rm -Rf _compiledPlugins/macOS/Standalone
 mkdir -p _compiledPlugins/macOS/IEM
 mkdir -p _compiledPlugins/macOS/Standalone
 for d in */*.jucer; do
