@@ -342,6 +342,8 @@ void BinauralDecoderAudioProcessor::updateBuffers()
         order = tmpOrder;
     }
 
+    if (order < 1)
+        order = 1;
 
     AudioBuffer<float> resampledIRs;
     bool useResampled = false;

@@ -420,6 +420,10 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
 
     const auto delayBufferWritePtrArray = delayBuffer.getArrayOfWritePointers();
 
+
+    if (maxNChIn < 1)
+        return;
+    
     // update iir filter coefficients
     if (userChangedFilterSettings) updateFilterCoefficients(sampleRate);
 

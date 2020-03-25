@@ -437,6 +437,9 @@ void MultiBandCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer,
     }
 
     const int numChannels = jmin (buffer.getNumChannels(), input.getNumberOfChannels());
+    if (numChannels == 0)
+        return;
+    
     ScopedNoDenormals noDenormals;
 
     for (int i = numChannels; i < getTotalNumOutputChannels(); ++i)

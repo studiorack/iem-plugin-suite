@@ -4,7 +4,9 @@ For a list of all changes and bugfixes see the git log.
 Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They might lead to an unexpected behaviour and might not be compatible with your previous projects without making some adaptions. See the [Breaking changes article](https://plugins.iem.at/docs/breakingchanges/) for more information.
 
 ## untagged changes
--plug-in specific changes
+- general changes
+    - standalones: prevents crashes when there's no audio input device
+- plug-in specific changes
     - **AllRA**Decoder
         - removed the 64 channel number limit for loudspeakers layouts with more than 64 loudspeakers
     - **Simple**Decoder

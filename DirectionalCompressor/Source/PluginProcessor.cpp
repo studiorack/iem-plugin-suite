@@ -166,7 +166,10 @@ void DirectionalCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffe
     const int totalNumInputChannels  = getTotalNumInputChannels();
     const int totalNumOutputChannels = getTotalNumOutputChannels();
     const int bufferSize = buffer.getNumSamples();
-    //const int ambisonicOrder = input.getOrder();
+
+    const int numCh = jmin(input.getNumberOfChannels(), buffer.getNumChannels());
+    if (numCh == 0)
+           return;
 
     // Compressor 1 settings
     if (*c1Ratio > 15.9f)
@@ -192,13 +195,9 @@ void DirectionalCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffe
     compressor2.setThreshold(*c2Threshold);
     compressor2.setMakeUpGain(*c2Makeup);
 
-
     drivingPointers[0] = maskBuffer.getReadPointer(0);
     drivingPointers[1] = buffer.getReadPointer(0);
     drivingPointers[2] = omniW.getReadPointer(0);
-
-
-    const int numCh = jmin(input.getNumberOfChannels(), buffer.getNumChannels());
 
     // preGain - can be tweaked by adding gain to compressor gains
     float preGainLinear = Decibels::decibelsToGain (preGain->load());

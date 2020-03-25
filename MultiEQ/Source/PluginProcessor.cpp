@@ -416,7 +416,9 @@ void MultiEQAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
     const int L = buffer.getNumSamples();
 
     const int maxNChIn = jmin (buffer.getNumChannels(), input.getSize());
-
+    if (maxNChIn < 1)
+        return;
+    
     const int nSIMDFilters = 1 + (maxNChIn - 1) / IIRfloat_elements;
 
 
