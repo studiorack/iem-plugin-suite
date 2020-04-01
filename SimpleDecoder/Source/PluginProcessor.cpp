@@ -133,7 +133,7 @@ void SimpleDecoderAudioProcessor::setLastDir(File newLastDir)
 //==============================================================================
 int SimpleDecoderAudioProcessor::getNumPrograms()
 {
-    return 6;
+    return 11;
 }
 
 int SimpleDecoderAudioProcessor::getCurrentProgram()
@@ -157,14 +157,34 @@ void SimpleDecoderAudioProcessor::setCurrentProgram (int index)
             break;
 
         case 3:
-            preset = String (BinaryData::_5point1_json, BinaryData::_5point1_jsonSize);
+            preset = String (BinaryData::MSDecoder_json, BinaryData::MSDecoder_jsonSize);
             break;
 
         case 4:
-            preset = String (BinaryData::_7point1_json, BinaryData::_7point1_jsonSize);
+            preset = String (BinaryData::Quadraphonic_json, BinaryData::Quadraphonic_jsonSize);
             break;
 
         case 5:
+            preset = String (BinaryData::_5point1_json, BinaryData::_5point1_jsonSize);
+            break;
+
+        case 6:
+            preset = String (BinaryData::_7point1_json, BinaryData::_7point1_jsonSize);
+            break;
+
+        case 7:
+            preset = String (BinaryData::_5point1point4_json, BinaryData::_5point1point4_jsonSize);
+            break;
+
+        case 8:
+            preset = String (BinaryData::_7point1point4_json, BinaryData::_7point1point4_jsonSize);
+            break;
+
+        case 9:
+            preset = String (BinaryData::Cube_8ch_json, BinaryData::Cube_8ch_jsonSize);
+            break;
+
+        case 10:
             preset = String (BinaryData::_22_2_NHK_json, BinaryData::_22_2_NHK_jsonSize);
             break;
 
@@ -187,10 +207,20 @@ const String SimpleDecoderAudioProcessor::getProgramName (int index)
         case 2:
             return "IEM Produktionsstudio";
         case 3:
-            return "5.1";
+            return "Stereo";
         case 4:
-            return "7.1";
+            return "Quadraphonic";
         case 5:
+            return "5.1";
+        case 6:
+            return "7.1";
+        case 7:
+            return "5.1.4";
+        case 8:
+            return "7.1.4";
+        case 9:
+            return "8ch Cube";
+        case 10:
             return "22.2 NHK";
 
         default:
@@ -526,9 +556,18 @@ void SimpleDecoderAudioProcessor::loadConfigFromString (String configString)
         parameters.getParameterAsValue ("weights").setValue (static_cast<int> (tempDecoder->getSettings().weights));
     }
 
-
     decoder.setDecoder (tempDecoder);
     decoderConfig = tempDecoder;
+
+    if (decoderConfig->getSettings().subwooferChannel != -1)
+    {
+        parameters.getParameter ("swMode")->setValueNotifyingHost (parameters.getParameterRange ("swMode").convertTo0to1 (1));
+        parameters.getParameter ("swChannel")->setValueNotifyingHost (parameters.getParameterRange ("swChannel").convertTo0to1 (decoderConfig->getSettings().subwooferChannel));
+    }
+    else
+        parameters.getParameter ("swMode")->setValueNotifyingHost (parameters.getParameterRange ("swMode").convertTo0to1 (0));
+
+
 
     updateDecoderInfo = true;
     messageChanged = true;

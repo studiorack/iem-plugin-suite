@@ -7,8 +7,8 @@ rm -Rf _compiledPlugins/macOS/Standalone
 mkdir -p _compiledPlugins/macOS/IEM
 mkdir -p _compiledPlugins/macOS/Standalone
 for d in */*.jucer; do
-  open -W -n ${PWD}/${d} --args --resave ${PWD}/${d}
-  d=${d%/*}
+  open -W -n "${PWD}/${d}" --args --resave "${PWD}/${d}"
+  d="${d%/*}"
   echo "Compiling $d for macOS..."
     if [ -d "${d}/Builds/MacOSX" ]; then
         pushd "${d}/Builds/MacOSX"
