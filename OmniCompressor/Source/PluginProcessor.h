@@ -84,15 +84,15 @@ private:
     AudioBuffer<float> gains;
 
     float GR;
-    float *orderSetting;
-    float *threshold;
-    float *outGain;
-    float *ratio;
-    float *attack;
-    float *release;
-    float *knee;
-    float *lookAhead;
-    float *reportLatency;
+    std::atomic<float>* orderSetting;
+    std::atomic<float>* threshold;
+    std::atomic<float>* outGain;
+    std::atomic<float>* ratio;
+    std::atomic<float>* attack;
+    std::atomic<float>* release;
+    std::atomic<float>* knee;
+    std::atomic<float>* lookAhead;
+    std::atomic<float>* reportLatency;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OmniCompressorAudioProcessor)
 };

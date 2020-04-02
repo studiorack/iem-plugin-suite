@@ -83,16 +83,16 @@ createParameterLayout())
     for (int i = 0; i < numFilterBands; ++i)
     {
         filterArrays[i].clear();
-        for (int ch = 0; ch < ceil (64 / IIRfloat_elements()); ++ch)
+        for (int ch = 0; ch < ceil (64 / IIRfloat_elements); ++ch)
             filterArrays[i].add (new IIR::Filter<IIRfloat> (processorCoefficients[i]));
     }
 
     additionalFilterArrays[0].clear();
-    for (int ch = 0; ch < ceil (64 / IIRfloat_elements()); ++ch)
+    for (int ch = 0; ch < ceil (64 / IIRfloat_elements); ++ch)
         additionalFilterArrays[0].add (new IIR::Filter<IIRfloat> (additionalProcessorCoefficients[0]));
 
     additionalFilterArrays[1].clear();
-    for (int ch = 0; ch < ceil (64 / IIRfloat_elements()); ++ch)
+    for (int ch = 0; ch < ceil (64 / IIRfloat_elements); ++ch)
         additionalFilterArrays[1].add (new IIR::Filter<IIRfloat> (additionalProcessorCoefficients[1]));
 }
 
@@ -107,7 +107,7 @@ void MultiEQAudioProcessor::updateGuiCoefficients()
     const double sampleRate = getSampleRate() == 0 ? 48000.0 : getSampleRate();
 
     // Low band
-    const auto lowBandFrequency = jmin (static_cast<float> (0.5 * sampleRate), *filterFrequency[0]);
+    const auto lowBandFrequency = jmin (static_cast<float> (0.5 * sampleRate), filterFrequency[0]->load());
     const SpecialFilterType lowType = SpecialFilterType (static_cast<int> (*filterType[0]));
 
     switch (lowType)
@@ -127,7 +127,7 @@ void MultiEQAudioProcessor::updateGuiCoefficients()
             guiCoefficients[0] = IIR::Coefficients<double>::makeHighPass (sampleRate, lowBandFrequency, *filterQ[0]);
             break;
         case SpecialFilterType::LowShelf:
-            guiCoefficients[0] = IIR::Coefficients<double>::makeLowShelf (sampleRate, lowBandFrequency, *filterQ[0], Decibels::decibelsToGain (*filterGain[0]));
+            guiCoefficients[0] = IIR::Coefficients<double>::makeLowShelf (sampleRate, lowBandFrequency, *filterQ[0], Decibels::decibelsToGain (filterGain[0]->load()));
             break;
         default:
             break;
@@ -135,7 +135,7 @@ void MultiEQAudioProcessor::updateGuiCoefficients()
 
 
     // High band
-    const auto highBandFrequency = jmin (static_cast<float> (0.5 * sampleRate), *filterFrequency[numFilterBands - 1]);
+    const auto highBandFrequency = jmin (static_cast<float> (0.5 * sampleRate), filterFrequency[numFilterBands - 1]->load());
     const SpecialFilterType highType = SpecialFilterType (4 + static_cast<int> (*filterType[numFilterBands - 1]));
 
     switch (highType)
@@ -155,7 +155,7 @@ void MultiEQAudioProcessor::updateGuiCoefficients()
             guiCoefficients[numFilterBands - 1] = IIR::Coefficients<double>::makeLowPass (sampleRate, highBandFrequency, *filterQ[numFilterBands - 1]);
             break;
         case SpecialFilterType::HighShelf:
-            guiCoefficients[numFilterBands - 1] = IIR::Coefficients<double>::makeHighShelf (sampleRate, highBandFrequency, *filterQ[numFilterBands - 1], Decibels::decibelsToGain (*filterGain[numFilterBands - 1]));
+            guiCoefficients[numFilterBands - 1] = IIR::Coefficients<double>::makeHighShelf (sampleRate, highBandFrequency, *filterQ[numFilterBands - 1], Decibels::decibelsToGain (filterGain[numFilterBands - 1]->load()));
             break;
         default:
             break;
@@ -165,18 +165,18 @@ void MultiEQAudioProcessor::updateGuiCoefficients()
 
     for (int f = 1; f < numFilterBands - 1; ++f)
     {
-        const auto frequency = jmin (static_cast<float> (0.5 * sampleRate), *filterFrequency[f]);
+        const auto frequency = jmin (static_cast<float> (0.5 * sampleRate), filterFrequency[f]->load());
         const RegularFilterType type = RegularFilterType (2 + static_cast<int>(*filterType[f]));
         switch (type)
         {
             case RegularFilterType::LowShelf:
-                guiCoefficients[f] = IIR::Coefficients<double>::makeLowShelf (sampleRate, frequency, *filterQ[f], Decibels::decibelsToGain (*filterGain[f]));
+                guiCoefficients[f] = IIR::Coefficients<double>::makeLowShelf (sampleRate, frequency, *filterQ[f], Decibels::decibelsToGain (filterGain[f]->load()));
                 break;
             case RegularFilterType::PeakFilter:
-                guiCoefficients[f] = IIR::Coefficients<double>::makePeakFilter (sampleRate, frequency, *filterQ[f], Decibels::decibelsToGain (*filterGain[f]));
+                guiCoefficients[f] = IIR::Coefficients<double>::makePeakFilter (sampleRate, frequency, *filterQ[f], Decibels::decibelsToGain (filterGain[f]->load()));
                 break;
             case RegularFilterType::HighShelf:
-                guiCoefficients[f] = IIR::Coefficients<double>::makeHighShelf (sampleRate, frequency, *filterQ[f], Decibels::decibelsToGain (*filterGain[f]));
+                guiCoefficients[f] = IIR::Coefficients<double>::makeHighShelf (sampleRate, frequency, *filterQ[f], Decibels::decibelsToGain (filterGain[f]->load()));
                 break;
             default:
                 break;
@@ -253,13 +253,13 @@ void MultiEQAudioProcessor::createLinkwitzRileyFilter (const bool isUpperBand)
 {
     if (isUpperBand)
     {
-        const auto frequency = jmin (static_cast<float> (0.5 * getSampleRate()), *filterFrequency[numFilterBands - 1]);
+        const auto frequency = jmin (static_cast<float> (0.5 * getSampleRate()), filterFrequency[numFilterBands - 1]->load());
         tempCoefficients[numFilterBands - 1] = IIR::Coefficients<float>::makeLowPass (getSampleRate(), frequency, *filterQ[numFilterBands - 1]);
         additionalTempCoefficients[1] = processorCoefficients[numFilterBands - 1];
     }
     else
     {
-        const auto frequency = jmin (static_cast<float> (0.5 * getSampleRate()), *filterFrequency[0]);
+        const auto frequency = jmin (static_cast<float> (0.5 * getSampleRate()), filterFrequency[0]->load());
         tempCoefficients[0] = IIR::Coefficients<float>::makeHighPass (getSampleRate(), frequency, *filterQ[0]);
         additionalTempCoefficients[0] = processorCoefficients[0];
     }
@@ -267,7 +267,7 @@ void MultiEQAudioProcessor::createLinkwitzRileyFilter (const bool isUpperBand)
 
 void MultiEQAudioProcessor::createFilterCoefficients (const int filterIndex, const double sampleRate)
 {
-    const int type = roundToInt (*filterType[filterIndex]);
+    const int type = roundToInt (filterType[filterIndex]->load());
     if (filterIndex == 0 && type == 2)
     {
         createLinkwitzRileyFilter (false);
@@ -319,7 +319,7 @@ void MultiEQAudioProcessor::createFilterCoefficients (const int filterIndex, con
                 }
                 break;
         }
-        tempCoefficients[filterIndex] = createFilterCoefficients (filterType, sampleRate, *filterFrequency[filterIndex], *filterQ[filterIndex], Decibels::decibelsToGain (*filterGain[filterIndex]));
+        tempCoefficients[filterIndex] = createFilterCoefficients (filterType, sampleRate, *filterFrequency[filterIndex], *filterQ[filterIndex], Decibels::decibelsToGain (filterGain[filterIndex]->load()));
     }
 
 }
@@ -338,7 +338,7 @@ void MultiEQAudioProcessor::copyFilterCoefficientsToProcessor()
 
 inline void MultiEQAudioProcessor::clear (AudioBlock<IIRfloat>& ab)
 {
-    const int N = static_cast<int> (ab.getNumSamples()) * IIRfloat_elements();
+    const int N = static_cast<int> (ab.getNumSamples()) * IIRfloat_elements;
     const int nCh = static_cast<int> (ab.getNumChannels());
 
     for (int ch = 0; ch < nCh; ++ch)
@@ -384,7 +384,7 @@ void MultiEQAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
 
     interleavedData.clear();
 
-    for (int i = 0; i < ceil (64 / IIRfloat_elements()); ++i)
+    for (int i = 0; i < ceil (64 / IIRfloat_elements); ++i)
     {
         // reset filters
         for (int f = 0; f < numFilterBands; ++f)
@@ -397,7 +397,7 @@ void MultiEQAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
         clear (*interleavedData.getLast());
     }
 
-    zero = AudioBlock<float> (zeroData, IIRfloat_elements(), samplesPerBlock);
+    zero = AudioBlock<float> (zeroData, IIRfloat_elements, samplesPerBlock);
     zero.clear();
 }
 
@@ -416,8 +416,10 @@ void MultiEQAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
     const int L = buffer.getNumSamples();
 
     const int maxNChIn = jmin (buffer.getNumChannels(), input.getSize());
-
-    const int nSIMDFilters = 1 + (maxNChIn - 1) / IIRfloat_elements();
+    if (maxNChIn < 1)
+        return;
+    
+    const int nSIMDFilters = 1 + (maxNChIn - 1) / IIRfloat_elements;
 
 
     // update iir filter coefficients
@@ -425,14 +427,14 @@ void MultiEQAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
 
 
     //interleave input data
-    int partial = maxNChIn % IIRfloat_elements();
+    int partial = maxNChIn % IIRfloat_elements;
     if (partial == 0)
     {
         for (int i = 0; i<nSIMDFilters; ++i)
         {
-            AudioDataConverters::interleaveSamples (buffer.getArrayOfReadPointers() + i* IIRfloat_elements(),
+            AudioDataConverters::interleaveSamples (buffer.getArrayOfReadPointers() + i* IIRfloat_elements,
                                                    reinterpret_cast<float*> (interleavedData[i]->getChannelPointer (0)), L,
-                                                   static_cast<int> (IIRfloat_elements()));
+                                                   static_cast<int> (IIRfloat_elements));
         }
     }
     else
@@ -440,24 +442,24 @@ void MultiEQAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
         int i;
         for (i = 0; i<nSIMDFilters-1; ++i)
         {
-            AudioDataConverters::interleaveSamples (buffer.getArrayOfReadPointers() + i* IIRfloat_elements(),
+            AudioDataConverters::interleaveSamples (buffer.getArrayOfReadPointers() + i* IIRfloat_elements,
                                                    reinterpret_cast<float*> (interleavedData[i]->getChannelPointer (0)), L,
-                                                   static_cast<int> (IIRfloat_elements()));
+                                                   static_cast<int> (IIRfloat_elements));
         }
 
-        const float* addr[IIRfloat_elements()];
+        const float* addr[IIRfloat_elements];
         int ch;
         for (ch = 0; ch < partial; ++ch)
         {
-            addr[ch] = buffer.getReadPointer (i * IIRfloat_elements() + ch);
+            addr[ch] = buffer.getReadPointer (i * IIRfloat_elements + ch);
         }
-        for (; ch < IIRfloat_elements(); ++ch)
+        for (; ch < IIRfloat_elements; ++ch)
         {
             addr[ch] = zero.getChannelPointer(ch);
         }
         AudioDataConverters::interleaveSamples (addr,
                                                reinterpret_cast<float*> (interleavedData[i]->getChannelPointer (0)), L,
-                                               static_cast<int> (IIRfloat_elements()));
+                                               static_cast<int> (IIRfloat_elements));
     }
 
 
@@ -469,9 +471,9 @@ void MultiEQAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
         {
             for (int i = 0; i < nSIMDFilters; ++i)
             {
-                const SIMDRegister<float>* chPtr[1] = {interleavedData[i]->getChannelPointer (0)};
-                AudioBlock<SIMDRegister<float>> ab (const_cast<SIMDRegister<float>**> (chPtr), 1, L);
-                ProcessContextReplacing<SIMDRegister<float>> context (ab);
+                const IIRfloat* chPtr[1] = {interleavedData[i]->getChannelPointer (0)};
+                AudioBlock<IIRfloat> ab (const_cast<IIRfloat**> (chPtr), 1, L);
+                ProcessContextReplacing<IIRfloat> context (ab);
                 filterArrays[f][i]->process (context);
             }
         }
@@ -482,9 +484,9 @@ void MultiEQAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
     {
         for (int i = 0; i < nSIMDFilters; ++i)
         {
-            const SIMDRegister<float>* chPtr[1] = {chPtr[0] = interleavedData[i]->getChannelPointer (0)};
-            AudioBlock<SIMDRegister<float>> ab (const_cast<SIMDRegister<float>**> (chPtr), 1, L);
-            ProcessContextReplacing<SIMDRegister<float>> context (ab);
+            const IIRfloat* chPtr[1] = {chPtr[0] = interleavedData[i]->getChannelPointer (0)};
+            AudioBlock<IIRfloat> ab (const_cast<IIRfloat**> (chPtr), 1, L);
+            ProcessContextReplacing<IIRfloat> context (ab);
             additionalFilterArrays[0][i]->process (context);
         }
     }
@@ -492,9 +494,9 @@ void MultiEQAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
     {
         for (int i = 0; i < nSIMDFilters; ++i)
         {
-            const SIMDRegister<float>* chPtr[1] = {interleavedData[i]->getChannelPointer (0)};
-            AudioBlock<SIMDRegister<float>> ab (const_cast<SIMDRegister<float>**> (chPtr), 1, L);
-            ProcessContextReplacing<SIMDRegister<float>> context (ab);
+            const IIRfloat* chPtr[1] = {interleavedData[i]->getChannelPointer (0)};
+            AudioBlock<IIRfloat> ab (const_cast<IIRfloat**> (chPtr), 1, L);
+            ProcessContextReplacing<IIRfloat> context (ab);
             additionalFilterArrays[1][i]->process (context);
         }
     }
@@ -506,9 +508,9 @@ void MultiEQAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
         for (int i = 0; i<nSIMDFilters; ++i)
         {
             AudioDataConverters::deinterleaveSamples (reinterpret_cast<float*> (interleavedData[i]->getChannelPointer (0)),
-                                                      buffer.getArrayOfWritePointers() + i * IIRfloat_elements(),
+                                                      buffer.getArrayOfWritePointers() + i * IIRfloat_elements,
                                                       L,
-                                                      static_cast<int> (IIRfloat_elements()));
+                                                      static_cast<int> (IIRfloat_elements));
         }
     }
     else
@@ -517,25 +519,25 @@ void MultiEQAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
         for (i = 0; i<nSIMDFilters-1; ++i)
         {
             AudioDataConverters::deinterleaveSamples (reinterpret_cast<float*> (interleavedData[i]->getChannelPointer (0)),
-                                                      buffer.getArrayOfWritePointers() + i * IIRfloat_elements(),
+                                                      buffer.getArrayOfWritePointers() + i * IIRfloat_elements,
                                                       L,
-                                                      static_cast<int> (IIRfloat_elements()));
+                                                      static_cast<int> (IIRfloat_elements));
         }
 
-        float* addr[IIRfloat_elements()];
+        float* addr[IIRfloat_elements];
         int ch;
         for (ch = 0; ch < partial; ++ch)
         {
-            addr[ch] = buffer.getWritePointer (i * IIRfloat_elements() + ch);
+            addr[ch] = buffer.getWritePointer (i * IIRfloat_elements + ch);
         }
-        for (; ch < IIRfloat_elements(); ++ch)
+        for (; ch < IIRfloat_elements; ++ch)
         {
             addr[ch] = zero.getChannelPointer (ch);
         }
         AudioDataConverters::deinterleaveSamples (reinterpret_cast<float*> (interleavedData[i]->getChannelPointer (0)),
                                                  addr,
                                                  L,
-                                                 static_cast<int> (IIRfloat_elements()));
+                                                 static_cast<int> (IIRfloat_elements));
         zero.clear();
     }
 

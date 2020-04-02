@@ -87,7 +87,7 @@ createParameterLayout())
 
     for (int i = 0; i < numberOfBands; ++i)
     {
-        filter[i].coefficients = createFilterCoefficients(roundToInt(*filterType[i]), 44100, *filterFrequency[i], *filterQ[i]);
+        filter[i].coefficients = createFilterCoefficients(roundToInt (filterType[i]->load()), 44100, filterFrequency[i]->load(), filterQ[i]->load());
     }
 }
 
@@ -145,7 +145,7 @@ void DirectivityShaperAudioProcessor::prepareToPlay (double sampleRate, int samp
 
     for (int i = 0; i < numberOfBands; ++i)
     {
-        *filter[i].coefficients = *createFilterCoefficients(roundToInt(*filterType[i]), sampleRate, *filterFrequency[i], *filterQ[i]);
+        *filter[i].coefficients = *createFilterCoefficients(roundToInt (filterType[i]->load()), sampleRate, filterFrequency[i]->load(), filterQ[i]->load());
         filter[i].reset();
     }
     repaintFV = true;
@@ -187,7 +187,7 @@ void DirectivityShaperAudioProcessor::processBlock (AudioSampleBuffer& buffer, M
     float probeSH[64];
 
     {
-        Vector3D<float> pos = Conversions<float>::sphericalToCartesian(degreesToRadians(*probeAzimuth), degreesToRadians(*probeElevation));
+        Vector3D<float> pos = Conversions<float>::sphericalToCartesian (degreesToRadians (probeAzimuth->load()), degreesToRadians (probeElevation->load()));
         SHEval(orderToWorkWith, pos.x, pos.y, pos.z, probeSH, false); // decoding -> false
         if (applySN3D)
         { // reverting SN3D in probeSH
@@ -225,12 +225,12 @@ void DirectivityShaperAudioProcessor::processBlock (AudioSampleBuffer& buffer, M
         WeightsHelper::applyNormalization(tempWeights, *order[b], orderToWorkWith, norm, applySN3D);
 
 
-        Vector3D<float> pos = Conversions<float>::sphericalToCartesian(degreesToRadians(*azimuth[b]), degreesToRadians(*elevation[b]));
+        Vector3D<float> pos = Conversions<float>::sphericalToCartesian (degreesToRadians(azimuth[b]->load()), degreesToRadians (elevation[b]->load()));
         SHEval(orderToWorkWith, pos.x, pos.y, pos.z, sh, true); // encoding -> true
 
         float temp = 0.0f;
         float shTemp[64];
-        FloatVectorOperations::multiply(shTemp, sh, Decibels::decibelsToGain(*filterGain[b]), 64);
+        FloatVectorOperations::multiply(shTemp, sh, Decibels::decibelsToGain (filterGain[b]->load()), 64);
         for (int i = 0; i < nChToWorkWith; ++i)
         {
             shTemp[i] *= tempWeights[isqrt(i)];
@@ -320,14 +320,14 @@ void DirectivityShaperAudioProcessor::parameterChanged (const String &parameterI
             {
                 iem::Quaternion<float> probeQuat;
                 float probeypr[3];
-                probeypr[0] = degreesToRadians(*probeAzimuth);
-                probeypr[1] = degreesToRadians(*probeElevation);
-                probeypr[2] = - degreesToRadians(*probeRoll);
+                probeypr[0] = degreesToRadians (probeAzimuth->load());
+                probeypr[1] = degreesToRadians (probeElevation->load());
+                probeypr[2] = - degreesToRadians (probeRoll->load());
                 probeQuat.fromYPR(probeypr);
                 probeQuat.conjugate();
 
-                ypr[0] = degreesToRadians(*azimuth[i]);
-                ypr[1] = degreesToRadians(*elevation[i]);
+                ypr[0] = degreesToRadians (azimuth[i]->load());
+                ypr[1] = degreesToRadians (elevation[i]->load());
                 quats[i].fromYPR(ypr);
                 quats[i] = probeQuat*quats[i];
             }
@@ -345,9 +345,9 @@ void DirectivityShaperAudioProcessor::parameterChanged (const String &parameterI
             moving = true;
             iem::Quaternion<float> probeQuat;
             float ypr[3];
-            ypr[0] = degreesToRadians(*probeAzimuth);
-            ypr[1] = degreesToRadians(*probeElevation);
-            ypr[2] = - degreesToRadians(*probeRoll);
+            ypr[0] = degreesToRadians (probeAzimuth->load());
+            ypr[1] = degreesToRadians (probeElevation->load());
+            ypr[2] = - degreesToRadians (probeRoll->load());
             probeQuat.fromYPR(ypr);
 
             for (int i = 0; i < numberOfBands; ++i)
@@ -374,14 +374,14 @@ void DirectivityShaperAudioProcessor::parameterChanged (const String &parameterI
             {
                 iem::Quaternion<float> probeQuat;
                 float probeypr[3];
-                probeypr[0] = degreesToRadians(*probeAzimuth);
-                probeypr[1] = degreesToRadians(*probeElevation);
-                probeypr[2] = - degreesToRadians(*probeRoll);
+                probeypr[0] = degreesToRadians (probeAzimuth->load());
+                probeypr[1] = degreesToRadians (probeElevation->load());
+                probeypr[2] = - degreesToRadians (probeRoll->load());
                 probeQuat.fromYPR(probeypr);
                 probeQuat.conjugate();
 
-                ypr[0] = degreesToRadians(*azimuth[i]);
-                ypr[1] = degreesToRadians(*elevation[i]);
+                ypr[0] = degreesToRadians (azimuth[i]->load());
+                ypr[1] = degreesToRadians (elevation[i]->load());
                 quats[i].fromYPR(ypr);
                 quats[i] = probeQuat*quats[i];
             }
@@ -392,7 +392,7 @@ void DirectivityShaperAudioProcessor::parameterChanged (const String &parameterI
     else if (parameterID.startsWith("filter"))
     {
         int i = parameterID.getLastCharacters(1).getIntValue();
-        *filter[i].coefficients = *createFilterCoefficients(roundToInt(*filterType[i]), getSampleRate(), *filterFrequency[i], *filterQ[i]);
+        *filter[i].coefficients = *createFilterCoefficients (roundToInt (filterType[i]->load()), getSampleRate(), *filterFrequency[i], *filterQ[i]);
         repaintFV = true;
     }
     else if (parameterID.startsWith("order") || parameterID.startsWith("shape"))

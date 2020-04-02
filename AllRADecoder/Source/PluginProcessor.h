@@ -140,12 +140,12 @@ public:
 private:
     //==============================================================================
     // list of used audio parameters
-    float* inputOrderSetting;
-    float* useSN3D;
-    float* decoderOrder;
-    float* exportDecoder;
-    float* exportLayout;
-    float* weights;
+    std::atomic<float>* inputOrderSetting;
+    std::atomic<float>* useSN3D;
+    std::atomic<float>* decoderOrder;
+    std::atomic<float>* exportDecoder;
+    std::atomic<float>* exportLayout;
+    std::atomic<float>* weights;
 
     ValueTree loudspeakers {"Loudspeakers"};
 

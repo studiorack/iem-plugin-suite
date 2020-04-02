@@ -99,8 +99,11 @@ endif
 showprojects:
 	@echo $(PROJECTS)
 
+.PHONY: $(ALL_PROJECTS)
+$(ALL_PROJECTS): % : %-$(BUILDSYSTEM)-build
+
 # generic rules
-.PHONY: distclean clean all
+.PHONY: distclean clean all resave
 
 noop=
 space=$(noop) $(noop)
@@ -110,11 +113,12 @@ all: $(PROJECTS:%=%-$(BUILDSYSTEM)-build)
 clean: $(PROJECTS:%=%-$(BUILDSYSTEM)-clean)
 distclean:
 	rm -rf */Builds
+resave: $(PROJECTS:%=%/Builds/LinuxMakefile/Makefile)
 # aliases
-$(ALL_PROJECTS:%=%-build):
-	make $(@:%-build=%)-$(BUILDSYSTEM)-build
-$(ALL_PROJECTS:%=%-clean):
-	make $(@:%-clean=%)-$(BUILDSYSTEM)-clean
+.PHONY: $(ALL_PROJECTS:%=%-build)
+.PHONY: $(ALL_PROJECTS:%=%-clean)
+$(ALL_PROJECTS:%=%-build): %-build : %-$(BUILDSYSTEM)-build
+$(ALL_PROJECTS:%=%-clean): %-clean : %-$(BUILDSYSTEM)-clean
 
 # LinuxMakefile based rules
 %-LinuxMakefile-build: %/Builds/LinuxMakefile/Makefile

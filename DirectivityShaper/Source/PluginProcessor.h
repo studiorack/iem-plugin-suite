@@ -105,21 +105,21 @@ private:
     float shOld[numberOfBands][64];
 
     // parameters
-    float *orderSetting;
-    float *useSN3D;
-    float* filterType[numberOfBands];
-    float* filterFrequency[numberOfBands];
-    float* filterQ[numberOfBands];
-    float* filterGain[numberOfBands];
-    float* probeAzimuth;
-    float* probeElevation;
-    float* probeRoll;
-    float* probeLock;
-    float* normalization;
-    float* order[numberOfBands];
-    float* shape[numberOfBands];
-    float* azimuth[numberOfBands];
-    float* elevation[numberOfBands];
+    std::atomic<float>* orderSetting;
+    std::atomic<float>* useSN3D;
+    std::atomic<float>* filterType[numberOfBands];
+    std::atomic<float>* filterFrequency[numberOfBands];
+    std::atomic<float>* filterQ[numberOfBands];
+    std::atomic<float>* filterGain[numberOfBands];
+    std::atomic<float>* probeAzimuth;
+    std::atomic<float>* probeElevation;
+    std::atomic<float>* probeRoll;
+    std::atomic<float>* probeLock;
+    std::atomic<float>* normalization;
+    std::atomic<float>* order[numberOfBands];
+    std::atomic<float>* shape[numberOfBands];
+    std::atomic<float>* azimuth[numberOfBands];
+    std::atomic<float>* elevation[numberOfBands];
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DirectivityShaperAudioProcessor)
 };

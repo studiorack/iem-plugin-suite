@@ -50,7 +50,7 @@ public:
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;
 
-    void processBlock (AudioSampleBuffer&, MidiBuffer&) override;
+    void processBlock (AudioBuffer<float>&, MidiBuffer&) override;
 
     //==============================================================================
     AudioProcessorEditor* createEditor() override;
@@ -86,17 +86,17 @@ public:
 
     Atomic<bool> updatedPositionData;
 
-    float *orderSetting;
-    float *useSN3D;
-    float *qw;
-    float *qx;
-    float *qy;
-    float *qz;
-    float *azimuth;
-    float *elevation;
-    float *roll;
-    float *width;
-    float *highQuality;
+    std::atomic<float>* orderSetting;
+    std::atomic<float>* useSN3D;
+    std::atomic<float>* qw;
+    std::atomic<float>* qx;
+    std::atomic<float>* qy;
+    std::atomic<float>* qz;
+    std::atomic<float>* azimuth;
+    std::atomic<float>* elevation;
+    std::atomic<float>* roll;
+    std::atomic<float>* width;
+    std::atomic<float>* highQuality;
 
     // --------------------
 

@@ -75,9 +75,9 @@ public:
 
 private:
     // list of used audio parameters
-    float* inputOrderSetting;
-    float* useSN3D;
-    float* applyHeadphoneEq;
+    std::atomic<float>* inputOrderSetting;
+    std::atomic<float>* useSN3D;
+    std::atomic<float>* applyHeadphoneEq;
 
     Convolution EQ;
 
@@ -94,7 +94,7 @@ private:
     fftwf_plan fftForward, fftBackwardMid, fftBackwardSide;
     bool fftwWasPlanned = false;
 
-    AudioBuffer<float> stereoSum, stereoTemp;
+    AudioBuffer<float> stereoSum;
     AudioBuffer<float> overlapBuffer;
     AudioBuffer<float> irs[7];
 

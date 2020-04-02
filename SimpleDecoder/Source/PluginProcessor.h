@@ -104,21 +104,27 @@ private:
     void updateLowPassCoefficients (double sampleRate, float frequency);
     void updateHighPassCoefficients (double sampleRate, float frequency);
 
-    // list of used audio parameters
-    float *inputOrderSetting, *useSN3D;
-    float *lowPassFrequency, *lowPassGain;
-    float *highPassFrequency;
+    void loadConfigFromString (String string);
 
-    float *swMode;
-    float *swChannel;
-    float *weights;
+    // list of used audio parameters
+    std::atomic<float>* inputOrderSetting;
+    std::atomic<float>* useSN3D;
+    std::atomic<float>* lowPassFrequency;
+    std::atomic<float>* lowPassGain;
+    std::atomic<float>* highPassFrequency;
+
+    std::atomic<float>* swMode;
+    std::atomic<float>* swChannel;
+    std::atomic<float>* weights;
 
     // =========================================
 
     float omniGain = 0.0f;
 
     File lastDir;
-    File lastFile;
+
+    String lastConfigString;
+
     std::unique_ptr<PropertiesFile> properties;
 
     AudioBuffer<float> swBuffer;

@@ -129,12 +129,12 @@ public:
         deviceManager.createAudioDeviceTypes (types);
 
         for (auto* t : types)
-            deviceManager.addAudioDeviceType (t);
+            deviceManager.addAudioDeviceType (std::unique_ptr<AudioIODeviceType> (t));
 
         types.clearQuick (false);
 #if BUILD_WITH_JACK_SUPPORT
 
-        deviceManager.addAudioDeviceType (new iem::JackAudioIODeviceType());
+        deviceManager.addAudioDeviceType (std::make_unique<iem::JackAudioIODeviceType> ());
 #endif
 
         auto inChannels = (channelConfiguration.size() > 0 ? channelConfiguration[0].numIns
@@ -907,7 +907,7 @@ private:
             }
 
         private:
-            bool muted;
+            bool muted = false;
             SimpleLabel lbMuted;
             std::unique_ptr<SimpleLabel> jackDeviceName;
             TextButton settingsButton;

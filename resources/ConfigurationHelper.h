@@ -334,13 +334,26 @@ public:
         if (! result.wasOk())
             return Result::fail (result.getErrorMessage());
 
+        result = parseVarForDecoder (parsedJson, decoder);
+        if (! result.wasOk())
+            return Result::fail (result.getErrorMessage());
+
+        return Result::ok();
+    }
+
+    /** Parses a 'Decoder' object from a JSON var. If successful, writes the decoder into the destination (decoder).
+     */
+    static Result parseVarForDecoder (const var& jsonVar, ReferenceCountedDecoder::Ptr* decoder)
+    {
+        jassert (decoder != nullptr);
+
         // looking for a 'Decoder' object
-        if (! parsedJson.hasProperty ("Decoder"))
+        if (! jsonVar.hasProperty ("Decoder"))
             return Result::fail ("No 'Decoder' object found in the configuration file.");
 
-        var decoderObject = parsedJson.getProperty ("Decoder", parsedJson);
-        result = DecoderVar (decoderObject, decoder,
-                             parsedJson.getProperty ("Name", var("")), parsedJson.getProperty ("Description", var("")));
+        var decoderObject = jsonVar.getProperty ("Decoder", jsonVar);
+        auto result = DecoderVar (decoderObject, decoder,
+                             jsonVar.getProperty ("Name", var("")), jsonVar.getProperty ("Description", var("")));
 
         if (! result.wasOk())
             return Result::fail (result.getErrorMessage());

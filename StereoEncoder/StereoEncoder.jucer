@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<JUCERPROJECT id="cBXtXS" name="StereoEncoder" projectType="audioplug" version="1.4.0"
+<JUCERPROJECT id="cBXtXS" name="StereoEncoder" projectType="audioplug" version="1.4.1"
               bundleIdentifier="at.iem.StereoEncoder" includeBinaryInAppConfig="1"
               buildVST="1" buildVST3="0" buildAU="0" buildAUv3="0" buildRTAS="0"
               buildAAX="0" pluginName="StereoEncoder" pluginDesc="StereoEncoder"
@@ -8,7 +8,7 @@
               pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
               pluginAUExportPrefix="StereoEncoderAU" aaxIdentifier="at.iem.StereoEncoder"
-              pluginAAXCategory="2" jucerVersion="5.4.5" companyName="IEM"
+              pluginAAXCategory="2" jucerVersion="5.4.7" companyName="IEM"
               companyWebsite="iem.at" displaySplashScreen="0" reportAppUsage="0"
               splashScreenColour="Dark" buildStandalone="1" enableIAA="0" cppLanguageStandard="14"
               companyCopyright="IEM - Daniel Rudrich" headerPath="../../../resources/"

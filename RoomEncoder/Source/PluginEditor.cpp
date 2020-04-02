@@ -314,7 +314,7 @@ listenerElement(*valueTreeState.getParameter("listenerX"), valueTreeState.getPar
     fv.addCoefficients(processor.highShelfCoefficients, Colours::orangered, &slHighShelfFreq, &slHighShelfGain);
 
     addAndMakeVisible(&rv);
-    rv.setDataPointers(p.allGains, p.mRadius, p.numRefl);
+    rv.setDataPointers (p.allGains, p.mRadius, p.numRefl);
 
     Vector3D<float> dims(slRoomX.getValue(), slRoomY.getValue(), slRoomZ.getValue());
     float scale = jmin(xyPlane.setDimensions(dims), zyPlane.setDimensions(dims));

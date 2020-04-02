@@ -3,6 +3,19 @@ For a list of all changes and bugfixes see the git log.
 
 Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They might lead to an unexpected behaviour and might not be compatible with your previous projects without making some adaptions. See the [Breaking changes article](https://plugins.iem.at/docs/breakingchanges/) for more information.
 
+## v1.11.1
+- general changes
+    - standalones: prevents crashes when there's no audio input device
+    - smaller bug fixes
+- plug-in specific changes
+    - **AllRA**Decoder
+        - removed the 64 channel number limit for loudspeakers layouts with more than 64 loudspeakers
+    - **Simple**Decoder
+        - decoder configuration is now stored within the plug-in state when saving a session, so no need to provide the decoder file when sharing projects
+        - added decoder presets for standard layouts and IEM studios
+    -**Energy**Visualizer
+        - sending RMS values with OSCAddressPattern "/RMS"
+
 ## v1.11.0
 - general changes
     - new standalone versions with JACK support on linux and macOS

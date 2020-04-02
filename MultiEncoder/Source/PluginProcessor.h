@@ -84,23 +84,23 @@ public:
     float xyzGrab[3];
     float xyz[maxNumberOfInputs][3];
 
-    float *azimuth[maxNumberOfInputs];
-    float *elevation[maxNumberOfInputs];
-    float *gain[maxNumberOfInputs];
-    float *mute[maxNumberOfInputs];
-    float *solo[maxNumberOfInputs];
+    std::atomic<float>* azimuth[maxNumberOfInputs];
+    std::atomic<float>* elevation[maxNumberOfInputs];
+    std::atomic<float>* gain[maxNumberOfInputs];
+    std::atomic<float>* mute[maxNumberOfInputs];
+    std::atomic<float>* solo[maxNumberOfInputs];
 
     BigInteger muteMask;
     BigInteger soloMask;
 
-    float *masterAzimuth;
-    float *masterElevation;
-    float *masterRoll;
-    float *lockedToMaster;
+    std::atomic<float>* masterAzimuth;
+    std::atomic<float>* masterElevation;
+    std::atomic<float>* masterRoll;
+    std::atomic<float>* lockedToMaster;
 
-    float *inputSetting;
-    float *orderSetting;
-    float *useSN3D;
+    std::atomic<float>* inputSetting;
+    std::atomic<float>* orderSetting;
+    std::atomic<float>* useSN3D;
 
 
     bool yprInput;

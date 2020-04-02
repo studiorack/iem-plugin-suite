@@ -133,8 +133,7 @@ void SimpleDecoderAudioProcessor::setLastDir(File newLastDir)
 //==============================================================================
 int SimpleDecoderAudioProcessor::getNumPrograms()
 {
-    return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
-    // so this should be at least 1, even if you're not really implementing programs.
+    return 11;
 }
 
 int SimpleDecoderAudioProcessor::getCurrentProgram()
@@ -144,11 +143,89 @@ int SimpleDecoderAudioProcessor::getCurrentProgram()
 
 void SimpleDecoderAudioProcessor::setCurrentProgram (int index)
 {
+    String preset;
+    switch (index)
+    {
+        case 0:
+            return;
+        case 1:
+            preset = String (BinaryData::CUBE_json, BinaryData::CUBE_jsonSize);
+            break;
+
+        case 2:
+            preset = String (BinaryData::Produktionsstudio_json, BinaryData::Produktionsstudio_jsonSize);
+            break;
+
+        case 3:
+            preset = String (BinaryData::MSDecoder_json, BinaryData::MSDecoder_jsonSize);
+            break;
+
+        case 4:
+            preset = String (BinaryData::Quadraphonic_json, BinaryData::Quadraphonic_jsonSize);
+            break;
+
+        case 5:
+            preset = String (BinaryData::_5point1_json, BinaryData::_5point1_jsonSize);
+            break;
+
+        case 6:
+            preset = String (BinaryData::_7point1_json, BinaryData::_7point1_jsonSize);
+            break;
+
+        case 7:
+            preset = String (BinaryData::_5point1point4_json, BinaryData::_5point1point4_jsonSize);
+            break;
+
+        case 8:
+            preset = String (BinaryData::_7point1point4_json, BinaryData::_7point1point4_jsonSize);
+            break;
+
+        case 9:
+            preset = String (BinaryData::Cube_8ch_json, BinaryData::Cube_8ch_jsonSize);
+            break;
+
+        case 10:
+            preset = String (BinaryData::_22_2_NHK_json, BinaryData::_22_2_NHK_jsonSize);
+            break;
+
+        default:
+            preset = "";
+            break;
+    }
+
+    loadConfigFromString (preset);
 }
 
 const String SimpleDecoderAudioProcessor::getProgramName (int index)
 {
-    return {};
+    switch (index)
+    {
+        case 0:
+            return "---";
+        case 1:
+            return "IEM CUBE";
+        case 2:
+            return "IEM Produktionsstudio";
+        case 3:
+            return "Stereo";
+        case 4:
+            return "Quadraphonic";
+        case 5:
+            return "5.1";
+        case 6:
+            return "7.1";
+        case 7:
+            return "5.1.4";
+        case 8:
+            return "7.1.4";
+        case 9:
+            return "8ch Cube";
+        case 10:
+            return "22.2 NHK";
+
+        default:
+            return {};
+    }
 }
 
 void SimpleDecoderAudioProcessor::changeProgramName (int index, const String& newName)
@@ -236,6 +313,8 @@ void SimpleDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiB
             parameters.getParameter ("swChannel")->setValueNotifyingHost (parameters.getParameterRange ("swChannel").convertTo0to1 (decoder.getCurrentDecoder()->getSettings().subwooferChannel));
             parameters.getParameter ("swMode")->setValueNotifyingHost (parameters.getParameterRange ("swMode").convertTo0to1 (1)); //discrete
         }
+        else
+            parameters.getParameter ("swMode")->setValueNotifyingHost (parameters.getParameterRange ("swMode").convertTo0to1 (0)); // off
 
         // calculate mean omni-signal-gain
         Matrix<float>& decoderMatrix = retainedDecoder->getMatrix();
@@ -277,7 +356,7 @@ void SimpleDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiB
         ProcessContextReplacing<float> lowPassContext(lowPassAudioBlock);
         lowPass1->process(lowPassContext);
         lowPass2->process(lowPassContext);
-        swBuffer.applyGain(0, 0, swBuffer.getNumSamples(), Decibels::decibelsToGain(*lowPassGain));
+        swBuffer.applyGain(0, 0, swBuffer.getNumSamples(), Decibels::decibelsToGain (lowPassGain->load()));
 
         AudioBlock<float> highPassAudioBlock = AudioBlock<float>(buffer.getArrayOfWritePointers(), nChIn, buffer.getNumSamples());
         ProcessContextReplacing<float> highPassContext (highPassAudioBlock);
@@ -287,7 +366,7 @@ void SimpleDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiB
 
     // update current weights setting
     auto settings = retainedDecoder->getSettings();
-    settings.weights = ReferenceCountedDecoder::Weights (roundToInt (*weights));
+    settings.weights = ReferenceCountedDecoder::Weights (roundToInt (weights->load()));
     retainedDecoder->setSettings (settings);
 
     // ambisonic decoding
@@ -319,7 +398,7 @@ void SimpleDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiB
         }
     }
     // =================== Master Gain =========================================
-    auto overallGainInDecibels = *parameters.getRawParameterValue ("overallGain");
+    const float overallGainInDecibels = *parameters.getRawParameterValue ("overallGain");
     masterGain.setGainDecibels (overallGainInDecibels);
     AudioBlock<float> ab (buffer.getArrayOfWritePointers(), nChOut,  buffer.getNumSamples());
     ProcessContextReplacing<float> masterContext (ab);
@@ -342,7 +421,7 @@ void SimpleDecoderAudioProcessor::getStateInformation (MemoryBlock& destData)
 {
     auto state = parameters.copyState();
 
-    state.setProperty ("lastOpenedPresetFile", var (lastFile.getFullPathName()), nullptr);
+    state.setProperty ("configString", var (lastConfigString), nullptr);;
 
     auto oscConfig = state.getOrCreateChildWithName ("OSCConfig", nullptr);
     oscConfig.copyPropertiesFrom (oscParameterInterface.getConfig(), nullptr);
@@ -362,18 +441,36 @@ void SimpleDecoderAudioProcessor::setStateInformation (const void* data, int siz
     if (xmlState != nullptr)
         if (xmlState->hasTagName (parameters.state.getType()) || xmlState->hasTagName ("Decoder")) // compatibility for old "Decoder" state tagName
             parameters.state = ValueTree::fromXml (*xmlState);
+
+    auto* weightsParam = parameters.getParameter ("weights");
+    const auto savedWeights = weightsParam->getValue();
+    auto* swModeParam = parameters.getParameter ("swMode");
+    const auto savedSwMode = swModeParam->getValue();
+    auto* swChannelParam = parameters.getParameter ("swChannel");
+    const auto savedSwChannel = swChannelParam->getValue();
+
+
     if (parameters.state.hasProperty ("lastOpenedPresetFile"))
     {
         Value val = parameters.state.getPropertyAsValue ("lastOpenedPresetFile", nullptr);
         if (val.getValue().toString() != "")
         {
-            auto* weightsParam = parameters.getParameter ("weights");
-            const auto savedWeights = weightsParam->getValue();
             const File f (val.getValue().toString());
-            loadConfiguration(f);
+            loadConfiguration (f);
             weightsParam->setValueNotifyingHost (savedWeights);
         }
+        parameters.state.removeProperty ("lastOpenedPresetFile", nullptr);
     }
+    else if (parameters.state.hasProperty ("configString"))
+    {
+        var configString = parameters.state.getProperty ("configString");
+        if (configString.isString())
+            loadConfigFromString (configString);
+    }
+
+    weightsParam->setValueNotifyingHost (savedWeights);
+    swModeParam->setValueNotifyingHost (savedSwMode);
+    swChannelParam->setValueNotifyingHost (savedSwChannel);
 
     if (parameters.state.hasProperty ("OSCPort")) // legacy
     {
@@ -420,22 +517,57 @@ void SimpleDecoderAudioProcessor::loadConfiguration (const File& presetFile)
 {
     ReferenceCountedDecoder::Ptr tempDecoder = nullptr;
 
-    Result result = ConfigurationHelper::parseFileForDecoder (presetFile, &tempDecoder);
+    if (! presetFile.exists())
+    {
+        messageForEditor = "File '" + presetFile.getFullPathName() + "' does not exist!";
+        messageChanged = true;
+        return;
+    }
+
+    const String jsonString = presetFile.loadFileAsString();
+
+    loadConfigFromString (jsonString);
+}
+
+void SimpleDecoderAudioProcessor::loadConfigFromString (String configString)
+{
+    if (configString.isEmpty())
+        return;
+
+    lastConfigString = configString;
+
+    var parsedJson;
+    Result result = JSON::parse (configString, parsedJson);
+
+    if (result.failed())
+        return;
+
+    ReferenceCountedDecoder::Ptr tempDecoder = nullptr;
+
+    result = ConfigurationHelper::parseVarForDecoder (parsedJson, &tempDecoder);
     if (result.failed())
         messageForEditor = result.getErrorMessage();
 
     if (tempDecoder != nullptr)
     {
-        lastFile = presetFile;
         messageForEditor = "";
 
         tempDecoder->removeAppliedWeights();
         parameters.getParameterAsValue ("weights").setValue (static_cast<int> (tempDecoder->getSettings().weights));
     }
 
-
     decoder.setDecoder (tempDecoder);
     decoderConfig = tempDecoder;
+
+    if (decoderConfig->getSettings().subwooferChannel != -1)
+    {
+        parameters.getParameter ("swMode")->setValueNotifyingHost (parameters.getParameterRange ("swMode").convertTo0to1 (1));
+        parameters.getParameter ("swChannel")->setValueNotifyingHost (parameters.getParameterRange ("swChannel").convertTo0to1 (decoderConfig->getSettings().subwooferChannel));
+    }
+    else
+        parameters.getParameter ("swMode")->setValueNotifyingHost (parameters.getParameterRange ("swMode").convertTo0to1 (0));
+
+
 
     updateDecoderInfo = true;
     messageChanged = true;

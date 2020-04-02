@@ -55,10 +55,16 @@ rePro = hap(azi,ele);
 xre = rePro(:,1);
 yre = rePro(:,2);
 
-scatter(xre, yre);
+
+
+
 
 tri = delaunay(xre,yre)
-triplot(tri,xre,yre);
+triplot (tri, xre, yre, 'Color', [0.2 0.2 0.2]);
+
+scatter (xre, yre, 300,  '.r');
+xlim ([-1 1])
+
 
 [x,y,z] = sph2cart(azi,ele,1);
 

@@ -309,7 +309,7 @@ void DistanceCompensatorAudioProcessor::updateDelays()
 
     tempValues.clearQuick();
 
-    const int selected = roundToInt(*inputChannelsSetting);
+    const int selected = roundToInt (inputChannelsSetting->load());
     int nCh;
     if (selected > 0)
         nCh = selected;
@@ -341,7 +341,7 @@ void DistanceCompensatorAudioProcessor::updateGains()
     tempValues.clearQuick();
 
 
-    const int selected = roundToInt(*inputChannelsSetting);
+    const int selected = roundToInt (inputChannelsSetting->load());
     int nCh;
     if (selected > 0)
         nCh = selected;

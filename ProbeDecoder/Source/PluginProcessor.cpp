@@ -90,7 +90,7 @@ void ProbeDecoderAudioProcessor::processBlock(AudioSampleBuffer &buffer, MidiBuf
     const int ambisonicOrder = input.getOrder();
     const int nChannels = jmin(buffer.getNumChannels(), input.getNumberOfChannels());
 
-    Vector3D<float> xyz = Conversions<float>::sphericalToCartesian(degreesToRadians(*azimuth), degreesToRadians(*elevation));
+    Vector3D<float> xyz = Conversions<float>::sphericalToCartesian (degreesToRadians (azimuth->load()), degreesToRadians (elevation->load()));
 
     float sh[64];
 

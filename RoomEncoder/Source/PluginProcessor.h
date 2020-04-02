@@ -39,11 +39,11 @@
 #endif
 
 #if JUCE_USE_SIMD
-# define IIRfloat juce::dsp::SIMDRegister<float>
-# define IIRfloat_elements() IIRfloat::size()
+    using IIRfloat = juce::dsp::SIMDRegister<float>;
+    static constexpr int IIRfloat_elements = juce::dsp::SIMDRegister<float>::size();
 #else /* !JUCE_USE_SIMD */
-# define IIRfloat float
-# define IIRfloat_elements() 1
+    using IIRfloat = float;
+    static constexpr int IIRfloat_elements = 1;
 #endif /* JUCE_USE_SIMD */
 
 #define ProcessorClass RoomEncoderAudioProcessor
@@ -147,7 +147,7 @@ public:
     void updateFilterCoefficients (double sampleRate);
     void calculateImageSourcePositions (const float t, const float b, const float h);
 
-    float* numRefl;
+    std::atomic<float>* numRefl;
     float mRadius[nImgSrc];
 
     void updateBuffers() override;
@@ -164,45 +164,45 @@ private:
     double theta;
 
     // Parameters
-    float *directivityOrderSetting;
-    float *inputIsSN3D;
-    float *orderSetting;
-    float *useSN3D;
+    std::atomic<float>* directivityOrderSetting;
+    std::atomic<float>* inputIsSN3D;
+    std::atomic<float>* orderSetting;
+    std::atomic<float>* useSN3D;
 
-    float* roomX;
-    float* roomY;
-    float* roomZ;
+    std::atomic<float>* roomX;
+    std::atomic<float>* roomY;
+    std::atomic<float>* roomZ;
 
-    float* sourceX;
-    float* sourceY;
-    float* sourceZ;
+    std::atomic<float>* sourceX;
+    std::atomic<float>* sourceY;
+    std::atomic<float>* sourceZ;
 
-    float* listenerX;
-    float* listenerY;
-    float* listenerZ;
+    std::atomic<float>* listenerX;
+    std::atomic<float>* listenerY;
+    std::atomic<float>* listenerZ;
 
-    float* reflCoeff;
+    std::atomic<float>* reflCoeff;
 
-    float* lowShelfFreq;
-    float* lowShelfGain;
-    float* highShelfFreq;
-    float* highShelfGain;
+    std::atomic<float>* lowShelfFreq;
+    std::atomic<float>* lowShelfGain;
+    std::atomic<float>* highShelfFreq;
+    std::atomic<float>* highShelfGain;
 
-    float* syncChannel;
-    float* syncRoomSize;
-    float* syncReflection;
-    float* syncListener;
+    std::atomic<float>* syncChannel;
+    std::atomic<float>* syncRoomSize;
+    std::atomic<float>* syncReflection;
+    std::atomic<float>* syncListener;
 
-    float* renderDirectPath;
-    float* directPathZeroDelay;
-    float* directPathUnityGain;
+    std::atomic<float>* renderDirectPath;
+    std::atomic<float>* directPathZeroDelay;
+    std::atomic<float>* directPathUnityGain;
 
-    float* wallAttenuationFront;
-    float* wallAttenuationBack;
-    float* wallAttenuationLeft;
-    float* wallAttenuationRight;
-    float* wallAttenuationCeiling;
-    float* wallAttenuationFloor;
+    std::atomic<float>* wallAttenuationFront;
+    std::atomic<float>* wallAttenuationBack;
+    std::atomic<float>* wallAttenuationLeft;
+    std::atomic<float>* wallAttenuationRight;
+    std::atomic<float>* wallAttenuationCeiling;
+    std::atomic<float>* wallAttenuationFloor;
 
     int _numRefl;
 

@@ -579,7 +579,7 @@ Result AllRADecoderAudioProcessor::checkLayout()
     const int result = NewtonApple_hull_3D(points, triangles);
     if (result != 1)
     {
-        return Result::fail("ERROR: An error occurred! The layout might be broken somehow.");
+        return Result::fail("ERROR: An error occurred! The layout might be broken somehow. Try adding additional loudspeakers (e.g. imaginary ones) or make small changes to the coordinates.");
     }
 
     // normalise normal vectors
@@ -643,8 +643,8 @@ Result AllRADecoderAudioProcessor::checkLayout()
         if (! points[i].isImaginary)
         {
             const int channel = points[i].channel;
-            if (channel < 1 || channel > 64)
-                return Result::fail("ERROR 8: A channel number is smaller than 1 or greater than 64.");
+            if (channel < 1)
+                return Result::fail("ERROR 8: A channel number is smaller than 1.");
 
             if (routing.contains(channel))
                 return Result::fail("ERROR 9: Channel number duplicates: a channel number may occur only once.");
@@ -662,8 +662,8 @@ Result AllRADecoderAudioProcessor::calculateDecoder()
     if (! isLayoutReady)
         return Result::fail("Layout not ready!");
 
-    const int N = roundToInt(*decoderOrder) + 1;
-    const auto ambisonicWeights = ReferenceCountedDecoder::Weights (roundToInt (*weights));
+    const int N = roundToInt (decoderOrder->load()) + 1;
+    const auto ambisonicWeights = ReferenceCountedDecoder::Weights (roundToInt (weights->load()));
     const int nCoeffs = square(N+1);
     const int nLsps = (int) points.size();
     const int nRealLsps = nLsps - imaginaryFlags.countNumberOfSetBits();

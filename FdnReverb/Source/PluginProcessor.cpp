@@ -142,11 +142,11 @@ void FdnReverbAudioProcessor::updateFilterParameters()
 
     lowShelf.frequency = *lowCutoff;
     lowShelf.q = *lowQ;
-    lowShelf.linearGain = Decibels::decibelsToGain(*lowGain);
+    lowShelf.linearGain = Decibels::decibelsToGain (lowGain->load());
 
     highShelf.frequency = *highCutoff;
     highShelf.q = *highQ;
-    highShelf.linearGain = Decibels::decibelsToGain(*highGain);
+    highShelf.linearGain = Decibels::decibelsToGain (highGain->load());
 
     fdn.setFilterParameter (lowShelf, highShelf);
 	fdnFade.setFilterParameter(lowShelf, highShelf);

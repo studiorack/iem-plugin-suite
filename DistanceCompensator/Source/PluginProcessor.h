@@ -109,18 +109,18 @@ private:
     Atomic<bool> updatingParameters = false;
 
     // list of used audio parameters
-    float *inputChannelsSetting;
-    float *speedOfSound;
-    float *distanceExponent;
-    float *gainNormalization;
-    float *referenceX;
-    float *referenceY;
-    float *referenceZ;
-    float *enableGains;
-    float *enableDelays;
+    std::atomic<float>* inputChannelsSetting;
+    std::atomic<float>* speedOfSound;
+    std::atomic<float>* distanceExponent;
+    std::atomic<float>* gainNormalization;
+    std::atomic<float>* referenceX;
+    std::atomic<float>* referenceY;
+    std::atomic<float>* referenceZ;
+    std::atomic<float>* enableGains;
+    std::atomic<float>* enableDelays;
 
-    float *enableCompensation[64];
-    float *distance[64];
+    std::atomic<float>* enableCompensation[64];
+    std::atomic<float>* distance[64];
 
     // ===== last directory loaded from
     File lastDir;

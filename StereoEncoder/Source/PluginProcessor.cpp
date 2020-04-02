@@ -51,6 +51,7 @@ updatedPositionData (true)
     parameters.addParameterListener("roll", this);
     parameters.addParameterListener("width", this);
     parameters.addParameterListener("orderSetting", this);
+    parameters.addParameterListener("useSN3D", this);
 
     orderSetting = parameters.getRawParameterValue("orderSetting");
     useSN3D = parameters.getRawParameterValue("useSN3D");
@@ -173,13 +174,14 @@ void StereoEncoderAudioProcessor::updateEuler()
     processorUpdatingParams = false;
 }
 
-void StereoEncoderAudioProcessor::processBlock(AudioSampleBuffer &buffer, MidiBuffer &midiMessages) {
+void StereoEncoderAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer &midiMessages)
+{
     checkInputAndOutput(this, 2, *orderSetting);
 
     const int L = buffer.getNumSamples();
     const int totalNumInputChannels = getTotalNumInputChannels() < 2 ? 1 : 2;
 
-    const int ambisonicOrder = *orderSetting < 0.5f ? output.getOrder() : roundToInt (*orderSetting) - 1;
+    const int ambisonicOrder = *orderSetting < 0.5f ? output.getOrder() : roundToInt (orderSetting->load()) - 1;
     const int nChOut = jmin (buffer.getNumChannels(), square(ambisonicOrder + 1));
 
     for (int i = 0; i < totalNumInputChannels; ++i)
@@ -329,6 +331,10 @@ void StereoEncoderAudioProcessor::parameterChanged (const String &parameterID, f
     if (parameterID == "orderSetting")
     {
         userChangedIOSettings = true;
+        positionHasChanged = true;
+    }
+    else if (parameterID == "useSN3D")
+    {
         positionHasChanged = true;
     }
 }

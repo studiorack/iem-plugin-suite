@@ -127,21 +127,21 @@ private:
     Atomic<bool> usingYpr = true;
 
     // list of used audio parameters
-    float* orderSetting;
-    float* useSN3D;
+    std::atomic<float>* orderSetting;
+    std::atomic<float>* useSN3D;
 
-    float* yaw;
-    float* pitch;
-    float* roll;
-    float* qw;
-    float* qx;
-    float* qy;
-    float* qz;
-    float* invertYaw;
-    float* invertPitch;
-    float* invertRoll;
-    float* invertQuaternion;
-    float* rotationSequence;
+    std::atomic<float>* yaw;
+    std::atomic<float>* pitch;
+    std::atomic<float>* roll;
+    std::atomic<float>* qw;
+    std::atomic<float>* qx;
+    std::atomic<float>* qy;
+    std::atomic<float>* qz;
+    std::atomic<float>* invertYaw;
+    std::atomic<float>* invertPitch;
+    std::atomic<float>* invertRoll;
+    std::atomic<float>* invertQuaternion;
+    std::atomic<float>* rotationSequence;
 
     Atomic<bool> updatingParams {false};
     Atomic<bool> rotationParamsHaveChanged {true};

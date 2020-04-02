@@ -393,20 +393,16 @@ public:
             slbg.addRoundedRectangle (r,sliderRadius/2.0,sliderRadius/2.0);
 
             if (isTwoValue)
-            {
-                clbar.addRoundedRectangle(Rectangle<float>(Point<float>(minSliderPos, iy), Point<float>(maxSliderPos, iy+sliderRadius)),sliderRadius/2.0,sliderRadius/2.0);
-            }
+                clbar.addRoundedRectangle (Rectangle<float> (juce::Point<float> (minSliderPos, iy), Point<float> (maxSliderPos, iy + sliderRadius)), sliderRadius / 2.0, sliderRadius / 2.0);
             else
-            {
-                clbar.addRoundedRectangle(Rectangle<float>(Point<float>(x+width*zeroPos, iy), Point<float>(sliderPos, iy+sliderRadius)),sliderRadius/2.0,sliderRadius/2.0);
-            }
+                clbar.addRoundedRectangle (Rectangle<float> (juce::Point<float> (x + width * zeroPos, iy), Point<float> (sliderPos, iy + sliderRadius)), sliderRadius / 2.0, sliderRadius / 2.0);
         }
         else
         {
             const float ix = x + width * 0.5f - sliderRadius * 0.5f;
             Rectangle<float> r (ix, y - sliderRadius * 0.5f, sliderRadius, height + sliderRadius);
             slbg.addRoundedRectangle (r,sliderRadius/2.0,sliderRadius/2.0);
-            clbar.addRoundedRectangle(Rectangle<float>(Point<float>(ix+1.0f,y+ height * (1.0f-zeroPos)), Point<float>(ix-1.0f+sliderRadius,sliderPos)),sliderRadius/2.0,sliderRadius/2.0);
+            clbar.addRoundedRectangle (Rectangle<float> (juce::Point<float> (ix + 1.0f, y + height * (1.0f - zeroPos)), Point<float> (ix - 1.0f + sliderRadius, sliderPos)), sliderRadius / 2.0, sliderRadius / 2.0);
         }
 
 
