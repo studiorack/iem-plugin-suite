@@ -128,15 +128,12 @@ void BinauralDecoderAudioProcessor::prepareToPlay (double sampleRate, int sample
 {
     checkInputAndOutput(this, *inputOrderSetting, 0, true);
 
-    stereoTemp.setSize(2, samplesPerBlock);
-
     ProcessSpec convSpec;
     convSpec.sampleRate = sampleRate;
     convSpec.maximumBlockSize = samplesPerBlock;
     convSpec.numChannels = 2; // convolve two channels (which actually point two one and the same input channel)
 
     EQ.prepare(convSpec);
-
 }
 
 void BinauralDecoderAudioProcessor::releaseResources()
@@ -165,8 +162,6 @@ void BinauralDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, Mid
     if (*useSN3D >= 0.5f)
         for (int ch = 1; ch < nCh; ++ch)
             buffer.applyGain(ch, 0, buffer.getNumSamples(), sn3d2n3d[ch]);
-
-    AudioBlock<float> tempBlock (stereoTemp);
 
     FloatVectorOperations::clear((float*) accumMid, fftLength + 2);
     FloatVectorOperations::clear((float*) accumSide, fftLength + 2);
@@ -342,8 +337,12 @@ void BinauralDecoderAudioProcessor::updateBuffers()
         order = tmpOrder;
     }
 
+    //get number of mid- and side-channels
+    nSideCh = order * (order + 1) / 2;
+    nMidCh = square(order + 1) - nSideCh;   //nMidCh = nCh - nSideCh; //nCh should be equalt to (order+1)^2
+
     if (order < 1)
-        order = 1;
+        return;
 
     AudioBuffer<float> resampledIRs;
     bool useResampled = false;
@@ -431,10 +430,6 @@ void BinauralDecoderAudioProcessor::updateBuffers()
         fftwf_execute(fftForward);
         FloatVectorOperations::copy(irsFrequencyDomain.getWritePointer(i), (float*)out, 2 * (fftLength / 2 + 1));
     }
-
-    //get number of mid- and side-channels
-    nSideCh = order * (order + 1) / 2;
-    nMidCh = square(order + 1) - nSideCh;   //nMidCh = nCh - nSideCh; //nCh should be equalt to (order+1)^2
 }
 
 

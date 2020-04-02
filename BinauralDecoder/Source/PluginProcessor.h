@@ -94,7 +94,7 @@ private:
     fftwf_plan fftForward, fftBackwardMid, fftBackwardSide;
     bool fftwWasPlanned = false;
 
-    AudioBuffer<float> stereoSum, stereoTemp;
+    AudioBuffer<float> stereoSum;
     AudioBuffer<float> overlapBuffer;
     AudioBuffer<float> irs[7];
 
