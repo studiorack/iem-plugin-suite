@@ -907,7 +907,7 @@ private:
             }
 
         private:
-            bool muted;
+            bool muted = false;
             SimpleLabel lbMuted;
             std::unique_ptr<SimpleLabel> jackDeviceName;
             TextButton settingsButton;
