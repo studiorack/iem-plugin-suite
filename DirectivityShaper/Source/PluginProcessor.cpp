@@ -446,7 +446,7 @@ std::vector<std::unique_ptr<RangedAudioParameter>> DirectivityShaperAudioProcess
                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
                                     [](float value) {return (value >= 0.5f) ? "locked" : "not locked";}, nullptr));
 
-    params.push_back (OSCParameterInterface::createParameterTheOldWay ("normalization", "Directivity Normalization", "",
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("normalization", "Beam Normalization", "",
                                     NormalisableRange<float> (0.0f, 2.0f, 1.0f), 1.0,
                                     [](float value) {
                                         if (value >= 0.5f && value < 1.5f) return "on axis";
