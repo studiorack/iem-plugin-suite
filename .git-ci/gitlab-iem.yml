@@ -37,7 +37,7 @@ variables:
 
 .build:linux: &build_linux
   stage: build
-  image: ubuntu:disco
+  image: ubuntu:focal
   tags:
     - docker
   variables:
@@ -45,10 +45,10 @@ variables:
   script:
 # install dependencies
     - apt-get update -y
-    - apt-get dist-upgrade -y
-    - apt-get install -y --no-install-recommends xvfb xauth curl unzip build-essential ca-certificates
-    - apt-get install -y --no-install-recommends libwebkit2gtk-4.0-dev libasound2-dev libfreetype6-dev libcurl4-gnutls-dev libgl1-mesa-dev libx11-dev libxext-dev libxinerama-dev libxrandr-dev libgtk-3-dev
-    - apt-get install -y --no-install-recommends libjack-dev libfftw3-dev
+    - DEBIAN_FRONTEND=noninteractive apt-get dist-upgrade -y
+    - DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends xvfb xauth curl unzip build-essential ca-certificates
+    - DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends libwebkit2gtk-4.0-dev libasound2-dev libfreetype6-dev libcurl4-gnutls-dev libgl1-mesa-dev libx11-dev libxext-dev libxinerama-dev libxrandr-dev libgtk-3-dev
+    - DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends libjack-dev libfftw3-dev
     - .git-ci/getjuce.sh "${JUCEVERSION}" linux ~/JUCE
     - xvfb-run -a ~/JUCE/Projucer --set-global-search-path linux defaultJuceModulePath ~/JUCE/modules/
 # run the actual build
