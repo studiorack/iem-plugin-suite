@@ -21,13 +21,13 @@
  */
 
 #pragma once
-using namespace dsp;
-class ReferenceCountedMatrix : public ReferenceCountedObject
+
+class ReferenceCountedMatrix : public juce::ReferenceCountedObject
 {
 public:
-    typedef ReferenceCountedObjectPtr<ReferenceCountedMatrix> Ptr;
+    typedef juce::ReferenceCountedObjectPtr<ReferenceCountedMatrix> Ptr;
 
-    ReferenceCountedMatrix (const String& nameToUse, const String& descriptionToUse, int rows, int columns)
+    ReferenceCountedMatrix (const juce::String& nameToUse, const juce::String& descriptionToUse, int rows, int columns)
     :   name (nameToUse), description (descriptionToUse), matrix (rows, columns)
     {
 
@@ -42,26 +42,26 @@ public:
         DBG (getDeconstructorMessage());
     }
 
-    virtual String getConstructorMessage()
+    virtual juce::String getConstructorMessage() const
     {
-        return "Matrix named '" + name + "' constructed. Size: " + String(matrix.getNumRows()) + "x" + String(matrix.getNumColumns());
+        return "Matrix named '" + name + "' constructed. Size: " + juce::String (matrix.getNumRows()) + "x" + juce::String (matrix.getNumColumns());
     }
 
-    virtual String getDeconstructorMessage()
+    virtual juce::String getDeconstructorMessage() const
     {
         return "Matrix named '" + name + "' destroyed.";
     }
 
-    Matrix<float>& getMatrix()
+    juce::dsp::Matrix<float>& getMatrix()
     {
         return matrix;
     }
-    const String getName()
+    juce::String getName() const
     {
         return name;
     }
 
-    const String getDescription()
+    juce::String getDescription() const
     {
         return description;
     }
@@ -83,16 +83,16 @@ public:
         return (int) matrix.getNumColumns();
     }
 
-    Array<int>& getRoutingArrayReference()
+    juce::Array<int>& getRoutingArrayReference()
     {
         return routingArray;
     }
 
 
 protected:
-    String name;
-    String description;
-    Matrix<float> matrix;
-    Array<int> routingArray;
+    juce::String name;
+    juce::String description;
+    juce::dsp::Matrix<float> matrix;
+    juce::Array<int> routingArray;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ReferenceCountedMatrix)
 };

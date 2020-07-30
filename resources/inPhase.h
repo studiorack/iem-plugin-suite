@@ -282,26 +282,26 @@ const float inPhaseCorrectionEnergy[8] =
 inline void multiplyInPhase(const int N, float *data) {
     switch (N) {
         case 0: break;
-        case 1: FloatVectorOperations::multiply (data, inPhase1, 4); break;
-        case 2: FloatVectorOperations::multiply (data, inPhase2, 9); break;
-        case 3: FloatVectorOperations::multiply (data, inPhase3, 16); break;
-        case 4: FloatVectorOperations::multiply (data, inPhase4, 25); break;
-        case 5: FloatVectorOperations::multiply (data, inPhase5, 36); break;
-        case 6: FloatVectorOperations::multiply (data, inPhase6, 47); break;
-        case 7: FloatVectorOperations::multiply (data, inPhase7, 64); break;
+        case 1: juce::FloatVectorOperations::multiply (data, inPhase1, 4); break;
+        case 2: juce::FloatVectorOperations::multiply (data, inPhase2, 9); break;
+        case 3: juce::FloatVectorOperations::multiply (data, inPhase3, 16); break;
+        case 4: juce::FloatVectorOperations::multiply (data, inPhase4, 25); break;
+        case 5: juce::FloatVectorOperations::multiply (data, inPhase5, 36); break;
+        case 6: juce::FloatVectorOperations::multiply (data, inPhase6, 47); break;
+        case 7: juce::FloatVectorOperations::multiply (data, inPhase7, 64); break;
     }
 }
 
 inline void copyInPhase(const int N, float *data) {
     switch (N) {
         case 0: *data = 1.0f; break;
-        case 1: FloatVectorOperations::copy (data, inPhase1, 4); break;
-        case 2: FloatVectorOperations::copy (data, inPhase2, 9); break;
-        case 3: FloatVectorOperations::copy (data, inPhase3, 16); break;
-        case 4: FloatVectorOperations::copy (data, inPhase4, 25); break;
-        case 5: FloatVectorOperations::copy (data, inPhase5, 36); break;
-        case 6: FloatVectorOperations::copy (data, inPhase6, 47); break;
-        case 7: FloatVectorOperations::copy (data, inPhase7, 64); break;
+        case 1: juce::FloatVectorOperations::copy (data, inPhase1, 4); break;
+        case 2: juce::FloatVectorOperations::copy (data, inPhase2, 9); break;
+        case 3: juce::FloatVectorOperations::copy (data, inPhase3, 16); break;
+        case 4: juce::FloatVectorOperations::copy (data, inPhase4, 25); break;
+        case 5: juce::FloatVectorOperations::copy (data, inPhase5, 36); break;
+        case 6: juce::FloatVectorOperations::copy (data, inPhase6, 47); break;
+        case 7: juce::FloatVectorOperations::copy (data, inPhase7, 64); break;
     }
 }
 

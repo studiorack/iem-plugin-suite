@@ -34,19 +34,19 @@ OSCDialogWindow::OSCDialogWindow (OSCParameterInterface& oscInterface, OSCReceiv
     receiverGroup.setText ("OSC Receiver");
 
     addAndMakeVisible (slRecPort);
-    slRecPort.setText ("Listen to port", false, Justification::centred);
+    slRecPort.setText ("Listen to port", false, juce::Justification::centred);
 
 
     addAndMakeVisible (lbRPort);
     const int receiverPort = receiver.getPortNumber();
-    lbRPort.setText (receiverPort == -1 ? "none" : String (receiverPort), NotificationType::dontSendNotification);
+    lbRPort.setText (receiverPort == -1 ? "none" : juce::String (receiverPort), juce::NotificationType::dontSendNotification);
     lbRPort.setEditable (true);
-    lbRPort.setJustificationType (Justification::centred);
+    lbRPort.setJustificationType (juce::Justification::centred);
     lbRPort.addListener (this);
 
     addAndMakeVisible (tbReceiverOpen);
     tbReceiverOpen.setButtonText (isReceiverConnected ? "CLOSE" : "OPEN");
-    tbReceiverOpen.setColour(TextButton::buttonColourId, isReceiverConnected ? Colours::orangered : Colours::limegreen);
+    tbReceiverOpen.setColour (juce::TextButton::buttonColourId, isReceiverConnected ? juce::Colours::orangered : juce::Colours::limegreen);
     tbReceiverOpen.onClick =  [this] () { checkPortAndConnectReceiver(); };
 
 
@@ -59,51 +59,51 @@ OSCDialogWindow::OSCDialogWindow (OSCParameterInterface& oscInterface, OSCReceiv
 
     addAndMakeVisible (lbSPort);
     const int senderPort = sender.getPortNumber();
-    lbSPort.setText (senderPort == -1 ? "none" : String (senderPort), NotificationType::dontSendNotification);
+    lbSPort.setText (senderPort == -1 ? "none" : juce::String (senderPort), juce::NotificationType::dontSendNotification);
     lbSPort.setEditable (true);
-    lbSPort.setJustificationType (Justification::centred);
+    lbSPort.setJustificationType (juce::Justification::centred);
     lbSPort.addListener (this);
 
     addAndMakeVisible (lbSHostname);
     const auto senderHostName = sender.getHostName();
-    lbSHostname.setText (senderHostName, NotificationType::dontSendNotification);
+    lbSHostname.setText (senderHostName, juce::NotificationType::dontSendNotification);
     lbSHostname.setEditable (true);
-    lbSHostname.setJustificationType (Justification::centred);
+    lbSHostname.setJustificationType (juce::Justification::centred);
     lbSHostname.addListener (this);
 
     addAndMakeVisible (lbSOSCAddress);
     const auto senderOSCAddress = interface.getOSCAddress();
-    lbSOSCAddress.setText (senderOSCAddress, NotificationType::dontSendNotification);
+    lbSOSCAddress.setText (senderOSCAddress, juce::NotificationType::dontSendNotification);
     lbSOSCAddress.setEditable (true);
-    lbSOSCAddress.setJustificationType (Justification::centred);
+    lbSOSCAddress.setJustificationType (juce::Justification::centred);
     lbSOSCAddress.onTextChange = [this] () { updateOSCAddress(); };
 
     addAndMakeVisible (tbSenderOpen);
     tbSenderOpen.setButtonText (isSenderConnected ? "DISCONNECT" : "CONNECT");
-    tbSenderOpen.setColour (TextButton::buttonColourId, isSenderConnected ? Colours::orangered : Colours::limegreen);
+    tbSenderOpen.setColour (juce::TextButton::buttonColourId, isSenderConnected ? juce::Colours::orangered : juce::Colours::limegreen);
     tbSenderOpen.onClick =  [this] () { checkPortAndConnectSender(); };
 
 
     addAndMakeVisible (slSendIP);
-    slSendIP.setText ("IP", false, Justification::centred);
+    slSendIP.setText ("IP", false, juce::Justification::centred);
 
     addAndMakeVisible (slSendPort);
-    slSendPort.setText ("Port", false, Justification::centred);
+    slSendPort.setText ("Port", false, juce::Justification::centred);
 
     addAndMakeVisible (slSendName);
-    slSendName.setText ("OSC Addr.", false, Justification::centred);
+    slSendName.setText ("OSC Addr.", false, juce::Justification::centred);
 
     addAndMakeVisible (tbFlush);
     tbFlush.setButtonText ("Flush Params");
-    tbFlush.setColour (TextButton::buttonColourId, Colours::cornflowerblue);
+    tbFlush.setColour (juce::TextButton::buttonColourId, juce::Colours::cornflowerblue);
     tbFlush.onClick =  [this] () { interface.sendParameterChanges (true); };
 
     addAndMakeVisible (intervalSlider);
     intervalSlider.setRange (1, 1000, 1);
     intervalSlider.setValue (interface.getInterval());
-    intervalSlider.setSliderStyle (Slider::RotaryVerticalDrag);
-    intervalSlider.setColour (Slider::rotarySliderOutlineColourId, Colours::cornflowerblue);
-    intervalSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 60, 14);
+    intervalSlider.setSliderStyle (juce::Slider::RotaryVerticalDrag);
+    intervalSlider.setColour (juce::Slider::rotarySliderOutlineColourId, juce::Colours::cornflowerblue);
+    intervalSlider.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 60, 14);
     intervalSlider.setTextValueSuffix (" ms");
     intervalSlider.onValueChange = [&] () { interface.setInterval (intervalSlider.getValue()); };
 
@@ -120,7 +120,7 @@ void OSCDialogWindow::timerCallback()
     {
         isReceiverConnected = shouldReceiverBeConnected;
         tbReceiverOpen.setButtonText (isReceiverConnected ? "CLOSE" : "OPEN");
-        tbReceiverOpen.setColour (TextButton::buttonColourId, isReceiverConnected ? Colours::orangered : Colours::limegreen);
+        tbReceiverOpen.setColour (juce::TextButton::buttonColourId, isReceiverConnected ? juce::Colours::orangered : juce::Colours::limegreen);
         repaint();
     }
 
@@ -129,7 +129,7 @@ void OSCDialogWindow::timerCallback()
     {
         isSenderConnected = shouldSenderBeConnected;
         tbSenderOpen.setButtonText (isSenderConnected ? "DISCONNECT" : "CONNECT");
-        tbSenderOpen.setColour (TextButton::buttonColourId, isSenderConnected ? Colours::orangered : Colours::limegreen);
+        tbSenderOpen.setColour (juce::TextButton::buttonColourId, isSenderConnected ? juce::Colours::orangered : juce::Colours::limegreen);
         repaint();
     }
 }
@@ -138,10 +138,10 @@ void OSCDialogWindow::updateOSCAddress()
 {
     interface.setOSCAddress (lbSOSCAddress.getText());
 
-    lbSOSCAddress.setText (interface.getOSCAddress(), NotificationType::dontSendNotification);
+    lbSOSCAddress.setText (interface.getOSCAddress(), juce::NotificationType::dontSendNotification);
 }
 
-void OSCDialogWindow::labelTextChanged (Label *labelThatHasChanged)
+void OSCDialogWindow::labelTextChanged (juce::Label *labelThatHasChanged)
 {
     if (labelThatHasChanged == &lbRPort)
     {
@@ -180,7 +180,7 @@ void OSCDialogWindow::checkPortAndConnectSender()
         if (lbSPort.getText() == "none" || lbSPort.getText() == "off")
         {
             sender.connect ("", -1);
-            lbSPort.setText ("none", NotificationType::dontSendNotification);
+            lbSPort.setText ("none", juce::NotificationType::dontSendNotification);
         }
 
 
@@ -193,9 +193,9 @@ void OSCDialogWindow::checkPortAndConnectSender()
         {
             if (! sender.connect (ip, v))
             {
-                AlertWindow alert ("Connection could not be established!", "Make sure the desired port is available and not already occupied by other clients. Also make sure the IP has a correct format!", AlertWindow::NoIcon, this);
+                juce::AlertWindow alert ("Connection could not be established!", "Make sure the desired port is available and not already occupied by other clients. Also make sure the IP has a correct format!", juce::AlertWindow::NoIcon, this);
                 alert.setLookAndFeel (&getLookAndFeel());
-                alert.addButton ("OK", 1, KeyPress (KeyPress::returnKey, 0, 0));
+                alert.addButton ("OK", 1, juce::KeyPress (juce::KeyPress::returnKey, 0, 0));
                 alert.runModalLoop();
             }
         }
@@ -213,7 +213,7 @@ void OSCDialogWindow::checkPortAndConnectReceiver()
         if (lbRPort.getText() == "none" || lbRPort.getText() == "off")
         {
             receiver.connect (-1);
-            lbRPort.setText ("none", NotificationType::dontSendNotification);
+            lbRPort.setText ("none", juce::NotificationType::dontSendNotification);
         }
 
         auto val = lbRPort.getTextValue();
@@ -223,9 +223,9 @@ void OSCDialogWindow::checkPortAndConnectReceiver()
         {
             if (! receiver.connect (v))
             {
-                AlertWindow alert ("Connection could not be established!", "Make sure the desired port is available and not already occupied by other clients.", AlertWindow::NoIcon, this);
+                juce::AlertWindow alert ("Connection could not be established!", "Make sure the desired port is available and not already occupied by other clients.", juce::AlertWindow::NoIcon, this);
                 alert.setLookAndFeel (&getLookAndFeel());
-                alert.addButton ("OK", 1, KeyPress (KeyPress::returnKey, 0, 0));
+                alert.addButton ("OK", 1, juce::KeyPress (juce::KeyPress::returnKey, 0, 0));
                 alert.runModalLoop();
             }
         }
@@ -302,7 +302,7 @@ void OSCStatus::timerCallback()
 {
     const int receiverPort = oscReceiver.getPortNumber();
     const int senderPort = oscSender.getPortNumber();
-    const String senderHostName = oscSender.getHostName();
+    const juce::String senderHostName = oscSender.getHostName();
 
     bool shouldReceiverBeConnected = oscReceiver.isConnected();
     bool shouldSenderBeConnected = oscSender.isConnected();
@@ -325,45 +325,45 @@ void OSCStatus::timerCallback()
 
 
 
-void OSCStatus::mouseMove (const MouseEvent &event)
+void OSCStatus::mouseMove (const juce::MouseEvent &event)
 {
     if (! mouseOver && bounds.contains (event.getPosition()))
     {
-        setMouseCursor (MouseCursor::PointingHandCursor);
+        setMouseCursor (juce::MouseCursor::PointingHandCursor);
         mouseOver = true;
         repaint();
     }
     else if (mouseOver && ! bounds.contains (event.getPosition()))
     {
-        setMouseCursor (MouseCursor::NormalCursor);
+        setMouseCursor (juce::MouseCursor::NormalCursor);
         mouseOver = false;
         repaint();
     }
 }
 
-void OSCStatus::mouseExit (const MouseEvent &event)
+void OSCStatus::mouseExit (const juce::MouseEvent &event)
 {
     ignoreUnused (event);
     mouseOver = false;
     repaint();
 }
 
-void OSCStatus::mouseUp (const MouseEvent &event)
+void OSCStatus::mouseUp (const juce::MouseEvent &event)
 {
     if (bounds.contains (event.getPosition()))
     {
         auto* dialogWindow = new OSCDialogWindow (oscParameterInterface, oscReceiver, oscSender);
         dialogWindow->setSize (211, 210);
 
-        CallOutBox& myBox = CallOutBox::launchAsynchronously (dialogWindow, getScreenBounds().removeFromLeft (bounds.getWidth()), nullptr);
+        juce::CallOutBox& myBox = juce::CallOutBox::launchAsynchronously (dialogWindow, getScreenBounds().removeFromLeft (bounds.getWidth()), nullptr);
         myBox.setLookAndFeel (&getLookAndFeel());
     }
 }
 
-void OSCStatus::paint (Graphics& g)
+void OSCStatus::paint (juce::Graphics& g)
 {
-    Colour receiveStatusColor = oscReceiver.getPortNumber() == -1 ? Colours::white.withAlpha(0.1f) : oscReceiver.isConnected() ? Colours::limegreen : Colours::red.withAlpha (0.5f);
-    Colour sendStatusColor = oscSender.getPortNumber() == -1 ? Colours::white.withAlpha (0.1f) : oscSender.isConnected() ? Colours::limegreen : Colours::red.withAlpha (0.5f);
+    juce::Colour receiveStatusColor = oscReceiver.getPortNumber() == -1 ? juce::Colours::white.withAlpha(0.1f) : oscReceiver.isConnected() ? juce::Colours::limegreen : juce::Colours::red.withAlpha (0.5f);
+    juce::Colour sendStatusColor = oscSender.getPortNumber() == -1 ? juce::Colours::white.withAlpha (0.1f) : oscSender.isConnected() ? juce::Colours::limegreen : juce::Colours::red.withAlpha (0.5f);
 
     const float alpha = mouseOver ? 1.0f : 0.5f;
 
@@ -389,22 +389,22 @@ void OSCStatus::paint (Graphics& g)
 
     area.removeFromLeft (2);
 
-    g.setColour (Colours::white.withAlpha (mouseOver ? 1.0f : 0.5f));
-    g.setFont (getLookAndFeel().getTypefaceForFont (Font (12.0f, 0)));
+    g.setColour (juce::Colours::white.withAlpha (mouseOver ? 1.0f : 0.5f));
+    g.setFont (getLookAndFeel().getTypefaceForFont (juce::Font (12.0f, 0)));
     g.setFont (14.0f);
 
-    String text = "OSC";
+    juce::String text = "OSC";
     if (oscReceiver.isConnected() || oscSender.isConnected())
     {
         text += " (";
         if (oscReceiver.isConnected())
-            text += "IN: " + String (oscReceiver.getPortNumber());
+            text += "IN: " + juce::String (oscReceiver.getPortNumber());
 
         if (oscReceiver.isConnected() && oscSender.isConnected())
             text += " - ";
 
         if (oscSender.isConnected())
-            text += "OUT: " + oscSender.getHostName() + ":" + String (oscSender.getPortNumber());
+            text += "OUT: " + oscSender.getHostName() + ":" + juce::String (oscSender.getPortNumber());
 
         text += ")";
     }
@@ -415,7 +415,7 @@ void OSCStatus::paint (Graphics& g)
 
     bounds = getLocalBounds().removeFromLeft (targetSize);
 
-    g.drawText (text, area.withWidth (textWidth), Justification::bottomLeft, true);
+    g.drawText (text, area.withWidth (textWidth), juce::Justification::bottomLeft, true);
 }
 
 

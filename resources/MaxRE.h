@@ -281,26 +281,26 @@ const float maxRECorrectionEnergy[8] =
 inline void multiplyMaxRE(const int N, float *data) {
     switch (N) {
         case 0: break;
-        case 1: FloatVectorOperations::multiply (data, maxre1, 4); break;
-        case 2: FloatVectorOperations::multiply (data, maxre2, 9); break;
-        case 3: FloatVectorOperations::multiply (data, maxre3, 16); break;
-        case 4: FloatVectorOperations::multiply (data, maxre4, 25); break;
-        case 5: FloatVectorOperations::multiply (data, maxre5, 36); break;
-        case 6: FloatVectorOperations::multiply (data, maxre6, 47); break;
-        case 7: FloatVectorOperations::multiply (data, maxre7, 64); break;
+        case 1: juce::FloatVectorOperations::multiply (data, maxre1, 4); break;
+        case 2: juce::FloatVectorOperations::multiply (data, maxre2, 9); break;
+        case 3: juce::FloatVectorOperations::multiply (data, maxre3, 16); break;
+        case 4: juce::FloatVectorOperations::multiply (data, maxre4, 25); break;
+        case 5: juce::FloatVectorOperations::multiply (data, maxre5, 36); break;
+        case 6: juce::FloatVectorOperations::multiply (data, maxre6, 47); break;
+        case 7: juce::FloatVectorOperations::multiply (data, maxre7, 64); break;
     }
 }
 
 inline void copyMaxRE(const int N, float *data) {
     switch (N) {
         case 0: *data = 1.0f; break;
-        case 1: FloatVectorOperations::copy (data, maxre1, 4); break;
-        case 2: FloatVectorOperations::copy (data, maxre2, 9); break;
-        case 3: FloatVectorOperations::copy (data, maxre3, 16); break;
-        case 4: FloatVectorOperations::copy (data, maxre4, 25); break;
-        case 5: FloatVectorOperations::copy (data, maxre5, 36); break;
-        case 6: FloatVectorOperations::copy (data, maxre6, 47); break;
-        case 7: FloatVectorOperations::copy (data, maxre7, 64); break;
+        case 1: juce::FloatVectorOperations::copy (data, maxre1, 4); break;
+        case 2: juce::FloatVectorOperations::copy (data, maxre2, 9); break;
+        case 3: juce::FloatVectorOperations::copy (data, maxre3, 16); break;
+        case 4: juce::FloatVectorOperations::copy (data, maxre4, 25); break;
+        case 5: juce::FloatVectorOperations::copy (data, maxre5, 36); break;
+        case 6: juce::FloatVectorOperations::copy (data, maxre6, 47); break;
+        case 7: juce::FloatVectorOperations::copy (data, maxre7, 64); break;
     }
 }
 

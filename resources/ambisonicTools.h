@@ -111,15 +111,15 @@ inline void ACNtoLM(int acn, int &l, int &m)
     m = acn - l*(l+1);
 }
 
-inline const String getOrderString(int order)
+inline const juce::String getOrderString (int order)
 {
     switch(order)
     {
-        case 1: return String(order) + String("st");
-        case 2: return String(order) + String("nd");
-        case 3: return String(order) + String("rd");
+        case 1: return juce::String (order) + juce::String ("st");
+        case 2: return juce::String (order) + juce::String ("nd");
+        case 3: return juce::String (order) + juce::String ("rd");
     }
-    return String(order) + String("th");
+    return juce::String (order) + juce::String ("th");
 }
 
 const float sn3d2n3d[64] = {

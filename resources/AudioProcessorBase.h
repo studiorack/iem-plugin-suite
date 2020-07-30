@@ -29,28 +29,28 @@
 #include "OSC/OSCParameterInterface.h"
 #include "IOHelper.h"
 
-typedef std::vector<std::unique_ptr<RangedAudioParameter>> ParameterList;
+typedef std::vector<std::unique_ptr<juce::RangedAudioParameter>> ParameterList;
 
 template <class inputType, class outputType, bool combined = false>
 
-class AudioProcessorBase :  public AudioProcessor,
+class AudioProcessorBase :  public juce::AudioProcessor,
                             public OSCMessageInterceptor,
-                            public VSTCallbackHandler,
+                            public juce::VSTCallbackHandler,
                             public IOHelper<inputType, outputType, combined>,
-                            public AudioProcessorValueTreeState::Listener
+                            public juce::AudioProcessorValueTreeState::Listener
 {
 public:
 
     AudioProcessorBase () : AudioProcessor(),
                             oscParameterInterface (*this, parameters),
-                            parameters (*this, nullptr, String (JucePlugin_Name), {})
+                            parameters (*this, nullptr, juce::String (JucePlugin_Name), {})
     {
 
     }
 
     AudioProcessorBase (ParameterList parameterLayout) :
                             AudioProcessor(),
-                            parameters (*this, nullptr, String (JucePlugin_Name), {parameterLayout.begin(), parameterLayout.end()}),
+                            parameters (*this, nullptr, juce::String (JucePlugin_Name), {parameterLayout.begin(), parameterLayout.end()}),
                             oscParameterInterface (*this, parameters)
     {
 
@@ -58,7 +58,7 @@ public:
 
     AudioProcessorBase (const BusesProperties& ioLayouts, ParameterList parameterLayout) :
                             AudioProcessor (ioLayouts),
-                            parameters (*this, nullptr, String (JucePlugin_Name), { parameterLayout.begin(), parameterLayout.end() }),
+                            parameters (*this, nullptr, juce::String (JucePlugin_Name), { parameterLayout.begin(), parameterLayout.end() }),
                             oscParameterInterface (*this, parameters)
     {
 
@@ -79,7 +79,7 @@ public:
 #endif
 
 
-    const String getName() const override
+    const juce::String getName() const override
     {
         return JucePlugin_Name;
     }
@@ -109,10 +109,10 @@ public:
     }
 
     //======== VSTCallbackHandler =======================================================
-    pointer_sized_int handleVstManufacturerSpecific (int32 index, pointer_sized_int value,
+    juce::pointer_sized_int handleVstManufacturerSpecific (juce::int32 index, juce::pointer_sized_int value,
                                                      void* ptr, float opt) override
     {
-        ignoreUnused (opt);
+        juce::ignoreUnused (opt);
 
         //0x69656D is hex code for `iem` in ASCII
         if (index == 0x0069656D)  // prefix 00 chooses OSC message
@@ -127,7 +127,7 @@ public:
                 oscParameterInterface.oscMessageReceived (inMessage);
                 return 1;
             }
-            catch (const OSCFormatError&)
+            catch (const juce::OSCFormatError&)
             {
                 return -1;
             }
@@ -136,10 +136,10 @@ public:
         return 0;
     }
 
-    pointer_sized_int handleVstPluginCanDo (int32 index, pointer_sized_int value,
+    juce::pointer_sized_int handleVstPluginCanDo (juce::int32 index, juce::pointer_sized_int value,
                                             void* ptr, float opt) override
     {
-        ignoreUnused (index, value, opt);
+        juce::ignoreUnused (index, value, opt);
 
         auto text = (const char*) ptr;
         auto matches = [=](const char* s) { return strcmp (text, s) == 0; };
@@ -161,7 +161,7 @@ public:
     //==============================================================================
 
 
-    AudioProcessorValueTreeState parameters;
+    juce::AudioProcessorValueTreeState parameters;
     OSCParameterInterface oscParameterInterface;
 
 private:

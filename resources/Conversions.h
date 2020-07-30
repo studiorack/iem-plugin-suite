@@ -47,15 +47,15 @@ public:
         elevationInRadians = atan2(z, sqrt(xSquared + ySquared));
     }
 
-    static void cartesianToSpherical (const Vector3D<Type> cartesian, Type& azimuthInRadians, Type& elevationInRadians)
+    static void cartesianToSpherical (const juce::Vector3D<Type> cartesian, Type& azimuthInRadians, Type& elevationInRadians)
     {
         cartesianToSpherical (cartesian.x, cartesian.y, cartesian.z, azimuthInRadians, elevationInRadians);
     }
 
-    static Vector3D<Type> cartesianToSpherical (Vector3D<Type> cartvect)
+    static juce::Vector3D<Type> cartesianToSpherical (juce::Vector3D<Type> cartvect)
     {
         const Type r = cartvect.length();
-        return Vector3D<Type>(
+        return juce::Vector3D<Type>(
                                r, // radius
                                radiansToDegrees(atan2(cartvect.y, cartvect.x)), // azimuth
                                radiansToDegrees(atan2(cartvect.z, sqrt(cartvect.x * cartvect.x + cartvect.y * cartvect.y))) // elevation
@@ -64,14 +64,14 @@ public:
 
 
 
-    static Vector3D<Type> sphericalToCartesian (const Type azimuthInRadians, const Type elevationInRadians)
+    static juce::Vector3D<Type> sphericalToCartesian (const Type azimuthInRadians, const Type elevationInRadians)
     {
-        Vector3D<Type> cartesian;
+        juce::Vector3D<Type> cartesian;
         sphericalToCartesian (azimuthInRadians, elevationInRadians, cartesian.x, cartesian.y, cartesian.z);
         return cartesian;
     }
 
-    static Vector3D<Type> sphericalToCartesian (const Type azimuthInRadians, const Type elevationInRadians, const Type radius)
+    static juce::Vector3D<Type> sphericalToCartesian (const Type azimuthInRadians, const Type elevationInRadians, const Type radius)
     {
         return sphericalToCartesian (azimuthInRadians, elevationInRadians) * radius;
     }
@@ -94,6 +94,4 @@ public:
         y = cosElevation * sin(azimuthInRadians);
         z = sin(elevationInRadians);
     }
-
-
 };

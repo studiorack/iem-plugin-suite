@@ -179,4 +179,4 @@ Image JUCE_CALLTYPE juce_getIAAHostIcon (int size)
 #endif
 #endif
 
-START_JUCE_APPLICATION (StandaloneApp)
+START_JUCE_APPLICATION (juce::StandaloneApp)
