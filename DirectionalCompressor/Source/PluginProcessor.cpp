@@ -36,7 +36,12 @@ DirectionalCompressorAudioProcessor::DirectionalCompressorAudioProcessor()
 #endif
                   ,
 #endif
-createParameterLayout())
+createParameterLayout()),
+//W (tDesignN),
+Y (tDesignN, 64),
+YH (64, tDesignN),
+tempMat (64, tDesignN),
+P1 (64, 64)
 {
     parameters.addParameterListener ("azimuth", this);
     parameters.addParameterListener ("elevation", this);
@@ -77,15 +82,15 @@ createParameterLayout())
     c1GR = 0.0f;
     c2GR = 0.0f;
 
-    // calc Y and YH
-    for (int point=0; point<tDesignN; ++point)
-    {
-        SHEval(7, tDesignX[point], tDesignY[point], tDesignZ[point], Y.data() + point * 64, false);
-        //FloatVectorOperations::multiply(Y.data()+point*64, Y.data()+point*64, sn3d2n3d, 64); //expecting sn3d normalization -> converting it to n3d
-    }
+    // calc Y
+    for (int p = 0; p < tDesignN; ++p)
+        SHEval (7, tDesignX[p], tDesignY[p], tDesignZ[p], Y.getRawDataPointer() + p * 64, false);
 
-    Y *= sqrt(4 * MathConstants<float>::pi / tDesignN) / decodeCorrection(7); // reverting 7th order correction
-    YH = Y.transpose();
+    Y *= std::sqrt (4 * MathConstants<float>::pi / tDesignN) / decodeCorrection (7); // reverting 7th order correction
+
+    for (int r = 0; r < 64; ++r)
+        for (int c = 0; c < tDesignN; ++c)
+            YH(r, c) = Y(c, r);
 }
 
 
@@ -348,35 +353,41 @@ void DirectionalCompressorAudioProcessor::calcParams()
     paramChanged = false;
 
     // convert azimuth and elevation to cartesian coordinates
-    Vector3D<float> pos {Conversions<float>::sphericalToCartesian(Conversions<float>::degreesToRadians(*azimuth), Conversions<float>::degreesToRadians(*elevation))};
+    auto pos = Conversions<float>::sphericalToCartesian (Conversions<float>::degreesToRadians (*azimuth), Conversions<float>::degreesToRadians (*elevation));
     pos = pos.normalised();
 
 
     for (int point=0; point<tDesignN; ++point)
     {
-        //dist[point] = acosf(xyz[0]*tDesignX[point] + xyz[1]*tDesignY[point] + xyz[2]*tDesignZ[point]); // could yield nans
         dist[point] = pos.x * tDesignX[point] + pos.y * tDesignY[point] + pos.z * tDesignZ[point];
-        dist[point] /= sqrt(tDesignX[point]*tDesignX[point] + tDesignY[point]*tDesignY[point] + tDesignZ[point]*tDesignZ[point]); // optimize by normalising tDesign on startup
-        dist[point] = acos(dist[point]);
+        dist[point] /= std::sqrt (square (tDesignX[point]) + square (tDesignY[point]) + square (tDesignZ[point]));
+        dist[point] = std::acos (dist[point]);
     }
 
-    float widthHalf = Conversions<float>::degreesToRadians(*width) * 0.25f; // it's actually width fourth (symmetric mask)
-    widthHalf = jmax(widthHalf,FloatVectorOperations::findMinimum(dist, tDesignN));
+    float widthHalf = Conversions<float>::degreesToRadians (*width) * 0.25f; // it's actually width fourth (symmetric mask)
+    widthHalf = jmax (widthHalf, FloatVectorOperations::findMinimum (dist, tDesignN));
 
-    FloatVectorOperations::clip(dist, dist, widthHalf, 3*widthHalf, tDesignN);
-    FloatVectorOperations::add(dist, - widthHalf, tDesignN);
-    FloatVectorOperations::multiply(dist, 0.25f * MathConstants<float>::pi / widthHalf, tDesignN);
+    FloatVectorOperations::clip (dist, dist, widthHalf, 3 * widthHalf, tDesignN);
+    FloatVectorOperations::add (dist, - widthHalf, tDesignN);
+    FloatVectorOperations::multiply (dist, 0.25f * MathConstants<float>::pi / widthHalf, tDesignN);
 
-    sumMaskWeights = 0.0f;
-    for (int point=0; point<tDesignN; ++point)
+
+    for (int p = 0; p < tDesignN; ++p)
     {
-        float g = cos(dist[point]);
-        W.diagonal()[point] = g;
-        sumMaskWeights += g;
+        const float g = std::cos (dist[p]);
+        for (int r = 0; r < 64; ++r)
+            tempMat (r, p) = g * Y(p, r);
     }
 
-    tempMat = W * YH;
-    P1 = Y * tempMat;
+    for (int r = 0; r < 64; ++r)
+        for (int c = r; c < 64; ++c)
+        {
+            float sum = 0.0f;
+            for (int i = 0; i < tDesignN; ++i)
+                sum += tempMat(r, i) * YH(c, i);
+            P1(r, c) = sum;
+            P1(c, r) = sum;
+        }
 }
 
 //==============================================================================

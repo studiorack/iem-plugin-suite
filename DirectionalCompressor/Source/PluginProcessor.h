@@ -26,7 +26,6 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "../../resources/efficientSHvanilla.h"
 #include "../../resources/tDesignN7.h"
-#include <Eigen/Dense>
 #include "../../resources/ambisonicTools.h"
 #include "../../resources/AudioProcessorBase.h"
 #include "../../resources/Compressor.h"
@@ -92,12 +91,10 @@ private:
     AudioBuffer<float> omniW;
     AudioBuffer<float> maskBuffer;
 
-    Eigen::Matrix<float,64,tDesignN> Y;
-    Eigen::Matrix<float,tDesignN,64> YH;
-
-    Eigen::DiagonalMatrix<float, tDesignN> W;
-    Eigen::Matrix<float,tDesignN,64> tempMat;
-    Eigen::Matrix<float,64,64> P1;
+    dsp::Matrix<float> Y;
+    dsp::Matrix<float> YH;
+    dsp::Matrix<float> tempMat;
+    dsp::Matrix<float> P1;
 
     float dist[tDesignN];
 
@@ -109,9 +106,7 @@ private:
     float c1GR;
     float c2GR;
 
-    float sumMaskWeights;
-
-    bool paramChanged = true;
+    std::atomic<bool> paramChanged { true };
 
     Compressor compressor1, compressor2;
     // == PARAMETERS ==
