@@ -77,25 +77,6 @@ createParameterLayout())
 BinauralDecoderAudioProcessor::~BinauralDecoderAudioProcessor()
 {
 
-    if (fftwWasPlanned)
-    {
-        fftwf_destroy_plan(fftForward);
-        fftwf_destroy_plan(fftBackwardMid);
-        fftwf_destroy_plan(fftBackwardSide);
-    }
-
-    if (in != nullptr)
-        fftwf_free(in);
-    if (out != nullptr)
-        fftwf_free(out);
-    if (accumMid != nullptr)
-        fftwf_free(accumMid);
-    if (accumSide != nullptr)
-        fftwf_free(accumSide);
-    if (ifftOutputMid != nullptr)
-        fftwf_free(ifftOutputMid);
-    if (ifftOutputSide != nullptr)
-        fftwf_free(ifftOutputSide);
 }
 
 
@@ -163,56 +144,52 @@ void BinauralDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, Mid
         for (int ch = 1; ch < nCh; ++ch)
             buffer.applyGain(ch, 0, buffer.getNumSamples(), sn3d2n3d[ch]);
 
-    FloatVectorOperations::clear((float*) accumMid, fftLength + 2);
-    FloatVectorOperations::clear((float*) accumSide, fftLength + 2);
+    // clear accumulation buffers
+    FloatVectorOperations::clear (reinterpret_cast<float*> (accumMid.data()), fftLength + 2);
+    FloatVectorOperations::clear (reinterpret_cast<float*> (accumSide.data()), fftLength + 2);
 
     const int nZeros = fftLength - L;
 
     //compute mid signal in frequency domain
     for (int midix = 0; midix < nMidCh; ++midix)
     {
-      int ch = mix2cix[midix];
+        const int ch = mix2cix[midix];
 
-      FloatVectorOperations::clear(&in[L], nZeros); // TODO: only last part
-      FloatVectorOperations::copy(in, buffer.getReadPointer(ch), L);
-      fftwf_execute(fftForward);
+        FloatVectorOperations::copy (reinterpret_cast<float*> (fftBuffer.data()), buffer.getReadPointer (ch), L);
+        FloatVectorOperations::clear (reinterpret_cast<float*> (fftBuffer.data()) + L, nZeros);
 
-      fftwf_complex* tfMid = (fftwf_complex*) irsFrequencyDomain.getReadPointer(ch);
+        fft->performRealOnlyForwardTransform (reinterpret_cast<float*> (fftBuffer.data()));
 
-      for (int i = 0; i < fftLength / 2 + 1; ++i)
-      {
-        accumMid[i][0]  += out[i][0] *  tfMid[i][0] - out[i][1] *  tfMid[i][1]; //real part
-        accumMid[i][1]  += out[i][1] *  tfMid[i][0] + out[i][0] *  tfMid[i][1]; //imag part
-      }
+        const auto tfMid = reinterpret_cast<const std::complex<float>*> (irsFrequencyDomain.getReadPointer (ch));
+        for (int i = 0; i < fftLength / 2 + 1; ++i)
+            accumMid[i] += fftBuffer[i] * tfMid[i];
     }
 
     //compute side signal in frequency domain
     for (int sidix = 0; sidix < nSideCh; ++sidix)
     {
-        int ch = six2cix[sidix];
+        const int ch = six2cix[sidix];
 
-        FloatVectorOperations::clear(&in[L], nZeros); // TODO: only last part
-        FloatVectorOperations::copy(in, buffer.getReadPointer(ch), L);
-        fftwf_execute(fftForward);
+        FloatVectorOperations::copy (reinterpret_cast<float*> (fftBuffer.data()), buffer.getReadPointer (ch), L);
+        FloatVectorOperations::clear (reinterpret_cast<float*> (fftBuffer.data()) + L, nZeros);
 
-        fftwf_complex* tfSide = (fftwf_complex*)irsFrequencyDomain.getReadPointer(ch);
+        fft->performRealOnlyForwardTransform (reinterpret_cast<float*> (fftBuffer.data()));
 
+        const auto tfSide = reinterpret_cast<const std::complex<float>*> (irsFrequencyDomain.getReadPointer (ch));
         for (int i = 0; i < fftLength / 2 + 1; ++i)
-        {
-            accumSide[i][0] += out[i][0] * tfSide[i][0] - out[i][1] * tfSide[i][1];
-            accumSide[i][1] += out[i][1] * tfSide[i][0] + out[i][0] * tfSide[i][1];
-        }
+            accumSide[i] += fftBuffer[i] * tfSide[i];
     }
 
-    fftwf_execute(fftBackwardMid);
-    fftwf_execute(fftBackwardSide);
+
+    fft->performRealOnlyInverseTransform (reinterpret_cast<float*> (accumMid.data()));
+    fft->performRealOnlyInverseTransform (reinterpret_cast<float*> (accumSide.data()));
 
 
     ///* MS -> LR  */
-    FloatVectorOperations::copy(buffer.getWritePointer(0), ifftOutputMid, L);
-    FloatVectorOperations::copy(buffer.getWritePointer(1), ifftOutputMid, L);
-    FloatVectorOperations::add(buffer.getWritePointer(0), ifftOutputSide, L);
-    FloatVectorOperations::subtract(buffer.getWritePointer(1), ifftOutputSide, L);
+    FloatVectorOperations::copy (buffer.getWritePointer (0), reinterpret_cast<float*> (accumMid.data()), L);
+    FloatVectorOperations::copy (buffer.getWritePointer (1), reinterpret_cast<float*> (accumMid.data()), L);
+    FloatVectorOperations::add (buffer.getWritePointer(0), reinterpret_cast<float*> (accumSide.data()), L);
+    FloatVectorOperations::subtract(buffer.getWritePointer(1), reinterpret_cast<float*> (accumSide.data()), L);
 
     FloatVectorOperations::add (buffer.getWritePointer(0), overlapBuffer.getWritePointer(0), copyL);
     FloatVectorOperations::add (buffer.getWritePointer(1), overlapBuffer.getWritePointer(1), copyL);
@@ -221,27 +198,27 @@ void BinauralDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, Mid
     {
         const int howManyAreLeft = overlap - L;
 
-                //shift the overlap buffer to the left
-        FloatVectorOperations::copy(overlapBuffer.getWritePointer(0), overlapBuffer.getReadPointer(0, L), howManyAreLeft);
-        FloatVectorOperations::copy(overlapBuffer.getWritePointer(1), overlapBuffer.getReadPointer(1, L), howManyAreLeft);
+        //shift the overlap buffer to the left
+        FloatVectorOperations::copy (overlapBuffer.getWritePointer (0), overlapBuffer.getReadPointer (0, L), howManyAreLeft);
+        FloatVectorOperations::copy (overlapBuffer.getWritePointer (1), overlapBuffer.getReadPointer (1, L), howManyAreLeft);
 
-                //clear the tail
-        FloatVectorOperations::clear(overlapBuffer.getWritePointer(0, howManyAreLeft), ergL - howManyAreLeft);
-        FloatVectorOperations::clear(overlapBuffer.getWritePointer(1, howManyAreLeft), ergL - howManyAreLeft);
+        //clear the tail
+        FloatVectorOperations::clear (overlapBuffer.getWritePointer (0, howManyAreLeft), ergL - howManyAreLeft);
+        FloatVectorOperations::clear (overlapBuffer.getWritePointer (1, howManyAreLeft), ergL - howManyAreLeft);
 
-                /* MS -> LR  */
-        FloatVectorOperations::add(overlapBuffer.getWritePointer(0), &ifftOutputMid[L], irLengthMinusOne);
-        FloatVectorOperations::add(overlapBuffer.getWritePointer(1), &ifftOutputMid[L], irLengthMinusOne);
-        FloatVectorOperations::add(overlapBuffer.getWritePointer(0), &ifftOutputSide[L], irLengthMinusOne);
-        FloatVectorOperations::subtract(overlapBuffer.getWritePointer(1), &ifftOutputSide[L], irLengthMinusOne);
+        /* MS -> LR  */
+        FloatVectorOperations::add (overlapBuffer.getWritePointer (0), reinterpret_cast<float*> (accumMid.data()) + L, irLengthMinusOne);
+        FloatVectorOperations::add (overlapBuffer.getWritePointer (1), reinterpret_cast<float*> (accumMid.data()) + L, irLengthMinusOne);
+        FloatVectorOperations::add (overlapBuffer.getWritePointer (0), reinterpret_cast<float*> (accumSide.data()) + L, irLengthMinusOne);
+        FloatVectorOperations::subtract (overlapBuffer.getWritePointer (1), reinterpret_cast<float*> (accumSide.data()) + L, irLengthMinusOne);
     }
     else
     {
-                /* MS -> LR  */
-        FloatVectorOperations::copy(overlapBuffer.getWritePointer(0), &ifftOutputMid[L], irLengthMinusOne);
-        FloatVectorOperations::copy(overlapBuffer.getWritePointer(1), &ifftOutputMid[L], irLengthMinusOne);
-        FloatVectorOperations::add(overlapBuffer.getWritePointer(0), &ifftOutputSide[L], irLengthMinusOne);
-        FloatVectorOperations::subtract(overlapBuffer.getWritePointer(1), &ifftOutputSide[L], irLengthMinusOne);
+        /* MS -> LR  */
+        FloatVectorOperations::copy (overlapBuffer.getWritePointer (0), reinterpret_cast<float*> (accumMid.data()) + L, irLengthMinusOne);
+        FloatVectorOperations::copy (overlapBuffer.getWritePointer (1), reinterpret_cast<float*> (accumMid.data()) + L, irLengthMinusOne);
+        FloatVectorOperations::add (overlapBuffer.getWritePointer (0), reinterpret_cast<float*> (accumSide.data()) + L, irLengthMinusOne);
+        FloatVectorOperations::subtract (overlapBuffer.getWritePointer (1), reinterpret_cast<float*> (accumSide.data()) + L, irLengthMinusOne);
     }
 
     if (*applyHeadphoneEq >= 0.5f)
@@ -384,51 +361,27 @@ void BinauralDecoderAudioProcessor::updateBuffers()
 
     if (prevFftLength != fftLength)
     {
-        if (fftwWasPlanned)
-        {
-            fftwf_destroy_plan(fftForward);
-            fftwf_destroy_plan(fftBackwardMid);
-            fftwf_destroy_plan(fftBackwardSide);
-        }
+        const int fftOrder = std::log2 (fftLength);
 
-        if (in != nullptr)
-            fftwf_free(in);
-        if (out != nullptr)
-            fftwf_free(out);
-        if (accumMid != nullptr)
-            fftwf_free(accumMid);
-        if (accumSide != nullptr)
-            fftwf_free(accumSide);
-        if (ifftOutputMid != nullptr)
-            fftwf_free(ifftOutputMid);
-        if (ifftOutputSide != nullptr)
-            fftwf_free(ifftOutputSide);
+        fft = std::make_unique<FFT> (fftOrder);
 
-        in = (float*) fftwf_malloc(sizeof(float) * fftLength);
-        out = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * (fftLength / 2 + 1));
-        accumMid = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * (fftLength / 2 + 1));
-        accumSide = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * (fftLength / 2 + 1));
-        ifftOutputMid = (float*) fftwf_malloc(sizeof(float) * fftLength);
-        ifftOutputSide = (float*) fftwf_malloc(sizeof(float) * fftLength);
+        fftBuffer.resize (fftLength);
 
-        fftForward = fftwf_plan_dft_r2c_1d(fftLength, in, out, FFTW_MEASURE);
-        fftBackwardMid = fftwf_plan_dft_c2r_1d(fftLength, accumMid, ifftOutputMid, FFTW_MEASURE);
-        fftBackwardSide = fftwf_plan_dft_c2r_1d(fftLength, accumSide, ifftOutputSide, FFTW_MEASURE);
-        fftwWasPlanned = true;
+        accumMid.resize (fftLength);
+        accumSide.resize (fftLength);
     }
 
-    FloatVectorOperations::clear((float*) in, fftLength); // clear (after plan creation!)
-
-    irsFrequencyDomain.setSize(nCh, 2 * (fftLength / 2 + 1));
+    irsFrequencyDomain.setSize (nCh, 2 * (fftLength / 2 + 1));
     irsFrequencyDomain.clear();
 
     for (int i = 0; i < nCh; ++i)
     {
+        float* inOut = reinterpret_cast<float*> (fftBuffer.data());
         const float* src = useResampled ? resampledIRs.getReadPointer(i) : irs[order - 1].getReadPointer(i);
-        FloatVectorOperations::multiply((float*)in, src, 1.0 / fftLength, irLength);
-        FloatVectorOperations::clear(&in[irLength], fftLength - irLength); // zero padding
-        fftwf_execute(fftForward);
-        FloatVectorOperations::copy(irsFrequencyDomain.getWritePointer(i), (float*)out, 2 * (fftLength / 2 + 1));
+        FloatVectorOperations::copy (inOut, src, irLength);
+        FloatVectorOperations::clear (inOut + irLength, fftLength - irLength); // zero padding
+        fft->performRealOnlyForwardTransform (inOut);
+        FloatVectorOperations::copy (irsFrequencyDomain.getWritePointer (i), inOut, 2 * (fftLength / 2 + 1));
     }
 }
 
