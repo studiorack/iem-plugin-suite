@@ -29,7 +29,7 @@
 //==============================================================================
 /*
 */
-class VisualizerColormap    : public Component
+class VisualizerColormap    : public juce::Component
 {
 public:
     VisualizerColormap()
@@ -43,52 +43,52 @@ public:
     {
     }
 
-    void paint (Graphics& g) override
+    void paint (juce::Graphics& g) override
     {
-        Colour colormapData[256];
+        juce::Colour colormapData[256];
         if (usePerceptualColormap)
             for (int i = 0; i < 256; ++i)
             {
-                const float alpha = jlimit(0.0f, 1.0f, (float) i / 50.0f);
-                colormapData[i] = Colour::fromFloatRGBA(viridis_cropped[i][0], viridis_cropped[i][1], viridis_cropped[i][2], alpha);
+                const float alpha = juce::jlimit(0.0f, 1.0f, (float) i / 50.0f);
+                colormapData[i] = juce::Colour::fromFloatRGBA(viridis_cropped[i][0], viridis_cropped[i][1], viridis_cropped[i][2], alpha);
             }
         else
             for (int i = 0; i < 256; ++i)
             {
-                colormapData[i] = Colour::fromFloatRGBA(heatmap[i][0], heatmap[i][1], heatmap[i][2], heatmap[i][3]);
+                colormapData[i] = juce::Colour::fromFloatRGBA(heatmap[i][0], heatmap[i][1], heatmap[i][2], heatmap[i][3]);
             }
 
-        Rectangle<int> colormapArea(getLocalBounds());
+        juce::Rectangle<int> colormapArea(getLocalBounds());
         colormapArea.removeFromTop(12);
         colormapArea.removeFromBottom(6);
 
         colormapArea.removeFromRight(25);
-        ColourGradient gradient;
+        juce::ColourGradient gradient;
         gradient.point1 = colormapArea.getTopLeft().toFloat();
         gradient.point2 = colormapArea.getBottomLeft().toFloat();
 
         for (int i = 0; i < 256; ++i)
             gradient.addColour(1.0f - i * 1.0f / 256, colormapData[i]);
 
-        Path path;
+        juce::Path path;
         path.addRectangle(colormapArea);
         g.setGradientFill(gradient);
         g.fillPath (path);
 
-        g.setColour (Colours::white);
+        g.setColour (juce::Colours::white);
         int width = colormapArea.getWidth();
 
-        g.setFont(getLookAndFeel().getTypefaceForFont (Font(12.0f, 1)));
-        g.drawText("dB", 25, 0, width, 12, Justification::centred);
+        g.setFont(getLookAndFeel().getTypefaceForFont (juce::Font(12.0f, 1)));
+        g.drawText("dB", 25, 0, width, 12, juce::Justification::centred);
 
-        g.setFont(getLookAndFeel().getTypefaceForFont (Font(12.0f, 0)));
+        g.setFont(getLookAndFeel().getTypefaceForFont (juce::Font(12.0f, 0)));
         g.setFont(12.0f);
 
         const float yStep = (float) colormapArea.getHeight() / 7;
-        g.drawText(String(maxLevel,1), 25, 12, width, 12, Justification::centred);
+        g.drawText(juce::String(maxLevel,1), 25, 12, width, 12, juce::Justification::centred);
         for (int i = 1; i < 8; ++i)
         {
-            g.drawText (String (maxLevel - range / 7.0 * i, 1), 25, 6 + yStep * i, width, 12, Justification::centred);
+            g.drawText (juce::String (maxLevel - range / 7.0 * i, 1), 25, 6 + yStep * i, width, 12, juce::Justification::centred);
         }
     }
 
@@ -104,7 +104,7 @@ public:
         repaint();
     }
 
-    void mouseDown (const MouseEvent& event) override
+    void mouseDown (const juce::MouseEvent& event) override
     {
         usePerceptualColormap = ! usePerceptualColormap;
         repaint();

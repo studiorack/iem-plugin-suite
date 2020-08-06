@@ -25,14 +25,14 @@
 
 
 //==============================================================================
-OmniCompressorAudioProcessorEditor::OmniCompressorAudioProcessorEditor (OmniCompressorAudioProcessor& p, AudioProcessorValueTreeState& vts)
-    : AudioProcessorEditor (&p), processor (p), valueTreeState (vts), footer (p.getOSCParameterInterface()), characteristic (&processor.compressor)
+OmniCompressorAudioProcessorEditor::OmniCompressorAudioProcessorEditor (OmniCompressorAudioProcessor& p, juce::AudioProcessorValueTreeState& vts)
+    : juce::AudioProcessorEditor (&p), processor (p), valueTreeState (vts), footer (p.getOSCParameterInterface()), characteristic (&processor.compressor)
 {
     setSize (330, 500);
     setLookAndFeel(&globalLaF);
 
     addAndMakeVisible(&title);
-    title.setTitle(String("Omni"),String("Compressor"));
+    title.setTitle(juce::String("Omni"),juce::String("Compressor"));
     title.setFont(globalLaF.robotoBold,globalLaF.robotoLight);
     addAndMakeVisible(&footer);
 
@@ -41,13 +41,13 @@ OmniCompressorAudioProcessorEditor::OmniCompressorAudioProcessorEditor (OmniComp
     addAndMakeVisible(&tbLookAhead);
     tbLookAheadAttachment.reset (new ButtonAttachment (valueTreeState, "lookAhead", tbLookAhead));
     tbLookAhead.setButtonText("Look ahead (5ms)");
-    tbLookAhead.setColour (ToggleButton::tickColourId, globalLaF.ClWidgetColours[0]);
+    tbLookAhead.setColour (juce::ToggleButton::tickColourId, globalLaF.ClWidgetColours[0]);
 
     addAndMakeVisible(&sliderKnee);
     KnAttachment.reset (new SliderAttachment (valueTreeState,"knee", sliderKnee));
-    sliderKnee.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    sliderKnee.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    sliderKnee.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
+    sliderKnee.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    sliderKnee.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    sliderKnee.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
     sliderKnee.setTextValueSuffix(" dB");
 
     cbNormalizationAtachement.reset (new ComboBoxAttachment (valueTreeState,"useSN3D", *title.getInputWidgetPtr()->getNormCbPointer()));
@@ -55,49 +55,49 @@ OmniCompressorAudioProcessorEditor::OmniCompressorAudioProcessorEditor (OmniComp
 
     addAndMakeVisible(&sliderThreshold);
     ThAttachment.reset (new SliderAttachment (valueTreeState,"threshold", sliderThreshold));
-    sliderThreshold.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    sliderThreshold.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    sliderThreshold.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
+    sliderThreshold.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    sliderThreshold.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    sliderThreshold.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
     sliderThreshold.setTextValueSuffix(" dB");
 
     addAndMakeVisible(&sliderRatio);
     RaAttachment.reset (new SliderAttachment (valueTreeState,"ratio", sliderRatio));
-    sliderRatio.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    sliderRatio.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    sliderRatio.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[3]);
+    sliderRatio.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    sliderRatio.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    sliderRatio.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[3]);
 //    sliderRatio.setTextValueSuffix("");
 
     addAndMakeVisible(&sliderAttackTime);
     ATAttachment.reset (new SliderAttachment (valueTreeState,"attack", sliderAttackTime));
-    sliderAttackTime.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    sliderAttackTime.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    sliderAttackTime.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
+    sliderAttackTime.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    sliderAttackTime.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    sliderAttackTime.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
     sliderAttackTime.setTextValueSuffix(" ms");
 
     addAndMakeVisible(&sliderReleaseTime);
     RTAttachment.reset (new SliderAttachment (valueTreeState,"release", sliderReleaseTime));
-    sliderReleaseTime.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    sliderReleaseTime.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    sliderReleaseTime.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
+    sliderReleaseTime.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    sliderReleaseTime.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    sliderReleaseTime.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
     sliderReleaseTime.setTextValueSuffix(" ms");
 
     addAndMakeVisible(&sliderMakeupGain);
     MGAttachment.reset (new SliderAttachment (valueTreeState,"outGain", sliderMakeupGain));
-    sliderMakeupGain.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    sliderMakeupGain.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    sliderMakeupGain.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
+    sliderMakeupGain.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    sliderMakeupGain.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    sliderMakeupGain.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
     sliderMakeupGain.setTextValueSuffix(" dB");
 
 
 
     addAndMakeVisible(&dbGRmeter);
     dbGRmeter.setMinLevel(-25.0f);
-    dbGRmeter.setColour(Colours::red.withMultipliedAlpha(0.8f));
+    dbGRmeter.setColour(juce::Colours::red.withMultipliedAlpha(0.8f));
     dbGRmeter.setGainReductionMeter(true);
 
     addAndMakeVisible(&inpMeter);
     inpMeter.setMinLevel(-60.0f);
-    inpMeter.setColour(Colours::green.withMultipliedAlpha(0.8f));
+    inpMeter.setColour(juce::Colours::green.withMultipliedAlpha(0.8f));
     inpMeter.setGainReductionMeter(false);
 
 
@@ -131,7 +131,7 @@ OmniCompressorAudioProcessorEditor::~OmniCompressorAudioProcessorEditor()
 }
 
 //==============================================================================
-void OmniCompressorAudioProcessorEditor::paint (Graphics& g)
+void OmniCompressorAudioProcessorEditor::paint (juce::Graphics& g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
     g.fillAll (globalLaF.ClBackground);
@@ -161,21 +161,21 @@ void OmniCompressorAudioProcessorEditor::resized()
     const int labelHeight = 15;
     const int sliderSpacing = 20;
     const int sliderWidth = 55;
-    Rectangle<int> area (getLocalBounds());
+    juce::Rectangle<int> area (getLocalBounds());
 
-    Rectangle<int> footerArea (area.removeFromBottom(footerHeight));
+    juce::Rectangle<int> footerArea (area.removeFromBottom(footerHeight));
     footer.setBounds(footerArea);
 
     area.removeFromLeft(leftRightMargin);
     area.removeFromRight(leftRightMargin);
-    Rectangle<int> headerArea = area.removeFromTop(headerHeight);
+    juce::Rectangle<int> headerArea = area.removeFromTop(headerHeight);
     title.setBounds (headerArea);
     area.removeFromTop(10);
     area.removeFromBottom(5);
 
 
 
-    Rectangle<int> ctrlPlane = area.removeFromBottom(180);
+    juce::Rectangle<int> ctrlPlane = area.removeFromBottom(180);
     ctrlPlane.setWidth(270);
     ctrlPlane.setCentre(area.getCentreX(), ctrlPlane.getCentreY());
 
@@ -184,7 +184,7 @@ void OmniCompressorAudioProcessorEditor::resized()
     dbGRmeter.setBounds(ctrlPlane.removeFromRight(20));
     ctrlPlane.removeFromRight(10);
 
-    Rectangle<int> sliderRow;
+    juce::Rectangle<int> sliderRow;
 
     sliderRow = ctrlPlane.removeFromTop(sliderHeight);
 

@@ -34,32 +34,32 @@
 using namespace juce::dsp;
 
 typedef ReverseSlider::SliderAttachment SliderAttachment;
-typedef AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
-typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
+typedef juce::AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
+typedef juce::AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 
 //==============================================================================
 
-class FdnReverbAudioProcessorEditor  : public AudioProcessorEditor,
-                                        private Timer,
-                                        private Button::Listener,
-                                        private Slider::Listener
+class FdnReverbAudioProcessorEditor  : public juce::AudioProcessorEditor,
+                                        private juce::Timer,
+                                        private juce::Button::Listener,
+                                        private juce::Slider::Listener
 {
 public:
-    FdnReverbAudioProcessorEditor (FdnReverbAudioProcessor&, AudioProcessorValueTreeState&);
+    FdnReverbAudioProcessorEditor (FdnReverbAudioProcessor&, juce::AudioProcessorValueTreeState&);
     ~FdnReverbAudioProcessorEditor();
 
     //==============================================================================
-    void paint (Graphics&) override;
+    void paint (juce::Graphics&) override;
     void resized() override;
 
-    void buttonClicked (Button* button) override;
-    void sliderValueChanged (Slider* slider) override;
+    void buttonClicked (juce::Button* button) override;
+    void sliderValueChanged (juce::Slider* slider) override;
 
 private:
     LaF globalLaF;
 
     FdnReverbAudioProcessor& processor;
-    AudioProcessorValueTreeState& valueTreeState;
+    juce::AudioProcessorValueTreeState& valueTreeState;
 
     // Layout stuff (footers, headers, logos, etc.)
     TitleBar<NoIOWidget, NoIOWidget> title;
@@ -71,20 +71,20 @@ private:
     SimpleLabel fdnLbTime, fdnSize;
     // Functional stuff (sliders, Indicators, OpenGL Voodoo magic, etc.)
     // Groups
-    GroupComponent delayGroup, filterGroup, t60Group;
+    juce::GroupComponent delayGroup, filterGroup, t60Group;
 
-    // Sliders
+    // juce::Sliders
     ReverseSlider delayLengthSlider, revTimeSlider, fadeInSlider, dryWetSlider, highCutoffSlider, highQSlider, highGainSlider, lowCutoffSlider, lowQSlider, lowGainSlider;
 
     // ComboBox
-    ComboBox cbFdnSize;
+    juce::ComboBox cbFdnSize;
 
-    // Pointers for value tree state
+    // juce::Pointers for value tree state
     std::unique_ptr<SliderAttachment> delayAttachment, feedbackAttachment, fadeInAttachment, dryWetAttachment, highCutoffAttachment, highQAttachment, highGainAttachment, lowCutoffAttachment, lowQAttachment, lowGainAttachment;
     std::unique_ptr<ComboBoxAttachment> cbFdnSizeAttachment;
 
-    // Buttons
-    ToggleButton networkOrder, freezeMode;
+    // juce::Buttons
+    juce::ToggleButton networkOrder, freezeMode;
     std::unique_ptr<ButtonAttachment> networkOrderAttachment;
 
     // filter visualization

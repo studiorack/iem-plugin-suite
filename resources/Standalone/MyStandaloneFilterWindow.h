@@ -939,7 +939,7 @@ private:
         void valueChanged (juce::Value& value) override     { inputMutedChanged (value.getValue()); }
 
         //==============================================================================
-        void componentMovedOrResized (Component&, bool, bool wasResized) override
+        void componentMovedOrResized (juce::Component&, bool, bool wasResized) override
         {
             if (wasResized && editor != nullptr)
                 setSize (editor->getWidth(),

@@ -30,9 +30,9 @@ StereoEncoderAudioProcessor::StereoEncoderAudioProcessor()
                       BusesProperties()
 #if !JucePlugin_IsMidiEffect
 #if !JucePlugin_IsSynth
-                 .withInput ("Input", AudioChannelSet::stereo(), true)
+                 .withInput ("Input", juce::AudioChannelSet::stereo(), true)
 #endif
-                 .withOutput ("Output", AudioChannelSet::discreteChannels (64), true)
+                 .withOutput ("Output", juce::AudioChannelSet::discreteChannels (64), true)
 #endif
                  ,
 #endif
@@ -69,8 +69,8 @@ updatedPositionData (true)
 
     sphericalInput = true; //input from ypr
 
-    FloatVectorOperations::clear(SHL, 64);
-    FloatVectorOperations::clear(SHR, 64);
+    juce::FloatVectorOperations::clear(SHL, 64);
+    juce::FloatVectorOperations::clear(SHR, 64);
 }
 
 StereoEncoderAudioProcessor::~StereoEncoderAudioProcessor()
@@ -93,12 +93,12 @@ void StereoEncoderAudioProcessor::setCurrentProgram (int index)
 {
 }
 
-const String StereoEncoderAudioProcessor::getProgramName (int index)
+const juce::String StereoEncoderAudioProcessor::getProgramName (int index)
 {
-    return String();
+    return juce::String();
 }
 
-void StereoEncoderAudioProcessor::changeProgramName (int index, const String &newName)
+void StereoEncoderAudioProcessor::changeProgramName (int index, const juce::String &newName)
 {
 }
 
@@ -109,11 +109,11 @@ void StereoEncoderAudioProcessor::prepareToPlay (double sampleRate, int samplesP
 
     bufferCopy.setSize(2, samplesPerBlock);
 
-    smoothAzimuthL.setCurrentAndTargetValue (*azimuth / 180.0f * MathConstants<float>::pi);
-    smoothElevationL.setCurrentAndTargetValue (*elevation / 180.0f * MathConstants<float>::pi);
+    smoothAzimuthL.setCurrentAndTargetValue (*azimuth / 180.0f * juce::MathConstants<float>::pi);
+    smoothElevationL.setCurrentAndTargetValue (*elevation / 180.0f * juce::MathConstants<float>::pi);
 
-    smoothAzimuthR.setCurrentAndTargetValue (*azimuth / 180.0f * MathConstants<float>::pi);
-    smoothElevationR.setCurrentAndTargetValue (*elevation / 180.0f * MathConstants<float>::pi);
+    smoothAzimuthR.setCurrentAndTargetValue (*azimuth / 180.0f * juce::MathConstants<float>::pi);
+    smoothElevationR.setCurrentAndTargetValue (*elevation / 180.0f * juce::MathConstants<float>::pi);
 
     smoothAzimuthL.reset(1, samplesPerBlock);
     smoothElevationL.reset(1, samplesPerBlock);
@@ -174,15 +174,15 @@ void StereoEncoderAudioProcessor::updateEuler()
     processorUpdatingParams = false;
 }
 
-void StereoEncoderAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer &midiMessages)
+void StereoEncoderAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer &midiMessages)
 {
     checkInputAndOutput(this, 2, *orderSetting);
 
     const int L = buffer.getNumSamples();
     const int totalNumInputChannels = getTotalNumInputChannels() < 2 ? 1 : 2;
 
-    const int ambisonicOrder = *orderSetting < 0.5f ? output.getOrder() : roundToInt (orderSetting->load()) - 1;
-    const int nChOut = jmin (buffer.getNumChannels(), square(ambisonicOrder + 1));
+    const int ambisonicOrder = *orderSetting < 0.5f ? output.getOrder() : juce::roundToInt (orderSetting->load()) - 1;
+    const int nChOut = juce::jmin (buffer.getNumChannels(), juce::square (ambisonicOrder + 1));
 
     for (int i = 0; i < totalNumInputChannels; ++i)
         bufferCopy.copyFrom(i, 0, buffer.getReadPointer(i), buffer.getNumSamples());
@@ -216,8 +216,8 @@ void StereoEncoderAudioProcessor::processBlock (AudioBuffer<float>& buffer, Midi
 
             if (*useSN3D > 0.5f)
             {
-                FloatVectorOperations::multiply(SHL, SHL, n3d2sn3d, nChOut);
-                FloatVectorOperations::multiply(SHR, SHR, n3d2sn3d, nChOut);
+                juce::FloatVectorOperations::multiply(SHL, SHL, n3d2sn3d, nChOut);
+                juce::FloatVectorOperations::multiply(SHR, SHR, n3d2sn3d, nChOut);
             }
         }
         const float *leftIn = bufferCopy.getReadPointer(0);
@@ -230,25 +230,25 @@ void StereoEncoderAudioProcessor::processBlock (AudioBuffer<float>& buffer, Midi
     }
     else // high-quality sampling
     {
-        if (smoothAzimuthL.getTargetValue() - azimuthL > MathConstants<float>::pi)
-            smoothAzimuthL.setCurrentAndTargetValue (smoothAzimuthL.getTargetValue() - 2.0f * MathConstants<float>::pi);
-        else if (azimuthL - smoothAzimuthL.getTargetValue() > MathConstants<float>::pi)
-            smoothAzimuthL.setCurrentAndTargetValue (smoothAzimuthL.getTargetValue() + 2.0f * MathConstants<float>::pi);
+        if (smoothAzimuthL.getTargetValue() - azimuthL > juce::MathConstants<float>::pi)
+            smoothAzimuthL.setCurrentAndTargetValue (smoothAzimuthL.getTargetValue() - 2.0f * juce::MathConstants<float>::pi);
+        else if (azimuthL - smoothAzimuthL.getTargetValue() > juce::MathConstants<float>::pi)
+            smoothAzimuthL.setCurrentAndTargetValue (smoothAzimuthL.getTargetValue() + 2.0f * juce::MathConstants<float>::pi);
 
-        if (smoothElevationL.getTargetValue() - elevationL > MathConstants<float>::pi)
-            smoothElevationL.setCurrentAndTargetValue (smoothElevationL.getTargetValue() - 2.0f * MathConstants<float>::pi);
-        else if (elevationL - smoothElevationL.getTargetValue() > MathConstants<float>::pi)
-            smoothElevationL.setCurrentAndTargetValue (smoothElevationL.getTargetValue() + 2.0f * MathConstants<float>::pi);
+        if (smoothElevationL.getTargetValue() - elevationL > juce::MathConstants<float>::pi)
+            smoothElevationL.setCurrentAndTargetValue (smoothElevationL.getTargetValue() - 2.0f * juce::MathConstants<float>::pi);
+        else if (elevationL - smoothElevationL.getTargetValue() > juce::MathConstants<float>::pi)
+            smoothElevationL.setCurrentAndTargetValue (smoothElevationL.getTargetValue() + 2.0f * juce::MathConstants<float>::pi);
 
-        if (smoothAzimuthR.getTargetValue() - azimuthR > MathConstants<float>::pi)
-            smoothAzimuthR.setCurrentAndTargetValue (smoothAzimuthR.getTargetValue() - 2.0f * MathConstants<float>::pi);
-        else if (azimuthR - smoothAzimuthR.getTargetValue() > MathConstants<float>::pi)
-            smoothAzimuthR.setCurrentAndTargetValue (smoothAzimuthR.getTargetValue() + 2.0f * MathConstants<float>::pi);
+        if (smoothAzimuthR.getTargetValue() - azimuthR > juce::MathConstants<float>::pi)
+            smoothAzimuthR.setCurrentAndTargetValue (smoothAzimuthR.getTargetValue() - 2.0f * juce::MathConstants<float>::pi);
+        else if (azimuthR - smoothAzimuthR.getTargetValue() > juce::MathConstants<float>::pi)
+            smoothAzimuthR.setCurrentAndTargetValue (smoothAzimuthR.getTargetValue() + 2.0f * juce::MathConstants<float>::pi);
 
-        if (smoothElevationR.getTargetValue() - elevationR > MathConstants<float>::pi)
-            smoothElevationR.setCurrentAndTargetValue (smoothElevationR.getTargetValue() - 2.0f * MathConstants<float>::pi);
-        else if (elevationR - smoothElevationR.getTargetValue() > MathConstants<float>::pi)
-            smoothElevationR.setCurrentAndTargetValue (smoothElevationR.getTargetValue() + 2.0f * MathConstants<float>::pi);
+        if (smoothElevationR.getTargetValue() - elevationR > juce::MathConstants<float>::pi)
+            smoothElevationR.setCurrentAndTargetValue (smoothElevationR.getTargetValue() - 2.0f * juce::MathConstants<float>::pi);
+        else if (elevationR - smoothElevationR.getTargetValue() > juce::MathConstants<float>::pi)
+            smoothElevationR.setCurrentAndTargetValue (smoothElevationR.getTargetValue() + 2.0f * juce::MathConstants<float>::pi);
 
         smoothAzimuthL.setTargetValue (azimuthL);
         smoothElevationL.setTargetValue (elevationL);
@@ -261,7 +261,7 @@ void StereoEncoderAudioProcessor::processBlock (AudioBuffer<float>& buffer, Midi
             const float elevation = smoothElevationL.getNextValue();
             float sample = bufferCopy.getSample(0, i);
 
-            const Vector3D<float> pos = Conversions<float>::sphericalToCartesian(azimuth, elevation);
+            const juce::Vector3D<float> pos = Conversions<float>::sphericalToCartesian(azimuth, elevation);
             SHEval(ambisonicOrder, pos.x, pos.y, pos.z, SHL);
 
             for (int ch = 0; ch < nChOut; ++ch)
@@ -274,7 +274,7 @@ void StereoEncoderAudioProcessor::processBlock (AudioBuffer<float>& buffer, Midi
             const float elevation = smoothElevationR.getNextValue();
             float sample = bufferCopy.getSample(1, i);
 
-            const Vector3D<float> pos = Conversions<float>::sphericalToCartesian(azimuth, elevation);
+            const juce::Vector3D<float> pos = Conversions<float>::sphericalToCartesian(azimuth, elevation);
             SHEval(ambisonicOrder, pos.x, pos.y, pos.z, SHR);
 
             for (int ch = 0; ch < nChOut; ++ch)
@@ -288,12 +288,12 @@ void StereoEncoderAudioProcessor::processBlock (AudioBuffer<float>& buffer, Midi
                 buffer.applyGain(ch, 0, L, n3d2sn3d[ch]);
             }
 
-            FloatVectorOperations::multiply(SHL, SHL, n3d2sn3d, nChOut);
-            FloatVectorOperations::multiply(SHR, SHR, n3d2sn3d, nChOut);
+            juce::FloatVectorOperations::multiply(SHL, SHL, n3d2sn3d, nChOut);
+            juce::FloatVectorOperations::multiply(SHR, SHR, n3d2sn3d, nChOut);
         }
     }
-    FloatVectorOperations::copy(_SHL, SHL, nChOut);
-    FloatVectorOperations::copy(_SHR, SHR, nChOut);
+    juce::FloatVectorOperations::copy(_SHL, SHL, nChOut);
+    juce::FloatVectorOperations::copy(_SHR, SHR, nChOut);
 }
 
 //==============================================================================
@@ -301,12 +301,12 @@ bool StereoEncoderAudioProcessor::hasEditor() const {
     return true; // (change this to false if you choose to not supply an editor)
 }
 
-AudioProcessorEditor *StereoEncoderAudioProcessor::createEditor()
+juce::AudioProcessorEditor *StereoEncoderAudioProcessor::createEditor()
 {
     return new StereoEncoderAudioProcessorEditor (*this, parameters);
 }
 
-void StereoEncoderAudioProcessor::parameterChanged (const String &parameterID, float newValue) {
+void StereoEncoderAudioProcessor::parameterChanged (const juce::String &parameterID, float newValue) {
     if (!processorUpdatingParams) {
         if (parameterID == "qw" || parameterID == "qx" || parameterID == "qy" || parameterID == "qz")
         {
@@ -341,27 +341,27 @@ void StereoEncoderAudioProcessor::parameterChanged (const String &parameterID, f
 
 
 //==============================================================================
-void StereoEncoderAudioProcessor::getStateInformation (MemoryBlock &destData)
+void StereoEncoderAudioProcessor::getStateInformation (juce::MemoryBlock &destData)
 {
     auto state = parameters.copyState();
 
     auto oscConfig = state.getOrCreateChildWithName ("OSCConfig", nullptr);
     oscConfig.copyPropertiesFrom (oscParameterInterface.getConfig(), nullptr);
 
-    std::unique_ptr<XmlElement> xml (state.createXml());
+    std::unique_ptr<juce::XmlElement> xml (state.createXml());
     copyXmlToBinary (*xml, destData);
 }
 
 void StereoEncoderAudioProcessor::setStateInformation (const void *data, int sizeInBytes)
 {
-    std::unique_ptr<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
+    std::unique_ptr<juce::XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
     if (xmlState.get() != nullptr)
         if (xmlState->hasTagName (parameters.state.getType()))
         {
-            parameters.replaceState (ValueTree::fromXml (*xmlState));
+            parameters.replaceState (juce::ValueTree::fromXml (*xmlState));
             if (parameters.state.hasProperty ("OSCPort")) // legacy
             {
-                oscParameterInterface.getOSCReceiver().connect (parameters.state.getProperty ("OSCPort", var (-1)));
+                oscParameterInterface.getOSCReceiver().connect (parameters.state.getProperty ("OSCPort", juce::var (-1)));
                 parameters.state.removeProperty ("OSCPort", nullptr);
             }
 
@@ -376,14 +376,14 @@ void StereoEncoderAudioProcessor::setStateInformation (const void *data, int siz
 //==============================================================================
 
 
-const bool StereoEncoderAudioProcessor::processNotYetConsumedOSCMessage (const OSCMessage &message)
+const bool StereoEncoderAudioProcessor::processNotYetConsumedOSCMessage (const juce::OSCMessage &message)
 {
-    String prefix ("/" + String (JucePlugin_Name));
+    juce::String prefix ("/" + juce::String (JucePlugin_Name));
     if (! message.getAddressPattern().toString().startsWith (prefix))
         return false;
 
-    OSCMessage msg (message);
-    msg.setAddressPattern (message.getAddressPattern().toString().substring (String (JucePlugin_Name).length() + 1));
+    juce::OSCMessage msg (message);
+    msg.setAddressPattern (message.getAddressPattern().toString().substring (juce::String (JucePlugin_Name).length() + 1));
 
     if (msg.getAddressPattern().toString().equalsIgnoreCase ("/quaternions") && msg.size() == 4)
     {
@@ -408,15 +408,15 @@ const bool StereoEncoderAudioProcessor::processNotYetConsumedOSCMessage (const O
 
 
 //==============================================================================
-std::vector<std::unique_ptr<RangedAudioParameter>> StereoEncoderAudioProcessor::createParameterLayout()
+std::vector<std::unique_ptr<juce::RangedAudioParameter>> StereoEncoderAudioProcessor::createParameterLayout()
 {
     // add your audio parameters here
-    std::vector<std::unique_ptr<RangedAudioParameter>> params;
+    std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
 
 
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("orderSetting", "Ambisonics Order", "",
-                                                 NormalisableRange<float>(0.0f, 8.0f, 1.0f), 0.0f,
+                                                 juce::NormalisableRange<float>(0.0f, 8.0f, 1.0f), 0.0f,
                                                  [](float value) {
                                                      if (value >= 0.5f && value < 1.5f) return "0th";
                                                      else if (value >= 1.5f && value < 2.5f) return "1st";
@@ -431,46 +431,46 @@ std::vector<std::unique_ptr<RangedAudioParameter>> StereoEncoderAudioProcessor::
 
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("useSN3D", "Normalization", "",
-                                                 NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
+                                                 juce::NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
                                                  [](float value) {
                                                      if (value >= 0.5f) return "SN3D";
                                                      else return "N3D";
                                                  }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("qw", "Quaternion W", "",
-                                                 NormalisableRange<float>(-1.0f, 1.0f, 0.001f), 1.0,
-                                                 [](float value) { return String(value, 2); }, nullptr, true));
+                                                 juce::NormalisableRange<float>(-1.0f, 1.0f, 0.001f), 1.0,
+                                                 [](float value) { return juce::String(value, 2); }, nullptr, true));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("qx", "Quaternion X", "",
-                                                 NormalisableRange<float>(-1.0f, 1.0f, 0.001f), 0.0,
-                                                 [](float value) { return String(value, 2); }, nullptr, true));
+                                                 juce::NormalisableRange<float>(-1.0f, 1.0f, 0.001f), 0.0,
+                                                 [](float value) { return juce::String(value, 2); }, nullptr, true));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("qy", "Quaternion Y", "",
-                                                 NormalisableRange<float>(-1.0f, 1.0f, 0.001f), 0.0,
-                                                 [](float value) { return String(value, 2); }, nullptr, true));
+                                                 juce::NormalisableRange<float>(-1.0f, 1.0f, 0.001f), 0.0,
+                                                 [](float value) { return juce::String(value, 2); }, nullptr, true));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("qz", "Quaternion Z", "",
-                                                 NormalisableRange<float>(-1.0f, 1.0f, 0.001f), 0.0,
-                                                 [](float value) { return String(value, 2); }, nullptr, true));
+                                                 juce::NormalisableRange<float>(-1.0f, 1.0f, 0.001f), 0.0,
+                                                 [](float value) { return juce::String(value, 2); }, nullptr, true));
 
-    params.push_back (OSCParameterInterface::createParameterTheOldWay ("azimuth", "Azimuth Angle", CharPointer_UTF8 (R"(°)"),
-                                                 NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
-                                                 [](float value) { return String(value, 2); }, nullptr, true));
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("azimuth", "Azimuth Angle", juce::CharPointer_UTF8 (R"(°)"),
+                                                 juce::NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
+                                                 [](float value) { return juce::String(value, 2); }, nullptr, true));
 
-    params.push_back (OSCParameterInterface::createParameterTheOldWay ("elevation", "Elevation Angle", CharPointer_UTF8 (R"(°)"),
-                                                 NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
-                                                 [](float value) { return String(value, 2); }, nullptr, true));
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("elevation", "Elevation Angle", juce::CharPointer_UTF8 (R"(°)"),
+                                                 juce::NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
+                                                 [](float value) { return juce::String(value, 2); }, nullptr, true));
 
-    params.push_back (OSCParameterInterface::createParameterTheOldWay ("roll", "Roll Angle", CharPointer_UTF8 (R"(°)"),
-                                                 NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
-                                                 [](float value) { return String(value, 2); }, nullptr, true));
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("roll", "Roll Angle", juce::CharPointer_UTF8 (R"(°)"),
+                                                 juce::NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
+                                                 [](float value) { return juce::String(value, 2); }, nullptr, true));
 
-    params.push_back (OSCParameterInterface::createParameterTheOldWay ("width", "Stereo Width", CharPointer_UTF8 (R"(°)"),
-                                                 NormalisableRange<float>(-360.0f, 360.0f, 0.01f), 0.0,
-                                                 [](float value) { return String(value, 2); }, nullptr));
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("width", "Stereo Width", juce::CharPointer_UTF8 (R"(°)"),
+                                                 juce::NormalisableRange<float>(-360.0f, 360.0f, 0.01f), 0.0,
+                                                 [](float value) { return juce::String(value, 2); }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("highQuality", "Sample-wise Panning", "",
-                                                 NormalisableRange<float>(0.0f, 1.0f, 1.0f), 0.0f,
+                                                 juce::NormalisableRange<float>(0.0f, 1.0f, 1.0f), 0.0f,
                                                  [](float value) { return value < 0.5f ? "OFF" : "ON"; }, nullptr));
 
 
@@ -479,6 +479,6 @@ std::vector<std::unique_ptr<RangedAudioParameter>> StereoEncoderAudioProcessor::
 
 //==============================================================================
 // This creates new instances of the plugin..
-AudioProcessor *JUCE_CALLTYPE createPluginFilter() {
+juce::AudioProcessor *JUCE_CALLTYPE createPluginFilter() {
     return new StereoEncoderAudioProcessor();
 }

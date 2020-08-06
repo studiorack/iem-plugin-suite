@@ -86,7 +86,7 @@ public:
     {
         float orderBlend, integer;
         orderBlend = modff(order, &integer);
-        int lowerOrder = roundToInt(integer);
+        int lowerOrder = juce::roundToInt(integer);
 
         if (lowerOrder == 7)
         {
@@ -138,7 +138,7 @@ public:
 
         if (useSN3D) // apply SN3D normalization
         {
-            FloatVectorOperations::multiply(weights, Weights::n3d2sn3d, decodeOrder + 1);
+            juce::FloatVectorOperations::multiply(weights, Weights::n3d2sn3d, decodeOrder + 1);
         }
     }
 
@@ -166,7 +166,7 @@ public:
         float orderBlend, integer;
         modff(order, &integer);
         orderBlend = getFractionalOrderBlendFactor (order);
-        int lowerOrder = roundToInt(integer);
+        int lowerOrder = juce::roundToInt(integer);
 
         if (lowerOrder == 7)
         {

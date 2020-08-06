@@ -29,7 +29,7 @@
 //#define DEBUG_PARAMETERS_FOR_DOCUMENTATION
 
 /**
- This class can be used to add parameters to a AudioProcessorValueTree and make them controllable via OSC. The used parameterID will be saved in a StringArray. If the OSCPattern of the forwarded OSCMessages matches one of the parameterIDs, that Parameter will be controlled.
+ This class can be used to add parameters to a AudioProcessorValueTree and make them controllable via OSC. The used parameterID will be saved in a juce::StringArray. If the OSCPattern of the forwarded OSCMessages matches one of the parameterIDs, that Parameter will be controlled.
  */
 
 

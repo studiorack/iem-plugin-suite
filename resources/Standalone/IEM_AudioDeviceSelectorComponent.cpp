@@ -417,7 +417,7 @@ public:
     {
         if (auto* device = setup.manager->getCurrentAudioDevice())
         {
-            Component modalWindow;
+            juce::Component modalWindow;
             modalWindow.setOpaque (true);
             modalWindow.addToDesktop (0);
             modalWindow.enterModalState();

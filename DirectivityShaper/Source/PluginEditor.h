@@ -29,7 +29,7 @@
 #include "../../resources/lookAndFeel/IEM_LaF.h"
 #include "../../resources/customComponents/TitleBar.h"
 
-//Custom Components
+//Custom juce::Components
 #include "../../resources/customComponents/ReverseSlider.h"
 #include "../../resources/customComponents/SimpleLabel.h"
 #include "ShapeAndOrderXyPad.h"
@@ -39,27 +39,27 @@
 
 
 typedef ReverseSlider::SliderAttachment SliderAttachment;
-typedef AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
-typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
+typedef juce::AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
+typedef juce::AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 
 //==============================================================================
 /**
 */
-class DirectivityShaperAudioProcessorEditor  : public AudioProcessorEditor, private Timer
+class DirectivityShaperAudioProcessorEditor  : public juce::AudioProcessorEditor, private juce::Timer
 {
 public:
-    DirectivityShaperAudioProcessorEditor (DirectivityShaperAudioProcessor&, AudioProcessorValueTreeState&);
+    DirectivityShaperAudioProcessorEditor (DirectivityShaperAudioProcessor&, juce::AudioProcessorValueTreeState&);
     ~DirectivityShaperAudioProcessorEditor();
 
     //==============================================================================
-    void paint (Graphics&) override;
+    void paint (juce::Graphics&) override;
     void resized() override;
 
 private:
     LaF globalLaF;
 
     DirectivityShaperAudioProcessor& processor;
-    AudioProcessorValueTreeState& valueTreeState;
+    juce::AudioProcessorValueTreeState& valueTreeState;
 
     ShapeAndOrderXyPad xyPad;
 
@@ -73,7 +73,7 @@ private:
     int maxPossibleOrder = -1;
     int ambisonicOrder = -1;
 
-    ComboBox cbFilterType[numberOfBands];
+    juce::ComboBox cbFilterType[numberOfBands];
     ReverseSlider slFilterFrequency[numberOfBands];
     ReverseSlider slFilterQ[numberOfBands];
     ReverseSlider slFilterGain[numberOfBands];
@@ -84,7 +84,7 @@ private:
     ReverseSlider slProbeAzimuth;
     ReverseSlider slProbeElevation;
     ReverseSlider slProbeRoll;
-    ComboBox cbDirectivityNormalization;
+    juce::ComboBox cbDirectivityNormalization;
     std::unique_ptr<ComboBoxAttachment> cbDirectivityNormalizationAttachment; // on-axis, energy
 
 
@@ -96,9 +96,9 @@ private:
     SimpleLabel lbProbeAzimuth, lbProbeElevation, lbProbeRoll;
     SimpleLabel lbNormalization;
 
-    GroupComponent gcFilterBands, gcOrderAndShape, gcPanning, gcSettings;
+    juce::GroupComponent gcFilterBands, gcOrderAndShape, gcPanning, gcSettings;
 
-    ToggleButton tbProbeLock;
+    juce::ToggleButton tbProbeLock;
     std::unique_ptr<ComboBoxAttachment> cbFilterTypeAttachment[numberOfBands];
     std::unique_ptr<SliderAttachment> slFilterFrequencyAttachment[numberOfBands];
     std::unique_ptr<SliderAttachment> slFilterQAttachment[numberOfBands];

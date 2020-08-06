@@ -35,7 +35,7 @@
 //==============================================================================
 /**
 */
-class EnergyVisualizerAudioProcessor  : public AudioProcessorBase<IOTypes::Ambisonics<>, IOTypes::Nothing>, private Timer
+class EnergyVisualizerAudioProcessor  : public AudioProcessorBase<IOTypes::Ambisonics<>, IOTypes::Nothing>, private juce::Timer
 {
 public:
     constexpr static int numberOfInputChannels = 64;
@@ -48,36 +48,36 @@ public:
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;
 
-    void processBlock (AudioSampleBuffer&, MidiBuffer&) override;
+    void processBlock (juce::AudioSampleBuffer&, juce::MidiBuffer&) override;
 
     //==============================================================================
-    AudioProcessorEditor* createEditor() override;
+    juce::AudioProcessorEditor* createEditor() override;
     bool hasEditor() const override;
 
     //==============================================================================
     int getNumPrograms() override;
     int getCurrentProgram() override;
     void setCurrentProgram (int index) override;
-    const String getProgramName (int index) override;
-    void changeProgramName (int index, const String& newName) override;
+    const juce::String getProgramName (int index) override;
+    void changeProgramName (int index, const juce::String& newName) override;
 
     //==============================================================================
-    void getStateInformation (MemoryBlock& destData) override;
+    void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
     //==============================================================================
-    void parameterChanged (const String &parameterID, float newValue) override;
+    void parameterChanged (const juce::String &parameterID, float newValue) override;
 
 
     //======= Parameters ===========================================================
-    std::vector<std::unique_ptr<RangedAudioParameter>> createParameterLayout();
+    std::vector<std::unique_ptr<juce::RangedAudioParameter>> createParameterLayout();
     //==============================================================================
 
     const float getPeakLevelSetting() { return *peakLevel; }
     const float getDynamicRange() { return *dynamicRange; }
 
     std::vector<float> rms;
-    Atomic<Time> lastEditorTime;
+    juce::Atomic<juce::Time> lastEditorTime;
 
 private:
     //==============================================================================
@@ -89,14 +89,14 @@ private:
 
     float timeConstant;
 
-    Atomic<bool> doProcessing = true;
+    juce::Atomic<bool> doProcessing = true;
 
-    dsp::Matrix<float> decoderMatrix;
+    juce::dsp::Matrix<float> decoderMatrix;
     std::vector<float> weights;
     std::vector<float> sampledSignal;
 
     void timerCallback() override;
-    void sendAdditionalOSCMessages (OSCSender& oscSender, const OSCAddressPattern& address) override;
+    void sendAdditionalOSCMessages (juce::OSCSender& oscSender, const juce::OSCAddressPattern& address) override;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (EnergyVisualizerAudioProcessor)

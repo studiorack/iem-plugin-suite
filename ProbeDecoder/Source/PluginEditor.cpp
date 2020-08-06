@@ -24,8 +24,8 @@
 #include "PluginEditor.h"
 
 //==============================================================================
-ProbeDecoderAudioProcessorEditor::ProbeDecoderAudioProcessorEditor (ProbeDecoderAudioProcessor& p, AudioProcessorValueTreeState& vts)
-: AudioProcessorEditor (&p), footer (p.getOSCParameterInterface()), processor (p), valueTreeState(vts),
+ProbeDecoderAudioProcessorEditor::ProbeDecoderAudioProcessorEditor (ProbeDecoderAudioProcessor& p, juce::AudioProcessorValueTreeState& vts)
+: juce::AudioProcessorEditor (&p), footer (p.getOSCParameterInterface()), processor (p), valueTreeState(vts),
 probe(*valueTreeState.getParameter("azimuth"), valueTreeState.getParameterRange("azimuth"),
       *valueTreeState.getParameter("elevation"), valueTreeState.getParameterRange("elevation"))
 {
@@ -38,7 +38,7 @@ probe(*valueTreeState.getParameter("azimuth"), valueTreeState.getParameterRange(
     addAndMakeVisible(&sphere);
     //sphere.addListener(this);
 
-    probe.setColour(Colours::aqua);
+    probe.setColour(juce::Colours::aqua);
     sphere.addElement(&probe);
 
 
@@ -46,7 +46,7 @@ probe(*valueTreeState.getParameter("azimuth"), valueTreeState.getParameterRange(
 
 
     addAndMakeVisible(&title);
-    title.setTitle(String("Probe"),String("Decoder"));
+    title.setTitle(juce::String("Probe"),juce::String("Decoder"));
     title.setFont(globalLaF.robotoBold,globalLaF.robotoLight);
 
     addAndMakeVisible(&footer);
@@ -62,28 +62,28 @@ probe(*valueTreeState.getParameter("azimuth"), valueTreeState.getParameterRange(
 
     // ======================== YAW PITCH ROLL GROUP
     ypGroup.setText("Azimuth & Elevation");
-    ypGroup.setTextLabelPosition (Justification::centredLeft);
-    ypGroup.setColour (GroupComponent::outlineColourId, globalLaF.ClSeperator);
-    ypGroup.setColour (GroupComponent::textColourId, Colours::white);
+    ypGroup.setTextLabelPosition (juce::Justification::centredLeft);
+    ypGroup.setColour (juce::GroupComponent::outlineColourId, globalLaF.ClSeperator);
+    ypGroup.setColour (juce::GroupComponent::textColourId, juce::Colours::white);
     addAndMakeVisible(&ypGroup);
     ypGroup.setVisible(true);
 
     addAndMakeVisible(&slAzimuth);
     slAzimuthAttachment.reset (new SliderAttachment (valueTreeState,"azimuth", slAzimuth));
-    slAzimuth.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slAzimuth.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
+    slAzimuth.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slAzimuth.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
     slAzimuth.setReverse(true);
-    slAzimuth.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
-    slAzimuth.setRotaryParameters(MathConstants<float>::pi, 3*MathConstants<float>::pi, false);
+    slAzimuth.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
+    slAzimuth.setRotaryParameters(juce::MathConstants<float>::pi, 3 * juce::MathConstants<float>::pi, false);
     slAzimuth.setTooltip("Azimuth angle");
-    slAzimuth.setTextValueSuffix(CharPointer_UTF8 (R"(°)"));
+    slAzimuth.setTextValueSuffix(juce::CharPointer_UTF8 (R"(°)"));
 
     addAndMakeVisible(&slElevation);
     slElevationAttachment.reset (new SliderAttachment (valueTreeState,"elevation", slElevation));
-    slElevation.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slElevation.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slElevation.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
-    slElevation.setRotaryParameters(0.5*MathConstants<float>::pi, 2.5*MathConstants<float>::pi, false);
+    slElevation.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slElevation.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    slElevation.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
+    slElevation.setRotaryParameters(0.5 * juce::MathConstants<float>::pi, 2.5 * juce::MathConstants<float>::pi, false);
     slElevation.setTooltip("Elevation angle");
 
 
@@ -104,7 +104,7 @@ ProbeDecoderAudioProcessorEditor::~ProbeDecoderAudioProcessorEditor()
 }
 
 //==============================================================================
-void ProbeDecoderAudioProcessorEditor::paint (Graphics& g)
+void ProbeDecoderAudioProcessorEditor::paint (juce::Graphics& g)
 {
     g.fillAll (globalLaF.ClBackground);
 }
@@ -128,22 +128,22 @@ void ProbeDecoderAudioProcessorEditor::resized()
     const int leftRightMargin = 30;
     const int headerHeight = 60;
     const int footerHeight = 25;
-    Rectangle<int> area (getLocalBounds());
+    juce::Rectangle<int> area (getLocalBounds());
 
-    Rectangle<int> footerArea (area.removeFromBottom (footerHeight));
+    juce::Rectangle<int> footerArea (area.removeFromBottom (footerHeight));
     footer.setBounds(footerArea);
 
     area.removeFromLeft(leftRightMargin);
     area.removeFromRight(leftRightMargin);
-    Rectangle<int> headerArea = area.removeFromTop    (headerHeight);
+    juce::Rectangle<int> headerArea = area.removeFromTop    (headerHeight);
     title.setBounds (headerArea);
     area.removeFromTop(10);
 
-    Rectangle<int> sliderRow;
+    juce::Rectangle<int> sliderRow;
 
     // ============== SIDEBAR RIGHT ====================
     // =================================================
-    Rectangle<int> sideBarArea (area.removeFromRight(190));
+    juce::Rectangle<int> sideBarArea (area.removeFromRight(190));
 
     const int rotSliderHeight = 55;
     const int rotSliderSpacing = 10;
@@ -153,7 +153,7 @@ void ProbeDecoderAudioProcessorEditor::resized()
 
 
     // -------------- Yaw Pitch Roll ------------------
-    Rectangle<int> yprArea (sideBarArea.removeFromTop(25 + rotSliderHeight + labelHeight));
+    juce::Rectangle<int> yprArea (sideBarArea.removeFromTop(25 + rotSliderHeight + labelHeight));
     ypGroup.setBounds (yprArea);
     yprArea.removeFromTop(25); //for box headline
 

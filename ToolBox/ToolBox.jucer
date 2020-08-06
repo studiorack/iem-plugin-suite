@@ -9,10 +9,10 @@
               pluginManufacturerCode="IEMA" pluginCode="ToBo" pluginChannelConfigs=""
               pluginIsSynth="0" pluginWantsMidiIn="0" pluginProducesMidiOut="0"
               pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0" pluginAUExportPrefix="ToolBoxAU"
-              aaxIdentifier="at.iem.ToolBox" pluginAAXCategory="2" jucerVersion="5.4.7"
-              companyCopyright="IEM - Daniel Rudrich" companyName="IEM" companyWebsite="iem.at"
-              headerPath="../../../resources/" pluginFormats="buildStandalone,buildVST"
-              defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1">
+              aaxIdentifier="at.iem.ToolBox" pluginAAXCategory="2" companyCopyright="IEM - Daniel Rudrich"
+              companyName="IEM" companyWebsite="iem.at" headerPath="../../../resources/"
+              pluginFormats="buildStandalone,buildVST" defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1"
+              projectLineFeed="&#10;" addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1">
   <MAINGROUP id="LpzrV9" name="ToolBox">
     <GROUP id="{DF461C38-FAA0-FB07-CFAE-FB96A168C32F}" name="Standalone">
       <FILE id="yoGjl7" name="IEM_AudioDeviceSelectorComponent.cpp" compile="1"

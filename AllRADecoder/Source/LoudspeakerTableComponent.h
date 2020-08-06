@@ -174,7 +174,7 @@ public:
         }
 
 
-        // The other columns are editable text columns, for which we use the custom Label component
+        // The other columns are editable text columns, for which we use the custom juce::Label component
         EditableTextCustomComponent* textLabel = static_cast<EditableTextCustomComponent*> (existingComponentToUpdate);
 
         // same as above...
@@ -281,7 +281,7 @@ private:
         void mouseDown (const juce::MouseEvent& event) override
         {
             owner.table.selectRowsBasedOnModifierKeys (row, event.mods, false);
-            Label::mouseDown (event);
+            juce::Label::mouseDown (event);
         }
 
         void textWasEdited() override
@@ -325,7 +325,7 @@ private:
                                   juce::jmax (1, (int) (textArea.getHeight() / 12.0f)),
                                   getMinimumHorizontalScale());
 
-                g.setColour (findColour (Label::outlineColourId).withMultipliedAlpha (alpha));
+                g.setColour (findColour (juce::Label::outlineColourId).withMultipliedAlpha (alpha));
             }
         }
 
@@ -341,7 +341,7 @@ private:
         RemoveButton (LoudspeakerTableComponent& td)  : owner (td)
         {
             setButtonText("Remove");
-            setColour(TextButton::buttonColourId, juce::Colours::orangered);
+            setColour(juce::TextButton::buttonColourId, juce::Colours::orangered);
             onClick = [this](){ owner.undoManager.beginNewTransaction(); owner.data.removeChild(owner.data.getChild(row), &owner.undoManager);};
         }
 
@@ -358,7 +358,7 @@ private:
             juce::Rectangle<float> buttonArea(0.0f, 0.0f, getWidth(), getHeight());
             buttonArea.reduce(2.0f, 2.0f);
 
-            g.setColour(findColour(TextButton::buttonColourId).withMultipliedAlpha(isButtonDown ? 1.0f : isMouseOverButton ? 0.7f : 0.5f));
+            g.setColour(findColour(juce::TextButton::buttonColourId).withMultipliedAlpha(isButtonDown ? 1.0f : isMouseOverButton ? 0.7f : 0.5f));
             if (isButtonDown)
                 buttonArea.reduce(0.8f, 0.8f);
             else if (isMouseOverButton)
@@ -367,7 +367,7 @@ private:
             g.drawRoundedRectangle(buttonArea, 2.0f, 1.0f);
 
             buttonArea.reduce(1.5f, 1.5f);
-            g.setColour(findColour(TextButton::buttonColourId).withMultipliedAlpha(isButtonDown ? 1.0f : isMouseOverButton ? 0.5f : 0.2f));
+            g.setColour(findColour(juce::TextButton::buttonColourId).withMultipliedAlpha(isButtonDown ? 1.0f : isMouseOverButton ? 0.5f : 0.2f));
 
             g.fillRoundedRectangle(buttonArea, 2.0f);
 
@@ -385,7 +385,7 @@ private:
         NoiseButton (LoudspeakerTableComponent& td)  : owner (td)
         {
             setButtonText("Noise");
-            setColour (TextButton::buttonColourId, juce::Colours::green);
+            setColour (juce::TextButton::buttonColourId, juce::Colours::green);
             onClick = [this](){ owner.playNoise(row); };
         }
 
@@ -402,7 +402,7 @@ private:
             juce::Rectangle<float> buttonArea(0.0f, 0.0f, getWidth(), getHeight());
             buttonArea.reduce(2.0f, 2.0f);
 
-            g.setColour(findColour(TextButton::buttonColourId).withMultipliedAlpha(isButtonDown ? 1.0f : isMouseOverButton ? 0.7f : 0.5f));
+            g.setColour(findColour(juce::TextButton::buttonColourId).withMultipliedAlpha(isButtonDown ? 1.0f : isMouseOverButton ? 0.7f : 0.5f));
             if (isButtonDown)
                 buttonArea.reduce(0.8f, 0.8f);
             else if (isMouseOverButton)
@@ -411,7 +411,7 @@ private:
             g.drawRoundedRectangle(buttonArea, 2.0f, 1.0f);
 
             buttonArea.reduce(1.5f, 1.5f);
-            g.setColour(findColour(TextButton::buttonColourId).withMultipliedAlpha(isButtonDown ? 1.0f : isMouseOverButton ? 0.5f : 0.2f));
+            g.setColour(findColour(juce::TextButton::buttonColourId).withMultipliedAlpha(isButtonDown ? 1.0f : isMouseOverButton ? 0.5f : 0.2f));
 
             g.fillRoundedRectangle(buttonArea, 2.0f);
 

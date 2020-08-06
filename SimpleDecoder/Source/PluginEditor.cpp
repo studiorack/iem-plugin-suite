@@ -25,8 +25,8 @@
 
 
 //==============================================================================
-SimpleDecoderAudioProcessorEditor::SimpleDecoderAudioProcessorEditor (SimpleDecoderAudioProcessor& p, AudioProcessorValueTreeState& vts)
-: AudioProcessorEditor (&p), processor (p), valueTreeState (vts), footer (p.getOSCParameterInterface()), dcInfoBox (vts), fv (20, 20000, -20, 10, 5)
+SimpleDecoderAudioProcessorEditor::SimpleDecoderAudioProcessorEditor (SimpleDecoderAudioProcessor& p, juce::AudioProcessorValueTreeState& vts)
+: juce::AudioProcessorEditor (&p), processor (p), valueTreeState (vts), footer (p.getOSCParameterInterface()), dcInfoBox (vts), fv (20, 20000, -20, 10, 5)
 {
     // ============== BEGIN: essentials ======================
     // set GUI size and lookAndFeel
@@ -35,7 +35,7 @@ SimpleDecoderAudioProcessorEditor::SimpleDecoderAudioProcessorEditor (SimpleDeco
 
     // make title and footer visible, and set the PluginName
     addAndMakeVisible(&title);
-    title.setTitle(String("Simple"),String("Decoder"));
+    title.setTitle(juce::String("Simple"),juce::String("Decoder"));
     title.setFont(globalLaF.robotoBold, globalLaF.robotoLight);
     addAndMakeVisible (&footer);
     // ============= END: essentials ========================
@@ -61,25 +61,25 @@ SimpleDecoderAudioProcessorEditor::SimpleDecoderAudioProcessorEditor (SimpleDeco
     // ================= BEGIN: filter slider ================
     addAndMakeVisible(slLowPassFrequency);
     slLowPassFrequencyAttachment.reset (new SliderAttachment(valueTreeState, "lowPassFrequency", slLowPassFrequency));
-    slLowPassFrequency.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slLowPassFrequency.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slLowPassFrequency.setColour (Slider::rotarySliderOutlineColourId, Colours::orangered);
+    slLowPassFrequency.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slLowPassFrequency.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    slLowPassFrequency.setColour (juce::Slider::rotarySliderOutlineColourId, juce::Colours::orangered);
     addAndMakeVisible(lbLowPassFrequency);
     lbLowPassFrequency.setText("Frequency");
 
     addAndMakeVisible(slLowPassGain);
     slLowPassGainAttachment.reset (new SliderAttachment(valueTreeState, "lowPassGain", slLowPassGain));
-    slLowPassGain.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slLowPassGain.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slLowPassGain.setColour (Slider::rotarySliderOutlineColourId, Colours::orangered);
+    slLowPassGain.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slLowPassGain.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    slLowPassGain.setColour (juce::Slider::rotarySliderOutlineColourId, juce::Colours::orangered);
     addAndMakeVisible(lbLowPassGain);
     lbLowPassGain.setText("Gain");
 
     addAndMakeVisible(slHighPassFrequency);
     slHighPassFrequencyAttachment.reset (new SliderAttachment(valueTreeState, "highPassFrequency", slHighPassFrequency));
-    slHighPassFrequency.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slHighPassFrequency.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slHighPassFrequency.setColour (Slider::rotarySliderOutlineColourId, Colours::cyan);
+    slHighPassFrequency.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slHighPassFrequency.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    slHighPassFrequency.setColour (juce::Slider::rotarySliderOutlineColourId, juce::Colours::cyan);
     addAndMakeVisible(lbHighPassFrequency);
     lbHighPassFrequency.setText("Frequency");
     // ================= END: filter slider ==================
@@ -87,7 +87,7 @@ SimpleDecoderAudioProcessorEditor::SimpleDecoderAudioProcessorEditor (SimpleDeco
     // ================= BEGIN: Subwoofer mode =====================
     addAndMakeVisible(cbSwMode);
     cbSwMode.setName("Subwoofer");
-    cbSwMode.setJustificationType(Justification::centred);
+    cbSwMode.setJustificationType(juce::Justification::centred);
     cbSwMode.addItem("none", 1);
     cbSwMode.addItem("discrete", 2);
     cbSwMode.addItem("virtual", 3);
@@ -103,21 +103,21 @@ SimpleDecoderAudioProcessorEditor::SimpleDecoderAudioProcessorEditor (SimpleDeco
 
     addAndMakeVisible(lbAlreadyUsed);
     lbAlreadyUsed.setText("already used!");
-    lbAlreadyUsed.setJustification(Justification::centred);
-    lbAlreadyUsed.setTextColour(Colours::orangered);
+    lbAlreadyUsed.setJustification(juce::Justification::centred);
+    lbAlreadyUsed.setTextColour(juce::Colours::orangered);
     lbAlreadyUsed.setVisible(false);
 
     addAndMakeVisible(slSwChannel);
     slSwChannelAttachment.reset (new SliderAttachment(valueTreeState, "swChannel", slSwChannel));
-    slSwChannel.setSliderStyle(Slider::IncDecButtons);
-    slSwChannel.setTextBoxStyle (Slider::TextBoxLeft, false, 200, 20);
+    slSwChannel.setSliderStyle(juce::Slider::IncDecButtons);
+    slSwChannel.setTextBoxStyle (juce::Slider::TextBoxLeft, false, 200, 20);
     slSwChannel.setEnabled(channelSelectShouldBeEnabled);
     // ================= END: Subwoofer mode =======================
 
     addAndMakeVisible(btLoadFile);
     btLoadFile.setButtonText("Load configuration");
     btLoadFile.onClick = [&] () { loadPresetFile(); };
-    btLoadFile.setColour(TextButton::buttonColourId, Colours::orange);
+    btLoadFile.setColour(juce::TextButton::buttonColourId, juce::Colours::orange);
 
     dcInfoBox.setErrorMessage(processor.getMessageForEditor());
 
@@ -126,17 +126,17 @@ SimpleDecoderAudioProcessorEditor::SimpleDecoderAudioProcessorEditor (SimpleDeco
 
     addAndMakeVisible(fv);
     fv.setParallel(true);
-    fv.addCoefficients (processor.cascadedLowPassCoeffs, Colours::orangered, &slLowPassFrequency, &slLowPassGain);
-    fv.addCoefficients (processor.cascadedHighPassCoeffs, Colours::cyan, &slHighPassFrequency);
+    fv.addCoefficients (processor.cascadedLowPassCoeffs, juce::Colours::orangered, &slLowPassFrequency, &slLowPassGain);
+    fv.addCoefficients (processor.cascadedHighPassCoeffs, juce::Colours::cyan, &slHighPassFrequency);
 
     addAndMakeVisible (gcGain);
     gcGain.setText ("Overall Gain");
 
     addAndMakeVisible (slGain);
     slGainAttachment.reset (new SliderAttachment (valueTreeState, "overallGain", slGain));
-    slGain.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slGain.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slGain.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
+    slGain.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slGain.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    slGain.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
 
 
     // start timer after everything is set up properly
@@ -147,12 +147,12 @@ SimpleDecoderAudioProcessorEditor::~SimpleDecoderAudioProcessorEditor()
 {
     valueTreeState.removeParameterListener("swChannel", this);
     valueTreeState.removeParameterListener("swMode", this);
-    ModalComponentManager::getInstance()->cancelAllModalComponents();
+    juce::ModalComponentManager::getInstance()->cancelAllModalComponents();
     setLookAndFeel(nullptr);
 }
 
 //==============================================================================
-void SimpleDecoderAudioProcessorEditor::paint (Graphics& g)
+void SimpleDecoderAudioProcessorEditor::paint (juce::Graphics& g)
 {
     g.fillAll (globalLaF.ClBackground);
 }
@@ -164,14 +164,14 @@ void SimpleDecoderAudioProcessorEditor::resized()
     const int headerHeight = 60;
     const int footerHeight = 25;
 
-    Rectangle<int> area (getLocalBounds());
+    juce::Rectangle<int> area (getLocalBounds());
 
-    Rectangle<int> footerArea (area.removeFromBottom(footerHeight));
+    juce::Rectangle<int> footerArea (area.removeFromBottom(footerHeight));
     footer.setBounds(footerArea);
 
     area.removeFromLeft(leftRightMargin);
     area.removeFromRight(leftRightMargin);
-    Rectangle<int> headerArea = area.removeFromTop(headerHeight);
+    juce::Rectangle<int> headerArea = area.removeFromTop(headerHeight);
     title.setBounds (headerArea);
     area.removeFromTop(10);
     area.removeFromBottom(5);
@@ -182,15 +182,15 @@ void SimpleDecoderAudioProcessorEditor::resized()
     const int labelHeight = 12;
 
 
-    Rectangle<int> rightCol (area.removeFromRight (100));
+    juce::Rectangle<int> rightCol (area.removeFromRight (100));
     area.removeFromRight (20);
-    Rectangle<int> middleCol (area.removeFromRight (190));
+    juce::Rectangle<int> middleCol (area.removeFromRight (190));
     area.removeFromRight (20);
-    Rectangle<int> leftCol (area);
+    juce::Rectangle<int> leftCol (area);
 
     { //====================== CONFIGURATION GROUP ==================================
-        Rectangle<int> configArea (leftCol);
-        Rectangle<int> buttonArea = configArea;
+        juce::Rectangle<int> configArea (leftCol);
+        juce::Rectangle<int> buttonArea = configArea;
 
         gcConfiguration.setBounds (configArea);
         configArea.removeFromTop(25);
@@ -229,7 +229,7 @@ void SimpleDecoderAudioProcessorEditor::resized()
 
 
     { //====================== FILTER GROUP ==================================
-        Rectangle<int> filterArea (middleCol);
+        juce::Rectangle<int> filterArea (middleCol);
         gcFilter.setBounds (filterArea);
         filterArea.removeFromTop (25);
 
@@ -237,7 +237,7 @@ void SimpleDecoderAudioProcessorEditor::resized()
 
         fv.setBounds (filterArea.removeFromTop (110));
 
-        Rectangle<int> sliderRow (filterArea.removeFromTop (rotSliderHeight - 10));
+        juce::Rectangle<int> sliderRow (filterArea.removeFromTop (rotSliderHeight - 10));
 
         slLowPassGain.setBounds (sliderRow.removeFromLeft (rotSliderWidth));
         sliderRow.removeFromLeft (rotSliderSpacing);
@@ -282,7 +282,7 @@ void SimpleDecoderAudioProcessorEditor::timerCallback()
         {
             int neededChannels = 0;
             if (swMode == 1)
-                neededChannels = jmax(currentDecoder->getNumOutputChannels(), (int) *valueTreeState.getRawParameterValue("swChannel"));
+                neededChannels = juce::jmax(currentDecoder->getNumOutputChannels(), (int) *valueTreeState.getRawParameterValue("swChannel"));
             else
                 neededChannels = currentDecoder->getNumOutputChannels();
 
@@ -301,7 +301,7 @@ void SimpleDecoderAudioProcessorEditor::timerCallback()
         const int swMode = *valueTreeState.getRawParameterValue("swMode");
         int neededChannels = 0;
         if (swMode == 1)
-            neededChannels = jmax(currentDecoder->getNumOutputChannels(), (int) *valueTreeState.getRawParameterValue("swChannel"));
+            neededChannels = juce::jmax(currentDecoder->getNumOutputChannels(), (int) *valueTreeState.getRawParameterValue("swChannel"));
         else
             neededChannels = currentDecoder->getNumOutputChannels();
 
@@ -355,12 +355,12 @@ void SimpleDecoderAudioProcessorEditor::timerCallback()
 
 void SimpleDecoderAudioProcessorEditor::loadPresetFile()
 {
-    FileChooser myChooser ("Please select the preset you want to load...",
-                           processor.getLastDir().exists() ? processor.getLastDir() : File::getSpecialLocation (File::userHomeDirectory),
+    juce::FileChooser myChooser ("Please select the preset you want to load...",
+                           processor.getLastDir().exists() ? processor.getLastDir() : juce::File::getSpecialLocation (juce::File::userHomeDirectory),
                            "*.json");
     if (myChooser.browseForFileToOpen())
     {
-        File presetFile (myChooser.getResult());
+        juce::File presetFile (myChooser.getResult());
         processor.setLastDir(presetFile.getParentDirectory());
         processor.loadConfiguration (presetFile);
 
@@ -368,7 +368,7 @@ void SimpleDecoderAudioProcessorEditor::loadPresetFile()
     }
 }
 
-void SimpleDecoderAudioProcessorEditor::parameterChanged (const String &parameterID, float newValue)
+void SimpleDecoderAudioProcessorEditor::parameterChanged (const juce::String &parameterID, float newValue)
 {
     if (parameterID == "swChannel" || parameterID == "swMode")
     {
@@ -378,7 +378,7 @@ void SimpleDecoderAudioProcessorEditor::parameterChanged (const String &paramete
             const int swMode = *valueTreeState.getRawParameterValue("swMode");
             int neededChannels = 0;
             if (swMode == 1)
-                neededChannels = jmax(currentDecoder->getNumOutputChannels(), (int) *valueTreeState.getRawParameterValue("swChannel"));
+                neededChannels = juce::jmax(currentDecoder->getNumOutputChannels(), (int) *valueTreeState.getRawParameterValue("swChannel"));
             else
                 neededChannels = currentDecoder->getNumOutputChannels();
 

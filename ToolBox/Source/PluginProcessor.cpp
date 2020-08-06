@@ -31,13 +31,13 @@ ToolBoxAudioProcessor::ToolBoxAudioProcessor()
                        BusesProperties()
                      #if ! JucePlugin_IsMidiEffect
                       #if ! JucePlugin_IsSynth
-                       .withInput  ("Input",  AudioChannelSet::discreteChannels(64), true)
+                       .withInput  ("Input",  juce::AudioChannelSet::discreteChannels(64), true)
                       #endif
-                       .withOutput ("Output", AudioChannelSet::discreteChannels(64), true)
+                       .withOutput ("Output", juce::AudioChannelSet::discreteChannels(64), true)
                      #endif
                        ,
 #endif
-createParameterLayout()), flipXMask (int64 (0)), flipYMask (int64 (0)), flipZMask (int64 (0))
+createParameterLayout()), flipXMask (juce::int64 (0)), flipYMask (juce::int64 (0)), flipZMask (juce::int64 (0))
 {
     // get pointers to the parameters
     inputOrderSetting = parameters.getRawParameterValue ("inputOrderSetting");
@@ -98,12 +98,12 @@ void ToolBoxAudioProcessor::setCurrentProgram (int index)
 {
 }
 
-const String ToolBoxAudioProcessor::getProgramName (int index)
+const juce::String ToolBoxAudioProcessor::getProgramName (int index)
 {
     return {};
 }
 
-void ToolBoxAudioProcessor::changeProgramName (int index, const String& newName)
+void ToolBoxAudioProcessor::changeProgramName (int index, const juce::String& newName)
 {
 }
 
@@ -126,14 +126,14 @@ void ToolBoxAudioProcessor::releaseResources()
 }
 
 
-void ToolBoxAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
+void ToolBoxAudioProcessor::processBlock (juce::AudioSampleBuffer& buffer, juce::MidiBuffer& midiMessages)
 {
     checkInputAndOutput(this, *inputOrderSetting, *outputOrderSetting, false);
-    ScopedNoDenormals noDenormals;
+    juce::ScopedNoDenormals noDenormals;
 
-    const int nChIn = jmin (buffer.getNumChannels(), input.getNumberOfChannels());
-    const int nChOut = jmin (buffer.getNumChannels(), output.getNumberOfChannels());
-    const int nCh = jmin (nChIn, nChOut);
+    const int nChIn = juce::jmin (buffer.getNumChannels(), input.getNumberOfChannels());
+    const int nChOut = juce::jmin (buffer.getNumChannels(), output.getNumberOfChannels());
+    const int nCh = juce::jmin (nChIn, nChOut);
 
     const int L = buffer.getNumSamples();
 
@@ -150,7 +150,7 @@ void ToolBoxAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
         }
         else if (weights[ch] != 1.0f)
         {
-            FloatVectorOperations::multiply (buffer.getWritePointer(ch), weights[ch], L);
+            juce::FloatVectorOperations::multiply (buffer.getWritePointer(ch), weights[ch], L);
         }
     }
 
@@ -165,16 +165,16 @@ void ToolBoxAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
 
 void ToolBoxAudioProcessor::calculateWeights (float *weights, const int nChannelsIn, const int nChannelsOut)
 {
-    const int nCh = jmin (nChannelsIn, nChannelsOut);
+    const int nCh = juce::jmin (nChannelsIn, nChannelsOut);
     const int orderIn = input.getOrder();
     const int orderOut = output.getOrder();
 
-    FloatVectorOperations::fill (weights, Decibels::decibelsToGain (gain->load()), nCh);
+    juce::FloatVectorOperations::fill (weights, juce::Decibels::decibelsToGain (gain->load()), nCh);
 
     // create mask for all flips
     if (doFlipX || doFlipY || doFlipZ)
     {
-        BigInteger mask (int64(0));
+        juce::BigInteger mask (juce::int64 (0));
         if (doFlipX)
             mask ^= flipXMask;
         if (doFlipY)
@@ -191,17 +191,17 @@ void ToolBoxAudioProcessor::calculateWeights (float *weights, const int nChannel
     // lower order ambisonics weighting
     if (orderIn < orderOut)
     {
-        const int weightType = roundToInt (loaWeights->load());
+        const int weightType = juce::roundToInt (loaWeights->load());
         if (weightType == 1) // maxrE
         {
-            FloatVectorOperations::multiply (weights, getMaxRELUT (orderIn), nChannelsIn);
+            juce::FloatVectorOperations::multiply (weights, getMaxRELUT (orderIn), nChannelsIn);
             const float* deWeights = getMaxRELUT (orderOut);
             for (int i = 0; i < nChannelsIn; ++i)
                 weights[i] /= deWeights[i];
         }
         else if (weightType == 2) // inPhase
         {
-            FloatVectorOperations::multiply (weights, getInPhaseLUT (orderIn), nChannelsIn);
+            juce::FloatVectorOperations::multiply (weights, getInPhaseLUT (orderIn), nChannelsIn);
             const float* deWeights = getInPhaseLUT (orderOut);
             for (int i = 0; i < nChannelsIn; ++i)
                 weights[i] /= deWeights[i];
@@ -215,9 +215,9 @@ void ToolBoxAudioProcessor::calculateWeights (float *weights, const int nChannel
     if (inSN3D != outSN3D)
     {
         if (inSN3D)
-            FloatVectorOperations::multiply (weights, sn3d2n3d, nCh);
+            juce::FloatVectorOperations::multiply (weights, sn3d2n3d, nCh);
         else
-            FloatVectorOperations::multiply (weights, n3d2sn3d, nCh);
+            juce::FloatVectorOperations::multiply (weights, n3d2sn3d, nCh);
     }
 }
 
@@ -227,33 +227,33 @@ bool ToolBoxAudioProcessor::hasEditor() const
     return true; // (change this to false if you choose to not supply an editor)
 }
 
-AudioProcessorEditor* ToolBoxAudioProcessor::createEditor()
+juce::AudioProcessorEditor* ToolBoxAudioProcessor::createEditor()
 {
     return new ToolBoxAudioProcessorEditor (*this, parameters);
 }
 
 //==============================================================================
-void ToolBoxAudioProcessor::getStateInformation (MemoryBlock &destData)
+void ToolBoxAudioProcessor::getStateInformation (juce::MemoryBlock &destData)
 {
     auto state = parameters.copyState();
 
     auto oscConfig = state.getOrCreateChildWithName ("OSCConfig", nullptr);
     oscConfig.copyPropertiesFrom (oscParameterInterface.getConfig(), nullptr);
 
-    std::unique_ptr<XmlElement> xml (state.createXml());
+    std::unique_ptr<juce::XmlElement> xml (state.createXml());
     copyXmlToBinary (*xml, destData);
 }
 
 void ToolBoxAudioProcessor::setStateInformation (const void *data, int sizeInBytes)
 {
-    std::unique_ptr<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
+    std::unique_ptr<juce::XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
     if (xmlState.get() != nullptr)
         if (xmlState->hasTagName (parameters.state.getType()))
         {
-            parameters.replaceState (ValueTree::fromXml (*xmlState));
+            parameters.replaceState (juce::ValueTree::fromXml (*xmlState));
             if (parameters.state.hasProperty ("OSCPort")) // legacy
             {
-                oscParameterInterface.getOSCReceiver().connect (parameters.state.getProperty ("OSCPort", var (-1)));
+                oscParameterInterface.getOSCReceiver().connect (parameters.state.getProperty ("OSCPort", juce::var (-1)));
                 parameters.state.removeProperty ("OSCPort", nullptr);
             }
 
@@ -264,7 +264,7 @@ void ToolBoxAudioProcessor::setStateInformation (const void *data, int sizeInByt
 }
 
 //==============================================================================
-void ToolBoxAudioProcessor::parameterChanged (const String &parameterID, float newValue)
+void ToolBoxAudioProcessor::parameterChanged (const juce::String &parameterID, float newValue)
 {
     DBG("Parameter with ID " << parameterID << " has changed. New value: " << newValue);
 
@@ -286,14 +286,14 @@ void ToolBoxAudioProcessor::updateBuffers()
 }
 
 //==============================================================================
-std::vector<std::unique_ptr<RangedAudioParameter>> ToolBoxAudioProcessor::createParameterLayout()
+std::vector<std::unique_ptr<juce::RangedAudioParameter>> ToolBoxAudioProcessor::createParameterLayout()
 {
     // add your audio parameters here
-    std::vector<std::unique_ptr<RangedAudioParameter>> params;
+    std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
 
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("inputOrderSetting", "Input Ambisonic Order", "",
-                                     NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
+                                     juce::NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
                                      [](float value) {
                                          if (value >= 0.5f && value < 1.5f) return "0th";
                                          else if (value >= 1.5f && value < 2.5f) return "1st";
@@ -307,14 +307,14 @@ std::vector<std::unique_ptr<RangedAudioParameter>> ToolBoxAudioProcessor::create
                                      nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("useSn3dInput", "Input Normalization", "",
-                                     NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
+                                     juce::NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value) {
                                          if (value >= 0.5f) return "SN3D";
                                          else return "N3D";
                                      }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("outputOrderSetting", "Output Ambisonic Order", "",
-                                     NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
+                                     juce::NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
                                      [](float value) {
                                          if (value >= 0.5f && value < 1.5f) return "0th";
                                          else if (value >= 1.5f && value < 2.5f) return "1st";
@@ -328,29 +328,29 @@ std::vector<std::unique_ptr<RangedAudioParameter>> ToolBoxAudioProcessor::create
                                      nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("useSn3dOutput", "Output Normalization", "",
-                                     NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
+                                     juce::NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value) {
                                          if (value >= 0.5f) return "SN3D";
                                          else return "N3D";
                                      }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("flipX", "Flip X axis", "",
-                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
+                                     juce::NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
                                      [](float value) {if (value >= 0.5f) return "ON";
                                          else return "OFF";}, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("flipY", "Flip Y axis", "",
-                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
+                                     juce::NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
                                      [](float value) {if (value >= 0.5f) return "ON";
                                          else return "OFF";}, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("flipZ", "Flip Z axis", "",
-                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
+                                     juce::NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
                                      [](float value) {if (value >= 0.5f) return "ON";
                                          else return "OFF";}, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("loaWeights", "Lower Order Ambisonic Weighting", "",
-                                     NormalisableRange<float> (0.0f, 2.0f, 1.0f), 0.0f,
+                                     juce::NormalisableRange<float> (0.0f, 2.0f, 1.0f), 0.0f,
                                      [](float value) {
                                          if (value >= 0.5f && value < 1.5f) return "maxrE";
                                          else if (value >= 1.5f) return "inPhase";
@@ -358,8 +358,8 @@ std::vector<std::unique_ptr<RangedAudioParameter>> ToolBoxAudioProcessor::create
                                      nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("gain", "Gain", "dB",
-                                                                       NormalisableRange<float> (-50.0f, 24.0f, 0.01f), 0.0f,
-                                                                       [](float value) { return String (value, 2); }, nullptr));
+                                                                       juce::NormalisableRange<float> (-50.0f, 24.0f, 0.01f), 0.0f,
+                                                                       [](float value) { return juce::String (value, 2); }, nullptr));
 
 
     return params;
@@ -367,7 +367,7 @@ std::vector<std::unique_ptr<RangedAudioParameter>> ToolBoxAudioProcessor::create
 
 //==============================================================================
 // This creates new instances of the plugin..
-AudioProcessor* JUCE_CALLTYPE createPluginFilter()
+juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new ToolBoxAudioProcessor();
 }

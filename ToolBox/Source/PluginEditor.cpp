@@ -25,8 +25,8 @@
 
 
 //==============================================================================
-ToolBoxAudioProcessorEditor::ToolBoxAudioProcessorEditor (ToolBoxAudioProcessor& p, AudioProcessorValueTreeState& vts)
-    : AudioProcessorEditor (&p), processor (p), valueTreeState (vts), footer (p.getOSCParameterInterface())
+ToolBoxAudioProcessorEditor::ToolBoxAudioProcessorEditor (ToolBoxAudioProcessor& p, juce::AudioProcessorValueTreeState& vts)
+    : juce::AudioProcessorEditor (&p), processor (p), valueTreeState (vts), footer (p.getOSCParameterInterface())
 {
     // ============== BEGIN: essentials ======================
     // set GUI size and lookAndFeel
@@ -36,7 +36,7 @@ ToolBoxAudioProcessorEditor::ToolBoxAudioProcessorEditor (ToolBoxAudioProcessor&
 
     // make title and footer visible, and set the PluginName
     addAndMakeVisible(&title);
-    title.setTitle(String("Tool"),String("Box"));
+    title.setTitle(juce::String("Tool"),juce::String("Box"));
     title.setFont(globalLaF.robotoBold, globalLaF.robotoLight);
     addAndMakeVisible (&footer);
     // ============= END: essentials ========================
@@ -56,24 +56,24 @@ ToolBoxAudioProcessorEditor::ToolBoxAudioProcessorEditor (ToolBoxAudioProcessor&
     addAndMakeVisible(tbFlipX);
     tbFlipXAttachment.reset (new ButtonAttachment(valueTreeState, "flipX", tbFlipX));
     tbFlipX.setButtonText("Flip X (front/back)");
-    tbFlipX.setColour(ToggleButton::tickColourId, globalLaF.ClWidgetColours[2]);
+    tbFlipX.setColour(juce::ToggleButton::tickColourId, globalLaF.ClWidgetColours[2]);
 
     addAndMakeVisible(tbFlipY);
     tbFlipYAttachment.reset (new ButtonAttachment(valueTreeState, "flipY", tbFlipY));
     tbFlipY.setButtonText("Flip Y (left/right)");
-    tbFlipY.setColour(ToggleButton::tickColourId, globalLaF.ClWidgetColours[1]);
+    tbFlipY.setColour(juce::ToggleButton::tickColourId, globalLaF.ClWidgetColours[1]);
 
     addAndMakeVisible(tbFlipZ);
     tbFlipZAttachment.reset (new ButtonAttachment(valueTreeState, "flipZ", tbFlipZ));
     tbFlipZ.setButtonText("Flip Z (bottom/top)");
-    tbFlipZ.setColour(ToggleButton::tickColourId, globalLaF.ClWidgetColours[0]);
+    tbFlipZ.setColour(juce::ToggleButton::tickColourId, globalLaF.ClWidgetColours[0]);
 
     // ================= LOA WEIGHTS ==================
     addAndMakeVisible(gcLOAWeighting);
     gcLOAWeighting.setText("LOA Weighting");
 
     addAndMakeVisible(cbLoaWeights);
-    cbLoaWeights.setJustificationType(Justification::centred);
+    cbLoaWeights.setJustificationType(juce::Justification::centred);
     cbLoaWeights.addSectionHeading ("Target Decoder Weights");
     cbLoaWeights.addItem("none", 1);
     cbLoaWeights.addItem("maxrE", 2);
@@ -89,9 +89,9 @@ ToolBoxAudioProcessorEditor::ToolBoxAudioProcessorEditor (ToolBoxAudioProcessor&
 
     addAndMakeVisible (slGain);
     slGainAttachment.reset (new SliderAttachment (valueTreeState, "gain", slGain));
-    slGain.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slGain.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slGain.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
+    slGain.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slGain.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    slGain.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
 
 
     // start timer after everything is set up properly
@@ -104,7 +104,7 @@ ToolBoxAudioProcessorEditor::~ToolBoxAudioProcessorEditor()
 }
 
 //==============================================================================
-void ToolBoxAudioProcessorEditor::paint (Graphics& g)
+void ToolBoxAudioProcessorEditor::paint (juce::Graphics& g)
 {
     g.fillAll (globalLaF.ClBackground);
 }
@@ -115,23 +115,23 @@ void ToolBoxAudioProcessorEditor::resized()
     const int leftRightMargin = 30;
     const int headerHeight = 60;
     const int footerHeight = 25;
-    Rectangle<int> area (getLocalBounds());
+    juce::Rectangle<int> area (getLocalBounds());
 
-    Rectangle<int> footerArea (area.removeFromBottom(footerHeight));
+    juce::Rectangle<int> footerArea (area.removeFromBottom(footerHeight));
     footer.setBounds(footerArea);
 
     area.removeFromLeft(leftRightMargin);
     area.removeFromRight(leftRightMargin);
-    Rectangle<int> headerArea = area.removeFromTop(headerHeight);
+    juce::Rectangle<int> headerArea = area.removeFromTop(headerHeight);
     title.setBounds (headerArea);
     area.removeFromTop(10);
     area.removeFromBottom(5);
     // =========== END: header and footer =================
 
 
-    Rectangle<int> leftColumn = area.removeFromLeft(150);
+    juce::Rectangle<int> leftColumn = area.removeFromLeft(150);
     {
-        Rectangle<int> flipArea = leftColumn.removeFromTop(85);
+        juce::Rectangle<int> flipArea = leftColumn.removeFromTop(85);
         gcFlip.setBounds(flipArea);
         flipArea.removeFromTop(25);
         tbFlipX.setBounds(flipArea.removeFromTop(20));
@@ -140,20 +140,20 @@ void ToolBoxAudioProcessorEditor::resized()
 
         leftColumn.removeFromTop (10);
 
-        Rectangle<int> loaArea = leftColumn.removeFromTop (45);
+        juce::Rectangle<int> loaArea = leftColumn.removeFromTop (45);
         gcLOAWeighting.setBounds (loaArea);
         loaArea.removeFromTop (25);
-        Rectangle<int> row = loaArea.removeFromTop (20);
+        juce::Rectangle<int> row = loaArea.removeFromTop (20);
         lbLoaWeights.setBounds (row.removeFromLeft (60));
         cbLoaWeights.setBounds (row);
     }
 
-    Rectangle<int> rightColumn = area.removeFromRight (120);
+    juce::Rectangle<int> rightColumn = area.removeFromRight (120);
     {
-        Rectangle<int> gainArea = rightColumn.removeFromTop(85);
+        juce::Rectangle<int> gainArea = rightColumn.removeFromTop(85);
         gcGain.setBounds (gainArea);
         gainArea.removeFromTop (25);
-        Rectangle<int> row = gainArea.removeFromTop (80);
+        juce::Rectangle<int> row = gainArea.removeFromTop (80);
         slGain.setBounds (row.removeFromLeft (100));
     }
 

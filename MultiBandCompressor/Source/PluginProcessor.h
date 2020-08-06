@@ -31,7 +31,7 @@
 #define ProcessorClass MultiBandCompressorAudioProcessor
 
 using namespace juce::dsp;
-using ParameterLayout = AudioProcessorValueTreeState::ParameterLayout;
+using ParameterLayout = juce::AudioProcessorValueTreeState::ParameterLayout;
 
 
 class MultiBandCompressorAudioProcessor  : public AudioProcessorBase<IOTypes::Ambisonics<>, IOTypes:: Ambisonics<>>
@@ -51,30 +51,30 @@ public:
     bool isBusesLayoutSupported (const BusesLayout& layouts) const override;
    #endif
 
-    void processBlock (AudioSampleBuffer&, MidiBuffer&) override;
+    void processBlock (juce::AudioSampleBuffer&, juce::MidiBuffer&) override;
 
     //==============================================================================
-    AudioProcessorEditor* createEditor() override;
+    juce::AudioProcessorEditor* createEditor() override;
     bool hasEditor() const override;
 
     //==============================================================================
     int getNumPrograms() override;
     int getCurrentProgram() override;
     void setCurrentProgram (int index) override;
-    const String getProgramName (int index) override;
-    void changeProgramName (int index, const String& newName) override;
+    const juce::String getProgramName (int index) override;
+    void changeProgramName (int index, const juce::String& newName) override;
 
     //==============================================================================
-    void getStateInformation (MemoryBlock& destData) override;
+    void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
     //==============================================================================
-    void parameterChanged (const String &parameterID, float newValue) override;
+    void parameterChanged (const juce::String &parameterID, float newValue) override;
     void updateBuffers() override;
 
 
     //======= Parameters ===========================================================
-    std::vector<std::unique_ptr<RangedAudioParameter>> createParameterLayout();
+    std::vector<std::unique_ptr<juce::RangedAudioParameter>> createParameterLayout();
 
 
     #if JUCE_USE_SIMD
@@ -98,20 +98,20 @@ public:
     IIR::Coefficients<double>::Ptr lowPassLRCoeffs[numFreqBands-1];
     IIR::Coefficients<double>::Ptr highPassLRCoeffs[numFreqBands-1];
 
-    Atomic<bool> repaintFilterVisualization = false;
-    Atomic<float> inputPeak = Decibels::gainToDecibels (-INFINITY), outputPeak = Decibels::gainToDecibels (-INFINITY);
-    Atomic<float> maxGR[numFreqBands], maxPeak[numFreqBands];
+    juce::Atomic<bool> repaintFilterVisualization = false;
+    juce::Atomic<float> inputPeak = juce::Decibels::gainToDecibels (-INFINITY), outputPeak = juce::Decibels::gainToDecibels (-INFINITY);
+    juce::Atomic<float> maxGR[numFreqBands], maxPeak[numFreqBands];
 
-    Atomic<bool> characteristicHasChanged[numFreqBands];
+    juce::Atomic<bool> characteristicHasChanged[numFreqBands];
 
 
-    Compressor* getCompressor (const int i) {return &compressors[i];};
+    iem::Compressor* getCompressor (const int i) {return &compressors[i];};
 
 private:
     void calculateCoefficients (const int index);
     void copyCoeffsToProcessor();
 
-    inline void clear (AudioBlock<filterFloatType>& ab);
+    inline void clear (juce::dsp::AudioBlock<filterFloatType>& ab);
 
     double lastSampleRate {48000};
     const int maxNumFilters;
@@ -128,31 +128,31 @@ private:
     std::atomic<float>* release[numFreqBands];
     std::atomic<float>* bypass[numFreqBands];
 
-    BigInteger soloArray;
+    juce::BigInteger soloArray;
 
-    Compressor compressors[numFreqBands];
+    iem::Compressor compressors[numFreqBands];
 
     // filter coefficients
-    IIR::Coefficients<float>::Ptr iirLPCoefficients[numFreqBands-1], iirHPCoefficients[numFreqBands-1],
+    juce::dsp::IIR::Coefficients<float>::Ptr iirLPCoefficients[numFreqBands-1], iirHPCoefficients[numFreqBands-1],
                                   iirAPCoefficients[numFreqBands-1],
                                   iirTempLPCoefficients[numFreqBands-1],
                                   iirTempHPCoefficients[numFreqBands-1], iirTempAPCoefficients[numFreqBands-1];
 
     // filters (cascaded butterworth/linkwitz-riley filters + allpass)
-    OwnedArray<IIR::Filter<filterFloatType>> iirLP[numFreqBands-1], iirHP[numFreqBands-1],
+    juce::OwnedArray<IIR::Filter<filterFloatType>> iirLP[numFreqBands-1], iirHP[numFreqBands-1],
                                              iirLP2[numFreqBands-1], iirHP2[numFreqBands-1],
                                              iirAP[numFreqBands-1];
 
-    OwnedArray<AudioBlock<filterFloatType>> interleaved, freqBands[numFreqBands];
-    AudioBlock<float> zero, temp, gains;
-    AudioBuffer<float> tempBuffer;
+    juce::OwnedArray<juce::dsp::AudioBlock<filterFloatType>> interleaved, freqBands[numFreqBands];
+    juce::dsp::AudioBlock<float> zero, temp, gains;
+    juce::AudioBuffer<float> tempBuffer;
     float* gainChannelPointer;
 
-    std::vector<HeapBlock<char>> interleavedBlockData,  freqBandsBlocks[numFreqBands];
-    HeapBlock<char> zeroData, tempData, gainData;
-    HeapBlock<const float*> channelPointers { 64 };
+    std::vector<juce::HeapBlock<char>> interleavedBlockData,  freqBandsBlocks[numFreqBands];
+    juce::HeapBlock<char> zeroData, tempData, gainData;
+    juce::HeapBlock<const float*> channelPointers { 64 };
 
-    Atomic<bool> userChangedFilterSettings = true;
+    juce::Atomic<bool> userChangedFilterSettings = true;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MultiBandCompressorAudioProcessor)

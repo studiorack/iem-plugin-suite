@@ -14,7 +14,7 @@
               companyWebsite="IEM.at" companyCopyright="IEM - Daniel Rudrich"
               headerPath="../../../resources/" pluginFormats="buildStandalone,buildVST"
               defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1" projectLineFeed="&#10;"
-              jucerFormatVersion="1">
+              jucerFormatVersion="1" addUsingNamespaceToJuceHeader="0">
   <MAINGROUP id="Ld9vSw" name="DirectionalCompressor">
     <GROUP id="{056389CC-5E71-EF31-E9BE-B7213785B02E}" name="Standalone">
       <FILE id="Tmvcfd" name="IEM_AudioDeviceSelectorComponent.cpp" compile="1"

@@ -21,7 +21,7 @@
  */
 
 /*
- This processor is based on JUCE's dsp::Gain processor.
+ This processor is based on JUCE's juce::dsp::Gain processor.
  */
 
 
@@ -43,7 +43,7 @@ public:
     /** Applies a new gain as a decibel value. */
     void setGainDecibels (const int channel, FloatType newGainDecibels)
     {
-        setGainLinear (channel, Decibels::decibelsToGain<FloatType> (newGainDecibels));
+        setGainLinear (channel, juce::Decibels::decibelsToGain<FloatType> (newGainDecibels));
     }
 
     /** Sets the length of the ramp used for smoothing gain changes. */
@@ -68,12 +68,12 @@ public:
 
     //==============================================================================
     /** Called before processing starts. */
-    void prepare (const ProcessSpec& spec) noexcept
+    void prepare (const juce::dsp::ProcessSpec& spec) noexcept
     {
         sampleRate = spec.sampleRate;
         gains.clear();
         for (int ch = 0; ch < spec.numChannels; ++ch)
-            gains.add(new LinearSmoothedValue<float> ());
+            gains.add(new juce::LinearSmoothedValue<float> ());
 
         reset();
     }
@@ -128,7 +128,7 @@ public:
     }
 
 private:
-    OwnedArray<LinearSmoothedValue<FloatType>> gains;
+    juce::OwnedArray<juce::LinearSmoothedValue<FloatType>> gains;
     double sampleRate = 0, rampDurationSeconds = 0;
 };
 

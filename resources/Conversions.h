@@ -57,8 +57,8 @@ public:
         const Type r = cartvect.length();
         return juce::Vector3D<Type>(
                                r, // radius
-                               radiansToDegrees(atan2(cartvect.y, cartvect.x)), // azimuth
-                               radiansToDegrees(atan2(cartvect.z, sqrt(cartvect.x * cartvect.x + cartvect.y * cartvect.y))) // elevation
+                               juce::radiansToDegrees(atan2(cartvect.y, cartvect.x)), // azimuth
+                               juce::radiansToDegrees(atan2(cartvect.z, sqrt(cartvect.x * cartvect.x + cartvect.y * cartvect.y))) // elevation
                                );
     }
 

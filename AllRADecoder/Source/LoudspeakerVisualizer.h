@@ -62,7 +62,7 @@ public:
     {
         const float alpha = 0.8;
         juce::PixelARGB colormapData[8];
-//        colormapData[0] = Colours::white.withMultipliedAlpha(alpha).getPixelARGB();
+//        colormapData[0] = juce::Colours::white.withMultipliedAlpha(alpha).getPixelARGB();
 //        texture.loadARGB(colormapData, 1, 1);
 
         colormapData[0] = juce::Colours::limegreen.getPixelARGB(); // selected colour

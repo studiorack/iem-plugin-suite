@@ -10,9 +10,10 @@
               pluginCode="CoCo" pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
               pluginAUExportPrefix="CoordinateConverterAU" aaxIdentifier="at.iem.CoordinateConverter"
-              pluginAAXCategory="2" jucerVersion="5.4.7" companyCopyright="IEM - Daniel Rudrich"
+              pluginAAXCategory="2" companyCopyright="IEM - Daniel Rudrich"
               companyName="IEM" companyWebsite="iem.at" headerPath="../../../resources/"
-              pluginFormats="buildStandalone,buildVST" defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1">
+              pluginFormats="buildStandalone,buildVST" defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1"
+              jucerFormatVersion="1" addUsingNamespaceToJuceHeader="0" projectLineFeed="&#10;">
   <MAINGROUP id="LpzrV9" name="CoordinateConverter">
     <GROUP id="{DD24AA7B-644A-3C5E-9734-243C087817B2}" name="Standalone">
       <FILE id="b7Mr2Z" name="IEM_AudioDeviceSelectorComponent.cpp" compile="1"

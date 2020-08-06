@@ -28,7 +28,7 @@
 class  EnergyDistributionVisualizer :  public juce::Component
 {
 public:
-    EnergyDistributionVisualizer (std::vector<R3>& pts, juce::BigInteger& imagFlags, juce::Image& energyImageFromProcessor, juce::Image& rEImageFromProcessor) : Component(), extPoints(pts), imaginaryFlags(imagFlags), energyImage(energyImageFromProcessor), rEImage(rEImageFromProcessor)
+    EnergyDistributionVisualizer (std::vector<R3>& pts, juce::BigInteger& imagFlags, juce::Image& energyImageFromProcessor, juce::Image& rEImageFromProcessor) : juce::Component(), extPoints(pts), imaginaryFlags(imagFlags), energyImage(energyImageFromProcessor), rEImage(rEImageFromProcessor)
     {
         setBufferedToImage(true);
 
@@ -60,7 +60,7 @@ public:
         for (int i = 0; i < extPoints.size(); ++i)
         {
             R3 point = extPoints[i];
-            g.setColour (activePoint == point.lspNum ?juce:: Colours::lawngreen : point.isImaginary ? juce::Colours::orange : juce::Colours::cornflowerblue);
+            g.setColour (activePoint == point.lspNum ? juce::Colours::lawngreen : point.isImaginary ? juce::Colours::orange : juce::Colours::cornflowerblue);
             float x, y;
             float azimuth = juce::degreesToRadians(point.azimuth);
             float elevation = juce::degreesToRadians(point.elevation);

@@ -29,7 +29,7 @@
 #include "../../resources/lookAndFeel/IEM_LaF.h"
 #include "../../resources/customComponents/TitleBar.h"
 
-//Custom Components
+//Custom juce::Components
 #include "../../resources/customComponents/ReverseSlider.h"
 #include "../../resources/customComponents/SimpleLabel.h"
 #include "../../resources/customComponents/SpherePanner.h"
@@ -37,37 +37,37 @@
 #include "../../resources/LabelAttachment.h"
 
 typedef ReverseSlider::SliderAttachment SliderAttachment; // all ReverseSliders will make use of the parameters' valueToText() function
-typedef AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
-typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
+typedef juce::AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
+typedef juce::AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 
 //==============================================================================
 /**
 */
-class CoordinateConverterAudioProcessorEditor  : public AudioProcessorEditor, private Timer, private Button::Listener
+class CoordinateConverterAudioProcessorEditor  : public juce::AudioProcessorEditor, private juce::Timer, private juce::Button::Listener
 {
 public:
-    CoordinateConverterAudioProcessorEditor (CoordinateConverterAudioProcessor&, AudioProcessorValueTreeState&);
+    CoordinateConverterAudioProcessorEditor (CoordinateConverterAudioProcessor&, juce::AudioProcessorValueTreeState&);
     ~CoordinateConverterAudioProcessorEditor();
 
     //==============================================================================
-    void paint (Graphics&) override;
+    void paint (juce::Graphics&) override;
     void resized() override;
 
 
     void timerCallback() override;
 
-    void buttonClicked (Button* button) override {};
+    void buttonClicked (juce::Button* button) override {};
 
-    void buttonStateChanged (Button* button) override;
+    void buttonStateChanged (juce::Button* button) override;
 
 private:
     // ====================== begin essentials ==================
     // lookAndFeel class with the IEM plug-in suite design
     LaF globalLaF;
 
-    // stored references to the AudioProcessor and ValueTreeState holding all the parameters
+    // stored references to the AudioProcessor and juce::ValueTreeState holding all the parameters
     CoordinateConverterAudioProcessor& processor;
-    AudioProcessorValueTreeState& valueTreeState;
+    juce::AudioProcessorValueTreeState& valueTreeState;
 
 
     /* title and footer component
@@ -82,7 +82,7 @@ private:
     // =============== end essentials ============
 
     // === Spherical
-    GroupComponent gcSpherical, gcCartesian, gcRange, gcReference;
+    juce::GroupComponent gcSpherical, gcCartesian, gcRange, gcReference;
 
     SpherePanner sphere;
     SpherePanner::AzimuthElevationParameterElement panner;
@@ -99,19 +99,19 @@ private:
     std::unique_ptr<SliderAttachment> slXPosAttachment, slYPosAttachment, slZPosAttachment;
     SimpleLabel lbXPos, lbYPos, lbZPos;
 
-    ToggleButton tbAzimuthFlip, tbElevationFlip, tbRadiusFlip, tbXFlip, tbYFlip, tbZFlip;
+    juce::ToggleButton tbAzimuthFlip, tbElevationFlip, tbRadiusFlip, tbXFlip, tbYFlip, tbZFlip;
     std::unique_ptr<ButtonAttachment> tbAzimuthFlipAttachment, tbElevationFlipAttachment, tbRadiusFlipAttachment, tbXFlipAttachment, tbYFlipAttachment, tbZFlipAttachment;
 
-    Label slXReference, slYReference, slZReference;
+    juce::Label slXReference, slYReference, slZReference;
     std::unique_ptr<LabelAttachment> slXReferenceAttachment, slYReferenceAttachment, slZReferenceAttachment;
     SimpleLabel lbXReference, lbYReference, lbZReference;
 
-    // === Range Settings
-    Label slRadiusRange;
+    // === juce::Range Settings
+    juce::Label slRadiusRange;
     std::unique_ptr<LabelAttachment> slRadiusRangeAttachment;
     SimpleLabel lbRadiusRange;
 
-    Label slXRange, slYRange, slZRange;
+    juce::Label slXRange, slYRange, slZRange;
     std::unique_ptr<LabelAttachment> slXRangeAttachment, slYRangeAttachment, slZRangeAttachment;
     SimpleLabel lbXRange, lbYRange, lbZRange;
 

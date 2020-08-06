@@ -151,7 +151,7 @@ public:
     virtual ~OSCMessageInterceptor() = default;
 
     /**
-     This method is exptected to return true, if the OSCMessage is considered to have been consumed, and should not be passed on.
+     This method is exptected to return true, if the juce::OSCMessage is considered to have been consumed, and should not be passed on.
      */
     virtual inline const bool interceptOSCMessage (juce::OSCMessage &message)
     {
@@ -171,7 +171,7 @@ public:
 
 
     /**
-     Use this method to send additional OSCMessages during the OSCSender's send routine.
+     Use this method to send additional juce::OSCMessages during the OSCSender's send routine.
      */
     virtual void sendAdditionalOSCMessages (juce::OSCSender& oscSender, const juce::OSCAddressPattern& address) {}
 };

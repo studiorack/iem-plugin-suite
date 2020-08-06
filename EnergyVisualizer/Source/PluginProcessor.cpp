@@ -31,9 +31,9 @@ EnergyVisualizerAudioProcessor::EnergyVisualizerAudioProcessor()
                        BusesProperties()
                      #if ! JucePlugin_IsMidiEffect
                       #if ! JucePlugin_IsSynth
-                       .withInput  ("Input",  AudioChannelSet::discreteChannels(64), true)
+                       .withInput  ("Input",  juce::AudioChannelSet::discreteChannels(64), true)
                       #endif
-                       .withOutput ("Output", AudioChannelSet::discreteChannels(64), true)
+                       .withOutput ("Output", juce::AudioChannelSet::discreteChannels(64), true)
                      #endif
                        ,
 #endif
@@ -50,7 +50,7 @@ createParameterLayout()), decoderMatrix (nSamplePoints, 64)
     {
         auto* matrixRowPtr = decoderMatrix.getRawDataPointer() + point * 64;
         SHEval (7, hammerAitovSampleX[point], hammerAitovSampleY[point], hammerAitovSampleZ[point], matrixRowPtr, false);
-        FloatVectorOperations::multiply (matrixRowPtr, matrixRowPtr, sn3d2n3d, 64); //expecting sn3d normalization -> converting it to handle n3d
+        juce::FloatVectorOperations::multiply (matrixRowPtr, matrixRowPtr, sn3d2n3d, 64); //expecting sn3d normalization -> converting it to handle n3d
     }
     decoderMatrix *= 1.0f / decodeCorrection(7); // revert 7th order correction
 
@@ -82,12 +82,12 @@ void EnergyVisualizerAudioProcessor::setCurrentProgram (int index)
 {
 }
 
-const String EnergyVisualizerAudioProcessor::getProgramName (int index)
+const juce::String EnergyVisualizerAudioProcessor::getProgramName (int index)
 {
     return {};
 }
 
-void EnergyVisualizerAudioProcessor::changeProgramName (int index, const String& newName)
+void EnergyVisualizerAudioProcessor::changeProgramName (int index, const juce::String& newName)
 {
 }
 
@@ -109,9 +109,9 @@ void EnergyVisualizerAudioProcessor::releaseResources()
 }
 
 
-void EnergyVisualizerAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
+void EnergyVisualizerAudioProcessor::processBlock (juce::AudioSampleBuffer& buffer, juce::MidiBuffer& midiMessages)
 {
-    ScopedNoDenormals noDenormals;
+    juce::ScopedNoDenormals noDenormals;
 
     checkInputAndOutput (this, *orderSetting, 0);
 
@@ -120,23 +120,23 @@ void EnergyVisualizerAudioProcessor::processBlock (AudioSampleBuffer& buffer, Mi
 
     //const int nCh = buffer.getNumChannels();
     const int L = buffer.getNumSamples();
-    const int workingOrder = jmin (isqrt (buffer.getNumChannels()) - 1, input.getOrder());
+    const int workingOrder = juce::jmin (isqrt (buffer.getNumChannels()) - 1, input.getOrder());
 
     const int nCh = squares[workingOrder+1];
 
 
     copyMaxRE (workingOrder, weights.data());
-    FloatVectorOperations::multiply (weights.data(), maxRECorrection[workingOrder] * decodeCorrection (workingOrder), nCh);
+    juce::FloatVectorOperations::multiply (weights.data(), maxRECorrection[workingOrder] * decodeCorrection (workingOrder), nCh);
 
     if (*useSN3D < 0.5f)
-        FloatVectorOperations::multiply (weights.data(), n3d2sn3d, nCh);
+        juce::FloatVectorOperations::multiply (weights.data(), n3d2sn3d, nCh);
 
     const float oneMinusTimeConstant = 1.0f - timeConstant;
     for (int i = 0; i < nSamplePoints; ++i)
     {
-        FloatVectorOperations::copyWithMultiply (sampledSignal.data(), buffer.getReadPointer (0), decoderMatrix(i, 0) * weights[0], buffer.getNumSamples());
+        juce::FloatVectorOperations::copyWithMultiply (sampledSignal.data(), buffer.getReadPointer (0), decoderMatrix(i, 0) * weights[0], buffer.getNumSamples());
         for (int ch = 1; ch < nCh; ++ch)
-            FloatVectorOperations::addWithMultiply (sampledSignal.data(), buffer.getReadPointer (ch), decoderMatrix(i, ch) * weights[ch], L);
+            juce::FloatVectorOperations::addWithMultiply (sampledSignal.data(), buffer.getReadPointer (ch), decoderMatrix(i, ch) * weights[ch], L);
 
         // calculate rms
         float sum = 0.0f;
@@ -157,33 +157,33 @@ bool EnergyVisualizerAudioProcessor::hasEditor() const
     return true; // (change this to false if you choose to not supply an editor)
 }
 
-AudioProcessorEditor* EnergyVisualizerAudioProcessor::createEditor()
+juce::AudioProcessorEditor* EnergyVisualizerAudioProcessor::createEditor()
 {
     return new EnergyVisualizerAudioProcessorEditor (*this, parameters);
 }
 
 //==============================================================================
-void EnergyVisualizerAudioProcessor::getStateInformation (MemoryBlock &destData)
+void EnergyVisualizerAudioProcessor::getStateInformation (juce::MemoryBlock &destData)
 {
   auto state = parameters.copyState();
 
   auto oscConfig = state.getOrCreateChildWithName ("OSCConfig", nullptr);
   oscConfig.copyPropertiesFrom (oscParameterInterface.getConfig(), nullptr);
 
-  std::unique_ptr<XmlElement> xml (state.createXml());
+  std::unique_ptr<juce::XmlElement> xml (state.createXml());
   copyXmlToBinary (*xml, destData);
 }
 
 void EnergyVisualizerAudioProcessor::setStateInformation (const void *data, int sizeInBytes)
 {
-    std::unique_ptr<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
+    std::unique_ptr<juce::XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
     if (xmlState.get() != nullptr)
         if (xmlState->hasTagName (parameters.state.getType()))
         {
-            parameters.replaceState (ValueTree::fromXml (*xmlState));
+            parameters.replaceState (juce::ValueTree::fromXml (*xmlState));
             if (parameters.state.hasProperty ("OSCPort")) // legacy
             {
-                oscParameterInterface.getOSCReceiver().connect (parameters.state.getProperty ("OSCPort", var (-1)));
+                oscParameterInterface.getOSCReceiver().connect (parameters.state.getProperty ("OSCPort", juce::var (-1)));
                 parameters.state.removeProperty ("OSCPort", nullptr);
             }
 
@@ -194,20 +194,20 @@ void EnergyVisualizerAudioProcessor::setStateInformation (const void *data, int 
 }
 
 //==============================================================================
-void EnergyVisualizerAudioProcessor::parameterChanged (const String &parameterID, float newValue)
+void EnergyVisualizerAudioProcessor::parameterChanged (const juce::String &parameterID, float newValue)
 {
     if (parameterID == "orderSetting") userChangedIOSettings = true;
 }
 
 
 //==============================================================================
-std::vector<std::unique_ptr<RangedAudioParameter>> EnergyVisualizerAudioProcessor::createParameterLayout()
+std::vector<std::unique_ptr<juce::RangedAudioParameter>> EnergyVisualizerAudioProcessor::createParameterLayout()
 {
     // add your audio parameters here
-    std::vector<std::unique_ptr<RangedAudioParameter>> params;
+    std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("orderSetting", "Ambisonics Order", "",
-                                     NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
+                                     juce::NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
                                      [](float value)
                                      {
                                          if (value >= 0.5f && value < 1.5f) return "0th";
@@ -222,7 +222,7 @@ std::vector<std::unique_ptr<RangedAudioParameter>> EnergyVisualizerAudioProcesso
                                      }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("useSN3D", "Normalization", "",
-                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
+                                     juce::NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value)
                                      {
                                          if (value >= 0.5f ) return "SN3D";
@@ -230,12 +230,12 @@ std::vector<std::unique_ptr<RangedAudioParameter>> EnergyVisualizerAudioProcesso
                                      }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("peakLevel", "Peak level", "dB",
-                                    NormalisableRange<float> (-50.0f, 10.0f, 0.1f), 0.0,
-                                    [](float value) {return String(value, 1);}, nullptr));
+                                    juce::NormalisableRange<float> (-50.0f, 10.0f, 0.1f), 0.0,
+                                    [](float value) {return juce::String(value, 1);}, nullptr));
 
-    params.push_back (OSCParameterInterface::createParameterTheOldWay ("dynamicRange", "Dynamic Range", "dB",
-                                                       NormalisableRange<float> (10.0f, 60.0f, 1.f), 35.0,
-                                                       [](float value) {return String (value, 0);}, nullptr));
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("dynamicRange", "Dynamic juce::Range", "dB",
+                                                       juce::NormalisableRange<float> (10.0f, 60.0f, 1.f), 35.0,
+                                                       [](float value) {return juce::String (value, 0);}, nullptr));
 
     return params;
 }
@@ -244,7 +244,7 @@ std::vector<std::unique_ptr<RangedAudioParameter>> EnergyVisualizerAudioProcesso
 //==============================================================================
 void EnergyVisualizerAudioProcessor::timerCallback()
 {
-    RelativeTime timeDifference = Time::getCurrentTime() - lastEditorTime.get();
+    juce::RelativeTime timeDifference = juce::Time::getCurrentTime() - lastEditorTime.get();
     if (timeDifference.inMilliseconds() > 800)
         doProcessing = false;
     else
@@ -252,9 +252,9 @@ void EnergyVisualizerAudioProcessor::timerCallback()
 }
 
 //==============================================================================
-void EnergyVisualizerAudioProcessor::sendAdditionalOSCMessages (OSCSender& oscSender, const OSCAddressPattern& address)
+void EnergyVisualizerAudioProcessor::sendAdditionalOSCMessages (juce::OSCSender& oscSender, const juce::OSCAddressPattern& address)
 {
-    OSCMessage message (address.toString() + "/RMS");
+    juce::OSCMessage message (address.toString() + "/RMS");
     for (int i = 0; i < nSamplePoints; ++i)
         message.addFloat32 (rms[i]);
     oscSender.send (message);
@@ -262,7 +262,7 @@ void EnergyVisualizerAudioProcessor::sendAdditionalOSCMessages (OSCSender& oscSe
 
 //==============================================================================
 // This creates new instances of the plugin..
-AudioProcessor* JUCE_CALLTYPE createPluginFilter()
+juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new EnergyVisualizerAudioProcessor();
 }

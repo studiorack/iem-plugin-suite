@@ -84,7 +84,7 @@ public:
 
     // =============== IMPORT ======================================================
     /**
-     Loads a JSON-file (fileToParse) and writes the parsed content to a var object (dest).
+     Loads a JSON-file (fileToParse) and writes the parsed content to a juce::var object (dest).
      */
     static juce::Result parseFile (const juce::File& fileToParse, juce::var& dest)
     {
@@ -127,7 +127,7 @@ public:
     }
 
     /**
-     Converts the Matrix object within a TransformationMatrix var object (tmVar) to a ReferenceCountedMatrix (matrix).
+     Converts the juce::dsp::Matrix object within a TransformationMatrix juce::var object (tmVar) to a ReferenceCountedMatrix (matrix).
      */
     static juce::Result convertTransformationMatrixVarToMatrix (juce::var& tmVar, ReferenceCountedMatrix::Ptr* matrix, juce::var nameFallback = juce::var (""), juce::var descriptionFallback = juce::var (""))
     {
@@ -157,7 +157,7 @@ public:
     }
 
     /**
-     Converts a 'Matrix' var object to a Matrix<float> object.
+     Converts a 'Matrix' juce::var object to a juce::dsp::Matrix<float> object.
      */
     static juce::Result getMatrix (juce::var& matrixData, int rows, int cols, juce::dsp::Matrix<float>& dest)
     {
@@ -183,7 +183,7 @@ public:
     }
 
     /**
-     Extracts the number of rows and columns out of a 'Matrix' var object.
+     Extracts the number of rows and columns out of a 'Matrix' juce::var object.
      */
     static juce::Result getMatrixDataSize (juce::var& matrixData, int& rows, int& cols)
     {
@@ -199,7 +199,7 @@ public:
 
 #if CONFIGURATIONHELPER_ENABLE_DECODER_METHODS
     /**
-     Converts a Decoder var object (decoderVar) to a ReferenceCountedDecoder (decoder).
+     Converts a Decoder juce::var object (decoderVar) to a ReferenceCountedDecoder (decoder).
      */
     static juce::Result DecoderVar (juce::var& decoderVar, ReferenceCountedDecoder::Ptr* decoder, juce::var nameFallback = juce::var (""), juce::var descriptionFallback = juce::var (""))
     {
@@ -339,7 +339,7 @@ public:
         return juce::Result::ok();
     }
 
-    /** Parses a 'Decoder' object from a JSON var. If successful, writes the decoder into the destination (decoder).
+    /** Parses a 'Decoder' object from a JSON juce::var. If successful, writes the decoder into the destination (decoder).
      */
     static juce::Result parseVarForDecoder (const juce::var& jsonVar, ReferenceCountedDecoder::Ptr* decoder)
     {
@@ -374,7 +374,7 @@ public:
 
 #if CONFIGURATIONHELPER_ENABLE_GENERICLAYOUT_METHODS
     /**
-     Loads a JSON-file (fileToParse) and tries to parse for a 'LoudspeakerLayout' or 'GenericLayout' object. If successful, writes the generic object into a ValueTree object (elements). Set 'undoManager' to nullptr in case you don't want to use a undoManager.
+     Loads a JSON-file (fileToParse) and tries to parse for a 'LoudspeakerLayout' or 'GenericLayout' object. If successful, writes the generic object into a juce::ValueTree object (elements). Set 'undoManager' to nullptr in case you don't want to use a undoManager.
      */
     static juce::Result parseFileForGenericLayout (const juce::File& fileToParse, juce::ValueTree& elements, juce::UndoManager* undoManager)
     {
@@ -411,7 +411,7 @@ public:
     }
 
     /**
-     Appends all elements within the GenericLayout to the elements ValueTree.
+     Appends all elements within the GenericLayout to the elements juce::ValueTree.
      */
     static juce::Result addElementsToValueTree (juce::var& elementArray, juce::ValueTree& elements, juce::UndoManager* undoManager)
     {
@@ -482,7 +482,7 @@ public:
     }
 
     /**
-     Creates a single element ValueTree, which can be appended to another ValueTree holding several elements.
+     Creates a single element juce::ValueTree, which can be appended to another juce::ValueTree holding several elements.
      */
     static juce::ValueTree createElement (float azimuth, float elevation, float radius, int channel, bool isImaginary, float gain)
     {
@@ -503,7 +503,7 @@ public:
 #if CONFIGURATIONHELPER_ENABLE_DECODER_METHODS
     // =============== EXPORT ======================================================
     /**
-     Converts a ReferenceCountedDecoder object to a var object. Useful for writing the Decoder to a configuration file.
+     Converts a ReferenceCountedDecoder object to a juce::var object. Useful for writing the Decoder to a configuration file.
      */
     static juce::var convertDecoderToVar (ReferenceCountedDecoder::Ptr& decoder)
     {
@@ -544,7 +544,7 @@ public:
 
 #if CONFIGURATIONHELPER_ENABLE_MATRIX_METHODS
     /**
-     Converts a Matrix<float> object to a var object.
+     Converts a juce::dsp::Matrix<float> object to a juce::var object.
      */
     static juce::var convertMatrixToVar (juce::dsp::Matrix<float>& mat)
     {
@@ -561,7 +561,7 @@ public:
     }
 
     /**
-     Converts a ReferenceCountedMatrix object to a var object. Useful for writing the Matrix to a configuration file.
+     Converts a ReferenceCountedMatrix object to a juce::var object. Useful for writing the juce::dsp::Matrix to a configuration file.
      */
     static juce::var convertTransformationMatrixToVar (ReferenceCountedMatrix::Ptr& matrix)
     {
@@ -582,7 +582,7 @@ public:
 
 #if CONFIGURATIONHELPER_ENABLE_LOUDSPEAKERLAYOUT_METHODS
     /**
-     Converts a loudspeakers ValueTree object to a var object. Useful for writing the loudspeakers to a configuration file ('LoudspeakerLayout'). Make sure the ValueTree contains valid loudspeakers.
+     Converts a loudspeakers juce::ValueTree object to a juce::var object. Useful for writing the loudspeakers to a configuration file ('LoudspeakerLayout'). Make sure the juce::ValueTree contains valid loudspeakers.
      */
     static juce::var convertLoudspeakersToVar (juce::ValueTree& loudspeakers, juce::String name = "", juce::String description = "")
     {
@@ -596,7 +596,7 @@ public:
 
         for (juce::ValueTree::Iterator it = loudspeakers.begin() ; it != loudspeakers.end(); ++it)
         {
-            auto* loudspeaker = new juce::DynamicObject(); // loudspeaker which get's added to the loudspeakerArray var
+            auto* loudspeaker = new juce::DynamicObject(); // loudspeaker which get's added to the loudspeakerArray juce::var
 
             loudspeaker->setProperty ("Azimuth", (*it).getProperty ("Azimuth"));
             loudspeaker->setProperty ("Elevation", (*it).getProperty ("Elevation"));
@@ -616,7 +616,7 @@ public:
 
 #if CONFIGURATIONHELPER_ENABLE_GENERICLAYOUT_METHODS
     /**
-     Converts a elements ValueTree object to a var object. Useful for writing the sources to a configuration file ('GenericLayout'). Make sure the ValueTree contains valid elements.
+     Converts a elements juce::ValueTree object to a juce::var object. Useful for writing the sources to a configuration file ('GenericLayout'). Make sure the juce::ValueTree contains valid elements.
      */
     static juce::var convertElementsToVar (juce::ValueTree& elements, juce::String name = "", juce::String description = "")
     {
@@ -649,14 +649,14 @@ public:
 #endif //#if CONFIGURATIONHELPER_ENABLE_GENERICLAYOUT_METHODS
 
     /**
-     Writes a configuration var to a JSON file.
+     Writes a configuration juce::var to a JSON file.
      Example use-case:
         DynamicObject* configuration = new DynamicObject();
-        configuration->setProperty("Name", var("Configuration Name"));
-        configuration->setProperty("Description", var("Description"));
+        configuration->setProperty("Name", juce::var("Configuration Name"));
+        configuration->setProperty("Description", juce::var("Description"));
         configuration->setProperty ("Decoder", ConfigurationHelper::convertDecoderToVar (referenceCountedDecoder));
         configuration->setProperty ("LoudspeakerLayout", ConfigurationHelper::convertLoudspeakersToVar (loudspeakersValueTree));
-        ConfigurationHelper::writeConfigurationToFile (fileName, var (configuration));
+        ConfigurationHelper::writeConfigurationToFile (fileName, juce::var (configuration));
      */
     static juce::Result writeConfigurationToFile (juce::File& fileToWrite, juce::var configuration)
     {

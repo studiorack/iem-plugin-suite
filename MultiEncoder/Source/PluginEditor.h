@@ -36,22 +36,22 @@
 
 
 typedef ReverseSlider::SliderAttachment SliderAttachment;
-typedef AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
-typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
+typedef juce::AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
+typedef juce::AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 
 //==============================================================================
 /**
 */
-class MultiEncoderAudioProcessorEditor  : public AudioProcessorEditor,
-private Timer,
+class MultiEncoderAudioProcessorEditor  : public juce::AudioProcessorEditor,
+private juce::Timer,
 private SpherePanner::Listener
 {
 public:
-    MultiEncoderAudioProcessorEditor (MultiEncoderAudioProcessor&, AudioProcessorValueTreeState&);
+    MultiEncoderAudioProcessorEditor (MultiEncoderAudioProcessor&, juce::AudioProcessorValueTreeState&);
     ~MultiEncoderAudioProcessorEditor();
 
     //==============================================================================
-    void paint (Graphics&) override;
+    void paint (juce::Graphics&) override;
     void resized() override;
 
     void importLayout();
@@ -61,18 +61,18 @@ private:
     OSCFooter footer;
 
     void timerCallback() override;
-    void mouseWheelOnSpherePannerMoved (SpherePanner* sphere, const MouseEvent &event, const MouseWheelDetails &wheel) override;
+    void mouseWheelOnSpherePannerMoved (SpherePanner* sphere, const juce::MouseEvent &event, const juce::MouseWheelDetails &wheel) override;
 
     MultiEncoderAudioProcessor& processor;
-    AudioProcessorValueTreeState& valueTreeState;
+    juce::AudioProcessorValueTreeState& valueTreeState;
 
-    GroupComponent masterGroup, encoderGroup;
-    TextButton tbImport;
+    juce::GroupComponent masterGroup, encoderGroup;
+    juce::TextButton tbImport;
 
     ReverseSlider slMasterAzimuth, slMasterElevation, slMasterRoll;
 
-    ToggleButton tbLockedToMaster;
-    ComboBox inputChooser;
+    juce::ToggleButton tbLockedToMaster;
+    juce::ComboBox inputChooser;
 
     SpherePanner sphere;
     SpherePanner::AzimuthElevationParameterElement masterElement;
@@ -85,10 +85,10 @@ private:
     std::unique_ptr<ComboBoxAttachment> cbNumInputChannelsAttachment, cbNormalizationAtachment;
     std::unique_ptr<ComboBoxAttachment> cbOrderAtachment;
 
-    Viewport viewport;
+    juce::Viewport viewport;
     EncoderList encoderList;
 
-    TooltipWindow tooltipWin;
+    juce::TooltipWindow tooltipWin;
 
     int maxPossibleOrder = -1;
     int maxNumInputs = -1;

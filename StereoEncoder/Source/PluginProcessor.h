@@ -50,10 +50,10 @@ public:
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;
 
-    void processBlock (AudioBuffer<float>&, MidiBuffer&) override;
+    void processBlock (juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
 
     //==============================================================================
-    AudioProcessorEditor* createEditor() override;
+    juce::AudioProcessorEditor* createEditor() override;
     bool hasEditor() const override;
 
 
@@ -61,30 +61,30 @@ public:
     int getNumPrograms() override;
     int getCurrentProgram() override;
     void setCurrentProgram (int index) override;
-    const String getProgramName (int index) override;
-    void changeProgramName (int index, const String& newName) override;
+    const juce::String getProgramName (int index) override;
+    void changeProgramName (int index, const juce::String& newName) override;
 
     //==============================================================================
-    void getStateInformation (MemoryBlock& destData) override;
+    void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
-    void parameterChanged (const String &parameterID, float newValue) override;
+    void parameterChanged (const juce::String &parameterID, float newValue) override;
 
 
     // ====== OSC ==================================================================
-    const bool processNotYetConsumedOSCMessage (const OSCMessage &message) override;
+    const bool processNotYetConsumedOSCMessage (const juce::OSCMessage &message) override;
     // =================
 
     //======= Parameters ===========================================================
-    std::vector<std::unique_ptr<RangedAudioParameter>> createParameterLayout();
+    std::vector<std::unique_ptr<juce::RangedAudioParameter>> createParameterLayout();
     //==============================================================================
 
     inline void updateQuaternions();
     inline void updateEuler();
 
-    Vector3D<float> posC, posL, posR;
+    juce::Vector3D<float> posC, posL, posR;
 
-    Atomic<bool> updatedPositionData;
+    juce::Atomic<bool> updatedPositionData;
 
     std::atomic<float>* orderSetting;
     std::atomic<float>* useSN3D;
@@ -113,14 +113,14 @@ private:
     float _SHL[64];
     float _SHR[64];
 
-    Atomic<bool> positionHasChanged = true;
+    juce::Atomic<bool> positionHasChanged = true;
 
     iem::Quaternion<float> quaternionDirection;
 
-    AudioBuffer<float> bufferCopy;
+    juce::AudioBuffer<float> bufferCopy;
 
-    LinearSmoothedValue<float> smoothAzimuthL, smoothElevationL;
-    LinearSmoothedValue<float> smoothAzimuthR, smoothElevationR;
+    juce::LinearSmoothedValue<float> smoothAzimuthL, smoothElevationL;
+    juce::LinearSmoothedValue<float> smoothAzimuthR, smoothElevationR;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (StereoEncoderAudioProcessor)
 };

@@ -24,8 +24,8 @@
 #include "PluginEditor.h"
 
 //==============================================================================
-FdnReverbAudioProcessorEditor::FdnReverbAudioProcessorEditor (FdnReverbAudioProcessor& p, AudioProcessorValueTreeState& vts)
-    : AudioProcessorEditor (&p), processor (p), valueTreeState (vts), footer (p.getOSCParameterInterface()),
+FdnReverbAudioProcessorEditor::FdnReverbAudioProcessorEditor (FdnReverbAudioProcessor& p, juce::AudioProcessorValueTreeState& vts)
+    : juce::AudioProcessorEditor (&p), processor (p), valueTreeState (vts), footer (p.getOSCParameterInterface()),
     tv (20.f, 20000.f, 0.1f, 25.f, 5.f),
     fv (20.f, 20000.f, -80.f, 5.f, 5.f, false)
 {
@@ -38,102 +38,102 @@ FdnReverbAudioProcessorEditor::FdnReverbAudioProcessorEditor (FdnReverbAudioProc
 	freezeMode.addListener (this);
 
     addAndMakeVisible (&title);
-    title.setTitle (String("FDN"), String("Reverb"));
+    title.setTitle (juce::String("FDN"), juce::String("Reverb"));
     title.setFont (globalLaF.robotoBold, globalLaF.robotoLight);
 
     addAndMakeVisible(&footer);
     addAndMakeVisible(&delayGroup);
     delayGroup.setText("General Settings");
-    delayGroup.setTextLabelPosition (Justification::centredLeft);
-    delayGroup.setColour (GroupComponent::outlineColourId, globalLaF.ClSeperator);
-    delayGroup.setColour (GroupComponent::textColourId, Colours::white);
+    delayGroup.setTextLabelPosition (juce::Justification::centredLeft);
+    delayGroup.setColour (juce::GroupComponent::outlineColourId, globalLaF.ClSeperator);
+    delayGroup.setColour (juce::GroupComponent::textColourId, juce::Colours::white);
     delayGroup.setVisible(true);
 
     addAndMakeVisible(&filterGroup);
     filterGroup.setText("Filter Settings");
     addAndMakeVisible(&t60Group);
     t60Group.setText("Reverberation Time");
-    t60Group.setTextLabelPosition (Justification::centredLeft);
-    t60Group.setColour (GroupComponent::outlineColourId, globalLaF.ClSeperator);
-    t60Group.setColour (GroupComponent::textColourId, Colours::red);
+    t60Group.setTextLabelPosition (juce::Justification::centredLeft);
+    t60Group.setColour (juce::GroupComponent::outlineColourId, globalLaF.ClSeperator);
+    t60Group.setColour (juce::GroupComponent::textColourId, juce::Colours::red);
     t60Group.setVisible(true);
 
     addAndMakeVisible (&delayLengthSlider);
     delayAttachment.reset (new SliderAttachment (valueTreeState, "delayLength", delayLengthSlider));
-    delayLengthSlider.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    delayLengthSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    delayLengthSlider.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
+    delayLengthSlider.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    delayLengthSlider.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    delayLengthSlider.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
     delayLengthSlider.setTooltip("Room Size");
 
     addAndMakeVisible (&revTimeSlider);
     feedbackAttachment.reset (new SliderAttachment (valueTreeState, "revTime", revTimeSlider));
-    revTimeSlider.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    revTimeSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    revTimeSlider.setColour (Slider::rotarySliderOutlineColourId, Colours::white);
+    revTimeSlider.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    revTimeSlider.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    revTimeSlider.setColour (juce::Slider::rotarySliderOutlineColourId, juce::Colours::white);
     revTimeSlider.setTooltip("Reverberation Time");
     revTimeSlider.addListener(this);
 
 	addAndMakeVisible(&fadeInSlider);
 	fadeInAttachment.reset (new SliderAttachment (valueTreeState, "fadeInTime", fadeInSlider));
-	fadeInSlider.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
-	fadeInSlider.setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
-	fadeInSlider.setColour(Slider::rotarySliderOutlineColourId, Colours::white);
+	fadeInSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+	fadeInSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 15);
+	fadeInSlider.setColour(juce::Slider::rotarySliderOutlineColourId, juce::Colours::white);
 	fadeInSlider.setTooltip("FadeIn Time");
 
     addAndMakeVisible (&dryWetSlider);
     dryWetAttachment.reset (new SliderAttachment (valueTreeState, "dryWet", dryWetSlider));
-    dryWetSlider.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    dryWetSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    dryWetSlider.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
+    dryWetSlider.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    dryWetSlider.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    dryWetSlider.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
     dryWetSlider.setTooltip("Dry/Wet");
 
     addAndMakeVisible (&lowCutoffSlider);
     lowCutoffAttachment.reset (new SliderAttachment (valueTreeState, "lowCutoff", lowCutoffSlider));
-    lowCutoffSlider.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    lowCutoffSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    lowCutoffSlider.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[3]);
+    lowCutoffSlider.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    lowCutoffSlider.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    lowCutoffSlider.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[3]);
     lowCutoffSlider.setTooltip("Low Shelf Cutoff Freq");
     lowCutoffSlider.addListener(this);
 
     addAndMakeVisible (&lowQSlider);
     lowQAttachment.reset (new SliderAttachment (valueTreeState, "lowQ", lowQSlider));
-    lowQSlider.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    lowQSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    lowQSlider.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[3]);
+    lowQSlider.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    lowQSlider.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    lowQSlider.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[3]);
     lowQSlider.setTooltip("Low Shelf Q");
     lowQSlider.addListener(this);
 
     addAndMakeVisible (&lowGainSlider);
     lowGainAttachment.reset (new SliderAttachment (valueTreeState, "lowGain", lowGainSlider));
-    lowGainSlider.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    lowGainSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    lowGainSlider.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[3]);
+    lowGainSlider.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    lowGainSlider.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    lowGainSlider.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[3]);
     lowGainSlider.setTooltip("Low Shelf Gain");
     lowGainSlider.addListener(this);
 
     addAndMakeVisible (&highCutoffSlider);
     highCutoffAttachment.reset (new SliderAttachment (valueTreeState, "highCutoff", highCutoffSlider));
-    highCutoffSlider.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    highCutoffSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    highCutoffSlider.setColour (Slider::rotarySliderOutlineColourId,
+    highCutoffSlider.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    highCutoffSlider.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    highCutoffSlider.setColour (juce::Slider::rotarySliderOutlineColourId,
         globalLaF.ClWidgetColours[0]);;
     highCutoffSlider.setTooltip("High Shelf Cutoff Freq");
     highCutoffSlider.addListener(this);
 
     addAndMakeVisible (&highQSlider);
     highQAttachment.reset (new SliderAttachment (valueTreeState, "highQ", highQSlider));
-    highQSlider.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    highQSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    highQSlider.setColour (Slider::rotarySliderOutlineColourId,
+    highQSlider.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    highQSlider.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    highQSlider.setColour (juce::Slider::rotarySliderOutlineColourId,
         globalLaF.ClWidgetColours[0]);
     highQSlider.setTooltip("High Shelf Q");
     highQSlider.addListener(this);
 
     addAndMakeVisible (&highGainSlider);
     highGainAttachment.reset (new SliderAttachment (valueTreeState, "highGain", highGainSlider));
-    highGainSlider.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    highGainSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    highGainSlider.setColour (Slider::rotarySliderOutlineColourId,
+    highGainSlider.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    highGainSlider.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    highGainSlider.setColour (juce::Slider::rotarySliderOutlineColourId,
         globalLaF.ClWidgetColours[0]);
     highGainSlider.setTooltip("High Shelf Gain");
     highGainSlider.addListener(this);
@@ -143,7 +143,7 @@ FdnReverbAudioProcessorEditor::FdnReverbAudioProcessorEditor (FdnReverbAudioProc
     cbFdnSize.addItem ("16", 1);
     cbFdnSize.addItem ("32", 2);
     cbFdnSize.addItem ("64", 3);
-    cbFdnSize.setJustificationType (Justification::centred);
+    cbFdnSize.setJustificationType (juce::Justification::centred);
     cbFdnSizeAttachment.reset (new ComboBoxAttachment (valueTreeState, "fdnSize", cbFdnSize));
 
     addAndMakeVisible (&freezeMode);
@@ -174,13 +174,13 @@ FdnReverbAudioProcessorEditor::FdnReverbAudioProcessorEditor (FdnReverbAudioProc
     // left side
     addAndMakeVisible(&tv);
     lowpassCoeffs = IIR::Coefficients<float>::makeLowShelf(48000,
-                                                           lowCutoffSlider.getValue(), lowQSlider.getValue(), Decibels::decibelsToGain(lowGainSlider.getValue()));
+                                                           lowCutoffSlider.getValue(), lowQSlider.getValue(), juce::Decibels::decibelsToGain(lowGainSlider.getValue()));
     highpassCoeffs = IIR::Coefficients<float>::makeHighShelf(48000,
-                                                             highCutoffSlider.getValue(), highQSlider.getValue(), Decibels::decibelsToGain(highGainSlider.getValue()));
+                                                             highCutoffSlider.getValue(), highQSlider.getValue(), juce::Decibels::decibelsToGain(highGainSlider.getValue()));
 
-    tv.addCoefficients(lowpassCoeffs, Colours::orangered, &lowCutoffSlider,
+    tv.addCoefficients(lowpassCoeffs, juce::Colours::orangered, &lowCutoffSlider,
         &lowGainSlider);
-    tv.addCoefficients(highpassCoeffs, Colours::cyan, &highCutoffSlider,
+    tv.addCoefficients(highpassCoeffs, juce::Colours::cyan, &highCutoffSlider,
         &highGainSlider);
 
     float gain = pow (10.0, -3.0 / revTimeSlider.getValue());
@@ -200,7 +200,7 @@ FdnReverbAudioProcessorEditor::~FdnReverbAudioProcessorEditor()
 }
 
 //==============================================================================
-void FdnReverbAudioProcessorEditor::paint (Graphics& g)
+void FdnReverbAudioProcessorEditor::paint (juce::Graphics& g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
     g.fillAll (globalLaF.ClBackground);
@@ -210,7 +210,7 @@ void FdnReverbAudioProcessorEditor::timerCallback()
 {
 }
 
-void FdnReverbAudioProcessorEditor::buttonClicked (Button* button)
+void FdnReverbAudioProcessorEditor::buttonClicked (juce::Button* button)
 {
     if (button == &freezeMode)
     {
@@ -221,14 +221,14 @@ void FdnReverbAudioProcessorEditor::buttonClicked (Button* button)
     }
 }
 
-void FdnReverbAudioProcessorEditor::sliderValueChanged(Slider* slider)
+void FdnReverbAudioProcessorEditor::sliderValueChanged(juce::Slider* slider)
 {
     if (slider == &highCutoffSlider ||
         slider == &highQSlider ||
         slider == &highGainSlider)
     {
         *highpassCoeffs = *IIR::Coefficients<float>::makeHighShelf(48000,
-                 highCutoffSlider.getValue(), highQSlider.getValue(), Decibels::decibelsToGain(highGainSlider.getValue()));
+                 highCutoffSlider.getValue(), highQSlider.getValue(), juce::Decibels::decibelsToGain(highGainSlider.getValue()));
 
         tv.repaint();
         fv.repaint();
@@ -238,7 +238,7 @@ void FdnReverbAudioProcessorEditor::sliderValueChanged(Slider* slider)
              slider == &lowGainSlider)
     {
         *lowpassCoeffs = *IIR::Coefficients<float>::makeLowShelf(48000,
-            lowCutoffSlider.getValue(), lowQSlider.getValue(), Decibels::decibelsToGain(lowGainSlider.getValue()));
+            lowCutoffSlider.getValue(), lowQSlider.getValue(), juce::Decibels::decibelsToGain(lowGainSlider.getValue()));
 
         tv.repaint();
         fv.repaint();
@@ -262,13 +262,13 @@ void FdnReverbAudioProcessorEditor::resized()
     const int rotSliderSpacing = 10;
     const int labelHeight = 20;
 
-    Rectangle<int> area (getLocalBounds());
-    Rectangle<int> footerArea (area.removeFromBottom (footerHeight));
+    juce::Rectangle<int> area (getLocalBounds());
+    juce::Rectangle<int> footerArea (area.removeFromBottom (footerHeight));
     footer.setBounds(footerArea);
 
     area.removeFromLeft(leftRightMargin);
     area.removeFromRight(leftRightMargin);
-    Rectangle<int> headerArea = area.removeFromTop (headerHeight);
+    juce::Rectangle<int> headerArea = area.removeFromTop (headerHeight);
     title.setBounds (headerArea);
     area.removeFromTop(10);
     area.removeFromBottom(5);
@@ -277,11 +277,11 @@ void FdnReverbAudioProcessorEditor::resized()
     { //====================== DELAY SETTINGS GROUP ==================================
         const int rotSliderWidth = 55;
 
-        Rectangle<int> settingsArea (area.removeFromRight(185));
+        juce::Rectangle<int> settingsArea (area.removeFromRight(185));
         delayGroup.setBounds (settingsArea);
         settingsArea.removeFromTop (25); //for box headline
 
-        Rectangle<int> sliderRow (settingsArea.removeFromTop(rotSliderHeight));
+        juce::Rectangle<int> sliderRow (settingsArea.removeFromTop(rotSliderHeight));
 
         delayLengthSlider.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
         sliderRow.removeFromLeft(rotSliderSpacing);
@@ -312,7 +312,7 @@ void FdnReverbAudioProcessorEditor::resized()
 
     const int height = (area.getHeight() - 10 - labelHeight - rotSliderHeight + 10) / 2;
     { //====================== T60 GROUP ==================================
-        Rectangle<int> t60Area (area.removeFromTop(height));
+        juce::Rectangle<int> t60Area (area.removeFromTop(height));
         t60Group.setBounds (t60Area);
         t60Area.removeFromTop (25);
         tv.setBounds(t60Area);
@@ -323,11 +323,11 @@ void FdnReverbAudioProcessorEditor::resized()
 
     { //====================== FILTER GROUP ==================================
         const int rotSliderWidth = 40;
-        Rectangle<int> filterArea(area);
+        juce::Rectangle<int> filterArea(area);
         filterGroup.setBounds(filterArea);
         filterArea.removeFromTop(25);
 
-        Rectangle<int> sliderRow(filterArea.removeFromBottom(labelHeight));
+        juce::Rectangle<int> sliderRow(filterArea.removeFromBottom(labelHeight));
         lbLowCutoff.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
         sliderRow.removeFromLeft (rotSliderSpacing);
         lbLowQ.setBounds (sliderRow.removeFromLeft(rotSliderWidth));

@@ -331,7 +331,7 @@ public:
                            float sliderPos, float minSliderPos, float maxSliderPos,
                            const juce::Slider::SliderStyle style, juce::Slider& slider) override
     {
-        //g.fillAll (slider.findColour (Slider::backgroundColourId));
+        //g.fillAll (slider.findColour (juce::Slider::backgroundColourId));
 
         //Label* l = createSliderTextBox(slider);
         //l->showEditor();
@@ -566,7 +566,7 @@ public:
     void drawRoundThumb (juce::Graphics& g, const float centreX, const float centreY,
                          const float diameter, const juce::Colour& colour, float outlineThickness)
     {
-        //        const Rectangle<float> a (x, y, diameter, diameter);
+        //        const juce::Rectangle<float> a (x, y, diameter, diameter);
 
         const float newDiameter = (diameter - outlineThickness);
         const float halfThickness = newDiameter * 0.5f;
@@ -588,7 +588,7 @@ public:
     juce::Button* createSliderButton (juce::Slider&, const bool isIncrement) override
     {
         return new juce::TextButton (isIncrement ? "+" : "-", juce::String());
-        //return new ArrowButton (String(),isIncrement ? 0.75 : 0.25f,Colours::white);
+        //return new ArrowButton (juce::String(),isIncrement ? 0.75 : 0.25f,juce::Colours::white);
     }
 
 

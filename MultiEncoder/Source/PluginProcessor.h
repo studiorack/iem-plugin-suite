@@ -53,33 +53,33 @@ public:
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;
 
-    void processBlock (AudioSampleBuffer&, MidiBuffer&) override;
+    void processBlock (juce::AudioSampleBuffer&, juce::MidiBuffer&) override;
 
     //==============================================================================
-    AudioProcessorEditor* createEditor() override;
+    juce::AudioProcessorEditor* createEditor() override;
     bool hasEditor() const override;
 
     //==============================================================================
     int getNumPrograms() override;
     int getCurrentProgram() override;
     void setCurrentProgram (int index) override;
-    const String getProgramName (int index) override;
-    void changeProgramName (int index, const String& newName) override;
+    const juce::String getProgramName (int index) override;
+    void changeProgramName (int index, const juce::String& newName) override;
 
     //==============================================================================
-    void getStateInformation (MemoryBlock& destData) override;
+    void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
-    void parameterChanged (const String &parameterID, float newValue) override;
+    void parameterChanged (const juce::String &parameterID, float newValue) override;
 
 
     //======= Parameters ===========================================================
-    std::vector<std::unique_ptr<RangedAudioParameter>> createParameterLayout();
+    std::vector<std::unique_ptr<juce::RangedAudioParameter>> createParameterLayout();
 
     //==============================================================================
-    Result loadConfiguration (const File& configFile);
-    void setLastDir (File newLastDir);
-    File getLastDir() { return lastDir; };
+    juce::Result loadConfiguration (const juce::File& configFile);
+    void setLastDir (juce::File newLastDir);
+    juce::File getLastDir() { return lastDir; };
 
     float xyzGrab[3];
     float xyz[maxNumberOfInputs][3];
@@ -90,8 +90,8 @@ public:
     std::atomic<float>* mute[maxNumberOfInputs];
     std::atomic<float>* solo[maxNumberOfInputs];
 
-    BigInteger muteMask;
-    BigInteger soloMask;
+    juce::BigInteger muteMask;
+    juce::BigInteger soloMask;
 
     std::atomic<float>* masterAzimuth;
     std::atomic<float>* masterElevation;
@@ -110,15 +110,15 @@ public:
     bool updateSphere = true;
     bool soloMuteChanged = true;
 
-    Colour elementColours[maxNumberOfInputs];
+    juce::Colour elementColours[maxNumberOfInputs];
 
     void updateBuffers() override;
     void updateQuaternions();
 
 private:
     //==============================================================================
-    File lastDir;
-    std::unique_ptr<PropertiesFile> properties;
+    juce::File lastDir;
+    std::unique_ptr<juce::PropertiesFile> properties;
 
     bool processorUpdatingParams;
 
@@ -136,7 +136,7 @@ private:
     float _SH[maxNumberOfInputs][64];
     float _gain[maxNumberOfInputs];
 
-    AudioBuffer<float> bufferCopy;
+    juce::AudioBuffer<float> bufferCopy;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MultiEncoderAudioProcessor)
 };

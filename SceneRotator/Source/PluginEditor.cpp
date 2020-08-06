@@ -25,8 +25,8 @@
 
 
 //==============================================================================
-SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotatorAudioProcessor& p, AudioProcessorValueTreeState& vts)
-    : AudioProcessorEditor (&p), processor (p), valueTreeState (vts), footer (p.getOSCParameterInterface())
+SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotatorAudioProcessor& p, juce::AudioProcessorValueTreeState& vts)
+    : juce::AudioProcessorEditor (&p), processor (p), valueTreeState (vts), footer (p.getOSCParameterInterface())
 {
     // ============== BEGIN: essentials ======================
     // set GUI size and lookAndFeel
@@ -36,7 +36,7 @@ SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotator
 
     // make title and footer visible, and set the PluginName
     addAndMakeVisible (&title);
-    title.setTitle (String ("Scene"), String ("Rotator"));
+    title.setTitle (juce::String ("Scene"), juce::String ("Rotator"));
     title.setFont (globalLaF.robotoBold, globalLaF.robotoLight);
     addAndMakeVisible (&footer);
     // ============= END: essentials ========================
@@ -50,57 +50,57 @@ SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotator
 
     // ======================== YAW, PITCH, ROLL GROUP
     yprGroup.setText ("Yaw, Pitch & Roll");
-    yprGroup.setTextLabelPosition (Justification::centredLeft);
+    yprGroup.setTextLabelPosition (juce::Justification::centredLeft);
     addAndMakeVisible (&yprGroup);
 
     addAndMakeVisible (&slYaw);
     slYawAttachment.reset (new SliderAttachment (valueTreeState, "yaw", slYaw));
-    slYaw.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slYaw.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
+    slYaw.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slYaw.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
     slYaw.setReverse (true);
-    slYaw.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
-    slYaw.setRotaryParameters (MathConstants<float>::pi, 3 * MathConstants<float>::pi, false);
+    slYaw.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
+    slYaw.setRotaryParameters (juce::MathConstants<float>::pi, 3 * juce::MathConstants<float>::pi, false);
     slYaw.setTooltip ("Yaw angle: rotation around z-axis");
-    slYaw.setTextValueSuffix (CharPointer_UTF8 (R"(°)"));
+    slYaw.setTextValueSuffix (juce::CharPointer_UTF8 (R"(°)"));
 
     addAndMakeVisible (&slPitch);
     slPitchAttachment.reset (new SliderAttachment (valueTreeState, "pitch", slPitch));
-    slPitch.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slPitch.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
+    slPitch.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slPitch.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
     slPitch.setReverse (true);
-    slPitch.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
-    slPitch.setRotaryParameters (0.5 * MathConstants<float>::pi, 2.5 * MathConstants<float>::pi, false);
+    slPitch.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
+    slPitch.setRotaryParameters (0.5 * juce::MathConstants<float>::pi, 2.5 * juce::MathConstants<float>::pi, false);
     slPitch.setTooltip ("Pitch angle: rotation around y-axis");
-    slPitch.setTextValueSuffix (CharPointer_UTF8 (R"(°)"));
+    slPitch.setTextValueSuffix (juce::CharPointer_UTF8 (R"(°)"));
 
     addAndMakeVisible (&slRoll);
     slRollAttachment.reset (new SliderAttachment (valueTreeState, "roll", slRoll));
-    slRoll.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slRoll.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slRoll.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
+    slRoll.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slRoll.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    slRoll.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
     slRoll.setReverse (false);
-    slRoll.setRotaryParameters (MathConstants<float>::pi, 3 * MathConstants<float>::pi, false);
+    slRoll.setRotaryParameters (juce::MathConstants<float>::pi, 3 * juce::MathConstants<float>::pi, false);
     slRoll.setTooltip ("Roll angle: rotation around x-axis");
-    slRoll.setTextValueSuffix (CharPointer_UTF8 (R"(°)"));
+    slRoll.setTextValueSuffix (juce::CharPointer_UTF8 (R"(°)"));
 
     addAndMakeVisible (tbInvertYaw);
     tbInvertYawAttachment.reset (new ButtonAttachment (valueTreeState, "invertYaw", tbInvertYaw));
-    tbInvertYaw.setColour (ToggleButton::ColourIds::tickColourId, globalLaF.ClWidgetColours[0]);
+    tbInvertYaw.setColour (juce::ToggleButton::ColourIds::tickColourId, globalLaF.ClWidgetColours[0]);
     tbInvertYaw.setButtonText ("Flip");
 
     addAndMakeVisible (tbInvertPitch);
     tbInvertPitchAttachment.reset (new ButtonAttachment (valueTreeState, "invertPitch", tbInvertPitch));
-    tbInvertPitch.setColour (ToggleButton::ColourIds::tickColourId, globalLaF.ClWidgetColours[1]);
+    tbInvertPitch.setColour (juce::ToggleButton::ColourIds::tickColourId, globalLaF.ClWidgetColours[1]);
     tbInvertPitch.setButtonText ("Flip");
 
     addAndMakeVisible (tbInvertRoll);
     tbRollFlipAttachment.reset (new ButtonAttachment (valueTreeState, "invertRoll", tbInvertRoll));
-    tbInvertRoll.setColour (ToggleButton::ColourIds::tickColourId, globalLaF.ClWidgetColours[2]);
+    tbInvertRoll.setColour (juce::ToggleButton::ColourIds::tickColourId, globalLaF.ClWidgetColours[2]);
     tbInvertRoll.setButtonText ("Flip");
 
     addAndMakeVisible (tbInvertQuaternion);
     tbInvertQuaternionAttachment.reset (new ButtonAttachment (valueTreeState, "invertQuaternion", tbInvertQuaternion));
-    tbInvertQuaternion.setColour (ToggleButton::ColourIds::tickColourId, globalLaF.ClWidgetColours[0]);
+    tbInvertQuaternion.setColour (juce::ToggleButton::ColourIds::tickColourId, globalLaF.ClWidgetColours[0]);
     tbInvertQuaternion.setButtonText ("Invert Quaternions");
 
     addAndMakeVisible (cbRotationSequence);
@@ -108,38 +108,38 @@ SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotator
     cbRotationSequence.addSectionHeading ("Rotation sequence");
     cbRotationSequence.addItem("Yaw -> Pitch -> Roll", 1);
     cbRotationSequence.addItem("Roll -> Pitch -> Yaw", 2);
-    cbRotationSequence.setJustificationType (Justification::centred);
+    cbRotationSequence.setJustificationType (juce::Justification::centred);
     cbRotationSequenceAttachment.reset (new ComboBoxAttachment (valueTreeState, "rotationSequence", cbRotationSequence));
 
 
     // ====================== QUATERNION GROUP
     quatGroup.setText ("Quaternions");
-    quatGroup.setTextLabelPosition (Justification::centredLeft);
+    quatGroup.setTextLabelPosition (juce::Justification::centredLeft);
     addAndMakeVisible (&quatGroup);
 
     addAndMakeVisible (&slQW);
     slQWAttachment.reset (new SliderAttachment (valueTreeState, "qw", slQW));
-    slQW.setSliderStyle (Slider::LinearHorizontal);
-    slQW.setTextBoxStyle (Slider::TextBoxLeft, false, 50, 15);
-    slQW.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
+    slQW.setSliderStyle (juce::Slider::LinearHorizontal);
+    slQW.setTextBoxStyle (juce::Slider::TextBoxLeft, false, 50, 15);
+    slQW.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
 
     addAndMakeVisible (&slQX);
     slQXAttachment.reset (new SliderAttachment (valueTreeState, "qx", slQX));
-    slQX.setSliderStyle (Slider::LinearHorizontal);
-    slQX.setTextBoxStyle (Slider::TextBoxLeft, false, 50, 15);
-    slQX.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
+    slQX.setSliderStyle (juce::Slider::LinearHorizontal);
+    slQX.setTextBoxStyle (juce::Slider::TextBoxLeft, false, 50, 15);
+    slQX.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
 
     addAndMakeVisible (&slQY);
     slQYAttachment.reset (new SliderAttachment (valueTreeState, "qy", slQY));
-    slQY.setSliderStyle (Slider::LinearHorizontal);
-    slQY.setTextBoxStyle (Slider::TextBoxLeft, false, 50, 15);
-    slQY.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
+    slQY.setSliderStyle (juce::Slider::LinearHorizontal);
+    slQY.setTextBoxStyle (juce::Slider::TextBoxLeft, false, 50, 15);
+    slQY.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
 
     addAndMakeVisible (&slQZ);
     slQZAttachment.reset (new SliderAttachment (valueTreeState, "qz", slQZ));
-    slQZ.setSliderStyle (Slider::LinearHorizontal);
-    slQZ.setTextBoxStyle (Slider::TextBoxLeft, false, 50, 15);
-    slQZ.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
+    slQZ.setSliderStyle (juce::Slider::LinearHorizontal);
+    slQZ.setTextBoxStyle (juce::Slider::TextBoxLeft, false, 50, 15);
+    slQZ.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
 
 
     // ================ LABELS ===================
@@ -168,15 +168,15 @@ SceneRotatorAudioProcessorEditor::SceneRotatorAudioProcessorEditor (SceneRotator
     // ====================== MIDI GROUP
     addAndMakeVisible (midiGroup);
     midiGroup.setText ("MIDI Connection");
-    midiGroup.setTextLabelPosition (Justification::centredLeft);
+    midiGroup.setTextLabelPosition (juce::Justification::centredLeft);
 
     addAndMakeVisible (cbMidiDevices);
-    cbMidiDevices.setJustificationType (Justification::centred);
+    cbMidiDevices.setJustificationType (juce::Justification::centred);
     refreshMidiDeviceList();
     cbMidiDevices.addListener (this);
 
     addAndMakeVisible (cbMidiScheme);
-    cbMidiScheme.setJustificationType (Justification::centred);
+    cbMidiScheme.setJustificationType (juce::Justification::centred);
     cbMidiScheme.addSectionHeading ("Select Device's MIDI Scheme");
     cbMidiScheme.addItemList (processor.getMidiSchemes(), 1);
     cbMidiScheme.setSelectedId (static_cast<int> (processor.getCurrentMidiScheme()) + 1);
@@ -203,7 +203,7 @@ SceneRotatorAudioProcessorEditor::~SceneRotatorAudioProcessorEditor()
 }
 
 //==============================================================================
-void SceneRotatorAudioProcessorEditor::paint (Graphics& g)
+void SceneRotatorAudioProcessorEditor::paint (juce::Graphics& g)
 {
     g.fillAll (globalLaF.ClBackground);
 }
@@ -214,14 +214,14 @@ void SceneRotatorAudioProcessorEditor::resized()
     const int leftRightMargin = 30;
     const int headerHeight = 60;
     const int footerHeight = 25;
-    Rectangle<int> area (getLocalBounds());
+    juce::Rectangle<int> area (getLocalBounds());
 
-    Rectangle<int> footerArea (area.removeFromBottom (footerHeight));
+    juce::Rectangle<int> footerArea (area.removeFromBottom (footerHeight));
     footer.setBounds (footerArea);
 
     area.removeFromLeft (leftRightMargin);
     area.removeFromRight (leftRightMargin);
-    Rectangle<int> headerArea = area.removeFromTop (headerHeight);
+    juce::Rectangle<int> headerArea = area.removeFromTop (headerHeight);
     title.setBounds (headerArea);
     area.removeFromTop (10);
     area.removeFromBottom (5);
@@ -340,17 +340,17 @@ void SceneRotatorAudioProcessorEditor::timerCallback()
     if (processor.showMidiOpenError.get())
     {
         processor.showMidiOpenError = false;
-        AlertWindow alert ("Could no open device", "The MIDI device could not be opened, although it's listed in the available device list. This can happen if this process has already opened that device. Please visit https://plugins.iem.at/docs/scenerotator/ for troubleshooting.", AlertWindow::NoIcon);
+        juce::AlertWindow alert ("Could no open device", "The MIDI device could not be opened, although it's listed in the available device list. This can happen if this process has already opened that device. Please visit https://plugins.iem.at/docs/scenerotator/ for troubleshooting.", juce::AlertWindow::NoIcon);
         alert.setLookAndFeel (&globalLaF);
-        alert.addButton ("OK", 1, KeyPress (KeyPress::returnKey, 0, 0));
+        alert.addButton ("OK", 1, juce::KeyPress (juce::KeyPress::returnKey, 0, 0));
         alert.addButton ("Visit website", 2);
         if (alert.runModalLoop() == 2)
-            URL ("https://plugins.iem.at/docs/scenerotator/").launchInDefaultBrowser();
+            juce::URL ("https://plugins.iem.at/docs/scenerotator/").launchInDefaultBrowser();
     }
 }
 
 
-void SceneRotatorAudioProcessorEditor::comboBoxChanged (ComboBox *comboBoxThatHasChanged)
+void SceneRotatorAudioProcessorEditor::comboBoxChanged (juce::ComboBox *comboBoxThatHasChanged)
 {
     if (comboBoxThatHasChanged == &cbMidiDevices && ! refreshingMidiDevices.get())
     {
@@ -365,7 +365,7 @@ void SceneRotatorAudioProcessorEditor::comboBoxChanged (ComboBox *comboBoxThatHa
         }
         else if (id > 0) // an actual device is selected!
         {
-            String deviceName = cbMidiDevices.getText();
+            juce::String deviceName = cbMidiDevices.getText();
             processor.openMidiInput (deviceName);
         }
     }
@@ -382,11 +382,11 @@ void SceneRotatorAudioProcessorEditor::refreshMidiDeviceList()
     cbMidiDevices.addItem ("(refresh list...)", -3);
     cbMidiDevices.addItem ("none / use DAW input", -2);
 
-    String currentDevice = processor.getCurrentMidiDeviceName();
+    juce::String currentDevice = processor.getCurrentMidiDeviceName();
 
     int select = -2;
 
-    StringArray devices = MidiInput::getDevices();
+    juce::StringArray devices = juce::MidiInput::getDevices();
     if (! currentDevice.isEmpty())
     {
         if (devices.contains (currentDevice))
@@ -405,12 +405,12 @@ void SceneRotatorAudioProcessorEditor::refreshMidiDeviceList()
         cbMidiDevices.addItem (devices[i], i + 1);
     }
 
-    ScopedValueSetter<Atomic<bool>> refreshing (refreshingMidiDevices, true, false);
-    cbMidiDevices.setSelectedId (select, sendNotificationSync);
+    juce::ScopedValueSetter<juce::Atomic<bool>> refreshing (refreshingMidiDevices, true, false);
+    cbMidiDevices.setSelectedId (select, juce::sendNotificationSync);
 }
 
 void SceneRotatorAudioProcessorEditor::updateSelectedMidiScheme()
 {
-    ScopedValueSetter<Atomic<bool>> refreshing (updatingMidiScheme, true, false);
-    //cbMidiScheme.setSelectedId (select, sendNotificationSync);
+    juce::ScopedValueSetter<juce::Atomic<bool>> refreshing (updatingMidiScheme, true, false);
+    //cbMidiScheme.setSelectedId (select, juce::sendNotificationSync);
 }

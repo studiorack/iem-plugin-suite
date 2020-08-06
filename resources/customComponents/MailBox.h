@@ -36,7 +36,7 @@ namespace MailBox
 class Display : public juce::Component
 {
 public:
-    Display() : Component() {
+    Display() : juce::Component() {
 
     };
 

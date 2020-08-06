@@ -29,7 +29,7 @@
 #include "../../resources/lookAndFeel/IEM_LaF.h"
 #include "../../resources/customComponents/TitleBar.h"
 
-//Custom Components
+//Custom juce::Components
 #include "../../resources/customComponents/ReverseSlider.h"
 #include "../../resources/customComponents/SimpleLabel.h"
 #include "../../resources/customComponents/FilterVisualizer.h"
@@ -37,34 +37,34 @@
 
 
 typedef ReverseSlider::SliderAttachment SliderAttachment; // all ReverseSliders will make use of the parameters' valueToText() function
-typedef AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
-typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
+typedef juce::AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
+typedef juce::AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 
 //==============================================================================
 /**
 */
-class SimpleDecoderAudioProcessorEditor  : public AudioProcessorEditor, private Timer, public AudioProcessorValueTreeState::Listener
+class SimpleDecoderAudioProcessorEditor  : public juce::AudioProcessorEditor, private juce::Timer, public juce::AudioProcessorValueTreeState::Listener
 {
 public:
-    SimpleDecoderAudioProcessorEditor (SimpleDecoderAudioProcessor&, AudioProcessorValueTreeState&);
+    SimpleDecoderAudioProcessorEditor (SimpleDecoderAudioProcessor&, juce::AudioProcessorValueTreeState&);
     ~SimpleDecoderAudioProcessorEditor();
 
     //==============================================================================
-    void paint (Graphics&) override;
+    void paint (juce::Graphics&) override;
     void resized() override;
 
 
     void timerCallback() override;
     void loadPresetFile();
-    void parameterChanged (const String &parameterID, float newValue) override;
+    void parameterChanged (const juce::String &parameterID, float newValue) override;
 private:
     // ====================== beging essentials ==================
     // lookAndFeel class with the IEM plug-in suite design
     LaF globalLaF;
 
-    // stored references to the AudioProcessor and ValueTreeState holding all the parameters
+    // stored references to the AudioProcessor and juce::ValueTreeState holding all the parameters
     SimpleDecoderAudioProcessor& processor;
-    AudioProcessorValueTreeState& valueTreeState;
+    juce::AudioProcessorValueTreeState& valueTreeState;
 
 
     /* title and footer component
@@ -89,7 +89,7 @@ private:
     bool enableSubwooferChannelControls;
     bool changeEnablement = false;
 
-    GroupComponent gcFilter, gcSw, gcConfiguration, gcGain;
+    juce::GroupComponent gcFilter, gcSw, gcConfiguration, gcGain;
 
     // Filter slider
     ReverseSlider slLowPassFrequency, slHighPassFrequency, slLowPassGain;
@@ -97,13 +97,13 @@ private:
     SimpleLabel lbLowPassFrequency, lbLowPassGain, lbHighPassFrequency;
 
     // Subwoofer mode
-    ComboBox cbSwMode;
+    juce::ComboBox cbSwMode;
     std::unique_ptr<ComboBoxAttachment> cbSwModeAttachment;
     SimpleLabel lbSwMode, lbSwChannel, lbAlreadyUsed;
     ReverseSlider slSwChannel;
     std::unique_ptr<SliderAttachment> slSwChannelAttachment;
     //
-    TextButton btLoadFile;
+    juce::TextButton btLoadFile;
     DecoderInfoBox dcInfoBox;
 
     ReverseSlider slGain;

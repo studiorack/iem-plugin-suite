@@ -27,74 +27,75 @@
 //==============================================================================
 /*
 */
-using namespace dsp;
-class DirectivityVisualizer    : public Component
+
+class DirectivityVisualizer    : public juce::Component
 {
-    struct WeightsAndColour {
+    struct WeightsAndColour
+    {
         float *weights;
-        Colour colour;
+        juce::Colour colour;
     };
 
-    const float deg2rad = MathConstants<float>::pi / 180.0f;
+    const float deg2rad = juce::MathConstants<float>::pi / 180.0f;
     const int degStep = 1;
     const int nLookUpSamples = 360;
     const int maxdB = 90;
     const float power = 3.0f;
     const int dBstep = 10;
     //#define scale 4
-    const float scale = sqrt(4 * MathConstants<float>::pi) * decodeCorrection(7);
+    const float scale = std::sqrt (4 * juce::MathConstants<float>::pi) * decodeCorrection(7);
 public:
     DirectivityVisualizer()
     {
         // 0th
-        lookUpTables.add(new LookupTableTransform<float>([this] (float phi) { return scale * (0.25f / (float) MathConstants<float>::pi); }, -MathConstants<float>::pi, MathConstants<float>::pi, nLookUpSamples));
+        lookUpTables.add (new juce::dsp::LookupTableTransform<float>([this] (float phi) { return scale * (0.25f / (float) juce::MathConstants<float>::pi); }, -juce::MathConstants<float>::pi, juce::MathConstants<float>::pi, nLookUpSamples));
 
         // 1st
-        lookUpTables.add(new LookupTableTransform<float>([this] (float phi) { return scale * (0.75f / MathConstants<float>::pi) * std::cos (phi); }, -MathConstants<float>::pi, MathConstants<float>::pi, nLookUpSamples));
+        lookUpTables.add (new juce::dsp::LookupTableTransform<float>([this] (float phi) { return scale * (0.75f / juce::MathConstants<float>::pi) * std::cos (phi); }, -juce::MathConstants<float>::pi, juce::MathConstants<float>::pi, nLookUpSamples));
 
         // 2nd
-        lookUpTables.add(new LookupTableTransform<float>([this] (float phi) { return scale * 2.0f*(5.0f /16.0f / MathConstants<float>::pi) * (3 * std::cos (phi) * std::cos (phi) - 1.0f); }, -MathConstants<float>::pi, MathConstants<float>::pi, nLookUpSamples));
+        lookUpTables.add (new juce::dsp::LookupTableTransform<float>([this] (float phi) { return scale * 2.0f*(5.0f /16.0f / juce::MathConstants<float>::pi) * (3 * std::cos (phi) * std::cos (phi) - 1.0f); }, -juce::MathConstants<float>::pi, juce::MathConstants<float>::pi, nLookUpSamples));
 
         // 3rd
-        lookUpTables.add(new LookupTableTransform<float>([this] (float phi) { return scale * (7.0f / MathConstants<float>::pi) / 8.0f * (5 * pow(std::cos (phi), 3) - 3.0f * std::cos (phi));}, -MathConstants<float>::pi, MathConstants<float>::pi, nLookUpSamples));
+        lookUpTables.add (new juce::dsp::LookupTableTransform<float>([this] (float phi) { return scale * (7.0f / juce::MathConstants<float>::pi) / 8.0f * (5 * pow(std::cos (phi), 3) - 3.0f * std::cos (phi));}, -juce::MathConstants<float>::pi, juce::MathConstants<float>::pi, nLookUpSamples));
 
         // 4th
-        lookUpTables.add(new LookupTableTransform<float>([this] (float phi) { return scale * 9.0f / 32.0f / MathConstants<float>::pi * (35 * pow(std::cos (phi),4) - 30* pow(std::cos (phi), 2) + 3.0f); }, -MathConstants<float>::pi, MathConstants<float>::pi, nLookUpSamples));
+        lookUpTables.add (new juce::dsp::LookupTableTransform<float>([this] (float phi) { return scale * 9.0f / 32.0f / juce::MathConstants<float>::pi * (35 * pow(std::cos (phi),4) - 30* pow(std::cos (phi), 2) + 3.0f); }, -juce::MathConstants<float>::pi, juce::MathConstants<float>::pi, nLookUpSamples));
 
         // 5th
-        lookUpTables.add(new LookupTableTransform<float>([this] (float phi) { return scale * 8.0f / 256.0f * 11.0f / MathConstants<float>::pi * (63 * pow(std::cos (phi),5) - 70* pow(std::cos (phi),3) + 15.0f * std::cos (phi)); }, -MathConstants<float>::pi, MathConstants<float>::pi, nLookUpSamples));
+        lookUpTables.add (new juce::dsp::LookupTableTransform<float>([this] (float phi) { return scale * 8.0f / 256.0f * 11.0f / juce::MathConstants<float>::pi * (63 * pow(std::cos (phi),5) - 70* pow(std::cos (phi),3) + 15.0f * std::cos (phi)); }, -juce::MathConstants<float>::pi, juce::MathConstants<float>::pi, nLookUpSamples));
 
         // 6th
-        lookUpTables.add(new LookupTableTransform<float>([this] (float phi) { return scale * 16.0f / 1024.0f * 13.0f / MathConstants<float>::pi * (231 *  pow(std::cos (phi),6) - 315 * pow(std::cos (phi), 4) + 105 * pow(std::cos (phi),2) - 5.0f); }, -MathConstants<float>::pi, MathConstants<float>::pi, nLookUpSamples));
+        lookUpTables.add (new juce::dsp::LookupTableTransform<float>([this] (float phi) { return scale * 16.0f / 1024.0f * 13.0f / juce::MathConstants<float>::pi * (231 *  pow(std::cos (phi),6) - 315 * pow(std::cos (phi), 4) + 105 * pow(std::cos (phi),2) - 5.0f); }, -juce::MathConstants<float>::pi, juce::MathConstants<float>::pi, nLookUpSamples));
 
         // 7th
-        lookUpTables.add(new LookupTableTransform<float>([this] (float phi) { return scale * 16.0f / 1024.0f *15.0f /MathConstants<float>::pi * (429 * pow(std::cos (phi),7) - 693 * pow(std::cos (phi), 5) + 315* pow(std::cos (phi),3) - 35 * std::cos (phi)); }, -MathConstants<float>::pi, MathConstants<float>::pi, nLookUpSamples));
+        lookUpTables.add (new juce::dsp::LookupTableTransform<float>([this] (float phi) { return scale * 16.0f / 1024.0f *15.0f / juce::MathConstants<float>::pi * (429 * pow(std::cos (phi),7) - 693 * pow(std::cos (phi), 5) + 315* pow(std::cos (phi),3) - 35 * std::cos (phi)); }, -juce::MathConstants<float>::pi, juce::MathConstants<float>::pi, nLookUpSamples));
 
         for (int phi = -180; phi <= 180; phi += degStep)
         {
-            pointsOnCircle.add(Point<float>(cos(deg2rad * phi), sin(deg2rad * phi)));
+            pointsOnCircle.add(juce::Point<float>(cos(deg2rad * phi), sin(deg2rad * phi)));
         }
 
 
-        Path circle;
+        juce::Path circle;
         circle.addEllipse(-1.0f, -1.0f, 2.0f, 2.0f);
-        Path line;
+        juce::Path line;
         line.startNewSubPath(0.0f, -1.0f);
         line.lineTo(0.0f, 1.0f);
 
 
         grid.clear();
         for (int dB = 0; dB < maxdB; dB += dBstep)
-            grid.addPath(circle, AffineTransform().scaled(dBToRadius(-dB)));
+            grid.addPath(circle, juce::AffineTransform().scaled(dBToRadius(-dB)));
 
         subGrid.clear();
         for (int dB = dBstep/2; dB < maxdB; dB += dBstep)
-            subGrid.addPath(circle, AffineTransform().scaled(dBToRadius(-dB)));
+            subGrid.addPath(circle, juce::AffineTransform().scaled(dBToRadius(-dB)));
 
         subGrid.addPath(line);
-        subGrid.addPath(line, AffineTransform().rotation(0.25f * MathConstants<float>::pi));
-        subGrid.addPath(line, AffineTransform().rotation(0.5f * MathConstants<float>::pi));
-        subGrid.addPath(line, AffineTransform().rotation(0.75f * MathConstants<float>::pi));
+        subGrid.addPath(line, juce::AffineTransform().rotation(0.25f * juce::MathConstants<float>::pi));
+        subGrid.addPath(line, juce::AffineTransform().rotation(0.5f * juce::MathConstants<float>::pi));
+        subGrid.addPath(line, juce::AffineTransform().rotation(0.75f * juce::MathConstants<float>::pi));
 
     }
 
@@ -111,9 +112,9 @@ public:
         return radius;
     }
 
-    void paint (Graphics& g) override
+    void paint (juce::Graphics& g) override
     {
-        Rectangle<int> bounds = getLocalBounds();
+        juce::Rectangle<int> bounds = getLocalBounds();
         const int scale = plotArea.getWidth()/2;
         //const int height = bounds.getHeight();
 
@@ -121,25 +122,25 @@ public:
         int centreY = bounds.getCentreY();
 
 
-        Path path;
+        juce::Path path;
         path = grid;
         path.applyTransform(transform);
-        g.setColour (Colours::skyblue.withMultipliedAlpha(0.1f));
+        g.setColour (juce::Colours::skyblue.withMultipliedAlpha(0.1f));
         g.fillPath(path);
-        g.setColour (Colours::white);
-        g.strokePath(path, PathStrokeType(1.0f));
+        g.setColour (juce::Colours::white);
+        g.strokePath(path, juce::PathStrokeType(1.0f));
 
         path = subGrid;
         path.applyTransform(transform);
-        g.setColour (Colours::skyblue.withMultipliedAlpha(0.3f));
-        g.strokePath(path, PathStrokeType(0.5f));
+        g.setColour (juce::Colours::skyblue.withMultipliedAlpha(0.3f));
+        g.strokePath(path, juce::PathStrokeType(0.5f));
 
-        g.setColour (Colours::white);
-        g.setFont(getLookAndFeel().getTypefaceForFont (Font(12.0f, 2)));
+        g.setColour (juce::Colours::white);
+        g.setFont(getLookAndFeel().getTypefaceForFont (juce::Font(12.0f, 2)));
         g.setFont(12.0f);
-        g.drawText("0 dB", centreX-10, centreY + scale * dBToRadius(0.0f) - 12, 20, 12, Justification::centred);
-        g.drawText("-10", centreX-10, centreY + scale * dBToRadius(-10.0f), 20, 12, Justification::centred);
-        g.drawText("-20", centreX-10, centreY + scale * dBToRadius(-20.0f), 20, 12, Justification::centred);
+        g.drawText("0 dB", centreX-10, centreY + scale * dBToRadius(0.0f) - 12, 20, 12, juce::Justification::centred);
+        g.drawText("-10", centreX-10, centreY + scale * dBToRadius(-10.0f), 20, 12, juce::Justification::centred);
+        g.drawText("-20", centreX-10, centreY + scale * dBToRadius(-20.0f), 20, 12, juce::Justification::centred);
 
 
         int size = elements.size();
@@ -158,7 +159,7 @@ public:
                 for (int o = 0; o < 8; ++o) {
                     gain += handle.weights[o] * lookUpTables[o]->processSample(phiInRad);
                 }
-                Point<float> point = dBToRadius(Decibels::gainToDecibels(std::abs(gain), -1.0f * maxdB)) * pointsOnCircle[idx];
+                juce::Point<float> point = dBToRadius(juce::Decibels::gainToDecibels(std::abs(gain), -1.0f * maxdB)) * pointsOnCircle[idx];
                 if (phi == -180)
                     path.startNewSubPath(point);
                 else
@@ -168,14 +169,14 @@ public:
 
             path.closeSubPath();
             path.applyTransform(transform);
-            g.strokePath(path, PathStrokeType(2.0f));
+            g.strokePath(path, juce::PathStrokeType(2.0f));
         }
     }
 
     void resized() override
     {
-        Rectangle<int> bounds = getLocalBounds();
-        Point<int> centre = bounds.getCentre();
+        juce::Rectangle<int> bounds = getLocalBounds();
+        juce::Point<int> centre = bounds.getCentre();
 
         bounds.reduce(10,10);
 
@@ -185,28 +186,28 @@ public:
             bounds.setHeight(bounds.getWidth());
         bounds.setCentre(centre);
 
-        transform = AffineTransform::fromTargetPoints((float) centre.x, (float) centre.y, (float)  centre.x, bounds.getY(), bounds.getX(), centre.y);
+        transform = juce::AffineTransform::fromTargetPoints((float) centre.x, (float) centre.y, (float)  centre.x, bounds.getY(), bounds.getX(), centre.y);
 
 
         plotArea = bounds;
     }
 
-    void addElement(float* weights, Colour colour)
+    void addElement (float* weights, juce::Colour colour)
     {
         elements.add({weights, colour});
     }
 
 private:
-    OwnedArray<LookupTableTransform<float>> lookUpTables;
-    Path grid;
-    Path subGrid;
-    AffineTransform transform;
-    Rectangle<int> plotArea;
+    juce::OwnedArray<juce::dsp::LookupTableTransform<float>> lookUpTables;
+    juce::Path grid;
+    juce::Path subGrid;
+    juce::AffineTransform transform;
+    juce::Rectangle<int> plotArea;
 
     int maxOrder;
 
-    Array<WeightsAndColour> elements;
+    juce::Array<WeightsAndColour> elements;
 
-    Array<Point<float>> pointsOnCircle;
+    juce::Array<juce::Point<float>> pointsOnCircle;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DirectivityVisualizer)
 };

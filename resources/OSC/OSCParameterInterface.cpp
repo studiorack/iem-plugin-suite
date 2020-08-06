@@ -30,7 +30,7 @@ OSCParameterInterface::OSCParameterInterface (OSCMessageInterceptor &i, juce::Au
     auto& params = parameters.processor.getParameters();
     for (auto& item : params)
     {
-        if (auto* ptr = dynamic_cast<AudioProcessorParameterWithID*> (item)) // that's maybe not the best solution, but it does the job for now
+        if (auto* ptr = dynamic_cast<juce::AudioProcessorParameterWithID*> (item)) // that's maybe not the best solution, but it does the job for now
         {
             auto parameterID = ptr->paramID;
             auto parameterName = ptr->name;

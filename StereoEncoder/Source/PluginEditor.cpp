@@ -25,8 +25,8 @@
 
 
 //==============================================================================
-StereoEncoderAudioProcessorEditor::StereoEncoderAudioProcessorEditor (StereoEncoderAudioProcessor& p, AudioProcessorValueTreeState& vts)
-: AudioProcessorEditor (&p), footer (p.getOSCParameterInterface()), processor (p), valueTreeState(vts),
+StereoEncoderAudioProcessorEditor::StereoEncoderAudioProcessorEditor (StereoEncoderAudioProcessor& p, juce::AudioProcessorValueTreeState& vts)
+: juce::AudioProcessorEditor (&p), footer (p.getOSCParameterInterface()), processor (p), valueTreeState(vts),
     centerElement(*valueTreeState.getParameter("azimuth"), valueTreeState.getParameterRange("azimuth"), *valueTreeState.getParameter("elevation"), valueTreeState.getParameterRange("elevation")),
     leftElement(centerElement, *valueTreeState.getParameter("roll"), valueTreeState.getParameterRange("roll"), *valueTreeState.getParameter("width"), valueTreeState.getParameterRange("width")),
     rightElement(centerElement, *valueTreeState.getParameter("roll"), valueTreeState.getParameterRange("roll"), *valueTreeState.getParameter("width"), valueTreeState.getParameterRange("width"))
@@ -40,22 +40,22 @@ StereoEncoderAudioProcessorEditor::StereoEncoderAudioProcessorEditor (StereoEnco
     addAndMakeVisible(&sphere);
     sphere.addListener(this);
 
-    leftElement.setColour(Colours::aqua);
+    leftElement.setColour(juce::Colours::aqua);
     sphere.addElement(&leftElement);
     leftElement.setLabel("L");
 
-    rightElement.setColour(Colours::red);
+    rightElement.setColour(juce::Colours::red);
     rightElement.setMirrored(true);
     sphere.addElement(&rightElement);
     rightElement.setLabel("R");
 
-    centerElement.setColour(Colours::white);
+    centerElement.setColour(juce::Colours::white);
     sphere.addElement(&centerElement);
     centerElement.setGrabPriority(1);
     // ======================================
 
     addAndMakeVisible(&title);
-    title.setTitle(String("Stereo"),String("Encoder"));
+    title.setTitle(juce::String("Stereo"),juce::String("Encoder"));
     title.setFont(globalLaF.robotoBold,globalLaF.robotoLight);
 
     addAndMakeVisible(&footer);
@@ -71,91 +71,91 @@ StereoEncoderAudioProcessorEditor::StereoEncoderAudioProcessorEditor (StereoEnco
 
     // ======================== AZIMUTH ELEVATION ROLL WIDTH GROUP
     ypGroup.setText("Azimuth, Elevation, Roll, Width");
-    ypGroup.setTextLabelPosition (Justification::centredLeft);
-    ypGroup.setColour (GroupComponent::outlineColourId, globalLaF.ClSeperator);
-    ypGroup.setColour (GroupComponent::textColourId, Colours::white);
+    ypGroup.setTextLabelPosition (juce::Justification::centredLeft);
+    ypGroup.setColour (juce::GroupComponent::outlineColourId, globalLaF.ClSeperator);
+    ypGroup.setColour (juce::GroupComponent::textColourId, juce::Colours::white);
     addAndMakeVisible(&ypGroup);
     ypGroup.setVisible(true);
 
     addAndMakeVisible(&azimuthSlider);
     azimuthAttachment.reset (new SliderAttachment (valueTreeState,"azimuth", azimuthSlider));
-    azimuthSlider.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    azimuthSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
+    azimuthSlider.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    azimuthSlider.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
     azimuthSlider.setReverse(true);
-    azimuthSlider.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
-    azimuthSlider.setRotaryParameters(MathConstants<float>::pi, 3*MathConstants<float>::pi, false);
+    azimuthSlider.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
+    azimuthSlider.setRotaryParameters(juce::MathConstants<float>::pi, 3*juce::MathConstants<float>::pi, false);
     azimuthSlider.setTooltip("Azimuth angle");
-    azimuthSlider.setTextValueSuffix(CharPointer_UTF8 (R"(°)"));
+    azimuthSlider.setTextValueSuffix(juce::CharPointer_UTF8 (R"(°)"));
 
     addAndMakeVisible(&elevationSlider);
     elevationAttachment.reset (new SliderAttachment (valueTreeState,"elevation", elevationSlider));
-    elevationSlider.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    elevationSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    elevationSlider.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
-    elevationSlider.setRotaryParameters(0.5 * MathConstants<float>::pi, 2.5 * MathConstants<float>::pi, false);
+    elevationSlider.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    elevationSlider.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    elevationSlider.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
+    elevationSlider.setRotaryParameters(0.5 * juce::MathConstants<float>::pi, 2.5 * juce::MathConstants<float>::pi, false);
     elevationSlider.setTooltip("Elevation angle");
-    elevationSlider.setTextValueSuffix(CharPointer_UTF8 (R"(°)"));
+    elevationSlider.setTextValueSuffix(juce::CharPointer_UTF8 (R"(°)"));
 
     addAndMakeVisible(&rollSlider);
     rollAttachment.reset (new SliderAttachment (valueTreeState,"roll", rollSlider));
-    rollSlider.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    rollSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    rollSlider.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
+    rollSlider.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    rollSlider.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    rollSlider.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
     rollSlider.setReverse(false);
-    rollSlider.setRotaryParameters(MathConstants<float>::pi, 3*MathConstants<float>::pi, false);
+    rollSlider.setRotaryParameters(juce::MathConstants<float>::pi, 3*juce::MathConstants<float>::pi, false);
     rollSlider.setTooltip("Roll angle");
-    rollSlider.setTextValueSuffix(CharPointer_UTF8 (R"(°)"));
+    rollSlider.setTextValueSuffix(juce::CharPointer_UTF8 (R"(°)"));
 
 
 
     // ====================== QUATERNION GROUP
     quatGroup.setText("Quaternions");
-    quatGroup.setTextLabelPosition (Justification::centredLeft);
-    quatGroup.setColour (GroupComponent::outlineColourId, globalLaF.ClSeperator);
-    quatGroup.setColour (GroupComponent::textColourId, Colours::white);
+    quatGroup.setTextLabelPosition (juce::Justification::centredLeft);
+    quatGroup.setColour (juce::GroupComponent::outlineColourId, globalLaF.ClSeperator);
+    quatGroup.setColour (juce::GroupComponent::textColourId, juce::Colours::white);
     addAndMakeVisible(&quatGroup);
     quatGroup.setVisible(true);
 
     addAndMakeVisible(&qwSlider);
     qwAttachment.reset (new SliderAttachment (valueTreeState,"qw", qwSlider));
-    qwSlider.setSliderStyle (Slider::LinearHorizontal);
-    qwSlider.setTextBoxStyle (Slider::TextBoxLeft, false, 50, 15);
-    qwSlider.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
+    qwSlider.setSliderStyle (juce::Slider::LinearHorizontal);
+    qwSlider.setTextBoxStyle (juce::Slider::TextBoxLeft, false, 50, 15);
+    qwSlider.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
 
     addAndMakeVisible(&qxSlider);
     qxAttachment.reset (new SliderAttachment (valueTreeState,"qx", qxSlider));
-    qxSlider.setSliderStyle (Slider::LinearHorizontal);
-    qxSlider.setTextBoxStyle (Slider::TextBoxLeft, false, 50, 15);
-    qxSlider.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
+    qxSlider.setSliderStyle (juce::Slider::LinearHorizontal);
+    qxSlider.setTextBoxStyle (juce::Slider::TextBoxLeft, false, 50, 15);
+    qxSlider.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
 
     addAndMakeVisible(&qySlider);
     qyAttachment.reset (new SliderAttachment (valueTreeState,"qy", qySlider));
-    qySlider.setSliderStyle (Slider::LinearHorizontal);
-    qySlider.setTextBoxStyle (Slider::TextBoxLeft, false, 50, 15);
-    qySlider.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
+    qySlider.setSliderStyle (juce::Slider::LinearHorizontal);
+    qySlider.setTextBoxStyle (juce::Slider::TextBoxLeft, false, 50, 15);
+    qySlider.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
 
     addAndMakeVisible(&qzSlider);
     qzAttachment.reset (new SliderAttachment (valueTreeState,"qz", qzSlider));
-    qzSlider.setSliderStyle (Slider::LinearHorizontal);
-    qzSlider.setTextBoxStyle (Slider::TextBoxLeft, false, 50, 15);
-    qzSlider.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
+    qzSlider.setSliderStyle (juce::Slider::LinearHorizontal);
+    qzSlider.setTextBoxStyle (juce::Slider::TextBoxLeft, false, 50, 15);
+    qzSlider.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
 
 
     // =========================== SETTINGS GROUP
     addAndMakeVisible(&settingsGroup);
     settingsGroup.setText("Settings");
-    settingsGroup.setTextLabelPosition (Justification::centredLeft);
-    settingsGroup.setColour (GroupComponent::outlineColourId, globalLaF.ClSeperator);
-    settingsGroup.setColour (GroupComponent::textColourId, Colours::white);
+    settingsGroup.setTextLabelPosition (juce::Justification::centredLeft);
+    settingsGroup.setColour (juce::GroupComponent::outlineColourId, globalLaF.ClSeperator);
+    settingsGroup.setColour (juce::GroupComponent::textColourId, juce::Colours::white);
     settingsGroup.setVisible(true);
 
     addAndMakeVisible(&widthSlider);
     widthAttachment.reset (new SliderAttachment (valueTreeState,"width", widthSlider));
-    widthSlider.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    widthSlider.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    widthSlider.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[3]);
+    widthSlider.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    widthSlider.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    widthSlider.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[3]);
     widthSlider.setReverse(false);
-    widthSlider.setRotaryParameters(MathConstants<float>::pi, 3*MathConstants<float>::pi, false);
+    widthSlider.setRotaryParameters(juce::MathConstants<float>::pi, 3*juce::MathConstants<float>::pi, false);
     widthSlider.setTooltip("Stereo Width");
     //widthSlider.setEnabled(*processor.inputMode >= 0.5f);
 
@@ -193,7 +193,7 @@ StereoEncoderAudioProcessorEditor::StereoEncoderAudioProcessorEditor (StereoEnco
 }
 
 
-void StereoEncoderAudioProcessorEditor::mouseWheelOnSpherePannerMoved (SpherePanner* sphere, const MouseEvent &event, const MouseWheelDetails &wheel)
+void StereoEncoderAudioProcessorEditor::mouseWheelOnSpherePannerMoved (SpherePanner* sphere, const juce::MouseEvent &event, const juce::MouseWheelDetails &wheel)
 {
     if (event.mods.isCommandDown() && event.mods.isAltDown())
         rollSlider.mouseWheelMove(event, wheel);
@@ -211,7 +211,7 @@ StereoEncoderAudioProcessorEditor::~StereoEncoderAudioProcessorEditor()
 }
 
 //==============================================================================
-void StereoEncoderAudioProcessorEditor::paint (Graphics& g)
+void StereoEncoderAudioProcessorEditor::paint (juce::Graphics& g)
 {
     g.fillAll (globalLaF.ClBackground);
 }
@@ -234,22 +234,22 @@ void StereoEncoderAudioProcessorEditor::resized()
     const int leftRightMargin = 30;
     const int headerHeight = 60;
     const int footerHeight = 25;
-    Rectangle<int> area (getLocalBounds());
+    juce::Rectangle<int> area (getLocalBounds());
 
-    Rectangle<int> footerArea (area.removeFromBottom (footerHeight));
+    juce::Rectangle<int> footerArea (area.removeFromBottom (footerHeight));
     footer.setBounds(footerArea);
 
     area.removeFromLeft(leftRightMargin);
     area.removeFromRight(leftRightMargin);
-    Rectangle<int> headerArea = area.removeFromTop    (headerHeight);
+    juce::Rectangle<int> headerArea = area.removeFromTop    (headerHeight);
     title.setBounds (headerArea);
     area.removeFromTop(10);
 
-    Rectangle<int> sliderRow;
+    juce::Rectangle<int> sliderRow;
 
     // ============== SIDEBAR RIGHT ====================
     // =================================================
-    Rectangle<int> sideBarArea (area.removeFromRight(190));
+    juce::Rectangle<int> sideBarArea (area.removeFromRight(190));
     const int sliderHeight = 15;
     const int rotSliderHeight = 55;
     const int rotSliderSpacing = 10;
@@ -259,7 +259,7 @@ void StereoEncoderAudioProcessorEditor::resized()
     const int labelWidth = 20;
 
     // -------------- Azimuth Elevation Roll Width ------------------
-    Rectangle<int> yprArea (sideBarArea.removeFromTop(25+rotSliderHeight+labelHeight));
+    juce::Rectangle<int> yprArea (sideBarArea.removeFromTop(25+rotSliderHeight+labelHeight));
     ypGroup.setBounds (yprArea);
     yprArea.removeFromTop(25); //for box headline
 
@@ -284,7 +284,7 @@ void StereoEncoderAudioProcessorEditor::resized()
     sideBarArea.removeFromTop(20);
 
     // ------------- Quaternion ------------------------
-    Rectangle<int> quatArea (sideBarArea.removeFromTop(165));
+    juce::Rectangle<int> quatArea (sideBarArea.removeFromTop(165));
     quatGroup.setBounds (quatArea);
     quatArea.removeFromTop(25); //for box headline
 
@@ -317,7 +317,7 @@ void StereoEncoderAudioProcessorEditor::resized()
 
 }
 
-bool StereoEncoderAudioProcessorEditor::keyPressed (const KeyPress &key, Component *originatingComponent)
+bool StereoEncoderAudioProcessorEditor::keyPressed (const juce::KeyPress &key, juce::Component *originatingComponent)
 {
     DBG("Key pressed: " << key.getKeyCode());
 

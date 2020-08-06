@@ -33,29 +33,29 @@
 #include "ReflectionsVisualizer.h"
 
 typedef ReverseSlider::SliderAttachment SliderAttachment;
-typedef AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
-typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
+typedef juce::AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
+typedef juce::AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 
 //==============================================================================
 /**
 */
-class RoomEncoderAudioProcessorEditor  : public AudioProcessorEditor, private Timer,
-private Slider::Listener, private Button::Listener
+class RoomEncoderAudioProcessorEditor  : public juce::AudioProcessorEditor, private juce::Timer,
+private juce::Slider::Listener, private juce::Button::Listener
 {
 public:
-    RoomEncoderAudioProcessorEditor (RoomEncoderAudioProcessor&, AudioProcessorValueTreeState&);
+    RoomEncoderAudioProcessorEditor (RoomEncoderAudioProcessor&, juce::AudioProcessorValueTreeState&);
     ~RoomEncoderAudioProcessorEditor();
 
     //==============================================================================
-    void paint (Graphics&) override;
+    void paint (juce::Graphics&) override;
     void resized() override;
 
     //==============================================================================
-    void sliderValueChanged(Slider *slider) override;
+    void sliderValueChanged(juce::Slider *slider) override;
 
     //==============================================================================
-    void buttonClicked (Button *button) override {};
-    void buttonStateChanged (Button *button) override;
+    void buttonClicked (juce::Button *button) override {};
+    void buttonStateChanged (juce::Button *button) override;
 
 private:
     //==============================================================================
@@ -66,7 +66,7 @@ private:
     void timerCallback() override;
 
     RoomEncoderAudioProcessor& processor;
-    AudioProcessorValueTreeState& valueTreeState;
+    juce::AudioProcessorValueTreeState& valueTreeState;
 
     SimpleLabel lbReflCoeff, lbNumReflections;
     TripleLabel lbRoomDim;
@@ -74,17 +74,17 @@ private:
     FilterVisualizer<float> fv;
     ReflectionsVisualizer rv;
 
-    ComboBox cbSyncChannel;
+    juce::ComboBox cbSyncChannel;
     SimpleLabel lbSyncChannel;
-    ToggleButton tbSyncRoomSize, tbSyncReflection, tbSyncListener;
-    ToggleButton tbDirectPathUnityGain, tbDirectPathZeroDelay, tbRenderDirectPath;
+    juce::ToggleButton tbSyncRoomSize, tbSyncReflection, tbSyncListener;
+    juce::ToggleButton tbDirectPathUnityGain, tbDirectPathZeroDelay, tbRenderDirectPath;
     std::unique_ptr<ComboBoxAttachment> cbSyncChannelAttachment;
     std::unique_ptr<ButtonAttachment> tbSyncRoomSizeAttachment, tbSyncReflectionAttachment, tbSyncListenerAttachment;
     std::unique_ptr<ButtonAttachment> tbDirectPathUnityGainAttachment, tbDirectPathZeroDelayAttachment, tbRenderDirectPathAttachment;
 
-    GroupComponent gcRoomDimensions, gcSourcePosition, gcListenerPosition;
-    GroupComponent gcReflectionProperties;
-    GroupComponent gcSync;
+    juce::GroupComponent gcRoomDimensions, gcSourcePosition, gcListenerPosition;
+    juce::GroupComponent gcReflectionProperties;
+    juce::GroupComponent gcSync;
 
     SimpleLabel lbRoomX, lbRoomY, lbRoomZ;
     SimpleLabel lbListenerX, lbListenerY, lbListenerZ;
@@ -124,9 +124,9 @@ private:
     PositionPlane xyPlane, zyPlane;
     PositionPlane::ParameterElement sourceElement, listenerElement;
 
-    OpenGLContext mOpenGlContext;
+    juce::OpenGLContext mOpenGlContext;
 
-    TooltipWindow toolTipWin;
+    juce::TooltipWindow toolTipWin;
 
 
 

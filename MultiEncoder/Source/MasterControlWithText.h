@@ -25,30 +25,30 @@
 #include "../../resources/customComponents/ReverseSlider.h"
 
 
-class MasterControlWithText : public Component
+class MasterControlWithText : public juce::Component
 {
 public:
-    MasterControlWithText (OwnedArray<ReverseSlider>& sliderArray) : elements (sliderArray)
+    MasterControlWithText (juce::OwnedArray<ReverseSlider>& sliderArray) : elements (sliderArray)
     {
     }
 
-    void setText (String newText)
+    void setText (juce::String newText)
     {
         text = newText;
         repaint();
     }
 
-    void mouseEnter (const MouseEvent& e) override
+    void mouseEnter (const juce::MouseEvent& e) override
     {
         repaint();
     }
 
-    void mouseExit (const MouseEvent& e) override
+    void mouseExit (const juce::MouseEvent& e) override
     {
         repaint();
     }
 
-    void mouseMove (const MouseEvent& e) override
+    void mouseMove (const juce::MouseEvent& e) override
     {
         if (triangleUp.contains (e.position))
             isOverTriangle = 1;
@@ -58,7 +58,7 @@ public:
             isOverTriangle = 0;
     }
 
-    void mouseDrag (const MouseEvent& e) override
+    void mouseDrag (const juce::MouseEvent& e) override
     {
         isDragging = true;
 
@@ -82,7 +82,7 @@ public:
     }
 
 
-    void mouseWheelMove (const MouseEvent& e, const MouseWheelDetails& wheel) override
+    void mouseWheelMove (const juce::MouseEvent& e, const juce::MouseWheelDetails& wheel) override
     {
         isDragging = true;
 
@@ -93,7 +93,7 @@ public:
         }
     }
 
-    void mouseDown (const MouseEvent& e) override
+    void mouseDown (const juce::MouseEvent& e) override
     {
         for (int i = 0; i < elements.size(); ++i)
         {
@@ -115,7 +115,7 @@ public:
         }
     }
 
-    void mouseUp (const MouseEvent & e) override
+    void mouseUp (const juce::MouseEvent & e) override
     {
         isDragging = false;
         dragDirection = 0;
@@ -127,7 +127,7 @@ public:
         }
     }
 
-    void paint (Graphics& g) override
+    void paint (juce::Graphics& g) override
     {
         auto bounds = getLocalBounds();
         const bool filled = (! isDragging && isMouseOver());
@@ -135,18 +135,18 @@ public:
         const bool isDragginUp = dragDirection == 1;
         const bool isDragginDown = dragDirection == -1;
 
-        g.setColour (Colours::white.withAlpha ((filled || isDragginUp) ? 1.0f : 0.5f));
+        g.setColour (juce::Colours::white.withAlpha ((filled || isDragginUp) ? 1.0f : 0.5f));
         g.fillPath (triangleUp);
 
-        g.setColour (Colours::white.withAlpha ((filled || isDragginDown) ? 1.0f : 0.5f));
+        g.setColour (juce::Colours::white.withAlpha ((filled || isDragginDown) ? 1.0f : 0.5f));
         g.fillPath (triangleDown);
 
         bounds.removeFromLeft (bounds.getHeight() - 5);
 
-        g.setColour (Colours::white);
+        g.setColour (juce::Colours::white);
         g.setFont (bounds.getHeight());
-        g.setFont (getLookAndFeel().getTypefaceForFont (Font (bounds.getHeight(), 0)));
-        g.drawText (text, bounds, Justification::left, true);
+        g.setFont (getLookAndFeel().getTypefaceForFont (juce::Font (bounds.getHeight(), 0)));
+        g.drawText (text, bounds, juce::Justification::left, true);
     }
 
     void resized() override
@@ -172,10 +172,10 @@ public:
 
 
 private:
-    OwnedArray<ReverseSlider>& elements;
-    String text;
+    juce::OwnedArray<ReverseSlider>& elements;
+    juce::String text;
 
-    Path triangleUp, triangleDown;
+    juce::Path triangleUp, triangleDown;
 
     bool isDragging = false;
     int dragDirection = 0;

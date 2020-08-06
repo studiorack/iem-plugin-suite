@@ -10,9 +10,10 @@
               pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
               pluginAUExportPrefix="SimpleDecoderAU" aaxIdentifier="at.iem.SimpleDecoder"
-              pluginAAXCategory="2" jucerVersion="5.4.7" companyCopyright="IEM - Daniel Rudrich"
+              pluginAAXCategory="2" companyCopyright="IEM - Daniel Rudrich"
               companyName="IEM" companyWebsite="iem.at" headerPath="../../../resources/"
-              pluginFormats="buildStandalone,buildVST" defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1">
+              pluginFormats="buildStandalone,buildVST" defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1"
+              projectLineFeed="&#10;" addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1">
   <MAINGROUP id="LpzrV9" name="SimpleDecoder">
     <GROUP id="{8445278F-ADD4-E9D2-71BE-30BC0248B2CA}" name="Presets">
       <FILE id="ekfGiG" name="5point1.json" compile="0" resource="1" file="Source/Presets/5point1.json"/>

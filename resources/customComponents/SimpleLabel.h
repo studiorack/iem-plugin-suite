@@ -97,7 +97,7 @@ private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SimpleLabel)
     juce::String text = "";
     bool isBold = false;
-    juce::Colour colour =juce:: Colours::white;
+    juce::Colour colour = juce::Colours::white;
     juce::Justification justification = juce::Justification::centred;
 };
 

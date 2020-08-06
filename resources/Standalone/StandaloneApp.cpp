@@ -68,7 +68,7 @@ public:
     {
         PluginHostType::jucePlugInClientCurrentWrapperType = AudioProcessor::wrapperType_Standalone;
 
-        PropertiesFile::Options options;
+        juce::PropertiesFile::Options options;
 
         options.applicationName     = getApplicationName();
         options.filenameSuffix      = ".settings";
@@ -82,10 +82,10 @@ public:
         appProperties.setStorageParameters (options);
     }
 
-    const String getApplicationName() override              { return JucePlugin_Name; }
-    const String getApplicationVersion() override           { return JucePlugin_VersionString; }
+    const juce::String getApplicationName() override              { return JucePlugin_Name; }
+    const juce::String getApplicationVersion() override           { return JucePlugin_VersionString; }
     bool moreThanOneInstanceAllowed() override              { return true; }
-    void anotherInstanceStarted (const String&) override    {}
+    void anotherInstanceStarted (const juce::String&) override    {}
 
     virtual MyStandaloneFilterWindow* createWindow()
     {
@@ -94,7 +94,7 @@ public:
        #endif
 
         return new MyStandaloneFilterWindow (getApplicationName(),
-                                           LookAndFeel::getDefaultLookAndFeel().findColour (ResizableWindow::backgroundColourId),
+                                           LookAndFeel::getDefaultLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId),
                                            appProperties.getUserSettings(),
                                            false, {}, nullptr
                                           #ifdef JucePlugin_PreferredChannelConfigurations
@@ -109,7 +109,7 @@ public:
     }
 
     //==============================================================================
-    void initialise (const String&) override
+    void initialise (const juce::String&) override
     {
         mainWindow.reset (createWindow());
 
@@ -131,7 +131,7 @@ public:
     {
         if (ModalComponentManager::getInstance()->cancelAllModalComponents())
         {
-            Timer::callAfterDelay (100, []()
+            juce::Timer::callAfterDelay (100, []()
             {
                 if (auto app = JUCEApplicationBase::getInstance())
                     app->systemRequestedQuit();

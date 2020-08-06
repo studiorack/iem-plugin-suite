@@ -9,10 +9,11 @@
               pluginCode="FdRe" pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
               pluginAUExportPrefix="FdnReverbAU" aaxIdentifier="at.IEM.FdnReverb"
-              pluginAAXCategory="2" jucerVersion="5.4.7" companyName="IEM"
-              companyWebsite="iem.at" cppLanguageStandard="14" companyCopyright="IEM - Sebastian Grill"
+              pluginAAXCategory="2" companyName="IEM" companyWebsite="iem.at"
+              cppLanguageStandard="14" companyCopyright="IEM - Sebastian Grill"
               headerPath="../../../resources/" pluginFormats="buildStandalone,buildVST"
-              defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1">
+              defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1" addUsingNamespaceToJuceHeader="0"
+              projectLineFeed="&#10;" jucerFormatVersion="1">
   <MAINGROUP id="IWaAhA" name="FdnReverb">
     <GROUP id="{6F514E93-3815-8136-4E43-3D287BE1DB1F}" name="Standalone">
       <FILE id="rUuB4k" name="IEM_AudioDeviceSelectorComponent.cpp" compile="1"

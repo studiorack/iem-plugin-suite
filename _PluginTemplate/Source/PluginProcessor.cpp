@@ -31,9 +31,9 @@ PluginTemplateAudioProcessor::PluginTemplateAudioProcessor()
                       BusesProperties()
 #if ! JucePlugin_IsMidiEffect
 #if ! JucePlugin_IsSynth
-                      .withInput ("Input",  AudioChannelSet::discreteChannels (10), true)
+                      .withInput ("Input",  juce::AudioChannelSet::discreteChannels (10), true)
 #endif
-                      .withOutput ("Output", AudioChannelSet::discreteChannels (64), true)
+                      .withOutput ("Output", juce::AudioChannelSet::discreteChannels (64), true)
 #endif
                        ,
 #endif
@@ -73,18 +73,18 @@ int PluginTemplateAudioProcessor::getCurrentProgram()
 
 void PluginTemplateAudioProcessor::setCurrentProgram (int index)
 {
-    ignoreUnused (index);
+    juce::ignoreUnused (index);
 }
 
-const String PluginTemplateAudioProcessor::getProgramName (int index)
+const juce::String PluginTemplateAudioProcessor::getProgramName (int index)
 {
-    ignoreUnused (index);
+    juce::ignoreUnused (index);
     return {};
 }
 
-void PluginTemplateAudioProcessor::changeProgramName (int index, const String& newName)
+void PluginTemplateAudioProcessor::changeProgramName (int index, const juce::String& newName)
 {
-    ignoreUnused (index, newName);
+    juce::ignoreUnused (index, newName);
 }
 
 //==============================================================================
@@ -93,7 +93,7 @@ void PluginTemplateAudioProcessor::prepareToPlay (double sampleRate, int samples
     checkInputAndOutput (this, static_cast<int> (*inputChannelsSetting), static_cast<int> (*outputOrderSetting), true);
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
-    ignoreUnused (sampleRate, samplesPerBlock);
+    juce::ignoreUnused (sampleRate, samplesPerBlock);
 }
 
 void PluginTemplateAudioProcessor::releaseResources()
@@ -102,10 +102,10 @@ void PluginTemplateAudioProcessor::releaseResources()
     // spare memory, etc.
 }
 
-void PluginTemplateAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&)
+void PluginTemplateAudioProcessor::processBlock (juce::AudioSampleBuffer& buffer, juce::MidiBuffer&)
 {
     checkInputAndOutput (this, static_cast<int> (*inputChannelsSetting), static_cast<int> (*outputOrderSetting), false);
-    ScopedNoDenormals noDenormals;
+    juce::ScopedNoDenormals noDenormals;
 
     const int totalNumInputChannels  = getTotalNumInputChannels();
     const int totalNumOutputChannels = getTotalNumOutputChannels();
@@ -124,7 +124,7 @@ void PluginTemplateAudioProcessor::processBlock (AudioSampleBuffer& buffer, Midi
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
         float* channelData = buffer.getWritePointer (channel);
-        ignoreUnused (channelData);
+        juce::ignoreUnused (channelData);
         // ..do something to the data...
     }
 }
@@ -135,20 +135,20 @@ bool PluginTemplateAudioProcessor::hasEditor() const
     return true; // (change this to false if you choose to not supply an editor)
 }
 
-AudioProcessorEditor* PluginTemplateAudioProcessor::createEditor()
+juce::AudioProcessorEditor* PluginTemplateAudioProcessor::createEditor()
 {
     return new PluginTemplateAudioProcessorEditor (*this, parameters);
 }
 
 //==============================================================================
-void PluginTemplateAudioProcessor::getStateInformation (MemoryBlock& destData)
+void PluginTemplateAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
   auto state = parameters.copyState();
 
   auto oscConfig = state.getOrCreateChildWithName ("OSCConfig", nullptr);
   oscConfig.copyPropertiesFrom (oscParameterInterface.getConfig(), nullptr);
 
-  std::unique_ptr<XmlElement> xml (state.createXml());
+  std::unique_ptr<juce::XmlElement> xml (state.createXml());
   copyXmlToBinary (*xml, destData);
 }
 
@@ -157,14 +157,14 @@ void PluginTemplateAudioProcessor::setStateInformation (const void* data, int si
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
-    std::unique_ptr<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
+    std::unique_ptr<juce::XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
     if (xmlState.get() != nullptr)
         if (xmlState->hasTagName (parameters.state.getType()))
         {
-            parameters.replaceState (ValueTree::fromXml (*xmlState));
+            parameters.replaceState (juce::ValueTree::fromXml (*xmlState));
             if (parameters.state.hasProperty ("OSCPort")) // legacy
             {
-                oscParameterInterface.getOSCReceiver().connect (parameters.state.getProperty ("OSCPort", var (-1)));
+                oscParameterInterface.getOSCReceiver().connect (parameters.state.getProperty ("OSCPort", juce::var (-1)));
                 parameters.state.removeProperty ("OSCPort", nullptr);
             }
 
@@ -175,7 +175,7 @@ void PluginTemplateAudioProcessor::setStateInformation (const void* data, int si
 }
 
 //==============================================================================
-void PluginTemplateAudioProcessor::parameterChanged (const String &parameterID, float newValue)
+void PluginTemplateAudioProcessor::parameterChanged (const juce::String &parameterID, float newValue)
 {
     DBG ("Parameter with ID " << parameterID << " has changed. New value: " << newValue);
 
@@ -191,17 +191,17 @@ void PluginTemplateAudioProcessor::updateBuffers()
 
 
 //==============================================================================
-std::vector<std::unique_ptr<RangedAudioParameter>> PluginTemplateAudioProcessor::createParameterLayout()
+std::vector<std::unique_ptr<juce::RangedAudioParameter>> PluginTemplateAudioProcessor::createParameterLayout()
 {
     // add your audio parameters here
-    std::vector<std::unique_ptr<RangedAudioParameter>> params;
+    std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("inputChannelsSetting", "Number of input channels ", "",
-                                                       NormalisableRange<float> (0.0f, 10.0f, 1.0f), 0.0f,
-                                                       [](float value) {return value < 0.5f ? "Auto" : String (value);}, nullptr));
+                                                       juce::NormalisableRange<float> (0.0f, 10.0f, 1.0f), 0.0f,
+                                                       [](float value) {return value < 0.5f ? "Auto" : juce::String (value);}, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("outputOrderSetting", "Ambisonic Order", "",
-                                                       NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
+                                                       juce::NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
                                                        [](float value) {
                                                            if (value >= 0.5f && value < 1.5f) return "0th";
                                                            else if (value >= 1.5f && value < 2.5f) return "1st";
@@ -215,19 +215,19 @@ std::vector<std::unique_ptr<RangedAudioParameter>> PluginTemplateAudioProcessor:
                                                        nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("useSN3D", "Normalization", "",
-                                                       NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
+                                                       juce::NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
                                                        [](float value) {
                                                            if (value >= 0.5f) return "SN3D";
                                                            else return "N3D";
                                                        }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("param1", "Parameter 1", "",
-                                                       NormalisableRange<float> (-10.0f, 10.0f, 0.1f), 0.0,
-                                                       [](float value) {return String (value);}, nullptr));
+                                                       juce::NormalisableRange<float> (-10.0f, 10.0f, 0.1f), 0.0,
+                                                       [](float value) {return juce::String (value);}, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("param2", "Parameter 2", "dB",
-                                                       NormalisableRange<float> (-50.0f, 0.0f, 0.1f), -10.0,
-                                                       [](float value) {return String (value, 1);}, nullptr));
+                                                       juce::NormalisableRange<float> (-50.0f, 0.0f, 0.1f), -10.0,
+                                                       [](float value) {return juce::String (value, 1);}, nullptr));
 
     return params;
 }
@@ -235,7 +235,7 @@ std::vector<std::unique_ptr<RangedAudioParameter>> PluginTemplateAudioProcessor:
 
 //==============================================================================
 // This creates new instances of the plugin..
-AudioProcessor* JUCE_CALLTYPE createPluginFilter()
+juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new PluginTemplateAudioProcessor();
 }

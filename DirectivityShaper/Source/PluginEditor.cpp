@@ -25,8 +25,8 @@
 
 
 //==============================================================================
-DirectivityShaperAudioProcessorEditor::DirectivityShaperAudioProcessorEditor (DirectivityShaperAudioProcessor& p, AudioProcessorValueTreeState& vts)
-: AudioProcessorEditor (&p), processor (p), valueTreeState(vts), footer (p.getOSCParameterInterface()),
+DirectivityShaperAudioProcessorEditor::DirectivityShaperAudioProcessorEditor (DirectivityShaperAudioProcessor& p, juce::AudioProcessorValueTreeState& vts)
+: juce::AudioProcessorEditor (&p), processor (p), valueTreeState(vts), footer (p.getOSCParameterInterface()),
 probeElement(*valueTreeState.getParameter("probeAzimuth"), valueTreeState.getParameterRange("probeAzimuth"),
               *valueTreeState.getParameter("probeElevation"), valueTreeState.getParameterRange("probeElevation")),
 fv(20.0f, 20000.0f, -50.0f, 10.0f, 10.0f)
@@ -47,15 +47,15 @@ fv(20.0f, 20000.0f, -50.0f, 10.0f, 10.0f)
     }
 
     addAndMakeVisible(&title);
-    title.setTitle(String("Directivity"),String("Shaper"));
+    title.setTitle ("Directivity", "Shaper");
     title.setFont(globalLaF.robotoBold,globalLaF.robotoLight);
     addAndMakeVisible (&footer);
 
-    Colour colours[4] = {
-        Colours::cadetblue,
-        Colours::mediumpurple,
-        Colours::greenyellow,
-        Colours::orangered,
+    juce::Colour colours[4] = {
+        juce::Colours::cadetblue,
+        juce::Colours::mediumpurple,
+        juce::Colours::greenyellow,
+        juce::Colours::orangered,
     };
 
 
@@ -84,25 +84,25 @@ fv(20.0f, 20000.0f, -50.0f, 10.0f, 10.0f)
     cbNormalizationAttachment.reset (new ComboBoxAttachment (valueTreeState, "useSN3D", *title.getOutputWidgetPtr()->getNormCbPointer()));
 
     addAndMakeVisible(&slProbeAzimuth);
-    slProbeAzimuth.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
-    slProbeAzimuth.setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
-    slProbeAzimuth.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
+    slProbeAzimuth.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    slProbeAzimuth.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 15);
+    slProbeAzimuth.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
     slProbeAzimuth.setReverse(true);
-    slProbeAzimuth.setRotaryParameters(MathConstants<float>::pi, 3*MathConstants<float>::pi, false);
+    slProbeAzimuth.setRotaryParameters(juce::MathConstants<float>::pi, 3 * juce::MathConstants<float>::pi, false);
     slProbeAzimuthAttachment.reset (new SliderAttachment (valueTreeState, "probeAzimuth", slProbeAzimuth));
 
     addAndMakeVisible(&slProbeElevation);
-    slProbeElevation.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
-    slProbeElevation.setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
-    slProbeElevation.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
-    slProbeElevation.setRotaryParameters(0.5 * MathConstants<float>::pi, 2.5 * MathConstants<float>::pi, false);
+    slProbeElevation.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    slProbeElevation.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 15);
+    slProbeElevation.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
+    slProbeElevation.setRotaryParameters(0.5 * juce::MathConstants<float>::pi, 2.5 * juce::MathConstants<float>::pi, false);
     slProbeElevationAttachment.reset (new SliderAttachment (valueTreeState, "probeElevation", slProbeElevation));
 
     addAndMakeVisible(&slProbeRoll);
-    slProbeRoll.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
-    slProbeRoll.setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
-    slProbeRoll.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
-    slProbeRoll.setRotaryParameters(MathConstants<float>::pi, 3*MathConstants<float>::pi, false);
+    slProbeRoll.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    slProbeRoll.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 15);
+    slProbeRoll.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
+    slProbeRoll.setRotaryParameters(juce::MathConstants<float>::pi, 3 * juce::MathConstants<float>::pi, false);
     slProbeRollAttachment.reset (new SliderAttachment (valueTreeState, "probeRoll", slProbeRoll));
 
     addAndMakeVisible(&tbProbeLock);
@@ -117,72 +117,72 @@ fv(20.0f, 20000.0f, -50.0f, 10.0f, 10.0f)
         cbFilterType[i].addItem("Low-pass", 2);
         cbFilterType[i].addItem("Band-pass", 3);
         cbFilterType[i].addItem("High-pass", 4);
-        cbFilterType[i].setJustificationType(Justification::centred);
-        cbFilterTypeAttachment[i].reset (new ComboBoxAttachment (valueTreeState, "filterType" + String(i), cbFilterType[i]));
+        cbFilterType[i].setJustificationType(juce::Justification::centred);
+        cbFilterTypeAttachment[i].reset (new ComboBoxAttachment (valueTreeState, "filterType" + juce::String(i), cbFilterType[i]));
 
         addAndMakeVisible(&slFilterFrequency[i]);
-        slFilterFrequency[i].setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
-        slFilterFrequency[i].setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
-        slFilterFrequency[i].setColour(Slider::rotarySliderOutlineColourId, colours[i]);
-        slFilterFrequencyAttachment[i].reset (new SliderAttachment (valueTreeState, "filterFrequency" + String(i), slFilterFrequency[i]));
+        slFilterFrequency[i].setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+        slFilterFrequency[i].setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 15);
+        slFilterFrequency[i].setColour(juce::Slider::rotarySliderOutlineColourId, colours[i]);
+        slFilterFrequencyAttachment[i].reset (new SliderAttachment (valueTreeState, "filterFrequency" + juce::String(i), slFilterFrequency[i]));
 
         addAndMakeVisible(&slFilterQ[i]);
-        slFilterQ[i].setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
-        slFilterQ[i].setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
-        slFilterQ[i].setColour(Slider::rotarySliderOutlineColourId, colours[i]);
-        slFilterQAttachment[i].reset (new SliderAttachment (valueTreeState, "filterQ" + String(i), slFilterQ[i]));
+        slFilterQ[i].setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+        slFilterQ[i].setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 15);
+        slFilterQ[i].setColour(juce::Slider::rotarySliderOutlineColourId, colours[i]);
+        slFilterQAttachment[i].reset (new SliderAttachment (valueTreeState, "filterQ" + juce::String(i), slFilterQ[i]));
 
         addAndMakeVisible(&slFilterGain[i]);
-        slFilterGain[i].setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
-        slFilterGain[i].setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
-        slFilterGain[i].setColour(Slider::rotarySliderOutlineColourId, colours[i]);
-        slFilterGainAttachment[i].reset (new SliderAttachment (valueTreeState, "filterGain" + String(i), slFilterGain[i]));
+        slFilterGain[i].setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+        slFilterGain[i].setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 15);
+        slFilterGain[i].setColour(juce::Slider::rotarySliderOutlineColourId, colours[i]);
+        slFilterGainAttachment[i].reset (new SliderAttachment (valueTreeState, "filterGain" + juce::String(i), slFilterGain[i]));
 
         addAndMakeVisible(&slOrder[i]);
-        slOrder[i].setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
-        slOrder[i].setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
-        slOrder[i].setColour(Slider::rotarySliderOutlineColourId, colours[i]);
-        slOrderAttachment[i].reset (new SliderAttachment (valueTreeState, "order" + String(i), slOrder[i]));
+        slOrder[i].setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+        slOrder[i].setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 15);
+        slOrder[i].setColour(juce::Slider::rotarySliderOutlineColourId, colours[i]);
+        slOrderAttachment[i].reset (new SliderAttachment (valueTreeState, "order" + juce::String(i), slOrder[i]));
 
         addAndMakeVisible(&slShape[i]);
-        slShape[i].setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
-        slShape[i].setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
-        slShape[i].setColour(Slider::rotarySliderOutlineColourId, colours[i]);
-        slShapeAttachment[i].reset (new SliderAttachment (valueTreeState, "shape" + String(i), slShape[i]));
+        slShape[i].setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+        slShape[i].setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 15);
+        slShape[i].setColour(juce::Slider::rotarySliderOutlineColourId, colours[i]);
+        slShapeAttachment[i].reset (new SliderAttachment (valueTreeState, "shape" + juce::String(i), slShape[i]));
 
         addAndMakeVisible(&slAzimuth[i]);
-        slAzimuth[i].setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
-        slAzimuth[i].setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
-        slAzimuth[i].setColour(Slider::rotarySliderOutlineColourId, colours[i]);
+        slAzimuth[i].setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+        slAzimuth[i].setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 15);
+        slAzimuth[i].setColour(juce::Slider::rotarySliderOutlineColourId, colours[i]);
         slAzimuth[i].setReverse(true);
-        slAzimuth[i].setRotaryParameters(MathConstants<float>::pi, 3*MathConstants<float>::pi, false);
-        slAzimuth[i].setTextValueSuffix(CharPointer_UTF8 (R"(°)"));
-        slAzimuthAttachment[i].reset (new SliderAttachment (valueTreeState, "azimuth" + String(i), slAzimuth[i]));
+        slAzimuth[i].setRotaryParameters(juce::MathConstants<float>::pi, 3 *juce::MathConstants<float>::pi, false);
+        slAzimuth[i].setTextValueSuffix(juce::CharPointer_UTF8 (R"(°)"));
+        slAzimuthAttachment[i].reset (new SliderAttachment (valueTreeState, "azimuth" + juce::String(i), slAzimuth[i]));
 
         addAndMakeVisible(&slElevation[i]);
-        slElevation[i].setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
-        slElevation[i].setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
-        slElevation[i].setColour(Slider::rotarySliderOutlineColourId, colours[i]);
-        slElevation[i].setRotaryParameters(0.5 * MathConstants<float>::pi, 2.5 * MathConstants<float>::pi, false);
-        slElevation[i].setTextValueSuffix(CharPointer_UTF8 (R"(°)"));
-        slElevationAttachment[i].reset (new SliderAttachment (valueTreeState, "elevation" + String(i), slElevation[i]));
+        slElevation[i].setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+        slElevation[i].setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 15);
+        slElevation[i].setColour(juce::Slider::rotarySliderOutlineColourId, colours[i]);
+        slElevation[i].setRotaryParameters(0.5 * juce::MathConstants<float>::pi, 2.5 * juce::MathConstants<float>::pi, false);
+        slElevation[i].setTextValueSuffix(juce::CharPointer_UTF8 (R"(°)"));
+        slElevationAttachment[i].reset (new SliderAttachment (valueTreeState, "elevation" + juce::String(i), slElevation[i]));
     }
 
     addAndMakeVisible(&lbAzimuth);
     lbAzimuth.setText("Azimuth");
-    lbAzimuth.setJustification(Justification::centred);
+    lbAzimuth.setJustification(juce::Justification::centred);
 
     addAndMakeVisible(&lvElevation);
     lvElevation.setText("Elevation");
-    lvElevation.setJustification(Justification::centred);
+    lvElevation.setJustification(juce::Justification::centred);
 
     addAndMakeVisible(&lbOrder);
     lbOrder.setText("Order");
-    lbOrder.setJustification(Justification::right);
+    lbOrder.setJustification(juce::Justification::right);
 
     addAndMakeVisible(&lbShape);
     lbShape.setText("Shape");
-    lbShape.setJustification(Justification::right);
+    lbShape.setJustification(juce::Justification::right);
 
     addAndMakeVisible(&gcSettings);
     gcSettings.setText("Probe Settings and Normalization");
@@ -199,32 +199,32 @@ fv(20.0f, 20000.0f, -50.0f, 10.0f, 10.0f)
 
     addAndMakeVisible(&lbProbeAzimuth);
     lbProbeAzimuth.setText("Azimuth");
-    lbProbeAzimuth.setJustification(Justification::centred);
+    lbProbeAzimuth.setJustification(juce::Justification::centred);
 
     addAndMakeVisible(&lbProbeElevation);
     lbProbeElevation.setText("Elevation");
-    lbProbeElevation.setJustification(Justification::centred);
+    lbProbeElevation.setJustification(juce::Justification::centred);
 
     addAndMakeVisible(&lbProbeRoll);
     lbProbeRoll.setText("Roll");
-    lbProbeRoll.setJustification(Justification::centred);
+    lbProbeRoll.setJustification(juce::Justification::centred);
 
     addAndMakeVisible(&lbNormalization);
     lbNormalization.setText("Normalization");
-    lbNormalization.setJustification(Justification::right);
+    lbNormalization.setJustification(juce::Justification::right);
 
 
 
     addAndMakeVisible(&sphere);
     for (int i = 0; i < numberOfBands; ++i)
     {
-        sphereElements[i].reset (new SpherePanner::AzimuthElevationParameterElement(*valueTreeState.getParameter("azimuth" + String(i)), valueTreeState.getParameterRange("azimuth" + String(i)), *valueTreeState.getParameter("elevation" + String(i)), valueTreeState.getParameterRange("elevation" + String(i))));
+        sphereElements[i].reset (new SpherePanner::AzimuthElevationParameterElement(*valueTreeState.getParameter("azimuth" + juce::String(i)), valueTreeState.getParameterRange("azimuth" + juce::String(i)), *valueTreeState.getParameter("elevation" + juce::String(i)), valueTreeState.getParameterRange("elevation" + juce::String(i))));
         sphereElements[i]->setColour(colours[i]);
         sphere.addElement (sphereElements[i].get());
     }
 
-    probeElement.setColour(Colours::black);
-    probeElement.setTextColour(Colours::white);
+    probeElement.setColour(juce::Colours::black);
+    probeElement.setTextColour(juce::Colours::white);
     probeElement.setLabel("P");
     sphere.addElement(&probeElement);
 
@@ -237,7 +237,7 @@ DirectivityShaperAudioProcessorEditor::~DirectivityShaperAudioProcessorEditor()
 }
 
 //==============================================================================
-void DirectivityShaperAudioProcessorEditor::paint (Graphics& g)
+void DirectivityShaperAudioProcessorEditor::paint (juce::Graphics& g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
     g.fillAll (globalLaF.ClBackground);
@@ -251,25 +251,25 @@ void DirectivityShaperAudioProcessorEditor::resized()
     const int headerHeight = 60;
     const int footerHeight = 25;
     const int rotSliderSpacing = 10;
-    Rectangle<int> area (getLocalBounds());
+    juce::Rectangle<int> area (getLocalBounds());
 
-    Rectangle<int> footerArea (area.removeFromBottom (footerHeight));
+    juce::Rectangle<int> footerArea (area.removeFromBottom (footerHeight));
     footer.setBounds(footerArea);
 
     area.removeFromLeft(leftRightMargin);
     area.removeFromRight(leftRightMargin);
-    Rectangle<int> headerArea = area.removeFromTop(headerHeight);
+    juce::Rectangle<int> headerArea = area.removeFromTop(headerHeight);
     title.setBounds (headerArea);
     area.removeFromTop(10);
 
     { // left side
-        Rectangle<int> leftSide(area.removeFromLeft(545));
+        juce::Rectangle<int> leftSide(area.removeFromLeft(545));
         { // upper row
-            Rectangle<int> filterArea(leftSide.removeFromTop(250));
+            juce::Rectangle<int> filterArea(leftSide.removeFromTop(250));
             gcFilterBands.setBounds(filterArea);
             filterArea.removeFromTop(25);
 
-            Rectangle<int> cbArea (filterArea.removeFromBottom(50));
+            juce::Rectangle<int> cbArea (filterArea.removeFromBottom(50));
             for (int i = 0; i < numberOfBands; ++i)
             {
                 slFilterFrequency[i].setBounds(cbArea.removeFromLeft(40));
@@ -296,7 +296,7 @@ void DirectivityShaperAudioProcessorEditor::resized()
             leftSide.removeFromTop(25);
 
 
-            Rectangle<int> row(leftSide.removeFromTop(250));
+            juce::Rectangle<int> row(leftSide.removeFromTop(250));
             xyPad.setBounds(row.removeFromLeft(250));
             dv.setBounds(row.removeFromRight(250));
 
@@ -324,14 +324,14 @@ void DirectivityShaperAudioProcessorEditor::resized()
     area.removeFromLeft(20);
 
     {
-        Rectangle<int> rightSide(area);
+        juce::Rectangle<int> rightSide(area);
         {
-            Rectangle<int> panningArea(rightSide.removeFromTop(375));
+            juce::Rectangle<int> panningArea(rightSide.removeFromTop(375));
             gcPanning.setBounds(panningArea);
             panningArea.removeFromTop(25);
 
 
-            Rectangle<int> sliderRow = panningArea.removeFromBottom(50);
+            juce::Rectangle<int> sliderRow = panningArea.removeFromBottom(50);
             lvElevation.setBounds(sliderRow.removeFromLeft(47));
             for (int i = 0; i < numberOfBands; ++i)
             {
@@ -354,7 +354,7 @@ void DirectivityShaperAudioProcessorEditor::resized()
                 gcSettings.setBounds(rightSide);
                 rightSide.removeFromTop(25);
 
-                Rectangle<int> sliderRow(rightSide.removeFromTop(55));
+                juce::Rectangle<int> sliderRow(rightSide.removeFromTop(55));
 
                 slProbeAzimuth.setBounds(sliderRow.removeFromLeft(40));
                 sliderRow.removeFromLeft(rotSliderSpacing);

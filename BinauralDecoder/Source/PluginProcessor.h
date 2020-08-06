@@ -27,7 +27,6 @@
 
 #define ProcessorClass BinauralDecoderAudioProcessor
 
-using namespace dsp;
 class BinauralDecoderAudioProcessor  :  public AudioProcessorBase<IOTypes::Ambisonics<>, IOTypes::AudioChannels<2>>
 {
 public:
@@ -42,10 +41,10 @@ public:
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;
 
-    void processBlock (AudioSampleBuffer&, MidiBuffer&) override;
+    void processBlock (juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
 
     //==============================================================================
-    AudioProcessorEditor* createEditor() override;
+    juce::AudioProcessorEditor* createEditor() override;
     bool hasEditor() const override;
 
 
@@ -53,24 +52,24 @@ public:
     int getNumPrograms() override;
     int getCurrentProgram() override;
     void setCurrentProgram (int index) override;
-    const String getProgramName (int index) override;
-    void changeProgramName (int index, const String& newName) override;
+    const juce::String getProgramName (int index) override;
+    void changeProgramName (int index, const juce::String& newName) override;
 
     //==============================================================================
-    void getStateInformation (MemoryBlock& destData) override;
+    void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
     //==============================================================================
-    void parameterChanged (const String &parameterID, float newValue) override;
+    void parameterChanged (const juce::String &parameterID, float newValue) override;
     void updateBuffers() override; // use this to implement a buffer update method
 
 
     //======= Parameters ===========================================================
-    std::vector<std::unique_ptr<RangedAudioParameter>> createParameterLayout();
+    std::vector<std::unique_ptr<juce::RangedAudioParameter>> createParameterLayout();
     //==============================================================================
 
 
-    static const StringArray headphoneEQs;
+    static const juce::StringArray headphoneEQs;
 
 private:
     // list of used audio parameters
@@ -78,7 +77,7 @@ private:
     std::atomic<float>* useSN3D;
     std::atomic<float>* applyHeadphoneEq;
 
-    Convolution EQ;
+    juce::dsp::Convolution EQ;
 
     int fftLength = -1;
     int irLength = 236;
@@ -88,12 +87,12 @@ private:
     std::vector<std::complex<float>> accumMid;
     std::vector<std::complex<float>> accumSide;
 
-    std::unique_ptr<dsp::FFT> fft;
+    std::unique_ptr<juce::dsp::FFT> fft;
 
-    AudioBuffer<float> overlapBuffer;
-    AudioBuffer<float> irs[7];
+    juce::AudioBuffer<float> overlapBuffer;
+    juce::AudioBuffer<float> irs[7];
 
-    AudioBuffer<float> irsFrequencyDomain;
+    juce::AudioBuffer<float> irsFrequencyDomain;
     double irsSampleRate = 44100.0;
     //mapping between mid-channel index and channel index
     const int mix2cix[36] = { 0, 2, 3, 6, 7, 8, 12, 13, 14, 15, 20, 21, 22, 23, 24, 30, 31, 32, 33, 34, 35, 42, 43, 44, 45, 46, 47, 48, 56, 57, 58, 59, 60, 61, 62, 63 };

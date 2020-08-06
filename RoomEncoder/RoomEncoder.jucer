@@ -9,10 +9,11 @@
               pluginCode="RoEn" pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
               pluginAUExportPrefix="RoomEncoderAU" aaxIdentifier="at.iem.RoomEncoder"
-              pluginAAXCategory="2" jucerVersion="5.4.7" companyName="IEM"
-              companyWebsite="iem.at" cppLanguageStandard="latest" companyCopyright="IEM - Daniel Rudrich"
+              pluginAAXCategory="2" companyName="IEM" companyWebsite="iem.at"
+              cppLanguageStandard="latest" companyCopyright="IEM - Daniel Rudrich"
               headerPath="../../../resources/" pluginFormats="buildStandalone,buildVST"
-              defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1">
+              defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1" projectLineFeed="&#10;"
+              addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1">
   <MAINGROUP id="ONcHIf" name="RoomEncoder">
     <GROUP id="{73A2D79E-8872-0E13-E660-320741A2D50C}" name="Standalone">
       <FILE id="OiAf10" name="IEM_AudioDeviceSelectorComponent.cpp" compile="1"

@@ -29,7 +29,7 @@
 #include "../../resources/lookAndFeel/IEM_LaF.h"
 #include "../../resources/customComponents/TitleBar.h"
 
-//Custom Components
+//Custom juce::Components
 #include "../../resources/customComponents/ReverseSlider.h"
 #include "../../resources/customComponents/SimpleLabel.h"
 #include "../../resources/customComponents/MailBox.h"
@@ -38,32 +38,32 @@
 
 
 typedef ReverseSlider::SliderAttachment SliderAttachment; // all ReverseSliders will make use of the parameters' valueToText() function
-typedef AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
-typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
+typedef juce::AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
+typedef juce::AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 
 //==============================================================================
 /**
  */
-class DistanceCompensatorAudioProcessorEditor  : public AudioProcessorEditor, private Timer, private Button::Listener
+class DistanceCompensatorAudioProcessorEditor  : public juce::AudioProcessorEditor, private juce::Timer, private juce::Button::Listener
 {
 public:
-    DistanceCompensatorAudioProcessorEditor (DistanceCompensatorAudioProcessor&, AudioProcessorValueTreeState&);
+    DistanceCompensatorAudioProcessorEditor (DistanceCompensatorAudioProcessor&, juce::AudioProcessorValueTreeState&);
     ~DistanceCompensatorAudioProcessorEditor();
 
     //==============================================================================
-    void paint (Graphics&) override;
+    void paint (juce::Graphics&) override;
     void resized() override;
 
     void timerCallback() override;
-    void buttonClicked (Button* button) override;
-    void buttonStateChanged (Button* button) override;
+    void buttonClicked (juce::Button* button) override;
+    void buttonStateChanged (juce::Button* button) override;
 
 private:
     // ====================== begin essentials ==================
     LaF globalLaF;
 
     DistanceCompensatorAudioProcessor& processor;
-    AudioProcessorValueTreeState& valueTreeState;
+    juce::AudioProcessorValueTreeState& valueTreeState;
 
     TitleBar<AudioChannelsIOWidget<64, true>, NoIOWidget> title;
     OSCFooter footer;
@@ -76,34 +76,34 @@ private:
     std::unique_ptr<ComboBoxAttachment> cbInputChannelsSettingAttachment;
 
 
-    Label lbSpeedOfSound;
+    juce::Label lbSpeedOfSound;
     std::unique_ptr<LabelAttachment> lbSpeedOfSoundAttachment;
     SimpleLabel slbSpeedOfSound;
 
-    Label lbDistanceExponent;
+    juce::Label lbDistanceExponent;
     std::unique_ptr<LabelAttachment> lbDistanceExponentAttachment;
     SimpleLabel slbDistanceExponent;
 
-    ComboBox cbGainNormalization;
+    juce::ComboBox cbGainNormalization;
     SimpleLabel slbGainNormalization;
     std::unique_ptr<ComboBoxAttachment> cbGainNormalizationAttachment;
 
-    Label lbReferenceX, lbReferenceY, lbReferenceZ;
+    juce::Label lbReferenceX, lbReferenceY, lbReferenceZ;
     std::unique_ptr<LabelAttachment> lbReferenceXAttachment, lbReferenceYAttachment, lbReferenceZAttachment;
     SimpleLabel slbReference, slbReferenceX, slbReferenceY, slbReferenceZ;
 
 
-    TooltipWindow toolTipWin;
+    juce::TooltipWindow toolTipWin;
 
     // load
-    GroupComponent gcLayout;
-    TextButton btLoadFile;
-    TextButton btReference;
+    juce::GroupComponent gcLayout;
+    juce::TextButton btLoadFile;
+    juce::TextButton btReference;
 
     // buttons
-    GroupComponent gcCompensation;
-    ToggleButton tbEnableGains;
-    ToggleButton tbEnableDelays;
+    juce::GroupComponent gcCompensation;
+    juce::ToggleButton tbEnableGains;
+    juce::ToggleButton tbEnableDelays;
     std::unique_ptr<ButtonAttachment> tbEnableGainsAttachment;
     std::unique_ptr<ButtonAttachment> tbEnableDelaysAttachment;
     std::unique_ptr<ButtonAttachment> tbEnableFiltersAttachment;
@@ -112,14 +112,14 @@ private:
     int lastSetNumChIn = -1;
 
     // distances
-    GroupComponent gcDistances;
+    juce::GroupComponent gcDistances;
 
-    OwnedArray<RoundButton> tbEnableCompensation;
-    OwnedArray<ButtonAttachment> tbEnableCompensationAttachment;
+    juce::OwnedArray<RoundButton> tbEnableCompensation;
+    juce::OwnedArray<ButtonAttachment> tbEnableCompensationAttachment;
 
-    OwnedArray<Label> slDistance;
-    OwnedArray<LabelAttachment> slDistanceAttachment;
-    OwnedArray<SimpleLabel> lbDistance;
+    juce::OwnedArray<juce::Label> slDistance;
+    juce::OwnedArray<LabelAttachment> slDistanceAttachment;
+    juce::OwnedArray<SimpleLabel> lbDistance;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DistanceCompensatorAudioProcessorEditor)
 };

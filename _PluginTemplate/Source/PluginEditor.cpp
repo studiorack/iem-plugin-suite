@@ -25,8 +25,8 @@
 
 
 //==============================================================================
-PluginTemplateAudioProcessorEditor::PluginTemplateAudioProcessorEditor (PluginTemplateAudioProcessor& p, AudioProcessorValueTreeState& vts)
-    : AudioProcessorEditor (&p), audioProcessor (p), valueTreeState (vts), footer (p.getOSCParameterInterface())
+PluginTemplateAudioProcessorEditor::PluginTemplateAudioProcessorEditor (PluginTemplateAudioProcessor& p, juce::AudioProcessorValueTreeState& vts)
+    : juce::AudioProcessorEditor (&p), audioProcessor (p), valueTreeState (vts), footer (p.getOSCParameterInterface())
 {
     // ============== BEGIN: essentials ======================
     // set GUI size and lookAndFeel
@@ -36,7 +36,7 @@ PluginTemplateAudioProcessorEditor::PluginTemplateAudioProcessorEditor (PluginTe
 
     // make title and footer visible, and set the PluginName
     addAndMakeVisible (&title);
-    title.setTitle (String ("Plugin"), String ("Template"));
+    title.setTitle (juce::String ("Plugin"), juce::String ("Template"));
     title.setFont (globalLaF.robotoBold, globalLaF.robotoLight);
     addAndMakeVisible (&footer);
     // ============= END: essentials ========================
@@ -63,7 +63,7 @@ PluginTemplateAudioProcessorEditor::~PluginTemplateAudioProcessorEditor()
 }
 
 //==============================================================================
-void PluginTemplateAudioProcessorEditor::paint (Graphics& g)
+void PluginTemplateAudioProcessorEditor::paint (juce::Graphics& g)
 {
     g.fillAll (globalLaF.ClBackground);
 }
@@ -74,14 +74,14 @@ void PluginTemplateAudioProcessorEditor::resized()
     const int leftRightMargin = 30;
     const int headerHeight = 60;
     const int footerHeight = 25;
-    Rectangle<int> area (getLocalBounds());
+    juce::Rectangle<int> area (getLocalBounds());
 
-    Rectangle<int> footerArea (area.removeFromBottom (footerHeight));
+    juce::Rectangle<int> footerArea (area.removeFromBottom (footerHeight));
     footer.setBounds (footerArea);
 
     area.removeFromLeft (leftRightMargin);
     area.removeFromRight (leftRightMargin);
-    Rectangle<int> headerArea = area.removeFromTop (headerHeight);
+    juce::Rectangle<int> headerArea = area.removeFromTop (headerHeight);
     title.setBounds (headerArea);
     area.removeFromTop (10);
     area.removeFromBottom (5);
@@ -92,7 +92,7 @@ void PluginTemplateAudioProcessorEditor::resized()
     // the removeFrom...() methods are quite handy to create scalable areas
     // best practice would be the use of flexBoxes...
     // the following is medium level practice ;-)
-    Rectangle<int> sliderRow = area.removeFromTop (50);
+    juce::Rectangle<int> sliderRow = area.removeFromTop (50);
     slParam1.setBounds (sliderRow.removeFromLeft (150));
     slParam2.setBounds (sliderRow.removeFromRight (150));
 
