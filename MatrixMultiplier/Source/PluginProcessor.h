@@ -45,32 +45,32 @@ public:
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;
 
-    void processBlock (AudioSampleBuffer&, MidiBuffer&) override;
+    void processBlock (juce::AudioSampleBuffer&, juce::MidiBuffer&) override;
 
     //==============================================================================
-    AudioProcessorEditor* createEditor() override;
+    juce::AudioProcessorEditor* createEditor() override;
     bool hasEditor() const override;
 
     //==============================================================================
     int getNumPrograms() override;
     int getCurrentProgram() override;
     void setCurrentProgram (int index) override;
-    const String getProgramName (int index) override;
-    void changeProgramName (int index, const String& newName) override;
+    const juce::String getProgramName (int index) override;
+    void changeProgramName (int index, const juce::String& newName) override;
 
     //==============================================================================
-    void getStateInformation (MemoryBlock& destData) override;
+    void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
     //==============================================================================
-    void parameterChanged (const String &parameterID, float newValue) override;
+    void parameterChanged (const juce::String &parameterID, float newValue) override;
     void updateBuffers() override; // use this to implement a buffer update method
 
     //======= Parameters ===========================================================
-    std::vector<std::unique_ptr<RangedAudioParameter>> createParameterLayout();
+    std::vector<std::unique_ptr<juce::RangedAudioParameter>> createParameterLayout();
 
     //==============================================================================
-    const bool processNotYetConsumedOSCMessage (const OSCMessage &message) override;
+    const bool processNotYetConsumedOSCMessage (const juce::OSCMessage &message) override;
 
     //==============================================================================
     void setMatrix (ReferenceCountedMatrix::Ptr newMatrixToUse)
@@ -78,12 +78,12 @@ public:
         matTrans.setMatrix(newMatrixToUse);
     }
 
-    File getLastDir() {return lastDir;}
-    void setLastDir(File newLastDir);
-    void loadConfiguration(const File& configurationFile);
+    juce::File getLastDir() {return lastDir;}
+    void setLastDir(juce::File newLastDir);
+    void loadConfiguration(const juce::File& configurationFile);
 
     bool messageChanged {true};
-    String getMessageForEditor() {return messageForEditor;}
+    juce::String getMessageForEditor() {return messageForEditor;}
 
     ReferenceCountedMatrix::Ptr getCurrentMatrix() {return currentMatrix;}
 
@@ -92,11 +92,11 @@ private:
     MatrixMultiplication matTrans;
     ReferenceCountedMatrix::Ptr currentMatrix {nullptr};
 
-    File lastDir;
-    File lastFile;
-    std::unique_ptr<PropertiesFile> properties;
+    juce::File lastDir;
+    juce::File lastFile;
+    std::unique_ptr<juce::PropertiesFile> properties;
 
-    String messageForEditor {"Please load a configuration."};
+    juce::String messageForEditor {"Please load a configuration."};
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MatrixMultiplierAudioProcessor)
 };

@@ -25,7 +25,7 @@
 //==============================================================================
 /*
 */
-class ReflectionsVisualizer    : public Component, private Timer
+class ReflectionsVisualizer    : public juce::Component, private juce::Timer
 {
     const float mL = 23.0f;
     const float mR = 10.0f;
@@ -44,26 +44,26 @@ public:
     {
     }
 
-    void paint (Graphics& g) override
+    void paint (juce::Graphics& g) override
     {
-        g.setColour(Colours::steelblue.withMultipliedAlpha(0.01f));
+        g.setColour(juce::Colours::steelblue.withMultipliedAlpha(0.01f));
         g.fillAll();
 
-        g.setColour (Colours::steelblue.withMultipliedAlpha(0.9f));
-        g.strokePath (axes, PathStrokeType (1.0f));
-        g.setColour (Colours::steelblue.withMultipliedAlpha(0.8f));
-        g.strokePath (dBGrid, PathStrokeType (0.5f));
+        g.setColour (juce::Colours::steelblue.withMultipliedAlpha(0.9f));
+        g.strokePath (axes, juce::PathStrokeType (1.0f));
+        g.setColour (juce::Colours::steelblue.withMultipliedAlpha(0.8f));
+        g.strokePath (dBGrid, juce::PathStrokeType (0.5f));
 
 
-        g.setColour(Colours::white);
-        g.setFont(getLookAndFeel().getTypefaceForFont (Font(12.0f, 2)));
+        g.setColour(juce::Colours::white);
+        g.setFont(getLookAndFeel().getTypefaceForFont (juce::Font(12.0f, 2)));
         g.setFont(12.0f);
 
 
         for (int dB = 0; dB >= -60; dB -= 10)
         {
             float yPos = dBToY((float) dB);
-            g.drawText (String(dB), 0, yPos-6, 18, 12.0f, Justification::right, false);
+            g.drawText (juce::String(dB), 0, yPos-6, 18, 12.0f, juce::Justification::right, false);
         }
 
         int msStep;
@@ -76,7 +76,7 @@ public:
         for (int timeInMs = 0; timeInMs <= xRangeInMs; timeInMs += msStep)
         {
             float xPos = timeToX((float) timeInMs);
-            g.drawText (String(timeInMs), xPos-15.0f, mT+plotHeight+2.0f, 30, 12.0f, Justification::centred, false);
+            g.drawText (juce::String(timeInMs), xPos-15.0f, mT+plotHeight+2.0f, 30, 12.0f, juce::Justification::centred, false);
         }
 
 
@@ -86,9 +86,9 @@ public:
 
         if (radiusPtr != nullptr)
         {
-            int numRef = roundToInt (numReflPtr->load());
+            int numRef = juce::roundToInt (numReflPtr->load());
 
-            float gainDb = Decibels::gainToDecibels(gainPtr[0]);
+            float gainDb = juce::Decibels::gainToDecibels(gainPtr[0]);
             if (gainDb > -60.0f && gainDb <= 20.0f)
             {
                 const float xPos = timeToX (zeroDelay ? 0.0f : radiusPtr[0] * xFactor);
@@ -96,11 +96,11 @@ public:
                 g.drawLine(xPos, yPos, xPos, mT + plotHeight, 2.0f);
             }
 
-            g.setColour(Colours::white.withMultipliedAlpha(0.5f));
+            g.setColour(juce::Colours::white.withMultipliedAlpha(0.5f));
 
             for (int i = 1; i <= numRef; ++i)
             {
-                float gainDb = Decibels::gainToDecibels(gainPtr[i]);
+                float gainDb = juce::Decibels::gainToDecibels(gainPtr[i]);
                 if (gainDb > -60.0f && gainDb < 20.0f)
                 {
                     const float radius = radiusPtr[i] - (zeroDelay ? radiusPtr[0] : 0.0f);
@@ -121,13 +121,13 @@ public:
         return mT + dynRange * gainInDB * plotHeight;
     }
 
-    void mouseWheelMove(const MouseEvent &e, const MouseWheelDetails &wheel) override {
+    void mouseWheelMove(const juce::MouseEvent &e, const juce::MouseWheelDetails &wheel) override {
         const double delta = 100*(std::abs (wheel.deltaX) > std::abs (wheel.deltaY) ? -wheel.deltaX : wheel.deltaY);
         //bool positiveDelta = delta >= 0.0;
 
-        xRangeInMs += roundToInt(delta);
-        xRangeInMs = jmin(xRangeInMs, 550);
-        xRangeInMs = jmax(xRangeInMs, 40);
+        xRangeInMs += juce::roundToInt(delta);
+        xRangeInMs = juce::jmin(xRangeInMs, 550);
+        xRangeInMs = juce::jmax(xRangeInMs, 40);
     }
     void setDataPointers(float* Gain, float* Radius, std::atomic<float>* NumRefl) {
         gainPtr = Gain;
@@ -172,8 +172,8 @@ public:
     }
 private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ReflectionsVisualizer)
-    Path axes;
-    Path dBGrid;
+    juce::Path axes;
+    juce::Path dBGrid;
     float plotWidth = 1.0f;
     float plotHeight = 1.0f;
     int xRangeInMs = 100;

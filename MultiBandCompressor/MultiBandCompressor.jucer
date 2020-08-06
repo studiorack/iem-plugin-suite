@@ -11,9 +11,10 @@
               pluginIsSynth="0" pluginWantsMidiIn="0" pluginProducesMidiOut="0"
               pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0" pluginAUExportPrefix="MultiBandCompressorAU"
               aaxIdentifier="at.iem.MultiBandCompressor" pluginAAXCategory="2"
-              jucerVersion="5.4.7" companyCopyright="IEM - Markus Huber" companyName="IEM"
-              companyWebsite="iem.at" headerPath="../../../resources/" pluginFormats="buildStandalone,buildVST"
-              defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1">
+              companyCopyright="IEM - Markus Huber" companyName="IEM" companyWebsite="iem.at"
+              headerPath="../../../resources/" pluginFormats="buildStandalone,buildVST"
+              defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1" addUsingNamespaceToJuceHeader="0"
+              projectLineFeed="&#10;" jucerFormatVersion="1">
   <MAINGROUP id="LpzrV9" name="MultiBandCompressor">
     <GROUP id="{DD24AA7B-644A-3C5E-9734-243C087817B2}" name="Standalone">
       <FILE id="XzZcwL" name="IEM_AudioDeviceSelectorComponent.cpp" compile="1"

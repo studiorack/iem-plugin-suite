@@ -70,7 +70,7 @@ struct SharedParams {
         rooms.add(RoomParams());
         rooms.add(RoomParams());
     }
-    Array<RoomParams> rooms;
+    juce::Array<RoomParams> rooms;
 };
 
 struct ReflectionProperty
@@ -91,7 +91,7 @@ struct ReflectionProperty
 /**
 */
 class RoomEncoderAudioProcessor  :  public AudioProcessorBase<IOTypes::Ambisonics<>, IOTypes::Ambisonics<>>,
-                                    private Timer
+                                    private juce::Timer
 {
 public:
     constexpr static int numberOfInputChannels = 64;
@@ -108,28 +108,28 @@ public:
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;
 
-    void processBlock (AudioSampleBuffer&, MidiBuffer&) override;
+    void processBlock (juce::AudioSampleBuffer&, juce::MidiBuffer&) override;
 
     //==============================================================================
-    AudioProcessorEditor* createEditor() override;
+    juce::AudioProcessorEditor* createEditor() override;
     bool hasEditor() const override;
 
     //==============================================================================
     int getNumPrograms() override;
     int getCurrentProgram() override;
     void setCurrentProgram (int index) override;
-    const String getProgramName (int index) override;
-    void changeProgramName (int index, const String& newName) override;
+    const juce::String getProgramName (int index) override;
+    void changeProgramName (int index, const juce::String& newName) override;
 
     //==============================================================================
-    void getStateInformation (MemoryBlock& destData) override;
+    void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
-    void parameterChanged (const String &parameterID, float newValue) override;
+    void parameterChanged (const juce::String &parameterID, float newValue) override;
 
 
     //======= Parameters ===========================================================
-    std::vector<std::unique_ptr<RangedAudioParameter>> createParameterLayout();
+    std::vector<std::unique_ptr<juce::RangedAudioParameter>> createParameterLayout();
 
     //==============================================================================
     double oldDelay[nImgSrc];
@@ -152,11 +152,11 @@ public:
 
     void updateBuffers() override;
 
-    Atomic<bool> repaintPositionPlanes = true;
+    juce::Atomic<bool> repaintPositionPlanes = true;
 
 private:
     //==============================================================================
-    inline void clear (AudioBlock<IIRfloat>& ab);
+    inline void clear (juce::dsp::AudioBlock<IIRfloat>& ab);
 
     bool readingSharedParams = false;;
 
@@ -206,19 +206,19 @@ private:
 
     int _numRefl;
 
-    SharedResourcePointer<SharedParams> sharedParams;
+    juce::SharedResourcePointer<SharedParams> sharedParams;
 
     //SIMD IIR Filter
 
-    OwnedArray<OwnedArray<IIR::Filter<IIRfloat>>> lowShelfArray;
-    OwnedArray<OwnedArray<IIR::Filter<IIRfloat>>> highShelfArray;
-    HeapBlock<char> interleavedBlockData[16], zeroData; //todo: dynamically?
-    OwnedArray<AudioBlock<IIRfloat>> interleavedData;
-    AudioBlock<float> zero;
+    juce::OwnedArray<juce::OwnedArray<IIR::Filter<IIRfloat>>> lowShelfArray;
+    juce::OwnedArray<juce::OwnedArray<IIR::Filter<IIRfloat>>> highShelfArray;
+    juce::HeapBlock<char> interleavedBlockData[16], zeroData; //todo: dynamically?
+    juce::OwnedArray<juce::dsp::AudioBlock<IIRfloat>> interleavedData;
+    juce::dsp::AudioBlock<float> zero;
 
-    Array<int> filterPoints {1, 7, 25, 61, 113, 169, 213};
+    juce::Array<int> filterPoints {1, 7, 25, 61, 113, 169, 213};
 
-    Vector3D<float> sourcePos, listenerPos;
+    juce::Vector3D<float> sourcePos, listenerPos;
 
     float mx[nImgSrc];
     float my[nImgSrc];
@@ -238,10 +238,10 @@ private:
     float SHcoeffsOld[nImgSrc][64];
     IIRfloat SHsampleOld[nImgSrc][16]; //TODO: can be smaller: (N+1)^2/IIRfloat_elements()
 
-    AudioBuffer<float> delayBuffer;
-    AudioBuffer<float> monoBuffer;
+    juce::AudioBuffer<float> delayBuffer;
+    juce::AudioBuffer<float> monoBuffer;
 
-    OwnedArray<ReflectionProperty> reflectionList;
+    juce::OwnedArray<ReflectionProperty> reflectionList;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (RoomEncoderAudioProcessor)
 };

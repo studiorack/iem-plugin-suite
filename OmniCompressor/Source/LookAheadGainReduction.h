@@ -24,7 +24,7 @@
 #pragma once
 #include "../JuceLibraryCode/JuceHeader.h"
 
-using namespace dsp;
+using namespace juce::dsp;
 class LookAheadGainReduction
 {
 public:
@@ -53,7 +53,7 @@ public:
         return delayInSamples;
     }
 
-    void prepare (const ProcessSpec& specs)
+    void prepare (const juce::dsp::ProcessSpec& specs)
     {
         spec = specs;
 
@@ -91,10 +91,10 @@ public:
 
         // read from delay line
         getReadPositions (numSamples, startIndex, blockSize1, blockSize2);
-        FloatVectorOperations::copy(dest, buffer.getReadPointer(0) + startIndex, blockSize1);
+        juce::FloatVectorOperations::copy(dest, buffer.getReadPointer(0) + startIndex, blockSize1);
 
         if (blockSize2 > 0)
-            FloatVectorOperations::copy(dest + blockSize1, buffer.getReadPointer(0), blockSize2);
+            juce::FloatVectorOperations::copy(dest + blockSize1, buffer.getReadPointer(0), blockSize2);
     }
 
 
@@ -102,7 +102,7 @@ public:
     {
         jassert (delayInSamples > 0);
 
-        ScopedNoDenormals noDenormals;
+        juce::ScopedNoDenormals noDenormals;
 
         float nextGainReductionValue = 0.0f;
         float step = 0.0f;
@@ -208,7 +208,7 @@ private:
         }
         else
         {
-            blockSize1 = jmin (startIndex + 1, numSamples);
+            blockSize1 = juce::jmin (startIndex + 1, numSamples);
             numSamples -= blockSize1;
             blockSize2 = numSamples <= 0 ? 0 : numSamples;
         }
@@ -234,7 +234,7 @@ private:
         else
         {
             startIndex = pos;
-            blockSize1 = jmin (L - pos, numSamples);
+            blockSize1 = juce::jmin (L - pos, numSamples);
             numSamples -= blockSize1;
             blockSize2 = numSamples <= 0 ? 0 : numSamples;
         }
@@ -260,7 +260,7 @@ private:
         else
         {
             startIndex = pos;
-            blockSize1 = jmin (L - pos, numSamples);
+            blockSize1 = juce::jmin (L - pos, numSamples);
             numSamples -= blockSize1;
             blockSize2 = numSamples <= 0 ? 0 : numSamples;
         }
@@ -270,10 +270,10 @@ private:
 
 private:
     //==============================================================================
-    ProcessSpec spec = {-1, 0, 0};
+    juce::dsp::ProcessSpec spec = {-1, 0, 0};
     float delay;
     int delayInSamples = 0;
     int writePosition = 0;
     int lastPushedSamples = 0;
-    AudioBuffer<float> buffer;
+    juce::AudioBuffer<float> buffer;
 };

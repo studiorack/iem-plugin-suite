@@ -25,8 +25,8 @@
 
 
 //==============================================================================
-AllRADecoderAudioProcessorEditor::AllRADecoderAudioProcessorEditor (AllRADecoderAudioProcessor& p, AudioProcessorValueTreeState& vts)
-    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts), footer (p.getOSCParameterInterface()), lv(processor.points, processor.triangles, processor.normals, processor.imaginaryFlags), lspList(processor.getLoudspeakersValueTree(), lv, grid, processor.undoManager, processor), grid(processor.points, processor.imaginaryFlags, processor.energyDistribution, processor.rEVector)
+AllRADecoderAudioProcessorEditor::AllRADecoderAudioProcessorEditor (AllRADecoderAudioProcessor& p, juce::AudioProcessorValueTreeState& vts)
+    : juce::AudioProcessorEditor (&p), processor (p), valueTreeState(vts), footer (p.getOSCParameterInterface()), lv(processor.points, processor.triangles, processor.normals, processor.imaginaryFlags), lspList(processor.getLoudspeakersValueTree(), lv, grid, processor.undoManager, processor), grid(processor.points, processor.imaginaryFlags, processor.energyDistribution, processor.rEVector)
 {
     // ============== BEGIN: essentials ======================
     // set GUI size and lookAndFeel
@@ -36,7 +36,7 @@ AllRADecoderAudioProcessorEditor::AllRADecoderAudioProcessorEditor (AllRADecoder
 
     // make title and footer visible, and set the PluginName
     addAndMakeVisible(&title);
-    title.setTitle(String("AllRA"),String("Decoder"));
+    title.setTitle (juce::String ("AllRA"), juce::String("Decoder"));
     title.setFont(globalLaF.robotoBold, globalLaF.robotoLight);
     addAndMakeVisible (&footer);
     // ============= END: essentials ========================
@@ -47,22 +47,22 @@ AllRADecoderAudioProcessorEditor::AllRADecoderAudioProcessorEditor (AllRADecoder
     cbOrderSettingAttachment.reset (new ComboBoxAttachment(valueTreeState, "inputOrderSetting", *title.getInputWidgetPtr()->getOrderCbPointer()));
 
     addAndMakeVisible (cbDecoderOrder);
-    cbDecoderOrder.setJustificationType (Justification::centred);
+    cbDecoderOrder.setJustificationType (juce::Justification::centred);
     cbDecoderOrder.addSectionHeading ("Decoder order");
     for (int n = 1; n <= 7; ++n)
         cbDecoderOrder.addItem (getOrderString(n), n);
     cbDecoderOrderAttachment.reset (new ComboBoxAttachment (valueTreeState, "decoderOrder", cbDecoderOrder));
 
     addAndMakeVisible (lbDecoderOrder);
-    lbDecoderOrder.setText ("Decoder Order", Justification::left);
+    lbDecoderOrder.setText ("Decoder Order", juce::Justification::left);
 
     addAndMakeVisible (cbDecoderWeights);
-    cbDecoderWeights.setJustificationType (Justification::centred);
+    cbDecoderWeights.setJustificationType (juce::Justification::centred);
     cbDecoderWeights.addItemList (p.weightsStrings, 1);
     cbDecoderWeightsAttachment.reset (new ComboBoxAttachment (valueTreeState, "weights", cbDecoderWeights));
 
     addAndMakeVisible (lbDecoderWeights);
-    lbDecoderWeights.setText ("Weights", Justification::left);
+    lbDecoderWeights.setText ("Weights", juce::Justification::left);
 
     addAndMakeVisible(gcLayout);
     gcLayout.setText("Loudspeaker Layout");
@@ -74,14 +74,14 @@ AllRADecoderAudioProcessorEditor::AllRADecoderAudioProcessorEditor (AllRADecoder
     gcExport.setText("Export Decoder/Layout");
 
     addAndMakeVisible(tbExportDecoder);
-    tbExportDecoderAttachment.reset (new ButtonAttachment(valueTreeState, "exportDecoder", tbExportDecoder));
-    tbExportDecoder.setButtonText("Export Decoder");
-    tbExportDecoder.setColour(ToggleButton::tickColourId, Colours::orange);
+    tbExportDecoderAttachment.reset (new ButtonAttachment (valueTreeState, "exportDecoder", tbExportDecoder));
+    tbExportDecoder.setButtonText ("Export Decoder");
+    tbExportDecoder.setColour (juce::ToggleButton::tickColourId, juce::Colours::orange);
 
     addAndMakeVisible(tbExportLayout);
     tbExportLayoutAttachment.reset (new ButtonAttachment(valueTreeState, "exportLayout", tbExportLayout));
     tbExportLayout.setButtonText("Export Layout");
-    tbExportLayout.setColour(ToggleButton::tickColourId, Colours::limegreen);
+    tbExportLayout.setColour (juce::ToggleButton::tickColourId, juce::Colours::limegreen);
 
 
     addAndMakeVisible(messageDisplay);
@@ -91,40 +91,40 @@ AllRADecoderAudioProcessorEditor::AllRADecoderAudioProcessorEditor (AllRADecoder
 
     addAndMakeVisible(tbCalculateDecoder);
     tbCalculateDecoder.setButtonText("CALCULATE DECODER");
-    tbCalculateDecoder.setColour(TextButton::buttonColourId, Colours::cornflowerblue);
+    tbCalculateDecoder.setColour (juce::TextButton::buttonColourId, juce::Colours::cornflowerblue);
     tbCalculateDecoder.addListener(this);
 
     addAndMakeVisible(tbAddSpeakers);
     tbAddSpeakers.setButtonText("ADD LOUDSPEAKER");
-    tbAddSpeakers.setColour(TextButton::buttonColourId, Colours::limegreen);
+    tbAddSpeakers.setColour (juce::TextButton::buttonColourId, juce::Colours::limegreen);
     tbAddSpeakers.setTooltip ("Adds a new loudspeaker with random position. \n Alt+click: adds an imaginary loudspeaker to the nadir position.");
     tbAddSpeakers.addListener(this);
 
     addAndMakeVisible(tbJson);
     tbJson.setButtonText("EXPORT");
-    tbJson.setColour(TextButton::buttonColourId, Colours::orange);
+    tbJson.setColour(juce::TextButton::buttonColourId, juce::Colours::orange);
     tbJson.setTooltip ("Stores the decoder and/or loudspeaker layout to a configuration file.");
     tbJson.addListener(this);
 
     addAndMakeVisible(tbImport);
     tbImport.setButtonText("IMPORT");
-    tbImport.setColour(TextButton::buttonColourId, Colours::orange);
+    tbImport.setColour (juce::TextButton::buttonColourId, juce::Colours::orange);
     tbImport.setTooltip ("Imports loudspeakers from a configuration file.");
     tbImport.addListener(this);
 
     addAndMakeVisible(tbUndo);
     tbUndo.setButtonText("UNDO");
-    tbUndo.setColour(TextButton::buttonColourId, Colours::orangered);
+    tbUndo.setColour (juce::TextButton::buttonColourId, juce::Colours::orangered);
     tbUndo.onClick = [this] () { processor.undo(); };
 
     addAndMakeVisible(tbRedo);
     tbRedo.setButtonText("REDO");
-    tbRedo.setColour(TextButton::buttonColourId, Colours::orangered);
+    tbRedo.setColour (juce::TextButton::buttonColourId, juce::Colours::orangered);
     tbRedo.onClick = [this] () { processor.redo(); };
 
     addAndMakeVisible(tbRotate);
     tbRotate.setButtonText("ROTATE");
-    tbRotate.setColour(TextButton::buttonColourId, Colours::cornflowerblue);
+    tbRotate.setColour (juce::TextButton::buttonColourId, juce::Colours::cornflowerblue);
     tbRotate.setTooltip ("Rotates all loudspeakers by a desired amount around the z-axis.");
     tbRotate.onClick = [this] () { openRotateWindow(); };
 
@@ -148,7 +148,7 @@ AllRADecoderAudioProcessorEditor::~AllRADecoderAudioProcessorEditor()
 }
 
 //==============================================================================
-void AllRADecoderAudioProcessorEditor::paint (Graphics& g)
+void AllRADecoderAudioProcessorEditor::paint (juce::Graphics& g)
 {
     g.fillAll (globalLaF.ClBackground);
 }
@@ -159,14 +159,14 @@ void AllRADecoderAudioProcessorEditor::resized()
     const int leftRightMargin = 30;
     const int headerHeight = 60;
     const int footerHeight = 25;
-    Rectangle<int> area (getLocalBounds());
+    juce::Rectangle<int> area (getLocalBounds());
 
-    Rectangle<int> footerArea (area.removeFromBottom(footerHeight));
+    juce::Rectangle<int> footerArea (area.removeFromBottom(footerHeight));
     footer.setBounds(footerArea);
 
     area.removeFromLeft(leftRightMargin);
     area.removeFromRight(leftRightMargin);
-    Rectangle<int> headerArea = area.removeFromTop(headerHeight);
+    juce::Rectangle<int> headerArea = area.removeFromTop(headerHeight);
     title.setBounds (headerArea);
     area.removeFromTop(10);
     area.removeFromBottom(5);
@@ -178,16 +178,16 @@ void AllRADecoderAudioProcessorEditor::resized()
     // best practice would be the use of flexBoxes...
     // the following is medium level practice ;-)
 
-    Rectangle<int> rightArea = area.removeFromRight(420);
-    Rectangle<int> bottomRight = rightArea.removeFromBottom(100);
+    juce::Rectangle<int> rightArea = area.removeFromRight(420);
+    juce::Rectangle<int> bottomRight = rightArea.removeFromBottom(100);
 
     rightArea.removeFromBottom(25);
 
     gcLayout.setBounds(rightArea);
     rightArea.removeFromTop(25);
 
-    Rectangle<int> ctrlsAndDisplay (rightArea.removeFromBottom(80));
-    Rectangle<int> lspCtrlArea (ctrlsAndDisplay.removeFromTop(20));
+    juce::Rectangle<int> ctrlsAndDisplay (rightArea.removeFromBottom(80));
+    juce::Rectangle<int> lspCtrlArea (ctrlsAndDisplay.removeFromTop(20));
     ctrlsAndDisplay.removeFromTop(5);
     tbAddSpeakers.setBounds(lspCtrlArea.removeFromLeft(120));
     lspCtrlArea.removeFromLeft(5);
@@ -206,9 +206,9 @@ void AllRADecoderAudioProcessorEditor::resized()
     rightArea.removeFromBottom(5);
     lspList.setBounds(rightArea);
 
-    Rectangle<int> decoderArea = bottomRight.removeFromLeft(150);
+    juce::Rectangle<int> decoderArea = bottomRight.removeFromLeft(150);
     bottomRight.removeFromLeft(20);
-    Rectangle<int> exportArea = bottomRight;
+    juce::Rectangle<int> exportArea = bottomRight;
 
 
     gcDecoder.setBounds (decoderArea);
@@ -226,7 +226,7 @@ void AllRADecoderAudioProcessorEditor::resized()
 
     gcExport.setBounds(exportArea);
     exportArea.removeFromTop(25);
-    Rectangle<int> toggleArea (exportArea.removeFromLeft(120));
+    juce::Rectangle<int> toggleArea (exportArea.removeFromLeft(120));
     tbExportDecoder.setBounds(toggleArea.removeFromTop(20));
     tbExportLayout.setBounds(toggleArea.removeFromTop(20));
     exportArea.removeFromLeft(20);
@@ -234,7 +234,7 @@ void AllRADecoderAudioProcessorEditor::resized()
     tbJson.setBounds(exportArea.removeFromTop(20).removeFromLeft(80));
 
     area.removeFromRight(20);
-    Rectangle<int> leftArea = area;
+    juce::Rectangle<int> leftArea = area;
 
     grid.setBounds(leftArea.removeFromBottom(200));
     leftArea.removeFromBottom(10);
@@ -277,11 +277,11 @@ void AllRADecoderAudioProcessorEditor::timerCallback()
 
 
 
-void AllRADecoderAudioProcessorEditor::buttonClicked (Button* button)
+void AllRADecoderAudioProcessorEditor::buttonClicked (juce::Button* button)
 {
     if (button == &tbAddSpeakers)
     {
-        const auto& modifiers = ModifierKeys::getCurrentModifiers();
+        const auto& modifiers = juce::ModifierKeys::getCurrentModifiers();
         if (modifiers.isAltDown())
             processor.addImaginaryLoudspeakerBelow();
         else
@@ -293,24 +293,24 @@ void AllRADecoderAudioProcessorEditor::buttonClicked (Button* button)
     }
     else if (button == &tbJson)
     {
-        FileChooser myChooser ("Save configuration...",
-                               processor.getLastDir().exists() ? processor.getLastDir() : File::getSpecialLocation (File::userHomeDirectory),
+        juce::FileChooser myChooser ("Save configuration...",
+                               processor.getLastDir().exists() ? processor.getLastDir() : juce::File::getSpecialLocation (juce::File::userHomeDirectory),
                                "*.json");
         if (myChooser.browseForFileToSave (true))
         {
-            File configFile (myChooser.getResult());
+            juce::File configFile (myChooser.getResult());
             processor.setLastDir(configFile.getParentDirectory());
             processor.saveConfigurationToFile (configFile);
         }
     }
     else if (button == &tbImport)
     {
-        FileChooser myChooser ("Load configuration...",
-                               processor.getLastDir().exists() ? processor.getLastDir() : File::getSpecialLocation (File::userHomeDirectory),
+        juce::FileChooser myChooser ("Load configuration...",
+                               processor.getLastDir().exists() ? processor.getLastDir() : juce::File::getSpecialLocation (juce::File::userHomeDirectory),
                                "*.json");
         if (myChooser.browseForFileToOpen())
         {
-            File configFile (myChooser.getResult());
+            juce::File configFile (myChooser.getResult());
             processor.setLastDir(configFile.getParentDirectory());
             processor.loadConfiguration (configFile);
         }
@@ -336,13 +336,13 @@ void AllRADecoderAudioProcessorEditor::updateChannelCount ()
 
 };
 
-void AllRADecoderAudioProcessorEditor::buttonStateChanged (Button* button) {};
+void AllRADecoderAudioProcessorEditor::buttonStateChanged (juce::Button* button) {};
 
 void AllRADecoderAudioProcessorEditor::openRotateWindow()
 {
     auto* rotateWindow = new RotateWindow (processor);
     rotateWindow->setSize (120, 35);
 
-    CallOutBox& myBox = CallOutBox::launchAsynchronously (rotateWindow, tbRotate.getScreenBounds(), nullptr);
+    auto& myBox = juce::CallOutBox::launchAsynchronously (rotateWindow, tbRotate.getScreenBounds(), nullptr);
     myBox.setLookAndFeel(&globalLaF);
 }

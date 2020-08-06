@@ -31,9 +31,9 @@ OmniCompressorAudioProcessor::OmniCompressorAudioProcessor()
                   BusesProperties()
 #if ! JucePlugin_IsMidiEffect
 #if ! JucePlugin_IsSynth
-                  .withInput  ("Input",  AudioChannelSet::discreteChannels(64), true)
+                  .withInput  ("Input",  juce::AudioChannelSet::discreteChannels(64), true)
 #endif
-                  .withOutput ("Output", AudioChannelSet::discreteChannels(64), true)
+                  .withOutput ("Output", juce::AudioChannelSet::discreteChannels(64), true)
 #endif
                   ,
 #endif
@@ -79,16 +79,16 @@ void OmniCompressorAudioProcessor::setCurrentProgram (int index)
 {
 }
 
-const String OmniCompressorAudioProcessor::getProgramName (int index)
+const juce::String OmniCompressorAudioProcessor::getProgramName (int index)
 {
     return {};
 }
 
-void OmniCompressorAudioProcessor::changeProgramName (int index, const String& newName)
+void OmniCompressorAudioProcessor::changeProgramName (int index, const juce::String& newName)
 {
 }
 
-void OmniCompressorAudioProcessor::parameterChanged (const String &parameterID, float newValue)
+void OmniCompressorAudioProcessor::parameterChanged (const juce::String &parameterID, float newValue)
 {
     if (parameterID == "orderSetting") userChangedIOSettings = true;
 }
@@ -103,7 +103,7 @@ void OmniCompressorAudioProcessor::prepareToPlay (double sampleRate, int samples
 
     gains.setSize(1, samplesPerBlock);
 
-    dsp::ProcessSpec spec;
+    juce::dsp::ProcessSpec spec;
     spec.sampleRate = sampleRate;
     spec.numChannels = 1;
     spec.maximumBlockSize = samplesPerBlock;
@@ -126,7 +126,7 @@ void OmniCompressorAudioProcessor::releaseResources()
 }
 
 
-void OmniCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
+void OmniCompressorAudioProcessor::processBlock (juce::AudioSampleBuffer& buffer, juce::MidiBuffer& midiMessages)
 {
     checkInputAndOutput(this, *orderSetting, *orderSetting);
 
@@ -134,8 +134,8 @@ void OmniCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer, Midi
     const int totalNumOutputChannels = getTotalNumOutputChannels();
     const int bufferSize = buffer.getNumSamples();
 
-    const int numCh = jmin(buffer.getNumChannels(), input.getNumberOfChannels(), output.getNumberOfChannels());
-    //const int ambisonicOrder = jmin(input.getOrder(), output.getOrder());
+    const int numCh = juce::jmin(buffer.getNumChannels(), input.getNumberOfChannels(), output.getNumberOfChannels());
+    //const int ambisonicOrder = juce::jmin(input.getOrder(), output.getOrder());
     const float* bufferReadPtr = buffer.getReadPointer(0);
 
     const bool useLookAhead = *lookAhead >= 0.5f;
@@ -159,12 +159,12 @@ void OmniCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer, Midi
     if (useLookAhead)
     {
         compressor.getGainFromSidechainSignalInDecibelsWithoutMakeUpGain (bufferReadPtr, gains.getWritePointer(0), bufferSize);
-        maxGR = FloatVectorOperations::findMinimum(gains.getWritePointer(0), bufferSize);
+        maxGR = juce::FloatVectorOperations::findMinimum(gains.getWritePointer(0), bufferSize);
 
         // delay input signal
         {
-            AudioBlock<float> ab (buffer);
-            ProcessContextReplacing<float> context (ab);
+            juce::dsp::AudioBlock<float> ab (buffer);
+            juce::dsp::ProcessContextReplacing<float> context (ab);
             delay.process (context);
         }
 
@@ -175,13 +175,13 @@ void OmniCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer, Midi
         // convert from decibels to gain values
         for (int i = 0; i < bufferSize; ++i)
         {
-            gains.setSample(0, i, Decibels::decibelsToGain(gains.getSample(0, i) + *outGain));
+            gains.setSample(0, i, juce::Decibels::decibelsToGain(gains.getSample(0, i) + *outGain));
         }
     }
     else
     {
         compressor.getGainFromSidechainSignal(bufferReadPtr, gains.getWritePointer(0), bufferSize);
-        maxGR = Decibels::gainToDecibels(FloatVectorOperations::findMinimum(gains.getWritePointer(0), bufferSize)) - *outGain;
+        maxGR = juce::Decibels::gainToDecibels(juce::FloatVectorOperations::findMinimum(gains.getWritePointer(0), bufferSize)) - *outGain;
     }
 
     maxRMS = compressor.getMaxLevelInDecibels();
@@ -189,7 +189,7 @@ void OmniCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer, Midi
     for (int channel = 0; channel < numCh; ++channel)
     {
         float* channelData = buffer.getWritePointer (channel);
-        FloatVectorOperations::multiply(channelData, gains.getWritePointer(0), bufferSize);
+        juce::FloatVectorOperations::multiply(channelData, gains.getWritePointer(0), bufferSize);
     }
 
 
@@ -201,33 +201,33 @@ bool OmniCompressorAudioProcessor::hasEditor() const
     return true; // (change this to false if you choose to not supply an editor)
 }
 
-AudioProcessorEditor* OmniCompressorAudioProcessor::createEditor()
+juce::AudioProcessorEditor* OmniCompressorAudioProcessor::createEditor()
 {
     return new OmniCompressorAudioProcessorEditor (*this,parameters);
 }
 
 //==============================================================================
-void OmniCompressorAudioProcessor::getStateInformation (MemoryBlock &destData)
+void OmniCompressorAudioProcessor::getStateInformation (juce::MemoryBlock &destData)
 {
     auto state = parameters.copyState();
 
     auto oscConfig = state.getOrCreateChildWithName ("OSCConfig", nullptr);
     oscConfig.copyPropertiesFrom (oscParameterInterface.getConfig(), nullptr);
 
-    std::unique_ptr<XmlElement> xml (state.createXml());
+    std::unique_ptr<juce::XmlElement> xml (state.createXml());
     copyXmlToBinary (*xml, destData);
 }
 
 void OmniCompressorAudioProcessor::setStateInformation (const void *data, int sizeInBytes)
 {
-    std::unique_ptr<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
+    std::unique_ptr<juce::XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
     if (xmlState.get() != nullptr)
         if (xmlState->hasTagName (parameters.state.getType()))
         {
-            parameters.replaceState (ValueTree::fromXml (*xmlState));
+            parameters.replaceState (juce::ValueTree::fromXml (*xmlState));
             if (parameters.state.hasProperty ("OSCPort")) // legacy
             {
-                oscParameterInterface.getOSCReceiver().connect (parameters.state.getProperty ("OSCPort", var (-1)));
+                oscParameterInterface.getOSCReceiver().connect (parameters.state.getProperty ("OSCPort", juce::var (-1)));
                 parameters.state.removeProperty ("OSCPort", nullptr);
             }
 
@@ -239,13 +239,13 @@ void OmniCompressorAudioProcessor::setStateInformation (const void *data, int si
 
 
 //==============================================================================
-std::vector<std::unique_ptr<RangedAudioParameter>> OmniCompressorAudioProcessor::createParameterLayout()
+std::vector<std::unique_ptr<juce::RangedAudioParameter>> OmniCompressorAudioProcessor::createParameterLayout()
 {
     // add your audio parameters here
-    std::vector<std::unique_ptr<RangedAudioParameter>> params;
+    std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("orderSetting", "Ambisonics Order", "",
-                                     NormalisableRange<float>(0.0f, 8.0f, 1.0f), 0.0f,
+                                     juce::NormalisableRange<float>(0.0f, 8.0f, 1.0f), 0.0f,
                                      [](float value) {
                                          if (value >= 0.5f && value < 1.5f) return "0th";
                                          else if (value >= 1.5f && value < 2.5f) return "1st";
@@ -259,47 +259,47 @@ std::vector<std::unique_ptr<RangedAudioParameter>> OmniCompressorAudioProcessor:
                                      }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("useSN3D", "Normalization", "",
-                                     NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
+                                     juce::NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value) {
                                          if (value >= 0.5f) return "SN3D";
                                          else return "N3D";
                                      }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("threshold", "Threshold", "dB",
-                                     NormalisableRange<float> (-50.0f, 10.0f, 0.1f), -10.0,
-                                     [](float value) {return String(value, 1);}, nullptr));
+                                     juce::NormalisableRange<float> (-50.0f, 10.0f, 0.1f), -10.0,
+                                     [](float value) {return juce::String(value, 1);}, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("knee", "Knee", "dB",
-                                     NormalisableRange<float> (0.0f, 30.0f, 0.1f), 0.0f,
-                                     [](float value) {return String(value, 1);}, nullptr));
+                                     juce::NormalisableRange<float> (0.0f, 30.0f, 0.1f), 0.0f,
+                                     [](float value) {return juce::String(value, 1);}, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("attack", "Attack Time", "ms",
-                                     NormalisableRange<float> (0.0f, 100.0f, 0.1f), 30.0,
-                                     [](float value) {return String(value, 1);}, nullptr));
+                                     juce::NormalisableRange<float> (0.0f, 100.0f, 0.1f), 30.0,
+                                     [](float value) {return juce::String(value, 1);}, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("release", "Release Time", "ms",
-                                     NormalisableRange<float> (0.0f, 500.0f, 0.1f), 150.0,
-                                     [](float value) {return String(value, 1);}, nullptr));
+                                     juce::NormalisableRange<float> (0.0f, 500.0f, 0.1f), 150.0,
+                                     [](float value) {return juce::String(value, 1);}, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("ratio", "Ratio", " : 1",
-                                     NormalisableRange<float> (1.0f, 16.0f, .2f), 4.0,
+                                     juce::NormalisableRange<float> (1.0f, 16.0f, .2f), 4.0,
                                      [](float value) {
                                          if (value > 15.9f)
-                                             return String("inf");
-                                         return String(value, 1);
+                                             return juce::String("inf");
+                                         return juce::String(value, 1);
 
                                      }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("outGain", "MakeUp Gain", "dB",
-                                     NormalisableRange<float> (-10.0f, 20.0f, 0.1f), 0.0,
-                                     [](float value) {return String(value, 1);}, nullptr));
+                                     juce::NormalisableRange<float> (-10.0f, 20.0f, 0.1f), 0.0,
+                                     [](float value) {return juce::String(value, 1);}, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("lookAhead", "LookAhead", "",
-                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
+                                     juce::NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
                                      [](float value) {return value >= 0.5f ? "ON (5ms)" : "OFF";}, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("reportLatency", "Report Latency to DAW", "",
-                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
+                                     juce::NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value) {
                                          if (value >= 0.5f) return "Yes";
                                          else return "No";
@@ -312,7 +312,7 @@ std::vector<std::unique_ptr<RangedAudioParameter>> OmniCompressorAudioProcessor:
 
 //==============================================================================
 // This creates new instances of the plugin..
-AudioProcessor* JUCE_CALLTYPE createPluginFilter()
+juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new OmniCompressorAudioProcessor();
 }

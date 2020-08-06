@@ -31,9 +31,9 @@ CoordinateConverterAudioProcessor::CoordinateConverterAudioProcessor()
                        BusesProperties()
                      #if ! JucePlugin_IsMidiEffect
                       #if ! JucePlugin_IsSynth
-                       .withInput  ("Input",  AudioChannelSet::discreteChannels(10), true)
+                       .withInput  ("Input",  juce::AudioChannelSet::discreteChannels(10), true)
                       #endif
-                       .withOutput ("Output", AudioChannelSet::discreteChannels(64), true)
+                       .withOutput ("Output", juce::AudioChannelSet::discreteChannels(64), true)
                      #endif
                        ,
 #endif
@@ -103,12 +103,12 @@ void CoordinateConverterAudioProcessor::setCurrentProgram (int index)
 {
 }
 
-const String CoordinateConverterAudioProcessor::getProgramName (int index)
+const juce::String CoordinateConverterAudioProcessor::getProgramName (int index)
 {
     return {};
 }
 
-void CoordinateConverterAudioProcessor::changeProgramName (int index, const String& newName)
+void CoordinateConverterAudioProcessor::changeProgramName (int index, const juce::String& newName)
 {
 }
 
@@ -123,7 +123,7 @@ void CoordinateConverterAudioProcessor::releaseResources()
     // spare memory, etc.
 }
 
-void CoordinateConverterAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
+void CoordinateConverterAudioProcessor::processBlock (juce::AudioSampleBuffer& buffer, juce::MidiBuffer& midiMessages)
 {
     // nothing to do
 }
@@ -134,34 +134,34 @@ bool CoordinateConverterAudioProcessor::hasEditor() const
     return true; // (change this to false if you choose to not supply an editor)
 }
 
-AudioProcessorEditor* CoordinateConverterAudioProcessor::createEditor()
+juce::AudioProcessorEditor* CoordinateConverterAudioProcessor::createEditor()
 {
     return new CoordinateConverterAudioProcessorEditor (*this, parameters);
 }
 
 //==============================================================================
-void CoordinateConverterAudioProcessor::getStateInformation (MemoryBlock& destData)
+void CoordinateConverterAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
     auto state = parameters.copyState();
 
     auto oscConfig = state.getOrCreateChildWithName ("OSCConfig", nullptr);
     oscConfig.copyPropertiesFrom (oscParameterInterface.getConfig(), nullptr);
 
-    std::unique_ptr<XmlElement> xml (state.createXml());
+    std::unique_ptr<juce::XmlElement> xml (state.createXml());
     copyXmlToBinary (*xml, destData);
 }
 
 
 void CoordinateConverterAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
-    std::unique_ptr<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
+    std::unique_ptr<juce::XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
     if (xmlState.get() != nullptr)
         if (xmlState->hasTagName (parameters.state.getType()))
         {
-            parameters.replaceState (ValueTree::fromXml (*xmlState));
+            parameters.replaceState (juce::ValueTree::fromXml (*xmlState));
             if (parameters.state.hasProperty ("OSCPort")) // legacy
             {
-                oscParameterInterface.getOSCReceiver().connect (parameters.state.getProperty ("OSCPort", var (-1)));
+                oscParameterInterface.getOSCReceiver().connect (parameters.state.getProperty ("OSCPort", juce::var (-1)));
                 parameters.state.removeProperty ("OSCPort", nullptr);
             }
 
@@ -172,7 +172,7 @@ void CoordinateConverterAudioProcessor::setStateInformation (const void* data, i
 }
 
 //==============================================================================
-void CoordinateConverterAudioProcessor::parameterChanged (const String &parameterID, float newValue)
+void CoordinateConverterAudioProcessor::parameterChanged (const juce::String &parameterID, float newValue)
 {
     DBG("Parameter with ID " << parameterID << " has changed. New value: " << newValue);
 
@@ -221,8 +221,8 @@ void CoordinateConverterAudioProcessor::updateCartesianCoordinates()
 {
     updatingParams = true;
 
-    auto cartesian = Conversions<float>::sphericalToCartesian (degreesToRadians (azimuth->load()) * azimuthFlipFactor,
-                                                               degreesToRadians (elevation->load()) * elevationFlipFactor,
+    auto cartesian = Conversions<float>::sphericalToCartesian (juce::degreesToRadians (azimuth->load()) * azimuthFlipFactor,
+                                                               juce::degreesToRadians (elevation->load()) * elevationFlipFactor,
                                                                (0.5f - radiusFlipFactor * (0.5f - *radius)) * *radiusRange);
 
     cartesian += {*xReference, *yReference, *zReference};
@@ -243,7 +243,7 @@ void CoordinateConverterAudioProcessor::updateSphericalCoordinates()
 {
     updatingParams = true;
 
-    auto cartesian = Vector3D<float> (*xPos * *xRange * xFlipFactor,
+    auto cartesian = juce::Vector3D<float> (*xPos * *xRange * xFlipFactor,
                                       *yPos * *yRange * yFlipFactor,
                                       *zPos * *zRange * zFlipFactor);
 
@@ -276,85 +276,85 @@ void CoordinateConverterAudioProcessor::updateBuffers()
 
 
 //==============================================================================
-std::vector<std::unique_ptr<RangedAudioParameter>> CoordinateConverterAudioProcessor::createParameterLayout()
+std::vector<std::unique_ptr<juce::RangedAudioParameter>> CoordinateConverterAudioProcessor::createParameterLayout()
 {
     // add your audio parameters here
-    std::vector<std::unique_ptr<RangedAudioParameter>> params;
+    std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
 
-    params.push_back (OSCParameterInterface::createParameterTheOldWay ("azimuth", "Azimuth Angle", CharPointer_UTF8 (R"(°)"),
-                                                       NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
-                                                       [](float value) { return String(value, 2); }, nullptr));
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("azimuth", "Azimuth Angle", juce::CharPointer_UTF8 (R"(°)"),
+                                                       juce::NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
+                                                       [](float value) { return juce::String (value, 2); }, nullptr));
 
-    params.push_back (OSCParameterInterface::createParameterTheOldWay ("elevation", "Elevation Angle", CharPointer_UTF8 (R"(°)"),
-                                                       NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
-                                                       [](float value) { return String(value, 2); }, nullptr));
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("elevation", "Elevation Angle", juce::CharPointer_UTF8 (R"(°)"),
+                                                       juce::NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
+                                                       [](float value) { return juce::String (value, 2); }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("radius", "Radius", "",
-                                                       NormalisableRange<float>(0.0f, 1.0f, 0.001f), 1.0,
-                                                       [](float value) { return String(value, 3); }, nullptr));
+                                                       juce::NormalisableRange<float>(0.0f, 1.0f, 0.001f), 1.0,
+                                                       [](float value) { return juce::String (value, 3); }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("xPos", "X Coordinate", "",
-                                                       NormalisableRange<float>(-1.0f, 1.0f, 0.0001f), 1.0,
-                                                       [](float value) { return String(value, 4); }, nullptr));
+                                                       juce::NormalisableRange<float>(-1.0f, 1.0f, 0.0001f), 1.0,
+                                                       [](float value) { return juce::String (value, 4); }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("yPos", "Y Coordinate", "",
-                                                       NormalisableRange<float>(-1.0f, 1.0f, 0.0001f), 0.0,
-                                                       [](float value) { return String(value, 4); }, nullptr));
+                                                       juce::NormalisableRange<float>(-1.0f, 1.0f, 0.0001f), 0.0,
+                                                       [](float value) { return juce::String (value, 4); }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("zPos", "Z Coordinate", "",
-                                                       NormalisableRange<float>(-1.0f, 1.0f, 0.0001f), 0.0,
-                                                       [](float value) { return String(value, 4); }, nullptr));
+                                                       juce::NormalisableRange<float>(-1.0f, 1.0f, 0.0001f), 0.0,
+                                                       [](float value) { return juce::String (value, 4); }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("xReference", "X Reference", "m",
-                                                       NormalisableRange<float>(-50.0f, 50.0f, 0.001f), 0.0,
-                                                       [](float value) { return String(value, 3); }, nullptr));
+                                                       juce::NormalisableRange<float>(-50.0f, 50.0f, 0.001f), 0.0,
+                                                       [](float value) { return juce::String (value, 3); }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("yReference", "Y Reference", "m",
-                                                       NormalisableRange<float>(-50.0f, 50.0f, 0.001f), 0.0,
-                                                       [](float value) { return String(value, 3); }, nullptr));
+                                                       juce::NormalisableRange<float>(-50.0f, 50.0f, 0.001f), 0.0,
+                                                       [](float value) { return juce::String (value, 3); }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("zReference", "Z Reference", "m",
-                                                       NormalisableRange<float>(-50.0f, 50.0f, 0.001f), 0.0,
-                                                       [](float value) { return String(value, 3); }, nullptr));
+                                                       juce::NormalisableRange<float>(-50.0f, 50.0f, 0.001f), 0.0,
+                                                       [](float value) { return juce::String (value, 3); }, nullptr));
 
-    params.push_back (OSCParameterInterface::createParameterTheOldWay ("radiusRange", "Radius Range", "m",
-                                                       NormalisableRange<float>(0.1f, 50.0f, 0.01f), 1.0,
-                                                       [](float value) { return String(value, 2); }, nullptr));
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("radiusRange", "Radius juce::Range", "m",
+                                                       juce::NormalisableRange<float>(0.1f, 50.0f, 0.01f), 1.0,
+                                                       [](float value) { return juce::String (value, 2); }, nullptr));
 
-    params.push_back (OSCParameterInterface::createParameterTheOldWay ("xRange", "X Range", "m",
-                                                       NormalisableRange<float>(0.1f, 50.0f, 0.01f), 1.0,
-                                                       [](float value) { return String(value, 2); }, nullptr));
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("xRange", "X juce::Range", "m",
+                                                       juce::NormalisableRange<float>(0.1f, 50.0f, 0.01f), 1.0,
+                                                       [](float value) { return juce::String (value, 2); }, nullptr));
 
-    params.push_back (OSCParameterInterface::createParameterTheOldWay ("yRange", "Y Range", "m",
-                                                       NormalisableRange<float>(0.1f, 50.0f, 0.01f), 1.0,
-                                                       [](float value) { return String(value, 2); }, nullptr));
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("yRange", "Y juce::Range", "m",
+                                                       juce::NormalisableRange<float>(0.1f, 50.0f, 0.01f), 1.0,
+                                                       [](float value) { return juce::String (value, 2); }, nullptr));
 
-    params.push_back (OSCParameterInterface::createParameterTheOldWay ("zRange", "Z Range", "m",
-                                                       NormalisableRange<float>(0.1f, 50.0f, 0.01f), 1.0,
-                                                       [](float value) { return String(value, 2); }, nullptr));
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("zRange", "Z juce::Range", "m",
+                                                       juce::NormalisableRange<float>(0.1f, 50.0f, 0.01f), 1.0,
+                                                       [](float value) { return juce::String (value, 2); }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("azimuthFlip", "Invert Azimuth", "",
-                                                       NormalisableRange<float>(0.0f, 1.0f, 1.0f), 0.0,
+                                                       juce::NormalisableRange<float>(0.0f, 1.0f, 1.0f), 0.0,
                                                        [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("elevationFlip", "Invert Elevation", "",
-                                                       NormalisableRange<float>(0.0f, 1.0f, 1.0f), 0.0,
+                                                       juce::NormalisableRange<float>(0.0f, 1.0f, 1.0f), 0.0,
                                                        [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("radiusFlip", "Invert Radius Axis", "",
-                                                       NormalisableRange<float>(0.0f, 1.0f, 1.0f), 0.0,
+                                                       juce::NormalisableRange<float>(0.0f, 1.0f, 1.0f), 0.0,
                                                        [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("xFlip", "Invert X Axis", "",
-                                                       NormalisableRange<float>(0.0f, 1.0f, 1.0f), 0.0,
+                                                       juce::NormalisableRange<float>(0.0f, 1.0f, 1.0f), 0.0,
                                                        [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("yFlip", "Invert Y Axis", "",
-                                                       NormalisableRange<float>(0.0f, 1.0f, 1.0f), 0.0,
+                                                       juce::NormalisableRange<float>(0.0f, 1.0f, 1.0f), 0.0,
                                                        [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("zFlip", "Invert Z Axis", "",
-                                                       NormalisableRange<float>(0.0f, 1.0f, 1.0f), 0.0,
+                                                       juce::NormalisableRange<float>(0.0f, 1.0f, 1.0f), 0.0,
                                                        [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr));
 
 
@@ -365,7 +365,7 @@ std::vector<std::unique_ptr<RangedAudioParameter>> CoordinateConverterAudioProce
 
 //==============================================================================
 // This creates new instances of the plugin..
-AudioProcessor* JUCE_CALLTYPE createPluginFilter()
+juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new CoordinateConverterAudioProcessor();
 }

@@ -27,7 +27,7 @@
 //==============================================================================
 /*
 */
-class LoudspeakerVisualizer    : public Component, public OpenGLRenderer
+class LoudspeakerVisualizer    : public juce::Component, public juce::OpenGLRenderer
 {
     struct positionAndColour {
         float position[3];
@@ -35,9 +35,9 @@ class LoudspeakerVisualizer    : public Component, public OpenGLRenderer
     };
 
 public:
-    LoudspeakerVisualizer(std::vector<R3>& pts, std::vector<Tri>& tris, std::vector<Vector3D<float>>& norms, BigInteger& imagFlags) : extPoints(pts), extTriangles(tris), extNormals(norms), imaginaryFlags(imagFlags)
+    LoudspeakerVisualizer(std::vector<R3>& pts, std::vector<Tri>& tris, std::vector<juce::Vector3D<float>>& norms, juce::BigInteger& imagFlags) : extPoints(pts), extTriangles(tris), extNormals(norms), imaginaryFlags(imagFlags)
     {
-        OpenGLPixelFormat pf;
+        juce::OpenGLPixelFormat pf;
         pf.multisamplingLevel = 4;
         openGLContext.setPixelFormat(pf);
         openGLContext.setMultisamplingEnabled(true);
@@ -61,18 +61,18 @@ public:
     void initialise()
     {
         const float alpha = 0.8;
-        PixelARGB colormapData[8];
-//        colormapData[0] = Colours::white.withMultipliedAlpha(alpha).getPixelARGB();
+        juce::PixelARGB colormapData[8];
+//        colormapData[0] = juce::Colours::white.withMultipliedAlpha(alpha).getPixelARGB();
 //        texture.loadARGB(colormapData, 1, 1);
 
-        colormapData[0] = Colours::limegreen.getPixelARGB(); // selected colour
-        colormapData[1] = Colours::orange.getPixelARGB(); // imaginary colour
-        colormapData[2] = Colours::cornflowerblue.getPixelARGB(); // regular colour
-        colormapData[3] = Colours::cornflowerblue.withMultipliedAlpha(alpha).getPixelARGB();
-        colormapData[4] = Colours::limegreen.withMultipliedAlpha(alpha).getPixelARGB();
-        colormapData[5] = Colours::cornflowerblue.withMultipliedAlpha(alpha).getPixelARGB();
-        colormapData[6] = Colours::orange.withMultipliedAlpha(alpha).getPixelARGB();
-        colormapData[7] = Colours::red.withMultipliedAlpha(alpha).getPixelARGB();
+        colormapData[0] = juce::Colours::limegreen.getPixelARGB(); // selected colour
+        colormapData[1] = juce::Colours::orange.getPixelARGB(); // imaginary colour
+        colormapData[2] = juce::Colours::cornflowerblue.getPixelARGB(); // regular colour
+        colormapData[3] = juce::Colours::cornflowerblue.withMultipliedAlpha(alpha).getPixelARGB();
+        colormapData[4] = juce::Colours::limegreen.withMultipliedAlpha(alpha).getPixelARGB();
+        colormapData[5] = juce::Colours::cornflowerblue.withMultipliedAlpha(alpha).getPixelARGB();
+        colormapData[6] = juce::Colours::orange.withMultipliedAlpha(alpha).getPixelARGB();
+        colormapData[7] = juce::Colours::red.withMultipliedAlpha(alpha).getPixelARGB();
 
         texture.loadARGB(colormapData, 8, 1);
 
@@ -124,11 +124,11 @@ public:
         for (int i = 0; i < nTriangles;  ++i)
         {
             const float col = 0.4f + 0.6f * ((float) i / nTriangles); // defining a colour
-            Vector3D<float> normal = extNormals[i];
+            juce::Vector3D<float> normal = extNormals[i];
             Tri tr = extTriangles[i];
-            Vector3D<float> a {extPoints[tr.a].x, extPoints[tr.a].y, extPoints[tr.a].z};
-            Vector3D<float> b {extPoints[tr.b].x, extPoints[tr.b].y, extPoints[tr.b].z};
-            Vector3D<float> c {extPoints[tr.c].x, extPoints[tr.c].y, extPoints[tr.c].z};
+            juce::Vector3D<float> a {extPoints[tr.a].x, extPoints[tr.a].y, extPoints[tr.a].z};
+            juce::Vector3D<float> b {extPoints[tr.b].x, extPoints[tr.b].y, extPoints[tr.b].z};
+            juce::Vector3D<float> c {extPoints[tr.c].x, extPoints[tr.c].y, extPoints[tr.c].z};
 
             // making sure that triangles are facing outward
             if (normal * ((b-a)^(c-a)) < 0.0f) // incorrect but no swap because of inverse y axis swap
@@ -184,12 +184,12 @@ public:
 
     void renderOpenGL() override
     {
-        jassert (OpenGLHelpers::isContextActive());
+        jassert (juce::OpenGLHelpers::isContextActive());
 
-        OpenGLHelpers::clear (Colour(0xFF2D2D2D));
+        juce::OpenGLHelpers::clear (juce::Colour(0xFF2D2D2D));
 
         const float desktopScale = (float) openGLContext.getRenderingScale();
-        glViewport (0, 0, roundToInt (desktopScale * getWidth()), roundToInt (desktopScale * getHeight()));
+        glViewport (0, 0, juce::roundToInt (desktopScale * getWidth()), juce::roundToInt (desktopScale * getHeight()));
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glEnable (GL_DEPTH_TEST);
@@ -381,28 +381,28 @@ public:
                 texture.release();
     }
 
-    void mouseWheelMove (const MouseEvent &e, const MouseWheelDetails &wheel) override
+    void mouseWheelMove (const juce::MouseEvent &e, const juce::MouseWheelDetails &wheel) override
     {
         const double delta = (std::abs (wheel.deltaX) > std::abs (wheel.deltaY) ? -wheel.deltaX : wheel.deltaY);
 
         zoom += delta;
-        zoom = jmin(zoom, 8.0f);
-        zoom = jmax(zoom, 2.5f);
+        zoom = juce::jmin (zoom, 8.0f);
+        zoom = juce::jmax (zoom, 2.5f);
         viewHasChanged = true;
         openGLContext.triggerRepaint();
     }
 
-    void mouseDown (const MouseEvent& e) override
+    void mouseDown (const juce::MouseEvent& e) override
     {
         tiltBeforeDrag = tilt;
         yawBeforeDrag = yaw;
     }
 
-    void mouseDrag (const MouseEvent& e) override {
+    void mouseDrag (const juce::MouseEvent& e) override {
         float deltaY = (float) e.getDistanceFromDragStartY() / 100;
         tilt = tiltBeforeDrag + deltaY;
-        tilt = jmin(tilt, (float) MathConstants<float>::pi / 2.0f);
-        tilt = jmax(tilt, 0.0f);
+        tilt = juce::jmin (tilt, (float) juce::MathConstants<float>::pi / 2.0f);
+        tilt = juce::jmax (tilt, 0.0f);
 
         float deltaX = (float) e.getDistanceFromDragStartX() / 100;
         yaw = yawBeforeDrag + deltaX;
@@ -463,16 +463,16 @@ public:
         "      gl_FragColor.w = alphaOut * gl_FragColor.w;\n"
         "}";
 
-        std::unique_ptr<OpenGLShaderProgram> newShader (new OpenGLShaderProgram (openGLContext));
-        String statusText;
+        std::unique_ptr<juce::OpenGLShaderProgram> newShader (new juce::OpenGLShaderProgram (openGLContext));
+        juce::String statusText;
 
-        if (newShader->addVertexShader (OpenGLHelpers::translateVertexShaderToV3 (vertexShader))
-            && newShader->addFragmentShader (OpenGLHelpers::translateFragmentShaderToV3 (fragmentShader))
+        if (newShader->addVertexShader (juce::OpenGLHelpers::translateVertexShaderToV3 (vertexShader))
+            && newShader->addFragmentShader (juce::OpenGLHelpers::translateFragmentShaderToV3 (fragmentShader))
             && newShader->link())
         {
             shader = std::move (newShader);
             shader->use();
-            statusText = "GLSL: v" + String (OpenGLShaderProgram::getLanguageVersion(), 2);
+            statusText = "GLSL: v" + juce::String (juce::OpenGLShaderProgram::getLanguageVersion(), 2);
 
             projectionMatrix.reset (createUniform (openGLContext, *shader, "projectionMatrix"));
             viewMatrix.reset (createUniform (openGLContext, *shader, "viewMatrix"));
@@ -486,32 +486,32 @@ public:
         }
     }
 
-    Matrix3D<float> getProjectionMatrix() const
+    juce::Matrix3D<float> getProjectionMatrix() const
     {
         const float near = 1.0f;
         const float ratio = 1.0f / 3.0f; // similar to focal length (maybe reciprocal)
         const float w = near * ratio;
         const float h = w * getLocalBounds().toFloat().getAspectRatio (false);
-        return Matrix3D<float>::fromFrustum (-w, w, -h, h, near, 10000.0f);
+        return juce::Matrix3D<float>::fromFrustum (-w, w, -h, h, near, 10000.0f);
     }
 
-    Matrix3D<float> createRotationMatrix (Vector3D<float> eulerAngleRadians) const noexcept
+    juce::Matrix3D<float> createRotationMatrix (juce::Vector3D<float> eulerAngleRadians) const noexcept
     {
         const float cx = std::cos (eulerAngleRadians.x),  sx = std::sin (eulerAngleRadians.x),
         cy = std::cos (eulerAngleRadians.y),  sy = std::sin (eulerAngleRadians.y),
         cz = std::cos (eulerAngleRadians.z),  sz = std::sin (eulerAngleRadians.z);
 
-        return Matrix3D<float> ((cy * cz) + (sx * sy * sz), cx * sz, (cy * sx * sz) - (cz * sy), 0.0f,
+        return juce::Matrix3D<float> ((cy * cz) + (sx * sy * sz), cx * sz, (cy * sx * sz) - (cz * sy), 0.0f,
                                 (cz * sx * sy) - (cy * sz), cx * cz, (cy * cz * sx) + (sy * sz), 0.0f,
                                 cx * sy, -sx, cx * cy, 0.0f,
                                 0.0f, 0.0f, 0.0f, 1.0f);
     }
 
-    Matrix3D<float> getViewMatrix()
+    juce::Matrix3D<float> getViewMatrix()
     {
-        Matrix3D<float> translationMatrix (Vector3D<float> (0.0f, 0.0f, -500.0f * zoom)); // move object further away
-        Matrix3D<float> tiltMatrix = createRotationMatrix (Vector3D<float> (tilt, 0.0f, 0.0f));
-        Matrix3D<float> rotationMatrix = createRotationMatrix (Vector3D<float> (0.0f, yaw, 0.0f));
+        juce::Matrix3D<float> translationMatrix (juce::Vector3D<float> (0.0f, 0.0f, -500.0f * zoom)); // move object further away
+        juce::Matrix3D<float> tiltMatrix = createRotationMatrix (juce::Vector3D<float> (tilt, 0.0f, 0.0f));
+        juce::Matrix3D<float> rotationMatrix = createRotationMatrix (juce::Vector3D<float> (0.0f, yaw, 0.0f));
         return rotationMatrix * tiltMatrix  * translationMatrix;
     }
 
@@ -519,21 +519,21 @@ private:
     GLuint vertexBuffer=0, indexBuffer=0, normalsBuffer=0;
     const char* vertexShader;
     const char* fragmentShader;
-    std::unique_ptr<OpenGLShaderProgram> shader;
-    std::unique_ptr<OpenGLShaderProgram::Uniform> projectionMatrix, viewMatrix, alpha, blackFlag, drawPointsFlag;
+    std::unique_ptr<juce::OpenGLShaderProgram> shader;
+    std::unique_ptr<juce::OpenGLShaderProgram::Uniform> projectionMatrix, viewMatrix, alpha, blackFlag, drawPointsFlag;
 
-    static OpenGLShaderProgram::Uniform* createUniform (OpenGLContext& openGLContext, OpenGLShaderProgram& shaderProgram, const char* uniformName)
+    static juce::OpenGLShaderProgram::Uniform* createUniform (juce::OpenGLContext& openGLContext, juce::OpenGLShaderProgram& shaderProgram, const char* uniformName)
     {
         if (openGLContext.extensions.glGetUniformLocation (shaderProgram.getProgramID(), uniformName) < 0)
             return nullptr; // Return if error
-        return new OpenGLShaderProgram::Uniform (shaderProgram, uniformName);
+        return new juce::OpenGLShaderProgram::Uniform (shaderProgram, uniformName);
     }
 
         bool updatedBuffers;
     std::vector<R3>& extPoints;
     std::vector<Tri>& extTriangles;
-    std::vector<Vector3D<float>>& extNormals;
-    BigInteger& imaginaryFlags;
+    std::vector<juce::Vector3D<float>>& extNormals;
+    juce::BigInteger& imaginaryFlags;
 
     std::vector<positionAndColour> vertices;
     std::vector<int> indices;
@@ -552,8 +552,8 @@ private:
     float yaw = 0.0f;
     float yawBeforeDrag;
 
-    OpenGLTexture texture;
+    juce::OpenGLTexture texture;
 
-    OpenGLContext openGLContext;
+    juce::OpenGLContext openGLContext;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (LoudspeakerVisualizer)
 };

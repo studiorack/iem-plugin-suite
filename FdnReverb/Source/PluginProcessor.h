@@ -45,28 +45,28 @@ public:
     void releaseResources() override;
     void reset() override;
 
-    void processBlock (AudioBuffer<float>& buffer, MidiBuffer& midiMessages) override;
+    void processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages) override;
 
 //==============================================================================
-    AudioProcessorEditor* createEditor() override;
+    juce::AudioProcessorEditor* createEditor() override;
     bool hasEditor() const override;
 
 //==============================================================================
     int getNumPrograms() override;
     int getCurrentProgram() override;
     void setCurrentProgram (int index) override;
-    const String getProgramName (int index) override;
-    void changeProgramName (int index, const String& newName) override;
+    const juce::String getProgramName (int index) override;
+    void changeProgramName (int index, const juce::String& newName) override;
 
     //==============================================================================
-    void getStateInformation (MemoryBlock& destData) override;
+    void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
-    void parameterChanged (const String &parameterID, float newValue) override;
+    void parameterChanged (const juce::String &parameterID, float newValue) override;
 
 
     //======= Parameters ===========================================================
-    std::vector<std::unique_ptr<RangedAudioParameter>> createParameterLayout();
+    std::vector<std::unique_ptr<juce::RangedAudioParameter>> createParameterLayout();
 
 
 
@@ -78,7 +78,7 @@ public:
 
 private:
     //==============================================================================
-	AudioBuffer<float> copyBuffer;
+	juce::AudioBuffer<float> copyBuffer;
 
     // parameters (from GUI)
     std::atomic<float>* revTime;

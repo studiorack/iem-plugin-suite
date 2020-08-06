@@ -24,7 +24,7 @@
 #pragma once
 #include "../JuceLibraryCode/JuceHeader.h"
 
-using namespace dsp;
+using namespace juce::dsp;
 
 template <typename FloatType>
 class MultiChannelDelay : private ProcessorBase
@@ -66,7 +66,7 @@ public:
         maxDelay = maxDelayTimeInSeconds;
     }
 
-    void prepare (const ProcessSpec& specs) override
+    void prepare (const juce::dsp::ProcessSpec& specs) override
     {
         spec = specs;
 
@@ -80,9 +80,9 @@ public:
 
     }
 
-    void process (const ProcessContextReplacing<FloatType>& context) override
+    void process (const juce::dsp::ProcessContextReplacing<FloatType>& context) override
     {
-        ScopedNoDenormals noDenormals;
+        juce::ScopedNoDenormals noDenormals;
 
         auto abIn = context.getInputBlock();
         auto abOut = context.getOutputBlock();
@@ -107,10 +107,10 @@ public:
             int startIndex, blockSize1, blockSize2;
             getReadPositions(ch, (int) L, startIndex, blockSize1, blockSize2);
 
-            FloatVectorOperations::copy(abOut.getChannelPointer(ch), buffer.getReadPointer(ch) + startIndex, blockSize1);
+            juce::FloatVectorOperations::copy(abOut.getChannelPointer(ch), buffer.getReadPointer(ch) + startIndex, blockSize1);
 
             if (blockSize2 > 0)
-                FloatVectorOperations::copy(abOut.getChannelPointer(ch) + blockSize1, buffer.getReadPointer(ch), blockSize2);
+                juce::FloatVectorOperations::copy(abOut.getChannelPointer(ch) + blockSize1, buffer.getReadPointer(ch), blockSize2);
         }
 
         writePosition += L;
@@ -141,7 +141,7 @@ public:
         else
         {
             startIndex = pos;
-            blockSize1 = jmin (L - pos, numSamples);
+            blockSize1 = juce::jmin (L - pos, numSamples);
             numSamples -= blockSize1;
             blockSize2 = numSamples <= 0 ? 0 : numSamples;
         }
@@ -168,7 +168,7 @@ public:
         else
         {
             startIndex = pos;
-            blockSize1 = jmin (L - pos, numSamples);
+            blockSize1 = juce::jmin (L - pos, numSamples);
             numSamples -= blockSize1;
             blockSize2 = numSamples <= 0 ? 0 : numSamples;
         }
@@ -176,14 +176,14 @@ public:
 
 private:
     //==============================================================================
-    ProcessSpec spec = {-1, 0, 0};
+    juce::dsp::ProcessSpec spec = {-1, 0, 0};
 
-    Array<float> delayInSeconds;
-    Array<int> delayInSamples;
+    juce::Array<float> delayInSeconds;
+    juce::Array<int> delayInSamples;
 
     float maxDelay = 1.0f;
     int numChannels = 0;
 
     int writePosition = 0;
-    AudioBuffer<FloatType> buffer;
+    juce::AudioBuffer<FloatType> buffer;
 };

@@ -25,8 +25,8 @@
 
 
 //==============================================================================
-DirectionalCompressorAudioProcessorEditor::DirectionalCompressorAudioProcessorEditor (DirectionalCompressorAudioProcessor& p,AudioProcessorValueTreeState& vts)
-    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts), footer (p.getOSCParameterInterface()),
+DirectionalCompressorAudioProcessorEditor::DirectionalCompressorAudioProcessorEditor (DirectionalCompressorAudioProcessor& p, juce::AudioProcessorValueTreeState& vts)
+    : juce::AudioProcessorEditor (&p), processor (p), valueTreeState(vts), footer (p.getOSCParameterInterface()),
     sphereElem(*valueTreeState.getParameter("azimuth"), valueTreeState.getParameterRange("azimuth"), *valueTreeState.getParameter("elevation"), valueTreeState.getParameterRange("elevation"))
 {
     // Make sure that before the constructor has finished, you've set the
@@ -35,7 +35,7 @@ DirectionalCompressorAudioProcessorEditor::DirectionalCompressorAudioProcessorEd
     setLookAndFeel (&globalLaF);
 
     addAndMakeVisible(&title);
-    title.setTitle(String("Directional"),String("Compressor"));
+    title.setTitle ("Directional", "Compressor");
     title.setFont(globalLaF.robotoBold,globalLaF.robotoLight);
     addAndMakeVisible(&footer);
 
@@ -51,52 +51,52 @@ DirectionalCompressorAudioProcessorEditor::DirectionalCompressorAudioProcessorEd
     // ======== general components ===========
     addAndMakeVisible(&gcMask);
     gcMask.setText("Spatial mask properties");
-    gcMask.setTextLabelPosition (Justification::centredLeft);
-    gcMask.setColour (GroupComponent::outlineColourId, globalLaF.ClSeperator);
-    gcMask.setColour (GroupComponent::textColourId, Colours::white);
+    gcMask.setTextLabelPosition (juce::Justification::centredLeft);
+    gcMask.setColour (juce::GroupComponent::outlineColourId, globalLaF.ClSeperator);
+    gcMask.setColour (juce::GroupComponent::textColourId, juce::Colours::white);
     gcMask.setVisible(true);
 
     addAndMakeVisible(&gcSettings);
     gcSettings.setText("General settings");
-    gcSettings.setTextLabelPosition (Justification::centredLeft);
-    gcSettings.setColour (GroupComponent::outlineColourId, globalLaF.ClSeperator);
-    gcSettings.setColour (GroupComponent::textColourId, Colours::white);
+    gcSettings.setTextLabelPosition (juce::Justification::centredLeft);
+    gcSettings.setColour (juce::GroupComponent::outlineColourId, globalLaF.ClSeperator);
+    gcSettings.setColour (juce::GroupComponent::textColourId, juce::Colours::white);
     gcSettings.setVisible(true);
 
     addAndMakeVisible(&slPreGain);
     slPreGainAttachment.reset (new SliderAttachment(valueTreeState,"preGain", slPreGain));
-    slPreGain.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slPreGain.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slPreGain.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
+    slPreGain.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slPreGain.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    slPreGain.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
     slPreGain.setTooltip("PreGain");
 
     addAndMakeVisible(&slAzimuth);
     slAzimuthAttachment.reset (new SliderAttachment(valueTreeState,"azimuth", slAzimuth));
-    slAzimuth.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slAzimuth.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
+    slAzimuth.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slAzimuth.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
     slAzimuth.setReverse(true);
-    slAzimuth.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
-    slAzimuth.setRotaryParameters(MathConstants<float>::pi, 3*MathConstants<float>::pi, false);
+    slAzimuth.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
+    slAzimuth.setRotaryParameters (juce::MathConstants<float>::pi, 3 * juce::MathConstants<float>::pi, false);
     slAzimuth.setTooltip("Azimuth angle of the spatial mask");
 
     addAndMakeVisible(&slElevation);
     slElevationAttachment.reset (new SliderAttachment(valueTreeState,"elevation", slElevation));
-    slElevation.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slElevation.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slElevation.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
-    slElevation.setRotaryParameters(0.5*MathConstants<float>::pi, 2.5*MathConstants<float>::pi, false);
+    slElevation.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slElevation.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    slElevation.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
+    slElevation.setRotaryParameters(0.5 * juce::MathConstants<float>::pi, 2.5 * juce::MathConstants<float>::pi, false);
     slElevation.setTooltip("Elevation angle of the spatial mask");
 
     addAndMakeVisible(&slWidth);
     slWidthAttachment.reset (new SliderAttachment(valueTreeState,"width", slWidth));
-    slWidth.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slWidth.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slWidth.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
+    slWidth.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slWidth.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    slWidth.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
     slWidth.setTooltip("Width of the spatial mask");
 
     addAndMakeVisible(&cbListen);
     cbListenAttachment.reset (new ComboBoxAttachment(valueTreeState,"listen", cbListen));
-    cbListen.setJustificationType(Justification::centred);
+    cbListen.setJustificationType (juce::Justification::centred);
     cbListen.addSectionHeading("Listen to");
     cbListen.addItem("Full", 1);
     cbListen.addItem("Masked", 2);
@@ -108,21 +108,21 @@ DirectionalCompressorAudioProcessorEditor::DirectionalCompressorAudioProcessorEd
 
     addAndMakeVisible(&gcC1);
     gcC1.setText("Compressor 1");
-    gcC1.setTextLabelPosition (Justification::centredLeft);
-    gcC1.setColour (GroupComponent::outlineColourId, globalLaF.ClSeperator);
-    gcC1.setColour (GroupComponent::textColourId, Colours::white);
+    gcC1.setTextLabelPosition (juce::Justification::centredLeft);
+    gcC1.setColour (juce::GroupComponent::outlineColourId, globalLaF.ClSeperator);
+    gcC1.setColour (juce::GroupComponent::textColourId, juce::Colours::white);
     gcC1.setVisible(true);
 
     addAndMakeVisible(&tbC1);
     tbC1Attachment.reset (new ButtonAttachment(valueTreeState,"c1Enabled",tbC1));
-    tbC1.setColour(ToggleButton::tickColourId, globalLaF.ClWidgetColours[0]);
+    tbC1.setColour (juce::ToggleButton::tickColourId, globalLaF.ClWidgetColours[0]);
     tbC1.setButtonText("ON/OFF");
     tbC1.setName("C1");
     tbC1.addListener(this);
 
     addAndMakeVisible(&cbC1Driving);
     cbC1DrivingAttachment.reset (new ComboBoxAttachment(valueTreeState,"c1DrivingSignal", cbC1Driving));
-    cbC1Driving.setJustificationType(Justification::centred);
+    cbC1Driving.setJustificationType (juce::Justification::centred);
     cbC1Driving.addSectionHeading("Driving signa");
     cbC1Driving.addItem("Full", 1);
     cbC1Driving.addItem("Masked", 2);
@@ -132,7 +132,7 @@ DirectionalCompressorAudioProcessorEditor::DirectionalCompressorAudioProcessorEd
 
     addAndMakeVisible(&cbC1Apply);
     cbC1ApplyAttachment.reset (new ComboBoxAttachment(valueTreeState,"c1Apply", cbC1Apply));
-    cbC1Apply.setJustificationType(Justification::centred);
+    cbC1Apply.setJustificationType (juce::Justification::centred);
     cbC1Apply.addSectionHeading("Apply to");
     cbC1Apply.addItem("Full", 1);
     cbC1Apply.addItem("Masked", 2);
@@ -142,58 +142,58 @@ DirectionalCompressorAudioProcessorEditor::DirectionalCompressorAudioProcessorEd
 
     addAndMakeVisible(&slC1Threshold);
     slC1ThresholdAttachment.reset (new SliderAttachment(valueTreeState,"c1Threshold", slC1Threshold));
-    slC1Threshold.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slC1Threshold.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slC1Threshold.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
+    slC1Threshold.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slC1Threshold.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    slC1Threshold.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
     slC1Threshold.setTextValueSuffix(" dB");
     slC1Threshold.setEnabled(isOn);
 
     addAndMakeVisible(&slC1Knee);
     slC1KneeAttachment.reset (new SliderAttachment(valueTreeState,"c1Knee", slC1Knee));
-    slC1Knee.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slC1Knee.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slC1Knee.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
+    slC1Knee.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slC1Knee.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    slC1Knee.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
     slC1Knee.setEnabled(isOn);
 
     addAndMakeVisible(&slC1Ratio);
     slC1RatioAttachment.reset (new SliderAttachment(valueTreeState,"c1Ratio", slC1Ratio));
-    slC1Ratio.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slC1Ratio.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slC1Ratio.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[3]);
+    slC1Ratio.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slC1Ratio.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    slC1Ratio.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[3]);
     slC1Ratio.setTextValueSuffix(" : 1");
     slC1Ratio.setEnabled(isOn);
 
     addAndMakeVisible(&slC1Attack);
     slC1AttackAttachment.reset (new SliderAttachment(valueTreeState,"c1Attack", slC1Attack));
-    slC1Attack.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slC1Attack.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slC1Attack.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
+    slC1Attack.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slC1Attack.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    slC1Attack.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
     slC1Attack.setTextValueSuffix(" ms");
     slC1Attack.setEnabled(isOn);
 
     addAndMakeVisible(&slC1Release);
     slC1ReleaseAttachment.reset (new SliderAttachment(valueTreeState,"c1Release", slC1Release));
-    slC1Release.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slC1Release.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slC1Release.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
+    slC1Release.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slC1Release.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    slC1Release.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
     slC1Release.setEnabled(isOn);
 
     addAndMakeVisible(&slC1Makeup);
     slC1MakeupAttachment.reset (new SliderAttachment(valueTreeState,"c1Makeup", slC1Makeup));
-    slC1Makeup.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slC1Makeup.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slC1Makeup.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
+    slC1Makeup.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slC1Makeup.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    slC1Makeup.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
     slC1Makeup.setEnabled(isOn);
 
     addAndMakeVisible(&dbC1GRmeter);
     dbC1GRmeter.setMinLevel(-25.0f);
-    dbC1GRmeter.setColour(Colours::red.withMultipliedAlpha(0.8f));
+    dbC1GRmeter.setColour(juce::Colours::red.withMultipliedAlpha(0.8f));
     dbC1GRmeter.setGainReductionMeter(true);
     dbC1GRmeter.setEnabled(isOn);
 
     addAndMakeVisible(&dbC1RMSmeter);
     dbC1RMSmeter.setMinLevel(-60.0f);
-    dbC1RMSmeter.setColour(Colours::green.withMultipliedAlpha(0.8f));
+    dbC1RMSmeter.setColour(juce::Colours::green.withMultipliedAlpha(0.8f));
     dbC1RMSmeter.setGainReductionMeter(false);
     dbC1RMSmeter.setEnabled(isOn);
 
@@ -226,21 +226,21 @@ DirectionalCompressorAudioProcessorEditor::DirectionalCompressorAudioProcessorEd
 
     addAndMakeVisible(&gcC2);
     gcC2.setText("Compressor 2");
-    gcC2.setTextLabelPosition (Justification::centredLeft);
-    gcC2.setColour (GroupComponent::outlineColourId, globalLaF.ClSeperator);
-    gcC2.setColour (GroupComponent::textColourId, Colours::white);
+    gcC2.setTextLabelPosition (juce::Justification::centredLeft);
+    gcC2.setColour (juce::GroupComponent::outlineColourId, globalLaF.ClSeperator);
+    gcC2.setColour (juce::GroupComponent::textColourId, juce::Colours::white);
     gcC2.setVisible(true);
 
     addAndMakeVisible(&tbC2);
     tbC2Attachment.reset (new ButtonAttachment(valueTreeState,"c2Enabled",tbC2));
-    tbC2.setColour(ToggleButton::tickColourId, globalLaF.ClWidgetColours[0]);
+    tbC2.setColour (juce::ToggleButton::tickColourId, globalLaF.ClWidgetColours[0]);
     tbC2.setButtonText("ON/OFF");
     tbC2.setName("C2");
     tbC2.addListener(this);
 
     addAndMakeVisible(&cbC2Driving);
     cbC2DrivingAttachment.reset (new ComboBoxAttachment(valueTreeState,"c2DrivingSignal", cbC2Driving));
-    cbC2Driving.setJustificationType(Justification::centred);
+    cbC2Driving.setJustificationType (juce::Justification::centred);
     cbC2Driving.addSectionHeading("Driving signal");
     cbC2Driving.addItem("Full", 1);
     cbC2Driving.addItem("Masked", 2);
@@ -250,7 +250,7 @@ DirectionalCompressorAudioProcessorEditor::DirectionalCompressorAudioProcessorEd
 
     addAndMakeVisible(&cbC2Apply);
     cbC2ApplyAttachment.reset (new ComboBoxAttachment(valueTreeState,"c2Apply", cbC2Apply));
-    cbC2Apply.setJustificationType(Justification::centred);
+    cbC2Apply.setJustificationType (juce::Justification::centred);
     cbC2Apply.addSectionHeading("Apply to");
     cbC2Apply.addItem("Full", 1);
     cbC2Apply.addItem("Masked", 2);
@@ -260,60 +260,60 @@ DirectionalCompressorAudioProcessorEditor::DirectionalCompressorAudioProcessorEd
 
     addAndMakeVisible(&slC2Threshold);
     slC2ThresholdAttachment.reset (new SliderAttachment(valueTreeState,"c2Threshold", slC2Threshold));
-    slC2Threshold.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slC2Threshold.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slC2Threshold.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
+    slC2Threshold.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slC2Threshold.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    slC2Threshold.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
     slC2Threshold.setTextValueSuffix(" dB");
     slC2Threshold.setEnabled(isOn);
 
     addAndMakeVisible(&slC2Knee);
     slC2KneeAttachment.reset (new SliderAttachment(valueTreeState,"c2Knee", slC2Knee));
-    slC2Knee.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slC2Knee.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slC2Knee.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
+    slC2Knee.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slC2Knee.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    slC2Knee.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
     slC2Knee.setEnabled(isOn);
 
     addAndMakeVisible(&slC2Ratio);
     slC2RatioAttachment.reset (new SliderAttachment(valueTreeState,"c2Ratio", slC2Ratio));
-    slC2Ratio.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slC2Ratio.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slC2Ratio.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[3]);
+    slC2Ratio.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slC2Ratio.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    slC2Ratio.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[3]);
     slC2Ratio.setTextValueSuffix(" : 1");
     slC2Ratio.setEnabled(isOn);
 
     addAndMakeVisible(&slC2Attack);
     slC2AttackAttachment.reset (new SliderAttachment(valueTreeState,"c2Attack", slC2Attack));
-    slC2Attack.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slC2Attack.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slC2Attack.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
+    slC2Attack.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slC2Attack.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    slC2Attack.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
     slC2Attack.setTextValueSuffix(" ms");
     slC2Attack.setEnabled(isOn);
 
     addAndMakeVisible(&slC2Release);
     slC2ReleaseAttachment.reset (new SliderAttachment(valueTreeState,"c2Release", slC2Release));
-    slC2Release.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slC2Release.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slC2Release.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
+    slC2Release.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slC2Release.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    slC2Release.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
     slC2Release.setTextValueSuffix(" ms");
     slC2Release.setEnabled(isOn);
 
     addAndMakeVisible(&slC2Makeup);
     slC2MakeupAttachment.reset (new SliderAttachment(valueTreeState,"c2Makeup", slC2Makeup));
-    slC2Makeup.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slC2Makeup.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slC2Makeup.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
+    slC2Makeup.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slC2Makeup.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    slC2Makeup.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
     slC2Makeup.setTextValueSuffix(" dB");
     slC2Makeup.setEnabled(isOn);
 
     addAndMakeVisible(&dbC2GRmeter);
     dbC2GRmeter.setMinLevel(-25.0f);
-    dbC2GRmeter.setColour(Colours::red.withMultipliedAlpha(0.8f));
+    dbC2GRmeter.setColour(juce::Colours::red.withMultipliedAlpha(0.8f));
     dbC2GRmeter.setGainReductionMeter(true);
     dbC2GRmeter.setEnabled(isOn);
 
     addAndMakeVisible(&dbC2RMSmeter);
     dbC2RMSmeter.setMinLevel(-60.0f);
-    dbC2RMSmeter.setColour(Colours::green.withMultipliedAlpha(0.8f));
+    dbC2RMSmeter.setColour(juce::Colours::green.withMultipliedAlpha(0.8f));
     dbC2RMSmeter.setGainReductionMeter(false);
     dbC2RMSmeter.setEnabled(isOn);
 
@@ -361,7 +361,7 @@ DirectionalCompressorAudioProcessorEditor::~DirectionalCompressorAudioProcessorE
 }
 
 
-void DirectionalCompressorAudioProcessorEditor::buttonStateChanged (Button* button)
+void DirectionalCompressorAudioProcessorEditor::buttonStateChanged (juce::Button* button)
 {
     bool isOn = button->getToggleState();
     if (button->getName() == "C1")
@@ -405,7 +405,7 @@ void DirectionalCompressorAudioProcessorEditor::buttonStateChanged (Button* butt
 };
 
 //==============================================================================
-void DirectionalCompressorAudioProcessorEditor::paint (Graphics& g)
+void DirectionalCompressorAudioProcessorEditor::paint (juce::Graphics& g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
     g.fillAll (globalLaF.ClBackground);
@@ -415,7 +415,7 @@ void DirectionalCompressorAudioProcessorEditor::timerCallback()
 {
     // === update titleBar widgets according to available input/output channel counts
     auto sizes = processor.getMaxSize();
-    sizes.first = jmin (sizes.first, sizes.second);
+    sizes.first = juce::jmin (sizes.first, sizes.second);
     sizes.second = sizes.first;
     title.setMaxSize (sizes);
     // ==========================================
@@ -443,20 +443,20 @@ void DirectionalCompressorAudioProcessorEditor::resized()
 //    const int sliderHeight = 60;
     const int sliderSpacing = 15;
 
-    Rectangle<int> area (getLocalBounds());
+    juce::Rectangle<int> area (getLocalBounds());
 
-    Rectangle<int> footerArea (area.removeFromBottom (footerHeight));
+    juce::Rectangle<int> footerArea (area.removeFromBottom (footerHeight));
     footer.setBounds(footerArea);
 
     area.removeFromLeft(leftRightMargin);
     area.removeFromRight(leftRightMargin);
-    Rectangle<int> headerArea = area.removeFromTop    (headerHeight);
+    juce::Rectangle<int> headerArea = area.removeFromTop    (headerHeight);
     title.setBounds (headerArea);
     area.removeFromTop(10);
 
-    Rectangle<int> temp; //work area
-    Rectangle<int> sliderRow;
-    Rectangle<int> comprRow;
+    juce::Rectangle<int> temp; //work area
+    juce::Rectangle<int> sliderRow;
+    juce::Rectangle<int> comprRow;
     comprRow = area.removeFromBottom(200);
 
     // ======== compressor 1
@@ -481,7 +481,7 @@ void DirectionalCompressorAudioProcessorEditor::resized()
 
         temp.removeFromTop(5);//spacing
 
-        //first Sliders
+        //first juce::Sliders
         sliderRow = temp.removeFromTop(60);
         slC1Threshold.setBounds(sliderRow.removeFromLeft(45));
         sliderRow.removeFromLeft(sliderSpacing);
@@ -498,7 +498,7 @@ void DirectionalCompressorAudioProcessorEditor::resized()
 
         temp.removeFromTop(5);//spacing
 
-        // next Sliders
+        // next juce::Sliders
         sliderRow = temp.removeFromTop(60);
         slC1Ratio.setBounds(sliderRow.removeFromLeft(45));
         sliderRow.removeFromLeft(sliderSpacing);
@@ -536,7 +536,7 @@ void DirectionalCompressorAudioProcessorEditor::resized()
 
         temp.removeFromTop(5);//spacing
 
-        //first Sliders
+        //first juce::Sliders
         sliderRow = temp.removeFromTop(60);
         slC2Threshold.setBounds(sliderRow.removeFromLeft(45));
         sliderRow.removeFromLeft(sliderSpacing);
@@ -553,7 +553,7 @@ void DirectionalCompressorAudioProcessorEditor::resized()
 
         temp.removeFromTop(5);//spacing
 
-        // next Sliders
+        // next juce::Sliders
         sliderRow = temp.removeFromTop(60);
         slC2Ratio.setBounds(sliderRow.removeFromLeft(45));
         sliderRow.removeFromLeft(sliderSpacing);

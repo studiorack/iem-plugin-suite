@@ -25,8 +25,8 @@
 
 
 //==============================================================================
-MultiEncoderAudioProcessorEditor::MultiEncoderAudioProcessorEditor (MultiEncoderAudioProcessor& p, AudioProcessorValueTreeState& vts)
-: AudioProcessorEditor (&p), footer (p.getOSCParameterInterface()), processor (p), valueTreeState(vts),
+MultiEncoderAudioProcessorEditor::MultiEncoderAudioProcessorEditor (MultiEncoderAudioProcessor& p, juce::AudioProcessorValueTreeState& vts)
+: juce::AudioProcessorEditor (&p), footer (p.getOSCParameterInterface()), processor (p), valueTreeState(vts),
 masterElement(*valueTreeState.getParameter("masterAzimuth"), valueTreeState.getParameterRange("masterAzimuth"),
               *valueTreeState.getParameter("masterElevation"), valueTreeState.getParameterRange("masterElevation")),
 encoderList (p, sphere, &vts),
@@ -41,14 +41,14 @@ lbGain (encoderList.getGainArray())
     sphere.addListener(this);
 
     sphere.addElement(&masterElement);
-    masterElement.setColour(Colours::black);
-    masterElement.setTextColour(Colours::white);
+    masterElement.setColour(juce::Colours::black);
+    masterElement.setTextColour(juce::Colours::white);
     masterElement.setLabel("M");
 
     // ======================================
 
     addAndMakeVisible(&title);
-    title.setTitle(String("Multi"),String("Encoder"));
+    title.setTitle(juce::String("Multi"),juce::String("Encoder"));
     title.setFont(globalLaF.robotoBold,globalLaF.robotoLight);
 
     addAndMakeVisible(&footer);
@@ -65,15 +65,15 @@ lbGain (encoderList.getGainArray())
 
     // ======================== Encoder group
     encoderGroup.setText("Encoder settings");
-    encoderGroup.setTextLabelPosition (Justification::centredLeft);
-    encoderGroup.setColour (GroupComponent::outlineColourId, globalLaF.ClSeperator);
-    encoderGroup.setColour (GroupComponent::textColourId, Colours::white);
+    encoderGroup.setTextLabelPosition (juce::Justification::centredLeft);
+    encoderGroup.setColour (juce::GroupComponent::outlineColourId, globalLaF.ClSeperator);
+    encoderGroup.setColour (juce::GroupComponent::textColourId, juce::Colours::white);
     addAndMakeVisible(&encoderGroup);
     encoderGroup.setVisible(true);
 
     addAndMakeVisible(tbImport);
     tbImport.setButtonText ("IMPORT");
-    tbImport.setColour (TextButton::buttonColourId, Colours::orange);
+    tbImport.setColour (juce::TextButton::buttonColourId, juce::Colours::orange);
     tbImport.setTooltip ("Imports sources from a configuration file.");
     tbImport.onClick = [&] () { importLayout(); };
 
@@ -82,35 +82,35 @@ lbGain (encoderList.getGainArray())
 
     // ====================== GRAB GROUP
     masterGroup.setText("Master");
-    masterGroup.setTextLabelPosition (Justification::centredLeft);
-    masterGroup.setColour (GroupComponent::outlineColourId, globalLaF.ClSeperator);
-    masterGroup.setColour (GroupComponent::textColourId, Colours::white);
+    masterGroup.setTextLabelPosition (juce::Justification::centredLeft);
+    masterGroup.setColour (juce::GroupComponent::outlineColourId, globalLaF.ClSeperator);
+    masterGroup.setColour (juce::GroupComponent::textColourId, juce::Colours::white);
     addAndMakeVisible(&masterGroup);
     masterGroup.setVisible(true);
 
     addAndMakeVisible(&slMasterAzimuth);
     slMasterAzimuthAttachment.reset (new SliderAttachment (valueTreeState, "masterAzimuth", slMasterAzimuth));
-    slMasterAzimuth.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slMasterAzimuth.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
+    slMasterAzimuth.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slMasterAzimuth.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
     slMasterAzimuth.setReverse(true);
-    slMasterAzimuth.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
-    slMasterAzimuth.setRotaryParameters(MathConstants<float>::pi, 3*MathConstants<float>::pi, false);
+    slMasterAzimuth.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
+    slMasterAzimuth.setRotaryParameters(juce::MathConstants<float>::pi, 3*juce::MathConstants<float>::pi, false);
     slMasterAzimuth.setTooltip("Master azimuth angle");
 
     addAndMakeVisible(&slMasterElevation);
     slMasterElevationAttachment.reset (new SliderAttachment (valueTreeState, "masterElevation", slMasterElevation));
-    slMasterElevation.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slMasterElevation.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slMasterElevation.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
-    slMasterElevation.setRotaryParameters(0.5*MathConstants<float>::pi, 2.5*MathConstants<float>::pi, false);
+    slMasterElevation.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slMasterElevation.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    slMasterElevation.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
+    slMasterElevation.setRotaryParameters(0.5*juce::MathConstants<float>::pi, 2.5*juce::MathConstants<float>::pi, false);
     slMasterElevation.setTooltip("Master elevation angle");
 
     addAndMakeVisible(&slMasterRoll);
     slMasterRollAttachment.reset (new SliderAttachment (valueTreeState, "masterRoll", slMasterRoll));
-    slMasterRoll.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slMasterRoll.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slMasterRoll.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
-    slMasterRoll.setRotaryParameters(MathConstants<float>::pi, 3*MathConstants<float>::pi, false);
+    slMasterRoll.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slMasterRoll.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    slMasterRoll.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
+    slMasterRoll.setRotaryParameters(juce::MathConstants<float>::pi, 3*juce::MathConstants<float>::pi, false);
     slMasterRoll.setTooltip("Master roll angle");
 
     addAndMakeVisible(&tbLockedToMaster);
@@ -152,7 +152,7 @@ MultiEncoderAudioProcessorEditor::~MultiEncoderAudioProcessorEditor()
 }
 
 //==============================================================================
-void MultiEncoderAudioProcessorEditor::paint (Graphics& g)
+void MultiEncoderAudioProcessorEditor::paint (juce::Graphics& g)
 {
     g.fillAll (globalLaF.ClBackground);
 }
@@ -203,7 +203,7 @@ void MultiEncoderAudioProcessorEditor::timerCallback()
     }
 }
 
-void MultiEncoderAudioProcessorEditor::mouseWheelOnSpherePannerMoved (SpherePanner* sphere, const MouseEvent &event, const MouseWheelDetails &wheel)
+void MultiEncoderAudioProcessorEditor::mouseWheelOnSpherePannerMoved (SpherePanner* sphere, const juce::MouseEvent &event, const juce::MouseWheelDetails &wheel)
 {
     if (event.mods.isCommandDown() && event.mods.isAltDown())
         slMasterRoll.mouseWheelMove(event, wheel);
@@ -218,23 +218,23 @@ void MultiEncoderAudioProcessorEditor::resized()
     const int leftRightMargin = 30;
     const int headerHeight = 60;
     const int footerHeight = 25;
-    Rectangle<int> area (getLocalBounds());
+    juce::Rectangle<int> area (getLocalBounds());
 
-    Rectangle<int> footerArea (area.removeFromBottom (footerHeight));
+    juce::Rectangle<int> footerArea (area.removeFromBottom (footerHeight));
     footer.setBounds(footerArea);
 
     area.removeFromLeft(leftRightMargin);
     area.removeFromRight(leftRightMargin);
-    Rectangle<int> headerArea = area.removeFromTop    (headerHeight);
+    juce::Rectangle<int> headerArea = area.removeFromTop    (headerHeight);
     title.setBounds (headerArea);
     area.removeFromTop(10);
     area.removeFromBottom(5);
 
-    Rectangle<int> sliderRow;
+    juce::Rectangle<int> sliderRow;
 
     // ============== SIDEBAR RIGHT ====================
     // =================================================
-    Rectangle<int> sideBarArea (area.removeFromRight(220));
+    juce::Rectangle<int> sideBarArea (area.removeFromRight(220));
     //const int sliderHeight = 15;
     const int rotSliderSpacing = 10;
     //const int sliderSpacing = 3;
@@ -243,8 +243,8 @@ void MultiEncoderAudioProcessorEditor::resized()
     //const int labelWidth = 20;
 
 
-    // -------------- Azimuth Elevation Roll Labels ------------------
-    Rectangle<int> yprArea (sideBarArea);
+    // -------------- Azimuth Elevation Roll juce::Labels ------------------
+    juce::Rectangle<int> yprArea (sideBarArea);
     encoderGroup.setBounds (yprArea);
     auto headlineArea = yprArea.removeFromTop (25); //for box headline
     tbImport.setBounds (headlineArea.removeFromRight (60).removeFromTop (15));
@@ -267,7 +267,7 @@ void MultiEncoderAudioProcessorEditor::resized()
     const int masterAreaHeight = 90;
     area.removeFromRight(10); // spacing
 
-    Rectangle<int> sphereArea (area);
+    juce::Rectangle<int> sphereArea (area);
     sphereArea.removeFromBottom(masterAreaHeight);
 
     if ((float)sphereArea.getWidth()/sphereArea.getHeight() > 1)
@@ -279,7 +279,7 @@ void MultiEncoderAudioProcessorEditor::resized()
     area.removeFromTop(sphereArea.getHeight());
 
     // ------------- Master Grabber ------------------------
-    Rectangle<int> masterArea (area.removeFromTop(masterAreaHeight));
+    juce::Rectangle<int> masterArea (area.removeFromTop(masterAreaHeight));
     masterGroup.setBounds (masterArea);
     masterArea.removeFromTop(25); //for box headline
 
@@ -304,24 +304,24 @@ void MultiEncoderAudioProcessorEditor::resized()
 
 void MultiEncoderAudioProcessorEditor::importLayout()
 {
-    FileChooser myChooser ("Load configuration...",
-                           processor.getLastDir().exists() ? processor.getLastDir() : File::getSpecialLocation (File::userHomeDirectory),
+    juce::FileChooser myChooser ("Load configuration...",
+                           processor.getLastDir().exists() ? processor.getLastDir() : juce::File::getSpecialLocation (juce::File::userHomeDirectory),
                            "*.json");
     if (myChooser.browseForFileToOpen())
     {
-        File configFile (myChooser.getResult());
+        juce::File configFile (myChooser.getResult());
         processor.setLastDir (configFile.getParentDirectory());
         auto result = processor.loadConfiguration (configFile);
 
         if (! result.wasOk())
         {
-            auto* component = new TextEditor();
+            auto* component = new juce::TextEditor();
             component->setMultiLine (true, true);
             component->setReadOnly (true);
             component->setText (result.getErrorMessage());
             component->setSize (200, 110);
 
-            CallOutBox& myBox = CallOutBox::launchAsynchronously (component, tbImport.getBounds(), this);
+            auto& myBox = juce::CallOutBox::launchAsynchronously (component, tbImport.getBounds(), this);
             myBox.setLookAndFeel (&getLookAndFeel());
         }
     }

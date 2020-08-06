@@ -31,9 +31,9 @@ DistanceCompensatorAudioProcessor::DistanceCompensatorAudioProcessor()
                       BusesProperties()
 #if ! JucePlugin_IsMidiEffect
 #if ! JucePlugin_IsSynth
-                  .withInput  ("Input",  AudioChannelSet::discreteChannels(10), true)
+                  .withInput  ("Input",  juce::AudioChannelSet::discreteChannels(10), true)
 #endif
-                  .withOutput ("Output", AudioChannelSet::discreteChannels(64), true)
+                  .withOutput ("Output", juce::AudioChannelSet::discreteChannels(64), true)
 #endif
                   ,
 #endif
@@ -60,22 +60,22 @@ createParameterLayout())
 
     for (int i = 0; i < 64; ++i)
     {
-        enableCompensation[i] = parameters.getRawParameterValue ("enableCompensation" + String (i));
-        parameters.addParameterListener ("enableCompensation" + String (i), this);
+        enableCompensation[i] = parameters.getRawParameterValue ("enableCompensation" + juce::String (i));
+        parameters.addParameterListener ("enableCompensation" + juce::String (i), this);
 
-        distance[i] = parameters.getRawParameterValue ("distance" + String (i));
-        parameters.addParameterListener ("distance" + String (i), this);
+        distance[i] = parameters.getRawParameterValue ("distance" + juce::String (i));
+        parameters.addParameterListener ("distance" + juce::String (i), this);
     }
 
     // global properties
-    PropertiesFile::Options options;
+    juce::PropertiesFile::Options options;
     options.applicationName     = "DistanceCompensator";
     options.filenameSuffix      = "settings";
     options.folderName          = "IEM";
     options.osxLibrarySubFolder = "Preferences";
 
-    properties.reset (new PropertiesFile (options));
-    lastDir = File (properties->getValue ("presetFolder"));
+    properties.reset (new juce::PropertiesFile (options));
+    lastDir = juce::File (properties->getValue ("presetFolder"));
 
     tempValues.resize(64);
 }
@@ -88,7 +88,7 @@ DistanceCompensatorAudioProcessor::~DistanceCompensatorAudioProcessor()
 float DistanceCompensatorAudioProcessor::distanceToGainInDecibels (const float distance)
 {
     jassert(distance >= 1.0f);
-    const float gainInDecibels = Decibels::gainToDecibels (1.0f / pow(distance, *distanceExponent));
+    const float gainInDecibels = juce::Decibels::gainToDecibels (1.0f / pow(distance, *distanceExponent));
     return gainInDecibels;
 }
 
@@ -99,23 +99,23 @@ float DistanceCompensatorAudioProcessor::distanceToDelayInSeconds (const float d
     return delayInSeconds;
 }
 
-void DistanceCompensatorAudioProcessor::setLastDir(File newLastDir)
+void DistanceCompensatorAudioProcessor::setLastDir(juce::File newLastDir)
 {
     lastDir = newLastDir;
-    const var v (lastDir.getFullPathName());
+    const juce::var v (lastDir.getFullPathName());
     properties->setValue ("presetFolder", v);
 }
 
-void DistanceCompensatorAudioProcessor::loadConfiguration (const File& configFile)
+void DistanceCompensatorAudioProcessor::loadConfiguration (const juce::File& configFile)
 {
-    ValueTree loudspeakers {"Loudspeakers"};
+    juce::ValueTree loudspeakers {"Loudspeakers"};
 
-    Result result = ConfigurationHelper::parseFileForLoudspeakerLayout (configFile, loudspeakers, nullptr);
+    juce::Result result = ConfigurationHelper::parseFileForLoudspeakerLayout (configFile, loudspeakers, nullptr);
     if (!result.wasOk())
     {
         DBG("Configuration could not be loaded.");
         MailBox::Message newMessage;
-        newMessage.messageColour = Colours::red;
+        newMessage.messageColour = juce::Colours::red;
         newMessage.headline = "Error loading configuration";
         newMessage.text = result.getErrorMessage();
         messageToEditor = newMessage;
@@ -140,7 +140,7 @@ void DistanceCompensatorAudioProcessor::loadConfiguration (const File& configFil
             const float elevation = lsp.getProperty("Elevation");
             const int channel = lsp.getProperty("Channel");
 
-            const Vector3D<float> cart = Conversions<float>::sphericalToCartesian(degreesToRadians(azimuth), degreesToRadians(elevation), radius);
+            const juce::Vector3D<float> cart = Conversions<float>::sphericalToCartesian(juce::degreesToRadians(azimuth), juce::degreesToRadians(elevation), radius);
             loadedLoudspeakerPositions.add({cart, channel});
             if (channel > maxChannel)
                 maxChannel = channel;
@@ -169,12 +169,12 @@ void DistanceCompensatorAudioProcessor::setCurrentProgram (int index)
 {
 }
 
-const String DistanceCompensatorAudioProcessor::getProgramName (int index)
+const juce::String DistanceCompensatorAudioProcessor::getProgramName (int index)
 {
     return {};
 }
 
-void DistanceCompensatorAudioProcessor::changeProgramName (int index, const String& newName)
+void DistanceCompensatorAudioProcessor::changeProgramName (int index, const juce::String& newName)
 {
 }
 
@@ -183,7 +183,7 @@ void DistanceCompensatorAudioProcessor::prepareToPlay (double sampleRate, int sa
 {
     checkInputAndOutput(this, *inputChannelsSetting, 0, true);
 
-    ProcessSpec specs;
+    juce::dsp::ProcessSpec specs;
     specs.sampleRate = sampleRate;
     specs.maximumBlockSize = samplesPerBlock;
     specs.numChannels = 64;
@@ -201,10 +201,10 @@ void DistanceCompensatorAudioProcessor::releaseResources()
     // spare memory, etc.
 }
 
-void DistanceCompensatorAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
+void DistanceCompensatorAudioProcessor::processBlock (juce::AudioSampleBuffer& buffer, juce::MidiBuffer& midiMessages)
 {
     checkInputAndOutput(this, *inputChannelsSetting, 0, false);
-    ScopedNoDenormals noDenormals;
+    juce::ScopedNoDenormals noDenormals;
 
     const int totalNumInputChannels  = getTotalNumInputChannels();
     const int totalNumOutputChannels = getTotalNumOutputChannels();
@@ -212,8 +212,8 @@ void DistanceCompensatorAudioProcessor::processBlock (AudioSampleBuffer& buffer,
     for (int i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    AudioBlock<float> ab (buffer);
-    ProcessContextReplacing<float> context (ab);
+    juce::dsp::AudioBlock<float> ab (buffer);
+    juce::dsp::ProcessContextReplacing<float> context (ab);
 
     if (*enableGains > 0.5f)
         gain.process (context);
@@ -227,20 +227,20 @@ bool DistanceCompensatorAudioProcessor::hasEditor() const
     return true; // (change this to false if you choose to not supply an editor)
 }
 
-AudioProcessorEditor* DistanceCompensatorAudioProcessor::createEditor()
+juce::AudioProcessorEditor* DistanceCompensatorAudioProcessor::createEditor()
 {
     return new DistanceCompensatorAudioProcessorEditor (*this, parameters);
 }
 
 //==============================================================================
-void DistanceCompensatorAudioProcessor::getStateInformation (MemoryBlock& destData)
+void DistanceCompensatorAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
   auto state = parameters.copyState();
 
   auto oscConfig = state.getOrCreateChildWithName ("OSCConfig", nullptr);
   oscConfig.copyPropertiesFrom (oscParameterInterface.getConfig(), nullptr);
 
-  std::unique_ptr<XmlElement> xml (state.createXml());
+  std::unique_ptr<juce::XmlElement> xml (state.createXml());
   copyXmlToBinary (*xml, destData);
 }
 
@@ -250,15 +250,15 @@ void DistanceCompensatorAudioProcessor::setStateInformation (const void* data, i
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
-    std::unique_ptr<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
+    std::unique_ptr<juce::XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
     if (xmlState != nullptr)
         if (xmlState->hasTagName (parameters.state.getType()))
         {
-            parameters.state = ValueTree::fromXml (*xmlState);
+            parameters.state = juce::ValueTree::fromXml (*xmlState);
             loadedLoudspeakerPositions.clear();
             if (parameters.state.hasProperty ("OSCPort")) // legacy
             {
-                oscParameterInterface.getOSCReceiver().connect (parameters.state.getProperty ("OSCPort", var (-1)));
+                oscParameterInterface.getOSCReceiver().connect (parameters.state.getProperty ("OSCPort", juce::var (-1)));
                 parameters.state.removeProperty ("OSCPort", nullptr);
             }
 
@@ -270,7 +270,7 @@ void DistanceCompensatorAudioProcessor::setStateInformation (const void* data, i
 }
 
 //==============================================================================
-void DistanceCompensatorAudioProcessor::parameterChanged (const String &parameterID, float newValue)
+void DistanceCompensatorAudioProcessor::parameterChanged (const juce::String &parameterID, float newValue)
 {
     DBG("Parameter with ID " << parameterID << " has changed. New value: " << newValue);
 
@@ -309,7 +309,7 @@ void DistanceCompensatorAudioProcessor::updateDelays()
 
     tempValues.clearQuick();
 
-    const int selected = roundToInt (inputChannelsSetting->load());
+    const int selected = juce::roundToInt (inputChannelsSetting->load());
     int nCh;
     if (selected > 0)
         nCh = selected;
@@ -323,7 +323,7 @@ void DistanceCompensatorAudioProcessor::updateDelays()
     }
 
     const int nActive = tempValues.size();
-    const float maxDelay = FloatVectorOperations::findMaximum (tempValues.getRawDataPointer(), nActive);
+    const float maxDelay = juce::FloatVectorOperations::findMaximum (tempValues.getRawDataPointer(), nActive);
 
     for (int i = 0; i < nCh; ++i)
     {
@@ -341,7 +341,7 @@ void DistanceCompensatorAudioProcessor::updateGains()
     tempValues.clearQuick();
 
 
-    const int selected = roundToInt (inputChannelsSetting->load());
+    const int selected = juce::roundToInt (inputChannelsSetting->load());
     int nCh;
     if (selected > 0)
         nCh = selected;
@@ -355,7 +355,7 @@ void DistanceCompensatorAudioProcessor::updateGains()
     }
     const int nActive = tempValues.size();
 
-    const float minGain = FloatVectorOperations::findMinimum (tempValues.getRawDataPointer(), nActive);
+    const float minGain = juce::FloatVectorOperations::findMinimum (tempValues.getRawDataPointer(), nActive);
 
     float ref = 0.0f;
     if (*gainNormalization >= 0.5f) // zero mean
@@ -391,7 +391,7 @@ void DistanceCompensatorAudioProcessor::updateParameters()
     {
         DBG("No loudspeakers loaded.");
         MailBox::Message newMessage;
-        newMessage.messageColour = Colours::red;
+        newMessage.messageColour = juce::Colours::red;
         newMessage.headline = "Can't update reference position.";
         newMessage.text = "The reference position can only be updated, if a loudspeaker layout has been loaded. An already loaded layout will vanish every time the session is reloaded.";
         messageToEditor = newMessage;
@@ -403,19 +403,19 @@ void DistanceCompensatorAudioProcessor::updateParameters()
 
     for (int i = 0; i < 64; ++i)
     {
-        parameters.getParameter ("enableCompensation" + String (i))->setValueNotifyingHost (0.0f);
-        parameters.getParameter ("distance" + String (i))->setValueNotifyingHost (0.0f);
+        parameters.getParameter ("enableCompensation" + juce::String (i))->setValueNotifyingHost (0.0f);
+        parameters.getParameter ("distance" + juce::String (i))->setValueNotifyingHost (0.0f);
     }
 
-    const Vector3D<float> reference {*referenceX, *referenceY, *referenceZ};
+    const juce::Vector3D<float> reference {*referenceX, *referenceY, *referenceZ};
 
     for (int i = 0; i < nLsp; ++i)
     {
         auto lsp = loadedLoudspeakerPositions.getReference(i);
-        const float radius = jmax(1.0f, (lsp.position - reference).length());
+        const float radius = juce::jmax(1.0f, (lsp.position - reference).length());
 
-        parameters.getParameter ("enableCompensation" + String (lsp.channel - 1))->setValueNotifyingHost (1.0f);
-        parameters.getParameter ("distance" + String (lsp.channel - 1))->setValueNotifyingHost (parameters.getParameterRange ("distance" + String (lsp.channel - 1)).convertTo0to1 (radius));
+        parameters.getParameter ("enableCompensation" + juce::String (lsp.channel - 1))->setValueNotifyingHost (1.0f);
+        parameters.getParameter ("distance" + juce::String (lsp.channel - 1))->setValueNotifyingHost (parameters.getParameterRange ("distance" + juce::String (lsp.channel - 1)).convertTo0to1 (radius));
     }
 
 
@@ -436,20 +436,20 @@ void DistanceCompensatorAudioProcessor::updateBuffers()
 
 
 //==============================================================================
-const bool DistanceCompensatorAudioProcessor::processNotYetConsumedOSCMessage (const OSCMessage &message)
+const bool DistanceCompensatorAudioProcessor::processNotYetConsumedOSCMessage (const juce::OSCMessage &message)
 {
-    String prefix ("/" + String (JucePlugin_Name));
+    juce::String prefix ("/" + juce::String (JucePlugin_Name));
     if (! message.getAddressPattern().toString().startsWith (prefix))
         return false;
 
-    OSCMessage msg (message);
-    msg.setAddressPattern (message.getAddressPattern().toString().substring (String (JucePlugin_Name).length() + 1));
+    juce::OSCMessage msg (message);
+    msg.setAddressPattern (message.getAddressPattern().toString().substring (juce::String (JucePlugin_Name).length() + 1));
 
     if (msg.getAddressPattern().toString ().equalsIgnoreCase ("/loadFile") && msg.size() >= 1)
     {
         if (msg[0].isString ())
         {
-            File fileToLoad (msg[0].getString ());
+            juce::File fileToLoad (msg[0].getString ());
             loadConfiguration (fileToLoad);
         }
         return true;
@@ -466,69 +466,69 @@ const bool DistanceCompensatorAudioProcessor::processNotYetConsumedOSCMessage (c
 
 
 //==============================================================================
-std::vector<std::unique_ptr<RangedAudioParameter>> DistanceCompensatorAudioProcessor::createParameterLayout()
+std::vector<std::unique_ptr<juce::RangedAudioParameter>> DistanceCompensatorAudioProcessor::createParameterLayout()
 {
     // add your audio parameters here
-    std::vector<std::unique_ptr<RangedAudioParameter>> params;
+    std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
 
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("inputChannelsSetting", "Number of input channels ", "",
-                                     NormalisableRange<float> (0.0f, 64.0f, 1.0f), 0.0f,
-                                     [](float value) {return value < 0.5f ? "Auto" : String (value);}, nullptr));
+                                     juce::NormalisableRange<float> (0.0f, 64.0f, 1.0f), 0.0f,
+                                     [](float value) {return value < 0.5f ? "Auto" : juce::String (value);}, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("enableGains", "Enable Gain Compensation", "",
-                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
+                                     juce::NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value) {
                                          if (value >= 0.5f) return "Yes";
                                          else return "No";
                                      }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("enableDelays", "Enable Delay Compensation", "",
-                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
+                                     juce::NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value) {
                                          if (value >= 0.5f) return "Yes";
                                          else return "No";
                                      }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("speedOfSound", "Speed of Sound", "m/s",
-                                     NormalisableRange<float> (330.0, 350.0, 0.1f), 343.2f,
-                                     [](float value) {return String (value, 1);}, nullptr));
+                                     juce::NormalisableRange<float> (330.0, 350.0, 0.1f), 343.2f,
+                                     [](float value) {return juce::String (value, 1);}, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("distanceExponent", "Distance-Gain Exponent", "",
-                                     NormalisableRange<float> (0.5f, 1.5f, 0.1f), 1.0f,
-                                     [](float value) {return String (value, 1);}, nullptr));
+                                     juce::NormalisableRange<float> (0.5f, 1.5f, 0.1f), 1.0f,
+                                     [](float value) {return juce::String (value, 1);}, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("gainNormalization", "Gain Normalization", "",
-                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
+                                     juce::NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
                                      [](float value) {
                                          if (value >= 0.5f) return "Zero-mean";
                                          else return "Attenuation only";
                                      }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("referenceX", "Reference position x", "m",
-                                     NormalisableRange<float> (-20.0f, 20.0f, 0.01f), 0.0f,
-                                     [](float value) {return String (value, 2);}, nullptr));
+                                     juce::NormalisableRange<float> (-20.0f, 20.0f, 0.01f), 0.0f,
+                                     [](float value) {return juce::String (value, 2);}, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("referenceY", "Reference position x", "m",
-                                     NormalisableRange<float> (-20.0f, 20.0f, 0.01f), 0.0f,
-                                     [](float value) {return String (value, 2);}, nullptr));
+                                     juce::NormalisableRange<float> (-20.0f, 20.0f, 0.01f), 0.0f,
+                                     [](float value) {return juce::String (value, 2);}, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("referenceZ", "Reference position x", "m",
-                                     NormalisableRange<float> (-20.0f, 20.0f, 0.01f), 0.0f,
-                                     [](float value) {return String (value, 2);}, nullptr));
+                                     juce::NormalisableRange<float> (-20.0f, 20.0f, 0.01f), 0.0f,
+                                     [](float value) {return juce::String (value, 2);}, nullptr));
 
     for (int i = 0; i < 64; ++i)
     {
-        params.push_back (OSCParameterInterface::createParameterTheOldWay ("enableCompensation" + String (i), "Enable Compensation of loudspeaker " + String (i + 1), "",
-                                        NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
+        params.push_back (OSCParameterInterface::createParameterTheOldWay ("enableCompensation" + juce::String (i), "Enable Compensation of loudspeaker " + juce::String (i + 1), "",
+                                        juce::NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                         [](float value) {
                                             if (value >= 0.5f) return "ON";
                                             else return "OFF";
                                         }, nullptr));
 
-        params.push_back (OSCParameterInterface::createParameterTheOldWay ("distance" + String (i), "Distance of loudspeaker " + String (i + 1), "m",
-                                        NormalisableRange<float> (1.0f, 50.0f, 0.01f), 5.0f,
-                                        [](float value) {return String (value, 2);}, nullptr));
+        params.push_back (OSCParameterInterface::createParameterTheOldWay ("distance" + juce::String (i), "Distance of loudspeaker " + juce::String (i + 1), "m",
+                                        juce::NormalisableRange<float> (1.0f, 50.0f, 0.01f), 5.0f,
+                                        [](float value) {return juce::String (value, 2);}, nullptr));
     }
 
     return params;
@@ -537,7 +537,7 @@ std::vector<std::unique_ptr<RangedAudioParameter>> DistanceCompensatorAudioProce
 
 //==============================================================================
 // This creates new instances of the plugin..
-AudioProcessor* JUCE_CALLTYPE createPluginFilter()
+juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new DistanceCompensatorAudioProcessor();
 }

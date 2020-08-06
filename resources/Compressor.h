@@ -21,6 +21,8 @@
  */
 
 #pragma once
+namespace iem
+{
 
 class Compressor
 {
@@ -104,7 +106,7 @@ public:
         if (overShoot <= -kneeHalf)
             overShoot = 0.0f; //y_G = levelInDecibels;
         else if (overShoot > -kneeHalf && overShoot <= kneeHalf)
-            overShoot = 0.5f * slope * square(overShoot + kneeHalf) / knee; //y_G = levelInDecibels + 0.5f * slope * square(overShoot + kneeHalf) / knee;
+            overShoot = 0.5f * slope * juce::square (overShoot + kneeHalf) / knee; //y_G = levelInDecibels + 0.5f * slope * square(overShoot + kneeHalf) / knee;
         else
             overShoot = slope * overShoot;
     }
@@ -115,7 +117,7 @@ public:
         for (int i = 0; i < numSamples; ++i)
         {
             // convert sample to decibels
-            float levelInDecibels =  Decibels::gainToDecibels(abs(sideChainSignal[i]));
+            float levelInDecibels =  juce::Decibels::gainToDecibels(abs(sideChainSignal[i]));
             if (levelInDecibels > maxLevel)
                 maxLevel = levelInDecibels;
             // calculate overshoot and apply knee and ratio
@@ -129,7 +131,7 @@ public:
             else
                 state += alphaRelease * diff;
 
-            destination[i] = Decibels::decibelsToGain(state + makeUpGain);
+            destination[i] = juce::Decibels::decibelsToGain(state + makeUpGain);
         }
     }
 
@@ -139,7 +141,7 @@ public:
         for (int i = 0; i < numSamples; ++i)
         {
             // convert sample to decibels
-            float levelInDecibels =  Decibels::gainToDecibels(abs(sideChainSignal[i]));
+            float levelInDecibels =  juce::Decibels::gainToDecibels(abs(sideChainSignal[i]));
             if (levelInDecibels > maxLevel)
                 maxLevel = levelInDecibels;
             // calculate overshoot and apply knee and ratio
@@ -187,9 +189,11 @@ private:
 
     float maxLevel {-INFINITY};
 
-    //state variable
+    //state juce::variable
     float state {0.0f};
 
     double alphaAttack;
     double alphaRelease;
 };
+
+} // namespace iem

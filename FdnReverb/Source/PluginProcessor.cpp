@@ -30,9 +30,9 @@ FdnReverbAudioProcessor::FdnReverbAudioProcessor()
                   BusesProperties()
 #if ! JucePlugin_IsMidiEffect
 #if ! JucePlugin_IsSynth
-                 .withInput  ("Input",  AudioChannelSet::discreteChannels(64), true)
+                 .withInput  ("Input",  juce::AudioChannelSet::discreteChannels(64), true)
 #endif
-                 .withOutput ("Output", AudioChannelSet::discreteChannels(64), true)
+                 .withOutput ("Output", juce::AudioChannelSet::discreteChannels(64), true)
 #endif
                  ,
 #endif
@@ -87,16 +87,16 @@ void FdnReverbAudioProcessor::setCurrentProgram (int index)
 {
 }
 
-const String FdnReverbAudioProcessor::getProgramName (int index)
+const juce::String FdnReverbAudioProcessor::getProgramName (int index)
 {
     return {};
 }
 
-void FdnReverbAudioProcessor::changeProgramName (int index, const String& newName)
+void FdnReverbAudioProcessor::changeProgramName (int index, const juce::String& newName)
 {
 }
 
-void FdnReverbAudioProcessor::parameterChanged (const String & parameterID, float newValue)
+void FdnReverbAudioProcessor::parameterChanged (const juce::String & parameterID, float newValue)
 {
 	if (parameterID == "delayLength")
 	{
@@ -121,7 +121,7 @@ void FdnReverbAudioProcessor::parameterChanged (const String & parameterID, floa
         fdn.setFdnSize (size);
         fdnFade.setFdnSize (size);
 
-        ProcessSpec spec;
+        juce::dsp::ProcessSpec spec;
         spec.sampleRate = getSampleRate();
         spec.maximumBlockSize = getBlockSize();
         spec.numChannels = 64;
@@ -142,11 +142,11 @@ void FdnReverbAudioProcessor::updateFilterParameters()
 
     lowShelf.frequency = *lowCutoff;
     lowShelf.q = *lowQ;
-    lowShelf.linearGain = Decibels::decibelsToGain (lowGain->load());
+    lowShelf.linearGain = juce::Decibels::decibelsToGain (lowGain->load());
 
     highShelf.frequency = *highCutoff;
     highShelf.q = *highQ;
-    highShelf.linearGain = Decibels::decibelsToGain (highGain->load());
+    highShelf.linearGain = juce::Decibels::decibelsToGain (highGain->load());
 
     fdn.setFilterParameter (lowShelf, highShelf);
 	fdnFade.setFilterParameter(lowShelf, highShelf);
@@ -159,7 +159,7 @@ void FdnReverbAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBl
 	copyBuffer.setSize(64, samplesPerBlock);
 	copyBuffer.clear();
 
-    ProcessSpec spec;
+    juce::dsp::ProcessSpec spec;
     spec.sampleRate = sampleRate;
     spec.maximumBlockSize = samplesPerBlock;
     spec.numChannels = 64;
@@ -184,7 +184,7 @@ void FdnReverbAudioProcessor::reset()
 }
 
 //------------------------------------------------------------------------------
-void FdnReverbAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& midiMessages)
+void FdnReverbAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
 	const int nChannels = buffer.getNumChannels();
 	const int nSamples = buffer.getNumSamples();
@@ -197,11 +197,11 @@ void FdnReverbAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuff
 			copyBuffer.copyFrom(i, 0, buffer, i, 0, nSamples);
 		}
 
-		dsp::AudioBlock<float> blockFade(copyBuffer.getArrayOfWritePointers(), nChannels, nSamples);
-		fdnFade.process(dsp::ProcessContextReplacing<float>(blockFade));
+		juce::dsp::AudioBlock<float> blockFade(copyBuffer.getArrayOfWritePointers(), nChannels, nSamples);
+		fdnFade.process(juce::dsp::ProcessContextReplacing<float>(blockFade));
 	}
-	dsp::AudioBlock<float> block (buffer);
-    fdn.process (dsp::ProcessContextReplacing<float> (block));
+	juce::dsp::AudioBlock<float> block (buffer);
+    fdn.process (juce::dsp::ProcessContextReplacing<float> (block));
 
 	if (*fadeInTime != 0.0f)
 	{
@@ -238,33 +238,33 @@ bool FdnReverbAudioProcessor::hasEditor() const
     return true; // (change this to false if you choose to not supply an editor)
 }
 
-AudioProcessorEditor* FdnReverbAudioProcessor::createEditor()
+juce::AudioProcessorEditor* FdnReverbAudioProcessor::createEditor()
 {
     return new FdnReverbAudioProcessorEditor (*this, parameters);
 }
 
 //==============================================================================
-void FdnReverbAudioProcessor::getStateInformation (MemoryBlock &destData)
+void FdnReverbAudioProcessor::getStateInformation (juce::MemoryBlock &destData)
 {
     auto state = parameters.copyState();
 
     auto oscConfig = state.getOrCreateChildWithName ("OSCConfig", nullptr);
     oscConfig.copyPropertiesFrom (oscParameterInterface.getConfig(), nullptr);
 
-    std::unique_ptr<XmlElement> xml (state.createXml());
+    std::unique_ptr<juce::XmlElement> xml (state.createXml());
     copyXmlToBinary (*xml, destData);
 }
 
 void FdnReverbAudioProcessor::setStateInformation (const void *data, int sizeInBytes)
 {
-    std::unique_ptr<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
+    std::unique_ptr<juce::XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
     if (xmlState.get() != nullptr)
         if (xmlState->hasTagName (parameters.state.getType()))
         {
-            parameters.replaceState (ValueTree::fromXml (*xmlState));
+            parameters.replaceState (juce::ValueTree::fromXml (*xmlState));
             if (parameters.state.hasProperty ("OSCPort")) // legacy
             {
-                oscParameterInterface.getOSCReceiver().connect (parameters.state.getProperty ("OSCPort", var (-1)));
+                oscParameterInterface.getOSCReceiver().connect (parameters.state.getProperty ("OSCPort", juce::var (-1)));
                 parameters.state.removeProperty ("OSCPort", nullptr);
             }
 
@@ -276,66 +276,66 @@ void FdnReverbAudioProcessor::setStateInformation (const void *data, int sizeInB
 
 
 //==============================================================================
-std::vector<std::unique_ptr<RangedAudioParameter>> FdnReverbAudioProcessor::createParameterLayout()
+std::vector<std::unique_ptr<juce::RangedAudioParameter>> FdnReverbAudioProcessor::createParameterLayout()
 {
     // add your audio parameters here
-    std::vector<std::unique_ptr<RangedAudioParameter>> params;
+    std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
 
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("delayLength", "Room Size", "",
-                                     NormalisableRange<float> (1.0f, 30.0f, 1.0f), 20.0f,
-                                     [](float value) {return String (value, 0);},
+                                     juce::NormalisableRange<float> (1.0f, 30.0f, 1.0f), 20.0f,
+                                     [](float value) {return juce::String (value, 0);},
                                      nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("revTime", "Reverberation Time", "s",
-                                     NormalisableRange<float> (0.1f, 9.0f, 0.1f), 5.f,
-                                     [](float value) {return String (value, 1);},
+                                     juce::NormalisableRange<float> (0.1f, 9.0f, 0.1f), 5.f,
+                                     [](float value) {return juce::String (value, 1);},
                                      nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("lowCutoff", "Lows Cutoff Frequency", "Hz",
-                                     NormalisableRange<float> (20.f, 20000.f, 1.f, 0.2f), 100.f,
-                                     [](float value) {return String (value, 0);},
+                                     juce::NormalisableRange<float> (20.f, 20000.f, 1.f, 0.2f), 100.f,
+                                     [](float value) {return juce::String (value, 0);},
                                      nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("lowQ", "Lows Q Factor", "",
-                                     NormalisableRange<float> (0.01f, 0.9f, 0.01f), 0.5f,
-                                     [](float value) {return String (value, 2);},
+                                     juce::NormalisableRange<float> (0.01f, 0.9f, 0.01f), 0.5f,
+                                     [](float value) {return juce::String (value, 2);},
                                      nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("lowGain",
                                      "Lows Gain", "dB/s",
-                                     NormalisableRange<float> (-80.0f, 6.0, 0.1f), 1.f,
-                                     [](float value) {return String (value, 1);},
+                                     juce::NormalisableRange<float> (-80.0f, 6.0, 0.1f), 1.f,
+                                     [](float value) {return juce::String (value, 1);},
                                      nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("highCutoff", "Highs Cutoff Frequency", "Hz",
-                                     NormalisableRange<float> (20.f, 20000.f, 1.f, 0.2f), 2000.f,
-                                     [](float value) {return String (value, 0);},
+                                     juce::NormalisableRange<float> (20.f, 20000.f, 1.f, 0.2f), 2000.f,
+                                     [](float value) {return juce::String (value, 0);},
                                      nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("highQ", "Highs Q Factor", "",
-                                     NormalisableRange<float> (0.01f, 0.9f, 0.01f), 0.5f,
-                                     [](float value) {return String (value, 2);},
+                                     juce::NormalisableRange<float> (0.01f, 0.9f, 0.01f), 0.5f,
+                                     [](float value) {return juce::String (value, 2);},
                                      nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("highGain",
                                      "Highs Gain", "dB/s",
-                                     NormalisableRange<float> (-80.0f, 4.0f, 0.1f), -10.f,
-                                     [](float value) {return String (value, 1);},
+                                     juce::NormalisableRange<float> (-80.0f, 4.0f, 0.1f), -10.f,
+                                     [](float value) {return juce::String (value, 1);},
                                      nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("dryWet", "Dry/Wet", "",
-                                     NormalisableRange<float> (0.f, 1.f, 0.01f), 0.5f,
-                                     [](float value) {return String (value, 2);},
+                                     juce::NormalisableRange<float> (0.f, 1.f, 0.01f), 0.5f,
+                                     [](float value) {return juce::String (value, 2);},
                                      nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("fadeInTime", "Fade-in Time", "s",
-                                     NormalisableRange<float> (0.0f, 9.0f, 0.01f), 0.f,
-                                     [](float value) {return String(value, 2);},
+                                     juce::NormalisableRange<float> (0.0f, 9.0f, 0.01f), 0.f,
+                                     [](float value) {return juce::String(value, 2);},
                                      nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("fdnSize", "Fdn Size (internal)", "",
-                                     NormalisableRange<float> (0.0f, 2.0f, 1.0f), 2.0f,
+                                     juce::NormalisableRange<float> (0.0f, 2.0f, 1.0f), 2.0f,
                                      [](float value) {
                                          if (value == 0.0f)
                                              return "16";
@@ -351,7 +351,7 @@ std::vector<std::unique_ptr<RangedAudioParameter>> FdnReverbAudioProcessor::crea
 
 //==============================================================================
 // This creates new instances of the plugin..
-AudioProcessor* JUCE_CALLTYPE createPluginFilter()
+juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new FdnReverbAudioProcessor();
 }

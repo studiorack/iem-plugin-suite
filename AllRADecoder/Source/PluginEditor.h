@@ -29,7 +29,7 @@
 #include "../../resources/lookAndFeel/IEM_LaF.h"
 #include "../../resources/customComponents/TitleBar.h"
 
-//Custom Components
+//Custom juce::Components
 #include "../../resources/customComponents/ReverseSlider.h"
 #include "../../resources/customComponents/SimpleLabel.h"
 #include "../../resources/customComponents/MailBox.h"
@@ -41,27 +41,27 @@
 
 
 typedef ReverseSlider::SliderAttachment SliderAttachment; // all ReverseSliders will make use of the parameters' valueToText() function
-typedef AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
-typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
+typedef juce::AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
+typedef juce::AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 
 //==============================================================================
 /**
 */
-class AllRADecoderAudioProcessorEditor  : public AudioProcessorEditor, private juce::Timer, public Button::Listener
+class AllRADecoderAudioProcessorEditor  : public juce::AudioProcessorEditor, private juce::Timer, public juce::Button::Listener
 {
 public:
-    AllRADecoderAudioProcessorEditor (AllRADecoderAudioProcessor&, AudioProcessorValueTreeState&);
+    AllRADecoderAudioProcessorEditor (AllRADecoderAudioProcessor&, juce::AudioProcessorValueTreeState&);
     ~AllRADecoderAudioProcessorEditor();
 
     //==============================================================================
-    void paint (Graphics&) override;
+    void paint (juce::Graphics&) override;
     void resized() override;
 
     //==============================================================================
     void timerCallback() override;
     //==============================================================================
-    void buttonClicked (Button* button) override;
-    void buttonStateChanged (Button* button) override;
+    void buttonClicked (juce::Button* button) override;
+    void buttonStateChanged (juce::Button* button) override;
 
     void updateChannelCount();
     void openRotateWindow();
@@ -71,9 +71,9 @@ private:
     // lookAndFeel class with the IEM plug-in suite design
     LaF globalLaF;
 
-    // stored references to the AudioProcessor and ValueTreeState holding all the parameters
+    // stored references to the AudioProcessor and juce::ValueTreeState holding all the parameters
     AllRADecoderAudioProcessor& processor;
-    AudioProcessorValueTreeState& valueTreeState;
+    juce::AudioProcessorValueTreeState& valueTreeState;
 
 
     /* title and footer component
@@ -87,32 +87,32 @@ private:
     OSCFooter footer;
     // =============== end essentials ============
 
-    TooltipWindow tooltipWin;
+    juce::TooltipWindow tooltipWin;
 
     // Attachments to create a connection between IOWidgets comboboxes
     // and the associated parameters
     std::unique_ptr<ComboBoxAttachment> cbOrderSettingAttachment;
     std::unique_ptr<ComboBoxAttachment> cbNormalizationSettingAttachment;
 
-    ComboBox cbDecoderOrder, cbDecoderWeights;
+    juce::ComboBox cbDecoderOrder, cbDecoderWeights;
     std::unique_ptr<ComboBoxAttachment> cbDecoderOrderAttachment, cbDecoderWeightsAttachment;
 
-    ToggleButton tbExportDecoder, tbExportLayout;
+    juce::ToggleButton tbExportDecoder, tbExportLayout;
     std::unique_ptr<ButtonAttachment> tbExportDecoderAttachment, tbExportLayoutAttachment;
 
 
-    GroupComponent gcLayout, gcDecoder, gcExport;
+    juce::GroupComponent gcLayout, gcDecoder, gcExport;
     SimpleLabel lbDecoderOrder, lbDecoderWeights;
 
     MailBox::Display messageDisplay;
 
-    TextButton tbCalculateDecoder;
-    TextButton tbAddSpeakers;
-    TextButton tbUndo;
-    TextButton tbRedo;
-    TextButton tbRotate;
-    TextButton tbImport;
-    TextButton tbJson;
+    juce::TextButton tbCalculateDecoder;
+    juce::TextButton tbAddSpeakers;
+    juce::TextButton tbUndo;
+    juce::TextButton tbRedo;
+    juce::TextButton tbRotate;
+    juce::TextButton tbImport;
+    juce::TextButton tbJson;
     LoudspeakerVisualizer lv;
 
     LoudspeakerTableComponent lspList;

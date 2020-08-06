@@ -28,9 +28,9 @@
 template <typename type>
 class FilterVisualizerHelper {
 public:
-    static Array<type> cascadeSecondOrderCoefficients(Array<type>& c0, Array<type>& c1)
+    static juce::Array<type> cascadeSecondOrderCoefficients(juce::Array<type>& c0, juce::Array<type>& c1)
     {
-        Array<type> c12;
+        juce::Array<type> c12;
         c12.resize(9);
         const int o = 2;
 
@@ -48,12 +48,12 @@ public:
         return c12;
     }
 
-    static Array<type> cascadeFirstAndSecondOrderCoefficients(Array<type>& firstOrder, Array<type>& secondOrder)
+    static juce::Array<type> cascadeFirstAndSecondOrderCoefficients(juce::Array<type>& firstOrder, juce::Array<type>& secondOrder)
     {
-        Array<type>& c1 = firstOrder;
-        Array<type>& c2 = secondOrder;
+        juce::Array<type>& c1 = firstOrder;
+        juce::Array<type>& c2 = secondOrder;
 
-        Array<type> c12;
+        juce::Array<type> c12;
         c12.resize(7);
 
         //b

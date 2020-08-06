@@ -29,26 +29,26 @@
 #include "../../resources/lookAndFeel/IEM_LaF.h"
 #include "../../resources/customComponents/TitleBar.h"
 
-//Custom Components
+//Custom juce::Components
 #include "../../resources/customComponents/ReverseSlider.h"
 #include "../../resources/customComponents/SimpleLabel.h"
 
 
 typedef ReverseSlider::SliderAttachment SliderAttachment; // all ReverseSliders will make use of the parameters' valueToText() function
-typedef AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
-typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
+typedef juce::AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
+typedef juce::AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 
 //==============================================================================
 /**
 */
-class PluginTemplateAudioProcessorEditor  : public AudioProcessorEditor, private Timer
+class PluginTemplateAudioProcessorEditor  : public juce::AudioProcessorEditor, private juce::Timer
 {
 public:
-    PluginTemplateAudioProcessorEditor (PluginTemplateAudioProcessor&, AudioProcessorValueTreeState&);
+    PluginTemplateAudioProcessorEditor (PluginTemplateAudioProcessor&, juce::AudioProcessorValueTreeState&);
     ~PluginTemplateAudioProcessorEditor() override;
 
     //==============================================================================
-    void paint (Graphics&) override;
+    void paint (juce::Graphics&) override;
     void resized() override;
 
 
@@ -59,9 +59,9 @@ private:
     // lookAndFeel class with the IEM plug-in suite design
     LaF globalLaF;
 
-    // stored references to the AudioProcessor and ValueTreeState holding all the parameters
+    // stored references to the AudioProcessor and juce::ValueTreeState holding all the parameters
     PluginTemplateAudioProcessor& audioProcessor;
-    AudioProcessorValueTreeState& valueTreeState;
+    juce::AudioProcessorValueTreeState& valueTreeState;
 
 
     /* title and footer component
@@ -82,7 +82,7 @@ private:
     std::unique_ptr<ComboBoxAttachment> cbNormalizationSettingAttachment;
 
     // Demo stuff
-    Slider slParam1;
+    juce::Slider slParam1;
     ReverseSlider slParam2;
     std::unique_ptr<SliderAttachment> slParam1Attachment, slParam2Attachment;
 

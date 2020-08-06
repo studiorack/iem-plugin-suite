@@ -30,9 +30,9 @@ ProbeDecoderAudioProcessor::ProbeDecoderAudioProcessor()
                       BusesProperties()
 #if ! JucePlugin_IsMidiEffect
 #if ! JucePlugin_IsSynth
-                  .withInput  ("Input",  AudioChannelSet::discreteChannels(64), true)
+                  .withInput  ("Input",  juce::AudioChannelSet::discreteChannels(64), true)
 #endif
-                  .withOutput ("Output", AudioChannelSet::mono(), true)
+                  .withOutput ("Output", juce::AudioChannelSet::mono(), true)
 #endif
                   ,
 #endif
@@ -47,7 +47,7 @@ createParameterLayout())
     parameters.addParameterListener("azimuth", this);
     parameters.addParameterListener("elevation", this);
 
-    FloatVectorOperations::clear(previousSH, 64);
+    juce::FloatVectorOperations::clear(previousSH, 64);
 }
 
 ProbeDecoderAudioProcessor::~ProbeDecoderAudioProcessor()
@@ -67,11 +67,11 @@ int ProbeDecoderAudioProcessor::getCurrentProgram() {
 void ProbeDecoderAudioProcessor::setCurrentProgram(int index) {
 }
 
-const String ProbeDecoderAudioProcessor::getProgramName(int index) {
-    return String();
+const juce::String ProbeDecoderAudioProcessor::getProgramName(int index) {
+    return juce::String();
 }
 
-void ProbeDecoderAudioProcessor::changeProgramName(int index, const String &newName) {
+void ProbeDecoderAudioProcessor::changeProgramName(int index, const juce::String &newName) {
 }
 
 //==============================================================================
@@ -85,22 +85,22 @@ void ProbeDecoderAudioProcessor::releaseResources() {
 }
 
 
-void ProbeDecoderAudioProcessor::processBlock(AudioSampleBuffer &buffer, MidiBuffer &midiMessages) {
+void ProbeDecoderAudioProcessor::processBlock(juce::AudioSampleBuffer &buffer, juce::MidiBuffer &midiMessages) {
     checkInputAndOutput(this, *orderSetting, 1);
     const int ambisonicOrder = input.getOrder();
-    const int nChannels = jmin(buffer.getNumChannels(), input.getNumberOfChannels());
+    const int nChannels = juce::jmin(buffer.getNumChannels(), input.getNumberOfChannels());
 
-    Vector3D<float> xyz = Conversions<float>::sphericalToCartesian (degreesToRadians (azimuth->load()), degreesToRadians (elevation->load()));
+    juce::Vector3D<float> xyz = Conversions<float>::sphericalToCartesian (juce::degreesToRadians (azimuth->load()), juce::degreesToRadians (elevation->load()));
 
     float sh[64];
 
     SHEval(ambisonicOrder, xyz, sh, false);
 
-    const int nCh = jmin(buffer.getNumChannels(), nChannels);
+    const int nCh = juce::jmin(buffer.getNumChannels(), nChannels);
     const int numSamples = buffer.getNumSamples();
 
     if (*useSN3D >= 0.5f)
-        FloatVectorOperations::multiply(sh, sh, sn3d2n3d, nChannels);
+        juce::FloatVectorOperations::multiply(sh, sh, sn3d2n3d, nChannels);
 
     buffer.applyGainRamp(0, 0, numSamples, previousSH[0], sh[0]);
 
@@ -111,7 +111,7 @@ void ProbeDecoderAudioProcessor::processBlock(AudioSampleBuffer &buffer, MidiBuf
     }
 
 
-    FloatVectorOperations::copy(previousSH, sh, nChannels);
+    juce::FloatVectorOperations::copy(previousSH, sh, nChannels);
 }
 
 //==============================================================================
@@ -119,11 +119,11 @@ bool ProbeDecoderAudioProcessor::hasEditor() const {
     return true; // (change this to false if you choose to not supply an editor)
 }
 
-AudioProcessorEditor *ProbeDecoderAudioProcessor::createEditor() {
+juce::AudioProcessorEditor *ProbeDecoderAudioProcessor::createEditor() {
     return new ProbeDecoderAudioProcessorEditor(*this, parameters);
 }
 
-void ProbeDecoderAudioProcessor::parameterChanged(const String &parameterID, float newValue) {
+void ProbeDecoderAudioProcessor::parameterChanged(const juce::String &parameterID, float newValue) {
     if (parameterID == "orderSetting") userChangedIOSettings = true;
     else if (parameterID == "azimuth" || parameterID == "elevation")
     {
@@ -133,27 +133,27 @@ void ProbeDecoderAudioProcessor::parameterChanged(const String &parameterID, flo
 
 
 //==============================================================================
-void ProbeDecoderAudioProcessor::getStateInformation (MemoryBlock &destData)
+void ProbeDecoderAudioProcessor::getStateInformation (juce::MemoryBlock &destData)
 {
     auto state = parameters.copyState();
 
     auto oscConfig = state.getOrCreateChildWithName ("OSCConfig", nullptr);
     oscConfig.copyPropertiesFrom (oscParameterInterface.getConfig(), nullptr);
 
-    std::unique_ptr<XmlElement> xml (state.createXml());
+    std::unique_ptr<juce::XmlElement> xml (state.createXml());
     copyXmlToBinary (*xml, destData);
 }
 
 void ProbeDecoderAudioProcessor::setStateInformation (const void *data, int sizeInBytes)
 {
-    std::unique_ptr<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
+    std::unique_ptr<juce::XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
     if (xmlState.get() != nullptr)
         if (xmlState->hasTagName (parameters.state.getType()))
         {
-            parameters.replaceState (ValueTree::fromXml (*xmlState));
+            parameters.replaceState (juce::ValueTree::fromXml (*xmlState));
             if (parameters.state.hasProperty ("OSCPort")) // legacy
             {
-                oscParameterInterface.getOSCReceiver().connect (parameters.state.getProperty ("OSCPort", var (-1)));
+                oscParameterInterface.getOSCReceiver().connect (parameters.state.getProperty ("OSCPort", juce::var (-1)));
                 parameters.state.removeProperty ("OSCPort", nullptr);
             }
 
@@ -165,14 +165,14 @@ void ProbeDecoderAudioProcessor::setStateInformation (const void *data, int size
 
 
 //==============================================================================
-std::vector<std::unique_ptr<RangedAudioParameter>> ProbeDecoderAudioProcessor::createParameterLayout()
+std::vector<std::unique_ptr<juce::RangedAudioParameter>> ProbeDecoderAudioProcessor::createParameterLayout()
 {
     // add your audio parameters here
-    std::vector<std::unique_ptr<RangedAudioParameter>> params;
+    std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
 
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("orderSetting", "Ambisonics Order", "",
-                                     NormalisableRange<float>(0.0f, 8.0f, 1.0f), 0.0f,
+                                     juce::NormalisableRange<float>(0.0f, 8.0f, 1.0f), 0.0f,
                                      [](float value) {
                                          if (value >= 0.5f && value < 1.5f) return "0th";
                                          else if (value >= 1.5f && value < 2.5f) return "1st";
@@ -186,19 +186,19 @@ std::vector<std::unique_ptr<RangedAudioParameter>> ProbeDecoderAudioProcessor::c
                                      }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("useSN3D", "Normalization", "",
-                                     NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
+                                     juce::NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value) {
                                          if (value >= 0.5f) return "SN3D";
                                          else return "N3D";
                                      }, nullptr));
 
-    params.push_back (OSCParameterInterface::createParameterTheOldWay ("azimuth", "Azimuth angle", CharPointer_UTF8 (R"(°)"),
-                                     NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
-                                     [](float value) { return String(value, 2); }, nullptr));
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("azimuth", "Azimuth angle", juce::CharPointer_UTF8 (R"(°)"),
+                                     juce::NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
+                                     [](float value) { return juce::String(value, 2); }, nullptr));
 
-    params.push_back (OSCParameterInterface::createParameterTheOldWay ("elevation", "Elevation angle", CharPointer_UTF8 (R"(°)"),
-                                     NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
-                                     [](float value) { return String(value, 2); }, nullptr));
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("elevation", "Elevation angle", juce::CharPointer_UTF8 (R"(°)"),
+                                     juce::NormalisableRange<float>(-180.0f, 180.0f, 0.01f), 0.0,
+                                     [](float value) { return juce::String(value, 2); }, nullptr));
 
 
     return params;
@@ -206,6 +206,6 @@ std::vector<std::unique_ptr<RangedAudioParameter>> ProbeDecoderAudioProcessor::c
 
 //==============================================================================
 // This creates new instances of the plugin..
-AudioProcessor *JUCE_CALLTYPE createPluginFilter() {
+juce::AudioProcessor *JUCE_CALLTYPE createPluginFilter() {
     return new ProbeDecoderAudioProcessor();
 }

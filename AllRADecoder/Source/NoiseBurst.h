@@ -22,7 +22,7 @@
 
 #pragma once
 
-using namespace dsp;
+
 class NoiseBurst
 {
 public:
@@ -31,34 +31,34 @@ public:
         originalNoise.setSize(1, L);
 
         // create noise
-        Random random;
+        juce::Random random;
         for (int i = 0; i < L; ++i)
             originalNoise.setSample(0, i, random.nextFloat() * 2.0f - 1.0f);
 
-        ProcessSpec spec;
+        juce::dsp::ProcessSpec spec;
         spec.sampleRate = 44100.0f;
         spec.maximumBlockSize = L;
         spec.numChannels = 1;
 
-        IIR::Filter<float> filter;
-        filter.coefficients = IIR::Coefficients<float>::makeHighPass(spec.sampleRate, 200.0f);
-        AudioBlock<float> ab (originalNoise);
-        ProcessContextReplacing<float> context(ab);
+        juce::dsp::IIR::Filter<float> filter;
+        filter.coefficients = juce::dsp::IIR::Coefficients<float>::makeHighPass (spec.sampleRate, 200.0f);
+        juce::dsp::AudioBlock<float> ab (originalNoise);
+        juce::dsp::ProcessContextReplacing<float> context(ab);
 
-        filter.prepare(spec);
-        filter.process(context);
+        filter.prepare (spec);
+        filter.process (context);
 
-        filter.coefficients = IIR::Coefficients<float>::makeFirstOrderLowPass(spec.sampleRate, 200.0f);
-        filter.prepare(spec);
+        filter.coefficients = juce::dsp::IIR::Coefficients<float>::makeFirstOrderLowPass (spec.sampleRate, 200.0f);
+        filter.prepare (spec);
         filter.reset();
-        filter.process(context);
+        filter.process (context);
 
         // fade-in/-out
-        originalNoise.applyGainRamp(0, 0, 1000, 0.0f, 1.0f);
-        originalNoise.applyGainRamp(0, L - 10000, 10000, 1.0f, 0.0f);
+        originalNoise.applyGainRamp (0, 0, 1000, 0.0f, 1.0f);
+        originalNoise.applyGainRamp (0, L - 10000, 10000, 1.0f, 0.0f);
 
         // level
-        originalNoise.applyGain(Decibels::decibelsToGain(-10.0f));
+        originalNoise.applyGain (juce::Decibels::decibelsToGain (-10.0f));
 
         // copy buffer
         resampledNoise = originalNoise;
@@ -80,16 +80,16 @@ public:
     void resampleNoise (double newSampleRate)
     {
         double factorReading = 44100.0 / newSampleRate;
-        resampledL = roundToInt (L / factorReading + 0.49);
+        resampledL = juce::roundToInt (L / factorReading + 0.49);
 
-        MemoryAudioSource memorySource (originalNoise, false, false);
-        ResamplingAudioSource resamplingSource (&memorySource, false, 1);
+        juce::MemoryAudioSource memorySource (originalNoise, false, false);
+        juce::ResamplingAudioSource resamplingSource (&memorySource, false, 1);
 
         resamplingSource.setResamplingRatio (factorReading);
         resamplingSource.prepareToPlay (L, 44100.0);
 
         resampledNoise.setSize(1, resampledL);
-        AudioSourceChannelInfo info;
+        juce::AudioSourceChannelInfo info;
         info.startSample = 0;
         info.numSamples = resampledL;
         info.buffer = &resampledNoise;
@@ -113,7 +113,7 @@ public:
         return active.get();
     }
 
-    void processBuffer (AudioBuffer<float> buffer)
+    void processBuffer (juce::AudioBuffer<float> buffer)
     {
         if (active.get())
         {
@@ -122,9 +122,9 @@ public:
                 if (buffer.getNumChannels() >= activeChannel)
                 {
                     const int bufferSize = buffer.getNumSamples();
-                    const int copyL = jmin(bufferSize, resampledL - currentPosition);
+                    const int copyL = juce::jmin (bufferSize, resampledL - currentPosition);
 
-                    FloatVectorOperations::add(buffer.getWritePointer(activeChannel - 1), resampledNoise.getReadPointer(0, currentPosition), copyL);
+                    juce::FloatVectorOperations::add (buffer.getWritePointer(activeChannel - 1), resampledNoise.getReadPointer(0, currentPosition), copyL);
 
                     currentPosition += copyL;
                     if (currentPosition >= resampledL)
@@ -150,9 +150,9 @@ private:
     int currentPosition;
 
     int resampledL;
-    Atomic<bool> active;
+    juce::Atomic<bool> active;
     int activeChannel;
 
-    AudioBuffer<float> originalNoise;
-    AudioBuffer<float> resampledNoise;
+    juce::AudioBuffer<float> originalNoise;
+    juce::AudioBuffer<float> resampledNoise;
 };

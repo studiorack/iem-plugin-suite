@@ -25,8 +25,8 @@
 
 
 //==============================================================================
-MatrixMultiplierAudioProcessorEditor::MatrixMultiplierAudioProcessorEditor (MatrixMultiplierAudioProcessor& p, AudioProcessorValueTreeState& vts)
-    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts), footer (p.getOSCParameterInterface())
+MatrixMultiplierAudioProcessorEditor::MatrixMultiplierAudioProcessorEditor (MatrixMultiplierAudioProcessor& p, juce::AudioProcessorValueTreeState& vts)
+    : juce::AudioProcessorEditor (&p), processor (p), valueTreeState(vts), footer (p.getOSCParameterInterface())
 {
     // ============== BEGIN: essentials ======================
     // set GUI size and lookAndFeel
@@ -35,7 +35,7 @@ MatrixMultiplierAudioProcessorEditor::MatrixMultiplierAudioProcessorEditor (Matr
 
     // make title and footer visible, and set the PluginName
     addAndMakeVisible(&title);
-    title.setTitle(String("Matrix"),String("Multiplier"));
+    title.setTitle(juce::String("Matrix"),juce::String("Multiplier"));
     title.setFont(globalLaF.robotoBold, globalLaF.robotoLight);
     addAndMakeVisible (&footer);
     // ============= END: essentials ========================
@@ -47,7 +47,7 @@ MatrixMultiplierAudioProcessorEditor::MatrixMultiplierAudioProcessorEditor (Matr
 
     addAndMakeVisible(btLoadFile);
     btLoadFile.setButtonText("Load configuration");
-    btLoadFile.setColour(TextButton::buttonColourId, Colours::cornflowerblue);
+    btLoadFile.setColour(juce::TextButton::buttonColourId, juce::Colours::cornflowerblue);
     btLoadFile.addListener(this);
 
     addAndMakeVisible(edOutput);
@@ -56,7 +56,7 @@ MatrixMultiplierAudioProcessorEditor::MatrixMultiplierAudioProcessorEditor (Matr
     edOutput.setTabKeyUsedAsCharacter(true);
     edOutput.clear();
     edOutput.setText(processor.getMessageForEditor());
-    edOutput.setColour(TextEditor::backgroundColourId, Colours::cornflowerblue.withMultipliedAlpha(0.2f));
+    edOutput.setColour(juce::TextEditor::backgroundColourId, juce::Colours::cornflowerblue.withMultipliedAlpha(0.2f));
 
     // start timer after everything is set up properly
     startTimer(20);
@@ -68,7 +68,7 @@ MatrixMultiplierAudioProcessorEditor::~MatrixMultiplierAudioProcessorEditor()
 }
 
 //==============================================================================
-void MatrixMultiplierAudioProcessorEditor::paint (Graphics& g)
+void MatrixMultiplierAudioProcessorEditor::paint (juce::Graphics& g)
 {
     g.fillAll (globalLaF.ClBackground);
 }
@@ -79,14 +79,14 @@ void MatrixMultiplierAudioProcessorEditor::resized()
     const int leftRightMargin = 30;
     const int headerHeight = 60;
     const int footerHeight = 25;
-    Rectangle<int> area (getLocalBounds());
+    juce::Rectangle<int> area (getLocalBounds());
 
-    Rectangle<int> footerArea (area.removeFromBottom(footerHeight));
+    juce::Rectangle<int> footerArea (area.removeFromBottom(footerHeight));
     footer.setBounds(footerArea);
 
     area.removeFromLeft(leftRightMargin);
     area.removeFromRight(leftRightMargin);
-    Rectangle<int> headerArea = area.removeFromTop(headerHeight);
+    juce::Rectangle<int> headerArea = area.removeFromTop(headerHeight);
     title.setBounds (headerArea);
     area.removeFromTop(10);
     area.removeFromBottom(5);
@@ -94,7 +94,7 @@ void MatrixMultiplierAudioProcessorEditor::resized()
 
 
 
-    Rectangle<int> sliderRow = area.removeFromRight(120);
+    juce::Rectangle<int> sliderRow = area.removeFromRight(120);
     btLoadFile.setBounds(sliderRow.removeFromTop(30));
 
     area.removeFromRight(10);
@@ -127,7 +127,7 @@ void MatrixMultiplierAudioProcessorEditor::timerCallback()
     }
 }
 
-void MatrixMultiplierAudioProcessorEditor::buttonClicked(Button* button)
+void MatrixMultiplierAudioProcessorEditor::buttonClicked(juce::Button* button)
 {
     if (button == &btLoadFile)
     {
@@ -142,12 +142,12 @@ void MatrixMultiplierAudioProcessorEditor::buttonStateChanged(juce::Button *butt
 
 void MatrixMultiplierAudioProcessorEditor::loadConfigurationFile()
 {
-    FileChooser myChooser ("Please select the configuration you want to load...",
-                           processor.getLastDir().exists() ? processor.getLastDir() : File::getSpecialLocation (File::userHomeDirectory),
+    juce::FileChooser myChooser ("Please select the configuration you want to load...",
+                           processor.getLastDir().exists() ? processor.getLastDir() : juce::File::getSpecialLocation (juce::File::userHomeDirectory),
                            "*.json");
     if (myChooser.browseForFileToOpen())
     {
-        File configurationFile (myChooser.getResult());
+        juce::File configurationFile (myChooser.getResult());
         processor.setLastDir(configurationFile.getParentDirectory());
         processor.loadConfiguration (configurationFile);
 

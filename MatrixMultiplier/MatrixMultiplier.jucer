@@ -10,9 +10,10 @@
               pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
               pluginAUExportPrefix="MatrixMultiplierAU" aaxIdentifier="at.iem.MatrixMultiplier"
-              jucerVersion="5.4.7" companyCopyright="IEM - Daniel Rudrich"
-              companyName="IEM" companyWebsite="iem.at" headerPath="../../../resources/"
-              pluginFormats="buildStandalone,buildVST" defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1">
+              companyCopyright="IEM - Daniel Rudrich" companyName="IEM" companyWebsite="iem.at"
+              headerPath="../../../resources/" pluginFormats="buildStandalone,buildVST"
+              defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1" projectLineFeed="&#10;"
+              addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1">
   <MAINGROUP id="LpzrV9" name="MatrixMultiplier">
     <GROUP id="{97867DE7-8E36-6438-E912-6978A3007F5A}" name="Standalone">
       <FILE id="FDqamv" name="IEM_AudioDeviceSelectorComponent.cpp" compile="1"

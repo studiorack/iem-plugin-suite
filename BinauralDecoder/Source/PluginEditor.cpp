@@ -25,8 +25,8 @@
 
 
 //==============================================================================
-BinauralDecoderAudioProcessorEditor::BinauralDecoderAudioProcessorEditor (BinauralDecoderAudioProcessor& p, AudioProcessorValueTreeState& vts)
-    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts), footer (p.getOSCParameterInterface())
+BinauralDecoderAudioProcessorEditor::BinauralDecoderAudioProcessorEditor (BinauralDecoderAudioProcessor& p, juce::AudioProcessorValueTreeState& vts)
+    : juce::AudioProcessorEditor (&p), processor (p), valueTreeState(vts), footer (p.getOSCParameterInterface())
 {
     // ============== BEGIN: essentials ======================
     // set GUI size and lookAndFeel
@@ -36,7 +36,7 @@ BinauralDecoderAudioProcessorEditor::BinauralDecoderAudioProcessorEditor (Binaur
 
     // make title and footer visible, and set the PluginName
     addAndMakeVisible(&title);
-    title.setTitle(String("Binaural"),String("Decoder"));
+    title.setTitle ("Binaural", "Decoder");
     title.setFont(globalLaF.robotoBold, globalLaF.robotoLight);
     addAndMakeVisible (&footer);
     // ============= END: essentials ========================
@@ -66,7 +66,7 @@ BinauralDecoderAudioProcessorEditor::~BinauralDecoderAudioProcessorEditor()
 }
 
 //==============================================================================
-void BinauralDecoderAudioProcessorEditor::paint (Graphics& g)
+void BinauralDecoderAudioProcessorEditor::paint (juce::Graphics& g)
 {
     g.fillAll (globalLaF.ClBackground);
 }
@@ -77,21 +77,21 @@ void BinauralDecoderAudioProcessorEditor::resized()
     const int leftRightMargin = 30;
     const int headerHeight = 60;
     const int footerHeight = 25;
-    Rectangle<int> area (getLocalBounds());
+    auto area = getLocalBounds();
 
-    Rectangle<int> footerArea (area.removeFromBottom(footerHeight));
+    auto footerArea (area.removeFromBottom(footerHeight));
     footer.setBounds(footerArea);
 
     area.removeFromLeft(leftRightMargin);
     area.removeFromRight(leftRightMargin);
-    Rectangle<int> headerArea = area.removeFromTop(headerHeight);
+    auto headerArea = area.removeFromTop(headerHeight);
     title.setBounds (headerArea);
     area.removeFromTop(10);
     area.removeFromBottom(5);
     // =========== END: header and footer =================
 
 
-    Rectangle<int> sliderRow = area.removeFromTop(20);
+    auto sliderRow = area.removeFromTop(20);
     lbEq.setBounds(sliderRow.removeFromLeft(150));
     cbEq.setBounds(sliderRow.removeFromLeft(120));
 }

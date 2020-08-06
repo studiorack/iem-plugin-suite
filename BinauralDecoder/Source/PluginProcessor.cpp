@@ -24,7 +24,7 @@
 #include "PluginEditor.h"
 
 
-const StringArray BinauralDecoderAudioProcessor::headphoneEQs = StringArray ("AKG-K141MK2", "AKG-K240DF", "AKG-K240MK2", "AKG-K271MK2", "AKG-K271STUDIO", "AKG-K601", "AKG-K701", "AKG-K702", "AKG-K1000-Closed", "AKG-K1000-Open", "AudioTechnica-ATH-M50", "Beyerdynamic-DT250", "Beyerdynamic-DT770PRO-250Ohms", "Beyerdynamic-DT880", "Beyerdynamic-DT990PRO", "Presonus-HD7", "Sennheiser-HD430", "Sennheiser-HD480", "Sennheiser-HD560ovationII", "Sennheiser-HD565ovation", "Sennheiser-HD600", "Sennheiser-HD650", "SHURE-SRH940");
+const auto BinauralDecoderAudioProcessor::headphoneEQs = juce::StringArray ("AKG-K141MK2", "AKG-K240DF", "AKG-K240MK2", "AKG-K271MK2", "AKG-K271STUDIO", "AKG-K601", "AKG-K701", "AKG-K702", "AKG-K1000-Closed", "AKG-K1000-Open", "AudioTechnica-ATH-M50", "Beyerdynamic-DT250", "Beyerdynamic-DT770PRO-250Ohms", "Beyerdynamic-DT880", "Beyerdynamic-DT990PRO", "Presonus-HD7", "Sennheiser-HD430", "Sennheiser-HD480", "Sennheiser-HD560ovationII", "Sennheiser-HD565ovation", "Sennheiser-HD600", "Sennheiser-HD650", "SHURE-SRH940");
 
 //==============================================================================
 BinauralDecoderAudioProcessor::BinauralDecoderAudioProcessor()
@@ -33,9 +33,9 @@ BinauralDecoderAudioProcessor::BinauralDecoderAudioProcessor()
                       BusesProperties()
 #if ! JucePlugin_IsMidiEffect
 #if ! JucePlugin_IsSynth
-                  .withInput  ("Input",  AudioChannelSet::discreteChannels(64), true)
+                  .withInput  ("Input",  juce::AudioChannelSet::discreteChannels(64), true)
 #endif
-                  .withOutput ("Output", AudioChannelSet::discreteChannels(64), true)
+                  .withOutput ("Output", juce::AudioChannelSet::discreteChannels(64), true)
 #endif
                   ,
 #endif
@@ -52,23 +52,23 @@ createParameterLayout())
 
 
     // load IRs
-    AudioFormatManager formatManager;
+    juce::AudioFormatManager formatManager;
     formatManager.registerBasicFormats();
-    WavAudioFormat wavFormat;
+    juce::WavAudioFormat wavFormat;
 
-    MemoryInputStream* mis[7];
-    mis[0] = new MemoryInputStream (BinaryData::irsOrd1_wav, BinaryData::irsOrd1_wavSize, false);
-    mis[1] = new MemoryInputStream (BinaryData::irsOrd2_wav, BinaryData::irsOrd2_wavSize, false);
-    mis[2] = new MemoryInputStream (BinaryData::irsOrd3_wav, BinaryData::irsOrd3_wavSize, false);
-    mis[3] = new MemoryInputStream (BinaryData::irsOrd4_wav, BinaryData::irsOrd4_wavSize, false);
-    mis[4] = new MemoryInputStream (BinaryData::irsOrd5_wav, BinaryData::irsOrd5_wavSize, false);
-    mis[5] = new MemoryInputStream (BinaryData::irsOrd6_wav, BinaryData::irsOrd6_wavSize, false);
-    mis[6] = new MemoryInputStream (BinaryData::irsOrd7_wav, BinaryData::irsOrd7_wavSize, false);
+    juce::MemoryInputStream* mis[7];
+    mis[0] = new juce::MemoryInputStream (BinaryData::irsOrd1_wav, BinaryData::irsOrd1_wavSize, false);
+    mis[1] = new juce::MemoryInputStream (BinaryData::irsOrd2_wav, BinaryData::irsOrd2_wavSize, false);
+    mis[2] = new juce::MemoryInputStream (BinaryData::irsOrd3_wav, BinaryData::irsOrd3_wavSize, false);
+    mis[3] = new juce::MemoryInputStream (BinaryData::irsOrd4_wav, BinaryData::irsOrd4_wavSize, false);
+    mis[4] = new juce::MemoryInputStream (BinaryData::irsOrd5_wav, BinaryData::irsOrd5_wavSize, false);
+    mis[5] = new juce::MemoryInputStream (BinaryData::irsOrd6_wav, BinaryData::irsOrd6_wavSize, false);
+    mis[6] = new juce::MemoryInputStream (BinaryData::irsOrd7_wav, BinaryData::irsOrd7_wavSize, false);
 
     for (int i = 0; i < 7; ++i)
     {
-        irs[i].setSize(square(i + 2), irLength);
-        std::unique_ptr<AudioFormatReader> reader (wavFormat.createReaderFor (mis[i], true));
+        irs[i].setSize(juce::square(i + 2), irLength);
+        std::unique_ptr<juce::AudioFormatReader> reader (wavFormat.createReaderFor (mis[i], true));
         reader->read(&irs[i], 0, irLength, 0, true, false);
         irs[i].applyGain (0.3f);
     }
@@ -95,12 +95,12 @@ void BinauralDecoderAudioProcessor::setCurrentProgram (int index)
 {
 }
 
-const String BinauralDecoderAudioProcessor::getProgramName (int index)
+const juce::String BinauralDecoderAudioProcessor::getProgramName (int index)
 {
     return {};
 }
 
-void BinauralDecoderAudioProcessor::changeProgramName (int index, const String& newName)
+void BinauralDecoderAudioProcessor::changeProgramName (int index, const juce::String& newName)
 {
 }
 
@@ -109,7 +109,7 @@ void BinauralDecoderAudioProcessor::prepareToPlay (double sampleRate, int sample
 {
     checkInputAndOutput(this, *inputOrderSetting, 0, true);
 
-    ProcessSpec convSpec;
+    juce::dsp::ProcessSpec convSpec;
     convSpec.sampleRate = sampleRate;
     convSpec.maximumBlockSize = samplesPerBlock;
     convSpec.numChannels = 2; // convolve two channels (which actually point two one and the same input channel)
@@ -123,10 +123,10 @@ void BinauralDecoderAudioProcessor::releaseResources()
     // spare memory, etc.
 }
 
-void BinauralDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
+void BinauralDecoderAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     checkInputAndOutput(this, *inputOrderSetting, 0, false);
-    ScopedNoDenormals noDenormals;
+    juce::ScopedNoDenormals noDenormals;
 
     if (buffer.getNumChannels() < 2)
     {
@@ -134,19 +134,19 @@ void BinauralDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, Mid
         return;
     }
 
-    const int nCh = jmin(buffer.getNumChannels(), input.getNumberOfChannels());
+    const int nCh = juce::jmin (buffer.getNumChannels(), input.getNumberOfChannels());
     const int L = buffer.getNumSamples();
     const int ergL = overlapBuffer.getNumSamples();
     const int overlap = irLengthMinusOne;
-    const int copyL = jmin(L, overlap); // copy max L samples of the overlap data
+    const int copyL = juce::jmin (L, overlap); // copy max L samples of the overlap data
 
     if (*useSN3D >= 0.5f)
         for (int ch = 1; ch < nCh; ++ch)
             buffer.applyGain(ch, 0, buffer.getNumSamples(), sn3d2n3d[ch]);
 
     // clear accumulation buffers
-    FloatVectorOperations::clear (reinterpret_cast<float*> (accumMid.data()), fftLength + 2);
-    FloatVectorOperations::clear (reinterpret_cast<float*> (accumSide.data()), fftLength + 2);
+    juce::FloatVectorOperations::clear (reinterpret_cast<float*> (accumMid.data()), fftLength + 2);
+    juce::FloatVectorOperations::clear (reinterpret_cast<float*> (accumSide.data()), fftLength + 2);
 
     const int nZeros = fftLength - L;
 
@@ -155,8 +155,8 @@ void BinauralDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, Mid
     {
         const int ch = mix2cix[midix];
 
-        FloatVectorOperations::copy (reinterpret_cast<float*> (fftBuffer.data()), buffer.getReadPointer (ch), L);
-        FloatVectorOperations::clear (reinterpret_cast<float*> (fftBuffer.data()) + L, nZeros);
+        juce::FloatVectorOperations::copy (reinterpret_cast<float*> (fftBuffer.data()), buffer.getReadPointer (ch), L);
+        juce::FloatVectorOperations::clear (reinterpret_cast<float*> (fftBuffer.data()) + L, nZeros);
 
         fft->performRealOnlyForwardTransform (reinterpret_cast<float*> (fftBuffer.data()));
 
@@ -170,8 +170,8 @@ void BinauralDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, Mid
     {
         const int ch = six2cix[sidix];
 
-        FloatVectorOperations::copy (reinterpret_cast<float*> (fftBuffer.data()), buffer.getReadPointer (ch), L);
-        FloatVectorOperations::clear (reinterpret_cast<float*> (fftBuffer.data()) + L, nZeros);
+        juce::FloatVectorOperations::copy (reinterpret_cast<float*> (fftBuffer.data()), buffer.getReadPointer (ch), L);
+        juce::FloatVectorOperations::clear (reinterpret_cast<float*> (fftBuffer.data()) + L, nZeros);
 
         fft->performRealOnlyForwardTransform (reinterpret_cast<float*> (fftBuffer.data()));
 
@@ -186,46 +186,46 @@ void BinauralDecoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, Mid
 
 
     ///* MS -> LR  */
-    FloatVectorOperations::copy (buffer.getWritePointer (0), reinterpret_cast<float*> (accumMid.data()), L);
-    FloatVectorOperations::copy (buffer.getWritePointer (1), reinterpret_cast<float*> (accumMid.data()), L);
-    FloatVectorOperations::add (buffer.getWritePointer(0), reinterpret_cast<float*> (accumSide.data()), L);
-    FloatVectorOperations::subtract(buffer.getWritePointer(1), reinterpret_cast<float*> (accumSide.data()), L);
+    juce::FloatVectorOperations::copy (buffer.getWritePointer (0), reinterpret_cast<float*> (accumMid.data()), L);
+    juce::FloatVectorOperations::copy (buffer.getWritePointer (1), reinterpret_cast<float*> (accumMid.data()), L);
+    juce::FloatVectorOperations::add (buffer.getWritePointer(0), reinterpret_cast<float*> (accumSide.data()), L);
+    juce::FloatVectorOperations::subtract(buffer.getWritePointer(1), reinterpret_cast<float*> (accumSide.data()), L);
 
-    FloatVectorOperations::add (buffer.getWritePointer(0), overlapBuffer.getWritePointer(0), copyL);
-    FloatVectorOperations::add (buffer.getWritePointer(1), overlapBuffer.getWritePointer(1), copyL);
+    juce::FloatVectorOperations::add (buffer.getWritePointer(0), overlapBuffer.getWritePointer(0), copyL);
+    juce::FloatVectorOperations::add (buffer.getWritePointer(1), overlapBuffer.getWritePointer(1), copyL);
 
     if (copyL < overlap) // there is some overlap left, want some?
     {
         const int howManyAreLeft = overlap - L;
 
         //shift the overlap buffer to the left
-        FloatVectorOperations::copy (overlapBuffer.getWritePointer (0), overlapBuffer.getReadPointer (0, L), howManyAreLeft);
-        FloatVectorOperations::copy (overlapBuffer.getWritePointer (1), overlapBuffer.getReadPointer (1, L), howManyAreLeft);
+        juce::FloatVectorOperations::copy (overlapBuffer.getWritePointer (0), overlapBuffer.getReadPointer (0, L), howManyAreLeft);
+        juce::FloatVectorOperations::copy (overlapBuffer.getWritePointer (1), overlapBuffer.getReadPointer (1, L), howManyAreLeft);
 
         //clear the tail
-        FloatVectorOperations::clear (overlapBuffer.getWritePointer (0, howManyAreLeft), ergL - howManyAreLeft);
-        FloatVectorOperations::clear (overlapBuffer.getWritePointer (1, howManyAreLeft), ergL - howManyAreLeft);
+        juce::FloatVectorOperations::clear (overlapBuffer.getWritePointer (0, howManyAreLeft), ergL - howManyAreLeft);
+        juce::FloatVectorOperations::clear (overlapBuffer.getWritePointer (1, howManyAreLeft), ergL - howManyAreLeft);
 
         /* MS -> LR  */
-        FloatVectorOperations::add (overlapBuffer.getWritePointer (0), reinterpret_cast<float*> (accumMid.data()) + L, irLengthMinusOne);
-        FloatVectorOperations::add (overlapBuffer.getWritePointer (1), reinterpret_cast<float*> (accumMid.data()) + L, irLengthMinusOne);
-        FloatVectorOperations::add (overlapBuffer.getWritePointer (0), reinterpret_cast<float*> (accumSide.data()) + L, irLengthMinusOne);
-        FloatVectorOperations::subtract (overlapBuffer.getWritePointer (1), reinterpret_cast<float*> (accumSide.data()) + L, irLengthMinusOne);
+        juce::FloatVectorOperations::add (overlapBuffer.getWritePointer (0), reinterpret_cast<float*> (accumMid.data()) + L, irLengthMinusOne);
+        juce::FloatVectorOperations::add (overlapBuffer.getWritePointer (1), reinterpret_cast<float*> (accumMid.data()) + L, irLengthMinusOne);
+        juce::FloatVectorOperations::add (overlapBuffer.getWritePointer (0), reinterpret_cast<float*> (accumSide.data()) + L, irLengthMinusOne);
+        juce::FloatVectorOperations::subtract (overlapBuffer.getWritePointer (1), reinterpret_cast<float*> (accumSide.data()) + L, irLengthMinusOne);
     }
     else
     {
         /* MS -> LR  */
-        FloatVectorOperations::copy (overlapBuffer.getWritePointer (0), reinterpret_cast<float*> (accumMid.data()) + L, irLengthMinusOne);
-        FloatVectorOperations::copy (overlapBuffer.getWritePointer (1), reinterpret_cast<float*> (accumMid.data()) + L, irLengthMinusOne);
-        FloatVectorOperations::add (overlapBuffer.getWritePointer (0), reinterpret_cast<float*> (accumSide.data()) + L, irLengthMinusOne);
-        FloatVectorOperations::subtract (overlapBuffer.getWritePointer (1), reinterpret_cast<float*> (accumSide.data()) + L, irLengthMinusOne);
+        juce::FloatVectorOperations::copy (overlapBuffer.getWritePointer (0), reinterpret_cast<float*> (accumMid.data()) + L, irLengthMinusOne);
+        juce::FloatVectorOperations::copy (overlapBuffer.getWritePointer (1), reinterpret_cast<float*> (accumMid.data()) + L, irLengthMinusOne);
+        juce::FloatVectorOperations::add (overlapBuffer.getWritePointer (0), reinterpret_cast<float*> (accumSide.data()) + L, irLengthMinusOne);
+        juce::FloatVectorOperations::subtract (overlapBuffer.getWritePointer (1), reinterpret_cast<float*> (accumSide.data()) + L, irLengthMinusOne);
     }
 
     if (*applyHeadphoneEq >= 0.5f)
     {
         float* channelData[2] = {buffer.getWritePointer(0), buffer.getWritePointer(1)};
-        AudioBlock<float> sumBlock (channelData, 2, L);
-        ProcessContextReplacing<float> eqContext (sumBlock);
+        juce::dsp::AudioBlock<float> sumBlock (channelData, 2, L);
+        juce::dsp::ProcessContextReplacing<float> eqContext (sumBlock);
         EQ.process(eqContext);
     }
 
@@ -239,34 +239,34 @@ bool BinauralDecoderAudioProcessor::hasEditor() const
     return true; // (change this to false if you choose to not supply an editor)
 }
 
-AudioProcessorEditor* BinauralDecoderAudioProcessor::createEditor()
+juce::AudioProcessorEditor* BinauralDecoderAudioProcessor::createEditor()
 {
     return new BinauralDecoderAudioProcessorEditor (*this, parameters);
 }
 
 //==============================================================================
-void BinauralDecoderAudioProcessor::getStateInformation (MemoryBlock& destData)
+void BinauralDecoderAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
     auto state = parameters.copyState();
 
     auto oscConfig = state.getOrCreateChildWithName ("OSCConfig", nullptr);
     oscConfig.copyPropertiesFrom (oscParameterInterface.getConfig(), nullptr);
 
-    std::unique_ptr<XmlElement> xml (state.createXml());
+    std::unique_ptr<juce::XmlElement> xml (state.createXml());
     copyXmlToBinary (*xml, destData);
 }
 
 
 void BinauralDecoderAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
-    std::unique_ptr<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
+    std::unique_ptr<juce::XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
     if (xmlState.get() != nullptr)
         if (xmlState->hasTagName (parameters.state.getType()))
         {
-            parameters.replaceState (ValueTree::fromXml (*xmlState));
+            parameters.replaceState (juce::ValueTree::fromXml (*xmlState));
             if (parameters.state.hasProperty ("OSCPort")) // legacy
             {
-                oscParameterInterface.getOSCReceiver().connect (parameters.state.getProperty ("OSCPort", var (-1)));
+                oscParameterInterface.getOSCReceiver().connect (parameters.state.getProperty ("OSCPort", juce::var (-1)));
                 parameters.state.removeProperty ("OSCPort", nullptr);
             }
 
@@ -277,21 +277,26 @@ void BinauralDecoderAudioProcessor::setStateInformation (const void* data, int s
 }
 
 //==============================================================================
-void BinauralDecoderAudioProcessor::parameterChanged (const String &parameterID, float newValue)
+void BinauralDecoderAudioProcessor::parameterChanged (const juce::String &parameterID, float newValue)
 {
     if (parameterID == "inputOrderSetting")
         userChangedIOSettings = true;
     else if (parameterID == "applyHeadphoneEq")
     {
-        const int sel (roundToInt(newValue));
+        const int sel (juce::roundToInt (newValue));
         if (sel > 0)
         {
             int sourceDataSize;
-            String name = headphoneEQs[sel-1].replace("-", "") + "_wav";
+            juce::String name = headphoneEQs[sel-1].replace("-", "") + "_wav";
             auto* sourceData = BinaryData::getNamedResource(name.toUTF8(), sourceDataSize);
             if (sourceData == nullptr)
                 DBG("error");
-            EQ.loadImpulseResponse(sourceData, sourceDataSize, true, false, 2048, false);
+            EQ.loadImpulseResponse (sourceData,
+                                    sourceDataSize,
+                                    juce::dsp::Convolution::Stereo::yes,
+                                    juce::dsp::Convolution::Trim::no,
+                                    2048,
+                                    juce::dsp::Convolution::Normalise::no);
         }
     }
 }
@@ -304,8 +309,8 @@ void BinauralDecoderAudioProcessor::updateBuffers()
     const double sampleRate = getSampleRate();
     const int blockSize = getBlockSize();
 
-    int order = jmax(input.getOrder(), 1);
-    const int nCh = input.getNumberOfChannels(); // why not jmin(buffer.....)? Is updateBuffers called before the first processBlock?
+    int order = juce::jmax (input.getOrder(), 1);
+    const int nCh = input.getNumberOfChannels(); // why not juce::jmin(buffer.....)? Is updateBuffers called before the first processBlock?
     DBG("order: " << order);
     DBG("nCh: " << nCh);
 
@@ -316,12 +321,12 @@ void BinauralDecoderAudioProcessor::updateBuffers()
 
     //get number of mid- and side-channels
     nSideCh = order * (order + 1) / 2;
-    nMidCh = square(order + 1) - nSideCh;   //nMidCh = nCh - nSideCh; //nCh should be equalt to (order+1)^2
+    nMidCh = juce::square (order + 1) - nSideCh;   //nMidCh = nCh - nSideCh; //nCh should be equalt to (order+1)^2
 
     if (order < 1)
         return;
 
-    AudioBuffer<float> resampledIRs;
+    juce::AudioBuffer<float> resampledIRs;
     bool useResampled = false;
     irLength = 236;
 
@@ -329,16 +334,16 @@ void BinauralDecoderAudioProcessor::updateBuffers()
     {
         useResampled = true;
         double factorReading = irsSampleRate / sampleRate;
-        irLength = roundToInt (irLength / factorReading + 0.49);
+        irLength = juce::roundToInt (irLength / factorReading + 0.49);
 
-        MemoryAudioSource memorySource (irs[order - 1], false);
-        ResamplingAudioSource resamplingSource (&memorySource, false, nCh);
+        juce::MemoryAudioSource memorySource (irs[order - 1], false);
+        juce::ResamplingAudioSource resamplingSource (&memorySource, false, nCh);
 
         resamplingSource.setResamplingRatio (factorReading);
         resamplingSource.prepareToPlay (irLength, sampleRate);
 
         resampledIRs.setSize(nCh, irLength);
-        AudioSourceChannelInfo info;
+        juce::AudioSourceChannelInfo info;
         info.startSample = 0;
         info.numSamples = irLength;
         info.buffer = &resampledIRs;
@@ -354,7 +359,7 @@ void BinauralDecoderAudioProcessor::updateBuffers()
     const int prevFftLength = fftLength;
 
     const int ergL = blockSize + irLength - 1; //max number of nonzero output samples
-    fftLength = nextPowerOfTwo(ergL);          //fftLength >= ergL
+    fftLength = juce::nextPowerOfTwo (ergL);          //fftLength >= ergL
 
     overlapBuffer.setSize(2, irLengthMinusOne);
     overlapBuffer.clear();
@@ -363,7 +368,7 @@ void BinauralDecoderAudioProcessor::updateBuffers()
     {
         const int fftOrder = std::log2 (fftLength);
 
-        fft = std::make_unique<FFT> (fftOrder);
+        fft = std::make_unique<juce::dsp::FFT> (fftOrder);
 
         fftBuffer.resize (fftLength);
 
@@ -378,22 +383,22 @@ void BinauralDecoderAudioProcessor::updateBuffers()
     {
         float* inOut = reinterpret_cast<float*> (fftBuffer.data());
         const float* src = useResampled ? resampledIRs.getReadPointer(i) : irs[order - 1].getReadPointer(i);
-        FloatVectorOperations::copy (inOut, src, irLength);
-        FloatVectorOperations::clear (inOut + irLength, fftLength - irLength); // zero padding
+        juce::FloatVectorOperations::copy (inOut, src, irLength);
+        juce::FloatVectorOperations::clear (inOut + irLength, fftLength - irLength); // zero padding
         fft->performRealOnlyForwardTransform (inOut);
-        FloatVectorOperations::copy (irsFrequencyDomain.getWritePointer (i), inOut, 2 * (fftLength / 2 + 1));
+        juce::FloatVectorOperations::copy (irsFrequencyDomain.getWritePointer (i), inOut, 2 * (fftLength / 2 + 1));
     }
 }
 
 
 //==============================================================================
-std::vector<std::unique_ptr<RangedAudioParameter>> BinauralDecoderAudioProcessor::createParameterLayout()
+std::vector<std::unique_ptr<juce::RangedAudioParameter>> BinauralDecoderAudioProcessor::createParameterLayout()
 {
     // add your audio parameters here
-    std::vector<std::unique_ptr<RangedAudioParameter>> params;
+    std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("inputOrderSetting", "Input Ambisonic Order", "",
-                                                         NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
+                                                         juce::NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
                                                          [](float value) {
                                                              if (value >= 0.5f && value < 1.5f) return "0th";
                                                              else if (value >= 1.5f && value < 2.5f) return "1st";
@@ -407,17 +412,17 @@ std::vector<std::unique_ptr<RangedAudioParameter>> BinauralDecoderAudioProcessor
                                                          nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("useSN3D", "Input Normalization", "",
-                                                       NormalisableRange<float>(0.0f, 1.0f, 1.0f), 1.0f,
+                                                       juce::NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                                        [](float value) {
                                                            if (value >= 0.5f) return "SN3D";
                                                            else return "N3D";
                                                        }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("applyHeadphoneEq", "Headphone Equalization", "",
-                                                       NormalisableRange<float>(0.0f, float(headphoneEQs.size()), 1.0f), 0.0f,
+                                                       juce::NormalisableRange<float> (0.0f, float(headphoneEQs.size()), 1.0f), 0.0f,
                                                        [this](float value) {
-                                                           if (value < 0.5f) return String("OFF");
-                                                           else return String(this->headphoneEQs[roundToInt(value)-1]);
+                                                           if (value < 0.5f) return juce::String ("OFF");
+                                                           else return juce::String (this->headphoneEQs[juce::roundToInt (value) - 1]);
                                                        }, nullptr));
 
     return params;
@@ -425,7 +430,7 @@ std::vector<std::unique_ptr<RangedAudioParameter>> BinauralDecoderAudioProcessor
 
 //==============================================================================
 // This creates new instances of the plugin..
-AudioProcessor* JUCE_CALLTYPE createPluginFilter()
+juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new BinauralDecoderAudioProcessor();
 }

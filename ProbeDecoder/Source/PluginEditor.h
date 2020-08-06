@@ -31,21 +31,21 @@
 #include "../../resources/customComponents/SimpleLabel.h"
 
 typedef ReverseSlider::SliderAttachment SliderAttachment;
-typedef AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
+typedef juce::AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
 
 //==============================================================================
 /**
 */
-class ProbeDecoderAudioProcessorEditor  : public AudioProcessorEditor,
-private Timer
+class ProbeDecoderAudioProcessorEditor  : public juce::AudioProcessorEditor,
+private juce::Timer
 {
 public:
 
-    ProbeDecoderAudioProcessorEditor (ProbeDecoderAudioProcessor&, AudioProcessorValueTreeState&);
+    ProbeDecoderAudioProcessorEditor (ProbeDecoderAudioProcessor&, juce::AudioProcessorValueTreeState&);
     ~ProbeDecoderAudioProcessorEditor();
 
     //==============================================================================
-    void paint (Graphics&) override;
+    void paint (juce::Graphics&) override;
     void resized() override;
 
 private:
@@ -59,9 +59,9 @@ private:
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     ProbeDecoderAudioProcessor& processor;
-    AudioProcessorValueTreeState& valueTreeState;
+    juce::AudioProcessorValueTreeState& valueTreeState;
 
-    GroupComponent ypGroup, settingsGroup;
+    juce::GroupComponent ypGroup, settingsGroup;
     ReverseSlider slAzimuth, slElevation;
 
     SpherePanner sphere;
@@ -73,7 +73,7 @@ private:
     std::unique_ptr<ComboBoxAttachment> cbNormalizationAtachement;
     std::unique_ptr<ComboBoxAttachment> cbOrderAtachement;
 
-    TooltipWindow toolTipWin;
+    juce::TooltipWindow toolTipWin;
 
     // labels
     SimpleLabel lbAzimuth, lbElevation;

@@ -24,8 +24,8 @@
 #include "PluginEditor.h"
 
 //==============================================================================
-RoomEncoderAudioProcessorEditor::RoomEncoderAudioProcessorEditor (RoomEncoderAudioProcessor& p, AudioProcessorValueTreeState& vts)
-: AudioProcessorEditor (&p), footer (p.getOSCParameterInterface()), processor (p), valueTreeState (vts),
+RoomEncoderAudioProcessorEditor::RoomEncoderAudioProcessorEditor (RoomEncoderAudioProcessor& p, juce::AudioProcessorValueTreeState& vts)
+: juce::AudioProcessorEditor (&p), footer (p.getOSCParameterInterface()), processor (p), valueTreeState (vts),
 sourceElement(*valueTreeState.getParameter("sourceX"), valueTreeState.getParameterRange("sourceX"),
               *valueTreeState.getParameter("sourceY"), valueTreeState.getParameterRange("sourceY"),
               *valueTreeState.getParameter("sourceZ"), valueTreeState.getParameterRange("sourceZ")),
@@ -42,7 +42,7 @@ listenerElement(*valueTreeState.getParameter("listenerX"), valueTreeState.getPar
     toolTipWin.setOpaque (false);
 
     addAndMakeVisible (&title);
-    title.setTitle (String ("Room"), String ("Encoder"));
+    title.setTitle (juce::String ("Room"), juce::String ("Encoder"));
     title.setFont (globalLaF.robotoBold, globalLaF.robotoLight);
 
     cbNormalizationAttachement.reset (new ComboBoxAttachment (valueTreeState, "useSN3D", *title.getOutputWidgetPtr()->getNormCbPointer()));
@@ -54,33 +54,33 @@ listenerElement(*valueTreeState.getParameter("listenerX"), valueTreeState.getPar
 
     addAndMakeVisible(&gcRoomDimensions);
     gcRoomDimensions.setText("Room Dimensions");
-    gcRoomDimensions.setTextLabelPosition (Justification::left);
-    gcRoomDimensions.setColour (GroupComponent::outlineColourId, globalLaF.ClSeperator);
-    gcRoomDimensions.setColour (GroupComponent::textColourId, Colours::white);
+    gcRoomDimensions.setTextLabelPosition (juce::Justification::left);
+    gcRoomDimensions.setColour (juce::GroupComponent::outlineColourId, globalLaF.ClSeperator);
+    gcRoomDimensions.setColour (juce::GroupComponent::textColourId, juce::Colours::white);
 
     addAndMakeVisible(&gcListenerPosition);
     gcListenerPosition.setText("Listener Position");
-    gcListenerPosition.setTextLabelPosition (Justification::left);
-    gcListenerPosition.setColour (GroupComponent::outlineColourId, globalLaF.ClSeperator);
-    gcListenerPosition.setColour (GroupComponent::textColourId, Colours::white);
+    gcListenerPosition.setTextLabelPosition (juce::Justification::left);
+    gcListenerPosition.setColour (juce::GroupComponent::outlineColourId, globalLaF.ClSeperator);
+    gcListenerPosition.setColour (juce::GroupComponent::textColourId, juce::Colours::white);
 
     addAndMakeVisible(&gcSourcePosition);
     gcSourcePosition.setText("Source Position");
-    gcSourcePosition.setTextLabelPosition (Justification::left);
-    gcSourcePosition.setColour (GroupComponent::outlineColourId, globalLaF.ClSeperator);
-    gcSourcePosition.setColour (GroupComponent::textColourId, Colours::white);
+    gcSourcePosition.setTextLabelPosition (juce::Justification::left);
+    gcSourcePosition.setColour (juce::GroupComponent::outlineColourId, globalLaF.ClSeperator);
+    gcSourcePosition.setColour (juce::GroupComponent::textColourId, juce::Colours::white);
 
     addAndMakeVisible(&gcReflectionProperties);
     gcReflectionProperties.setText("Reflection Properties");
-    gcReflectionProperties.setTextLabelPosition (Justification::centredLeft);
-    gcReflectionProperties.setColour (GroupComponent::outlineColourId, globalLaF.ClSeperator);
-    gcReflectionProperties.setColour (GroupComponent::textColourId, Colours::white);
+    gcReflectionProperties.setTextLabelPosition (juce::Justification::centredLeft);
+    gcReflectionProperties.setColour (juce::GroupComponent::outlineColourId, globalLaF.ClSeperator);
+    gcReflectionProperties.setColour (juce::GroupComponent::textColourId, juce::Colours::white);
 
     addAndMakeVisible(&gcSync);
     gcSync.setText("Synchronize Room Settings");
-    gcSync.setTextLabelPosition (Justification::left);
-    gcSync.setColour (GroupComponent::outlineColourId, globalLaF.ClSeperator);
-    gcSync.setColour (GroupComponent::textColourId, Colours::white);
+    gcSync.setTextLabelPosition (juce::Justification::left);
+    gcSync.setColour (juce::GroupComponent::outlineColourId, globalLaF.ClSeperator);
+    gcSync.setColour (juce::GroupComponent::textColourId, juce::Colours::white);
 
 
     addAndMakeVisible(&lbRoomX);
@@ -106,27 +106,27 @@ listenerElement(*valueTreeState.getParameter("listenerX"), valueTreeState.getPar
 
     addAndMakeVisible(&slRoomX);
     slRoomXAttachment.reset (new SliderAttachment(valueTreeState,"roomX", slRoomX));
-    slRoomX.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slRoomX.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slRoomX.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
+    slRoomX.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slRoomX.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    slRoomX.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
     slRoomX.setTextValueSuffix(" m");
     slRoomX.setTooltip("room size x");
     slRoomX.addListener(this);
 
     addAndMakeVisible(&slRoomY);
     slRoomYAttachment.reset (new SliderAttachment(valueTreeState, "roomY", slRoomY));
-    slRoomY.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slRoomY.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slRoomY.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
+    slRoomY.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slRoomY.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    slRoomY.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
     slRoomY.setTextValueSuffix(" m");
     slRoomY.setTooltip("room size y");
     slRoomY.addListener(this);
 
     addAndMakeVisible(&slRoomZ);
     slRoomZAttachment.reset (new SliderAttachment(valueTreeState, "roomZ", slRoomZ));
-    slRoomZ.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slRoomZ.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slRoomZ.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
+    slRoomZ.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slRoomZ.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    slRoomZ.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
     slRoomZ.setTextValueSuffix(" m");
     slRoomZ.setTooltip("room size z");
     slRoomZ.addListener(this);
@@ -144,55 +144,55 @@ listenerElement(*valueTreeState.getParameter("listenerX"), valueTreeState.getPar
 
     addAndMakeVisible(&slSourceX);
     slSourceXAttachment.reset (new SliderAttachment(valueTreeState, "sourceX", slSourceX));
-    slSourceX.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slSourceX.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slSourceX.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
+    slSourceX.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slSourceX.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    slSourceX.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
     slSourceX.setTextValueSuffix(" m");
     slSourceX.setTooltip("source position x");
     slSourceX.addListener(this);
 
     addAndMakeVisible(&slSourceY);
     slSourceYAttachment.reset (new SliderAttachment(valueTreeState, "sourceY", slSourceY));
-    slSourceY.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slSourceY.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slSourceY.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
+    slSourceY.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slSourceY.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    slSourceY.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
     slSourceY.setTextValueSuffix(" m");
     slSourceY.setTooltip("source position y");
     slSourceY.addListener(this);
 
     addAndMakeVisible(&slSourceZ);
     slSourceZAttachment.reset (new SliderAttachment(valueTreeState, "sourceZ", slSourceZ));
-    slSourceZ.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slSourceZ.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slSourceZ.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
+    slSourceZ.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slSourceZ.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    slSourceZ.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
     slSourceZ.setTextValueSuffix(" m");
     slSourceZ.setTooltip("source position z");
     slSourceZ.addListener(this);
 
     addAndMakeVisible(&slListenerX);
     slListenerXAttachment.reset (new SliderAttachment(valueTreeState, "listenerX", slListenerX));
-    slListenerX.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slListenerX.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slListenerX.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
-    slListenerX.setRotaryParameters(MathConstants<float>::pi, 3*MathConstants<float>::pi, false);
+    slListenerX.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slListenerX.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    slListenerX.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
+    slListenerX.setRotaryParameters(juce::MathConstants<float>::pi, 3*juce::MathConstants<float>::pi, false);
     slListenerX.setTextValueSuffix(" m");
     slListenerX.setTooltip("listener position x");
     slListenerX.addListener(this);
 
     addAndMakeVisible(&slListenerY);
     slListenerYAttachment.reset (new SliderAttachment(valueTreeState,"listenerY", slListenerY));
-    slListenerY.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slListenerY.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slListenerY.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
+    slListenerY.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slListenerY.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    slListenerY.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
     slListenerY.setTextValueSuffix(" m");
     slListenerY.setTooltip("listener position y");
     slListenerY.addListener(this);
 
     addAndMakeVisible(&slListenerZ);
     slListenerZAttachment.reset (new SliderAttachment (valueTreeState,"listenerZ", slListenerZ));
-    slListenerZ.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slListenerZ.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slListenerZ.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
+    slListenerZ.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slListenerZ.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    slListenerZ.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
     slListenerZ.setTextValueSuffix(" m");
     slListenerZ.setTooltip("listener position z");
     slListenerZ.addListener(this);
@@ -204,59 +204,59 @@ listenerElement(*valueTreeState.getParameter("listenerX"), valueTreeState.getPar
     lbNumReflections.setText("Number of Reflections");
     addAndMakeVisible(&slNumReflections);
     slNumReflectionsAttachment.reset (new SliderAttachment(valueTreeState,"numRefl", slNumReflections));
-    slNumReflections.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slNumReflections.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slNumReflections.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
+    slNumReflections.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slNumReflections.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    slNumReflections.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
 
 
     addAndMakeVisible (lbWallAttenuation);
-    lbWallAttenuation.setText ("Additional Attenuation", true, Justification::left);
+    lbWallAttenuation.setText ("Additional Attenuation", true, juce::Justification::left);
 
     addAndMakeVisible (slWallAttenuationFront);
     slWallAttenuationFrontAttachment.reset (new SliderAttachment (valueTreeState, "wallAttenuationFront", slWallAttenuationFront));
-    slWallAttenuationFront.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slWallAttenuationFront.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slWallAttenuationFront.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
+    slWallAttenuationFront.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slWallAttenuationFront.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    slWallAttenuationFront.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
     addAndMakeVisible (lbWallAttenuationFront);
     lbWallAttenuationFront.setText ("Front");
 
     addAndMakeVisible (slWallAttenuationBack);
     slWallAttenuationBackAttachment.reset (new SliderAttachment (valueTreeState, "wallAttenuationBack", slWallAttenuationBack));
-    slWallAttenuationBack.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slWallAttenuationBack.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slWallAttenuationBack.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
+    slWallAttenuationBack.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slWallAttenuationBack.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    slWallAttenuationBack.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
     addAndMakeVisible (lbWallAttenuationBack);
     lbWallAttenuationBack.setText ("Back");
 
     addAndMakeVisible (slWallAttenuationLeft);
     slWallAttenuationLeftAttachment.reset (new SliderAttachment (valueTreeState, "wallAttenuationLeft", slWallAttenuationLeft));
-    slWallAttenuationLeft.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slWallAttenuationLeft.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slWallAttenuationLeft.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
+    slWallAttenuationLeft.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slWallAttenuationLeft.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    slWallAttenuationLeft.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
     addAndMakeVisible (lbWallAttenuationLeft);
     lbWallAttenuationLeft.setText ("Left");
 
     addAndMakeVisible (slWallAttenuationRight);
     slWallAttenuationRightAttachment.reset (new SliderAttachment (valueTreeState, "wallAttenuationRight", slWallAttenuationRight));
-    slWallAttenuationRight.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slWallAttenuationRight.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slWallAttenuationRight.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
+    slWallAttenuationRight.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slWallAttenuationRight.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    slWallAttenuationRight.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
     addAndMakeVisible (lbWallAttenuationRight);
     lbWallAttenuationRight.setText ("Right");
 
     addAndMakeVisible (slWallAttenuationCeiling);
     slWallAttenuationCeilingAttachment.reset (new SliderAttachment (valueTreeState, "wallAttenuationCeiling", slWallAttenuationCeiling));
-    slWallAttenuationCeiling.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slWallAttenuationCeiling.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slWallAttenuationCeiling.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
+    slWallAttenuationCeiling.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slWallAttenuationCeiling.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    slWallAttenuationCeiling.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
     addAndMakeVisible (lbWallAttenuationCeiling);
     lbWallAttenuationCeiling.setText ("Ceiling");
 
     addAndMakeVisible (slWallAttenuationFloor);
     slWallAttenuationFloorAttachment.reset (new SliderAttachment (valueTreeState, "wallAttenuationFloor", slWallAttenuationFloor));
-    slWallAttenuationFloor.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slWallAttenuationFloor.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slWallAttenuationFloor.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
+    slWallAttenuationFloor.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slWallAttenuationFloor.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    slWallAttenuationFloor.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
     addAndMakeVisible (lbWallAttenuationFloor);
     lbWallAttenuationFloor.setText ("Floor");
 
@@ -265,9 +265,9 @@ listenerElement(*valueTreeState.getParameter("listenerX"), valueTreeState.getPar
 
     addAndMakeVisible(&slReflCoeff);
     slReflCoeffAttachment.reset (new SliderAttachment(valueTreeState,"reflCoeff", slReflCoeff));
-    slReflCoeff.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slReflCoeff.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slReflCoeff.setColour (Slider::rotarySliderOutlineColourId, Colours::lightgrey);
+    slReflCoeff.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slReflCoeff.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    slReflCoeff.setColour (juce::Slider::rotarySliderOutlineColourId, juce::Colours::lightgrey);
     slReflCoeff.setTextValueSuffix(" dB");
 
     addAndMakeVisible(&lbLSF);
@@ -281,48 +281,48 @@ listenerElement(*valueTreeState.getParameter("listenerX"), valueTreeState.getPar
 
     addAndMakeVisible(&slLowShelfFreq);
     slLowShelfFreqAttachment.reset (new SliderAttachment(valueTreeState,"lowShelfFreq", slLowShelfFreq));
-    slLowShelfFreq.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slLowShelfFreq.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slLowShelfFreq.setColour (Slider::rotarySliderOutlineColourId, Colours::cyan);
+    slLowShelfFreq.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slLowShelfFreq.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    slLowShelfFreq.setColour (juce::Slider::rotarySliderOutlineColourId, juce::Colours::cyan);
     slLowShelfFreq.setTooltip("low shelf freq");
 
 
     addAndMakeVisible(&slLowShelfGain);
     slLowShelfGainAttachment.reset (new SliderAttachment(valueTreeState,"lowShelfGain", slLowShelfGain));
     slLowShelfGain.setTextValueSuffix (" dB");
-    slLowShelfGain.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slLowShelfGain.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slLowShelfGain.setColour (Slider::rotarySliderOutlineColourId, Colours::cyan);
+    slLowShelfGain.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slLowShelfGain.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    slLowShelfGain.setColour (juce::Slider::rotarySliderOutlineColourId, juce::Colours::cyan);
 
 
     addAndMakeVisible(&slHighShelfFreq);
     slHighShelfFreqAttachment.reset (new SliderAttachment(valueTreeState,"highShelfFreq", slHighShelfFreq));
-    slHighShelfFreq.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slHighShelfFreq.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slHighShelfFreq.setColour (Slider::rotarySliderOutlineColourId, Colours::orangered);
+    slHighShelfFreq.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slHighShelfFreq.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    slHighShelfFreq.setColour (juce::Slider::rotarySliderOutlineColourId, juce::Colours::orangered);
     slHighShelfFreq.setTooltip("high shelf freq");
 
     addAndMakeVisible(&slHighShelfGain);
     slHighShelfGainAttachment.reset (new SliderAttachment(valueTreeState,"highShelfGain", slHighShelfGain));
     slHighShelfGain.setTextValueSuffix (" dB");
-    slHighShelfGain.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slHighShelfGain.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slHighShelfGain.setColour (Slider::rotarySliderOutlineColourId, Colours::orangered);
+    slHighShelfGain.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slHighShelfGain.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    slHighShelfGain.setColour (juce::Slider::rotarySliderOutlineColourId, juce::Colours::orangered);
 
     addAndMakeVisible(&fv);
-    fv.addCoefficients(processor.lowShelfCoefficients, Colours::cyan, &slLowShelfFreq, &slLowShelfGain);
-    fv.addCoefficients(processor.highShelfCoefficients, Colours::orangered, &slHighShelfFreq, &slHighShelfGain);
+    fv.addCoefficients(processor.lowShelfCoefficients, juce::Colours::cyan, &slLowShelfFreq, &slLowShelfGain);
+    fv.addCoefficients(processor.highShelfCoefficients, juce::Colours::orangered, &slHighShelfFreq, &slHighShelfGain);
 
     addAndMakeVisible(&rv);
     rv.setDataPointers (p.allGains, p.mRadius, p.numRefl);
 
-    Vector3D<float> dims(slRoomX.getValue(), slRoomY.getValue(), slRoomZ.getValue());
-    float scale = jmin(xyPlane.setDimensions(dims), zyPlane.setDimensions(dims));
+    juce::Vector3D<float> dims(slRoomX.getValue(), slRoomY.getValue(), slRoomZ.getValue());
+    float scale = juce::jmin(xyPlane.setDimensions(dims), zyPlane.setDimensions(dims));
     xyPlane.setScale(scale);
     zyPlane.setScale(scale);
 
     addAndMakeVisible(&cbSyncChannel);
-    cbSyncChannel.setJustificationType(Justification::centred);
+    cbSyncChannel.setJustificationType(juce::Justification::centred);
     cbSyncChannel.addItem("none", 1);
     cbSyncChannel.addItem("1", 2);
     cbSyncChannel.addItem("2", 3);
@@ -336,34 +336,34 @@ listenerElement(*valueTreeState.getParameter("listenerX"), valueTreeState.getPar
     addAndMakeVisible(&tbSyncRoomSize);
     tbSyncRoomSizeAttachment.reset (new ButtonAttachment(valueTreeState, "syncRoomSize", tbSyncRoomSize));
     tbSyncRoomSize.setButtonText("Room Dimensions");
-    tbSyncRoomSize.setColour (ToggleButton::tickColourId, globalLaF.ClWidgetColours[0]);
+    tbSyncRoomSize.setColour (juce::ToggleButton::tickColourId, globalLaF.ClWidgetColours[0]);
 
     addAndMakeVisible(&tbSyncListener);
     tbSyncListenerAttachment.reset (new ButtonAttachment(valueTreeState, "syncListener", tbSyncListener));
     tbSyncListener.setButtonText("Listener Position");
-    tbSyncListener.setColour (ToggleButton::tickColourId, globalLaF.ClWidgetColours[1]);
+    tbSyncListener.setColour (juce::ToggleButton::tickColourId, globalLaF.ClWidgetColours[1]);
 
     addAndMakeVisible(&tbSyncReflection);
     tbSyncReflectionAttachment.reset (new ButtonAttachment(valueTreeState, "syncReflection", tbSyncReflection));
     tbSyncReflection.setButtonText("Reflection Properties");
-    tbSyncReflection.setColour (ToggleButton::tickColourId, Colours::orangered);
+    tbSyncReflection.setColour (juce::ToggleButton::tickColourId, juce::Colours::orangered);
 
     addAndMakeVisible (&tbDirectPathUnityGain);
     tbDirectPathUnityGainAttachment.reset (new ButtonAttachment (valueTreeState, "directPathUnityGain", tbDirectPathUnityGain));
-    tbDirectPathUnityGain.setButtonText ("Direct Path Unity Gain");
-    tbDirectPathUnityGain.setColour (ToggleButton::tickColourId, globalLaF.ClWidgetColours[0]);
+    tbDirectPathUnityGain.setButtonText ("Direct juce::Path Unity Gain");
+    tbDirectPathUnityGain.setColour (juce::ToggleButton::tickColourId, globalLaF.ClWidgetColours[0]);
 
     addAndMakeVisible (&tbDirectPathZeroDelay);
     tbDirectPathZeroDelayAttachment.reset (new ButtonAttachment (valueTreeState, "directPathZeroDelay", tbDirectPathZeroDelay));
-    tbDirectPathZeroDelay.setButtonText ("Direct Path Zero Delay");
-    tbDirectPathZeroDelay.setColour (ToggleButton::tickColourId, globalLaF.ClWidgetColours[1]);
+    tbDirectPathZeroDelay.setButtonText ("Direct juce::Path Zero Delay");
+    tbDirectPathZeroDelay.setColour (juce::ToggleButton::tickColourId, globalLaF.ClWidgetColours[1]);
     rv.setZeroDelay (tbDirectPathZeroDelay.getToggleState());
     tbDirectPathZeroDelay.addListener (this);
 
     addAndMakeVisible (&tbRenderDirectPath);
     tbRenderDirectPathAttachment.reset (new ButtonAttachment (valueTreeState, "renderDirectPath", tbRenderDirectPath));
-    tbRenderDirectPath.setButtonText ("Render Direct Path");
-    tbRenderDirectPath.setColour (ToggleButton::tickColourId, globalLaF.ClWidgetColours[2]);
+    tbRenderDirectPath.setButtonText ("Render Direct juce::Path");
+    tbRenderDirectPath.setColour (juce::ToggleButton::tickColourId, globalLaF.ClWidgetColours[2]);
     tbRenderDirectPath.addListener (this);
 
     startTimer(20);
@@ -375,7 +375,7 @@ RoomEncoderAudioProcessorEditor::~RoomEncoderAudioProcessorEditor()
 }
 
 //==============================================================================
-void RoomEncoderAudioProcessorEditor::paint (Graphics& g)
+void RoomEncoderAudioProcessorEditor::paint (juce::Graphics& g)
 {
     g.fillAll (globalLaF.ClBackground);
 }
@@ -396,26 +396,26 @@ void RoomEncoderAudioProcessorEditor::resized()
 
 
 
-    Rectangle<int> area (getLocalBounds());
+    juce::Rectangle<int> area (getLocalBounds());
 
     {
-        Rectangle<int> footerArea (area.removeFromBottom (footerHeight));
+        juce::Rectangle<int> footerArea (area.removeFromBottom (footerHeight));
         footer.setBounds(footerArea);
     }
 
     area.removeFromLeft(leftRightMargin);
     area.removeFromRight(leftRightMargin);
-    Rectangle<int> headerArea = area.removeFromTop (headerHeight);
+    juce::Rectangle<int> headerArea = area.removeFromTop (headerHeight);
     title.setBounds (headerArea);
     area.removeFromTop(10);
 
     {
-        Rectangle<int> bottomStrip(area.removeFromBottom(120));
+        juce::Rectangle<int> bottomStrip(area.removeFromBottom(120));
         rv.setBounds(bottomStrip.removeFromRight(540));
         bottomStrip.removeFromRight(20);
         gcSync.setBounds(bottomStrip);
         bottomStrip.removeFromTop(25);
-        Rectangle<int> channelRow(bottomStrip.removeFromTop(20));
+        juce::Rectangle<int> channelRow(bottomStrip.removeFromTop(20));
         lbSyncChannel.setBounds(channelRow.removeFromLeft(130));
         cbSyncChannel.setBounds(channelRow.removeFromLeft(50));
         bottomStrip.removeFromLeft(5);
@@ -428,15 +428,15 @@ void RoomEncoderAudioProcessorEditor::resized()
 
 
 
-    Rectangle<int> propArea (area.removeFromRight (9 * rotSliderWidth + 8 * rotSliderSpacing + 20));
+    juce::Rectangle<int> propArea (area.removeFromRight (9 * rotSliderWidth + 8 * rotSliderSpacing + 20));
     {
-        Rectangle<int> coordinateArea (propArea.removeFromTop(100));
+        juce::Rectangle<int> coordinateArea (propArea.removeFromTop(100));
 
-        Rectangle<int> roomArea (coordinateArea.removeFromLeft(3*rotSliderWidth+2*rotSliderSpacing));
+        juce::Rectangle<int> roomArea (coordinateArea.removeFromLeft(3*rotSliderWidth+2*rotSliderSpacing));
         gcRoomDimensions.setBounds (roomArea);
         roomArea.removeFromTop(25);
 
-        Rectangle<int> sliderRow = (roomArea.removeFromTop(rotSliderHeight));
+        juce::Rectangle<int> sliderRow = (roomArea.removeFromTop(rotSliderHeight));
         slRoomX.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
         sliderRow.removeFromLeft(rotSliderSpacing);
         slRoomY.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
@@ -450,7 +450,7 @@ void RoomEncoderAudioProcessorEditor::resized()
         lbRoomZ.setBounds (roomArea.removeFromLeft(rotSliderWidth));
 
         coordinateArea.removeFromLeft (20);
-        Rectangle<int> sourceArea (coordinateArea.removeFromLeft(3*rotSliderWidth+2*rotSliderSpacing));
+        juce::Rectangle<int> sourceArea (coordinateArea.removeFromLeft(3*rotSliderWidth+2*rotSliderSpacing));
         gcSourcePosition.setBounds (sourceArea);
         sourceArea.removeFromTop(25);
 
@@ -468,7 +468,7 @@ void RoomEncoderAudioProcessorEditor::resized()
         lbSourceZ.setBounds (sourceArea.removeFromLeft(rotSliderWidth));
 
         coordinateArea.removeFromLeft (20);
-        Rectangle<int> listenerArea (coordinateArea.removeFromLeft(3*rotSliderWidth+2*rotSliderSpacing));
+        juce::Rectangle<int> listenerArea (coordinateArea.removeFromLeft(3*rotSliderWidth+2*rotSliderSpacing));
         gcListenerPosition.setBounds (listenerArea);
         listenerArea.removeFromTop(25);
 
@@ -498,15 +498,15 @@ void RoomEncoderAudioProcessorEditor::resized()
     tbRenderDirectPath.setBounds (buttonRow.removeFromLeft (120));
 
 
-    Rectangle<int> fvCol (propArea.removeFromLeft(330));
+    juce::Rectangle<int> fvCol (propArea.removeFromLeft(330));
 
     { // 120
-        Rectangle<int> fvRow (fvCol.removeFromTop(130));
+        juce::Rectangle<int> fvRow (fvCol.removeFromTop(130));
         fv.setBounds(fvRow);
 
         fvCol.removeFromTop(10);
 
-        Rectangle<int> sliderRow (fvCol.removeFromTop(rotSliderHeight));
+        juce::Rectangle<int> sliderRow (fvCol.removeFromTop(rotSliderHeight));
         sliderRow.removeFromLeft(20);
         slLowShelfFreq.setBounds(sliderRow.removeFromLeft(rotSliderWidth));
         sliderRow.removeFromLeft(sliderSpacing);
@@ -572,7 +572,7 @@ void RoomEncoderAudioProcessorEditor::resized()
     area.removeFromRight(10);
 
     {
-        Rectangle<int> planeArea (area.removeFromLeft(300));
+        juce::Rectangle<int> planeArea (area.removeFromLeft(300));
         int height = planeArea.getHeight()/2;
 
         xyPlane.setBounds(planeArea.removeFromTop(height));
@@ -580,18 +580,18 @@ void RoomEncoderAudioProcessorEditor::resized()
     }
 }
 
-void RoomEncoderAudioProcessorEditor::sliderValueChanged(Slider *slider)
+void RoomEncoderAudioProcessorEditor::sliderValueChanged(juce::Slider *slider)
 {
     if (slider == &slRoomX || slider == &slRoomY || slider == &slRoomZ)
     {
-        Vector3D<float> dims(slRoomX.getValue(), slRoomY.getValue(), slRoomZ.getValue());
-        float scale = jmin(xyPlane.setDimensions(dims), zyPlane.setDimensions(dims));
+        juce::Vector3D<float> dims(slRoomX.getValue(), slRoomY.getValue(), slRoomZ.getValue());
+        float scale = juce::jmin(xyPlane.setDimensions(dims), zyPlane.setDimensions(dims));
         xyPlane.setScale(scale);
         zyPlane.setScale(scale);
     }
 }
 
-void RoomEncoderAudioProcessorEditor::buttonStateChanged (Button *button)
+void RoomEncoderAudioProcessorEditor::buttonStateChanged (juce::Button *button)
 {
     if (button == &tbDirectPathZeroDelay)
         rv.setZeroDelay (tbDirectPathZeroDelay.getToggleState());

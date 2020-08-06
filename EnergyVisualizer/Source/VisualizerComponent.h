@@ -29,7 +29,7 @@
 //==============================================================================
 /*
 */
-class VisualizerComponent    : public Component, public OpenGLRenderer, private Timer
+class VisualizerComponent    : public juce::Component, public juce::OpenGLRenderer, private juce::Timer
 {
 public:
     VisualizerComponent()
@@ -80,12 +80,12 @@ public:
 
     void renderOpenGL() override
     {
-        jassert (OpenGLHelpers::isContextActive());
+        jassert (juce::OpenGLHelpers::isContextActive());
 
-        OpenGLHelpers::clear (Colour(0xFF2D2D2D));
+        juce::OpenGLHelpers::clear (juce::Colour(0xFF2D2D2D));
 
         const float desktopScale = (float) openGLContext.getRenderingScale();
-        glViewport (-5, -5, roundToInt (desktopScale * getWidth()+10), roundToInt (desktopScale * getHeight()+10));
+        glViewport (-5, -5, juce::roundToInt (desktopScale * getWidth()+10), juce::roundToInt (desktopScale * getHeight()+10));
 
         glEnable (GL_DEPTH_TEST);
         glDepthFunc (GL_LESS);
@@ -105,12 +105,12 @@ public:
 
         if (firstRun)
         {
-            PixelARGB colormapData[512];
+            juce::PixelARGB colormapData[512];
             for (int i = 0; i < 256; ++i)
             {
-                const float alpha = jlimit(0.0f, 1.0f, (float) i / 50.0f);
-                colormapData[i] = Colour::fromFloatRGBA(viridis_cropped[i][0], viridis_cropped[i][1], viridis_cropped[i][2], alpha).getPixelARGB();
-                colormapData[256 + i] = Colour::fromFloatRGBA(heatmap[i][0], heatmap[i][1], heatmap[i][2], heatmap[i][3]).getPixelARGB();
+                const float alpha = juce::jlimit(0.0f, 1.0f, (float) i / 50.0f);
+                colormapData[i] = juce::Colour::fromFloatRGBA(viridis_cropped[i][0], viridis_cropped[i][1], viridis_cropped[i][2], alpha).getPixelARGB();
+                colormapData[256 + i] = juce::Colour::fromFloatRGBA(heatmap[i][0], heatmap[i][1], heatmap[i][2], heatmap[i][3]).getPixelARGB();
             }
             texture.loadARGB(colormapData, 256, 2);
 
@@ -127,8 +127,8 @@ public:
         static GLfloat g_colorMap_data[nSamplePoints];
         for (int i = 0; i < nSamplePoints; i++)
         {
-            const float val = (Decibels::gainToDecibels (pRMS[i]) - peakLevel) / dynamicRange + 1.0f;
-            g_colorMap_data[i] = jlimit (0.0f, 1.0f, val);;
+            const float val = (juce::Decibels::gainToDecibels (pRMS[i]) - peakLevel) / dynamicRange + 1.0f;
+            g_colorMap_data[i] = juce::jlimit (0.0f, 1.0f, val);;
         }
 
         GLuint colorBuffer;
@@ -200,7 +200,7 @@ public:
         texture.release();
     }
 
-    void paint (Graphics& g) override
+    void paint (juce::Graphics& g) override
     {
 
     }
@@ -254,18 +254,18 @@ public:
         "      gl_FragColor = texture2D(tex0, vec2(colormapDepthOut, colormapChooserOut));\n"
         "}";
 
-        std::unique_ptr<OpenGLShaderProgram> newShader (new OpenGLShaderProgram (openGLContext));
-        String statusText;
+        std::unique_ptr<juce::OpenGLShaderProgram> newShader (new juce::OpenGLShaderProgram (openGLContext));
+        juce::String statusText;
 
-        if (newShader->addVertexShader (OpenGLHelpers::translateVertexShaderToV3 (vertexShader))
-            && newShader->addFragmentShader (OpenGLHelpers::translateFragmentShaderToV3 (fragmentShader))
+        if (newShader->addVertexShader (juce::OpenGLHelpers::translateVertexShaderToV3 (vertexShader))
+            && newShader->addFragmentShader (juce::OpenGLHelpers::translateFragmentShaderToV3 (fragmentShader))
             && newShader->link())
         {
             shader = std::move (newShader);
             shader->use();
 
             colormapChooser.reset (createUniform (openGLContext, *shader, "colormapChooser"));
-            statusText = "GLSL: v" + String (OpenGLShaderProgram::getLanguageVersion(), 2);
+            statusText = "GLSL: v" + juce::String (juce::OpenGLShaderProgram::getLanguageVersion(), 2);
         }
         else
         {
@@ -285,26 +285,26 @@ private:
     GLuint vertexBuffer, indexBuffer;
     const char* vertexShader;
     const char* fragmentShader;
-    std::unique_ptr<OpenGLShaderProgram> shader;
-    std::unique_ptr<OpenGLShaderProgram::Uniform> colormapChooser;
+    std::unique_ptr<juce::OpenGLShaderProgram> shader;
+    std::unique_ptr<juce::OpenGLShaderProgram::Uniform> colormapChooser;
     bool usePerceptualColormap = true;
 
-    static OpenGLShaderProgram::Uniform* createUniform (OpenGLContext& openGLContext, OpenGLShaderProgram& shaderProgram, const char* uniformName)
+    static juce::OpenGLShaderProgram::Uniform* createUniform (juce::OpenGLContext& openGLContext, juce::OpenGLShaderProgram& shaderProgram, const char* uniformName)
     {
         if (openGLContext.extensions.glGetUniformLocation (shaderProgram.getProgramID(), uniformName) < 0)
             return nullptr; // Return if error
-        return new OpenGLShaderProgram::Uniform (shaderProgram, uniformName);
+        return new juce::OpenGLShaderProgram::Uniform (shaderProgram, uniformName);
     }
 
     float peakLevel = 0.0f; // dB
     float dynamicRange = 35.0f; // dB
 
-    OpenGLTexture texture;
+    juce::OpenGLTexture texture;
 
     bool firstRun = true;
 
     float* pRMS;
 
-    OpenGLContext openGLContext;
+    juce::OpenGLContext openGLContext;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (VisualizerComponent)
 };

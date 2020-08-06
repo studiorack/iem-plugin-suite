@@ -31,22 +31,22 @@ MatrixMultiplierAudioProcessor::MatrixMultiplierAudioProcessor()
                        BusesProperties()
 #if ! JucePlugin_IsMidiEffect
 #if ! JucePlugin_IsSynth
-                       .withInput  ("Input",  AudioChannelSet::discreteChannels(64), true)
+                       .withInput  ("Input",  juce::AudioChannelSet::discreteChannels(64), true)
 #endif
-                       .withOutput ("Output", AudioChannelSet::discreteChannels(64), true)
+                       .withOutput ("Output", juce::AudioChannelSet::discreteChannels(64), true)
 #endif
                        ,
 #endif
 createParameterLayout())
 {
-    PropertiesFile::Options options;
+    juce::PropertiesFile::Options options;
     options.applicationName     = "MatrixMultiplier";
     options.filenameSuffix      = "settings";
     options.folderName          = "IEM";
     options.osxLibrarySubFolder = "Preferences";
 
-    properties.reset (new PropertiesFile(options));
-    lastDir = File(properties->getValue("configurationFolder"));
+    properties.reset (new juce::PropertiesFile(options));
+    lastDir = juce::File(properties->getValue("configurationFolder"));
 }
 
 MatrixMultiplierAudioProcessor::~MatrixMultiplierAudioProcessor()
@@ -54,10 +54,10 @@ MatrixMultiplierAudioProcessor::~MatrixMultiplierAudioProcessor()
 
 }
 
-void MatrixMultiplierAudioProcessor::setLastDir(File newLastDir)
+void MatrixMultiplierAudioProcessor::setLastDir(juce::File newLastDir)
 {
     lastDir = newLastDir;
-    const var v (lastDir.getFullPathName());
+    const juce::var v (lastDir.getFullPathName());
     properties->setValue("configurationFolder", v);
 
 }
@@ -78,12 +78,12 @@ void MatrixMultiplierAudioProcessor::setCurrentProgram (int index)
 {
 }
 
-const String MatrixMultiplierAudioProcessor::getProgramName (int index)
+const juce::String MatrixMultiplierAudioProcessor::getProgramName (int index)
 {
     return {};
 }
 
-void MatrixMultiplierAudioProcessor::changeProgramName (int index, const String& newName)
+void MatrixMultiplierAudioProcessor::changeProgramName (int index, const juce::String& newName)
 {
 }
 
@@ -92,7 +92,7 @@ void MatrixMultiplierAudioProcessor::prepareToPlay (double sampleRate, int sampl
 {
     checkInputAndOutput(this, 0, 0, true);
 
-    ProcessSpec specs;
+    juce::dsp::ProcessSpec specs;
     specs.sampleRate = sampleRate;
     specs.maximumBlockSize = samplesPerBlock;
     specs.numChannels = 64;
@@ -108,12 +108,12 @@ void MatrixMultiplierAudioProcessor::releaseResources()
 }
 
 
-void MatrixMultiplierAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
+void MatrixMultiplierAudioProcessor::processBlock (juce::AudioSampleBuffer& buffer, juce::MidiBuffer& midiMessages)
 {
     checkInputAndOutput(this, 0, 0, false);
-    ScopedNoDenormals noDenormals;
+    juce::ScopedNoDenormals noDenormals;
 
-    AudioBlock<float> ab (buffer);
+    juce::dsp::AudioBlock<float> ab (buffer);
     matTrans.processReplacing (ab);
 }
 
@@ -123,22 +123,22 @@ bool MatrixMultiplierAudioProcessor::hasEditor() const
     return true; // (change this to false if you choose to not supply an editor)
 }
 
-AudioProcessorEditor* MatrixMultiplierAudioProcessor::createEditor()
+juce::AudioProcessorEditor* MatrixMultiplierAudioProcessor::createEditor()
 {
     return new MatrixMultiplierAudioProcessorEditor (*this, parameters);
 }
 
 //==============================================================================
-void MatrixMultiplierAudioProcessor::getStateInformation (MemoryBlock& destData)
+void MatrixMultiplierAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
     auto state = parameters.copyState();
 
-    state.setProperty("lastOpenedConfigurationFile", var(lastFile.getFullPathName()), nullptr);
+    state.setProperty("lastOpenedConfigurationFile", juce::var(lastFile.getFullPathName()), nullptr);
 
     auto oscConfig = state.getOrCreateChildWithName ("OSCConfig", nullptr);
     oscConfig.copyPropertiesFrom (oscParameterInterface.getConfig(), nullptr);
 
-    std::unique_ptr<XmlElement> xml (state.createXml());
+    std::unique_ptr<juce::XmlElement> xml (state.createXml());
     copyXmlToBinary (*xml, destData);
 }
 
@@ -146,23 +146,23 @@ void MatrixMultiplierAudioProcessor::getStateInformation (MemoryBlock& destData)
 
 void MatrixMultiplierAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
-    std::unique_ptr<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
+    std::unique_ptr<juce::XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
     if (xmlState != nullptr)
         if (xmlState->hasTagName (parameters.state.getType()))
         {
-            parameters.replaceState (ValueTree::fromXml (*xmlState));
+            parameters.replaceState (juce::ValueTree::fromXml (*xmlState));
             if (parameters.state.hasProperty ("lastOpenedConfigurationFile"))
             {
-                Value val = parameters.state.getPropertyAsValue ("lastOpenedConfigurationFile", nullptr);
+                auto val = parameters.state.getPropertyAsValue ("lastOpenedConfigurationFile", nullptr);
                 if (val.getValue().toString() != "")
                 {
-                    const File f (val.getValue().toString());
+                    const juce::File f (val.getValue().toString());
                     loadConfiguration (f);
                 }
             }
             if (parameters.state.hasProperty ("OSCPort")) // legacy
             {
-                oscParameterInterface.getOSCReceiver().connect (parameters.state.getProperty ("OSCPort", var (-1)));
+                oscParameterInterface.getOSCReceiver().connect (parameters.state.getProperty ("OSCPort", juce::var (-1)));
                 parameters.state.removeProperty ("OSCPort", nullptr);
             }
 
@@ -173,7 +173,7 @@ void MatrixMultiplierAudioProcessor::setStateInformation (const void* data, int 
 }
 
 //==============================================================================
-void MatrixMultiplierAudioProcessor::parameterChanged (const String &parameterID, float newValue)
+void MatrixMultiplierAudioProcessor::parameterChanged (const juce::String &parameterID, float newValue)
 {
     if (parameterID == "inputChannelsSetting" || parameterID == "outputOrderSetting" )
         userChangedIOSettings = true;
@@ -186,17 +186,17 @@ void MatrixMultiplierAudioProcessor::updateBuffers()
 }
 //==============================================================================
 // This creates new instances of the plugin..
-AudioProcessor* JUCE_CALLTYPE createPluginFilter()
+juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new MatrixMultiplierAudioProcessor();
 }
 
 
-void MatrixMultiplierAudioProcessor::loadConfiguration(const File& configurationFile)
+void MatrixMultiplierAudioProcessor::loadConfiguration(const juce::File& configurationFile)
 {
     ReferenceCountedMatrix::Ptr tempMatrix = nullptr;
 
-    Result result = ConfigurationHelper::parseFileForTransformationMatrix(configurationFile, &tempMatrix);
+    juce::Result result = ConfigurationHelper::parseFileForTransformationMatrix(configurationFile, &tempMatrix);
     if (!result.wasOk()) {
         messageForEditor = result.getErrorMessage();
         return;
@@ -204,13 +204,13 @@ void MatrixMultiplierAudioProcessor::loadConfiguration(const File& configuration
 
     lastFile = configurationFile;
 
-    String output;
+    juce::String output;
     if (tempMatrix != nullptr)
     {
         matTrans.setMatrix(tempMatrix);
         output += "Configuration loaded successfully!\n";
         output += "    Name: \t" + tempMatrix->getName() + "\n";
-        output += "    Size: " + String(tempMatrix->getMatrix().getNumRows()) + "x" + String(tempMatrix->getMatrix().getNumColumns()) + " (output x input)\n";
+        output += "    Size: " + juce::String(tempMatrix->getMatrix().getNumRows()) + "x" + juce::String(tempMatrix->getMatrix().getNumColumns()) + " (output x input)\n";
         output += "    Description: \t" + tempMatrix->getDescription() + "\n";
     }
     else
@@ -223,13 +223,13 @@ void MatrixMultiplierAudioProcessor::loadConfiguration(const File& configuration
 
 
 //==============================================================================
-const bool MatrixMultiplierAudioProcessor::processNotYetConsumedOSCMessage (const OSCMessage &message)
+const bool MatrixMultiplierAudioProcessor::processNotYetConsumedOSCMessage (const juce::OSCMessage &message)
 {
-    if (message.getAddressPattern().toString().equalsIgnoreCase ("/" + String (JucePlugin_Name) + "/loadFile") && message.size() >= 1)
+    if (message.getAddressPattern().toString().equalsIgnoreCase ("/" + juce::String (JucePlugin_Name) + "/loadFile") && message.size() >= 1)
     {
         if (message[0].isString())
         {
-            File fileToLoad (message[0].getString());
+            juce::File fileToLoad (message[0].getString());
             loadConfiguration (fileToLoad);
             return true;
         }
@@ -241,9 +241,9 @@ const bool MatrixMultiplierAudioProcessor::processNotYetConsumedOSCMessage (cons
 
 
 //==============================================================================
-std::vector<std::unique_ptr<RangedAudioParameter>> MatrixMultiplierAudioProcessor::createParameterLayout()
+std::vector<std::unique_ptr<juce::RangedAudioParameter>> MatrixMultiplierAudioProcessor::createParameterLayout()
 {
-    std::vector<std::unique_ptr<RangedAudioParameter>> params;
+    std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
 
     return params;
 }

@@ -26,13 +26,13 @@
 #include "ReferenceCountedMatrix.h"
 #include "ReferenceCountedDecoder.h"
 
-using namespace dsp;
+
 class MatrixMultiplication
 {
 public:
     MatrixMultiplication() {}
 
-    void prepare (const ProcessSpec& newSpec, const bool prepareInputBuffering = true)
+    void prepare (const juce::dsp::ProcessSpec& newSpec, bool prepareInputBuffering = true)
     {
         spec = newSpec;
 
@@ -50,7 +50,7 @@ public:
         checkIfNewMatrixAvailable();
     }
 
-    void processReplacing (AudioBlock<float> data)
+    void processReplacing (juce::dsp::AudioBlock<float> data)
     {
         checkIfNewMatrixAvailable();
 
@@ -66,24 +66,24 @@ public:
 
         auto& T = retainedCurrentMatrix->getMatrix();
 
-        const int nInputChannels = jmin (static_cast<int> (data.getNumChannels()), static_cast<int> (T.getNumColumns()));
+        const int nInputChannels = juce::jmin (static_cast<int> (data.getNumChannels()), static_cast<int> (T.getNumColumns()));
         const int nSamples = static_cast<int> (data.getNumSamples());
 
         // copy input data to buffer
         for (int ch = 0; ch < nInputChannels; ++ch)
             buffer.copyFrom(ch, 0, data.getChannelPointer (ch), nSamples);
 
-        AudioBlock<float> ab (buffer.getArrayOfWritePointers(), nInputChannels, 0, nSamples);
+        juce::dsp::AudioBlock<float> ab (buffer.getArrayOfWritePointers(), nInputChannels, 0, nSamples);
         processNonReplacing (ab, data, false);
     }
 
-    void processNonReplacing (const AudioBlock<float> inputBlock, AudioBlock<float> outputBlock, const bool checkNewMatrix = true)
+    void processNonReplacing (const juce::dsp::AudioBlock<float> inputBlock, juce::dsp::AudioBlock<float> outputBlock, const bool checkNewMatrix = true)
     {
         // you should call the processReplacing instead, it will buffer the input data
         // this is a weak check, as e.g. if number channels differ, it won't trigger
         jassert (inputBlock != outputBlock);
 
-        ScopedNoDenormals noDenormals;
+        juce::ScopedNoDenormals noDenormals;
 
         if (checkNewMatrix)
             checkIfNewMatrixAvailable();
@@ -97,7 +97,7 @@ public:
 
         auto& T = retainedCurrentMatrix->getMatrix();
 
-        const int nInputChannels = jmin (static_cast<int> (inputBlock.getNumChannels()), static_cast<int> (T.getNumColumns()));
+        const int nInputChannels = juce::jmin (static_cast<int> (inputBlock.getNumChannels()), static_cast<int> (T.getNumColumns()));
         const int nSamples = static_cast<int> (inputBlock.getNumSamples());
 
         for (int row = 0; row < T.getNumRows(); ++row)
@@ -106,13 +106,13 @@ public:
             if (destCh < outputBlock.getNumChannels())
             {
                 float* dest = outputBlock.getChannelPointer (destCh);
-                FloatVectorOperations::multiply (dest, inputBlock.getChannelPointer (0), T(row, 0), nSamples); // first channel
+                juce::FloatVectorOperations::multiply (dest, inputBlock.getChannelPointer (0), T(row, 0), nSamples); // first channel
                 for (int i = 1; i < nInputChannels; ++i) // remaining channels
-                    FloatVectorOperations::addWithMultiply (dest, inputBlock.getChannelPointer (i), T(row, i), nSamples);
+                    juce::FloatVectorOperations::addWithMultiply (dest, inputBlock.getChannelPointer (i), T(row, i), nSamples);
             }
         }
 
-        Array<int> routingCopy (retainedCurrentMatrix->getRoutingArrayReference());
+        juce::Array<int> routingCopy (retainedCurrentMatrix->getRoutingArrayReference());
         routingCopy.sort();
         int lastDest = -1;
         const int nElements = routingCopy.size();
@@ -121,12 +121,12 @@ public:
             const int destCh = routingCopy[i];
             for (; ++lastDest < destCh;)
                 if (lastDest < outputBlock.getNumChannels())
-                    FloatVectorOperations::clear(outputBlock.getChannelPointer(lastDest), (int) outputBlock.getNumSamples());
+                    juce::FloatVectorOperations::clear(outputBlock.getChannelPointer(lastDest), (int) outputBlock.getNumSamples());
             lastDest = destCh;
         }
 
         for (int ch = routingCopy.getLast() + 1; ch < outputBlock.getNumChannels(); ++ch)
-            FloatVectorOperations::clear(outputBlock.getChannelPointer(ch), (int) outputBlock.getNumSamples());
+            juce::FloatVectorOperations::clear(outputBlock.getChannelPointer(ch), (int) outputBlock.getNumSamples());
     }
 
     const bool checkIfNewMatrixAvailable()
@@ -165,11 +165,11 @@ public:
 
 private:
     //==============================================================================
-    ProcessSpec spec = {-1, 0, 0};
+    juce::dsp::ProcessSpec spec = {-1, 0, 0};
     ReferenceCountedMatrix::Ptr currentMatrix {nullptr};
     ReferenceCountedMatrix::Ptr newMatrix {nullptr};
 
-    AudioBuffer<float> buffer;
+    juce::AudioBuffer<float> buffer;
     bool bufferPrepared {false};
 
     bool newMatrixAvailable {false};

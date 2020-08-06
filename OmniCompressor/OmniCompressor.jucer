@@ -9,10 +9,11 @@
               pluginCode="OmCo" pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
               pluginAUExportPrefix="OmniCompressorAU" aaxIdentifier="at.iem.OmniCompressor"
-              pluginAAXCategory="2" jucerVersion="5.4.7" cppLanguageStandard="14"
-              companyName="IEM" companyWebsite="IEM.at" companyCopyright="IEM - Daniel Rudrich"
+              pluginAAXCategory="2" cppLanguageStandard="14" companyName="IEM"
+              companyWebsite="IEM.at" companyCopyright="IEM - Daniel Rudrich"
               headerPath="../../../resources/" pluginFormats="buildStandalone,buildVST"
-              defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1">
+              defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1" jucerFormatVersion="1"
+              projectLineFeed="&#10;" addUsingNamespaceToJuceHeader="0">
   <MAINGROUP id="Ld9vSw" name="OmniCompressor">
     <GROUP id="{F388704D-EB9A-BECC-56F7-162EE5CFB545}" name="Standalone">
       <FILE id="GBvOwc" name="IEM_AudioDeviceSelectorComponent.cpp" compile="1"

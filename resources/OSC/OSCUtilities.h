@@ -26,7 +26,7 @@
  An extension to JUCE's OSCReceiver class with some useful methods.
  */
 
-class OSCReceiverPlus : public OSCReceiver
+class OSCReceiverPlus : public juce::OSCReceiver
 {
 public:
     OSCReceiverPlus()
@@ -34,7 +34,7 @@ public:
         connected = false;
     }
 
-    const bool connect (const int portNumber)
+    bool connect (int portNumber)
     {
         port = portNumber;
         if (portNumber == -1)
@@ -53,7 +53,7 @@ public:
             return false;
     }
 
-    const bool disconnect()
+    bool disconnect()
     {
         if (OSCReceiver::disconnect())
         {
@@ -64,12 +64,12 @@ public:
             return false;
     }
 
-    const int getPortNumber() const
+    int getPortNumber() const
     {
         return port;
     }
 
-    const bool isConnected() const
+    bool isConnected() const
     {
         return connected.get();
     }
@@ -77,11 +77,11 @@ public:
 
 private:
     int port = -1;
-    Atomic<bool> connected;
+    juce::Atomic<bool> connected;
 };
 
 
-class OSCSenderPlus : public OSCSender
+class OSCSenderPlus : public juce::OSCSender
 {
 public:
     OSCSenderPlus()
@@ -89,7 +89,7 @@ public:
         connected = false;
     }
 
-    const bool connect (const String& targetHostName, const int portNumber)
+    bool connect (const juce::String& targetHostName, int portNumber)
     {
         hostName = targetHostName;
         port = portNumber;
@@ -101,7 +101,7 @@ public:
             return true;
         }
 
-        if (OSCSender::connect (targetHostName, port))
+        if (juce::OSCSender::connect (targetHostName, port))
         {
             connected = true;
             return true;
@@ -110,7 +110,7 @@ public:
             return false;
     }
 
-    const bool disconnect()
+    bool disconnect()
     {
         if (OSCSender::disconnect())
         {
@@ -121,26 +121,26 @@ public:
             return false;
     }
 
-    const int getPortNumber() const
+    int getPortNumber() const
     {
         return port;
     }
 
-    const String getHostName() const
+    juce::String getHostName() const
     {
         return hostName;
     }
 
-    const bool isConnected() const
+    bool isConnected() const
     {
         return connected.get();
     }
 
 
 private:
-    String hostName;
+    juce::String hostName;
     int port = -1;
-    Atomic<bool> connected;
+    juce::Atomic<bool> connected;
 };
 
 
@@ -148,13 +148,12 @@ class OSCMessageInterceptor
 {
 public:
 
-
     virtual ~OSCMessageInterceptor() = default;
 
     /**
-     This method is exptected to return true, if the OSCMessage is considered to have been consumed, and should not be passed on.
+     This method is exptected to return true, if the juce::OSCMessage is considered to have been consumed, and should not be passed on.
      */
-    virtual inline const bool interceptOSCMessage (OSCMessage &message)
+    virtual inline const bool interceptOSCMessage (juce::OSCMessage &message)
     {
         ignoreUnused (message);
         return false; // not consumed
@@ -164,7 +163,7 @@ public:
      This method will be called if the OSC message wasn't consumed by both 'interceptOscMessage(...)' and the oscParameterInterface.processOSCmessage(...)' method.
      The method is expected to return true, if the SOCMessage is considered to have been consumed, and should not be passed on.
      */
-    virtual inline const bool processNotYetConsumedOSCMessage (const OSCMessage &message)
+    virtual inline const bool processNotYetConsumedOSCMessage (const juce::OSCMessage& message)
     {
         ignoreUnused (message);
         return false;
@@ -172,7 +171,7 @@ public:
 
 
     /**
-     Use this method to send additional OSCMessages during the OSCSender's send routine.
+     Use this method to send additional juce::OSCMessages during the OSCSender's send routine.
      */
-    virtual void sendAdditionalOSCMessages (OSCSender& oscSender, const OSCAddressPattern& address) {}
+    virtual void sendAdditionalOSCMessages (juce::OSCSender& oscSender, const juce::OSCAddressPattern& address) {}
 };

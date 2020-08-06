@@ -50,49 +50,49 @@ public:
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;
 
-    void processBlock (AudioSampleBuffer&, MidiBuffer&) override;
+    void processBlock (juce::AudioSampleBuffer&, juce::MidiBuffer&) override;
 
     //==============================================================================
-    AudioProcessorEditor* createEditor() override;
+    juce::AudioProcessorEditor* createEditor() override;
     bool hasEditor() const override;
 
     //==============================================================================
     int getNumPrograms() override;
     int getCurrentProgram() override;
     void setCurrentProgram (int index) override;
-    const String getProgramName (int index) override;
-    void changeProgramName (int index, const String& newName) override;
+    const juce::String getProgramName (int index) override;
+    void changeProgramName (int index, const juce::String& newName) override;
 
     //==============================================================================
-    void getStateInformation (MemoryBlock& destData) override;
+    void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
     //==============================================================================
-    void parameterChanged (const String &parameterID, float newValue) override;
+    void parameterChanged (const juce::String &parameterID, float newValue) override;
 
     //======= Parameters ===========================================================
-    std::vector<std::unique_ptr<RangedAudioParameter>> createParameterLayout();
+    std::vector<std::unique_ptr<juce::RangedAudioParameter>> createParameterLayout();
     //==============================================================================
 
 
     float weights[numberOfBands][8];
 
-    inline dsp::IIR::Coefficients<float>::Ptr createFilterCoefficients(int type, double sampleRate, double frequency, double Q);
+    inline juce::dsp::IIR::Coefficients<float>::Ptr createFilterCoefficients(int type, double sampleRate, double frequency, double Q);
 
     IIR::Filter<float> filter[numberOfBands];
 
     float probeGains[numberOfBands];
 
-    Atomic<bool> repaintDV = true;
-    Atomic<bool> repaintXY = true;
-    Atomic<bool> repaintFV = true;
-    Atomic<bool> repaintSphere = true;
+    juce::Atomic<bool> repaintDV = true;
+    juce::Atomic<bool> repaintXY = true;
+    juce::Atomic<bool> repaintFV = true;
+    juce::Atomic<bool> repaintSphere = true;
 
     void updateBuffers() override { repaintXY = true; };
 
 private:
     //==============================================================================
-    AudioSampleBuffer filteredBuffer;
+    juce::AudioSampleBuffer filteredBuffer;
 
     iem::Quaternion<float> quats[numberOfBands];
 

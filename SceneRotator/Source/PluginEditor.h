@@ -29,31 +29,31 @@
 #include "../../resources/lookAndFeel/IEM_LaF.h"
 #include "../../resources/customComponents/TitleBar.h"
 
-//Custom Components
+//Custom juce::Components
 #include "../../resources/customComponents/ReverseSlider.h"
 #include "../../resources/customComponents/SimpleLabel.h"
 
 
 typedef ReverseSlider::SliderAttachment SliderAttachment; // all ReverseSliders will make use of the parameters' valueToText() function
-typedef AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
-typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
+typedef juce::AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
+typedef juce::AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 
 //==============================================================================
 /**
 */
-class SceneRotatorAudioProcessorEditor  : public AudioProcessorEditor, private Timer, private ComboBox::Listener
+class SceneRotatorAudioProcessorEditor  : public juce::AudioProcessorEditor, private juce::Timer, private juce::ComboBox::Listener
 {
 public:
-    SceneRotatorAudioProcessorEditor (SceneRotatorAudioProcessor&, AudioProcessorValueTreeState&);
+    SceneRotatorAudioProcessorEditor (SceneRotatorAudioProcessor&, juce::AudioProcessorValueTreeState&);
     ~SceneRotatorAudioProcessorEditor();
 
     //==============================================================================
-    void paint (Graphics&) override;
+    void paint (juce::Graphics&) override;
     void resized() override;
 
 
     void timerCallback() override;
-    void comboBoxChanged (ComboBox *comboBoxThatHasChanged) override;
+    void comboBoxChanged (juce::ComboBox *comboBoxThatHasChanged) override;
 
     void refreshMidiDeviceList();
     void updateSelectedMidiScheme();
@@ -62,11 +62,11 @@ private:
     // ====================== begin essentials ==================
     // lookAndFeel class with the IEM plug-in suite design
     LaF globalLaF;
-    TooltipWindow tooltipWin;
+    juce::TooltipWindow tooltipWin;
 
-    // stored references to the AudioProcessor and ValueTreeState holding all the parameters
+    // stored references to the AudioProcessor and juce::ValueTreeState holding all the parameters
     SceneRotatorAudioProcessor& processor;
-    AudioProcessorValueTreeState& valueTreeState;
+    juce::AudioProcessorValueTreeState& valueTreeState;
 
 
     // title and footer component
@@ -90,24 +90,24 @@ private:
     std::unique_ptr<SliderAttachment> slQYAttachment;
     std::unique_ptr<SliderAttachment> slQZAttachment;
 
-    ComboBox cbRotationSequence;
+    juce::ComboBox cbRotationSequence;
     std::unique_ptr<ComboBoxAttachment> cbRotationSequenceAttachment;
 
-    // Labels and Groups
+    // juce::Labels and Groups
     SimpleLabel lbYaw, lbPitch, lbRoll, lbQW, lbQX, lbQY, lbQZ;
-    GroupComponent quatGroup, yprGroup;
+    juce::GroupComponent quatGroup, yprGroup;
 
-    ToggleButton tbInvertYaw, tbInvertPitch, tbInvertRoll, tbInvertQuaternion;
+    juce::ToggleButton tbInvertYaw, tbInvertPitch, tbInvertRoll, tbInvertQuaternion;
     std::unique_ptr<ButtonAttachment> tbInvertYawAttachment, tbInvertPitchAttachment, tbRollFlipAttachment, tbInvertQuaternionAttachment;
 
 
     // MIDI Section
-    GroupComponent midiGroup;
+    juce::GroupComponent midiGroup;
     SimpleLabel slMidiDevices, slMidiScheme;
-    ComboBox cbMidiDevices, cbMidiScheme;
+    juce::ComboBox cbMidiDevices, cbMidiScheme;
 
-    Atomic<bool> refreshingMidiDevices = false;
-    Atomic<bool> updatingMidiScheme = false;
+    juce::Atomic<bool> refreshingMidiDevices = false;
+    juce::Atomic<bool> updatingMidiScheme = false;
 
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SceneRotatorAudioProcessorEditor)

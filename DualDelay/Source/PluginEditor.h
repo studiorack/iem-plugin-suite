@@ -32,20 +32,20 @@
 #include "../../resources/lookAndFeel/IEM_LaF.h"
 
 typedef ReverseSlider::SliderAttachment SliderAttachment;
-typedef AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
+typedef juce::AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
 
 //==============================================================================
 /**
 */
-class DualDelayAudioProcessorEditor  : public AudioProcessorEditor,
-private Timer
+class DualDelayAudioProcessorEditor  : public juce::AudioProcessorEditor,
+private juce::Timer
 {
 public:
-    DualDelayAudioProcessorEditor (DualDelayAudioProcessor&, AudioProcessorValueTreeState&);
+    DualDelayAudioProcessorEditor (DualDelayAudioProcessor&, juce::AudioProcessorValueTreeState&);
     ~DualDelayAudioProcessorEditor();
 
     //==============================================================================
-    void paint (Graphics&) override;
+    void paint (juce::Graphics&) override;
     void resized() override;
 
 private:
@@ -54,7 +54,7 @@ private:
     void timerCallback() override;
 
     DualDelayAudioProcessor& processor;
-    AudioProcessorValueTreeState& valueTreeState;
+    juce::AudioProcessorValueTreeState& valueTreeState;
 
     TitleBar<AmbisonicIOWidget<>, NoIOWidget> title;
     OSCFooter footer;
@@ -90,7 +90,7 @@ private:
     SimpleLabel lbGainL, lbGainR, lbGainDry;
     TripleLabel lbLfoL, lbLfoR, lbFilterL, lbFilterR;
 
-    GroupComponent gcRotDelL, gcRotDelR, gcFiltL, gcFiltR, gcFbL, gcFbR, gcOutput;
+    juce::GroupComponent gcRotDelL, gcRotDelR, gcFiltL, gcFiltR, gcFbL, gcFbR, gcOutput;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DualDelayAudioProcessorEditor)
 };

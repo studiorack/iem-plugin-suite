@@ -42,7 +42,7 @@ class DistanceCompensatorAudioProcessor  : public AudioProcessorBase<IOTypes::Au
 {
     struct PositionAndChannel
     {
-        Vector3D<float> position;
+        juce::Vector3D<float> position;
         int channel;
     };
 
@@ -57,41 +57,41 @@ public:
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;
 
-    void processBlock (AudioSampleBuffer&, MidiBuffer&) override;
+    void processBlock (juce::AudioSampleBuffer&, juce::MidiBuffer&) override;
 
     //==============================================================================
-    AudioProcessorEditor* createEditor() override;
+    juce::AudioProcessorEditor* createEditor() override;
     bool hasEditor() const override;
 
     //==============================================================================
     int getNumPrograms() override;
     int getCurrentProgram() override;
     void setCurrentProgram (int index) override;
-    const String getProgramName (int index) override;
-    void changeProgramName (int index, const String& newName) override;
+    const juce::String getProgramName (int index) override;
+    void changeProgramName (int index, const juce::String& newName) override;
 
     //==============================================================================
-    void getStateInformation (MemoryBlock& destData) override;
+    void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
     //==============================================================================
-    void parameterChanged (const String &parameterID, float newValue) override;
+    void parameterChanged (const juce::String &parameterID, float newValue) override;
     void updateBuffers() override; // use this to implement a buffer update method
 
 
 
     //======= Parameters ===========================================================
-    std::vector<std::unique_ptr<RangedAudioParameter>> createParameterLayout();
+    std::vector<std::unique_ptr<juce::RangedAudioParameter>> createParameterLayout();
 
     //==============================================================================
-    inline const bool processNotYetConsumedOSCMessage (const OSCMessage &message) override;
+    inline const bool processNotYetConsumedOSCMessage (const juce::OSCMessage &message) override;
 
 
     //==============================================================================
-    void setLastDir (File newLastDir);
-    File getLastDir() {return lastDir;};
+    void setLastDir (juce::File newLastDir);
+    juce::File getLastDir() {return lastDir;};
 
-    void loadConfiguration (const File& presetFile);
+    void loadConfiguration (const juce::File& presetFile);
 
     float distanceToGainInDecibels (const float distance);
     float distanceToDelayInSeconds (const float distance);
@@ -106,7 +106,7 @@ public:
 
 private:
     //==============================================================================
-    Atomic<bool> updatingParameters = false;
+    juce::Atomic<bool> updatingParameters = false;
 
     // list of used audio parameters
     std::atomic<float>* inputChannelsSetting;
@@ -123,12 +123,12 @@ private:
     std::atomic<float>* distance[64];
 
     // ===== last directory loaded from
-    File lastDir;
-    std::unique_ptr<PropertiesFile> properties;
+    juce::File lastDir;
+    std::unique_ptr<juce::PropertiesFile> properties;
 
-    Array<float> tempValues;
+    juce::Array<float> tempValues;
 
-    Array<PositionAndChannel> loadedLoudspeakerPositions;
+    juce::Array<PositionAndChannel> loadedLoudspeakerPositions;
 
     // processors
     MultiChannelGain<float> gain;
