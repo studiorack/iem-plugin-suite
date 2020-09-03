@@ -80,6 +80,8 @@ public:
 
     void renderOpenGL() override
     {
+        using namespace juce;
+        
         jassert (juce::OpenGLHelpers::isContextActive());
 
         juce::OpenGLHelpers::clear (juce::Colour(0xFF2D2D2D));
