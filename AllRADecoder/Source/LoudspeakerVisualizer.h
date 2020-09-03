@@ -60,10 +60,10 @@ public:
 
     void initialise()
     {
+        using namespace juce;
+
         const float alpha = 0.8;
-        juce::PixelARGB colormapData[8];
-//        colormapData[0] = juce::Colours::white.withMultipliedAlpha(alpha).getPixelARGB();
-//        texture.loadARGB(colormapData, 1, 1);
+        PixelARGB colormapData[8];
 
         colormapData[0] = juce::Colours::limegreen.getPixelARGB(); // selected colour
         colormapData[1] = juce::Colours::orange.getPixelARGB(); // imaginary colour
@@ -165,25 +165,29 @@ public:
 
         void uploadBuffers() // this should only be called by the openGl thread
         {
-                openGLContext.extensions.glDeleteBuffers(1, &vertexBuffer);
-                openGLContext.extensions.glDeleteBuffers(1, &indexBuffer);
-                openGLContext.extensions.glDeleteBuffers(1, &normalsBuffer);
+            using namespace juce;
 
-                openGLContext.extensions.glGenBuffers(1, &vertexBuffer);
-                openGLContext.extensions.glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-                openGLContext.extensions.glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(positionAndColour), &vertices[0], GL_STATIC_DRAW);
+            openGLContext.extensions.glDeleteBuffers(1, &vertexBuffer);
+            openGLContext.extensions.glDeleteBuffers(1, &indexBuffer);
+            openGLContext.extensions.glDeleteBuffers(1, &normalsBuffer);
 
-                openGLContext.extensions.glGenBuffers(1, &indexBuffer);
-                openGLContext.extensions.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
-                openGLContext.extensions.glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(int), &indices[0], GL_STATIC_DRAW);
+            openGLContext.extensions.glGenBuffers(1, &vertexBuffer);
+            openGLContext.extensions.glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+            openGLContext.extensions.glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(positionAndColour), &vertices[0], GL_STATIC_DRAW);
 
-                openGLContext.extensions.glGenBuffers(1, &normalsBuffer);
-                openGLContext.extensions.glBindBuffer(GL_ARRAY_BUFFER, normalsBuffer);
-                openGLContext.extensions.glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(float), &normals[0], GL_STATIC_DRAW);
+            openGLContext.extensions.glGenBuffers(1, &indexBuffer);
+            openGLContext.extensions.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+            openGLContext.extensions.glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(int), &indices[0], GL_STATIC_DRAW);
+
+            openGLContext.extensions.glGenBuffers(1, &normalsBuffer);
+            openGLContext.extensions.glBindBuffer(GL_ARRAY_BUFFER, normalsBuffer);
+            openGLContext.extensions.glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(float), &normals[0], GL_STATIC_DRAW);
         }
 
     void renderOpenGL() override
     {
+        using namespace juce;
+        
         jassert (juce::OpenGLHelpers::isContextActive());
 
         juce::OpenGLHelpers::clear (juce::Colour(0xFF2D2D2D));

@@ -68,7 +68,7 @@
     #include "IEM_JackAudio.h"
 #endif
 
-#include "utility/juce_CreatePluginFilter.h"
+#include <juce_audio_plugin_client/utility/juce_CreatePluginFilter.h>
 
 //==============================================================================
 /**
