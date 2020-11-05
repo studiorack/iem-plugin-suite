@@ -206,6 +206,7 @@ juce::AudioProcessorEditor* MultiEncoderAudioProcessor::createEditor()
 
 void MultiEncoderAudioProcessor::parameterChanged (const juce::String &parameterID, float newValue)
 {
+    DBG (parameterID << ": " << newValue);
     if (parameterID == "inputSetting" || parameterID == "orderSetting")
     {
         userChangedIOSettings = true;
@@ -251,6 +252,9 @@ void MultiEncoderAudioProcessor::parameterChanged (const juce::String &parameter
     }
     else if (locked && ((parameterID == "masterAzimuth") ||  (parameterID == "masterElevation") ||  (parameterID == "masterRoll")))
     {
+        if (dontTriggerMasterUpdate)
+            return;
+
         moving = true;
         iem::Quaternion<float> masterQuat;
         float ypr[3];
@@ -319,7 +323,10 @@ void MultiEncoderAudioProcessor::setStateInformation (const void* data, int size
     if (xmlState != nullptr)
         if (xmlState->hasTagName (parameters.state.getType()))
         {
+            dontTriggerMasterUpdate = true;
             parameters.state = juce::ValueTree::fromXml (*xmlState);
+            dontTriggerMasterUpdate = false;
+
             updateQuaternions();
             for (int i = 0; i < maxNumberOfInputs; ++i)
                 if (parameters.state.getProperty("colour" + juce::String(i)).toString() != "0")

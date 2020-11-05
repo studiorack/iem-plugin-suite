@@ -128,6 +128,7 @@ private:
 
     float dist[maxNumberOfInputs];
 
+    bool dontTriggerMasterUpdate = false;
     bool wasLockedBefore;
     bool locked = false;
     bool moving = false;
