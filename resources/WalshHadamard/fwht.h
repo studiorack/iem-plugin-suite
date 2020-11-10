@@ -130,7 +130,7 @@ inline bool is_pow2( IntType n )
 template <typename T>
 void rotate( T& a, T& b )
 {
-	static T A;
+	T A;
 	A = a;
 	a = A + b;
 	b = A - b;
