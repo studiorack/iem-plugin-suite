@@ -352,10 +352,10 @@ void OSCStatus::mouseUp (const juce::MouseEvent &event)
 {
     if (bounds.contains (event.getPosition()))
     {
-        auto* dialogWindow = new OSCDialogWindow (oscParameterInterface, oscReceiver, oscSender);
+        auto dialogWindow = std::make_unique<OSCDialogWindow> (oscParameterInterface, oscReceiver, oscSender);
         dialogWindow->setSize (211, 210);
 
-        juce::CallOutBox& myBox = juce::CallOutBox::launchAsynchronously (dialogWindow, getScreenBounds().removeFromLeft (bounds.getWidth()), nullptr);
+        juce::CallOutBox& myBox = juce::CallOutBox::launchAsynchronously (std::move (dialogWindow), getScreenBounds().removeFromLeft (bounds.getWidth()), nullptr);
         myBox.setLookAndFeel (&getLookAndFeel());
     }
 }

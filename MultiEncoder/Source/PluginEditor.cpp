@@ -315,13 +315,13 @@ void MultiEncoderAudioProcessorEditor::importLayout()
 
         if (! result.wasOk())
         {
-            auto* component = new juce::TextEditor();
+            auto component = std::make_unique<juce::TextEditor> ();
             component->setMultiLine (true, true);
             component->setReadOnly (true);
             component->setText (result.getErrorMessage());
             component->setSize (200, 110);
 
-            auto& myBox = juce::CallOutBox::launchAsynchronously (component, tbImport.getBounds(), this);
+            auto& myBox = juce::CallOutBox::launchAsynchronously (std::move (component), tbImport.getBounds(), this);
             myBox.setLookAndFeel (&getLookAndFeel());
         }
     }

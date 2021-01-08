@@ -39,14 +39,14 @@ public:
 
     void clicked() override
     {
-        juce::ColourSelector* colourSelector = new juce::ColourSelector();
+        auto colourSelector = std::make_unique<juce::ColourSelector> ();
         colourSelector->setName ("background");
         colourSelector->setCurrentColour (findColour (juce::TextButton::buttonColourId));
         colourSelector->addChangeListener (this);
         colourSelector->setColour (juce::ColourSelector::backgroundColourId, juce::Colours::transparentBlack);
         colourSelector->setSize (300, 400);
 
-        juce::CallOutBox::launchAsynchronously (colourSelector, getScreenBounds(), nullptr);
+        juce::CallOutBox::launchAsynchronously (std::move (colourSelector), getScreenBounds(), nullptr);
     }
 
     void changeListenerCallback (juce::ChangeBroadcaster* source) override

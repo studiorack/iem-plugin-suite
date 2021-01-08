@@ -340,9 +340,9 @@ void AllRADecoderAudioProcessorEditor::buttonStateChanged (juce::Button* button)
 
 void AllRADecoderAudioProcessorEditor::openRotateWindow()
 {
-    auto* rotateWindow = new RotateWindow (processor);
+    auto rotateWindow = std::make_unique<RotateWindow> (processor);
     rotateWindow->setSize (120, 35);
 
-    auto& myBox = juce::CallOutBox::launchAsynchronously (rotateWindow, tbRotate.getScreenBounds(), nullptr);
+    auto& myBox = juce::CallOutBox::launchAsynchronously (std::move (rotateWindow), tbRotate.getScreenBounds(), nullptr);
     myBox.setLookAndFeel(&globalLaF);
 }
