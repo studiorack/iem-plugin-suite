@@ -25,8 +25,8 @@
 
 
 //==============================================================================
-MultiEQAudioProcessorEditor::MultiEQAudioProcessorEditor (MultiEQAudioProcessor& p, AudioProcessorValueTreeState& vts)
-: AudioProcessorEditor (&p), processor (p), valueTreeState (vts), footer (p.getOSCParameterInterface())
+MultiEQAudioProcessorEditor::MultiEQAudioProcessorEditor (MultiEQAudioProcessor& p, juce::AudioProcessorValueTreeState& vts)
+: juce::AudioProcessorEditor (&p), processor (p), valueTreeState (vts), footer (p.getOSCParameterInterface())
 {
     // ============== BEGIN: essentials ======================
     // set GUI size and lookAndFeel
@@ -36,7 +36,7 @@ MultiEQAudioProcessorEditor::MultiEQAudioProcessorEditor (MultiEQAudioProcessor&
 
     // make title and footer visible, and set the PluginName
     addAndMakeVisible (&title);
-    title.setTitle (String ("Multi"), String ("EQ"));
+    title.setTitle (juce::String ("Multi"), juce::String ("EQ"));
     title.setFont (globalLaF.robotoBold, globalLaF.robotoLight);
     addAndMakeVisible (&footer);
     // ============= END: essentials ========================
@@ -49,14 +49,14 @@ MultiEQAudioProcessorEditor::MultiEQAudioProcessorEditor (MultiEQAudioProcessor&
     tooltipWin.setMillisecondsBeforeTipAppears (500);
     tooltipWin.setOpaque (false);
 
-    const Colour colours[numFilterBands] =
+    const juce::Colour colours[numFilterBands] =
     {
-        Colours::cadetblue, // make sure you have enough colours in here
-        Colours::mediumpurple,
-        Colours::cornflowerblue,
-        Colours::greenyellow,
-        Colours::yellow,
-        Colours::orangered
+        juce::Colours::cadetblue, // make sure you have enough colours in here
+        juce::Colours::mediumpurple,
+        juce::Colours::cornflowerblue,
+        juce::Colours::greenyellow,
+        juce::Colours::yellow,
+        juce::Colours::orangered
     };
 
     for (int f = 0; f < numFilterBands; ++f)
@@ -77,9 +77,9 @@ MultiEQAudioProcessorEditor::MultiEQAudioProcessorEditor (MultiEQAudioProcessor&
     for (int i = 0; i < numFilterBands; ++i)
     {
         addAndMakeVisible (&tbFilterOn[i]);
-        tbFilterOn[i].setColour (ToggleButton::tickColourId, colours[i]);
+        tbFilterOn[i].setColour (juce::ToggleButton::tickColourId, colours[i]);
         tbFilterOn[i].addListener (this);
-        tbFilterOnAttachment[i].reset (new ButtonAttachment (valueTreeState, "filterEnabled" + String(i), tbFilterOn[i]));
+        tbFilterOnAttachment[i].reset (new ButtonAttachment (valueTreeState, "filterEnabled" + juce::String(i), tbFilterOn[i]));
 
         const bool enabled = tbFilterOn[i].getToggleState();
 
@@ -107,26 +107,26 @@ MultiEQAudioProcessorEditor::MultiEQAudioProcessorEditor (MultiEQAudioProcessor&
             cbFilterType[i].addItem ("High-shelf", 3);
         }
 
-        cbFilterType[i].setJustificationType (Justification::centred);
-        cbFilterTypeAttachment[i].reset (new ComboBoxAttachment (valueTreeState, "filterType" + String(i), cbFilterType[i]));
+        cbFilterType[i].setJustificationType (juce::Justification::centred);
+        cbFilterTypeAttachment[i].reset (new ComboBoxAttachment (valueTreeState, "filterType" + juce::String(i), cbFilterType[i]));
 
         addAndMakeVisible (&slFilterFrequency[i]);
-        slFilterFrequency[i].setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-        slFilterFrequency[i].setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-        slFilterFrequency[i].setColour (Slider::rotarySliderOutlineColourId, colours[i]);
-        slFilterFrequencyAttachment[i].reset (new SliderAttachment (valueTreeState, "filterFrequency" + String(i), slFilterFrequency[i]));
+        slFilterFrequency[i].setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+        slFilterFrequency[i].setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+        slFilterFrequency[i].setColour (juce::Slider::rotarySliderOutlineColourId, colours[i]);
+        slFilterFrequencyAttachment[i].reset (new SliderAttachment (valueTreeState, "filterFrequency" + juce::String(i), slFilterFrequency[i]));
 
         addAndMakeVisible(&slFilterQ[i]);
-        slFilterQ[i].setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-        slFilterQ[i].setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-        slFilterQ[i].setColour (Slider::rotarySliderOutlineColourId, colours[i]);
-        slFilterQAttachment[i].reset (new SliderAttachment (valueTreeState, "filterQ" + String(i), slFilterQ[i]));
+        slFilterQ[i].setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+        slFilterQ[i].setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+        slFilterQ[i].setColour (juce::Slider::rotarySliderOutlineColourId, colours[i]);
+        slFilterQAttachment[i].reset (new SliderAttachment (valueTreeState, "filterQ" + juce::String(i), slFilterQ[i]));
 
         addAndMakeVisible(&slFilterGain[i]);
-        slFilterGain[i].setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-        slFilterGain[i].setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-        slFilterGain[i].setColour (Slider::rotarySliderOutlineColourId, colours[i]);
-        slFilterGainAttachment[i].reset (new SliderAttachment (valueTreeState, "filterGain" + String(i), slFilterGain[i]));
+        slFilterGain[i].setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+        slFilterGain[i].setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+        slFilterGain[i].setColour (juce::Slider::rotarySliderOutlineColourId, colours[i]);
+        slFilterGainAttachment[i].reset (new SliderAttachment (valueTreeState, "filterGain" + juce::String(i), slFilterGain[i]));
 
         updateEnablement (i, enabled);
     }
@@ -146,7 +146,7 @@ MultiEQAudioProcessorEditor::~MultiEQAudioProcessorEditor()
 }
 
 //==============================================================================
-void MultiEQAudioProcessorEditor::paint (Graphics& g)
+void MultiEQAudioProcessorEditor::paint (juce::Graphics& g)
 {
     g.fillAll (globalLaF.ClBackground);
 }
@@ -158,14 +158,14 @@ void MultiEQAudioProcessorEditor::resized()
     const int leftRightMargin = 30;
     const int headerHeight = 60;
     const int footerHeight = 25;
-    Rectangle<int> area (getLocalBounds());
+    juce::Rectangle<int> area (getLocalBounds());
 
-    Rectangle<int> footerArea (area.removeFromBottom (footerHeight));
+    juce::Rectangle<int> footerArea (area.removeFromBottom (footerHeight));
     footer.setBounds (footerArea);
 
     area.removeFromLeft (leftRightMargin);
     area.removeFromRight (leftRightMargin);
-    Rectangle<int> headerArea = area.removeFromTop (headerHeight);
+    juce::Rectangle<int> headerArea = area.removeFromTop (headerHeight);
     title.setBounds (headerArea);
     area.removeFromTop (10);
     area.removeFromBottom (5);
@@ -176,10 +176,10 @@ void MultiEQAudioProcessorEditor::resized()
     // the removeFrom...() methods are quite handy to create scalable areas
     // best practice would be the use of flexBoxes...
     // the following is medium level practice ;-)
-    Rectangle<int> filterArea = area;
+    juce::Rectangle<int> filterArea = area;
     { // upper row
 
-        Rectangle<int> cbArea (filterArea.removeFromBottom (50));
+        juce::Rectangle<int> cbArea (filterArea.removeFromBottom (50));
         for (int i = 0; i < numFilterBands; ++i)
         {
             slFilterFrequency[i].setBounds(cbArea.removeFromLeft (45));
@@ -232,7 +232,7 @@ void MultiEQAudioProcessorEditor::updateEnablement (const int idx, const bool sh
     fv.enableFilter (idx, shouldBeEnabled);
 }
 
-void MultiEQAudioProcessorEditor::buttonClicked (Button* button)
+void MultiEQAudioProcessorEditor::buttonClicked (juce::Button* button)
 {
     for (int f = 0; f < numFilterBands; ++f)
     {
@@ -244,7 +244,7 @@ void MultiEQAudioProcessorEditor::buttonClicked (Button* button)
     }
 }
 
-void MultiEQAudioProcessorEditor::comboBoxChanged (ComboBox *comboBoxThatHasChanged)
+void MultiEQAudioProcessorEditor::comboBoxChanged (juce::ComboBox *comboBoxThatHasChanged)
 {
     int idx = -1;
     if (comboBoxThatHasChanged == &cbFilterType[0])

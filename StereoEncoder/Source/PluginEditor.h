@@ -30,28 +30,28 @@
 #include "../../resources/customComponents/SimpleLabel.h"
 
 typedef ReverseSlider::SliderAttachment SliderAttachment;
-typedef AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
+typedef juce::AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
 
 //==============================================================================
 /**
 */
-class StereoEncoderAudioProcessorEditor  : public AudioProcessorEditor,
-private Timer,
+class StereoEncoderAudioProcessorEditor  : public juce::AudioProcessorEditor,
+private juce::Timer,
 public SpherePanner::Listener,
-private KeyListener
+private juce::KeyListener
 {
 public:
 
-    StereoEncoderAudioProcessorEditor (StereoEncoderAudioProcessor&, AudioProcessorValueTreeState&);
+    StereoEncoderAudioProcessorEditor (StereoEncoderAudioProcessor&, juce::AudioProcessorValueTreeState&);
     ~StereoEncoderAudioProcessorEditor();
 
     //==============================================================================
-    void paint (Graphics&) override;
+    void paint (juce::Graphics&) override;
     void resized() override;
 
-    void mouseWheelOnSpherePannerMoved (SpherePanner* sphere, const MouseEvent &event, const MouseWheelDetails &wheel) override;
+    void mouseWheelOnSpherePannerMoved (SpherePanner* sphere, const juce::MouseEvent &event, const juce::MouseWheelDetails &wheel) override;
 
-    bool keyPressed (const KeyPress &key, Component *originatingComponent) override;
+    bool keyPressed (const juce::KeyPress &key, juce::Component *originatingComponent) override;
 
 private:
     LaF globalLaF;
@@ -64,11 +64,11 @@ private:
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     StereoEncoderAudioProcessor& processor;
-    AudioProcessorValueTreeState& valueTreeState;
+    juce::AudioProcessorValueTreeState& valueTreeState;
 
-    GroupComponent quatGroup,ypGroup,settingsGroup;
+    juce::GroupComponent quatGroup,ypGroup,settingsGroup;
     ReverseSlider azimuthSlider, elevationSlider, rollSlider, widthSlider, qwSlider, qxSlider, qySlider, qzSlider;
-    ComboBox inputChooser;
+    juce::ComboBox inputChooser;
 
     SpherePanner sphere;
     SpherePanner::AzimuthElevationParameterElement centerElement;
@@ -86,7 +86,7 @@ private:
     std::unique_ptr<ComboBoxAttachment> cbNormalizationAtachement;
     std::unique_ptr<ComboBoxAttachment> cbOrderAtachement;
 
-    TooltipWindow toolTipWin;
+    juce::TooltipWindow toolTipWin;
 
     // labels
     SimpleLabel lbAzimuth, lbElevation, lbRoll, lblWidth, lbW, lbX, lbY, lbZ;

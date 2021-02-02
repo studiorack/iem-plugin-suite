@@ -36,7 +36,7 @@ namespace IOTypes {
     {
     public:
         Nothing() {}
-        bool check (AudioProcessor* p, int setting, bool isInput) { ignoreUnused (p, setting, isInput); return false; }
+        bool check (juce::AudioProcessor* p, int setting, bool isInput) { ignoreUnused (p, setting, isInput); return false; }
         int getSize() { return 0; }
         int getMaxSize() {return 0; }
     };
@@ -53,10 +53,10 @@ namespace IOTypes {
 
         ~AudioChannels() {}
 
-        bool check(AudioProcessor* p, int setting, bool isInput)
+        bool check (juce::AudioProcessor* p, int setting, bool isInput)
         {
             int previous = nChannels;
-            int maxNumInputs = jmin(isInput ? p->getTotalNumInputChannels() : p->getTotalNumOutputChannels(), maxNumberOfInputChannels);
+            int maxNumInputs = juce::jmin (isInput ? p->getTotalNumInputChannels() : p->getTotalNumOutputChannels(), maxNumberOfInputChannels);
             if (setting == 0 || setting > maxNumberOfInputChannels) nChannels = maxNumInputs; // Auto setting or requested order exceeds highest possible order
             else nChannels = setting;
             maxSize = maxNumInputs;
@@ -87,15 +87,15 @@ namespace IOTypes {
 
         ~Ambisonics() {}
 
-        bool check(AudioProcessor* p, int setting, bool isInput)
+        bool check (juce::AudioProcessor* p, int setting, bool isInput)
         {
             int previousOrder = order;
             --setting;
 
-            int maxPossibleOrder = jmin(isqrt(isInput ? p->getTotalNumInputChannels() : p->getTotalNumOutputChannels())-1, highestOrder);
+            int maxPossibleOrder = juce::jmin (isqrt(isInput ? p->getTotalNumInputChannels() : p->getTotalNumOutputChannels())-1, highestOrder);
             if (setting == -1 || setting > maxPossibleOrder) order = maxPossibleOrder; // Auto setting or requested order exceeds highest possible order
             else order = setting;
-            nChannels = square(order+1);
+            nChannels = juce::square (order+1);
             maxSize = maxPossibleOrder;
             return previousOrder != order;
         }
@@ -143,7 +143,7 @@ public:
      and at the beginning of the processBlock() with a check if
      the user has changed the input/output settings.
      */
-    void checkInputAndOutput (AudioProcessor* p, int inputSetting, int outputSetting, bool force = false)
+    void checkInputAndOutput (juce::AudioProcessor* p, int inputSetting, int outputSetting, bool force = false)
     {
         if (force || userChangedIOSettings)
         {
@@ -170,7 +170,7 @@ public:
 
         if (combined)
         {
-            maxInputSize = jmin (maxInputSize, maxOutputSize);
+            maxInputSize = juce::jmin (maxInputSize, maxOutputSize);
             maxOutputSize = maxInputSize;
         }
         return {maxInputSize, maxOutputSize};
@@ -190,7 +190,8 @@ private:
      and at the beginning of the processBlock() with a check if
      the user has changed the input/output settings.
      */
-    virtual void updateBuffers() {
+    virtual void updateBuffers()
+    {
         DBG("IOHelper:  input size: " << input.getSize());
         DBG("IOHelper: output size: " << output.getSize());
     }

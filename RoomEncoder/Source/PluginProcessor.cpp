@@ -29,9 +29,9 @@ RoomEncoderAudioProcessor::RoomEncoderAudioProcessor()
                   BusesProperties()
 #if ! JucePlugin_IsMidiEffect
 #if ! JucePlugin_IsSynth
-                  .withInput  ("Input",  AudioChannelSet::discreteChannels(64), true)
+                  .withInput  ("Input",  juce::AudioChannelSet::discreteChannels(64), true)
 #endif
-                  .withOutput ("Output", AudioChannelSet::discreteChannels(64), true)
+                  .withOutput ("Output", juce::AudioChannelSet::discreteChannels(64), true)
 #endif
                   ,
 #endif
@@ -106,18 +106,18 @@ createParameterLayout())
 
     _numRefl = 0;
 
-    sourcePos = Vector3D<float>(*sourceX, *sourceY, *sourceZ);
-    listenerPos = Vector3D<float>(*listenerX, *listenerY, *listenerZ);
+    sourcePos = juce::Vector3D<float>(*sourceX, *sourceY, *sourceZ);
+    listenerPos = juce::Vector3D<float>(*listenerX, *listenerY, *listenerZ);
 
     for (int i = 0; i<nImgSrc;++i) {
         oldDelay[i] = 44100/343.2f*interpMult; //init oldRadius
         allGains[i] = 0.0f;
-        FloatVectorOperations::clear(SHcoeffsOld[i], 64);
-        FloatVectorOperations::clear((float *) &SHsampleOld[i], 64);
+        juce::FloatVectorOperations::clear(SHcoeffsOld[i], 64);
+        juce::FloatVectorOperations::clear((float *) &SHsampleOld[i], 64);
     }
 
-    lowShelfCoefficients = IIR::Coefficients<float>::makeLowShelf(48000, *lowShelfFreq, 0.707f, Decibels::decibelsToGain (lowShelfGain->load()));
-    highShelfCoefficients = IIR::Coefficients<float>::makeHighShelf(48000, *highShelfFreq, 0.707f, Decibels::decibelsToGain (highShelfGain->load()));
+    lowShelfCoefficients = IIR::Coefficients<float>::makeLowShelf(48000, *lowShelfFreq, 0.707f, juce::Decibels::decibelsToGain (lowShelfGain->load()));
+    highShelfCoefficients = IIR::Coefficients<float>::makeHighShelf(48000, *highShelfFreq, 0.707f, juce::Decibels::decibelsToGain (highShelfGain->load()));
 
 
     lowShelfArray.clear();
@@ -125,8 +125,8 @@ createParameterLayout())
 
     for (int o = 0; o < maxOrderImgSrc; ++o)
     {
-        lowShelfArray.add (new OwnedArray<IIR::Filter<IIRfloat>>);
-        highShelfArray.add (new OwnedArray<IIR::Filter<IIRfloat>>);
+        lowShelfArray.add (new juce::OwnedArray<IIR::Filter<IIRfloat>>);
+        highShelfArray.add (new juce::OwnedArray<IIR::Filter<IIRfloat>>);
         for (int i = 0; i<16; ++i)
         {
             lowShelfArray[o]->add (new IIR::Filter<IIRfloat> (lowShelfCoefficients));
@@ -230,12 +230,12 @@ void RoomEncoderAudioProcessor::setCurrentProgram (int index)
 {
 }
 
-const String RoomEncoderAudioProcessor::getProgramName (int index)
+const juce::String RoomEncoderAudioProcessor::getProgramName (int index)
 {
     return {};
 }
 
-void RoomEncoderAudioProcessor::changeProgramName (int index, const String& newName)
+void RoomEncoderAudioProcessor::changeProgramName (int index, const juce::String& newName)
 {
 }
 
@@ -259,12 +259,12 @@ void RoomEncoderAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
             highShelfArray[o]->getUnchecked (i)->reset (IIRfloat(0.0f));
         }
 
-        interleavedData.add (new AudioBlock<IIRfloat> (interleavedBlockData[i], 1, samplesPerBlock));
+        interleavedData.add (new juce::dsp::AudioBlock<IIRfloat> (interleavedBlockData[i], 1, samplesPerBlock));
         //interleavedData.getLast()->clear(); // broken in JUCE 5.4.5
         clear (*interleavedData.getLast());
     }
 
-    zero = AudioBlock<float> (zeroData, IIRfloat_elements, samplesPerBlock);
+    zero = juce::dsp::AudioBlock<float> (zeroData, IIRfloat_elements, samplesPerBlock);
     zero.clear();
 
     updateFv = true;
@@ -277,14 +277,14 @@ void RoomEncoderAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     const float rYHalfBound = rY / 2 - 0.1f;
     const float rZHalfBound = rZ / 2 - 0.1f;
 
-    sourcePos = Vector3D<float> (jlimit (-rXHalfBound, rXHalfBound, sourceX->load()),
-                                 jlimit (-rYHalfBound, rYHalfBound, sourceY->load()),
-                                 jlimit (-rZHalfBound, rZHalfBound, sourceZ->load()));
+    sourcePos = juce::Vector3D<float> (juce::jlimit (-rXHalfBound, rXHalfBound, sourceX->load()),
+                                 juce::jlimit (-rYHalfBound, rYHalfBound, sourceY->load()),
+                                 juce::jlimit (-rZHalfBound, rZHalfBound, sourceZ->load()));
 
 
-    listenerPos = Vector3D<float> (jlimit (-rXHalfBound, rXHalfBound, listenerX->load()),
-                                   jlimit (-rYHalfBound, rYHalfBound, listenerY->load()),
-                                   jlimit (-rZHalfBound, rZHalfBound, listenerZ->load()));
+    listenerPos = juce::Vector3D<float> (juce::jlimit (-rXHalfBound, rXHalfBound, listenerX->load()),
+                                   juce::jlimit (-rYHalfBound, rYHalfBound, listenerY->load()),
+                                   juce::jlimit (-rZHalfBound, rZHalfBound, listenerZ->load()));
 
     calculateImageSourcePositions (rX, rY, rZ);
 
@@ -299,7 +299,7 @@ void RoomEncoderAudioProcessor::releaseResources()
 }
 
 
-void RoomEncoderAudioProcessor::parameterChanged (const String &parameterID, float newValue)
+void RoomEncoderAudioProcessor::parameterChanged (const juce::String &parameterID, float newValue)
 {
     if (parameterID == "orderSetting" || parameterID == "directivityOrderSetting") userChangedIOSettings = true;
     else if (parameterID == "reflCoeff") {
@@ -363,11 +363,11 @@ void RoomEncoderAudioProcessor::parameterChanged (const String &parameterID, flo
 
 void RoomEncoderAudioProcessor::updateFilterCoefficients (double sampleRate)
 {
-    const auto lowFreq = jmin (static_cast<float> (0.5 * sampleRate), lowShelfFreq->load());
-    *lowShelfCoefficients = *IIR::Coefficients<float>::makeLowShelf (sampleRate, lowFreq, 0.707f, Decibels::decibelsToGain (lowShelfGain->load()));
+    const auto lowFreq = juce::jmin (static_cast<float> (0.5 * sampleRate), lowShelfFreq->load());
+    *lowShelfCoefficients = *IIR::Coefficients<float>::makeLowShelf (sampleRate, lowFreq, 0.707f, juce::Decibels::decibelsToGain (lowShelfGain->load()));
 
-    const auto highFreq = jmin (static_cast<float> (0.5 * sampleRate), highShelfFreq->load());
-    *highShelfCoefficients = *IIR::Coefficients<float>::makeHighShelf (sampleRate, highFreq, 0.707f, Decibels::decibelsToGain (highShelfGain->load()));
+    const auto highFreq = juce::jmin (static_cast<float> (0.5 * sampleRate), highShelfFreq->load());
+    *highShelfCoefficients = *IIR::Coefficients<float>::makeHighShelf (sampleRate, highFreq, 0.707f, juce::Decibels::decibelsToGain (highShelfGain->load()));
 
     userChangedFilterSettings = false;
     updateFv = true;
@@ -396,14 +396,14 @@ void RoomEncoderAudioProcessor::calculateImageSourcePositions (const float t, co
     }
 }
 
-void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
+void RoomEncoderAudioProcessor::processBlock (juce::AudioSampleBuffer& buffer, juce::MidiBuffer& midiMessages)
 {
-    ScopedNoDenormals noDenormals;
+    juce::ScopedNoDenormals noDenormals;
     checkInputAndOutput(this, *directivityOrderSetting, *orderSetting);
 
     // =============================== settings and parameters
-    const int maxNChIn = jmin(buffer.getNumChannels(), input.getNumberOfChannels());
-    const int maxNChOut = jmin(buffer.getNumChannels(), output.getNumberOfChannels());
+    const int maxNChIn = juce::jmin(buffer.getNumChannels(), input.getNumberOfChannels());
+    const int maxNChOut = juce::jmin(buffer.getNumChannels(), output.getNumberOfChannels());
     const int directivityOrder = input.getOrder();
     const int ambisonicOrder = output.getOrder();
 
@@ -434,7 +434,7 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
     {
         for (int i = 0; i<nSIMDFilters; ++i)
         {
-            AudioDataConverters::interleaveSamples(buffer.getArrayOfReadPointers() + i*IIRfloat_elements,
+            juce::AudioDataConverters::interleaveSamples(buffer.getArrayOfReadPointers() + i*IIRfloat_elements,
                                                    reinterpret_cast<float*> (interleavedData[i]->getChannelPointer (0)), L,
                                                    static_cast<int> (IIRfloat_elements));
         }
@@ -444,7 +444,7 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
         int i;
         for (i = 0; i<nSIMDFilters-1; ++i)
         {
-            AudioDataConverters::interleaveSamples(buffer.getArrayOfReadPointers() + i*IIRfloat_elements,
+            juce::AudioDataConverters::interleaveSamples(buffer.getArrayOfReadPointers() + i*IIRfloat_elements,
                                                    reinterpret_cast<float*> (interleavedData[i]->getChannelPointer (0)), L,
                                                    static_cast<int> (IIRfloat_elements));
         }
@@ -459,17 +459,17 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
         {
             addr[ch] = zero.getChannelPointer(ch);
         }
-        AudioDataConverters::interleaveSamples(addr,
+        juce::AudioDataConverters::interleaveSamples(addr,
                                                reinterpret_cast<float*> (interleavedData[i]->getChannelPointer (0)), L,
                                                static_cast<int> (IIRfloat_elements));
     }
 
-    int currNumRefl = roundToInt (numRefl->load());
+    int currNumRefl = juce::roundToInt (numRefl->load());
     int workingNumRefl = (currNumRefl < _numRefl) ? _numRefl : currNumRefl;
 
 
     // calculating reflection coefficients (only if parameter changed)
-    float reflCoeffGain = Decibels::decibelsToGain (reflCoeff->load());
+    float reflCoeffGain = juce::Decibels::decibelsToGain (reflCoeff->load());
     if (powReflCoeff[1] != reflCoeffGain)
     {
         powReflCoeff[0] = 1;
@@ -490,7 +490,7 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
     //===== LIMIT MOVING SPEED OF SOURCE AND LISTENER ===============================
     const float maxDist = 30.0f / sampleRate * L; // 30 meters per second
     {
-        const Vector3D<float> targetSourcePos (*sourceX, *sourceY, *sourceZ);
+        const juce::Vector3D<float> targetSourcePos (*sourceX, *sourceY, *sourceZ);
         const auto sourcePosDiff = targetSourcePos - sourcePos;
         const float sourcePosDiffLength = sourcePosDiff.length();
 
@@ -499,12 +499,12 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
         else
             sourcePos = targetSourcePos;
 
-        sourcePos = Vector3D<float> (jlimit (-rXHalfBound, rXHalfBound, sourcePos.x),
-                                     jlimit (-rYHalfBound, rYHalfBound, sourcePos.y),
-                                     jlimit (-rZHalfBound, rZHalfBound, sourcePos.z));
+        sourcePos = juce::Vector3D<float> (juce::jlimit (-rXHalfBound, rXHalfBound, sourcePos.x),
+                                     juce::jlimit (-rYHalfBound, rYHalfBound, sourcePos.y),
+                                     juce::jlimit (-rZHalfBound, rZHalfBound, sourcePos.z));
 
 
-        const Vector3D<float> listenerSourcePos (*listenerX, *listenerY, *listenerZ);
+        const juce::Vector3D<float> listenerSourcePos (*listenerX, *listenerY, *listenerZ);
         const auto listenerPosDiff = listenerSourcePos - listenerPos;
         const float listenerPosDiffLength = listenerPosDiff.length();
 
@@ -513,9 +513,9 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
         else
             listenerPos = listenerSourcePos;
 
-        listenerPos = Vector3D<float> (jlimit (-rXHalfBound, rXHalfBound, listenerPos.x),
-                                       jlimit (-rYHalfBound, rYHalfBound, listenerPos.y),
-                                       jlimit (-rZHalfBound, rZHalfBound, listenerPos.z));
+        listenerPos = juce::Vector3D<float> (juce::jlimit (-rXHalfBound, rXHalfBound, listenerPos.x),
+                                       juce::jlimit (-rYHalfBound, rYHalfBound, listenerPos.y),
+                                       juce::jlimit (-rZHalfBound, rZHalfBound, listenerPos.z));
     }
 
 
@@ -538,14 +538,15 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
 
     for (int q=0; q<workingNumRefl+1; ++q)
     {
-        if (const int idx = filterPoints.indexOf (q); idx != -1)
+        const int idx = filterPoints.indexOf (q);
+        if (idx != -1)
         {
             for (int i = 0; i<nSIMDFilters; ++i)
             {
                 const IIRfloat* chPtr[1];
                 chPtr[0] = interleavedData[i]->getChannelPointer (0);
-                AudioBlock<IIRfloat> ab (const_cast<IIRfloat**> (chPtr), 1, L);
-                ProcessContextReplacing<IIRfloat> context (ab);
+                juce::dsp::AudioBlock<IIRfloat> ab (const_cast<IIRfloat**> (chPtr), 1, L);
+                juce::dsp::ProcessContextReplacing<IIRfloat> context (ab);
 
                 lowShelfArray[idx]->getUnchecked (i)->process (context);
                 highShelfArray[idx]->getUnchecked (i)->process (context);
@@ -560,19 +561,19 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
         IIRfloat SHsample[16]; //TODO: can be smaller: (N+1)^2/IIRfloat_elements
         IIRfloat SHsampleStep[16];
 #if JUCE_USE_SIMD
-        FloatVectorOperations::clear((float *) &SHsample->value,
+        juce::FloatVectorOperations::clear((float *) &SHsample->value,
                                      IIRfloat_elements * sizeof(SHsample) / sizeof(*SHsample));
         SHEval(directivityOrder, smx[q], smy[q], smz[q],(float *) &SHsample->value, false); // deoding -> false
 #else  /* !JUCE_USE_SIMD */
-        FloatVectorOperations::clear((float *) SHsample,
+        juce::FloatVectorOperations::clear((float *) SHsample,
                                      IIRfloat_elements * sizeof(SHsample) / sizeof(*SHsample));
         SHEval(directivityOrder, smx[q], smy[q], smz[q],(float *) SHsample, false); // deoding -> false
 #endif /* JUCE_USE_SIMD */
 
         if (doInputSn3dToN3dConversion)
-            FloatVectorOperations::multiply((float *) SHsample, sn3d2n3d, maxNChIn);
+            juce::FloatVectorOperations::multiply((float *) SHsample, sn3d2n3d, maxNChIn);
 
-        Array<IIRfloat*> interleavedDataPtr;
+        juce::Array<IIRfloat*> interleavedDataPtr;
         interleavedDataPtr.resize(nSIMDFilters);
         IIRfloat** intrlvdDataArrayPtr = interleavedDataPtr.getRawDataPointer();
 
@@ -611,7 +612,7 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
         //calculate firstIdx and copyL
         int startIdx = ((int)oldDelay[q])>>interpShift;
         int stopIdx = L-1 + (((int)(oldDelay[q] + delayStep * L-1))>>interpShift); // ((int)(startIdx + delayStep * L-1))>>7
-        firstIdx = jmin (startIdx, stopIdx);
+        firstIdx = juce::jmin (startIdx, stopIdx);
         copyL = abs(stopIdx-startIdx) + interpLength;
 
         monoBuffer.clear(0,firstIdx, copyL); //TODO: optimization idea: resample input to match delay stretching
@@ -667,11 +668,11 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
             SHEval(ambisonicOrder, mx[q], my[q], mz[q], SHcoeffs, true); // encoding -> true
             if (*useSN3D > 0.5f)
             {
-                FloatVectorOperations::multiply(SHcoeffs, SHcoeffs, n3d2sn3d, maxNChOut);
+                juce::FloatVectorOperations::multiply(SHcoeffs, SHcoeffs, n3d2sn3d, maxNChOut);
             }
         }
         else
-            FloatVectorOperations::clear(SHcoeffs, 64);
+            juce::FloatVectorOperations::clear(SHcoeffs, 64);
 
         float gain = powReflCoeff[reflectionList[q]->order] / mRadius[q];
         if (*directPathUnityGain > 0.5f)
@@ -686,7 +687,7 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
         extraAttenuationInDb += reflProp.yMinusReflections * *wallAttenuationRight;
         extraAttenuationInDb += reflProp.zPlusReflections * *wallAttenuationCeiling;
         extraAttenuationInDb += reflProp.zMinusReflections * *wallAttenuationFloor;
-        gain *= Decibels::decibelsToGain (extraAttenuationInDb);
+        gain *= juce::Decibels::decibelsToGain (extraAttenuationInDb);
 
         // direct path rendering
         if (q == 0 && ! doRenderDirectPath)
@@ -697,9 +698,9 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
 
         allGains[q] = gain; // for reflectionVisualizer
 
-        FloatVectorOperations::multiply(SHcoeffs, gain, maxNChOut);
-        FloatVectorOperations::subtract(SHcoeffsStep, SHcoeffs, SHcoeffsOld[q], maxNChOut);
-        FloatVectorOperations::multiply(SHcoeffsStep, 1.0f/copyL, maxNChOut);
+        juce::FloatVectorOperations::multiply(SHcoeffs, gain, maxNChOut);
+        juce::FloatVectorOperations::subtract(SHcoeffsStep, SHcoeffs, SHcoeffsOld[q], maxNChOut);
+        juce::FloatVectorOperations::multiply(SHcoeffsStep, 1.0f/copyL, maxNChOut);
 
         if (firstIdx + copyL - 1 >= bufferSize)
         {
@@ -732,10 +733,10 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
                 }
                 else
                 {
-                    FloatVectorOperations::addWithMultiply(delayBufferWritePtrArray[channel] + firstIdx,
+                    juce::FloatVectorOperations::addWithMultiply(delayBufferWritePtrArray[channel] + firstIdx,
                                                            monoBufferReadPtrWithOffset,
                                                            SHcoeffs[channel], firstNumCopy);
-                    FloatVectorOperations::addWithMultiply(delayBufferWritePtrArray[channel],
+                    juce::FloatVectorOperations::addWithMultiply(delayBufferWritePtrArray[channel],
                                                            monoBufferReadPtrWithOffset + firstNumCopy,
                                                            SHcoeffs[channel], secondNumCopy);
                 }
@@ -760,7 +761,7 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
                 }
                 else
                 {
-                    FloatVectorOperations::addWithMultiply(delayBufferWritePtrArray[channel] + firstIdx,
+                    juce::FloatVectorOperations::addWithMultiply(delayBufferWritePtrArray[channel] + firstIdx,
                                                            monoBufferReadPtrWithOffset,
                                                            SHcoeffs[channel], copyL);
                 }
@@ -768,11 +769,11 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
             }
         }
 
-        FloatVectorOperations::copy(SHcoeffsOld[q], SHcoeffs, maxNChOut);
+        juce::FloatVectorOperations::copy(SHcoeffsOld[q], SHcoeffs, maxNChOut);
 #if JUCE_USE_SIMD
-        FloatVectorOperations::copy((float *) &SHsampleOld[q]->value, (float *) &SHsample->value, maxNChIn);
+        juce::FloatVectorOperations::copy((float *) &SHsampleOld[q]->value, (float *) &SHsample->value, maxNChIn);
 #else  /* !JUCE_USE_SIMD */
-        FloatVectorOperations::copy((float *) SHsampleOld[q], (float *) SHsample, maxNChIn);
+        juce::FloatVectorOperations::copy((float *) SHsampleOld[q], (float *) SHsample, maxNChIn);
 #endif /* JUCE_USE_SIMD */
         //oldDelay[q] = delay;
         oldDelay[q] = tempDelay;
@@ -785,7 +786,7 @@ void RoomEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuf
     // ======= Read from delayBuffer and clear read content ==============
     buffer.clear();
 
-    const int blockSize1 = jmin (bufferSize - readOffset, L);
+    const int blockSize1 = juce::jmin (bufferSize - readOffset, L);
 
     for (int channel = 0; channel < maxNChOut; ++channel)
     {
@@ -816,33 +817,33 @@ bool RoomEncoderAudioProcessor::hasEditor() const
     return true; // (change this to false if you choose to not supply an editor)
 }
 
-AudioProcessorEditor* RoomEncoderAudioProcessor::createEditor()
+juce::AudioProcessorEditor* RoomEncoderAudioProcessor::createEditor()
 {
     return new RoomEncoderAudioProcessorEditor (*this, parameters);
 }
 
 //==============================================================================
-void RoomEncoderAudioProcessor::getStateInformation (MemoryBlock &destData)
+void RoomEncoderAudioProcessor::getStateInformation (juce::MemoryBlock &destData)
 {
     auto state = parameters.copyState();
 
     auto oscConfig = state.getOrCreateChildWithName ("OSCConfig", nullptr);
     oscConfig.copyPropertiesFrom (oscParameterInterface.getConfig(), nullptr);
 
-    std::unique_ptr<XmlElement> xml (state.createXml());
+    std::unique_ptr<juce::XmlElement> xml (state.createXml());
     copyXmlToBinary (*xml, destData);
 }
 
 void RoomEncoderAudioProcessor::setStateInformation (const void *data, int sizeInBytes)
 {
-    std::unique_ptr<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
+    std::unique_ptr<juce::XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
     if (xmlState.get() != nullptr)
         if (xmlState->hasTagName (parameters.state.getType()))
         {
-            parameters.replaceState (ValueTree::fromXml (*xmlState));
+            parameters.replaceState (juce::ValueTree::fromXml (*xmlState));
             if (parameters.state.hasProperty ("OSCPort")) // legacy
             {
-                oscParameterInterface.getOSCReceiver().connect (parameters.state.getProperty ("OSCPort", var (-1)));
+                oscParameterInterface.getOSCReceiver().connect (parameters.state.getProperty ("OSCPort", juce::var (-1)));
                 parameters.state.removeProperty ("OSCPort", nullptr);
             }
 
@@ -960,12 +961,12 @@ void RoomEncoderAudioProcessor::updateBuffers()
 }
 
 //==============================================================================
-std::vector<std::unique_ptr<RangedAudioParameter>> RoomEncoderAudioProcessor::createParameterLayout()
+std::vector<std::unique_ptr<juce::RangedAudioParameter>> RoomEncoderAudioProcessor::createParameterLayout()
 {
-    std::vector<std::unique_ptr<RangedAudioParameter>> params;
+    std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("directivityOrderSetting", "Input Directivity Order", "",
-                                     NormalisableRange<float> (0.0f, 8.0f, 1.0f), 1.0f,
+                                     juce::NormalisableRange<float> (0.0f, 8.0f, 1.0f), 1.0f,
                                      [](float value) {
                                          if (value >= 0.5f && value < 1.5f) return "0th";
                                          else if (value >= 1.5f && value < 2.5f) return "1st";
@@ -979,13 +980,13 @@ std::vector<std::unique_ptr<RangedAudioParameter>> RoomEncoderAudioProcessor::cr
                                      nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("inputIsSN3D", "Input Directivity Normalization", "",
-                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
+                                     juce::NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value) { if (value >= 0.5f ) return "SN3D";
                                          else return "N3D"; },
                                      nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("orderSetting", "Output Ambisonics Order", "",
-                                     NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
+                                     juce::NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
                                      [](float value) {
                                          if (value >= 0.5f && value < 1.5f) return "0th";
                                          else if (value >= 1.5f && value < 2.5f) return "1st";
@@ -998,65 +999,65 @@ std::vector<std::unique_ptr<RangedAudioParameter>> RoomEncoderAudioProcessor::cr
                                          else return "Auto"; },
                                      nullptr));
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("useSN3D", "Normalization", "",
-                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
+                                     juce::NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value) { if (value >= 0.5f ) return "SN3D";
                                          else return "N3D"; },
                                      nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("roomX", "room size x", "m",
-                                     NormalisableRange<float> (1.0f, 30.0f, 0.01f), 10.0f,
-                                     [](float value) { return String(value, 2); }, nullptr));
+                                     juce::NormalisableRange<float> (1.0f, 30.0f, 0.01f), 10.0f,
+                                     [](float value) { return juce::String(value, 2); }, nullptr));
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("roomY", "room size y", "m",
-                                     NormalisableRange<float> (1.0f, 30.0f, 0.01f), 11.0f,
-                                     [](float value) { return String(value, 2); }, nullptr));
+                                     juce::NormalisableRange<float> (1.0f, 30.0f, 0.01f), 11.0f,
+                                     [](float value) { return juce::String(value, 2); }, nullptr));
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("roomZ", "room size z", "m",
-                                     NormalisableRange<float> (1.0f, 20.0f, 0.01f), 7.0f,
-                                     [](float value) { return String(value, 2); }, nullptr));
+                                     juce::NormalisableRange<float> (1.0f, 20.0f, 0.01f), 7.0f,
+                                     [](float value) { return juce::String(value, 2); }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("sourceX", "source position x", "m",
-                                     NormalisableRange<float> (-15.0f, 15.0f, 0.001f), 1.0f,
-                                     [](float value) { return String(value, 3); }, nullptr));
+                                     juce::NormalisableRange<float> (-15.0f, 15.0f, 0.001f), 1.0f,
+                                     [](float value) { return juce::String(value, 3); }, nullptr));
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("sourceY", "source position y", "m",
-                                     NormalisableRange<float> (-15.0f, 15.0f, 0.001f), 1.0f,
-                                     [](float value) { return String(value, 3); }, nullptr));
+                                     juce::NormalisableRange<float> (-15.0f, 15.0f, 0.001f), 1.0f,
+                                     [](float value) { return juce::String(value, 3); }, nullptr));
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("sourceZ", "source position z", "m",
-                                     NormalisableRange<float> (-10.0f, 10.0f, 0.001f), -1.0f,
-                                     [](float value) { return String(value, 3); }, nullptr));
+                                     juce::NormalisableRange<float> (-10.0f, 10.0f, 0.001f), -1.0f,
+                                     [](float value) { return juce::String(value, 3); }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("listenerX", "listener position x", "m",
-                                     NormalisableRange<float> (-15.0f, 15.0f, 0.001f), -1.0f,
-                                     [](float value) { return String(value, 3); }, nullptr));
+                                     juce::NormalisableRange<float> (-15.0f, 15.0f, 0.001f), -1.0f,
+                                     [](float value) { return juce::String(value, 3); }, nullptr));
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("listenerY", "listener position y", "m",
-                                     NormalisableRange<float> (-15.0f, 15.0f, 0.001f), -1.0f,
-                                     [](float value) { return String(value, 3); }, nullptr));
+                                     juce::NormalisableRange<float> (-15.0f, 15.0f, 0.001f), -1.0f,
+                                     [](float value) { return juce::String(value, 3); }, nullptr));
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("listenerZ", "listener position z", "m",
-                                     NormalisableRange<float> (-10.0f, 10.0f, 0.001f), -1.0f,
-                                     [](float value) { return String(value, 3); }, nullptr));
+                                     juce::NormalisableRange<float> (-10.0f, 10.0f, 0.001f), -1.0f,
+                                     [](float value) { return juce::String(value, 3); }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("numRefl", "number of reflections", "",
-                                     NormalisableRange<float> (0.0f, nImgSrc-1, 1.0f), 33.0f,
-                                     [](float value) { return String((int) value); }, nullptr));
+                                     juce::NormalisableRange<float> (0.0f, nImgSrc-1, 1.0f), 33.0f,
+                                     [](float value) { return juce::String((int) value); }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("lowShelfFreq", "LowShelf Frequency", "Hz",
-                                     NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.2f), 100.0,
-                                     [](float value) { return String((int) value); }, nullptr));
+                                     juce::NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.2f), 100.0,
+                                     [](float value) { return juce::String((int) value); }, nullptr));
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("lowShelfGain", "LowShelf Gain", "dB",
-                                     NormalisableRange<float> (-15.0f, 5.0f, 0.1f), -5.0f,
-                                     [](float value) { return String(value, 1); }, nullptr));
+                                     juce::NormalisableRange<float> (-15.0f, 5.0f, 0.1f), -5.0f,
+                                     [](float value) { return juce::String(value, 1); }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("highShelfFreq", "HighShelf Frequency", "Hz",
-                                     NormalisableRange<float> (20., 20000.0f, 1.0f, 0.2f), 8000.0,
-                                     [](float value) { return String((int) value); }, nullptr));
+                                     juce::NormalisableRange<float> (20., 20000.0f, 1.0f, 0.2f), 8000.0,
+                                     [](float value) { return juce::String((int) value); }, nullptr));
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("highShelfGain", "HighShelf Gain", "dB",
-                                     NormalisableRange<float> (-15.0f, 5.0f, 0.1f), -5.0f,
-                                     [](float value) { return String(value, 1); }, nullptr));
+                                     juce::NormalisableRange<float> (-15.0f, 5.0f, 0.1f), -5.0f,
+                                     [](float value) { return juce::String(value, 1); }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("reflCoeff", "Reflection Coefficient", "dB",
-                                     NormalisableRange<float> (-15.0f, 0.0f, 0.01f), -1.0f,
-                                     [](float value) { return String(value, 2); }, nullptr));
+                                     juce::NormalisableRange<float> (-15.0f, 0.0f, 0.01f), -1.0f,
+                                     [](float value) { return juce::String(value, 2); }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("syncChannel", "Synchronize to Channel", "",
-                                     NormalisableRange<float> (0.0f, 4.0f, 1.0f), 0.0f,
+                                     juce::NormalisableRange<float> (0.0f, 4.0f, 1.0f), 0.0f,
                                      [](float value) {
                                          if (value >= 0.5f && value < 1.5f) return "Channel 1";
                                          else if (value >= 1.5f && value < 2.5f) return "Channel 2";
@@ -1066,89 +1067,89 @@ std::vector<std::unique_ptr<RangedAudioParameter>> RoomEncoderAudioProcessor::cr
                                      nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("syncRoomSize", "Synchronize Room Dimensions", "",
-                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
+                                     juce::NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value) {
                                          if (value >= 0.5f) return "YES";
                                          else return "NO"; },
                                      nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("syncReflection", "Synchronize Reflection Properties", "",
-                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
+                                     juce::NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value) {
                                          if (value >= 0.5f) return "YES";
                                          else return "NO"; },
                                      nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("syncListener", "Synchronize Listener Position", "",
-                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
+                                     juce::NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value) {
                                          if (value >= 0.5f) return "YES";
                                          else return "NO"; },
                                      nullptr));
 
-    params.push_back (OSCParameterInterface::createParameterTheOldWay ("renderDirectPath", "Render Direct Path", "",
-                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("renderDirectPath", "Render Direct juce::Path", "",
+                                     juce::NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value) {
                                          if (value >= 0.5f) return "YES";
                                          else return "NO"; },
                                      nullptr));
 
-    params.push_back (OSCParameterInterface::createParameterTheOldWay ("directPathZeroDelay", "Zero-Delay for Direct Path", "",
-                                                                       NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("directPathZeroDelay", "Zero-Delay for Direct juce::Path", "",
+                                                                       juce::NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
                                                                        [](float value) {
                                                                            if (value >= 0.5f) return "ON";
                                                                            else return "OFF"; },
                                                                        nullptr));
 
 
-    params.push_back (OSCParameterInterface::createParameterTheOldWay ("directPathUnityGain", "Unity-Gain for Direct Path", "",
-                                                                       NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("directPathUnityGain", "Unity-Gain for Direct juce::Path", "",
+                                                                       juce::NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
                                                                        [](float value) {
                                                                            if (value >= 0.5f) return "ON";
                                                                            else return "OFF"; },
                                                                        nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("wallAttenuationFront", "Front wall attenuation", "dB",
-                                                                       NormalisableRange<float> (-50.0f, 0.0f, 0.01f, 3.0f), 0.0f,
-                                                                       [](float value) { return String (value, 2); }, nullptr));
+                                                                       juce::NormalisableRange<float> (-50.0f, 0.0f, 0.01f, 3.0f), 0.0f,
+                                                                       [](float value) { return juce::String (value, 2); }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("wallAttenuationBack", "Back wall attenuation", "dB",
-                                                                       NormalisableRange<float> (-50.0f, 0.0f, 0.01f, 3.0f), 0.0f,
-                                                                       [](float value) { return String (value, 2); }, nullptr));
+                                                                       juce::NormalisableRange<float> (-50.0f, 0.0f, 0.01f, 3.0f), 0.0f,
+                                                                       [](float value) { return juce::String (value, 2); }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("wallAttenuationLeft", "Left wall attenuation", "dB",
-                                                                       NormalisableRange<float> (-50.0f, 0.0f, 0.01f, 3.0f), 0.0f,
-                                                                       [](float value) { return String (value, 2); }, nullptr));
+                                                                       juce::NormalisableRange<float> (-50.0f, 0.0f, 0.01f, 3.0f), 0.0f,
+                                                                       [](float value) { return juce::String (value, 2); }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("wallAttenuationRight", "Right wall attenuation", "dB",
-                                                                       NormalisableRange<float> (-50.0f, 0.0f, 0.01f, 3.0f), 0.0f,
-                                                                       [](float value) { return String (value, 2); }, nullptr));
+                                                                       juce::NormalisableRange<float> (-50.0f, 0.0f, 0.01f, 3.0f), 0.0f,
+                                                                       [](float value) { return juce::String (value, 2); }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("wallAttenuationCeiling", "Ceiling attenuation", "dB",
-                                                                       NormalisableRange<float> (-50.0f, 0.0f, 0.01f, 3.0f), 0.0f,
-                                                                       [](float value) { return String (value, 2); }, nullptr));
+                                                                       juce::NormalisableRange<float> (-50.0f, 0.0f, 0.01f, 3.0f), 0.0f,
+                                                                       [](float value) { return juce::String (value, 2); }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("wallAttenuationFloor", "Floor attenuation", "dB",
-                                                                       NormalisableRange<float> (-50.0f, 0.0f, 0.01f, 3.0f), 0.0f,
-                                                                       [](float value) { return String (value, 2); }, nullptr));
+                                                                       juce::NormalisableRange<float> (-50.0f, 0.0f, 0.01f, 3.0f), 0.0f,
+                                                                       [](float value) { return juce::String (value, 2); }, nullptr));
 
 
 
     return params;
 }
 
-inline void RoomEncoderAudioProcessor::clear (AudioBlock<IIRfloat>& ab)
+inline void RoomEncoderAudioProcessor::clear (juce::dsp::AudioBlock<IIRfloat>& ab)
 {
     const int N = static_cast<int> (ab.getNumSamples()) * IIRfloat_elements;
     const int nCh = static_cast<int> (ab.getNumChannels());
 
     for (int ch = 0; ch < nCh; ++ch)
-        FloatVectorOperations::clear (reinterpret_cast<float*> (ab.getChannelPointer (ch)), N);
+        juce::FloatVectorOperations::clear (reinterpret_cast<float*> (ab.getChannelPointer (ch)), N);
 }
 
 //==============================================================================
 // This creates new instances of the plugin..
-AudioProcessor* JUCE_CALLTYPE createPluginFilter()
+juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new RoomEncoderAudioProcessor();
 }

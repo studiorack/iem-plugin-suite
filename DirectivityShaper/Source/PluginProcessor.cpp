@@ -34,9 +34,9 @@ DirectivityShaperAudioProcessor::DirectivityShaperAudioProcessor()
                       BusesProperties()
 #if ! JucePlugin_IsMidiEffect
 #if ! JucePlugin_IsSynth
-                  .withInput  ("Input",  AudioChannelSet::mono(), true)
+                  .withInput  ("Input",  juce::AudioChannelSet::mono(), true)
 #endif
-                  .withOutput ("Output", AudioChannelSet::discreteChannels(64), true)
+                  .withOutput ("Output", juce::AudioChannelSet::discreteChannels(64), true)
 #endif
                   ,
 #endif
@@ -59,41 +59,41 @@ createParameterLayout())
 
     for (int i = 0; i < numberOfBands; ++i)
     {
-        filterType[i] = parameters.getRawParameterValue ("filterType" + String(i));
-        filterFrequency[i] = parameters.getRawParameterValue ("filterFrequency" + String(i));
-        filterQ[i] = parameters.getRawParameterValue ("filterQ" + String(i));
-        filterGain[i] = parameters.getRawParameterValue ("filterGain" + String(i));
-        order[i] = parameters.getRawParameterValue ("order" + String(i));
-        shape[i] = parameters.getRawParameterValue ("shape" + String(i));
-        azimuth[i] = parameters.getRawParameterValue ("azimuth" + String(i));
-        elevation[i] = parameters.getRawParameterValue ("elevation" + String(i));
-        parameters.addParameterListener("filterType" + String(i), this);
-        parameters.addParameterListener("filterFrequency" + String(i), this);
-        parameters.addParameterListener("filterQ" + String(i), this);
-        parameters.addParameterListener("filterGain" + String(i), this);
-        parameters.addParameterListener("azimuth" + String(i), this);
-        parameters.addParameterListener("elevation" + String(i), this);
-        parameters.addParameterListener("order" + String(i), this);
-        parameters.addParameterListener("shape" + String(i), this);
+        filterType[i] = parameters.getRawParameterValue ("filterType" + juce::String(i));
+        filterFrequency[i] = parameters.getRawParameterValue ("filterFrequency" + juce::String(i));
+        filterQ[i] = parameters.getRawParameterValue ("filterQ" + juce::String(i));
+        filterGain[i] = parameters.getRawParameterValue ("filterGain" + juce::String(i));
+        order[i] = parameters.getRawParameterValue ("order" + juce::String(i));
+        shape[i] = parameters.getRawParameterValue ("shape" + juce::String(i));
+        azimuth[i] = parameters.getRawParameterValue ("azimuth" + juce::String(i));
+        elevation[i] = parameters.getRawParameterValue ("elevation" + juce::String(i));
+        parameters.addParameterListener("filterType" + juce::String(i), this);
+        parameters.addParameterListener("filterFrequency" + juce::String(i), this);
+        parameters.addParameterListener("filterQ" + juce::String(i), this);
+        parameters.addParameterListener("filterGain" + juce::String(i), this);
+        parameters.addParameterListener("azimuth" + juce::String(i), this);
+        parameters.addParameterListener("elevation" + juce::String(i), this);
+        parameters.addParameterListener("order" + juce::String(i), this);
+        parameters.addParameterListener("shape" + juce::String(i), this);
         parameters.addParameterListener("normalization", this);
 
         probeGains[i] = 0.0f;
     }
 
 
-    FloatVectorOperations::clear(shOld[0], 64 * numberOfBands);
-    FloatVectorOperations::clear(weights[0], 8 * numberOfBands);
+    juce::FloatVectorOperations::clear(shOld[0], 64 * numberOfBands);
+    juce::FloatVectorOperations::clear(weights[0], 8 * numberOfBands);
 
 
     for (int i = 0; i < numberOfBands; ++i)
     {
-        filter[i].coefficients = createFilterCoefficients(roundToInt (filterType[i]->load()), 44100, filterFrequency[i]->load(), filterQ[i]->load());
+        filter[i].coefficients = createFilterCoefficients(juce::roundToInt (filterType[i]->load()), 44100, filterFrequency[i]->load(), filterQ[i]->load());
     }
 }
 
-inline dsp::IIR::Coefficients<float>::Ptr DirectivityShaperAudioProcessor::createFilterCoefficients(int type, double sampleRate, double frequency, double Q)
+inline juce::dsp::IIR::Coefficients<float>::Ptr DirectivityShaperAudioProcessor::createFilterCoefficients(int type, double sampleRate, double frequency, double Q)
 {
-    frequency = jmin (0.5 * sampleRate, frequency);
+    frequency = juce::jmin (0.5 * sampleRate, frequency);
     switch (type) {
         case 1:
             return IIR::Coefficients<float>::makeLowPass(sampleRate, frequency, Q);
@@ -129,12 +129,12 @@ void DirectivityShaperAudioProcessor::setCurrentProgram (int index)
 {
 }
 
-const String DirectivityShaperAudioProcessor::getProgramName (int index)
+const juce::String DirectivityShaperAudioProcessor::getProgramName (int index)
 {
     return {};
 }
 
-void DirectivityShaperAudioProcessor::changeProgramName (int index, const String& newName)
+void DirectivityShaperAudioProcessor::changeProgramName (int index, const juce::String& newName)
 {
 }
 
@@ -145,7 +145,7 @@ void DirectivityShaperAudioProcessor::prepareToPlay (double sampleRate, int samp
 
     for (int i = 0; i < numberOfBands; ++i)
     {
-        *filter[i].coefficients = *createFilterCoefficients(roundToInt (filterType[i]->load()), sampleRate, filterFrequency[i]->load(), filterQ[i]->load());
+        *filter[i].coefficients = *createFilterCoefficients(juce::roundToInt (filterType[i]->load()), sampleRate, filterFrequency[i]->load(), filterQ[i]->load());
         filter[i].reset();
     }
     repaintFV = true;
@@ -160,25 +160,25 @@ void DirectivityShaperAudioProcessor::releaseResources()
 }
 
 
-void DirectivityShaperAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
+void DirectivityShaperAudioProcessor::processBlock (juce::AudioSampleBuffer& buffer, juce::MidiBuffer& midiMessages)
 {
     checkInputAndOutput(this, 1, *orderSetting);
-    ScopedNoDenormals noDenormals;
+    juce::ScopedNoDenormals noDenormals;
 
     const bool applySN3D = *useSN3D > 0.5f;
 
-    int nChToWorkWith = jmin(buffer.getNumChannels(), output.getNumberOfChannels());
+    int nChToWorkWith = juce::jmin(buffer.getNumChannels(), output.getNumberOfChannels());
     const int orderToWorkWith = isqrt(nChToWorkWith) - 1;
     nChToWorkWith = squares[orderToWorkWith+1];
 
     const int numSamples = buffer.getNumSamples();
 
-    AudioBlock<float> inBlock = AudioBlock<float>(buffer.getArrayOfWritePointers(), 1, numSamples);
+    juce::dsp::AudioBlock<float> inBlock = juce::dsp::AudioBlock<float>(buffer.getArrayOfWritePointers(), 1, numSamples);
     for (int i = 0; i < numberOfBands; ++i)
     {
         //filteredBuffer.copyFrom(i, 0, buffer, 0, 0, numSamples);
-        AudioBlock<float> outBlock = AudioBlock<float>(filteredBuffer.getArrayOfWritePointers() + i, 1, numSamples);
-        filter[i].process(ProcessContextNonReplacing<float>(inBlock, outBlock));
+        juce::dsp::AudioBlock<float> outBlock = juce::dsp::AudioBlock<float>(filteredBuffer.getArrayOfWritePointers() + i, 1, numSamples);
+        filter[i].process(juce::dsp::ProcessContextNonReplacing<float>(inBlock, outBlock));
     }
 
     buffer.clear();
@@ -187,11 +187,11 @@ void DirectivityShaperAudioProcessor::processBlock (AudioSampleBuffer& buffer, M
     float probeSH[64];
 
     {
-        Vector3D<float> pos = Conversions<float>::sphericalToCartesian (degreesToRadians (probeAzimuth->load()), degreesToRadians (probeElevation->load()));
+        juce::Vector3D<float> pos = Conversions<float>::sphericalToCartesian (juce::degreesToRadians (probeAzimuth->load()), juce::degreesToRadians (probeElevation->load()));
         SHEval(orderToWorkWith, pos.x, pos.y, pos.z, probeSH, false); // decoding -> false
         if (applySN3D)
         { // reverting SN3D in probeSH
-            FloatVectorOperations::multiply(probeSH, sn3d2n3d, nChToWorkWith);
+            juce::FloatVectorOperations::multiply(probeSH, sn3d2n3d, nChToWorkWith);
         }
     }
 
@@ -215,7 +215,7 @@ void DirectivityShaperAudioProcessor::processBlock (AudioSampleBuffer& buffer, M
 
         // ==== COPY WEIGHTS FOR GUI VISUALIZATION ====
         // copy non-normalized weights for GUI
-        FloatVectorOperations::copy(weights[b], tempWeights, 8);
+        juce::FloatVectorOperations::copy(weights[b], tempWeights, 8);
 
         // normalize weights for GUI (7th order decode)
         WeightsHelper::applyNormalization(weights[b], *order[b], 7, norm);
@@ -225,12 +225,12 @@ void DirectivityShaperAudioProcessor::processBlock (AudioSampleBuffer& buffer, M
         WeightsHelper::applyNormalization(tempWeights, *order[b], orderToWorkWith, norm, applySN3D);
 
 
-        Vector3D<float> pos = Conversions<float>::sphericalToCartesian (degreesToRadians(azimuth[b]->load()), degreesToRadians (elevation[b]->load()));
+        juce::Vector3D<float> pos = Conversions<float>::sphericalToCartesian (juce::degreesToRadians(azimuth[b]->load()), juce::degreesToRadians (elevation[b]->load()));
         SHEval(orderToWorkWith, pos.x, pos.y, pos.z, sh, true); // encoding -> true
 
         float temp = 0.0f;
         float shTemp[64];
-        FloatVectorOperations::multiply(shTemp, sh, Decibels::decibelsToGain (filterGain[b]->load()), 64);
+        juce::FloatVectorOperations::multiply(shTemp, sh, juce::Decibels::decibelsToGain (filterGain[b]->load()), 64);
         for (int i = 0; i < nChToWorkWith; ++i)
         {
             shTemp[i] *= tempWeights[isqrt(i)];
@@ -246,7 +246,7 @@ void DirectivityShaperAudioProcessor::processBlock (AudioSampleBuffer& buffer, M
             repaintFV = true;
             repaintSphere = true;
         }
-        FloatVectorOperations::copy(shOld[b], shTemp, 64);
+        juce::FloatVectorOperations::copy(shOld[b], shTemp, 64);
     }
 
     if (changeWeights)
@@ -264,33 +264,33 @@ bool DirectivityShaperAudioProcessor::hasEditor() const
     return true; // (change this to false if you choose to not supply an editor)
 }
 
-AudioProcessorEditor* DirectivityShaperAudioProcessor::createEditor()
+juce::AudioProcessorEditor* DirectivityShaperAudioProcessor::createEditor()
 {
     return new DirectivityShaperAudioProcessorEditor (*this, parameters);
 }
 
 //==============================================================================
-void DirectivityShaperAudioProcessor::getStateInformation (MemoryBlock &destData)
+void DirectivityShaperAudioProcessor::getStateInformation (juce::MemoryBlock &destData)
 {
   auto state = parameters.copyState();
 
   auto oscConfig = state.getOrCreateChildWithName ("OSCConfig", nullptr);
   oscConfig.copyPropertiesFrom (oscParameterInterface.getConfig(), nullptr);
 
-  std::unique_ptr<XmlElement> xml (state.createXml());
+  std::unique_ptr<juce::XmlElement> xml (state.createXml());
   copyXmlToBinary (*xml, destData);
 }
 
 void DirectivityShaperAudioProcessor::setStateInformation (const void *data, int sizeInBytes)
 {
-    std::unique_ptr<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
+    std::unique_ptr<juce::XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
     if (xmlState.get() != nullptr)
         if (xmlState->hasTagName (parameters.state.getType()))
         {
-            parameters.replaceState (ValueTree::fromXml (*xmlState));
+            parameters.replaceState (juce::ValueTree::fromXml (*xmlState));
             if (parameters.state.hasProperty ("OSCPort")) // legacy
             {
-                oscParameterInterface.getOSCReceiver().connect (parameters.state.getProperty ("OSCPort", var (-1)));
+                oscParameterInterface.getOSCReceiver().connect (parameters.state.getProperty ("OSCPort", juce::var (-1)));
                 parameters.state.removeProperty ("OSCPort", nullptr);
             }
 
@@ -301,7 +301,7 @@ void DirectivityShaperAudioProcessor::setStateInformation (const void *data, int
 }
 
 //==============================================================================
-void DirectivityShaperAudioProcessor::parameterChanged (const String &parameterID, float newValue)
+void DirectivityShaperAudioProcessor::parameterChanged (const juce::String &parameterID, float newValue)
 {
     if (parameterID == "orderSetting")
     {
@@ -320,14 +320,14 @@ void DirectivityShaperAudioProcessor::parameterChanged (const String &parameterI
             {
                 iem::Quaternion<float> probeQuat;
                 float probeypr[3];
-                probeypr[0] = degreesToRadians (probeAzimuth->load());
-                probeypr[1] = degreesToRadians (probeElevation->load());
-                probeypr[2] = - degreesToRadians (probeRoll->load());
+                probeypr[0] = juce::degreesToRadians (probeAzimuth->load());
+                probeypr[1] = juce::degreesToRadians (probeElevation->load());
+                probeypr[2] = - juce::degreesToRadians (probeRoll->load());
                 probeQuat.fromYPR(probeypr);
                 probeQuat.conjugate();
 
-                ypr[0] = degreesToRadians (azimuth[i]->load());
-                ypr[1] = degreesToRadians (elevation[i]->load());
+                ypr[0] = juce::degreesToRadians (azimuth[i]->load());
+                ypr[1] = juce::degreesToRadians (elevation[i]->load());
                 quats[i].fromYPR(ypr);
                 quats[i] = probeQuat*quats[i];
             }
@@ -345,17 +345,17 @@ void DirectivityShaperAudioProcessor::parameterChanged (const String &parameterI
             moving = true;
             iem::Quaternion<float> probeQuat;
             float ypr[3];
-            ypr[0] = degreesToRadians (probeAzimuth->load());
-            ypr[1] = degreesToRadians (probeElevation->load());
-            ypr[2] = - degreesToRadians (probeRoll->load());
+            ypr[0] = juce::degreesToRadians (probeAzimuth->load());
+            ypr[1] = juce::degreesToRadians (probeElevation->load());
+            ypr[2] = - juce::degreesToRadians (probeRoll->load());
             probeQuat.fromYPR(ypr);
 
             for (int i = 0; i < numberOfBands; ++i)
             {
                 iem::Quaternion<float> temp = probeQuat*quats[i];
                 temp.toYPR(ypr);
-                parameters.getParameter ("azimuth" + String (i))->setValueNotifyingHost (parameters.getParameterRange ("azimuth" + String (i)).convertTo0to1 (radiansToDegrees (ypr[0])));
-                parameters.getParameter ("elevation" + String (i))->setValueNotifyingHost (parameters.getParameterRange ("elevation" + String (i)).convertTo0to1 (radiansToDegrees(ypr[1])));
+                parameters.getParameter ("azimuth" + juce::String (i))->setValueNotifyingHost (parameters.getParameterRange ("azimuth" + juce::String (i)).convertTo0to1 (juce::radiansToDegrees (ypr[0])));
+                parameters.getParameter ("elevation" + juce::String (i))->setValueNotifyingHost (parameters.getParameterRange ("elevation" + juce::String (i)).convertTo0to1 (juce::radiansToDegrees(ypr[1])));
             }
             moving = false;
             repaintSphere = true;
@@ -374,14 +374,14 @@ void DirectivityShaperAudioProcessor::parameterChanged (const String &parameterI
             {
                 iem::Quaternion<float> probeQuat;
                 float probeypr[3];
-                probeypr[0] = degreesToRadians (probeAzimuth->load());
-                probeypr[1] = degreesToRadians (probeElevation->load());
-                probeypr[2] = - degreesToRadians (probeRoll->load());
+                probeypr[0] = juce::degreesToRadians (probeAzimuth->load());
+                probeypr[1] = juce::degreesToRadians (probeElevation->load());
+                probeypr[2] = - juce::degreesToRadians (probeRoll->load());
                 probeQuat.fromYPR(probeypr);
                 probeQuat.conjugate();
 
-                ypr[0] = degreesToRadians (azimuth[i]->load());
-                ypr[1] = degreesToRadians (elevation[i]->load());
+                ypr[0] = juce::degreesToRadians (azimuth[i]->load());
+                ypr[1] = juce::degreesToRadians (elevation[i]->load());
                 quats[i].fromYPR(ypr);
                 quats[i] = probeQuat*quats[i];
             }
@@ -392,7 +392,7 @@ void DirectivityShaperAudioProcessor::parameterChanged (const String &parameterI
     else if (parameterID.startsWith("filter"))
     {
         int i = parameterID.getLastCharacters(1).getIntValue();
-        *filter[i].coefficients = *createFilterCoefficients (roundToInt (filterType[i]->load()), getSampleRate(), *filterFrequency[i], *filterQ[i]);
+        *filter[i].coefficients = *createFilterCoefficients (juce::roundToInt (filterType[i]->load()), getSampleRate(), *filterFrequency[i], *filterQ[i]);
         repaintFV = true;
     }
     else if (parameterID.startsWith("order") || parameterID.startsWith("shape"))
@@ -405,13 +405,13 @@ void DirectivityShaperAudioProcessor::parameterChanged (const String &parameterI
 
 
 //==============================================================================
-std::vector<std::unique_ptr<RangedAudioParameter>> DirectivityShaperAudioProcessor::createParameterLayout()
+std::vector<std::unique_ptr<juce::RangedAudioParameter>> DirectivityShaperAudioProcessor::createParameterLayout()
 {
     // add your audio parameters here
-    std::vector<std::unique_ptr<RangedAudioParameter>> params;
+    std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("orderSetting", "Directivity Order", "",
-                                     NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
+                                     juce::NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
                                      [](float value) {
                                          if (value >= 0.5f && value < 1.5f) return "0th";
                                          else if (value >= 1.5f && value < 2.5f) return "1st";
@@ -425,29 +425,29 @@ std::vector<std::unique_ptr<RangedAudioParameter>> DirectivityShaperAudioProcess
                                      nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("useSN3D", "Directivity Normalization", "",
-                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
+                                     juce::NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value) { if (value >= 0.5f ) return "SN3D";
                                          else return "N3D"; },
                                      nullptr));
 
-    params.push_back (OSCParameterInterface::createParameterTheOldWay ("probeAzimuth", "probe Azimuth", CharPointer_UTF8 (R"(°)"),
-                                    NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
-                                    [](float value) {return String(value, 2);}, nullptr));
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("probeAzimuth", "probe Azimuth", juce::CharPointer_UTF8 (R"(°)"),
+                                    juce::NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
+                                    [](float value) {return juce::String(value, 2);}, nullptr));
 
-    params.push_back (OSCParameterInterface::createParameterTheOldWay ("probeElevation", "probe Elevation", CharPointer_UTF8 (R"(°)"),
-                                    NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
-                                    [](float value) {return String(value, 2);}, nullptr));
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("probeElevation", "probe Elevation", juce::CharPointer_UTF8 (R"(°)"),
+                                    juce::NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
+                                    [](float value) {return juce::String(value, 2);}, nullptr));
 
-    params.push_back (OSCParameterInterface::createParameterTheOldWay ("probeRoll", "probe Roll", CharPointer_UTF8 (R"(°)"),
-                                    NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
-                                    [](float value) {return String(value, 2);}, nullptr));
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("probeRoll", "probe Roll", juce::CharPointer_UTF8 (R"(°)"),
+                                    juce::NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
+                                    [](float value) {return juce::String(value, 2);}, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("probeLock", "Lock Directions", "",
-                                    NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
+                                    juce::NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
                                     [](float value) {return (value >= 0.5f) ? "locked" : "not locked";}, nullptr));
 
-    params.push_back (OSCParameterInterface::createParameterTheOldWay ("normalization", "Directivity Normalization", "",
-                                    NormalisableRange<float> (0.0f, 2.0f, 1.0f), 1.0,
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("normalization", "Beam Normalization", "",
+                                    juce::NormalisableRange<float> (0.0f, 2.0f, 1.0f), 1.0,
                                     [](float value) {
                                         if (value >= 0.5f && value < 1.5f) return "on axis";
                                         else if (value >= 1.5f && value < 2.5f) return "constant energy";
@@ -456,8 +456,8 @@ std::vector<std::unique_ptr<RangedAudioParameter>> DirectivityShaperAudioProcess
 
     for (int i = 0; i < numberOfBands; ++i)
     {
-        params.push_back (OSCParameterInterface::createParameterTheOldWay ("filterType" + String(i), "Filter Type " + String(i+1), "",
-                                        NormalisableRange<float> (0.0f, 3.0f, 1.0f),  filterTypePresets[i],
+        params.push_back (OSCParameterInterface::createParameterTheOldWay ("filterType" + juce::String(i), "Filter Type " + juce::String(i+1), "",
+                                        juce::NormalisableRange<float> (0.0f, 3.0f, 1.0f),  filterTypePresets[i],
                                         [](float value) {
                                             if (value >= 0.5f && value < 1.5f) return "Low-pass";
                                             else if (value >= 1.5f && value < 2.5f) return "Band-pass";
@@ -465,35 +465,35 @@ std::vector<std::unique_ptr<RangedAudioParameter>> DirectivityShaperAudioProcess
                                             else return "All-pass";},
                                         nullptr));
 
-        params.push_back (OSCParameterInterface::createParameterTheOldWay ("filterFrequency" + String(i), "Filter Frequency " + String(i+1), "Hz",
-                                        NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.4f), filterFrequencyPresets[i],
-                                        [](float value) { return String((int) value); }, nullptr));
+        params.push_back (OSCParameterInterface::createParameterTheOldWay ("filterFrequency" + juce::String(i), "Filter Frequency " + juce::String(i+1), "Hz",
+                                        juce::NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.4f), filterFrequencyPresets[i],
+                                        [](float value) { return juce::String((int) value); }, nullptr));
 
-        params.push_back (OSCParameterInterface::createParameterTheOldWay ("filterQ" + String(i), "Filter Q " + String(i+1), "",
-                                        NormalisableRange<float> (0.05f, 10.0f, 0.05f), 0.5f,
-                                        [](float value) { return String(value, 2); },
+        params.push_back (OSCParameterInterface::createParameterTheOldWay ("filterQ" + juce::String(i), "Filter Q " + juce::String(i+1), "",
+                                        juce::NormalisableRange<float> (0.05f, 10.0f, 0.05f), 0.5f,
+                                        [](float value) { return juce::String(value, 2); },
                                         nullptr));
 
-        params.push_back (OSCParameterInterface::createParameterTheOldWay ("filterGain" + String(i), "Filter Gain " + String(i+1), "dB",
-                                        NormalisableRange<float> (-60.0f, 10.0f, 0.1f), 0.0f,
-                                        [](float value) { return (value >= -59.9f) ? String(value, 1) : "-inf"; },
+        params.push_back (OSCParameterInterface::createParameterTheOldWay ("filterGain" + juce::String(i), "Filter Gain " + juce::String(i+1), "dB",
+                                        juce::NormalisableRange<float> (-60.0f, 10.0f, 0.1f), 0.0f,
+                                        [](float value) { return (value >= -59.9f) ? juce::String(value, 1) : "-inf"; },
                                         nullptr));
 
-        params.push_back (OSCParameterInterface::createParameterTheOldWay ("order" + String(i), "Order Band " + String(i+1), "",
-                                        NormalisableRange<float> (0.0f, 7.0f, 0.01f), 0.0,
-                                        [](float value) { return String(value, 2); }, nullptr));
+        params.push_back (OSCParameterInterface::createParameterTheOldWay ("order" + juce::String(i), "Order Band " + juce::String(i+1), "",
+                                        juce::NormalisableRange<float> (0.0f, 7.0f, 0.01f), 0.0,
+                                        [](float value) { return juce::String(value, 2); }, nullptr));
 
-        params.push_back (OSCParameterInterface::createParameterTheOldWay ("shape" + String(i), "Shape Band " + String(i+1), "",
-                                        NormalisableRange<float> (0.0f, 1.0f, 0.01f), 0.0,
-                                        [](float value) { return String(value, 2); }, nullptr));
+        params.push_back (OSCParameterInterface::createParameterTheOldWay ("shape" + juce::String(i), "Shape Band " + juce::String(i+1), "",
+                                        juce::NormalisableRange<float> (0.0f, 1.0f, 0.01f), 0.0,
+                                        [](float value) { return juce::String(value, 2); }, nullptr));
 
-        params.push_back (OSCParameterInterface::createParameterTheOldWay ("azimuth" + String(i), "Azimuth Band " + String(i+1), CharPointer_UTF8 (R"(°)"),
-                                        NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
-                                        [](float value) { return String(value, 2); }, nullptr));
+        params.push_back (OSCParameterInterface::createParameterTheOldWay ("azimuth" + juce::String(i), "Azimuth Band " + juce::String(i+1), juce::CharPointer_UTF8 (R"(°)"),
+                                        juce::NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
+                                        [](float value) { return juce::String(value, 2); }, nullptr));
 
-        params.push_back (OSCParameterInterface::createParameterTheOldWay ("elevation" + String(i), "Elevation Band " + String(i+1), CharPointer_UTF8 (R"(°)"),
-                                        NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
-                                        [](float value) {return String(value, 2);}, nullptr));
+        params.push_back (OSCParameterInterface::createParameterTheOldWay ("elevation" + juce::String(i), "Elevation Band " + juce::String(i+1), juce::CharPointer_UTF8 (R"(°)"),
+                                        juce::NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
+                                        [](float value) {return juce::String(value, 2);}, nullptr));
     }
 
     return params;
@@ -501,7 +501,7 @@ std::vector<std::unique_ptr<RangedAudioParameter>> DirectivityShaperAudioProcess
 
 //==============================================================================
 // This creates new instances of the plugin..
-AudioProcessor* JUCE_CALLTYPE createPluginFilter()
+juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new DirectivityShaperAudioProcessor();
 }

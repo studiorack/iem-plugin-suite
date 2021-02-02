@@ -30,9 +30,9 @@ DualDelayAudioProcessor::DualDelayAudioProcessor()
                   BusesProperties()
 #if ! JucePlugin_IsMidiEffect
 #if ! JucePlugin_IsSynth
-                  .withInput  ("Input",  AudioChannelSet::discreteChannels(64), true)
+                  .withInput  ("Input",  juce::AudioChannelSet::discreteChannels(64), true)
 #endif
-                  .withOutput ("Output", AudioChannelSet::discreteChannels(64), true)
+                  .withOutput ("Output", juce::AudioChannelSet::discreteChannels(64), true)
 #endif
                   ,
 #endif
@@ -86,12 +86,12 @@ void DualDelayAudioProcessor::setCurrentProgram (int index)
 {
 }
 
-const String DualDelayAudioProcessor::getProgramName (int index)
+const juce::String DualDelayAudioProcessor::getProgramName (int index)
 {
     return {};
 }
 
-void DualDelayAudioProcessor::changeProgramName (int index, const String& newName)
+void DualDelayAudioProcessor::changeProgramName (int index, const juce::String& newName)
 {
 }
 
@@ -100,7 +100,7 @@ void DualDelayAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBl
 {
     checkInputAndOutput(this, *orderSetting, *orderSetting, true);
 
-    dsp::ProcessSpec spec;
+    juce::dsp::ProcessSpec spec;
     spec.sampleRate = sampleRate;
     spec.numChannels = 1;
     spec.maximumBlockSize = samplesPerBlock;
@@ -146,13 +146,13 @@ void DualDelayAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBl
 
 void DualDelayAudioProcessor::releaseResources() { }
 
-void DualDelayAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
+void DualDelayAudioProcessor::processBlock (juce::AudioSampleBuffer& buffer, juce::MidiBuffer& midiMessages)
 {
-    ScopedNoDenormals noDenormals;
+    juce::ScopedNoDenormals noDenormals;
     checkInputAndOutput(this, *orderSetting, *orderSetting);
 
     const int totalNumInputChannels  =  getTotalNumInputChannels();
-    const int workingOrder = jmin(isqrt(buffer.getNumChannels())-1, input.getOrder(), output.getOrder());
+    const int workingOrder = juce::jmin(isqrt(buffer.getNumChannels())-1, input.getOrder(), output.getOrder());
     const int nCh = squares[workingOrder+1];
 
 
@@ -171,10 +171,10 @@ void DualDelayAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffe
 
     for (int i=0; i<nCh; ++i)
     {
-        lowPassFiltersLeft[i]->setCoefficients(IIRCoefficients::makeLowPass (fs, jmin (fs / 2.0, static_cast<double> (*LPcutOffL))));
-        lowPassFiltersRight[i]->setCoefficients(IIRCoefficients::makeLowPass (fs, jmin (fs / 2.0, static_cast<double> (*LPcutOffR))));
-        highPassFiltersLeft[i]->setCoefficients(IIRCoefficients::makeHighPass (fs, jmin (fs / 2.0, static_cast<double> (*HPcutOffL))));
-        highPassFiltersRight[i]->setCoefficients(IIRCoefficients::makeHighPass (fs, jmin (fs / 2.0, static_cast<double> (*HPcutOffR))));
+        lowPassFiltersLeft[i]->setCoefficients(juce::IIRCoefficients::makeLowPass (fs, juce::jmin (fs / 2.0, static_cast<double> (*LPcutOffL))));
+        lowPassFiltersRight[i]->setCoefficients(juce::IIRCoefficients::makeLowPass (fs, juce::jmin (fs / 2.0, static_cast<double> (*LPcutOffR))));
+        highPassFiltersLeft[i]->setCoefficients(juce::IIRCoefficients::makeHighPass (fs, juce::jmin (fs / 2.0, static_cast<double> (*HPcutOffL))));
+        highPassFiltersRight[i]->setCoefficients(juce::IIRCoefficients::makeHighPass (fs, juce::jmin (fs / 2.0, static_cast<double> (*HPcutOffR))));
     }
 
     // ==================== MAKE COPY OF INPUT BUFFER==============================
@@ -235,11 +235,11 @@ void DualDelayAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffe
     }
 
     // ========== OUTPUT
-    buffer.applyGain (Decibels::decibelsToGain (dryGain->load(), -59.91f)); //dry signal
+    buffer.applyGain (juce::Decibels::decibelsToGain (dryGain->load(), -59.91f)); //dry signal
     for (int channel = 0; channel < nCh; ++channel)
     {
-        buffer.addFrom (channel, 0, delayOutLeft, channel, 0, spb, Decibels::decibelsToGain (wetGainL->load(), -59.91f)); //wet signal
-        buffer.addFrom (channel, 0, delayOutRight, channel, 0, spb, Decibels::decibelsToGain (wetGainR->load(), -59.91f)); //wet signal
+        buffer.addFrom (channel, 0, delayOutLeft, channel, 0, spb, juce::Decibels::decibelsToGain (wetGainL->load(), -59.91f)); //wet signal
+        buffer.addFrom (channel, 0, delayOutRight, channel, 0, spb, juce::Decibels::decibelsToGain (wetGainR->load(), -59.91f)); //wet signal
     }
 
     // ================ ADD INPUT AND FED BACK OUTPUT WITH PROCESSING ===========
@@ -247,24 +247,24 @@ void DualDelayAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffe
     for (int channel = 0; channel < nCh; ++channel) // should be optimizable with SIMD
     {
         delayInLeft.copyFrom(channel, 0, AudioIN.getReadPointer(channel), spb); // input
-        delayInLeft.addFrom(channel, 0, delayOutLeft.getReadPointer(channel), spb, Decibels::decibelsToGain (feedbackL->load(), -59.91f) ); // feedback gain
-        delayInLeft.addFrom(channel, 0, delayOutRight.getReadPointer(channel),  spb, Decibels::decibelsToGain (xfeedbackR->load(), -59.91f) ); // feedback bleed gain
+        delayInLeft.addFrom(channel, 0, delayOutLeft.getReadPointer(channel), spb, juce::Decibels::decibelsToGain (feedbackL->load(), -59.91f) ); // feedback gain
+        delayInLeft.addFrom(channel, 0, delayOutRight.getReadPointer(channel),  spb, juce::Decibels::decibelsToGain (xfeedbackR->load(), -59.91f) ); // feedback bleed gain
         lowPassFiltersLeft[channel]->processSamples(delayInLeft.getWritePointer(channel), spb); //filter
         highPassFiltersLeft[channel]->processSamples(delayInLeft.getWritePointer(channel), spb); //filter
 
         delayInRight.copyFrom(channel, 0, AudioIN.getReadPointer(channel), spb); // input
-        delayInRight.addFrom(channel, 0, delayOutRight.getReadPointer(channel), spb, Decibels::decibelsToGain (feedbackR->load(), -59.91f) ); // feedback gain
-        delayInRight.addFrom(channel, 0, delayOutLeft.getReadPointer(channel), spb, Decibels::decibelsToGain (xfeedbackL->load(), -59.91f) ); // feedback bleed gain
+        delayInRight.addFrom(channel, 0, delayOutRight.getReadPointer(channel), spb, juce::Decibels::decibelsToGain (feedbackR->load(), -59.91f) ); // feedback gain
+        delayInRight.addFrom(channel, 0, delayOutLeft.getReadPointer(channel), spb, juce::Decibels::decibelsToGain (xfeedbackL->load(), -59.91f) ); // feedback bleed gain
         lowPassFiltersRight[channel]->processSamples(delayInRight.getWritePointer(channel), spb); //filter
         highPassFiltersRight[channel]->processSamples(delayInRight.getWritePointer(channel), spb); //filter
     }
 
     // left delay rotation
-    calcParams(*rotationL/180.0f*MathConstants<float>::pi);
+    calcParams(*rotationL/180.0f * juce::MathConstants<float>::pi);
     rotateBuffer(&delayInLeft, nCh, spb);
 
     // right delay rotation
-    calcParams(*rotationR/180.0f*MathConstants<float>::pi);
+    calcParams(*rotationR/180.0f * juce::MathConstants<float>::pi);
     rotateBuffer(&delayInRight, nCh, spb);
 
 
@@ -438,33 +438,33 @@ bool DualDelayAudioProcessor::hasEditor() const
     return true; // (change this to false if you choose to not supply an editor)
 }
 
-AudioProcessorEditor* DualDelayAudioProcessor::createEditor()
+juce::AudioProcessorEditor* DualDelayAudioProcessor::createEditor()
 {
     return new DualDelayAudioProcessorEditor (*this, parameters);
 }
 
 //==============================================================================
-void DualDelayAudioProcessor::getStateInformation (MemoryBlock &destData)
+void DualDelayAudioProcessor::getStateInformation (juce::MemoryBlock &destData)
 {
     auto state = parameters.copyState();
 
     auto oscConfig = state.getOrCreateChildWithName ("OSCConfig", nullptr);
     oscConfig.copyPropertiesFrom (oscParameterInterface.getConfig(), nullptr);
 
-    std::unique_ptr<XmlElement> xml (state.createXml());
+    std::unique_ptr<juce::XmlElement> xml (state.createXml());
     copyXmlToBinary (*xml, destData);
 }
 
 void DualDelayAudioProcessor::setStateInformation (const void *data, int sizeInBytes)
 {
-    std::unique_ptr<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
+    std::unique_ptr<juce::XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
     if (xmlState.get() != nullptr)
         if (xmlState->hasTagName (parameters.state.getType()))
         {
-            parameters.replaceState (ValueTree::fromXml (*xmlState));
+            parameters.replaceState (juce::ValueTree::fromXml (*xmlState));
             if (parameters.state.hasProperty ("OSCPort")) // legacy
             {
-                oscParameterInterface.getOSCReceiver().connect (parameters.state.getProperty ("OSCPort", var (-1)));
+                oscParameterInterface.getOSCReceiver().connect (parameters.state.getProperty ("OSCPort", juce::var (-1)));
                 parameters.state.removeProperty ("OSCPort", nullptr);
             }
 
@@ -476,7 +476,7 @@ void DualDelayAudioProcessor::setStateInformation (const void *data, int sizeInB
 
 //==============================================================================
 // This creates new instances of the plugin..
-AudioProcessor* JUCE_CALLTYPE createPluginFilter()
+juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new DualDelayAudioProcessor();
 }
@@ -494,13 +494,13 @@ void DualDelayAudioProcessor::calcParams(float phi)
     }
 }
 
-void DualDelayAudioProcessor::rotateBuffer(AudioBuffer<float>* bufferToRotate, const int nCh, const int samples)
+void DualDelayAudioProcessor::rotateBuffer(juce::AudioBuffer<float>* bufferToRotate, const int nCh, const int samples)
 {
-    AudioBuffer<float> tempBuffer;
+    juce::AudioBuffer<float> tempBuffer;
     tempBuffer.makeCopyOf(*bufferToRotate);
     bufferToRotate->clear();
 
-    //int nCh = jmin(nChannels, bufferToRotate->getNumChannels());
+    //int nCh = juce::jmin(nChannels, bufferToRotate->getNumChannels());
 
     for (int acn_out = 0; acn_out < nCh; ++acn_out)
     {
@@ -546,7 +546,7 @@ void DualDelayAudioProcessor::rotateBuffer(AudioBuffer<float>* bufferToRotate, c
     }
 }
 
-void DualDelayAudioProcessor::parameterChanged (const String &parameterID, float newValue)
+void DualDelayAudioProcessor::parameterChanged (const juce::String &parameterID, float newValue)
 {
     if (parameterID == "orderSetting") userChangedIOSettings = true;
 }
@@ -556,8 +556,8 @@ void DualDelayAudioProcessor::updateBuffers()
     DBG("IOHelper:  input size: " << input.getSize());
     DBG("IOHelper: output size: " << output.getSize());
 
-    const int nChannels = jmin(input.getNumberOfChannels(), output.getNumberOfChannels());
-    const int _nChannels = jmin(input.getPreviousNumberOfChannels(), output.getPreviousNumberOfChannels());
+    const int nChannels = juce::jmin(input.getNumberOfChannels(), output.getNumberOfChannels());
+    const int _nChannels = juce::jmin(input.getPreviousNumberOfChannels(), output.getPreviousNumberOfChannels());
     const int samplesPerBlock = getBlockSize();
 
     const double sampleRate = getSampleRate();
@@ -565,10 +565,10 @@ void DualDelayAudioProcessor::updateBuffers()
     {
         for (int i=_nChannels; i<nChannels; ++i)
         {
-            lowPassFiltersLeft.add(new IIRFilter());
-            lowPassFiltersRight.add(new IIRFilter());
-            highPassFiltersLeft.add(new IIRFilter());
-            highPassFiltersRight.add(new IIRFilter());
+            lowPassFiltersLeft.add(new juce::IIRFilter());
+            lowPassFiltersRight.add(new juce::IIRFilter());
+            highPassFiltersLeft.add(new juce::IIRFilter());
+            highPassFiltersRight.add(new juce::IIRFilter());
         }
     }
     else {
@@ -604,13 +604,13 @@ void DualDelayAudioProcessor::updateBuffers()
 
 
 //==============================================================================
-std::vector<std::unique_ptr<RangedAudioParameter>> DualDelayAudioProcessor::createParameterLayout()
+std::vector<std::unique_ptr<juce::RangedAudioParameter>> DualDelayAudioProcessor::createParameterLayout()
 {
     // add your audio parameters here
-    std::vector<std::unique_ptr<RangedAudioParameter>> params;
+    std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("orderSetting", "Ambisonics Order", "",
-                                    NormalisableRange<float>(0.0f, 8.0f, 1.0f), 0.0f,
+                                    juce::NormalisableRange<float>(0.0f, 8.0f, 1.0f), 0.0f,
                                     [](float value) {
                                         if (value >= 0.5f && value < 1.5f) return "0th";
                                         else if (value >= 1.5f && value < 2.5f) return "1st";
@@ -624,7 +624,7 @@ std::vector<std::unique_ptr<RangedAudioParameter>> DualDelayAudioProcessor::crea
                                     }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("useSN3D", "Normalization", "",
-                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
+                                     juce::NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value)
                                      {
                                          if (value >= 0.5f ) return "SN3D";
@@ -633,72 +633,72 @@ std::vector<std::unique_ptr<RangedAudioParameter>> DualDelayAudioProcessor::crea
 
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("dryGain", "Dry amount", "dB",
-                                    NormalisableRange<float> (-60.0f, 0.0f, 0.1f), 0.0f,
-                                    [](float value) { return (value >= -59.9f) ? String(value, 1) : "-inf"; }, nullptr));
+                                    juce::NormalisableRange<float> (-60.0f, 0.0f, 0.1f), 0.0f,
+                                    [](float value) { return (value >= -59.9f) ? juce::String(value, 1) : "-inf"; }, nullptr));
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("wetGainL", "Wet amount left", "dB",
-                                    NormalisableRange<float> (-60.0f, 0.0f, 0.1f), -6.0f,
-                                    [](float value) { return (value >= -59.9f) ? String(value, 1) : "-inf"; }, nullptr));
+                                    juce::NormalisableRange<float> (-60.0f, 0.0f, 0.1f), -6.0f,
+                                    [](float value) { return (value >= -59.9f) ? juce::String(value, 1) : "-inf"; }, nullptr));
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("wetGainR", "Wet amount right", "dB",
-                                    NormalisableRange<float> (-60.0f, 0.0f, 0.1f), -6.0f,
-                                    [](float value) { return (value >= -59.9f) ? String(value, 1) : "-inf"; }, nullptr));
+                                    juce::NormalisableRange<float> (-60.0f, 0.0f, 0.1f), -6.0f,
+                                    [](float value) { return (value >= -59.9f) ? juce::String(value, 1) : "-inf"; }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("delayTimeL", "delay time left", "ms",
-                                    NormalisableRange<float> (10.0f, 500.0f, 0.1f), 500.0f,
-                                    [](float value) { return String(value, 1); }, nullptr));
+                                    juce::NormalisableRange<float> (10.0f, 500.0f, 0.1f), 500.0f,
+                                    [](float value) { return juce::String(value, 1); }, nullptr));
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("delayTimeR", "delay time right", "ms",
-                                    NormalisableRange<float> (10.0f, 500.0f, 0.1f), 375.0f,
-                                    [](float value) { return String(value, 1); }, nullptr));
+                                    juce::NormalisableRange<float> (10.0f, 500.0f, 0.1f), 375.0f,
+                                    [](float value) { return juce::String(value, 1); }, nullptr));
 
-    params.push_back (OSCParameterInterface::createParameterTheOldWay ("rotationL", "rotation left", CharPointer_UTF8 (R"(°)"),
-                                    NormalisableRange<float> (-180.0f, 180.0f, 0.1f), 10.0f,
-                                    [](float value) { return String(value, 1); }, nullptr));
-    params.push_back (OSCParameterInterface::createParameterTheOldWay ("rotationR", "rotation right", CharPointer_UTF8 (R"(°)"),
-                                    NormalisableRange<float> (-180.0f, 180.0f, 0.1f), -7.5f,
-                                    [](float value) { return String(value, 1); }, nullptr));
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("rotationL", "rotation left", juce::CharPointer_UTF8 (R"(°)"),
+                                    juce::NormalisableRange<float> (-180.0f, 180.0f, 0.1f), 10.0f,
+                                    [](float value) { return juce::String(value, 1); }, nullptr));
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("rotationR", "rotation right", juce::CharPointer_UTF8 (R"(°)"),
+                                    juce::NormalisableRange<float> (-180.0f, 180.0f, 0.1f), -7.5f,
+                                    [](float value) { return juce::String(value, 1); }, nullptr));
 
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("LPcutOffL", "lowpass frequency left", "Hz",
-                                    NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.2), 20000.0f,
-                                    [](float value) { return String(value, 1); }, nullptr));
+                                    juce::NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.2), 20000.0f,
+                                    [](float value) { return juce::String(value, 1); }, nullptr));
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("LPcutOffR", "lowpass frequency right", "Hz",
-                                    NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.2), 20000.0f,
-                                    [](float value) { return String(value, 1); }, nullptr));
+                                    juce::NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.2), 20000.0f,
+                                    [](float value) { return juce::String(value, 1); }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("HPcutOffL", "highpass frequency left", "Hz",
-                                    NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.2), 100.0f,
-                                    [](float value) { return String(value, 1); }, nullptr));
+                                    juce::NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.2), 100.0f,
+                                    [](float value) { return juce::String(value, 1); }, nullptr));
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("HPcutOffR", "highpass frequency right", "Hz",
-                                    NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.2), 100.0f,
-                                    [](float value) { return String(value, 1); }, nullptr));
+                                    juce::NormalisableRange<float> (20.0f, 20000.0f, 1.0f, 0.2), 100.0f,
+                                    [](float value) { return juce::String(value, 1); }, nullptr));
 
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("feedbackL", "feedback left", "dB",
-                                    NormalisableRange<float> (-60.0f, 0.0f, 0.1f), -8.0f,
-                                    [](float value) { return (value >= -59.9f) ? String(value, 1) : "-inf"; }, nullptr));
+                                    juce::NormalisableRange<float> (-60.0f, 0.0f, 0.1f), -8.0f,
+                                    [](float value) { return (value >= -59.9f) ? juce::String(value, 1) : "-inf"; }, nullptr));
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("feedbackR", "feedback right", "dB",
-                                    NormalisableRange<float> (-60.0f, 0.0f, 0.1f), -8.0f,
-                                    [](float value) { return (value >= -59.9f) ? String(value, 1) : "-inf"; }, nullptr));
+                                    juce::NormalisableRange<float> (-60.0f, 0.0f, 0.1f), -8.0f,
+                                    [](float value) { return (value >= -59.9f) ? juce::String(value, 1) : "-inf"; }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("xfeedbackL", "cross feedback left", "dB",
-                                    NormalisableRange<float> (-60.0f, 0.0f, 0.1f), -20.0f,
-                                    [](float value) { return (value >= -59.9f) ? String(value, 1) : "-inf"; }, nullptr));
+                                    juce::NormalisableRange<float> (-60.0f, 0.0f, 0.1f), -20.0f,
+                                    [](float value) { return (value >= -59.9f) ? juce::String(value, 1) : "-inf"; }, nullptr));
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("xfeedbackR", "cross feedback right", "dB",
-                                    NormalisableRange<float> (-60.0f, 0.0f, 0.1f), -20.0f,
-                                    [](float value) { return (value >= -59.9f) ? String(value, 1) : "-inf"; }, nullptr));
+                                    juce::NormalisableRange<float> (-60.0f, 0.0f, 0.1f), -20.0f,
+                                    [](float value) { return (value >= -59.9f) ? juce::String(value, 1) : "-inf"; }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("lfoRateL", "LFO left rate", "Hz",
-                                    NormalisableRange<float> (0.0f, 10.0f, 0.01f), 0.0f,
-                                    [](float value) { return String(value, 2); }, nullptr));
+                                    juce::NormalisableRange<float> (0.0f, 10.0f, 0.01f), 0.0f,
+                                    [](float value) { return juce::String(value, 2); }, nullptr));
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("lfoRateR", "LFO right rate", "Hz",
-                                    NormalisableRange<float> (0.0f, 10.0f, 0.01f), 0.0f,
-                                    [](float value) { return String(value, 2); }, nullptr));
+                                    juce::NormalisableRange<float> (0.0f, 10.0f, 0.01f), 0.0f,
+                                    [](float value) { return juce::String(value, 2); }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("lfoDepthL", "LFO left depth", "ms",
-                                    NormalisableRange<float> (0.0f, 1.0f, 0.01f), 0.0f,
-                                    [](float value) { return String(value, 2); }, nullptr));
+                                    juce::NormalisableRange<float> (0.0f, 1.0f, 0.01f), 0.0f,
+                                    [](float value) { return juce::String(value, 2); }, nullptr));
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("lfoDepthR", "LFO right depth", "ms",
-                                    NormalisableRange<float> (0.0f, 1.0f, 0.01f), 0.0f,
-                                    [](float value) { return String(value, 2); }, nullptr));
+                                    juce::NormalisableRange<float> (0.0f, 1.0f, 0.01f), 0.0f,
+                                    [](float value) { return juce::String(value, 2); }, nullptr));
 
     return params;
 }

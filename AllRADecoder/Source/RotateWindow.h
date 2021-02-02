@@ -28,22 +28,22 @@
 //==============================================================================
 /*
 */
-class RotateWindow    : public Component
+class RotateWindow    : public juce::Component
 {
 public:
     RotateWindow (AllRADecoderAudioProcessor& p) : processor (p)
     {
         addAndMakeVisible (headline);
-        headline.setText ("Add to Azimuth angles", true, Justification::centred);
+        headline.setText ("Add to Azimuth angles", true, juce::Justification::centred);
 
         addAndMakeVisible (lbValue);
-        lbValue.setText("0", NotificationType::dontSendNotification);
+        lbValue.setText ("0", juce::dontSendNotification);
         lbValue.setEditable (true);
-        lbValue.setJustificationType (Justification::centred);
+        lbValue.setJustificationType (juce::Justification::centred);
 
         addAndMakeVisible (tbRotate);
         tbRotate.setButtonText ("ROTATE");
-        tbRotate.setColour(TextButton::buttonColourId, Colours::cornflowerblue);
+        tbRotate.setColour (juce::TextButton::buttonColourId, juce::Colours::cornflowerblue);
         tbRotate.onClick =  [this] () { checkAndTriggerRotation(); };
     }
 
@@ -51,7 +51,7 @@ public:
     {
     }
 
-    void paint (Graphics& g) override
+    void paint (juce::Graphics& g) override
     {
     }
 
@@ -81,7 +81,7 @@ public:
 private:
     AllRADecoderAudioProcessor& processor;
     SimpleLabel headline;
-    Label lbValue;
-    TextButton tbRotate;
+    juce::Label lbValue;
+    juce::TextButton tbRotate;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (RotateWindow)
 };

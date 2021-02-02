@@ -23,7 +23,8 @@
 #pragma once
 #include <cfloat>
 
-class HammerAitov {
+class HammerAitov
+{
 public:
 
     /**
@@ -33,30 +34,30 @@ public:
      */
     static void sphericalToXY (float azimuthInRadians, float elevationInRadians, float& x, float& y)
     {
-        while (azimuthInRadians > MathConstants<float>::pi + FLT_EPSILON)
-            azimuthInRadians -= 2.0f * MathConstants<float>::pi;
-        while (azimuthInRadians < -MathConstants<float>::pi - FLT_EPSILON)
-            azimuthInRadians += 2.0f * MathConstants<float>::pi;
+        while (azimuthInRadians > juce::MathConstants<float>::pi + FLT_EPSILON)
+            azimuthInRadians -= 2.0f * juce::MathConstants<float>::pi;
+        while (azimuthInRadians < - juce::MathConstants<float>::pi - FLT_EPSILON)
+            azimuthInRadians += 2.0f * juce::MathConstants<float>::pi;
 
-        const float cosEle = cos(elevationInRadians);
-        const float factor = 1.0f / sqrt(1.0f + cosEle * cos(0.5f * azimuthInRadians));
-        x = factor * - cosEle * sin(0.5f * azimuthInRadians);
-        y = factor * sin(elevationInRadians);
+        const float cosEle = std::cos (elevationInRadians);
+        const float factor = 1.0f / std::sqrt (1.0f + cosEle * std::cos (0.5f * azimuthInRadians));
+        x = factor * - cosEle * std::sin (0.5f * azimuthInRadians);
+        y = factor * std::sin (elevationInRadians);
     }
 
-    static Point<float> sphericalToXY (float azimuthInRadians, float elevationInRadians)
+    static juce::Point<float> sphericalToXY (float azimuthInRadians, float elevationInRadians)
     {
-        Point<float> ret;
+        juce::Point<float> ret;
         sphericalToXY (azimuthInRadians, elevationInRadians, ret.x, ret.y);
         return ret;
     }
 
-    static void XYToSpherical (const float x, const float y, float& azimuthInRadians, float& elevationInRadians)
+    static void XYToSpherical (float x, float y, float& azimuthInRadians, float& elevationInRadians)
     {
         constexpr float sqrt2Half = 0.5f * 1.41421356237309504880168872420969808;
-        const float z = sqrt(1.0f - square(x * sqrt2Half) - square(y * sqrt2Half));
-        azimuthInRadians = 2.0f * atan(sqrt2Half * -x * z / ( square(z) - 0.5f));
-        elevationInRadians = asin(sqrt(2) * y * z);
+        const float z = std::sqrt (1.0f - juce::square (x * sqrt2Half) - juce::square (y * sqrt2Half));
+        azimuthInRadians = 2.0f * std::atan (sqrt2Half * -x * z / (juce::square (z) - 0.5f));
+        elevationInRadians = std::asin (std::sqrt (2) * y * z);
     }
 
 };

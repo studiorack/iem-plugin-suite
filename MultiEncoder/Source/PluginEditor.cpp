@@ -25,14 +25,11 @@
 
 
 //==============================================================================
-MultiEncoderAudioProcessorEditor::MultiEncoderAudioProcessorEditor (MultiEncoderAudioProcessor& p, AudioProcessorValueTreeState& vts)
-: AudioProcessorEditor (&p), footer (p.getOSCParameterInterface()), processor (p), valueTreeState(vts),
+MultiEncoderAudioProcessorEditor::MultiEncoderAudioProcessorEditor (MultiEncoderAudioProcessor& p, juce::AudioProcessorValueTreeState& vts)
+: juce::AudioProcessorEditor (&p), footer (p.getOSCParameterInterface()), processor (p), valueTreeState(vts),
+sphere (p.rms),
 masterElement(*valueTreeState.getParameter("masterAzimuth"), valueTreeState.getParameterRange("masterAzimuth"),
-              *valueTreeState.getParameter("masterElevation"), valueTreeState.getParameterRange("masterElevation")),
-encoderList (p, sphere, &vts),
-lbAzimuth (encoderList.getAzimuthArray()),
-lbElevation (encoderList.getElevationArray()),
-lbGain (encoderList.getGainArray())
+              *valueTreeState.getParameter("masterElevation"), valueTreeState.getParameterRange("masterElevation"))
 {
     setLookAndFeel (&globalLaF);
 
@@ -41,14 +38,18 @@ lbGain (encoderList.getGainArray())
     sphere.addListener(this);
 
     sphere.addElement(&masterElement);
-    masterElement.setColour(Colours::black);
-    masterElement.setTextColour(Colours::white);
+    masterElement.setColour(juce::Colours::black);
+    masterElement.setTextColour(juce::Colours::white);
     masterElement.setLabel("M");
 
+    encoderList = std::make_unique<EncoderList> (p, sphere, &vts);
+    lbAzimuth = std::make_unique<MasterControlWithText> (encoderList->getAzimuthArray());
+    lbElevation = std::make_unique<MasterControlWithText>(encoderList->getElevationArray());
+    lbGain = std::make_unique<MasterControlWithText>(encoderList->getGainArray());
     // ======================================
 
     addAndMakeVisible(&title);
-    title.setTitle(String("Multi"),String("Encoder"));
+    title.setTitle(juce::String("Multi"),juce::String("Encoder"));
     title.setFont(globalLaF.robotoBold,globalLaF.robotoLight);
 
     addAndMakeVisible(&footer);
@@ -58,59 +59,58 @@ lbGain (encoderList.getGainArray())
     tooltipWin.setOpaque (false);
 
 
-
     cbNumInputChannelsAttachment.reset (new ComboBoxAttachment (valueTreeState,"inputSetting",*title.getInputWidgetPtr()->getChannelsCbPointer()));
     cbNormalizationAtachment.reset (new ComboBoxAttachment (valueTreeState,"useSN3D",*title.getOutputWidgetPtr()->getNormCbPointer()));
     cbOrderAtachment.reset (new ComboBoxAttachment (valueTreeState,"orderSetting",*title.getOutputWidgetPtr()->getOrderCbPointer()));
 
     // ======================== Encoder group
     encoderGroup.setText("Encoder settings");
-    encoderGroup.setTextLabelPosition (Justification::centredLeft);
-    encoderGroup.setColour (GroupComponent::outlineColourId, globalLaF.ClSeperator);
-    encoderGroup.setColour (GroupComponent::textColourId, Colours::white);
+    encoderGroup.setTextLabelPosition (juce::Justification::centredLeft);
+    encoderGroup.setColour (juce::GroupComponent::outlineColourId, globalLaF.ClSeperator);
+    encoderGroup.setColour (juce::GroupComponent::textColourId, juce::Colours::white);
     addAndMakeVisible(&encoderGroup);
     encoderGroup.setVisible(true);
 
     addAndMakeVisible(tbImport);
     tbImport.setButtonText ("IMPORT");
-    tbImport.setColour (TextButton::buttonColourId, Colours::orange);
+    tbImport.setColour (juce::TextButton::buttonColourId, juce::Colours::orange);
     tbImport.setTooltip ("Imports sources from a configuration file.");
     tbImport.onClick = [&] () { importLayout(); };
 
     addAndMakeVisible(&viewport);
-    viewport.setViewedComponent(&encoderList);
+    viewport.setViewedComponent (encoderList.get());
 
     // ====================== GRAB GROUP
     masterGroup.setText("Master");
-    masterGroup.setTextLabelPosition (Justification::centredLeft);
-    masterGroup.setColour (GroupComponent::outlineColourId, globalLaF.ClSeperator);
-    masterGroup.setColour (GroupComponent::textColourId, Colours::white);
+    masterGroup.setTextLabelPosition (juce::Justification::centredLeft);
+    masterGroup.setColour (juce::GroupComponent::outlineColourId, globalLaF.ClSeperator);
+    masterGroup.setColour (juce::GroupComponent::textColourId, juce::Colours::white);
     addAndMakeVisible(&masterGroup);
     masterGroup.setVisible(true);
 
     addAndMakeVisible(&slMasterAzimuth);
     slMasterAzimuthAttachment.reset (new SliderAttachment (valueTreeState, "masterAzimuth", slMasterAzimuth));
-    slMasterAzimuth.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slMasterAzimuth.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
+    slMasterAzimuth.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slMasterAzimuth.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
     slMasterAzimuth.setReverse(true);
-    slMasterAzimuth.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
-    slMasterAzimuth.setRotaryParameters(MathConstants<float>::pi, 3*MathConstants<float>::pi, false);
+    slMasterAzimuth.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
+    slMasterAzimuth.setRotaryParameters(juce::MathConstants<float>::pi, 3*juce::MathConstants<float>::pi, false);
     slMasterAzimuth.setTooltip("Master azimuth angle");
 
     addAndMakeVisible(&slMasterElevation);
     slMasterElevationAttachment.reset (new SliderAttachment (valueTreeState, "masterElevation", slMasterElevation));
-    slMasterElevation.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slMasterElevation.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slMasterElevation.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
-    slMasterElevation.setRotaryParameters(0.5*MathConstants<float>::pi, 2.5*MathConstants<float>::pi, false);
+    slMasterElevation.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slMasterElevation.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    slMasterElevation.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
+    slMasterElevation.setRotaryParameters(0.5*juce::MathConstants<float>::pi, 2.5*juce::MathConstants<float>::pi, false);
     slMasterElevation.setTooltip("Master elevation angle");
 
     addAndMakeVisible(&slMasterRoll);
     slMasterRollAttachment.reset (new SliderAttachment (valueTreeState, "masterRoll", slMasterRoll));
-    slMasterRoll.setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-    slMasterRoll.setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-    slMasterRoll.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
-    slMasterRoll.setRotaryParameters(MathConstants<float>::pi, 3*MathConstants<float>::pi, false);
+    slMasterRoll.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slMasterRoll.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+    slMasterRoll.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
+    slMasterRoll.setRotaryParameters(juce::MathConstants<float>::pi, 3*juce::MathConstants<float>::pi, false);
     slMasterRoll.setTooltip("Master roll angle");
 
     addAndMakeVisible(&tbLockedToMaster);
@@ -118,19 +118,56 @@ lbGain (encoderList.getGainArray())
     tbLockedToMaster.setName("locking");
     tbLockedToMaster.setButtonText("Lock Directions");
 
+    // ======================== RMS group
+    rmsGroup.setText("RMS");
+    rmsGroup.setTextLabelPosition (juce::Justification::centredLeft);
+    rmsGroup.setColour (juce::GroupComponent::outlineColourId, globalLaF.ClSeperator);
+    rmsGroup.setColour (juce::GroupComponent::textColourId, juce::Colours::white);
+    addAndMakeVisible (&rmsGroup);
+
+    
+    addAndMakeVisible (&slPeakLevel);
+    slPeakLevel.onValueChange = [&] () { sphere.setPeakLevel (slPeakLevel.getValue()); };
+    slPeakLevelAttachment.reset (new SliderAttachment (valueTreeState, "peakLevel", slPeakLevel));
+    slPeakLevel.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slPeakLevel.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 100, 12);
+    slPeakLevel.setTextValueSuffix (" dB");
+    slPeakLevel.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
+    
+    addAndMakeVisible(&lbPeakLevel);
+    lbPeakLevel.setText ("Peak level");
+
+
+    addAndMakeVisible(&slDynamicRange);
+    slDynamicRange.onValueChange = [&] () { sphere.setDynamicRange (slDynamicRange.getValue()); };
+    slDynamicRangeAttachment.reset (new SliderAttachment (valueTreeState, "dynamicRange", slDynamicRange));
+    slDynamicRange.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slDynamicRange.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 100, 12);
+    slDynamicRange.setTextValueSuffix (" dB");
+    slDynamicRange.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
+    slDynamicRange.setReverse (false);
+
+    addAndMakeVisible (&lbDynamicRange);
+    lbDynamicRange.setText ("Range");
+
+
+    addAndMakeVisible (&tbAnalyzeRMS);
+    tbAnalyzeRMS.onStateChange = [&] () { sphere.visualizeRMS (tbAnalyzeRMS.getToggleState()); };
+    tbAnalyzeRMSAttachment.reset (new ButtonAttachment (valueTreeState, "analyzeRMS", tbAnalyzeRMS));
+    tbAnalyzeRMS.setButtonText ("Visualize");
 
     // ================ LABELS ===================
     addAndMakeVisible(&lbNum);
     lbNum.setText("#");
 
-    addAndMakeVisible(&lbAzimuth);
-    lbAzimuth.setText("Azimuth");
+    addAndMakeVisible (*lbAzimuth);
+    lbAzimuth->setText("Azimuth");
 
-    addAndMakeVisible(&lbElevation);
-    lbElevation.setText("Elevation");
+    addAndMakeVisible (*lbElevation);
+    lbElevation->setText("Elevation");
 
-    addAndMakeVisible(&lbGain);
-    lbGain.setText("Gain");
+    addAndMakeVisible (*lbGain);
+    lbGain->setText("Gain");
 
     addAndMakeVisible(&lbMasterAzimuth);
     lbMasterAzimuth.setText("Azimuth");
@@ -141,7 +178,7 @@ lbGain (encoderList.getGainArray())
     addAndMakeVisible(&lbMasterRoll);
     lbMasterRoll.setText("Roll");
 
-    setResizeLimits(590, 455, 800, 1200);
+    setResizeLimits (590, 505, 800, 1200);
     startTimer (40);
 }
 
@@ -152,7 +189,7 @@ MultiEncoderAudioProcessorEditor::~MultiEncoderAudioProcessorEditor()
 }
 
 //==============================================================================
-void MultiEncoderAudioProcessorEditor::paint (Graphics& g)
+void MultiEncoderAudioProcessorEditor::paint (juce::Graphics& g)
 {
     g.fillAll (globalLaF.ClBackground);
 }
@@ -166,7 +203,7 @@ void MultiEncoderAudioProcessorEditor::timerCallback()
     const int nChIn = processor.input.getSize();
     if (nChIn != lastSetNumChIn)
     {
-        encoderList.setNumberOfChannels(nChIn);
+        encoderList->setNumberOfChannels (nChIn);
         lastSetNumChIn = nChIn;
         sphere.repaint();
     }
@@ -175,16 +212,12 @@ void MultiEncoderAudioProcessorEditor::timerCallback()
     {
         if (! processor.soloMask.isZero()) {
             for (int i = 0; i<lastSetNumChIn; ++i)
-            {
-                encoderList.sphereElementArray[i]->setActive(processor.soloMask[i]);
-            }
+                encoderList->sphereElementArray[i]->setActive(processor.soloMask[i]);
         }
         else
         {
             for (int i = 0; i<lastSetNumChIn; ++i)
-            {
-                encoderList.sphereElementArray[i]->setActive(!processor.muteMask[i]);
-            }
+                encoderList->sphereElementArray[i]->setActive(!processor.muteMask[i]);
         }
         processor.soloMuteChanged = false;
         sphere.repaint();
@@ -193,9 +226,13 @@ void MultiEncoderAudioProcessorEditor::timerCallback()
     if (processor.updateColours)
     {
         processor.updateColours = false;
-        encoderList.updateColours();
+        encoderList->updateColours();
         sphere.repaint();
     }
+    
+    if (tbAnalyzeRMS.getToggleState())
+        sphere.repaint();
+
     if (processor.updateSphere)
     {
         processor.updateSphere = false;
@@ -203,7 +240,7 @@ void MultiEncoderAudioProcessorEditor::timerCallback()
     }
 }
 
-void MultiEncoderAudioProcessorEditor::mouseWheelOnSpherePannerMoved (SpherePanner* sphere, const MouseEvent &event, const MouseWheelDetails &wheel)
+void MultiEncoderAudioProcessorEditor::mouseWheelOnSpherePannerMoved (SpherePanner* sphere, const juce::MouseEvent &event, const juce::MouseWheelDetails &wheel)
 {
     if (event.mods.isCommandDown() && event.mods.isAltDown())
         slMasterRoll.mouseWheelMove(event, wheel);
@@ -218,23 +255,23 @@ void MultiEncoderAudioProcessorEditor::resized()
     const int leftRightMargin = 30;
     const int headerHeight = 60;
     const int footerHeight = 25;
-    Rectangle<int> area (getLocalBounds());
+    juce::Rectangle<int> area (getLocalBounds());
 
-    Rectangle<int> footerArea (area.removeFromBottom (footerHeight));
+    juce::Rectangle<int> footerArea (area.removeFromBottom (footerHeight));
     footer.setBounds(footerArea);
 
     area.removeFromLeft(leftRightMargin);
     area.removeFromRight(leftRightMargin);
-    Rectangle<int> headerArea = area.removeFromTop    (headerHeight);
+    juce::Rectangle<int> headerArea = area.removeFromTop    (headerHeight);
     title.setBounds (headerArea);
     area.removeFromTop(10);
     area.removeFromBottom(5);
 
-    Rectangle<int> sliderRow;
+    juce::Rectangle<int> sliderRow;
 
     // ============== SIDEBAR RIGHT ====================
     // =================================================
-    Rectangle<int> sideBarArea (area.removeFromRight(220));
+    juce::Rectangle<int> sideBarArea (area.removeFromRight(220));
     //const int sliderHeight = 15;
     const int rotSliderSpacing = 10;
     //const int sliderSpacing = 3;
@@ -243,8 +280,8 @@ void MultiEncoderAudioProcessorEditor::resized()
     //const int labelWidth = 20;
 
 
-    // -------------- Azimuth Elevation Roll Labels ------------------
-    Rectangle<int> yprArea (sideBarArea);
+    // -------------- Azimuth Elevation Roll juce::Labels ------------------
+    juce::Rectangle<int> yprArea (sideBarArea);
     encoderGroup.setBounds (yprArea);
     auto headlineArea = yprArea.removeFromTop (25); //for box headline
     tbImport.setBounds (headlineArea.removeFromRight (60).removeFromTop (15));
@@ -253,21 +290,21 @@ void MultiEncoderAudioProcessorEditor::resized()
     sliderRow = yprArea.removeFromTop (15);
     lbNum.setBounds (sliderRow.removeFromLeft (15));
     sliderRow.removeFromLeft (3);
-    lbAzimuth.setBounds (sliderRow.removeFromLeft (rotSliderWidth + 10));
+    lbAzimuth->setBounds (sliderRow.removeFromLeft (rotSliderWidth + 10));
     sliderRow.removeFromLeft (rotSliderSpacing - 7);
-    lbElevation.setBounds (sliderRow.removeFromLeft (rotSliderWidth + 13));
+    lbElevation->setBounds (sliderRow.removeFromLeft (rotSliderWidth + 13));
     sliderRow.removeFromLeft (rotSliderSpacing - 5);
-    lbGain.setBounds(sliderRow.removeFromLeft(rotSliderWidth));
+    lbGain->setBounds(sliderRow.removeFromLeft(rotSliderWidth));
 
     viewport.setBounds(yprArea);
 
 
     // ============== SIDEBAR LEFT ====================
 
-    const int masterAreaHeight = 90;
+    const int masterAreaHeight = 110;
     area.removeFromRight(10); // spacing
 
-    Rectangle<int> sphereArea (area);
+    juce::Rectangle<int> sphereArea (area);
     sphereArea.removeFromBottom(masterAreaHeight);
 
     if ((float)sphereArea.getWidth()/sphereArea.getHeight() > 1)
@@ -278,13 +315,23 @@ void MultiEncoderAudioProcessorEditor::resized()
 
     area.removeFromTop(sphereArea.getHeight());
 
+    // ============= Settings =========================
+    auto row = area.removeFromTop (masterAreaHeight);
+
     // ------------- Master Grabber ------------------------
-    Rectangle<int> masterArea (area.removeFromTop(masterAreaHeight));
+    juce::Rectangle<int> masterArea (row.removeFromLeft (160));
     masterGroup.setBounds (masterArea);
-    masterArea.removeFromTop(25); //for box headline
+    masterArea.removeFromTop (25); //for box headline
 
+    sliderRow = masterArea.removeFromTop (53);
+    slMasterAzimuth.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
+    sliderRow.removeFromLeft(rotSliderSpacing);
+    slMasterElevation.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
+    sliderRow.removeFromLeft(rotSliderSpacing);
+    slMasterRoll.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
+    sliderRow.removeFromLeft(rotSliderSpacing);
 
-    sliderRow = (masterArea.removeFromBottom(12));
+    sliderRow = (masterArea.removeFromTop (12));
     lbMasterAzimuth.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
     sliderRow.removeFromLeft(rotSliderSpacing - 5);
     lbMasterElevation.setBounds (sliderRow.removeFromLeft(rotSliderWidth + 10));
@@ -292,36 +339,51 @@ void MultiEncoderAudioProcessorEditor::resized()
     lbMasterRoll.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
     sliderRow.removeFromLeft(rotSliderSpacing);
 
+    masterArea.removeFromTop (3);
     sliderRow = masterArea;
-    slMasterAzimuth.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
+    tbLockedToMaster.setBounds (sliderRow);
+
+    // ------------- RMS ------------------------
+    row.removeFromLeft (10);
+    juce::Rectangle<int> rmsArea = row.removeFromLeft (90);
+    rmsGroup.setBounds (rmsArea);
+    rmsArea.removeFromTop (25); //for box headline
+
+    sliderRow = rmsArea.removeFromTop (53);
+    slPeakLevel.setBounds (sliderRow.removeFromLeft (rotSliderWidth));
     sliderRow.removeFromLeft(rotSliderSpacing);
-    slMasterElevation.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
+    slDynamicRange.setBounds (sliderRow.removeFromLeft (rotSliderWidth));
+
+    sliderRow = rmsArea.removeFromTop (12);
+    lbPeakLevel.setBounds (sliderRow.removeFromLeft (rotSliderWidth));
     sliderRow.removeFromLeft(rotSliderSpacing);
-    slMasterRoll.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
-    sliderRow.removeFromLeft(rotSliderSpacing);
-    tbLockedToMaster.setBounds (sliderRow.removeFromLeft(100));
+    lbDynamicRange.setBounds (sliderRow.removeFromLeft (rotSliderWidth));
+
+    rmsArea.removeFromTop (3);
+    sliderRow = rmsArea;
+    tbAnalyzeRMS.setBounds (sliderRow);
 }
 
 void MultiEncoderAudioProcessorEditor::importLayout()
 {
-    FileChooser myChooser ("Load configuration...",
-                           processor.getLastDir().exists() ? processor.getLastDir() : File::getSpecialLocation (File::userHomeDirectory),
+    juce::FileChooser myChooser ("Load configuration...",
+                           processor.getLastDir().exists() ? processor.getLastDir() : juce::File::getSpecialLocation (juce::File::userHomeDirectory),
                            "*.json");
     if (myChooser.browseForFileToOpen())
     {
-        File configFile (myChooser.getResult());
+        juce::File configFile (myChooser.getResult());
         processor.setLastDir (configFile.getParentDirectory());
         auto result = processor.loadConfiguration (configFile);
 
         if (! result.wasOk())
         {
-            auto* component = new TextEditor();
+            auto component = std::make_unique<juce::TextEditor> ();
             component->setMultiLine (true, true);
             component->setReadOnly (true);
             component->setText (result.getErrorMessage());
             component->setSize (200, 110);
 
-            CallOutBox& myBox = CallOutBox::launchAsynchronously (component, tbImport.getBounds(), this);
+            auto& myBox = juce::CallOutBox::launchAsynchronously (std::move (component), tbImport.getBounds(), this);
             myBox.setLookAndFeel (&getLookAndFeel());
         }
     }

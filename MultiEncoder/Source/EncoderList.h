@@ -23,49 +23,50 @@
 #pragma once
 
 typedef ReverseSlider::SliderAttachment SliderAttachment;
-typedef AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
-typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
+typedef juce::AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
+typedef juce::AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 
-class ColourChangeButton  : public TextButton,
-public ChangeListener
+class ColourChangeButton  : public juce::TextButton,
+public juce::ChangeListener
 {
 public:
     ColourChangeButton(MultiEncoderAudioProcessor& p, SpherePanner &sphere, SpherePanner::Element* elem, int i)
-    : TextButton (String(i)), processor(p), id(i), spherePanner(sphere), element(elem)
+    : juce::TextButton (juce::String(i)), processor(p), id(i), spherePanner(sphere), element(elem)
     {
         setSize (10, 24);
         changeWidthToFitText();
     }
+
     void clicked() override
     {
-        ColourSelector* colourSelector = new ColourSelector();
+        auto colourSelector = std::make_unique<juce::ColourSelector> ();
         colourSelector->setName ("background");
-        colourSelector->setCurrentColour (findColour (TextButton::buttonColourId));
+        colourSelector->setCurrentColour (findColour (juce::TextButton::buttonColourId));
         colourSelector->addChangeListener (this);
-        colourSelector->setColour (ColourSelector::backgroundColourId, Colours::transparentBlack);
+        colourSelector->setColour (juce::ColourSelector::backgroundColourId, juce::Colours::transparentBlack);
         colourSelector->setSize (300, 400);
 
-        CallOutBox::launchAsynchronously (colourSelector, getScreenBounds(), nullptr);
+        juce::CallOutBox::launchAsynchronously (std::move (colourSelector), getScreenBounds(), nullptr);
     }
 
-    void changeListenerCallback (ChangeBroadcaster* source) override
+    void changeListenerCallback (juce::ChangeBroadcaster* source) override
     {
-        if (ColourSelector* cs = dynamic_cast<ColourSelector*> (source))
+        if (juce::ColourSelector* cs = dynamic_cast<juce::ColourSelector*> (source))
         {
             processor.elementColours[id-1] = cs->getCurrentColour();
-            setColour (TextButton::buttonColourId, cs->getCurrentColour());
+            setColour (juce::TextButton::buttonColourId, cs->getCurrentColour());
             element->setColour (cs->getCurrentColour());
-            setColour(TextButton::textColourOffId, Colours::white.overlaidWith (cs->getCurrentColour()).contrasting());
-            element->setTextColour(Colours::white.overlaidWith (cs->getCurrentColour()).contrasting());
+            setColour(juce::TextButton::textColourOffId, juce::Colours::white.overlaidWith (cs->getCurrentColour()).contrasting());
+            element->setTextColour(juce::Colours::white.overlaidWith (cs->getCurrentColour()).contrasting());
             spherePanner.repaint();
         }
     }
 
-    void paint (Graphics& g) override
+    void paint (juce::Graphics& g) override
     {
-        LookAndFeel& lf = getLookAndFeel();
+        auto& lf = getLookAndFeel();
 
-        Rectangle<float> buttonArea(0.0f, 0.0f, getWidth(), getHeight());
+        juce::Rectangle<float> buttonArea(0.0f, 0.0f, getWidth(), getHeight());
         buttonArea.reduce(1.0f, 1.0f);
 
         const float width  = getWidth()-2;
@@ -73,8 +74,8 @@ public:
 
         if (width > 0 && height > 0)
         {
-            const float cornerSize = jmin (15.0f, jmin (width, height) * 0.45f);
-            Path outline;
+            const float cornerSize = juce::jmin (15.0f, juce::jmin (width, height) * 0.45f);
+            juce::Path outline;
             outline.addRoundedRectangle (getX(), buttonArea.getY(), buttonArea.getWidth(), buttonArea.getHeight(),
                                                  cornerSize, cornerSize);
             g.setColour (findColour (getToggleState() ? buttonOnColourId : buttonColourId));
@@ -91,10 +92,10 @@ private:
     SpherePanner::Element* element;
 };
 
-class  EncoderList :  public Component
+class  EncoderList :  public juce::Component
 {
 public:
-    EncoderList(MultiEncoderAudioProcessor& p, SpherePanner& sphere, AudioProcessorValueTreeState* vts) : Component(), processor(p), spherePanner(sphere),  pVts(vts), nChannels(2) {
+    EncoderList(MultiEncoderAudioProcessor& p, SpherePanner& sphere, juce::AudioProcessorValueTreeState* vts) : juce::Component(), processor(p), spherePanner(sphere),  pVts(vts), nChannels(2) {
         setNumberOfChannels(nChannels);
     };
     ~EncoderList() {};
@@ -126,68 +127,68 @@ public:
         {
             for (int i = nElements; i < nCh; ++i)
             {
-                sphereElementArray.add(new SpherePanner::AzimuthElevationParameterElement(
-                                                                                           *pVts->getParameter("azimuth" + String(i)),
-                                                                                           pVts->getParameterRange("azimuth" + String(i)),
-                                                                                           *pVts->getParameter("elevation" + String(i)),
-                                                                                           pVts->getParameterRange("elevation" + String(i))));
-                colourChooserArray.add(new ColourChangeButton(processor, spherePanner, sphereElementArray.getLast(), i+1));
-                slAzimuthArray.add(new ReverseSlider());
-                slElevationArray.add(new ReverseSlider());
-                slGainArray.add(new ReverseSlider());
-                muteButtonArray.add(new MuteSoloButton());
-                soloButtonArray.add(new MuteSoloButton());
+                sphereElementArray.add (new SpherePanner::AzimuthElevationParameterElement(
+                                                                                           *pVts->getParameter("azimuth" + juce::String(i)),
+                                                                                           pVts->getParameterRange("azimuth" + juce::String(i)),
+                                                                                           *pVts->getParameter("elevation" + juce::String(i)),
+                                                                                           pVts->getParameterRange("elevation" + juce::String(i))));
+                colourChooserArray.add (new ColourChangeButton(processor, spherePanner, sphereElementArray.getLast(), i+1));
+                slAzimuthArray.add (new ReverseSlider());
+                slElevationArray.add (new ReverseSlider());
+                slGainArray.add (new ReverseSlider());
+                muteButtonArray.add (new MuteSoloButton());
+                soloButtonArray.add (new MuteSoloButton());
 
-                SpherePanner::Element* sphereElement = sphereElementArray.getLast();
-                ColourChangeButton* colourChooser = colourChooserArray.getLast();
-                ReverseSlider* azimuthSlider = slAzimuthArray.getLast();
-                ReverseSlider* elevationSlider = slElevationArray.getLast();
-                ReverseSlider* gainSlider = slGainArray.getLast();
-                MuteSoloButton* muteButton = muteButtonArray.getLast();
-                MuteSoloButton* soloButton = soloButtonArray.getLast();
+                auto* sphereElement = sphereElementArray.getLast();
+                auto* colourChooser = colourChooserArray.getLast();
+                auto* azimuthSlider = slAzimuthArray.getLast();
+                auto* elevationSlider = slElevationArray.getLast();
+                auto* gainSlider = slGainArray.getLast();
+                auto* muteButton = muteButtonArray.getLast();
+                auto* soloButton = soloButtonArray.getLast();
 
-                sphereElement->setLabel(String(i+1));
+                sphereElement->setLabel(juce::String(i+1));
                 sphereElement->setColour(processor.elementColours[i]);
-                sphereElement->setTextColour(Colours::white.overlaidWith(processor.elementColours[i]).contrasting());
+                sphereElement->setTextColour(juce::Colours::white.overlaidWith(processor.elementColours[i]).contrasting());
 
                 spherePanner.addElement(sphereElement);
 
                 addAndMakeVisible(colourChooser);
-                colourChooser->setColour(TextButton::buttonColourId, processor.elementColours[i]);
-                colourChooser->setColour(TextButton::textColourOffId, Colours::white.overlaidWith (processor.elementColours[i]).contrasting());
+                colourChooser->setColour(juce::TextButton::buttonColourId, processor.elementColours[i]);
+                colourChooser->setColour(juce::TextButton::textColourOffId, juce::Colours::white.overlaidWith (processor.elementColours[i]).contrasting());
 
                 addAndMakeVisible(azimuthSlider);
-                slAzimuthSliderAttachment.add(new SliderAttachment(*pVts, "azimuth" + String(i), *azimuthSlider));
-                azimuthSlider->setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-                azimuthSlider->setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
+                slAzimuthSliderAttachment.add(new SliderAttachment(*pVts, "azimuth" + juce::String(i), *azimuthSlider));
+                azimuthSlider->setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+                azimuthSlider->setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
                 azimuthSlider->setReverse(true);
-                azimuthSlider->setColour (Slider::rotarySliderOutlineColourId, Colour(0xFF00CAFF));
-                azimuthSlider->setRotaryParameters(MathConstants<float>::pi, 3*MathConstants<float>::pi, false);
+                azimuthSlider->setColour (juce::Slider::rotarySliderOutlineColourId, juce::Colour(0xFF00CAFF));
+                azimuthSlider->setRotaryParameters(juce::MathConstants<float>::pi, 3*juce::MathConstants<float>::pi, false);
                 azimuthSlider->setTooltip("Azimuth angle");
 
                 addAndMakeVisible(elevationSlider);
-                slElevationAttachmentArray.add(new SliderAttachment(*pVts, "elevation" + String(i), *elevationSlider));
-                elevationSlider->setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-                elevationSlider->setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-                elevationSlider->setColour (Slider::rotarySliderOutlineColourId, Colour(0xFF4FFF00));
-                elevationSlider->setRotaryParameters(0.5*MathConstants<float>::pi, 2.5*MathConstants<float>::pi, false);
+                slElevationAttachmentArray.add(new SliderAttachment(*pVts, "elevation" + juce::String(i), *elevationSlider));
+                elevationSlider->setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+                elevationSlider->setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+                elevationSlider->setColour (juce::Slider::rotarySliderOutlineColourId, juce::Colour(0xFF4FFF00));
+                elevationSlider->setRotaryParameters(0.5*juce::MathConstants<float>::pi, 2.5*juce::MathConstants<float>::pi, false);
                 elevationSlider->setTooltip("Elevation angle");
 
                 addAndMakeVisible(gainSlider);
-                slGainAttachmentArray.add(new SliderAttachment(*pVts, "gain" + String(i), *gainSlider));
-                gainSlider->setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
-                gainSlider->setTextBoxStyle (Slider::TextBoxBelow, false, 50, 15);
-                gainSlider->setColour (Slider::rotarySliderOutlineColourId, Colour(0xFFD0011B));
+                slGainAttachmentArray.add(new SliderAttachment(*pVts, "gain" + juce::String(i), *gainSlider));
+                gainSlider->setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+                gainSlider->setTextBoxStyle (juce::Slider::TextBoxBelow, false, 50, 15);
+                gainSlider->setColour (juce::Slider::rotarySliderOutlineColourId, juce::Colour(0xFFD0011B));
                 gainSlider->setReverse(false);
                 gainSlider->setTooltip("Gain");
                 gainSlider->setTextValueSuffix("dB");
 
                 addAndMakeVisible(muteButton);
-                muteButtonAttachmentArray.add(new ButtonAttachment(*pVts,"mute" + String(i), *muteButton));
+                muteButtonAttachmentArray.add(new ButtonAttachment(*pVts,"mute" + juce::String(i), *muteButton));
                 muteButton->setType(MuteSoloButton::Type::mute);
 
                 addAndMakeVisible(soloButton);
-                soloButtonAttachmentArray.add(new ButtonAttachment(*pVts,"solo" + String(i), *soloButton));
+                soloButtonAttachmentArray.add(new ButtonAttachment(*pVts,"solo" + juce::String(i), *soloButton));
                 soloButton->setType(MuteSoloButton::Type::solo);
             }
         }
@@ -201,21 +202,21 @@ public:
     void updateColours() {
         for (int i = 0; i < nChannels; ++i)
         {
-            colourChooserArray[i]->setColour(TextButton::buttonColourId, processor.elementColours[i]);
-            colourChooserArray[i]->setColour(TextButton::textColourOffId, Colours::white.overlaidWith (processor.elementColours[i]).contrasting());
+            colourChooserArray[i]->setColour(juce::TextButton::buttonColourId, processor.elementColours[i]);
+            colourChooserArray[i]->setColour(juce::TextButton::textColourOffId, juce::Colours::white.overlaidWith (processor.elementColours[i]).contrasting());
             sphereElementArray[i]->setColour(processor.elementColours[i]);
-            sphereElementArray[i]->setTextColour(Colours::white.overlaidWith (processor.elementColours[i]).contrasting());
+            sphereElementArray[i]->setTextColour(juce::Colours::white.overlaidWith (processor.elementColours[i]).contrasting());
         }
         repaint();
     }
 
-    void paint (Graphics& g) override {
+    void paint (juce::Graphics& g) override {
     };
 
     void resized() override {
 
-        Rectangle<int> bounds = getBounds();
-        Rectangle<int> sliderRow;
+        juce::Rectangle<int> bounds = getBounds();
+        juce::Rectangle<int> sliderRow;
 
         const int rotSliderSpacing = 10;
         const int rotSliderHeight = 55;
@@ -243,26 +244,26 @@ public:
 
         repaint();
     }
-    OwnedArray<SpherePanner::AzimuthElevationParameterElement> sphereElementArray;
+    juce::OwnedArray<SpherePanner::AzimuthElevationParameterElement> sphereElementArray;
 
-    OwnedArray<ReverseSlider>& getAzimuthArray() { return slAzimuthArray; }
-    OwnedArray<ReverseSlider>& getElevationArray() { return slElevationArray; }
-    OwnedArray<ReverseSlider>& getGainArray() { return slGainArray; }
+    juce::OwnedArray<ReverseSlider>& getAzimuthArray() { return slAzimuthArray; }
+    juce::OwnedArray<ReverseSlider>& getElevationArray() { return slElevationArray; }
+    juce::OwnedArray<ReverseSlider>& getGainArray() { return slGainArray; }
 
 private:
     MultiEncoderAudioProcessor& processor;
     SpherePanner& spherePanner;
-    AudioProcessorValueTreeState* pVts;
+    juce::AudioProcessorValueTreeState* pVts;
     int nChannels;
 
 
 
-    OwnedArray<ReverseSlider> slAzimuthArray, slElevationArray, slGainArray;
-    OwnedArray<MuteSoloButton> muteButtonArray, soloButtonArray;
-    OwnedArray<ColourChangeButton> colourChooserArray;
-    OwnedArray<SliderAttachment> slAzimuthSliderAttachment;
-    OwnedArray<SliderAttachment> slElevationAttachmentArray;
-    OwnedArray<SliderAttachment> slGainAttachmentArray;
-    OwnedArray<ButtonAttachment> muteButtonAttachmentArray;
-    OwnedArray<ButtonAttachment> soloButtonAttachmentArray;
+    juce::OwnedArray<ReverseSlider> slAzimuthArray, slElevationArray, slGainArray;
+    juce::OwnedArray<MuteSoloButton> muteButtonArray, soloButtonArray;
+    juce::OwnedArray<ColourChangeButton> colourChooserArray;
+    juce::OwnedArray<SliderAttachment> slAzimuthSliderAttachment;
+    juce::OwnedArray<SliderAttachment> slElevationAttachmentArray;
+    juce::OwnedArray<SliderAttachment> slGainAttachmentArray;
+    juce::OwnedArray<ButtonAttachment> muteButtonAttachmentArray;
+    juce::OwnedArray<ButtonAttachment> soloButtonAttachmentArray;
 };

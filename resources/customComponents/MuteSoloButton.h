@@ -26,7 +26,7 @@
 //==============================================================================
 /*
 */
-class MuteSoloButton    : public ToggleButton
+class MuteSoloButton    : public juce::ToggleButton
 {
 public:
     enum Type
@@ -46,20 +46,20 @@ public:
     void setType (Type newType)
     {
         type = newType;
-        setColour (ToggleButton::tickColourId, type == Type::mute ? Colours::red : Colours::yellow);
+        setColour (juce::ToggleButton::tickColourId, type == Type::mute ? juce::Colours::red : juce::Colours::yellow);
         repaint();
     }
-    void paint (Graphics& g) override
+    void paint (juce::Graphics& g) override
     {
-        Rectangle<int> bounds = getLocalBounds().reduced(1,1);
+        juce::Rectangle<int> bounds = getLocalBounds().reduced(1,1);
         const bool state = getToggleState();
 
         getLookAndFeel().drawTickBox(g, *this, bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight(), getToggleState(), isEnabled(), isMouseOver(), isMouseButtonDown());
 
-        g.setFont(getLookAndFeel().getTypefaceForFont (Font(12.0f, 0)));
+        g.setFont(getLookAndFeel().getTypefaceForFont (juce::Font(12.0f, 0)));
         g.setFont(bounds.getHeight()-4);
 
-        g.setColour(state ? Colours::black : findColour(ToggleButton::tickColourId));
+        g.setColour(state ? juce::Colours::black : findColour(juce::ToggleButton::tickColourId));
         g.drawFittedText(type == solo ? "S" : "M", bounds, juce::Justification::centred, 1);
 
     }

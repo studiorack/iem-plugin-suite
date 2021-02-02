@@ -33,8 +33,8 @@
 
 //==============================================================================
 class SceneRotatorAudioProcessor  : public AudioProcessorBase<IOTypes::Ambisonics<>, IOTypes::Ambisonics<>, true>,
-                                    private MidiMessageCollector,
-                                    private Timer
+                                    private juce::MidiMessageCollector,
+                                    private juce::Timer
 {
 public:
     constexpr static int numberOfInputChannels = 64;
@@ -47,39 +47,39 @@ public:
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;
 
-    void processBlock (AudioSampleBuffer&, MidiBuffer&) override;
+    void processBlock (juce::AudioSampleBuffer&, juce::MidiBuffer&) override;
 
     //==============================================================================
-    AudioProcessorEditor* createEditor() override;
+    juce::AudioProcessorEditor* createEditor() override;
     bool hasEditor() const override;
 
     //==============================================================================
     int getNumPrograms() override;
     int getCurrentProgram() override;
     void setCurrentProgram (int index) override;
-    const String getProgramName (int index) override;
-    void changeProgramName (int index, const String& newName) override;
+    const juce::String getProgramName (int index) override;
+    void changeProgramName (int index, const juce::String& newName) override;
 
     //==============================================================================
-    void getStateInformation (MemoryBlock& destData) override;
+    void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
     //==============================================================================
-    void parameterChanged (const String &parameterID, float newValue) override;
+    void parameterChanged (const juce::String &parameterID, float newValue) override;
     void updateBuffers() override; // use this to implement a buffer update method
 
 
     //======= Parameters ===========================================================
-    std::vector<std::unique_ptr<RangedAudioParameter>> createParameterLayout();
+    std::vector<std::unique_ptr<juce::RangedAudioParameter>> createParameterLayout();
 
     //======= OSC ==================================================================
-    inline const bool interceptOSCMessage (OSCMessage &message) override;
+    inline const bool interceptOSCMessage (juce::OSCMessage &message) override;
 
     //==============================================================================
     inline void updateQuaternions();
     inline void updateEuler();
 
-    void rotateBuffer (AudioBuffer<float>* bufferToRotate, const int nChannels, const int samples);
+    void rotateBuffer (juce::AudioBuffer<float>* bufferToRotate, const int nChannels, const int samples);
     void calcRotationMatrix (const int order);
 
     //======= MIDI Connection ======================================================
@@ -91,7 +91,7 @@ public:
         mrHeadTrackerQuaternions
     };
 
-    const StringArray midiSchemeNames
+    const juce::StringArray midiSchemeNames
     {
         "none (link only)",
         "MrHT YPR Direct",
@@ -99,7 +99,7 @@ public:
         "MrHT Quaternions"
     };
 
-    const Identifier midiSchemeIdentifieres[4]
+    const juce::Identifier midiSchemeIdentifieres[4]
     {
         "none",
         "MrHT_YprDir",
@@ -107,24 +107,24 @@ public:
         "MrHT_Quat"
     };
 
-    String getCurrentMidiDeviceName();
-    void openMidiInput (String midiDeviceName, bool forceUpdatingCurrentMidiDeviceName = false);
+    juce::String getCurrentMidiDeviceName();
+    void openMidiInput (juce::String midiDeviceName, bool forceUpdatingCurrentMidiDeviceName = false);
     void closeMidiInput();
 
-    const StringArray getMidiSchemes() { return midiSchemeNames; };
+    const juce::StringArray getMidiSchemes() { return midiSchemeNames; };
     MidiScheme getCurrentMidiScheme() { return currentMidiScheme; };
     void setMidiScheme (MidiScheme newMidiScheme);
 
     //==============================================================================
     // Flags for editor
-    Atomic<bool> deviceHasChanged = false;
-    Atomic<bool> showMidiOpenError = false;
-    Atomic<bool> schemeHasChanged = false;
+    juce::Atomic<bool> deviceHasChanged = false;
+    juce::Atomic<bool> showMidiOpenError = false;
+    juce::Atomic<bool> schemeHasChanged = false;
 
 private:
     //==============================================================================
 
-    Atomic<bool> usingYpr = true;
+    juce::Atomic<bool> usingYpr = true;
 
     // list of used audio parameters
     std::atomic<float>* orderSetting;
@@ -143,18 +143,18 @@ private:
     std::atomic<float>* invertQuaternion;
     std::atomic<float>* rotationSequence;
 
-    Atomic<bool> updatingParams {false};
-    Atomic<bool> rotationParamsHaveChanged {true};
+    juce::Atomic<bool> updatingParams {false};
+    juce::Atomic<bool> rotationParamsHaveChanged {true};
 
-    AudioBuffer<float> copyBuffer;
+    juce::AudioBuffer<float> copyBuffer;
 
-    OwnedArray<Matrix<float>> orderMatrices;
-    OwnedArray<Matrix<float>> orderMatricesCopy;
+    juce::OwnedArray<juce::dsp::Matrix<float>> orderMatrices;
+    juce::OwnedArray<juce::dsp::Matrix<float>> orderMatricesCopy;
 
-    double P (int i, int l, int a, int b, Matrix<float>& R1, Matrix<float>& Rlm1);
-    double U (int l, int m, int n, Matrix<float>& Rone, Matrix<float>& Rlm1);
-    double V (int l, int m, int n, Matrix<float>& Rone, Matrix<float>& Rlm1);
-    double W (int l, int m, int n, Matrix<float>& Rone, Matrix<float>& Rlm1);
+    double P (int i, int l, int a, int b, juce::dsp::Matrix<float>& R1, juce::dsp::Matrix<float>& Rlm1);
+    double U (int l, int m, int n, juce::dsp::Matrix<float>& Rone, juce::dsp::Matrix<float>& Rlm1);
+    double V (int l, int m, int n, juce::dsp::Matrix<float>& Rone, juce::dsp::Matrix<float>& Rlm1);
+    double W (int l, int m, int n, juce::dsp::Matrix<float>& Rone, juce::dsp::Matrix<float>& Rlm1);
 
     void timerCallback() override;
 
@@ -163,10 +163,10 @@ private:
     int yawLsb = 0, pitchLsb = 0, rollLsb = 0;
     int qwLsb = 0, qxLsb = 0, qyLsb = 0, qzLsb = 0;
 
-    std::unique_ptr<MidiInput> midiInput;
-    String currentMidiDeviceName = "";
+    std::unique_ptr<juce::MidiInput> midiInput;
+    juce::String currentMidiDeviceName = "";
     MidiScheme currentMidiScheme = MidiScheme::none;
-    CriticalSection changingMidiDevice;
+    juce::CriticalSection changingMidiDevice;
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SceneRotatorAudioProcessor)
 };

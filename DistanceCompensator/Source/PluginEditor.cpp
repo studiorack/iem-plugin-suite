@@ -25,14 +25,14 @@
 
 
 //==============================================================================
-DistanceCompensatorAudioProcessorEditor::DistanceCompensatorAudioProcessorEditor (DistanceCompensatorAudioProcessor& p, AudioProcessorValueTreeState& vts)
-: AudioProcessorEditor (&p), processor (p), valueTreeState(vts), footer (p.getOSCParameterInterface())
+DistanceCompensatorAudioProcessorEditor::DistanceCompensatorAudioProcessorEditor (DistanceCompensatorAudioProcessor& p, juce::AudioProcessorValueTreeState& vts)
+: juce::AudioProcessorEditor (&p), processor (p), valueTreeState(vts), footer (p.getOSCParameterInterface())
 {
     setLookAndFeel (&globalLaF);
 
     // make title and footer visible, and set the PluginName
     addAndMakeVisible (&title);
-    title.setTitle (String ("Distance"), String ("Compensator"));
+    title.setTitle (juce::String ("Distance"), juce::String ("Compensator"));
     title.setFont (globalLaF.robotoBold, globalLaF.robotoLight);
     addAndMakeVisible (&footer);
     // ============= END: essentials ========================
@@ -43,63 +43,63 @@ DistanceCompensatorAudioProcessorEditor::DistanceCompensatorAudioProcessorEditor
 
     addAndMakeVisible (lbSpeedOfSound);
     lbSpeedOfSound.setEditable (true);
-    lbSpeedOfSound.setJustificationType(Justification::centred);
+    lbSpeedOfSound.setJustificationType(juce::Justification::centred);
     lbSpeedOfSoundAttachment.reset (new LabelAttachment (valueTreeState, "speedOfSound", lbSpeedOfSound));
 
     addAndMakeVisible (slbSpeedOfSound);
     slbSpeedOfSound.setText ("Speed of sound");
-    slbSpeedOfSound.setJustification(Justification::left);
+    slbSpeedOfSound.setJustification(juce::Justification::left);
 
     addAndMakeVisible (lbDistanceExponent);
     lbDistanceExponent.setEditable (true);
-    lbDistanceExponent.setJustificationType(Justification::centred);
+    lbDistanceExponent.setJustificationType(juce::Justification::centred);
     lbDistanceExponentAttachment.reset (new LabelAttachment (valueTreeState, "distanceExponent", lbDistanceExponent));
 
     addAndMakeVisible (slbDistanceExponent);
     slbDistanceExponent.setText ("Distance-Gain exponent");
-    slbDistanceExponent.setJustification (Justification::left);
+    slbDistanceExponent.setJustification (juce::Justification::left);
 
     addAndMakeVisible(cbGainNormalization);
     cbGainNormalization.addSectionHeading ("Gain normalization");
     cbGainNormalization.addItem("Attenuation only", 1);
     cbGainNormalization.addItem("Zero-mean", 2);
-    cbGainNormalization.setJustificationType(Justification::centred);
+    cbGainNormalization.setJustificationType(juce::Justification::centred);
     cbGainNormalizationAttachment.reset (new ComboBoxAttachment (valueTreeState, "gainNormalization", cbGainNormalization));
 
     addAndMakeVisible(slbGainNormalization);
     slbGainNormalization.setText ("Normalization");
-    slbGainNormalization.setJustification (Justification::left);
+    slbGainNormalization.setJustification (juce::Justification::left);
 
     addAndMakeVisible (lbReferenceX);
     lbReferenceX.setEditable (true);
-    lbReferenceX.setJustificationType(Justification::centred);
+    lbReferenceX.setJustificationType(juce::Justification::centred);
     lbReferenceXAttachment.reset (new LabelAttachment (valueTreeState, "referenceX", lbReferenceX));
 
     addAndMakeVisible (lbReferenceY);
     lbReferenceY.setEditable (true);
-    lbReferenceY.setJustificationType(Justification::centred);
+    lbReferenceY.setJustificationType(juce::Justification::centred);
     lbReferenceYAttachment.reset (new LabelAttachment (valueTreeState, "referenceY", lbReferenceY));
 
     addAndMakeVisible (lbReferenceZ);
     lbReferenceZ.setEditable (true);
-    lbReferenceZ.setJustificationType(Justification::centred);
+    lbReferenceZ.setJustificationType(juce::Justification::centred);
     lbReferenceZAttachment.reset (new LabelAttachment (valueTreeState, "referenceZ", lbReferenceZ));
 
     addAndMakeVisible (slbReference);
     slbReference.setText ("Reference position", true);
-    slbReference.setJustification (Justification::left);
+    slbReference.setJustification (juce::Justification::left);
 
     addAndMakeVisible (slbReferenceX);
     slbReferenceX.setText ("x");
-    slbReferenceX.setJustification (Justification::centred);
+    slbReferenceX.setJustification (juce::Justification::centred);
 
     addAndMakeVisible (slbReferenceY);
     slbReferenceY.setText ("y");
-    slbReferenceY.setJustification (Justification::centred);
+    slbReferenceY.setJustification (juce::Justification::centred);
 
     addAndMakeVisible (slbReferenceZ);
     slbReferenceZ.setText ("z");
-    slbReferenceZ.setJustification (Justification::centred);
+    slbReferenceZ.setJustification (juce::Justification::centred);
 
     addAndMakeVisible (gcLayout);
     gcLayout.setText ("From loudspeaker layout");
@@ -107,12 +107,12 @@ DistanceCompensatorAudioProcessorEditor::DistanceCompensatorAudioProcessorEditor
     addAndMakeVisible(btLoadFile);
     btLoadFile.setButtonText("LOAD LAYOUT");
     btLoadFile.addListener(this);
-    btLoadFile.setColour(TextButton::buttonColourId, Colours::orange);
+    btLoadFile.setColour(juce::TextButton::buttonColourId, juce::Colours::orange);
 
     addAndMakeVisible(btReference);
     btReference.setButtonText("UPDATE REFERENCE");
     btReference.addListener(this);
-    btReference.setColour(TextButton::buttonColourId, Colours::cornflowerblue);
+    btReference.setColour(juce::TextButton::buttonColourId, juce::Colours::cornflowerblue);
 
     addAndMakeVisible (gcCompensation);
     gcCompensation.setText ("Settings");
@@ -120,12 +120,12 @@ DistanceCompensatorAudioProcessorEditor::DistanceCompensatorAudioProcessorEditor
     addAndMakeVisible(tbEnableGains);
     tbEnableGainsAttachment.reset (new ButtonAttachment (valueTreeState, "enableGains", tbEnableGains));
     tbEnableGains.setButtonText("Gain compensation");
-    tbEnableGains.setColour(ToggleButton::tickColourId, Colours::limegreen);
+    tbEnableGains.setColour(juce::ToggleButton::tickColourId, juce::Colours::limegreen);
 
     addAndMakeVisible(tbEnableDelays);
     tbEnableDelaysAttachment.reset (new ButtonAttachment (valueTreeState, "enableDelays", tbEnableDelays));
     tbEnableDelays.setButtonText("Delay compensation");
-    tbEnableDelays.setColour(ToggleButton::tickColourId, Colours::orange);
+    tbEnableDelays.setColour(juce::ToggleButton::tickColourId, juce::Colours::orange);
 
     addAndMakeVisible (gcDistances);
     gcDistances.setText ("Loudspeaker Distances");
@@ -135,26 +135,26 @@ DistanceCompensatorAudioProcessorEditor::DistanceCompensatorAudioProcessorEditor
 
         auto enHandle = tbEnableCompensation.add (new RoundButton());
         addAndMakeVisible (enHandle);
-        enHandle->setColour (ToggleButton::tickColourId, Colours::cornflowerblue);
+        enHandle->setColour (juce::ToggleButton::tickColourId, juce::Colours::cornflowerblue);
         enHandle->setButtonText ("C");
         enHandle->setTooltip("Enable compensation and \n factoring in the distance in gain/delay-calculation.");
-        tbEnableCompensationAttachment.add (new ButtonAttachment (valueTreeState, "enableCompensation" + String(i), *enHandle));
+        tbEnableCompensationAttachment.add (new ButtonAttachment (valueTreeState, "enableCompensation" + juce::String(i), *enHandle));
         enHandle->onStateChange = [this, i]() {updateEnableSetting(i);};
 
         bool isOn = enHandle->getToggleState();
 
-        auto handle = slDistance.add (new Label());
+        auto handle = slDistance.add (new juce::Label());
         addAndMakeVisible (handle);
-        handle->setJustificationType(Justification::centred);
+        handle->setJustificationType(juce::Justification::centred);
         handle->setEditable (true);
         handle->setEnabled (isOn);
         handle->setExplicitFocusOrder(i + 1);
-        slDistanceAttachment.add(new LabelAttachment (valueTreeState, "distance" + String(i), *handle));
+        slDistanceAttachment.add(new LabelAttachment (valueTreeState, "distance" + juce::String(i), *handle));
 
         auto lbHandle = lbDistance.add(new SimpleLabel());
         addAndMakeVisible(lbHandle);
         lbHandle->setEnabled (isOn);
-        lbHandle->setText(String(i + 1), true, Justification::right);
+        lbHandle->setText(juce::String(i + 1), true, juce::Justification::right);
     }
 
     toolTipWin.setLookAndFeel (&globalLaF);
@@ -197,7 +197,7 @@ void DistanceCompensatorAudioProcessorEditor::showControls (const int nCh)
 }
 
 //==============================================================================
-void DistanceCompensatorAudioProcessorEditor::paint (Graphics& g)
+void DistanceCompensatorAudioProcessorEditor::paint (juce::Graphics& g)
 {
     g.fillAll (globalLaF.ClBackground);
 }
@@ -208,20 +208,20 @@ void DistanceCompensatorAudioProcessorEditor::resized()
     const int leftRightMargin = 30;
     const int headerHeight = 60;
     const int footerHeight = 25;
-    Rectangle<int> area (getLocalBounds());
+    juce::Rectangle<int> area (getLocalBounds());
 
-    Rectangle<int> footerArea (area.removeFromBottom (footerHeight));
+    juce::Rectangle<int> footerArea (area.removeFromBottom (footerHeight));
     footer.setBounds (footerArea);
 
     area.removeFromLeft (leftRightMargin);
     area.removeFromRight (leftRightMargin);
-    Rectangle<int> headerArea = area.removeFromTop (headerHeight);
+    juce::Rectangle<int> headerArea = area.removeFromTop (headerHeight);
     title.setBounds (headerArea);
     area.removeFromTop (10);
     area.removeFromBottom (5);
     // =========== END: header and footer =================
 
-    Rectangle<int> controls = area.removeFromTop (150);
+    juce::Rectangle<int> controls = area.removeFromTop (150);
     auto settingsArea = controls.removeFromLeft(200);
     gcCompensation.setBounds(settingsArea);
     settingsArea.removeFromTop(25);
@@ -281,7 +281,7 @@ void DistanceCompensatorAudioProcessorEditor::resized()
     area.removeFromTop (10);
     gcDistances.setBounds (area.removeFromTop(25));
 
-    Rectangle<int> sliderCol;
+    juce::Rectangle<int> sliderCol;
 
     for (int i = 0; i < 64; ++i)
     {
@@ -329,24 +329,24 @@ void DistanceCompensatorAudioProcessorEditor::timerCallback()
     if (processor.updateMessage)
     {
         processor.updateMessage = false;
-        AlertWindow alert (processor.messageToEditor.headline, processor.messageToEditor.text, AlertWindow::NoIcon);
+        juce::AlertWindow alert (processor.messageToEditor.headline, processor.messageToEditor.text, juce::AlertWindow::NoIcon);
         alert.setLookAndFeel (&globalLaF);
-        alert.addButton ("OK",     1, KeyPress (KeyPress::returnKey, 0, 0));
+        alert.addButton ("OK",     1, juce::KeyPress (juce::KeyPress::returnKey, 0, 0));
         alert.runModalLoop();
     }
 }
 
 
-void DistanceCompensatorAudioProcessorEditor::buttonClicked(Button* button)
+void DistanceCompensatorAudioProcessorEditor::buttonClicked(juce::Button* button)
 {
     if (button == &btLoadFile)
     {
-        FileChooser myChooser ("Load loudspeaker layout...",
-                               processor.getLastDir().exists() ? processor.getLastDir() : File::getSpecialLocation (File::userHomeDirectory),
+        juce::FileChooser myChooser ("Load loudspeaker layout...",
+                               processor.getLastDir().exists() ? processor.getLastDir() : juce::File::getSpecialLocation (juce::File::userHomeDirectory),
                                "*.json");
         if (myChooser.browseForFileToOpen())
         {
-            File configFile (myChooser.getResult());
+            juce::File configFile (myChooser.getResult());
             processor.setLastDir(configFile.getParentDirectory());
             processor.loadConfiguration (configFile);
         }

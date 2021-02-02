@@ -27,11 +27,11 @@
 
 //==============================================================================
 /**
-    This is a simple wrapper for a Slider that controls other components,
-    e.g. other Sliders, by forwarding mouse events. It's intended to hold
+    This is a simple wrapper for a juce::Slider that controls other components,
+    e.g. other juce::Sliders, by forwarding mouse events. It's intended to hold
     pointers to the sliders it is controlling.
 */
-class MasterControl : public Component
+class MasterControl : public juce::Component
 {
 public:
     MasterControl()
@@ -43,17 +43,17 @@ public:
     }
 
 
-    void mouseEnter (const MouseEvent& e) override
+    void mouseEnter (const juce::MouseEvent& e) override
     {
         repaint();
     }
 
-    void mouseExit (const MouseEvent& e) override
+    void mouseExit (const juce::MouseEvent& e) override
     {
         repaint();
     }
 
-    void mouseMove (const MouseEvent& e) override
+    void mouseMove (const juce::MouseEvent& e) override
     {
         if (triangleUp.contains (e.position))
             isOverTriangle = 1;
@@ -63,7 +63,7 @@ public:
             isOverTriangle = 0;
     }
 
-    void mouseDrag (const MouseEvent& e) override
+    void mouseDrag (const juce::MouseEvent& e) override
     {
         isDragging = true;
 
@@ -89,7 +89,7 @@ public:
     }
 
 
-    void mouseWheelMove (const MouseEvent& e, const MouseWheelDetails& wheel) override
+    void mouseWheelMove (const juce::MouseEvent& e, const juce::MouseWheelDetails& wheel) override
     {
         isDragging = true;
 
@@ -100,7 +100,7 @@ public:
         }
     }
 
-    void mouseDown (const MouseEvent& e) override
+    void mouseDown (const juce::MouseEvent& e) override
     {
         for (int i = 0; i < elements.size(); ++i)
         {
@@ -122,7 +122,7 @@ public:
         }
     }
 
-    void  mouseUp (const MouseEvent & e) override
+    void  mouseUp (const juce::MouseEvent & e) override
     {
         isDragging = false;
         dragDirection = 0;
@@ -136,16 +136,16 @@ public:
 
 
 
-    void addSlave (Component& newComponentToControl)
+    void addSlave (juce::Component& newComponentToControl)
     {
         elements.add (&newComponentToControl);
     }
 
 
-    void paint (Graphics& g) override
+    void paint (juce::Graphics& g) override
     {
 
-        g.setColour (Colours::white);
+        g.setColour (juce::Colours::white);
 
         auto thickness = (! isDragging && isMouseOver()) ? 1.0f : 0.5f;
 
@@ -155,13 +155,13 @@ public:
         auto upThickness = isDragginUp ? 1.0f : thickness;
         auto downThickness = isDragginDown ? 1.0f : thickness;
 
-        g.strokePath (triangleUp, PathStrokeType (upThickness));
-        g.strokePath (triangleDown, PathStrokeType (downThickness));
+        g.strokePath (triangleUp, juce::PathStrokeType (upThickness));
+        g.strokePath (triangleDown, juce::PathStrokeType (downThickness));
 
-        g.setColour (Colours::steelblue.withMultipliedAlpha (isDragginUp ? 0.9f : 0.3f));
+        g.setColour (juce::Colours::steelblue.withMultipliedAlpha (isDragginUp ? 0.9f : 0.3f));
         g.fillPath (triangleUp);
 
-        g.setColour (Colours::steelblue.withMultipliedAlpha (isDragginDown ? 0.9f : 0.3f));
+        g.setColour (juce::Colours::steelblue.withMultipliedAlpha (isDragginDown ? 0.9f : 0.3f));
         g.fillPath (triangleDown);
     }
 
@@ -190,9 +190,9 @@ public:
 
 
 private:
-    Array<Component*> elements;
+    juce::Array<Component*> elements;
 
-    Path triangleUp, triangleDown;
+    juce::Path triangleUp, triangleDown;
 
     bool isDragging = false;
     int dragDirection = 0;

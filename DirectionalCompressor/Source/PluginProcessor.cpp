@@ -30,13 +30,18 @@ DirectionalCompressorAudioProcessor::DirectionalCompressorAudioProcessor()
                   BusesProperties()
 #if ! JucePlugin_IsMidiEffect
 #if ! JucePlugin_IsSynth
-                  .withInput  ("Input",  AudioChannelSet::discreteChannels(64), true)
+                  .withInput  ("Input",  juce::AudioChannelSet::discreteChannels(64), true)
 #endif
-                  .withOutput ("Output", AudioChannelSet::discreteChannels(64), true)
+                  .withOutput ("Output", juce::AudioChannelSet::discreteChannels(64), true)
 #endif
                   ,
 #endif
-createParameterLayout())
+createParameterLayout()),
+//W (tDesignN),
+Y (tDesignN, 64),
+YH (64, tDesignN),
+tempMat (64, tDesignN),
+P1 (64, 64)
 {
     parameters.addParameterListener ("azimuth", this);
     parameters.addParameterListener ("elevation", this);
@@ -77,15 +82,15 @@ createParameterLayout())
     c1GR = 0.0f;
     c2GR = 0.0f;
 
-    // calc Y and YH
-    for (int point=0; point<tDesignN; ++point)
-    {
-        SHEval(7, tDesignX[point], tDesignY[point], tDesignZ[point], Y.data() + point * 64, false);
-        //FloatVectorOperations::multiply(Y.data()+point*64, Y.data()+point*64, sn3d2n3d, 64); //expecting sn3d normalization -> converting it to n3d
-    }
+    // calc Y
+    for (int p = 0; p < tDesignN; ++p)
+        SHEval (7, tDesignX[p], tDesignY[p], tDesignZ[p], Y.getRawDataPointer() + p * 64, false);
 
-    Y *= sqrt(4 * MathConstants<float>::pi / tDesignN) / decodeCorrection(7); // reverting 7th order correction
-    YH = Y.transpose();
+    Y *= std::sqrt (4 * juce::MathConstants<float>::pi / tDesignN) / decodeCorrection (7); // reverting 7th order correction
+
+    for (int r = 0; r < 64; ++r)
+        for (int c = 0; c < tDesignN; ++c)
+            YH(r, c) = Y(c, r);
 }
 
 
@@ -109,16 +114,16 @@ void DirectionalCompressorAudioProcessor::setCurrentProgram (int index)
 {
 }
 
-const String DirectionalCompressorAudioProcessor::getProgramName (int index)
+const juce::String DirectionalCompressorAudioProcessor::getProgramName (int index)
 {
     return {};
 }
 
-void DirectionalCompressorAudioProcessor::changeProgramName (int index, const String& newName)
+void DirectionalCompressorAudioProcessor::changeProgramName (int index, const juce::String& newName)
 {
 }
 
-void DirectionalCompressorAudioProcessor::parameterChanged (const String &parameterID, float newValue)
+void DirectionalCompressorAudioProcessor::parameterChanged (const juce::String &parameterID, float newValue)
 {
     if (parameterID == "azimuth" || parameterID == "elevation" || parameterID == "width")
     {
@@ -136,7 +141,7 @@ void DirectionalCompressorAudioProcessor::prepareToPlay (double sampleRate, int 
 {
     checkInputAndOutput(this, *orderSetting, *orderSetting, true);
 
-    dsp::ProcessSpec spec;
+    juce::dsp::ProcessSpec spec;
     spec.sampleRate = sampleRate;
     spec.numChannels = 1;
     spec.maximumBlockSize = samplesPerBlock;
@@ -158,7 +163,7 @@ void DirectionalCompressorAudioProcessor::releaseResources()
 }
 
 
-void DirectionalCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
+void DirectionalCompressorAudioProcessor::processBlock (juce::AudioSampleBuffer& buffer, juce::MidiBuffer& midiMessages)
 {
     checkInputAndOutput(this, *orderSetting, *orderSetting);
     if (paramChanged) calcParams();
@@ -167,7 +172,7 @@ void DirectionalCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffe
     const int totalNumOutputChannels = getTotalNumOutputChannels();
     const int bufferSize = buffer.getNumSamples();
 
-    const int numCh = jmin(input.getNumberOfChannels(), buffer.getNumChannels());
+    const int numCh = juce::jmin (input.getNumberOfChannels(), buffer.getNumChannels());
     if (numCh == 0)
            return;
 
@@ -200,13 +205,13 @@ void DirectionalCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffe
     drivingPointers[2] = omniW.getReadPointer(0);
 
     // preGain - can be tweaked by adding gain to compressor gains
-    float preGainLinear = Decibels::decibelsToGain (preGain->load());
+    float preGainLinear = juce::Decibels::decibelsToGain (preGain->load());
 
     if (*useSN3D >= 0.5f)
         for (int i = 0; i < numCh; ++i)
             buffer.applyGain(i, 0, bufferSize, sn3d2n3d[i] * preGainLinear);
     else
-        buffer.applyGain (Decibels::decibelsToGain (preGain->load()));
+        buffer.applyGain (juce::Decibels::decibelsToGain (preGain->load()));
 
 
     // --------- make copys of buffer
@@ -224,7 +229,7 @@ void DirectionalCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffe
     }
     /* This makes the buffer containing the negative mask */
     for (int chIn = 0; chIn < numCh; ++chIn)
-        FloatVectorOperations::subtract(buffer.getWritePointer(chIn), maskBuffer.getReadPointer(chIn), bufferSize);
+        juce::FloatVectorOperations::subtract(buffer.getWritePointer(chIn), maskBuffer.getReadPointer(chIn), bufferSize);
 
     // ------- clear not needed channels
     for (int i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
@@ -243,7 +248,7 @@ void DirectionalCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffe
 
         compressor1.getGainFromSidechainSignal(drivingSignalPtr, c1Gains.getRawDataPointer(), bufferSize);
         c1MaxRMS = compressor1.getMaxLevelInDecibels();
-        c1MaxGR = Decibels::gainToDecibels(FloatVectorOperations::findMinimum(c1Gains.getRawDataPointer(), bufferSize)) - *c1Makeup;
+        c1MaxGR = juce::Decibels::gainToDecibels (juce::FloatVectorOperations::findMinimum(c1Gains.getRawDataPointer(), bufferSize)) - *c1Makeup;
     }
 
     // =============== COMPRESSOR 2 ====================
@@ -257,7 +262,7 @@ void DirectionalCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffe
 
         compressor2.getGainFromSidechainSignal(drivingSignalPtr, c2Gains.getRawDataPointer(), bufferSize);
         c2MaxRMS = compressor2.getMaxLevelInDecibels();
-        c2MaxGR = Decibels::gainToDecibels(FloatVectorOperations::findMinimum(c2Gains.getRawDataPointer(), bufferSize)) - *c2Makeup;
+        c2MaxGR = juce::Decibels::gainToDecibels (juce::FloatVectorOperations::findMinimum (c2Gains.getRawDataPointer(), bufferSize)) - *c2Makeup;
     }
 
 
@@ -272,7 +277,7 @@ void DirectionalCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffe
             for (int channel = 0; channel < numCh; ++channel)
             {
                 float* writeData = maskBuffer.getWritePointer(channel);
-                FloatVectorOperations::multiply(writeData, c1Gains.getRawDataPointer(), bufferSize);
+                juce::FloatVectorOperations::multiply (writeData, c1Gains.getRawDataPointer(), bufferSize);
             }
         }
         else if (*c1Apply > 1.5f) //negative mask
@@ -280,7 +285,7 @@ void DirectionalCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffe
             for (int channel = 0; channel < numCh; ++channel)
             {
                 float* writeData = buffer.getWritePointer(channel);
-                FloatVectorOperations::multiply(writeData, c1Gains.getRawDataPointer(), bufferSize);
+                juce::FloatVectorOperations::multiply (writeData, c1Gains.getRawDataPointer(), bufferSize);
             }
         }
         else
@@ -288,9 +293,9 @@ void DirectionalCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffe
             for (int channel = 0; channel < numCh; ++channel)
             {
                 float* writeData = maskBuffer.getWritePointer(channel);
-                FloatVectorOperations::multiply(writeData, c1Gains.getRawDataPointer(), bufferSize);
+                juce::FloatVectorOperations::multiply(writeData, c1Gains.getRawDataPointer(), bufferSize);
                 writeData = buffer.getWritePointer(channel);
-                FloatVectorOperations::multiply(writeData, c1Gains.getRawDataPointer(), bufferSize);
+                juce::FloatVectorOperations::multiply (writeData, c1Gains.getRawDataPointer(), bufferSize);
             }
         }
     }
@@ -302,26 +307,26 @@ void DirectionalCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffe
         {
             for (int channel = 0; channel < numCh; ++channel)
             {
-                float* writeData = maskBuffer.getWritePointer(channel);
-                FloatVectorOperations::multiply(writeData, c2Gains.getRawDataPointer(), bufferSize);
+                float* writeData = maskBuffer.getWritePointer (channel);
+                juce::FloatVectorOperations::multiply (writeData, c2Gains.getRawDataPointer(), bufferSize);
             }
         }
         else if (*c2Apply > 1.5f) //negative mask
         {
             for (int channel = 0; channel < numCh; ++channel)
             {
-                float* writeData = buffer.getWritePointer(channel);
-                FloatVectorOperations::multiply(writeData, c2Gains.getRawDataPointer(), bufferSize);
+                float* writeData = buffer.getWritePointer (channel);
+                juce::FloatVectorOperations::multiply (writeData, c2Gains.getRawDataPointer(), bufferSize);
             }
         }
         else
         {
             for (int channel = 0; channel < numCh; ++channel)
             {
-                float* writeData = maskBuffer.getWritePointer(channel);
-                FloatVectorOperations::multiply(writeData, c2Gains.getRawDataPointer(), bufferSize);
+                float* writeData = maskBuffer.getWritePointer (channel);
+                juce::FloatVectorOperations::multiply (writeData, c2Gains.getRawDataPointer(), bufferSize);
                 writeData = buffer.getWritePointer(channel);
-                FloatVectorOperations::multiply(writeData, c2Gains.getRawDataPointer(), bufferSize);
+                juce::FloatVectorOperations::multiply (writeData, c2Gains.getRawDataPointer(), bufferSize);
             }
         }
     }
@@ -329,12 +334,12 @@ void DirectionalCompressorAudioProcessor::processBlock (AudioSampleBuffer& buffe
     //add channels or replace
     if (*listen >= 0.5f && *listen < 1.5f) //mask
     {
-        FloatVectorOperations::copy(buffer.getWritePointer(0), maskBuffer.getReadPointer(0), numCh*bufferSize);
+        juce::FloatVectorOperations::copy(buffer.getWritePointer(0), maskBuffer.getReadPointer(0), numCh*bufferSize);
     }
     else if (*listen < 0.5f)
     {
         for (int chIn = 0; chIn < numCh; ++chIn)
-            FloatVectorOperations::add(buffer.getWritePointer(chIn), maskBuffer.getReadPointer(chIn), bufferSize);
+            juce::FloatVectorOperations::add(buffer.getWritePointer(chIn), maskBuffer.getReadPointer(chIn), bufferSize);
     }
 
 
@@ -348,35 +353,41 @@ void DirectionalCompressorAudioProcessor::calcParams()
     paramChanged = false;
 
     // convert azimuth and elevation to cartesian coordinates
-    Vector3D<float> pos {Conversions<float>::sphericalToCartesian(Conversions<float>::degreesToRadians(*azimuth), Conversions<float>::degreesToRadians(*elevation))};
+    auto pos = Conversions<float>::sphericalToCartesian (Conversions<float>::degreesToRadians (*azimuth), Conversions<float>::degreesToRadians (*elevation));
     pos = pos.normalised();
 
 
     for (int point=0; point<tDesignN; ++point)
     {
-        //dist[point] = acosf(xyz[0]*tDesignX[point] + xyz[1]*tDesignY[point] + xyz[2]*tDesignZ[point]); // could yield nans
         dist[point] = pos.x * tDesignX[point] + pos.y * tDesignY[point] + pos.z * tDesignZ[point];
-        dist[point] /= sqrt(tDesignX[point]*tDesignX[point] + tDesignY[point]*tDesignY[point] + tDesignZ[point]*tDesignZ[point]); // optimize by normalising tDesign on startup
-        dist[point] = acos(dist[point]);
+        dist[point] /= std::sqrt (juce::square (tDesignX[point]) + juce::square (tDesignY[point]) + juce::square (tDesignZ[point]));
+        dist[point] = std::acos (dist[point]);
     }
 
-    float widthHalf = Conversions<float>::degreesToRadians(*width) * 0.25f; // it's actually width fourth (symmetric mask)
-    widthHalf = jmax(widthHalf,FloatVectorOperations::findMinimum(dist, tDesignN));
+    float widthHalf = Conversions<float>::degreesToRadians (*width) * 0.25f; // it's actually width fourth (symmetric mask)
+    widthHalf = juce::jmax (widthHalf, juce::FloatVectorOperations::findMinimum (dist, tDesignN));
 
-    FloatVectorOperations::clip(dist, dist, widthHalf, 3*widthHalf, tDesignN);
-    FloatVectorOperations::add(dist, - widthHalf, tDesignN);
-    FloatVectorOperations::multiply(dist, 0.25f * MathConstants<float>::pi / widthHalf, tDesignN);
+    juce::FloatVectorOperations::clip (dist, dist, widthHalf, 3 * widthHalf, tDesignN);
+    juce::FloatVectorOperations::add (dist, - widthHalf, tDesignN);
+    juce::FloatVectorOperations::multiply (dist, 0.25f * juce::MathConstants<float>::pi / widthHalf, tDesignN);
 
-    sumMaskWeights = 0.0f;
-    for (int point=0; point<tDesignN; ++point)
+
+    for (int p = 0; p < tDesignN; ++p)
     {
-        float g = cos(dist[point]);
-        W.diagonal()[point] = g;
-        sumMaskWeights += g;
+        const float g = std::cos (dist[p]);
+        for (int r = 0; r < 64; ++r)
+            tempMat (r, p) = g * Y(p, r);
     }
 
-    tempMat = W * YH;
-    P1 = Y * tempMat;
+    for (int r = 0; r < 64; ++r)
+        for (int c = r; c < 64; ++c)
+        {
+            float sum = 0.0f;
+            for (int i = 0; i < tDesignN; ++i)
+                sum += tempMat(r, i) * YH(c, i);
+            P1(r, c) = sum;
+            P1(c, r) = sum;
+        }
 }
 
 //==============================================================================
@@ -385,33 +396,33 @@ bool DirectionalCompressorAudioProcessor::hasEditor() const
     return true; // (change this to false if you choose to not supply an editor)
 }
 
-AudioProcessorEditor* DirectionalCompressorAudioProcessor::createEditor()
+juce::AudioProcessorEditor* DirectionalCompressorAudioProcessor::createEditor()
 {
     return new DirectionalCompressorAudioProcessorEditor (*this,parameters);
 }
 
 //==============================================================================
-void DirectionalCompressorAudioProcessor::getStateInformation (MemoryBlock &destData)
+void DirectionalCompressorAudioProcessor::getStateInformation (juce::MemoryBlock &destData)
 {
     auto state = parameters.copyState();
 
     auto oscConfig = state.getOrCreateChildWithName ("OSCConfig", nullptr);
     oscConfig.copyPropertiesFrom (oscParameterInterface.getConfig(), nullptr);
 
-    std::unique_ptr<XmlElement> xml (state.createXml());
+    std::unique_ptr<juce::XmlElement> xml (state.createXml());
     copyXmlToBinary (*xml, destData);
 }
 
 void DirectionalCompressorAudioProcessor::setStateInformation (const void *data, int sizeInBytes)
 {
-    std::unique_ptr<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
+    std::unique_ptr<juce::XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
     if (xmlState.get() != nullptr)
         if (xmlState->hasTagName (parameters.state.getType()))
         {
-            parameters.replaceState (ValueTree::fromXml (*xmlState));
+            parameters.replaceState (juce::ValueTree::fromXml (*xmlState));
             if (parameters.state.hasProperty ("OSCPort")) // legacy
             {
-                oscParameterInterface.getOSCReceiver().connect (parameters.state.getProperty ("OSCPort", var (-1)));
+                oscParameterInterface.getOSCReceiver().connect (parameters.state.getProperty ("OSCPort", juce::var (-1)));
                 parameters.state.removeProperty ("OSCPort", nullptr);
             }
 
@@ -430,13 +441,13 @@ void DirectionalCompressorAudioProcessor::updateBuffers()
 }
 
 //==============================================================================
-std::vector<std::unique_ptr<RangedAudioParameter>> DirectionalCompressorAudioProcessor::createParameterLayout()
+std::vector<std::unique_ptr<juce::RangedAudioParameter>> DirectionalCompressorAudioProcessor::createParameterLayout()
 {
     // add your audio parameters here
-    std::vector<std::unique_ptr<RangedAudioParameter>> params;
+    std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("orderSetting", "Ambisonics Order", "",
-                                    NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
+                                    juce::NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
                                     [](float value) {
                                         if (value >= 0.5f && value < 1.5f) return "0th";
                                         else if (value >= 1.5f && value < 2.5f) return "1st";
@@ -450,19 +461,19 @@ std::vector<std::unique_ptr<RangedAudioParameter>> DirectionalCompressorAudioPro
                                     }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("useSN3D", "Normalization", "",
-                                    NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
+                                    juce::NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                     [](float value) {
                                         if (value >= 0.5f) return "SN3D";
                                         else return "N3D";
                                     }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("preGain", "Input Gain ", "dB",
-                                    NormalisableRange<float> (-10.0f, 10.0f, 0.1f), 0.0f,
-                                    [](float value) {return String(value, 1);}, nullptr));
+                                    juce::NormalisableRange<float> (-10.0f, 10.0f, 0.1f), 0.0f,
+                                    [](float value) {return juce::String (value, 1);}, nullptr));
 
     // compressor 1
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("c1Enabled", "Enable Compressor 1", "",
-                                    NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0,
+                                    juce::NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0,
                                     [](float value)
                                     {
                                         if (value >= 0.5f) return "ON";
@@ -470,7 +481,7 @@ std::vector<std::unique_ptr<RangedAudioParameter>> DirectionalCompressorAudioPro
                                     }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("c1DrivingSignal", "Compressor 1 Driving Signal", "",
-                                    NormalisableRange<float> (0.0f, 2.0f, 1.0f), 1.0,
+                                    juce::NormalisableRange<float> (0.0f, 2.0f, 1.0f), 1.0,
                                     [](float value)
                                     {
                                         if (value >= 0.5f && value < 1.5f) return "Masked";
@@ -479,7 +490,7 @@ std::vector<std::unique_ptr<RangedAudioParameter>> DirectionalCompressorAudioPro
                                     }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("c1Apply", "Apply compression 1 to", "",
-                                    NormalisableRange<float> (0.0f, 2.0f, 1.0f), 1.0,
+                                    juce::NormalisableRange<float> (0.0f, 2.0f, 1.0f), 1.0,
                                     [](float value)
                                     {
                                         if (value >= 0.5f && value < 1.5f) return "Masked";
@@ -488,36 +499,36 @@ std::vector<std::unique_ptr<RangedAudioParameter>> DirectionalCompressorAudioPro
                                     }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("c1Threshold", "Threshold 1", "dB",
-                                    NormalisableRange<float> (-50.0f, 10.0f, 0.1f), -10.0,
-                                    [](float value) {return String(value, 1);}, nullptr));
+                                    juce::NormalisableRange<float> (-50.0f, 10.0f, 0.1f), -10.0,
+                                    [](float value) {return juce::String (value, 1);}, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("c1Knee", "Knee 1", "dB",
-                                    NormalisableRange<float> (0.0f, 10.0f, 0.1f), 0.0f,
-                                    [](float value) {return String(value, 1);}, nullptr));
+                                    juce::NormalisableRange<float> (0.0f, 10.0f, 0.1f), 0.0f,
+                                    [](float value) {return juce::String (value, 1);}, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("c1Attack", "Attack Time 1", "ms",
-                                    NormalisableRange<float> (0.0f, 100.0f, 0.1f), 30.0,
-                                    [](float value) {return String(value, 1);}, nullptr));
+                                    juce::NormalisableRange<float> (0.0f, 100.0f, 0.1f), 30.0,
+                                    [](float value) {return juce::String (value, 1);}, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("c1Release", "Release Time 1", "ms",
-                                    NormalisableRange<float> (0.0f, 500.0f, 0.1f), 150.0,
-                                    [](float value) {return String(value, 1);}, nullptr));
+                                    juce::NormalisableRange<float> (0.0f, 500.0f, 0.1f), 150.0,
+                                    [](float value) {return juce::String (value, 1);}, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("c1Ratio", "Ratio 1", " : 1",
-                                    NormalisableRange<float> (1.0f, 16.0f, .2f), 4.0,
+                                    juce::NormalisableRange<float> (1.0f, 16.0f, .2f), 4.0,
                                     [](float value) {
                                         if (value > 15.9f)
-                                            return String("inf");
-                                        return String(value, 1);
+                                            return juce::String ("inf");
+                                        return juce::String (value, 1);
                                     }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("c1Makeup", "MakeUp Gain 1", "dB",
-                                    NormalisableRange<float> (-10.0f, 20.0f, 0.10f), 0.0,
-                                    [](float value) {return String(value, 1);}, nullptr));
+                                    juce::NormalisableRange<float> (-10.0f, 20.0f, 0.10f), 0.0,
+                                    [](float value) {return juce::String (value, 1);}, nullptr));
 
     // compressor 2
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("c2Enabled", "Enable Compressor 2", "",
-                                    NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0,
+                                    juce::NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0,
                                     [](float value)
                                     {
                                         if (value >= 0.5f) return "ON";
@@ -525,7 +536,7 @@ std::vector<std::unique_ptr<RangedAudioParameter>> DirectionalCompressorAudioPro
                                     }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("c2DrivingSignal", "Compressor 2 Driving Signal", "",
-                                    NormalisableRange<float> (0.0f, 2.0f, 1.0f), 1.0,
+                                    juce::NormalisableRange<float> (0.0f, 2.0f, 1.0f), 1.0,
                                     [](float value)
                                     {
                                         if (value >= 0.5f && value < 1.5f) return "Masked";
@@ -534,7 +545,7 @@ std::vector<std::unique_ptr<RangedAudioParameter>> DirectionalCompressorAudioPro
                                     }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("c2Apply", "Apply compression 2 to", "",
-                                    NormalisableRange<float> (0.0f, 2.0f, 1.0f), 1.0,
+                                    juce::NormalisableRange<float> (0.0f, 2.0f, 1.0f), 1.0,
                                     [](float value)
                                     {
                                         if (value >= 0.5f && value < 1.5f) return "Masked";
@@ -543,48 +554,48 @@ std::vector<std::unique_ptr<RangedAudioParameter>> DirectionalCompressorAudioPro
                                     }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("c2Threshold", "Threshold 2", "dB",
-                                    NormalisableRange<float> (-50.0f, 10.0f, 0.1f), -10.0,
-                                    [](float value) {return String(value, 1);}, nullptr));
+                                    juce::NormalisableRange<float> (-50.0f, 10.0f, 0.1f), -10.0,
+                                    [](float value) {return juce::String (value, 1);}, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("c2Knee", "Knee 2", "dB",
-                                    NormalisableRange<float> (0.0f, 10.0f, 0.1f), 0.0f,
-                                    [](float value) {return String(value, 1);}, nullptr));
+                                    juce::NormalisableRange<float> (0.0f, 10.0f, 0.1f), 0.0f,
+                                    [](float value) {return juce::String (value, 1);}, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("c2Attack", "Attack Time 2", "ms",
-                                    NormalisableRange<float> (0.0f, 100.0f, 0.1f), 30.0,
-                                    [](float value) {return String(value, 1);}, nullptr));
+                                    juce::NormalisableRange<float> (0.0f, 100.0f, 0.1f), 30.0,
+                                    [](float value) {return juce::String (value, 1);}, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("c2Release", "Release Time 2", "ms",
-                                    NormalisableRange<float> (0.0f, 500.0f, 0.1f), 150.0,
-                                    [](float value) {return String(value, 1);}, nullptr));
+                                    juce::NormalisableRange<float> (0.0f, 500.0f, 0.1f), 150.0,
+                                    [](float value) {return juce::String (value, 1);}, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("c2Ratio", "Ratio 2", " : 1",
-                                    NormalisableRange<float> (1.0f, 16.0f, .2f), 4.0,
+                                    juce::NormalisableRange<float> (1.0f, 16.0f, .2f), 4.0,
                                     [](float value) {
                                         if (value > 15.9f)
-                                            return String("inf");
-                                        return String(value, 1);
+                                            return juce::String ("inf");
+                                        return juce::String (value, 1);
                                     }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("c2Makeup", "MakeUp Gain 2", "dB",
-                                    NormalisableRange<float> (-10.0f, 20.0f, 0.10f), 0.0,
-                                    [](float value) { return String(value, 1); }, nullptr));
+                                    juce::NormalisableRange<float> (-10.0f, 20.0f, 0.10f), 0.0,
+                                    [](float value) { return juce::String (value, 1); }, nullptr));
 
 
-    params.push_back (OSCParameterInterface::createParameterTheOldWay ("azimuth", "Azimuth of mask", CharPointer_UTF8 (R"(°)"),
-                                    NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
-                                    [](float value) { return String(value, 2); }, nullptr));
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("azimuth", "Azimuth of mask", juce::CharPointer_UTF8 (R"(°)"),
+                                    juce::NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
+                                    [](float value) { return juce::String (value, 2); }, nullptr));
 
-    params.push_back (OSCParameterInterface::createParameterTheOldWay ("elevation", "Elevation of mask", CharPointer_UTF8 (R"(°)"),
-                                    NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
-                                    [](float value) { return String(value, 2); }, nullptr));
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("elevation", "Elevation of mask", juce::CharPointer_UTF8 (R"(°)"),
+                                    juce::NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
+                                    [](float value) { return juce::String (value, 2); }, nullptr));
 
-    params.push_back (OSCParameterInterface::createParameterTheOldWay ("width", "Width of mask", CharPointer_UTF8 (R"(°)"),
-                                    NormalisableRange<float> (10.0f, 180.0f, 0.01f), 40.0f,
-                                    [](float value) { return String(value, 2); }, nullptr));
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("width", "Width of mask", juce::CharPointer_UTF8 (R"(°)"),
+                                    juce::NormalisableRange<float> (10.0f, 180.0f, 0.01f), 40.0f,
+                                    [](float value) { return juce::String (value, 2); }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("listen", "Listen to", "",
-                                    NormalisableRange<float> (0.0f, 2.0f, 1.0f), 0.0,
+                                    juce::NormalisableRange<float> (0.0f, 2.0f, 1.0f), 0.0,
                                     [](float value)
                                     {
                                         if (value >= 0.5f && value < 1.5f) return "Masked";
@@ -598,7 +609,7 @@ std::vector<std::unique_ptr<RangedAudioParameter>> DirectionalCompressorAudioPro
 
 //==============================================================================
 // This creates new instances of the plugin..
-AudioProcessor* JUCE_CALLTYPE createPluginFilter()
+juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new DirectionalCompressorAudioProcessor();
 }

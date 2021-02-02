@@ -29,7 +29,7 @@
 #include "../../resources/lookAndFeel/IEM_LaF.h"
 #include "../../resources/customComponents/TitleBar.h"
 
-//Custom Components
+//Custom juce::Components
 #include "../../resources/customComponents/ReverseSlider.h"
 #include "../../resources/customComponents/SimpleLabel.h"
 #include "../../resources/customComponents/FilterVisualizer.h"
@@ -37,20 +37,20 @@
 
 
 typedef ReverseSlider::SliderAttachment SliderAttachment; // all ReverseSliders will make use of the parameters' valueToText() function
-typedef AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
-typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
+typedef juce::AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
+typedef juce::AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 
 //==============================================================================
 /**
 */
-class MultiEQAudioProcessorEditor  : public AudioProcessorEditor, private Timer, private Button::Listener, private ComboBox::Listener
+class MultiEQAudioProcessorEditor  : public juce::AudioProcessorEditor, private juce::Timer, private juce::Button::Listener, private juce::ComboBox::Listener
 {
 public:
-    MultiEQAudioProcessorEditor (MultiEQAudioProcessor&, AudioProcessorValueTreeState&);
+    MultiEQAudioProcessorEditor (MultiEQAudioProcessor&, juce::AudioProcessorValueTreeState&);
     ~MultiEQAudioProcessorEditor();
 
     //==============================================================================
-    void paint (Graphics&) override;
+    void paint (juce::Graphics&) override;
     void resized() override;
 
 
@@ -59,8 +59,8 @@ public:
     void timerCallback() override;
     void extracted(int f, bool state);
 
-    void buttonClicked (Button* button) override;
-    void comboBoxChanged (ComboBox *comboBoxThatHasChanged) override;
+    void buttonClicked (juce::Button* button) override;
+    void comboBoxChanged (juce::ComboBox *comboBoxThatHasChanged) override;
 
     void updateFilterVisualizer();
     void updateEnablement (const int idx, const bool shouldBeEnabled);
@@ -70,9 +70,9 @@ private:
     // lookAndFeel class with the IEM plug-in suite design
     LaF globalLaF;
 
-    // stored references to the AudioProcessor and ValueTreeState holding all the parameters
+    // stored references to the AudioProcessor and juce::ValueTreeState holding all the parameters
     MultiEQAudioProcessor& processor;
-    AudioProcessorValueTreeState& valueTreeState;
+    juce::AudioProcessorValueTreeState& valueTreeState;
 
 
     /* title and footer component
@@ -91,9 +91,9 @@ private:
     std::unique_ptr<ComboBoxAttachment> cbNumInputChannelsAttachment;
 
     FilterVisualizer<double> fv;
-    TooltipWindow tooltipWin;
+    juce::TooltipWindow tooltipWin;
     OnOffButton tbFilterOn[numFilterBands];
-    ComboBox cbFilterType[numFilterBands];
+    juce::ComboBox cbFilterType[numFilterBands];
     ReverseSlider slFilterFrequency[numFilterBands];
     ReverseSlider slFilterQ[numFilterBands];
     ReverseSlider slFilterGain[numFilterBands];

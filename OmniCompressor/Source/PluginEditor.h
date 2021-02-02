@@ -32,28 +32,28 @@
 #include "../../resources/customComponents/CompressorVisualizer.h"
 
 typedef ReverseSlider::SliderAttachment SliderAttachment;
-typedef AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
-typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
+typedef juce::AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
+typedef juce::AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 
 //==============================================================================
 /**
 */
-class OmniCompressorAudioProcessorEditor  : public AudioProcessorEditor,
-private Timer
+class OmniCompressorAudioProcessorEditor  : public juce::AudioProcessorEditor,
+private juce::Timer
 {
 public:
-    OmniCompressorAudioProcessorEditor (OmniCompressorAudioProcessor&, AudioProcessorValueTreeState&);
+    OmniCompressorAudioProcessorEditor (OmniCompressorAudioProcessor&, juce::AudioProcessorValueTreeState&);
     ~OmniCompressorAudioProcessorEditor();
 
     //==============================================================================
-    void paint (Graphics&) override;
+    void paint (juce::Graphics&) override;
     void resized() override;
 
 private:
     LaF globalLaF;
 
     OmniCompressorAudioProcessor& processor;
-    AudioProcessorValueTreeState& valueTreeState;
+    juce::AudioProcessorValueTreeState& valueTreeState;
 
     TitleBar<AmbisonicIOWidget<>, NoIOWidget> title;
     OSCFooter footer;
@@ -73,7 +73,7 @@ private:
     std::unique_ptr<SliderAttachment> RTAttachment;
     std::unique_ptr<SliderAttachment> MGAttachment;
 
-    ToggleButton tbLookAhead;
+    juce::ToggleButton tbLookAhead;
     std::unique_ptr<ButtonAttachment> tbLookAheadAttachment;
 
     CompressorVisualizer characteristic;

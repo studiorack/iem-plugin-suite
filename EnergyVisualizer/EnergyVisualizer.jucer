@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <JUCERPROJECT id="mbpAgi" name="EnergyVisualizer" displaySplashScreen="0" reportAppUsage="0"
-              splashScreenColour="Dark" projectType="audioplug" version="1.0.1"
+              splashScreenColour="Dark" projectType="audioplug" version="1.0.2"
               bundleIdentifier="at.iem.EnergyVisualizer" includeBinaryInAppConfig="1"
               cppLanguageStandard="14" buildVST="1" buildVST3="0" buildAU="0"
               buildAUv3="0" buildRTAS="0" buildAAX="0" buildStandalone="1"
@@ -10,9 +10,10 @@
               pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
               pluginAUExportPrefix="EnergyVisualizerAU" aaxIdentifier="at.iem.EnergyVisualizer"
-              pluginAAXCategory="2" jucerVersion="5.4.7" companyCopyright="IEM - Daniel Rudrich"
+              pluginAAXCategory="2" companyCopyright="IEM - Daniel Rudrich"
               companyName="IEM" companyWebsite="iem.at" headerPath="../../../resources/"
-              pluginFormats="buildStandalone,buildVST" defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1">
+              pluginFormats="buildStandalone,buildVST" defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1"
+              jucerFormatVersion="1" addUsingNamespaceToJuceHeader="0" projectLineFeed="&#10;">
   <MAINGROUP id="LpzrV9" name="EnergyVisualizer">
     <GROUP id="{DF461C38-FAA0-FB07-CFAE-FB96A168C32F}" name="Standalone">
       <FILE id="la7JFo" name="IEM_AudioDeviceSelectorComponent.cpp" compile="1"

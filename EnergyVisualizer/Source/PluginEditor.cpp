@@ -25,8 +25,8 @@
 
 
 //==============================================================================
-EnergyVisualizerAudioProcessorEditor::EnergyVisualizerAudioProcessorEditor (EnergyVisualizerAudioProcessor& p, AudioProcessorValueTreeState& vts)
-    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts), footer (p.getOSCParameterInterface())
+EnergyVisualizerAudioProcessorEditor::EnergyVisualizerAudioProcessorEditor (EnergyVisualizerAudioProcessor& p, juce::AudioProcessorValueTreeState& vts)
+    : juce::AudioProcessorEditor (&p), processor (p), valueTreeState(vts), footer (p.getOSCParameterInterface())
 {
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
@@ -36,7 +36,7 @@ EnergyVisualizerAudioProcessorEditor::EnergyVisualizerAudioProcessorEditor (Ener
 
 
     addAndMakeVisible(&title);
-    title.setTitle(String("Energy"),String("Visualizer"));
+    title.setTitle(juce::String("Energy"),juce::String("Visualizer"));
     title.setFont(globalLaF.robotoBold,globalLaF.robotoLight);
     addAndMakeVisible (&footer);
 
@@ -48,19 +48,19 @@ EnergyVisualizerAudioProcessorEditor::EnergyVisualizerAudioProcessorEditor (Ener
 
     addAndMakeVisible(&slPeakLevel);
     slPeakLevelAttachment.reset (new SliderAttachment (valueTreeState, "peakLevel", slPeakLevel));
-    slPeakLevel.setSliderStyle(Slider::LinearVertical);
-    slPeakLevel.setTextBoxStyle(Slider::TextBoxBelow, false, 100, 12);
+    slPeakLevel.setSliderStyle(juce::Slider::LinearVertical);
+    slPeakLevel.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 100, 12);
     slPeakLevel.setTextValueSuffix(" dB");
-    slPeakLevel.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
+    slPeakLevel.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
     slPeakLevel.setReverse(false);
     slPeakLevel.addListener(this);
 
     addAndMakeVisible(&slDynamicRange);
     slDynamicRangeAttachment.reset (new SliderAttachment (valueTreeState, "dynamicRange", slDynamicRange));
-    slDynamicRange.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
-    slDynamicRange.setTextBoxStyle(Slider::TextBoxBelow, false, 100, 12);
+    slDynamicRange.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    slDynamicRange.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 100, 12);
     slDynamicRange.setTextValueSuffix(" dB");
-    slDynamicRange.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
+    slDynamicRange.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
     slDynamicRange.setReverse(false);
     slDynamicRange.addListener (this);
 
@@ -85,9 +85,9 @@ EnergyVisualizerAudioProcessorEditor::~EnergyVisualizerAudioProcessorEditor()
 }
 
 //==============================================================================
-void EnergyVisualizerAudioProcessorEditor::paint (Graphics& g)
+void EnergyVisualizerAudioProcessorEditor::paint (juce::Graphics& g)
 {
-    g.fillAll (getLookAndFeel().findColour (ResizableWindow::backgroundColourId));
+    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
 }
 
 void EnergyVisualizerAudioProcessorEditor::resized()
@@ -97,27 +97,27 @@ void EnergyVisualizerAudioProcessorEditor::resized()
     const int leftRightMargin = 30;
     const int headerHeight = 60;
     const int footerHeight = 25;
-    Rectangle<int> area (getLocalBounds());
+    juce::Rectangle<int> area (getLocalBounds());
 
-    Rectangle<int> footerArea (area.removeFromBottom (footerHeight));
+    juce::Rectangle<int> footerArea (area.removeFromBottom (footerHeight));
     footer.setBounds(footerArea);
 
 
     area.removeFromLeft(leftRightMargin);
     area.removeFromRight(leftRightMargin);
-    Rectangle<int> headerArea = area.removeFromTop    (headerHeight);
+    juce::Rectangle<int> headerArea = area.removeFromTop    (headerHeight);
     title.setBounds (headerArea);
     area.removeFromTop(10);
     area.removeFromBottom(5);
 
 
-    Rectangle<int> UIarea = area.removeFromRight(105);
-    const Point<int> UIareaCentre = UIarea.getCentre();
+    juce::Rectangle<int> UIarea = area.removeFromRight(105);
+    const juce::Point<int> UIareaCentre = UIarea.getCentre();
     UIarea.setHeight(240);
     UIarea.setCentre(UIareaCentre);
 
 
-    Rectangle<int> sliderCol = UIarea.removeFromRight(50);
+    juce::Rectangle<int> sliderCol = UIarea.removeFromRight(50);
 
     lbDynamicRange.setBounds (sliderCol.removeFromBottom (12));
     slDynamicRange.setBounds (sliderCol.removeFromBottom (50));
@@ -137,7 +137,7 @@ void EnergyVisualizerAudioProcessorEditor::resized()
     visualizer.setBounds(area);
 
 }
-void EnergyVisualizerAudioProcessorEditor::sliderValueChanged (Slider *slider)
+void EnergyVisualizerAudioProcessorEditor::sliderValueChanged (juce::Slider *slider)
 {
     if (slider == &slPeakLevel)
         colormap.setMaxLevel((float) slider->getValue());
@@ -156,5 +156,5 @@ void EnergyVisualizerAudioProcessorEditor::timerCallback()
     visualizer.setPeakLevel (processor.getPeakLevelSetting());
     visualizer.setDynamicRange (processor.getDynamicRange());
 
-    processor.lastEditorTime = Time::getCurrentTime();
+    processor.lastEditorTime = juce::Time::getCurrentTime();
 }

@@ -49,9 +49,9 @@ SceneRotatorAudioProcessor::SceneRotatorAudioProcessor()
                   BusesProperties()
 #if ! JucePlugin_IsMidiEffect
 #if ! JucePlugin_IsSynth
-                  .withInput  ("Input",  AudioChannelSet::discreteChannels (64), true)
+                  .withInput  ("Input",  juce::AudioChannelSet::discreteChannels (64), true)
 #endif
-                  .withOutput ("Output", AudioChannelSet::discreteChannels (64), true)
+                  .withOutput ("Output", juce::AudioChannelSet::discreteChannels (64), true)
 #endif
                   ,
 #endif
@@ -93,15 +93,15 @@ createParameterLayout())
 
 
 
-    orderMatrices.add (new Matrix<float> (0, 0)); // 0th
-    orderMatricesCopy.add (new Matrix<float> (0, 0)); // 0th
+    orderMatrices.add (new juce::dsp::Matrix<float> (0, 0)); // 0th
+    orderMatricesCopy.add (new juce::dsp::Matrix<float> (0, 0)); // 0th
 
     for (int l = 1; l <= 7; ++l )
     {
         const int nCh = (2 * l + 1);
-        auto elem = orderMatrices.add (new Matrix<float> (nCh, nCh));
+        auto elem = orderMatrices.add (new juce::dsp::Matrix<float> (nCh, nCh));
         elem->clear();
-        auto elemCopy = orderMatricesCopy.add (new Matrix<float> (nCh, nCh));
+        auto elemCopy = orderMatricesCopy.add (new juce::dsp::Matrix<float> (nCh, nCh));
         elemCopy->clear();
     }
 
@@ -129,12 +129,12 @@ void SceneRotatorAudioProcessor::setCurrentProgram (int index)
 {
 }
 
-const String SceneRotatorAudioProcessor::getProgramName (int index)
+const juce::String SceneRotatorAudioProcessor::getProgramName (int index)
 {
     return {};
 }
 
-void SceneRotatorAudioProcessor::changeProgramName (int index, const String& newName)
+void SceneRotatorAudioProcessor::changeProgramName (int index, const juce::String& newName)
 {
 }
 
@@ -148,7 +148,7 @@ void SceneRotatorAudioProcessor::prepareToPlay (double sampleRate, int samplesPe
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
 
-    MidiMessageCollector::reset (sampleRate);
+    juce::MidiMessageCollector::reset (sampleRate);
     rotationParamsHaveChanged = true;
 
 }
@@ -159,25 +159,25 @@ void SceneRotatorAudioProcessor::releaseResources()
     // spare memory, etc.
 }
 
-void SceneRotatorAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
+void SceneRotatorAudioProcessor::processBlock (juce::AudioSampleBuffer& buffer, juce::MidiBuffer& midiMessages)
 {
     checkInputAndOutput (this, *orderSetting, *orderSetting, false);
-    ScopedNoDenormals noDenormals;
+    juce::ScopedNoDenormals noDenormals;
 
     const int L = buffer.getNumSamples();
 
     const int inputOrder = input.getOrder();
-    const int nChIn = jmin (input.getNumberOfChannels(), buffer.getNumChannels());
+    const int nChIn = juce::jmin (input.getNumberOfChannels(), buffer.getNumChannels());
     const int actualOrder = floor (sqrt (nChIn)) - 1;
-    const int actualChannels = square (actualOrder + 1);
+    const int actualChannels = juce::square (actualOrder + 1);
     jassert (actualChannels <= nChIn);
 
     if (currentMidiScheme != MidiScheme::none)
     {
         removeNextBlockOfMessages (midiMessages, buffer.getNumSamples());
 
-        MidiBuffer::Iterator i (midiMessages);
-        MidiMessage message;
+        juce::MidiBuffer::Iterator i (midiMessages);
+        juce::MidiMessage message;
         int time;
 
 
@@ -305,7 +305,7 @@ void SceneRotatorAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBu
     midiMessages.clear();
 }
 
-double SceneRotatorAudioProcessor::P (int i, int l, int a, int b, Matrix<float>& R1, Matrix<float>& Rlm1)
+double SceneRotatorAudioProcessor::P (int i, int l, int a, int b, juce::dsp::Matrix<float>& R1, juce::dsp::Matrix<float>& Rlm1)
 {
     double ri1 = R1 (i + 1, 2);
     double rim1 = R1 (i + 1, 0);
@@ -319,12 +319,12 @@ double SceneRotatorAudioProcessor::P (int i, int l, int a, int b, Matrix<float>&
         return ri0 * Rlm1(a + l - 1, b + l - 1);
 };
 
-double SceneRotatorAudioProcessor::U (int l, int m, int n, Matrix<float>& Rone, Matrix<float>& Rlm1)
+double SceneRotatorAudioProcessor::U (int l, int m, int n, juce::dsp::Matrix<float>& Rone, juce::dsp::Matrix<float>& Rlm1)
 {
     return P (0, l, m, n, Rone, Rlm1);
 }
 
-double SceneRotatorAudioProcessor::V (int l, int m, int n, Matrix<float>& Rone, Matrix<float>& Rlm1)
+double SceneRotatorAudioProcessor::V (int l, int m, int n, juce::dsp::Matrix<float>& Rone, juce::dsp::Matrix<float>& Rlm1)
 {
     if (m == 0)
     {
@@ -350,7 +350,7 @@ double SceneRotatorAudioProcessor::V (int l, int m, int n, Matrix<float>& Rone, 
     }
 }
 
-double SceneRotatorAudioProcessor::W (int l, int m, int n, Matrix<float>& Rone, Matrix<float>& Rlm1)
+double SceneRotatorAudioProcessor::W (int l, int m, int n, juce::dsp::Matrix<float>& Rone, juce::dsp::Matrix<float>& Rlm1)
 {
     if (m > 0)
     {
@@ -384,7 +384,7 @@ void SceneRotatorAudioProcessor::calcRotationMatrix (const int order)
     auto sy = std::sin (rollRadians);
 
 
-    Matrix<float> rotMat (3, 3);
+    juce::dsp::Matrix<float> rotMat (3, 3);
 
     if (*rotationSequence >= 0.5f) // roll -> pitch -> yaw (extrinsic rotations)
     {
@@ -474,22 +474,22 @@ bool SceneRotatorAudioProcessor::hasEditor() const
     return true; // (change this to false if you choose to not supply an editor)
 }
 
-AudioProcessorEditor* SceneRotatorAudioProcessor::createEditor()
+juce::AudioProcessorEditor* SceneRotatorAudioProcessor::createEditor()
 {
     return new SceneRotatorAudioProcessorEditor (*this, parameters);
 }
 
 //==============================================================================
-void SceneRotatorAudioProcessor::getStateInformation (MemoryBlock& destData)
+void SceneRotatorAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
     auto state = parameters.copyState();
 
     auto oscConfig = state.getOrCreateChildWithName ("OSCConfig", nullptr);
     oscConfig.copyPropertiesFrom (oscParameterInterface.getConfig(), nullptr);
 
-    state.setProperty ("MidiDeviceName", var (currentMidiDeviceName), nullptr);
-    state.setProperty ("MidiDeviceScheme", var (static_cast<int> (currentMidiScheme)), nullptr);
-    std::unique_ptr<XmlElement> xml (state.createXml());
+    state.setProperty ("MidiDeviceName", juce::var (currentMidiDeviceName), nullptr);
+    state.setProperty ("MidiDeviceScheme", juce::var (static_cast<int> (currentMidiScheme)), nullptr);
+    std::unique_ptr<juce::XmlElement> xml (state.createXml());
     copyXmlToBinary (*xml, destData);
 }
 
@@ -498,14 +498,14 @@ void SceneRotatorAudioProcessor::setStateInformation (const void* data, int size
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
-    std::unique_ptr<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
+    std::unique_ptr<juce::XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
     if (xmlState.get() != nullptr)
         if (xmlState->hasTagName (parameters.state.getType()))
         {
-            parameters.replaceState (ValueTree::fromXml (*xmlState));
+            parameters.replaceState (juce::ValueTree::fromXml (*xmlState));
             if (parameters.state.hasProperty ("OSCPort")) // legacy
             {
-                oscParameterInterface.getOSCReceiver().connect (parameters.state.getProperty ("OSCPort", var (-1)));
+                oscParameterInterface.getOSCReceiver().connect (parameters.state.getProperty ("OSCPort", juce::var (-1)));
                 parameters.state.removeProperty ("OSCPort", nullptr);
             }
 
@@ -514,19 +514,19 @@ void SceneRotatorAudioProcessor::setStateInformation (const void* data, int size
                 oscParameterInterface.setConfig (oscConfig);
 
             if (parameters.state.hasProperty ("MidiDeviceName"))
-                openMidiInput (parameters.state.getProperty ("MidiDeviceName", var ("")), true);
+                openMidiInput (parameters.state.getProperty ("MidiDeviceName", juce::var ("")), true);
             else
                 closeMidiInput();
 
             if (parameters.state.hasProperty ("MidiDeviceScheme"))
-                setMidiScheme (MidiScheme (static_cast<int> (parameters.state.getProperty ("MidiDeviceScheme", var (0)))));
+                setMidiScheme (MidiScheme (static_cast<int> (parameters.state.getProperty ("MidiDeviceScheme", juce::var (0)))));
         }
 
     usingYpr = true;
 }
 
 //==============================================================================
-void SceneRotatorAudioProcessor::parameterChanged (const String &parameterID, float newValue)
+void SceneRotatorAudioProcessor::parameterChanged (const juce::String &parameterID, float newValue)
 {
     DBG ("Parameter with ID " << parameterID << " has changed. New value: " << newValue);
 
@@ -639,10 +639,10 @@ void SceneRotatorAudioProcessor::updateEuler()
 
     // pitch (y-axis rotation)
     float t0 = 2.0f * (p0 * p2 + e * p1 * p3);
-    t0 = jlimit (-1.0f, 1.0f, t0);
+    t0 = juce::jlimit (-1.0f, 1.0f, t0);
     ypr[1] = asin (t0);
 
-    if (ypr[1] == MathConstants<float>::pi || ypr[1] == - MathConstants<float>::pi)
+    if (ypr[1] == juce::MathConstants<float>::pi || ypr[1] == - juce::MathConstants<float>::pi)
     {
         ypr[2] = 0.0f;
         ypr[0] = atan2 (p1, p0);
@@ -687,10 +687,10 @@ void SceneRotatorAudioProcessor::updateBuffers()
 
 
 //==============================================================================
-const bool SceneRotatorAudioProcessor::interceptOSCMessage (OSCMessage &message)
+const bool SceneRotatorAudioProcessor::interceptOSCMessage (juce::OSCMessage &message)
 {
-    String prefix ("/" + String (JucePlugin_Name));
-    if (message.getAddressPattern().toString().equalsIgnoreCase ("/" + String (JucePlugin_Name) + "/quaternions") && message.size() == 4)
+    juce::String prefix ("/" + juce::String (JucePlugin_Name));
+    if (message.getAddressPattern().toString().equalsIgnoreCase ("/" + juce::String (JucePlugin_Name) + "/quaternions") && message.size() == 4)
     {
         float qs[4];
         for (int i = 0; i < 4; ++i)
@@ -705,7 +705,7 @@ const bool SceneRotatorAudioProcessor::interceptOSCMessage (OSCMessage &message)
         oscParameterInterface.setValue ("qz", qs[3]);
         return true;
     }
-    else if (message.getAddressPattern().toString().equalsIgnoreCase ("/" + String (JucePlugin_Name) + "/ypr") && message.size() == 3)
+    else if (message.getAddressPattern().toString().equalsIgnoreCase ("/" + juce::String (JucePlugin_Name) + "/ypr") && message.size() == 3)
     {
         float ypr[3];
         for (int i = 0; i < 3; ++i)
@@ -726,14 +726,14 @@ const bool SceneRotatorAudioProcessor::interceptOSCMessage (OSCMessage &message)
 
 
 //==============================================================================
-std::vector<std::unique_ptr<RangedAudioParameter>> SceneRotatorAudioProcessor::createParameterLayout()
+std::vector<std::unique_ptr<juce::RangedAudioParameter>> SceneRotatorAudioProcessor::createParameterLayout()
 {
     // add your audio parameters here
-    std::vector<std::unique_ptr<RangedAudioParameter>> params;
+    std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
 
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("orderSetting", "Ambisonics Order", "",
-                                                       NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
+                                                       juce::NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
                                                        [](float value) {
                                                            if (value >= 0.5f && value < 1.5f) return "0th";
                                                            else if (value >= 1.5f && value < 2.5f) return "1st";
@@ -747,59 +747,59 @@ std::vector<std::unique_ptr<RangedAudioParameter>> SceneRotatorAudioProcessor::c
                                                        }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("useSN3D", "Normalization", "",
-                                                       NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
+                                                       juce::NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                                        [](float value)
                                                        {
                                                            if (value >= 0.5f ) return "SN3D";
                                                            else return "N3D";
                                                        }, nullptr));
 
-    params.push_back (OSCParameterInterface::createParameterTheOldWay ("yaw", "Yaw Angle", CharPointer_UTF8 (R"(°)"),
-                                                       NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
-                                                       [](float value) { return String(value, 2); }, nullptr, true));
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("yaw", "Yaw Angle", juce::CharPointer_UTF8 (R"(°)"),
+                                                       juce::NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
+                                                       [](float value) { return juce::String(value, 2); }, nullptr, true));
 
-    params.push_back (OSCParameterInterface::createParameterTheOldWay ("pitch", "Pitch Angle", CharPointer_UTF8 (R"(°)"),
-                                                       NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
-                                                       [](float value) { return String(value, 2); }, nullptr, true));
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("pitch", "Pitch Angle", juce::CharPointer_UTF8 (R"(°)"),
+                                                       juce::NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
+                                                       [](float value) { return juce::String(value, 2); }, nullptr, true));
 
-    params.push_back (OSCParameterInterface::createParameterTheOldWay ("roll", "Roll Angle", CharPointer_UTF8 (R"(°)"),
-                                                       NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
-                                                       [](float value) { return String(value, 2); }, nullptr, true));
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("roll", "Roll Angle", juce::CharPointer_UTF8 (R"(°)"),
+                                                       juce::NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
+                                                       [](float value) { return juce::String(value, 2); }, nullptr, true));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("qw", "Quaternion W", "",
-                                                       NormalisableRange<float> (-1.0f, 1.0f, 0.001f), 1.0,
-                                                       [](float value) { return String(value, 2); }, nullptr, true));
+                                                       juce::NormalisableRange<float> (-1.0f, 1.0f, 0.001f), 1.0,
+                                                       [](float value) { return juce::String(value, 2); }, nullptr, true));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("qx", "Quaternion X", "",
-                                                       NormalisableRange<float> (-1.0f, 1.0f, 0.001f), 0.0,
-                                                       [](float value) { return String(value, 2); }, nullptr, true));
+                                                       juce::NormalisableRange<float> (-1.0f, 1.0f, 0.001f), 0.0,
+                                                       [](float value) { return juce::String(value, 2); }, nullptr, true));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("qy", "Quaternion Y", "",
-                                                       NormalisableRange<float> (-1.0f, 1.0f, 0.001f), 0.0,
-                                                       [](float value) { return String(value, 2); }, nullptr, true));
+                                                       juce::NormalisableRange<float> (-1.0f, 1.0f, 0.001f), 0.0,
+                                                       [](float value) { return juce::String(value, 2); }, nullptr, true));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("qz", "Quaternion Z", "",
-                                                       NormalisableRange<float> (-1.0f, 1.0f, 0.001f), 0.0,
-                                                       [](float value) { return String(value, 2); }, nullptr, true));
+                                                       juce::NormalisableRange<float> (-1.0f, 1.0f, 0.001f), 0.0,
+                                                       [](float value) { return juce::String(value, 2); }, nullptr, true));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("invertYaw", "Invert Yaw", "",
-                                                       NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
+                                                       juce::NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
                                                        [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("invertPitch", "Invert Pitch", "",
-                                                       NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
+                                                       juce::NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
                                                        [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("invertRoll", "Invert Roll", "",
-                                                       NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
+                                                       juce::NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
                                                        [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("invertQuaternion", "Invert Quaternion", "",
-                                                       NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
+                                                       juce::NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0,
                                                        [](float value) { return value >= 0.5f ? "ON" : "OFF"; }, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("rotationSequence", "Sequence of Rotations", "",
-                                                       NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0,
+                                                       juce::NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0,
                                                        [](float value) { return value >= 0.5f ? "Roll->Pitch->Yaw" : "Yaw->Pitch->Roll"; }, nullptr));
 
 
@@ -816,24 +816,24 @@ void SceneRotatorAudioProcessor::timerCallback()
 
 
 //==============================================================================
-String SceneRotatorAudioProcessor::getCurrentMidiDeviceName()
+juce::String SceneRotatorAudioProcessor::getCurrentMidiDeviceName()
 {
     return currentMidiDeviceName;
 }
 
-void SceneRotatorAudioProcessor::openMidiInput (String midiDeviceName, bool forceUpdatingCurrentMidiDeviceName)
+void SceneRotatorAudioProcessor::openMidiInput (juce::String midiDeviceName, bool forceUpdatingCurrentMidiDeviceName)
 {
     if (midiDeviceName.isEmpty())
         return closeMidiInput(); // <- not sure if that syntax is totally wrong or brilliant!
 
-    const ScopedLock scopedLock (changingMidiDevice);
+    const juce::ScopedLock scopedLock (changingMidiDevice);
 
-    StringArray devices = MidiInput::getDevices();
+    juce::StringArray devices = juce::MidiInput::getDevices();
 
     const int index = devices.indexOf (midiDeviceName);
     if (index != -1)
     {
-        midiInput = MidiInput::openDevice (index, this);
+        midiInput = juce::MidiInput::openDevice (index, this);
         if (midiInput == nullptr)
         {
             deviceHasChanged = true;
@@ -843,7 +843,7 @@ void SceneRotatorAudioProcessor::openMidiInput (String midiDeviceName, bool forc
 
         midiInput->start();
 
-        DBG ("Opened MidiInput: " << midiInput->getName());
+        DBG ("Opened juce::MidiInput: " << midiInput->getName());
 
         currentMidiDeviceName = midiDeviceName;
         deviceHasChanged = true;
@@ -862,12 +862,12 @@ void SceneRotatorAudioProcessor::openMidiInput (String midiDeviceName, bool forc
 
 void SceneRotatorAudioProcessor::closeMidiInput()
 {
-    const ScopedLock scopedLock (changingMidiDevice);
+    const juce::ScopedLock scopedLock (changingMidiDevice);
     if (midiInput != nullptr)
     {
         midiInput->stop();
         midiInput.reset();
-        DBG ("Closed MidiInput");
+        DBG ("Closed juce::MidiInput");
     }
 
     currentMidiDeviceName = ""; // hoping there's not actually a MidiDevice without a name!
@@ -908,7 +908,7 @@ void SceneRotatorAudioProcessor::setMidiScheme (MidiScheme newMidiScheme)
 
 //==============================================================================
 // This creates new instances of the plugin..
-AudioProcessor* JUCE_CALLTYPE createPluginFilter()
+juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new SceneRotatorAudioProcessor();
 }

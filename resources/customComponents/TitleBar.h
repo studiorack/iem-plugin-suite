@@ -29,35 +29,35 @@
 #include "../OSC/OSCStatus.h"
 #endif
 
-class AlertSymbol : public Component, public TooltipClient
+class AlertSymbol : public juce::Component, public juce::TooltipClient
 {
 public:
-    AlertSymbol() : Component()
+    AlertSymbol() : juce::Component()
     {
         warningSign.loadPathFromData (WarningSignData, sizeof (WarningSignData));
         setBufferedToImage (true);
     }
 
-    String getTooltip() override
+    juce::String getTooltip() override
     {
         return "Not enough channels available \n for your current setting.";
     }
 
-    void paint (Graphics& g) override
+    void paint (juce::Graphics& g) override
     {
-        warningSign.applyTransform (warningSign.getTransformToScaleToFit (getLocalBounds().toFloat(), true, Justification::centred));
-        g.setColour (Colours::yellow);
+        warningSign.applyTransform (warningSign.getTransformToScaleToFit (getLocalBounds().toFloat(), true, juce::Justification::centred));
+        g.setColour (juce::Colours::yellow);
         g.fillPath (warningSign);
     }
 
 private:
-    Path warningSign;
+    juce::Path warningSign;
 };
 
-class IOWidget : public Component
+class IOWidget : public juce::Component
 {
 public:
-    IOWidget() : Component()
+    IOWidget() : juce::Component()
     {
         addChildComponent (alert);
         alert.setBounds (15, 15, 15, 15);
@@ -86,7 +86,7 @@ class  NoIOWidget :  public IOWidget
 {
 public:
     NoIOWidget() {}
-    void setMaxSize (int maxSize) override { ignoreUnused (maxSize); }
+    void setMaxSize (int maxSize) override { juce::ignoreUnused (maxSize); }
     const int getComponentSize() override { return 0; }
 };
 
@@ -100,22 +100,22 @@ public:
     }
 
     const int getComponentSize() override { return 30; }
-    void setMaxSize (int maxSize) override { ignoreUnused (maxSize); }
-    void paint (Graphics& g) override
+    void setMaxSize (int maxSize) override { juce::ignoreUnused (maxSize); }
+    void paint (juce::Graphics& g) override
     {
-        BinauralPath.applyTransform (BinauralPath.getTransformToScaleToFit (0, 0, 30, 30, true,Justification::centred));
-        g.setColour ((Colours::white).withMultipliedAlpha (0.5));
+        BinauralPath.applyTransform (BinauralPath.getTransformToScaleToFit (0, 0, 30, 30, true, juce::Justification::centred));
+        g.setColour ((juce::Colours::white).withMultipliedAlpha (0.5));
         g.fillPath (BinauralPath);
 
     }
 
 private:
-    Path BinauralPath;
+    juce::Path BinauralPath;
 };
 
 
 template <int maxChannels, bool selectable = true>
-class AudioChannelsIOWidget : public IOWidget, private ComboBox::Listener
+class AudioChannelsIOWidget : public IOWidget, private juce::ComboBox::Listener
 {
 public:
     AudioChannelsIOWidget() : IOWidget()
@@ -125,13 +125,13 @@ public:
 
         if (selectable)
         {
-            cbChannels.reset (new ComboBox());
+            cbChannels.reset (new juce::ComboBox());
             addAndMakeVisible (cbChannels.get());
-            cbChannels->setJustificationType (Justification::centred);
+            cbChannels->setJustificationType (juce::Justification::centred);
             cbChannels->addSectionHeading ("Number of channels");
             cbChannels->addItem ("Auto", 1);
             for (int i = 1; i <= maxChannels; ++i)
-                cbChannels->addItem (String (i), i + 1);
+                cbChannels->addItem (juce::String (i), i + 1);
             cbChannels->setBounds (35, 8, 70, 15);
             cbChannels->addListener (this);
         }
@@ -143,12 +143,12 @@ public:
     {
         if (availableChannels < channelSizeIfNotSelectable)
         {
-            displayTextIfNotSelectable = String (channelSizeIfNotSelectable) + " (bus too small)";
+            displayTextIfNotSelectable = juce::String (channelSizeIfNotSelectable) + " (bus too small)";
             setBusTooSmall (true);
         }
         else
         {
-            displayTextIfNotSelectable = String (channelSizeIfNotSelectable);
+            displayTextIfNotSelectable = juce::String (channelSizeIfNotSelectable);
             setBusTooSmall (false);
         }
         repaint();
@@ -162,9 +162,9 @@ public:
             setBusTooSmall (false);
     }
 
-    void comboBoxChanged (ComboBox *comboBoxThatHasChanged) override
+    void comboBoxChanged (juce::ComboBox *comboBoxThatHasChanged) override
     {
-        ignoreUnused (comboBoxThatHasChanged);
+        juce::ignoreUnused (comboBoxThatHasChanged);
         checkIfBusIsTooSmall();
     }
 
@@ -175,18 +175,18 @@ public:
             availableChannels = maxPossibleNumberOfChannels;
             if (selectable)
             {
-                if (maxPossibleNumberOfChannels > 0) cbChannels->changeItemText (1, "Auto (" + String (maxPossibleNumberOfChannels) + ")");
+                if (maxPossibleNumberOfChannels > 0) cbChannels->changeItemText (1, "Auto (" + juce::String (maxPossibleNumberOfChannels) + ")");
                 else cbChannels->changeItemText (1, "(Auto)");
                 int currId = cbChannels->getSelectedId();
                 if (currId == 0) currId = 1; //bad work around
                 int i;
                 for (i = 1; i <= maxPossibleNumberOfChannels; ++i)
                 {
-                    cbChannels->changeItemText (i + 1, String(i));
+                    cbChannels->changeItemText (i + 1, juce::String(i));
                 }
                 for (i = maxPossibleNumberOfChannels+1; i<=maxChannels; ++i)
                 {
-                    cbChannels->changeItemText (i + 1, String(i) + " (bus too small)");
+                    cbChannels->changeItemText (i + 1, juce::String(i) + " (bus too small)");
                 }
                 checkIfBusIsTooSmall();
 
@@ -208,33 +208,33 @@ public:
         }
     }
 
-    ComboBox* getChannelsCbPointer()
+    juce::ComboBox* getChannelsCbPointer()
     {
         if (selectable) return cbChannels.get();
         return nullptr;
     }
 
-    void paint (Graphics& g) override
+    void paint (juce::Graphics& g) override
     {
-        WaveformPath.applyTransform(WaveformPath.getTransformToScaleToFit (0, 0, 30, 30, true, Justification::centred));
-        g.setColour ((Colours::white).withMultipliedAlpha (0.5));
+        WaveformPath.applyTransform(WaveformPath.getTransformToScaleToFit (0, 0, 30, 30, true, juce::Justification::centred));
+        g.setColour ((juce::Colours::white).withMultipliedAlpha (0.5));
         g.fillPath (WaveformPath);
 
         if (!selectable)
         {
-            g.setColour ((Colours::white).withMultipliedAlpha (0.5));
-            g.setFont (getLookAndFeel().getTypefaceForFont (Font (12.0f, 1)));
+            g.setColour ((juce::Colours::white).withMultipliedAlpha (0.5));
+            g.setFont (getLookAndFeel().getTypefaceForFont (juce::Font (12.0f, 1)));
             g.setFont (15.0f);
-            g.drawFittedText (displayTextIfNotSelectable, 35, 0, 40, 30, Justification::centredLeft, 2);
+            g.drawFittedText (displayTextIfNotSelectable, 35, 0, 40, 30, juce::Justification::centredLeft, 2);
         }
     }
 
 private:
-    std::unique_ptr<ComboBox> cbChannels;
-    Path WaveformPath;
+    std::unique_ptr<juce::ComboBox> cbChannels;
+    juce::Path WaveformPath;
     int availableChannels {64};
     int channelSizeIfNotSelectable = maxChannels;
-    String displayTextIfNotSelectable = String(maxChannels);
+    juce::String displayTextIfNotSelectable = juce::String (maxChannels);
 };
 
 template <int order = 7, bool selectable = true>
@@ -249,7 +249,7 @@ public:
         if (selectable)
         {
             addAndMakeVisible (&cbOrder);
-            cbOrder.setJustificationType (Justification::centred);
+            cbOrder.setJustificationType (juce::Justification::centred);
             cbOrder.setBounds (35, 15, 70, 15);
             updateMaxOrder();
         }
@@ -259,7 +259,7 @@ public:
         }
 
         addAndMakeVisible (&cbNormalization);
-        cbNormalization.setJustificationType (Justification::centred);
+        cbNormalization.setJustificationType (juce::Justification::centred);
         cbNormalization.addSectionHeading ("Normalization");
         cbNormalization.addItem ("N3D", 1);
         cbNormalization.addItem ("SN3D", 2);
@@ -319,9 +319,9 @@ public:
      */
     void setMaxSize (int newMaxPossibleOrder) override
     {
-        if (maxPossibleOrder != jmin (newMaxPossibleOrder, maxOrder))
+        if (maxPossibleOrder != juce::jmin (newMaxPossibleOrder, maxOrder))
         {
-            maxPossibleOrder = jmin (newMaxPossibleOrder, maxOrder);
+            maxPossibleOrder = juce::jmin (newMaxPossibleOrder, maxOrder);
 
             if (selectable)
             {
@@ -353,8 +353,8 @@ public:
         }
     }
 
-    ComboBox* getNormCbPointer() { return &cbNormalization; }
-    ComboBox* getOrderCbPointer()
+    juce::ComboBox* getNormCbPointer() { return &cbNormalization; }
+    juce::ComboBox* getOrderCbPointer()
     {
         if (! selectable)
             // There's no Ambisonic Order ComboBox, when order is not selectable!
@@ -363,28 +363,28 @@ public:
         return &cbOrder;
     }
 
-    void paint (Graphics& g) override
+    void paint (juce::Graphics& g) override
     {
-        AmbiLogoPath.applyTransform (AmbiLogoPath.getTransformToScaleToFit (0, 0, 30, 30, true, Justification::centred));
-        g.setColour ((Colours::white).withMultipliedAlpha (0.5));
+        AmbiLogoPath.applyTransform (AmbiLogoPath.getTransformToScaleToFit (0, 0, 30, 30, true, juce::Justification::centred));
+        g.setColour ((juce::Colours::white).withMultipliedAlpha (0.5));
         g.fillPath (AmbiLogoPath);
 
         if (!selectable)
         {
-            g.setColour ((Colours::white).withMultipliedAlpha (0.5));
-            g.setFont (getLookAndFeel().getTypefaceForFont (Font (12.0f, 1)));
+            g.setColour ((juce::Colours::white).withMultipliedAlpha (0.5));
+            g.setFont (getLookAndFeel().getTypefaceForFont (juce::Font (12.0f, 1)));
             g.setFont (15.0f);
-            g.drawFittedText (displayTextIfNotSelectable, 35, 15, 55, 15, Justification::centred, 1);
+            g.drawFittedText (displayTextIfNotSelectable, 35, 15, 55, 15, juce::Justification::centred, 1);
         }
     };
 
 private:
-    ComboBox cbNormalization, cbOrder;
-    Path AmbiLogoPath;
+    juce::ComboBox cbNormalization, cbOrder;
+    juce::Path AmbiLogoPath;
     int maxOrder = order;
     int orderIfNotSelectable = order;
     int maxPossibleOrder = -1;
-    String displayTextIfNotSelectable;
+    juce::String displayTextIfNotSelectable;
 };
 
 class  DirectivityIOWidget :  public IOWidget
@@ -394,17 +394,17 @@ public:
     {
         DirectivityPath.loadPathFromData (DirectivityPathData, sizeof (DirectivityPathData));
         setBufferedToImage (true);
-        orderStrings[0] = String ("0th");
-        orderStrings[1] = String ("1st");
-        orderStrings[2] = String ("2nd");
-        orderStrings[3] = String ("3rd");
-        orderStrings[4] = String ("4th");
-        orderStrings[5] = String ("5th");
-        orderStrings[6] = String ("6th");
-        orderStrings[7] = String ("7th");
+        orderStrings[0] = juce::String ("0th");
+        orderStrings[1] = juce::String ("1st");
+        orderStrings[2] = juce::String ("2nd");
+        orderStrings[3] = juce::String ("3rd");
+        orderStrings[4] = juce::String ("4th");
+        orderStrings[5] = juce::String ("5th");
+        orderStrings[6] = juce::String ("6th");
+        orderStrings[7] = juce::String ("7th");
 
         addAndMakeVisible (&cbOrder);
-        cbOrder.setJustificationType (Justification::centred);
+        cbOrder.setJustificationType (juce::Justification::centred);
         cbOrder.addSectionHeading ("Directivity Order");
         cbOrder.addItem ("Auto", 1);
         cbOrder.addItem ("0th", 2);
@@ -418,7 +418,7 @@ public:
         cbOrder.setBounds (35, 15, 70, 15);
 
         addAndMakeVisible (&cbNormalization);
-        cbNormalization.setJustificationType (Justification::centred);
+        cbNormalization.setJustificationType (juce::Justification::centred);
         cbNormalization.addSectionHeading ("Normalization");
         cbNormalization.addItem ("N3D", 1);
         cbNormalization.addItem ("SN3D", 2);
@@ -450,28 +450,28 @@ public:
 
     }
 
-    ComboBox* getNormCbPointer() { return &cbNormalization; }
-    ComboBox* getOrderCbPointer() { return &cbOrder; }
+    juce::ComboBox* getNormCbPointer() { return &cbNormalization; }
+    juce::ComboBox* getOrderCbPointer() { return &cbOrder; }
 
-    void paint (Graphics& g) override
+    void paint (juce::Graphics& g) override
     {
-        DirectivityPath.applyTransform (DirectivityPath.getTransformToScaleToFit (0, 0, 30, 30, true, Justification::centred));
-        g.setColour ((Colours::white).withMultipliedAlpha (0.5));
+        DirectivityPath.applyTransform (DirectivityPath.getTransformToScaleToFit (0, 0, 30, 30, true, juce::Justification::centred));
+        g.setColour ((juce::Colours::white).withMultipliedAlpha (0.5));
         g.fillPath (DirectivityPath);
     }
 
 private:
-    String orderStrings[8];
-    ComboBox cbNormalization, cbOrder;
-    Path DirectivityPath;
+    juce::String orderStrings[8];
+    juce::ComboBox cbNormalization, cbOrder;
+    juce::Path DirectivityPath;
 };
 
 // ======================================================== TITLEBAR =========================
 template <class Tin, class Tout>
-class TitleBar :  public Component
+class TitleBar :  public juce::Component
 {
 public:
-    TitleBar() : Component()
+    TitleBar() : juce::Component()
     {
         addAndMakeVisible(&inputWidget);
         addAndMakeVisible(&outputWidget);
@@ -481,13 +481,13 @@ public:
     Tout* getOutputWidgetPtr() { return &outputWidget; }
 
 
-    void setTitle (String newBoldText, String newRegularText)
+    void setTitle (juce::String newBoldText, juce::String newRegularText)
     {
         boldText = newBoldText;
         regularText = newRegularText;
     }
 
-    void setFont (Typeface::Ptr newBoldFont, Typeface::Ptr newRegularFont)
+    void setFont (juce::Typeface::Ptr newBoldFont, juce::Typeface::Ptr newRegularFont)
     {
         boldFont = newBoldFont;
         regularFont = newRegularFont;
@@ -508,9 +508,9 @@ public:
         outputWidget.setMaxSize (inOutSizes.second);
     }
 
-    void paint (Graphics& g) override
+    void paint (juce::Graphics& g) override
     {
-        Rectangle<int> bounds = getLocalBounds();
+        juce::Rectangle<int> bounds = getLocalBounds();
         const float centreX = bounds.getX() + bounds.getWidth() * 0.5f;
         const float centreY = bounds.getY() + bounds.getHeight() * 0.5f;
         const float boldHeight = 25.f;
@@ -524,107 +524,107 @@ public:
         const float boldWidth = boldFont.getStringWidth (boldText);
         const float regularWidth = regularFont.getStringWidth (regularText);
 
-        Rectangle<float> textArea (0, 0, boldWidth + regularWidth, jmax (boldHeight, regularHeight));
+        juce::Rectangle<float> textArea (0, 0, boldWidth + regularWidth, juce::jmax (boldHeight, regularHeight));
         textArea.setCentre (centreX,centreY);
 
         if (textArea.getX() < leftWidth) textArea.setX(leftWidth);
         if (textArea.getRight() > bounds.getRight() - rightWidth) textArea.setRight (bounds.getRight() - rightWidth);
 
 
-        g.setColour (Colours::white);
+        g.setColour (juce::Colours::white);
         g.setFont (boldFont);
-        g.drawFittedText (boldText, textArea.removeFromLeft (boldWidth).toNearestInt(), Justification::bottom, 1);
+        g.drawFittedText (boldText, textArea.removeFromLeft (boldWidth).toNearestInt(), juce::Justification::bottom, 1);
         g.setFont (regularFont);
-        g.drawFittedText (regularText, textArea.toNearestInt(), Justification::bottom, 1);
+        g.drawFittedText (regularText, textArea.toNearestInt(), juce::Justification::bottom, 1);
 
-        g.setColour ((Colours::white).withMultipliedAlpha (0.5));
+        g.setColour ((juce::Colours::white).withMultipliedAlpha (0.5));
         g.drawLine (bounds.getX(),bounds.getY() + bounds.getHeight() - 4, bounds.getX() + bounds.getWidth(), bounds.getY()+bounds.getHeight() - 4);
     }
 
 private:
     Tin inputWidget;
     Tout outputWidget;
-    Font boldFont = Font (25.f);
-    Font regularFont = Font (25.f);
+    juce::Font boldFont = juce::Font (25.f);
+    juce::Font regularFont = juce::Font (25.f);
     juce::String boldText = "Bold";
     juce::String regularText = "Regular";
 };
 
 
-class IEMLogo : public Component
+class IEMLogo : public juce::Component
 {
 public:
-    IEMLogo() : Component()
+    IEMLogo() : juce::Component()
     {
         IEMPath.loadPathFromData (IEMpathData, sizeof (IEMpathData));
-        url = URL("https://plugins.iem.at/");
+        url = juce::URL ("https://plugins.iem.at/");
     }
 
-    void paint (Graphics& g) override
+    void paint (juce::Graphics& g) override
     {
-        Rectangle<int> bounds = getLocalBounds();
+        juce::Rectangle<int> bounds = getLocalBounds();
         bounds.removeFromBottom (3);
         bounds.removeFromLeft (1);
-        IEMPath.applyTransform(IEMPath.getTransformToScaleToFit (bounds.reduced (2, 2).toFloat(), true, Justification::bottomLeft));
+        IEMPath.applyTransform(IEMPath.getTransformToScaleToFit (bounds.reduced (2, 2).toFloat(), true, juce::Justification::bottomLeft));
 
         if (isMouseOver())
         {
-            g.setColour (Colour::fromRGB(52, 88, 165));
+            g.setColour (juce::Colour::fromRGB(52, 88, 165));
             g.fillAll();
         }
 
-        g.setColour (isMouseOver() ? Colour::fromRGB (249, 226, 45) : Colours::white.withMultipliedAlpha (0.5));
+        g.setColour (isMouseOver() ? juce::Colour::fromRGB (249, 226, 45) : juce::Colours::white.withMultipliedAlpha (0.5));
         g.fillPath (IEMPath);
     }
 
-    void mouseEnter (const MouseEvent &event) override
+    void mouseEnter (const juce::MouseEvent &event) override
     {
-        ignoreUnused (event);
-        setMouseCursor (MouseCursor (MouseCursor::PointingHandCursor));
+        juce::ignoreUnused (event);
+        setMouseCursor (juce::MouseCursor (juce::MouseCursor::PointingHandCursor));
         repaint();
     }
 
-    void mouseExit (const MouseEvent &event) override
+    void mouseExit (const juce::MouseEvent &event) override
     {
-        ignoreUnused (event);
-        setMouseCursor (MouseCursor (MouseCursor::NormalCursor));
+        juce::ignoreUnused (event);
+        setMouseCursor (juce::MouseCursor (juce::MouseCursor::NormalCursor));
         repaint();
     }
 
-    void mouseUp (const MouseEvent &event) override
+    void mouseUp (const juce::MouseEvent &event) override
     {
-        ignoreUnused (event);
+        juce::ignoreUnused (event);
         if (url.isWellFormed())
             url.launchInDefaultBrowser();
     }
 
 private:
-    Path IEMPath;
-    URL url;
+    juce::Path IEMPath;
+    juce::URL url;
 };
 
-class  Footer :  public Component
+class  Footer :  public juce::Component
 {
 public:
-    Footer() : Component()
+    Footer() : juce::Component()
     {
         addAndMakeVisible(&iemLogo);
     }
 
-    void paint (Graphics& g) override
+    void paint (juce::Graphics& g) override
     {
-        Rectangle<int> bounds = getLocalBounds();
-        g.setColour (Colours::white.withAlpha (0.5f));
-        g.setFont (getLookAndFeel().getTypefaceForFont (Font (12.0f, 0)));
+        juce::Rectangle<int> bounds = getLocalBounds();
+        g.setColour (juce::Colours::white.withAlpha (0.5f));
+        g.setFont (getLookAndFeel().getTypefaceForFont (juce::Font (12.0f, 0)));
         g.setFont (14.0f);
-        String versionString = "v";
+        juce::String versionString = "v";
 
 #if JUCE_DEBUG
         versionString = "DEBUG - v";
 #endif
         versionString.append(JucePlugin_VersionString, 6);
 
-        g.drawText (versionString, 0, 0, bounds.getWidth() - 8, bounds.getHeight() - 2, Justification::bottomRight);
+        g.drawText (versionString, 0, 0, bounds.getWidth() - 8, bounds.getHeight() - 2, juce::Justification::bottomRight);
     }
 
     void resized () override
@@ -637,7 +637,7 @@ private:
 };
 
 #ifdef JUCE_OSC_H_INCLUDED
-class  OSCFooter :  public Component
+class  OSCFooter :  public juce::Component
 {
 public:
     OSCFooter (OSCParameterInterface& oscInterface) : oscStatus (oscInterface)

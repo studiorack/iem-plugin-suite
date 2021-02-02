@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<JUCERPROJECT id="cBXtXS" name="ProbeDecoder" projectType="audioplug" version="0.5.1"
+<JUCERPROJECT id="cBXtXS" name="ProbeDecoder" projectType="audioplug" version="0.5.2"
               bundleIdentifier="at.iem.ProbeDecoder" includeBinaryInAppConfig="1"
               buildVST="1" buildVST3="0" buildAU="0" buildAUv3="0" buildRTAS="0"
               buildAAX="0" pluginName="ProbeDecoder" pluginDesc="Sampling Ambisonic signals at a single direction"
@@ -8,11 +8,12 @@
               pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
               pluginAUExportPrefix="ProbeDecoderAU" aaxIdentifier="at.iem.ProbeDecoder"
-              pluginAAXCategory="2" jucerVersion="5.4.7" companyName="IEM"
-              companyWebsite="iem.at" displaySplashScreen="0" reportAppUsage="0"
-              splashScreenColour="Dark" buildStandalone="1" enableIAA="0" cppLanguageStandard="14"
-              companyCopyright="IEM - Daniel Rudrich" headerPath="../../../resources/"
-              pluginFormats="buildStandalone,buildVST" defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1">
+              pluginAAXCategory="2" companyName="IEM" companyWebsite="iem.at"
+              displaySplashScreen="0" reportAppUsage="0" splashScreenColour="Dark"
+              buildStandalone="1" enableIAA="0" cppLanguageStandard="14" companyCopyright="IEM - Daniel Rudrich"
+              headerPath="../../../resources/" pluginFormats="buildStandalone,buildVST"
+              defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1" jucerFormatVersion="1"
+              projectLineFeed="&#10;" addUsingNamespaceToJuceHeader="0">
   <MAINGROUP id="u5XoJ7" name="ProbeDecoder">
     <GROUP id="{89932513-413A-3563-01B1-9A005CE71550}" name="Standalone">
       <FILE id="yB3yUy" name="IEM_AudioDeviceSelectorComponent.cpp" compile="1"

@@ -29,7 +29,7 @@
 #include "../../resources/lookAndFeel/IEM_LaF.h"
 #include "../../resources/customComponents/TitleBar.h"
 
-//Custom Components
+//Custom juce::Components
 #include "FilterBankVisualizer.h"
 #include "MasterControl.h"
 #include "../../resources/customComponents/RoundButton.h"
@@ -42,24 +42,24 @@
 
 
 using SliderAttachment = ReverseSlider::SliderAttachment ; // all ReverseSliders will make use of the parameters' valueToText() function
-using ComboBoxAttachment = AudioProcessorValueTreeState::ComboBoxAttachment;
-using ButtonAttachment = AudioProcessorValueTreeState::ButtonAttachment;
+using ComboBoxAttachment = juce::AudioProcessorValueTreeState::ComboBoxAttachment;
+using ButtonAttachment = juce::AudioProcessorValueTreeState::ButtonAttachment;
 
 //==============================================================================
 /**
 */
-class MultiBandCompressorAudioProcessorEditor  : public AudioProcessorEditor, private Timer, public Slider::Listener, public Button::Listener
+class MultiBandCompressorAudioProcessorEditor  : public juce::AudioProcessorEditor, private juce::Timer, public juce::Slider::Listener, public juce::Button::Listener
 {
 public:
-    MultiBandCompressorAudioProcessorEditor (MultiBandCompressorAudioProcessor&, AudioProcessorValueTreeState&);
+    MultiBandCompressorAudioProcessorEditor (MultiBandCompressorAudioProcessor&, juce::AudioProcessorValueTreeState&);
     ~MultiBandCompressorAudioProcessorEditor();
 
     //==============================================================================
-    void paint (Graphics&) override;
+    void paint (juce::Graphics&) override;
     void resized() override;
 
-    void sliderValueChanged (Slider *slider) override;
-    void buttonClicked (Button* bypassButton) override;
+    void sliderValueChanged (juce::Slider *slider) override;
+    void buttonClicked (juce::Button* bypassButton) override;
 
     void timerCallback() override;
 
@@ -68,9 +68,9 @@ private:
     // lookAndFeel class with the IEM plug-in suite design
     LaF globalLaF;
 
-    // stored references to the AudioProcessor and ValueTreeState holding all the parameters
+    // stored references to the AudioProcessor and juce::ValueTreeState holding all the parameters
     MultiBandCompressorAudioProcessor& processor;
-    AudioProcessorValueTreeState& valueTreeState;
+    juce::AudioProcessorValueTreeState& valueTreeState;
 
     /* title and footer component
      title component can hold different widgets for in- and output:
@@ -89,36 +89,36 @@ private:
     std::unique_ptr<ComboBoxAttachment> cbOrderAtachement;
 
     FilterBankVisualizer<double> filterBankVisualizer;
-    TooltipWindow tooltips;
+    juce::TooltipWindow tooltips;
 
     // Filter Crossovers
     ReverseSlider slCrossover[numFreqBands-1];
     std::unique_ptr<SliderAttachment> slCrossoverAttachment[numFreqBands-1];
 
-    // Solo and Bypass Buttons
+    // Solo and Bypass juce::Buttons
     RoundButton tbSolo[numFreqBands];
     RoundButton tbBypass[numFreqBands];
-    std::unique_ptr<AudioProcessorValueTreeState::ButtonAttachment> soloAttachment[numFreqBands], bypassAttachment[numFreqBands];
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> soloAttachment[numFreqBands], bypassAttachment[numFreqBands];
 
     // Compressor Parameters
     ReverseSlider slKnee[numFreqBands], slThreshold[numFreqBands], slRatio[numFreqBands], slAttackTime[numFreqBands], slReleaseTime[numFreqBands], slMakeUpGain[numFreqBands];
     std::unique_ptr<SliderAttachment> slKneeAttachment[numFreqBands], slThresholdAttachment[numFreqBands], slRatioAttachment[numFreqBands], slAttackTimeAttachment[numFreqBands], slReleaseTimeAttachment[numFreqBands], slMakeUpGainAttachment[numFreqBands];
 
     // Master parameters
-    GroupComponent gcMasterControls;
+    juce::GroupComponent gcMasterControls;
     MasterControl slMasterThreshold, slMasterMakeUpGain, slMasterKnee, slMasterRatio, slMasterAttackTime, slMasterReleaseTime;
 
     // Compressor Visualization
-    OwnedArray<CompressorVisualizer> compressorVisualizers;
+    juce::OwnedArray<CompressorVisualizer> compressorVisualizers;
 
     // Meters
     LevelMeter GRmeter[numFreqBands], omniInputMeter, omniOutputMeter;
 
-    // Toggle Buttons
-    ToggleButton tbOverallMagnitude;
+    // juce::Toggle juce::Buttons
+    juce::ToggleButton tbOverallMagnitude;
     bool displayOverallMagnitude {false};
 
-    // Labels
+    // juce::Labels
     SimpleLabel lbKnee[numFreqBands+1], lbThreshold[numFreqBands+1], lbMakeUpGain[numFreqBands+1], lbRatio[numFreqBands+1], lbAttack[numFreqBands+1], lbRelease[numFreqBands+1], lbInput, lbOutput;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MultiBandCompressorAudioProcessorEditor)

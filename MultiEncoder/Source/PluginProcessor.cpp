@@ -31,23 +31,24 @@ MultiEncoderAudioProcessor::MultiEncoderAudioProcessor()
                  BusesProperties()
 #if ! JucePlugin_IsMidiEffect
 #if ! JucePlugin_IsSynth
-                 .withInput  ("Input",  AudioChannelSet::discreteChannels(maxNumberOfInputs), true)
+                 .withInput  ("Input",  juce::AudioChannelSet::discreteChannels(maxNumberOfInputs), true)
 #endif
-                 .withOutput ("Output", AudioChannelSet::discreteChannels(64), true)
+                 .withOutput ("Output", juce::AudioChannelSet::discreteChannels(64), true)
 #endif
                  ,
 #endif
-createParameterLayout())
+createParameterLayout()),
+rms (64)
 {
     // global properties
-    PropertiesFile::Options options;
+    juce::PropertiesFile::Options options;
     options.applicationName     = "MultiEncoder";
     options.filenameSuffix      = "settings";
     options.folderName          = "IEM";
     options.osxLibrarySubFolder = "Preferences";
 
-    properties.reset (new PropertiesFile (options));
-    lastDir = File (properties->getValue ("presetFolder"));
+    properties.reset (new juce::PropertiesFile (options));
+    lastDir = juce::File (properties->getValue ("presetFolder"));
 
 
     parameters.addParameterListener("masterAzimuth", this);
@@ -63,19 +64,19 @@ createParameterLayout())
 
     for (int i = 0; i < maxNumberOfInputs; ++i)
     {
-        azimuth[i] = parameters.getRawParameterValue ("azimuth"+String(i));
-        elevation[i] = parameters.getRawParameterValue ("elevation"+String(i));
-        gain[i] = parameters.getRawParameterValue ("gain"+String(i));
-        mute[i] = parameters.getRawParameterValue ("mute"+String(i));
-        solo[i] = parameters.getRawParameterValue ("solo"+String(i));
+        azimuth[i] = parameters.getRawParameterValue ("azimuth" + juce::String (i));
+        elevation[i] = parameters.getRawParameterValue ("elevation" + juce::String (i));
+        gain[i] = parameters.getRawParameterValue ("gain" + juce::String (i));
+        mute[i] = parameters.getRawParameterValue ("mute" + juce::String (i));
+        solo[i] = parameters.getRawParameterValue ("solo" + juce::String (i));
 
         if (*mute[i] >= 0.5f) muteMask.setBit(i);
         if (*solo[i] >= 0.5f) soloMask.setBit(i);
 
-        parameters.addParameterListener("azimuth"+String(i), this);
-        parameters.addParameterListener("elevation"+String(i), this);
-        parameters.addParameterListener("mute"+String(i), this);
-        parameters.addParameterListener("solo"+String(i), this);
+        parameters.addParameterListener ("azimuth" + juce::String (i), this);
+        parameters.addParameterListener ("elevation" + juce::String (i), this);
+        parameters.addParameterListener ("mute" + juce::String (i), this);
+        parameters.addParameterListener ("solo" + juce::String (i), this);
     }
 
     masterAzimuth = parameters.getRawParameterValue("masterAzimuth");
@@ -83,24 +84,27 @@ createParameterLayout())
     masterRoll = parameters.getRawParameterValue("masterRoll");
     lockedToMaster = parameters.getRawParameterValue("locking");
 
-
-
     inputSetting = parameters.getRawParameterValue("inputSetting");
     orderSetting = parameters.getRawParameterValue ("orderSetting");
     useSN3D = parameters.getRawParameterValue ("useSN3D");
+
+    analyzeRMS = parameters.getRawParameterValue ("analyzeRMS");
+    dynamicRange = parameters.getRawParameterValue ("dynamicRange");
     processorUpdatingParams = false;
 
     yprInput = true; //input from ypr
 
     for (int i = 0; i < maxNumberOfInputs; ++i)
     {
-        FloatVectorOperations::clear(SH[i], 64);
+        juce::FloatVectorOperations::clear(SH[i], 64);
         _gain[i] = 0.0f;
         //elemActive[i] = *gain[i] >= -59.9f;
-        elementColours[i] = Colours::cyan;
+        elementColours[i] = juce::Colours::cyan;
     }
 
     updateQuaternions();
+
+    std::fill (rms.begin(), rms.end(), 0.0f);
 }
 
 MultiEncoderAudioProcessor::~MultiEncoderAudioProcessor()
@@ -123,12 +127,12 @@ void MultiEncoderAudioProcessor::setCurrentProgram (int index)
 {
 }
 
-const String MultiEncoderAudioProcessor::getProgramName (int index)
+const juce::String MultiEncoderAudioProcessor::getProgramName (int index)
 {
-    return String();
+    return juce::String();
 }
 
-void MultiEncoderAudioProcessor::changeProgramName (int index, const String& newName)
+void MultiEncoderAudioProcessor::changeProgramName (int index, const juce::String& newName)
 {
 }
 
@@ -136,6 +140,9 @@ void MultiEncoderAudioProcessor::changeProgramName (int index, const String& new
 void MultiEncoderAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     checkInputAndOutput(this, *inputSetting, *orderSetting, true);
+
+    timeConstant = exp (-1.0 / (sampleRate * 0.1 / samplesPerBlock)); // 100ms RMS averaging
+    std::fill (rms.begin(), rms.end(), 0.0f);
 }
 
 void MultiEncoderAudioProcessor::releaseResources()
@@ -144,13 +151,21 @@ void MultiEncoderAudioProcessor::releaseResources()
     // spare memory, etc.
 }
 
-void MultiEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
+void MultiEncoderAudioProcessor::processBlock (juce::AudioSampleBuffer& buffer, juce::MidiBuffer& midiMessages)
 {
+    juce::ScopedNoDenormals noDenormals;
     checkInputAndOutput (this, *inputSetting, *orderSetting);
 
-    const int nChOut = jmin(buffer.getNumChannels(), output.getNumberOfChannels());
-    const int nChIn = jmin(buffer.getNumChannels(), input.getSize());
+    const int nChOut = juce::jmin(buffer.getNumChannels(), output.getNumberOfChannels());
+    const int nChIn = juce::jmin(buffer.getNumChannels(), input.getSize());
     const int ambisonicOrder = output.getOrder();
+
+    if (*analyzeRMS > 0.5f)
+    {
+        const float oneMinusTimeConstant = 1.0f - timeConstant;
+        for (int ch = 0; ch < nChIn; ++ch)
+            rms[ch] = timeConstant * rms[ch] + oneMinusTimeConstant * buffer.getRMSLevel (ch, 0, buffer.getNumSamples());
+    }
 
     for (int i = 0; i < nChIn; ++i)
         bufferCopy.copyFrom (i, 0, buffer.getReadPointer (i), buffer.getNumSamples());
@@ -159,31 +174,31 @@ void MultiEncoderAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBu
 
     for (int i = 0; i < nChIn; ++i)
     {
-        FloatVectorOperations::copy (_SH[i], SH[i], nChOut);
+        juce::FloatVectorOperations::copy (_SH[i], SH[i], nChOut);
 
         float currGain = 0.0f;
 
         if (! soloMask.isZero())
         {
             if (soloMask[i])
-                currGain = Decibels::decibelsToGain (gain[i]->load());
+                currGain = juce::Decibels::decibelsToGain (gain[i]->load());
         }
         else
         {
             if (! muteMask[i])
-                currGain = Decibels::decibelsToGain (gain[i]->load());
+                currGain = juce::Decibels::decibelsToGain (gain[i]->load());
         }
 
 
-        const float azimuthInRad = degreesToRadians (azimuth[i]->load());
-        const float elevationInRad = degreesToRadians (elevation[i]->load());
+        const float azimuthInRad = juce::degreesToRadians (azimuth[i]->load());
+        const float elevationInRad = juce::degreesToRadians (elevation[i]->load());
 
-        const Vector3D<float> pos {Conversions<float>::sphericalToCartesian (azimuthInRad, elevationInRad)};
+        const juce::Vector3D<float> pos {Conversions<float>::sphericalToCartesian (azimuthInRad, elevationInRad)};
 
         SHEval (ambisonicOrder, pos.x, pos.y, pos.z, SH[i]);
 
         if (*useSN3D >= 0.5f)
-            FloatVectorOperations::multiply (SH[i], SH[i], n3d2sn3d, nChOut);
+            juce::FloatVectorOperations::multiply (SH[i], SH[i], n3d2sn3d, nChOut);
 
         const float* inpReadPtr = bufferCopy.getReadPointer(i);
         for (int ch = 0; ch < nChOut; ++ch)
@@ -199,13 +214,14 @@ bool MultiEncoderAudioProcessor::hasEditor() const
     return true; // (change this to false if you choose to not supply an editor)
 }
 
-AudioProcessorEditor* MultiEncoderAudioProcessor::createEditor()
+juce::AudioProcessorEditor* MultiEncoderAudioProcessor::createEditor()
 {
     return new MultiEncoderAudioProcessorEditor (*this, parameters);
 }
 
-void MultiEncoderAudioProcessor::parameterChanged (const String &parameterID, float newValue)
+void MultiEncoderAudioProcessor::parameterChanged (const juce::String &parameterID, float newValue)
 {
+    DBG (parameterID << ": " << newValue);
     if (parameterID == "inputSetting" || parameterID == "orderSetting")
     {
         userChangedIOSettings = true;
@@ -233,14 +249,14 @@ void MultiEncoderAudioProcessor::parameterChanged (const String &parameterID, fl
             {
                 iem::Quaternion<float> masterQuat;
                 float masterypr[3];
-                masterypr[0] = degreesToRadians (masterAzimuth->load());
-                masterypr[1] = degreesToRadians (masterElevation->load());
-                masterypr[2] = - degreesToRadians (masterRoll->load());
+                masterypr[0] = juce::degreesToRadians (masterAzimuth->load());
+                masterypr[1] = juce::degreesToRadians (masterElevation->load());
+                masterypr[2] = - juce::degreesToRadians (masterRoll->load());
                 masterQuat.fromYPR(masterypr);
                 masterQuat.conjugate();
 
-                ypr[0] = degreesToRadians (azimuth[i]->load());
-                ypr[1] = degreesToRadians (elevation[i]->load());
+                ypr[0] = juce::degreesToRadians (azimuth[i]->load());
+                ypr[1] = juce::degreesToRadians (elevation[i]->load());
                 quats[i].fromYPR(ypr);
                 quats[i] = masterQuat*quats[i];
             }
@@ -251,12 +267,15 @@ void MultiEncoderAudioProcessor::parameterChanged (const String &parameterID, fl
     }
     else if (locked && ((parameterID == "masterAzimuth") ||  (parameterID == "masterElevation") ||  (parameterID == "masterRoll")))
     {
+        if (dontTriggerMasterUpdate)
+            return;
+
         moving = true;
         iem::Quaternion<float> masterQuat;
         float ypr[3];
-        ypr[0] = degreesToRadians (masterAzimuth->load());
-        ypr[1] = degreesToRadians (masterElevation->load());
-        ypr[2] = - degreesToRadians (masterRoll->load());
+        ypr[0] = juce::degreesToRadians (masterAzimuth->load());
+        ypr[1] = juce::degreesToRadians (masterElevation->load());
+        ypr[2] = - juce::degreesToRadians (masterRoll->load());
         masterQuat.fromYPR(ypr);
 
         const int nChIn = input.getSize();
@@ -264,8 +283,8 @@ void MultiEncoderAudioProcessor::parameterChanged (const String &parameterID, fl
         {
             iem::Quaternion<float> temp = masterQuat * quats[i];
             temp.toYPR(ypr);
-            parameters.getParameter ("azimuth" + String (i))->setValueNotifyingHost (parameters.getParameterRange ("azimuth" + String (i)).convertTo0to1 (radiansToDegrees (ypr[0])));
-            parameters.getParameter ("elevation" + String (i))->setValueNotifyingHost (parameters.getParameterRange ("elevation" + String (i)).convertTo0to1 (radiansToDegrees(ypr[1])));
+            parameters.getParameter ("azimuth" + juce::String (i))->setValueNotifyingHost (parameters.getParameterRange ("azimuth" + juce::String (i)).convertTo0to1 (juce::radiansToDegrees (ypr[0])));
+            parameters.getParameter ("elevation" + juce::String (i))->setValueNotifyingHost (parameters.getParameterRange ("elevation" + juce::String (i)).convertTo0to1 (juce::radiansToDegrees(ypr[1])));
         }
         moving = false;
         updateSphere = true;
@@ -279,14 +298,14 @@ void MultiEncoderAudioProcessor::parameterChanged (const String &parameterID, fl
         {
             iem::Quaternion<float> masterQuat;
             float masterypr[3];
-            masterypr[0] = degreesToRadians (masterAzimuth->load());
-            masterypr[1] = degreesToRadians (masterElevation->load());
-            masterypr[2] = - degreesToRadians (masterRoll->load());
+            masterypr[0] = juce::degreesToRadians (masterAzimuth->load());
+            masterypr[1] = juce::degreesToRadians (masterElevation->load());
+            masterypr[2] = - juce::degreesToRadians (masterRoll->load());
             masterQuat.fromYPR(masterypr);
             masterQuat.conjugate();
 
-            ypr[0] = degreesToRadians (azimuth[i]->load());
-            ypr[1] = degreesToRadians (elevation[i]->load());
+            ypr[0] = juce::degreesToRadians (azimuth[i]->load());
+            ypr[1] = juce::degreesToRadians (elevation[i]->load());
             quats[i].fromYPR(ypr);
             quats[i] = masterQuat*quats[i];
         }
@@ -300,36 +319,39 @@ void MultiEncoderAudioProcessor::parameterChanged (const String &parameterID, fl
 
 
 //==============================================================================
-void MultiEncoderAudioProcessor::getStateInformation (MemoryBlock& destData)
+void MultiEncoderAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
     auto state = parameters.copyState();
     for (int i = 0; i < maxNumberOfInputs; ++i)
-        state.setProperty ("colour" + String(i), elementColours[i].toString(), nullptr);
+        state.setProperty ("colour" + juce::String(i), elementColours[i].toString(), nullptr);
 
     auto oscConfig = state.getOrCreateChildWithName ("OSCConfig", nullptr);
     oscConfig.copyPropertiesFrom (oscParameterInterface.getConfig(), nullptr);
 
-    std::unique_ptr<XmlElement> xml (state.createXml());
+    std::unique_ptr<juce::XmlElement> xml (state.createXml());
     copyXmlToBinary (*xml, destData);
 }
 
 void MultiEncoderAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
-    std::unique_ptr<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
+    std::unique_ptr<juce::XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
     if (xmlState != nullptr)
         if (xmlState->hasTagName (parameters.state.getType()))
         {
-            parameters.state = ValueTree::fromXml (*xmlState);
+            dontTriggerMasterUpdate = true;
+            parameters.state = juce::ValueTree::fromXml (*xmlState);
+            dontTriggerMasterUpdate = false;
+
             updateQuaternions();
             for (int i = 0; i < maxNumberOfInputs; ++i)
-                if (parameters.state.getProperty("colour" + String(i)).toString() != "0")
-                    elementColours[i] = Colour::fromString(parameters.state.getProperty("colour" + String(i)).toString());
-                else elementColours[i] = Colours::cyan;
+                if (parameters.state.getProperty("colour" + juce::String(i)).toString() != "0")
+                    elementColours[i] = juce::Colour::fromString(parameters.state.getProperty("colour" + juce::String(i)).toString());
+                else elementColours[i] = juce::Colours::cyan;
             updateColours = true;
 
             if (parameters.state.hasProperty ("OSCPort")) // legacy
             {
-                oscParameterInterface.getOSCReceiver().connect (parameters.state.getProperty ("OSCPort", var (-1)));
+                oscParameterInterface.getOSCReceiver().connect (parameters.state.getProperty ("OSCPort", juce::var (-1)));
                 parameters.state.removeProperty ("OSCPort", nullptr);
             }
 
@@ -341,7 +363,7 @@ void MultiEncoderAudioProcessor::setStateInformation (const void* data, int size
 
 //==============================================================================
 // This creates new instances of the plugin..
-AudioProcessor* JUCE_CALLTYPE createPluginFilter()
+juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new MultiEncoderAudioProcessor();
 }
@@ -358,8 +380,8 @@ void MultiEncoderAudioProcessor::updateBuffers() {
     // disable solo and mute for deleted input channels
     for (int i = nChIn; i < _nChIn; ++i)
     {
-        parameters.getParameter ("mute" + String(i))->setValueNotifyingHost (0.0f);
-        parameters.getParameter ("solo" + String(i))->setValueNotifyingHost (0.0f);
+        parameters.getParameter ("mute" + juce::String(i))->setValueNotifyingHost (0.0f);
+        parameters.getParameter ("solo" + juce::String(i))->setValueNotifyingHost (0.0f);
     }
 };
 
@@ -371,16 +393,16 @@ void MultiEncoderAudioProcessor::updateQuaternions()
 
     iem::Quaternion<float> masterQuat;
     float masterypr[3];
-    masterypr[0] = degreesToRadians (masterAzimuth->load());
-    masterypr[1] = degreesToRadians (masterElevation->load());
-    masterypr[2] = - degreesToRadians (masterRoll->load());
+    masterypr[0] = juce::degreesToRadians (masterAzimuth->load());
+    masterypr[1] = juce::degreesToRadians (masterElevation->load());
+    masterypr[2] = - juce::degreesToRadians (masterRoll->load());
     masterQuat.fromYPR(masterypr);
     masterQuat.conjugate();
 
     for (int i = 0; i < maxNumberOfInputs; ++i)
     {
-        ypr[0] = degreesToRadians (azimuth[i]->load());
-        ypr[1] = degreesToRadians (elevation[i]->load());
+        ypr[0] = juce::degreesToRadians (azimuth[i]->load());
+        ypr[1] = juce::degreesToRadians (elevation[i]->load());
         quats[i].fromYPR(ypr);
         quats[i] = masterQuat*quats[i];
     }
@@ -388,17 +410,17 @@ void MultiEncoderAudioProcessor::updateQuaternions()
 
 
 //==============================================================================
-std::vector<std::unique_ptr<RangedAudioParameter>> MultiEncoderAudioProcessor::createParameterLayout()
+std::vector<std::unique_ptr<juce::RangedAudioParameter>> MultiEncoderAudioProcessor::createParameterLayout()
 {
     // add your audio parameters here
-    std::vector<std::unique_ptr<RangedAudioParameter>> params;
+    std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay("inputSetting", "Number of input channels ", "",
-                                    NormalisableRange<float> (0.0f, maxNumberOfInputs, 1.0f), startNnumberOfInputs,
-                                    [](float value) {return String(value);}, nullptr));
+                                    juce::NormalisableRange<float> (0.0f, maxNumberOfInputs, 1.0f), startNnumberOfInputs,
+                                    [](float value) {return juce::String(value);}, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("orderSetting", "Ambisonics Order", "",
-                                     NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
+                                     juce::NormalisableRange<float> (0.0f, 8.0f, 1.0f), 0.0f,
                                      [](float value) {
                                          if (value >= 0.5f && value < 1.5f) return "0th";
                                          else if (value >= 1.5f && value < 2.5f) return "1st";
@@ -412,51 +434,65 @@ std::vector<std::unique_ptr<RangedAudioParameter>> MultiEncoderAudioProcessor::c
                                      nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay ("useSN3D", "Normalization", "",
-                                     NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
+                                     juce::NormalisableRange<float> (0.0f, 1.0f, 1.0f), 1.0f,
                                      [](float value)
                                      {
                                          if (value >= 0.5f ) return "SN3D";
                                          else return "N3D";
                                      }, nullptr));
 
-    params.push_back (OSCParameterInterface::createParameterTheOldWay("masterAzimuth", "Master azimuth angle", CharPointer_UTF8 (R"(°)"),
-                                    NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0f,
-                                    [](float value) {return String(value, 2);}, nullptr));
-    params.push_back (OSCParameterInterface::createParameterTheOldWay("masterElevation", "Master elevation angle", CharPointer_UTF8 (R"(°)"),
-                                    NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0f,
-                                    [](float value) {return String(value, 2);}, nullptr));
+    params.push_back (OSCParameterInterface::createParameterTheOldWay("masterAzimuth", "Master azimuth angle", juce::CharPointer_UTF8 (R"(°)"),
+                                    juce::NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0f,
+                                    [](float value) {return juce::String(value, 2);}, nullptr));
+    params.push_back (OSCParameterInterface::createParameterTheOldWay("masterElevation", "Master elevation angle", juce::CharPointer_UTF8 (R"(°)"),
+                                    juce::NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0f,
+                                    [](float value) {return juce::String(value, 2);}, nullptr));
 
-    params.push_back (OSCParameterInterface::createParameterTheOldWay("masterRoll", "Master roll angle", CharPointer_UTF8 (R"(°)"),
-                                    NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0f,
-                                    [](float value) {return String(value, 2);}, nullptr));
+    params.push_back (OSCParameterInterface::createParameterTheOldWay("masterRoll", "Master roll angle", juce::CharPointer_UTF8 (R"(°)"),
+                                    juce::NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0f,
+                                    [](float value) {return juce::String(value, 2);}, nullptr));
 
     params.push_back (OSCParameterInterface::createParameterTheOldWay("lockedToMaster", "Lock Directions relative to Master", "",
-                                    NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
+                                    juce::NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
                                     [](float value) {return (value >= 0.5f) ? "locked" : "not locked";}, nullptr));
 
     for (int i = 0; i < maxNumberOfInputs; ++i)
     {
-        params.push_back (OSCParameterInterface::createParameterTheOldWay("azimuth" + String(i), "Azimuth angle " + String(i + 1), CharPointer_UTF8 (R"(°)"),
-                                        NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
-                                        [](float value) {return String(value, 2);}, nullptr));
+        params.push_back (OSCParameterInterface::createParameterTheOldWay("azimuth" + juce::String(i), "Azimuth angle " + juce::String(i + 1), juce::CharPointer_UTF8 (R"(°)"),
+                                        juce::NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
+                                        [](float value) {return juce::String(value, 2);}, nullptr));
 
-        params.push_back (OSCParameterInterface::createParameterTheOldWay("elevation" + String(i), "Elevation angle " + String(i + 1), CharPointer_UTF8 (R"(°)"),
-                                        NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
-                                        [](float value) {return String(value, 2);}, nullptr));
+        params.push_back (OSCParameterInterface::createParameterTheOldWay("elevation" + juce::String(i), "Elevation angle " + juce::String(i + 1), juce::CharPointer_UTF8 (R"(°)"),
+                                        juce::NormalisableRange<float> (-180.0f, 180.0f, 0.01f), 0.0,
+                                        [](float value) {return juce::String(value, 2);}, nullptr));
 
-        params.push_back (OSCParameterInterface::createParameterTheOldWay("gain" + String(i), "Gain " + String(i + 1), "dB",
-                                        NormalisableRange<float> (-60.0f, 10.0f, 0.1f), 0.0f,
-                                        [](float value) {return (value >= -59.9f) ? String(value, 1) : "-inf";},
+        params.push_back (OSCParameterInterface::createParameterTheOldWay("gain" + juce::String(i), "Gain " + juce::String(i + 1), "dB",
+                                        juce::NormalisableRange<float> (-60.0f, 10.0f, 0.1f), 0.0f,
+                                        [](float value) {return (value >= -59.9f) ? juce::String(value, 1) : "-inf";},
                                         nullptr));
 
-        params.push_back (OSCParameterInterface::createParameterTheOldWay("mute" + String(i), "Mute input " + String(i + 1), "",
-                                        NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
+        params.push_back (OSCParameterInterface::createParameterTheOldWay("mute" + juce::String(i), "Mute input " + juce::String(i + 1), "",
+                                        juce::NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
                                         [](float value) {return (value >= 0.5f) ? "muted" : "not muted";}, nullptr));
 
-        params.push_back (OSCParameterInterface::createParameterTheOldWay("solo" + String(i), "Solo input " + String(i + 1), "",
-                                        NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
+        params.push_back (OSCParameterInterface::createParameterTheOldWay("solo" + juce::String(i), "Solo input " + juce::String(i + 1), "",
+                                        juce::NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
                                         [](float value) {return (value >= 0.5f) ? "soloed" : "not soloed";}, nullptr));
     }
+
+    params.push_back (OSCParameterInterface::createParameterTheOldWay("analyzeRMS", "Analzes RMS", "",
+                                                                      juce::NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
+                                                                      [](float value) {return (value >= 0.5f) ? "on" : "off";}, nullptr));
+
+
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("peakLevel", "Peak level", "dB",
+        juce::NormalisableRange<float> (-50.0f, 10.0f, 0.1f), 0.0,
+        [](float value) {return juce::String (value, 1);}, nullptr));
+
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("dynamicRange", "Dynamic juce::Range", "dB",
+                                                                       juce::NormalisableRange<float> (10.0f, 60.0f, 1.f), 35.0,
+                                                                       [](float value) {return juce::String (value, 0);}, nullptr));
+
 
 
     return params;
@@ -464,11 +500,11 @@ std::vector<std::unique_ptr<RangedAudioParameter>> MultiEncoderAudioProcessor::c
 
 //==============================================================================
 
-Result MultiEncoderAudioProcessor::loadConfiguration (const File& configFile)
+juce::Result MultiEncoderAudioProcessor::loadConfiguration (const juce::File& configFile)
 {
-    ValueTree newSources ("NewSources");
+    juce::ValueTree newSources ("NewSources");
 
-    Result result = ConfigurationHelper::parseFileForLoudspeakerLayout (configFile, newSources, nullptr);
+    juce::Result result = ConfigurationHelper::parseFileForLoudspeakerLayout (configFile, newSources, nullptr);
 
     if (result.wasOk())
     {
@@ -488,7 +524,7 @@ Result MultiEncoderAudioProcessor::loadConfiguration (const File& configFile)
         parameters.getParameterAsValue ("inputSetting").setValue (nSrc);
 
         for (int s = 0; s < nSrc; ++s)
-            parameters.getParameterAsValue ("mute" + String (s)).setValue (1);
+            parameters.getParameterAsValue ("mute" + juce::String (s)).setValue (1);
 
         for (int e = 0; e < nElements; ++e)
         {
@@ -500,12 +536,12 @@ Result MultiEncoderAudioProcessor::loadConfiguration (const File& configFile)
                 continue;
 
 
-            parameters.getParameterAsValue ("mute" + String (ch)).setValue (0);
+            parameters.getParameterAsValue ("mute" + juce::String (ch)).setValue (0);
 
             auto azi = src.getProperty ("Azimuth", 0.0f);
-            parameters.getParameterAsValue ("azimuth" + String (ch)).setValue (azi);
+            parameters.getParameterAsValue ("azimuth" + juce::String (ch)).setValue (azi);
             auto ele = src.getProperty ("Elevation", 0.0f);
-            parameters.getParameterAsValue ("elevation" + String (ch)).setValue (ele);
+            parameters.getParameterAsValue ("elevation" + juce::String (ch)).setValue (ele);
         }
     }
 
@@ -513,9 +549,9 @@ Result MultiEncoderAudioProcessor::loadConfiguration (const File& configFile)
 }
 
 
-void MultiEncoderAudioProcessor::setLastDir (File newLastDir)
+void MultiEncoderAudioProcessor::setLastDir (juce::File newLastDir)
 {
     lastDir = newLastDir;
-    const var v (lastDir.getFullPathName());
+    const juce::var v (lastDir.getFullPathName());
     properties->setValue ("presetFolder", v);
 }

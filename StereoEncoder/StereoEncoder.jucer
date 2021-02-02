@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<JUCERPROJECT id="cBXtXS" name="StereoEncoder" projectType="audioplug" version="1.4.1"
+<JUCERPROJECT id="cBXtXS" name="StereoEncoder" projectType="audioplug" version="1.4.2"
               bundleIdentifier="at.iem.StereoEncoder" includeBinaryInAppConfig="1"
               buildVST="1" buildVST3="0" buildAU="0" buildAUv3="0" buildRTAS="0"
               buildAAX="0" pluginName="StereoEncoder" pluginDesc="StereoEncoder"
@@ -8,11 +8,12 @@
               pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
               pluginAUExportPrefix="StereoEncoderAU" aaxIdentifier="at.iem.StereoEncoder"
-              pluginAAXCategory="2" jucerVersion="5.4.7" companyName="IEM"
-              companyWebsite="iem.at" displaySplashScreen="0" reportAppUsage="0"
-              splashScreenColour="Dark" buildStandalone="1" enableIAA="0" cppLanguageStandard="14"
-              companyCopyright="IEM - Daniel Rudrich" headerPath="../../../resources/"
-              pluginFormats="buildStandalone,buildVST" defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1">
+              pluginAAXCategory="2" companyName="IEM" companyWebsite="iem.at"
+              displaySplashScreen="0" reportAppUsage="0" splashScreenColour="Dark"
+              buildStandalone="1" enableIAA="0" cppLanguageStandard="14" companyCopyright="IEM - Daniel Rudrich"
+              headerPath="../../../resources/" pluginFormats="buildStandalone,buildVST"
+              defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1" projectLineFeed="&#10;"
+              addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1">
   <MAINGROUP id="u5XoJ7" name="StereoEncoder">
     <GROUP id="{C16396AC-F8D0-CC16-B74B-D4F46EC60D1D}" name="Standalone">
       <FILE id="l6uY0E" name="IEM_JackAudio.h" compile="0" resource="0" file="../resources/Standalone/IEM_JackAudio.h"/>

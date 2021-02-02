@@ -54,10 +54,10 @@ public:
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;
 
-    void processBlock (AudioSampleBuffer&, MidiBuffer&) override;
+    void processBlock (juce::AudioSampleBuffer&, juce::MidiBuffer&) override;
 
     //==============================================================================
-    AudioProcessorEditor* createEditor() override;
+    juce::AudioProcessorEditor* createEditor() override;
     bool hasEditor() const override;
 
 
@@ -65,20 +65,20 @@ public:
     int getNumPrograms() override;
     int getCurrentProgram() override;
     void setCurrentProgram (int index) override;
-    const String getProgramName (int index) override;
-    void changeProgramName (int index, const String& newName) override;
+    const juce::String getProgramName (int index) override;
+    void changeProgramName (int index, const juce::String& newName) override;
 
     //==============================================================================
-    void getStateInformation (MemoryBlock& destData) override;
+    void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
     //==============================================================================
-    void parameterChanged (const String &parameterID, float newValue) override;
+    void parameterChanged (const juce::String &parameterID, float newValue) override;
     void updateBuffers() override; // use this to implement a buffer update method
 
 
     //======= Parameters ===========================================================
-    std::vector<std::unique_ptr<RangedAudioParameter>> createParameterLayout();
+    std::vector<std::unique_ptr<juce::RangedAudioParameter>> createParameterLayout();
     //==============================================================================
 
     void updateFilterCoefficients (double sampleRate);
@@ -88,7 +88,7 @@ public:
     void updateGuiCoefficients();
 
     // FV repaint flag
-    Atomic<bool> repaintFV = true;
+    juce::Atomic<bool> repaintFV = true;
 
 private:
 
@@ -105,11 +105,11 @@ private:
     void createLinkwitzRileyFilter (const bool isUpperBand);
     void createFilterCoefficients (const int filterIndex, const double sampleRate);
 
-    inline void clear (AudioBlock<IIRfloat>& ab);
+    inline void clear (juce::dsp::AudioBlock<IIRfloat>& ab);
 
-    inline dsp::IIR::Coefficients<float>::Ptr createFilterCoefficients (const RegularFilterType type, const double sampleRate, const float frequency, const float Q, const float gain);
+    inline juce::dsp::IIR::Coefficients<float>::Ptr createFilterCoefficients (const RegularFilterType type, const double sampleRate, const float frequency, const float Q, const float gain);
 
-    inline dsp::IIR::Coefficients<double>::Ptr createFilterCoefficientsForGui (const RegularFilterType type, const double sampleRate, const float frequency, const float Q, const float gain);
+    inline juce::dsp::IIR::Coefficients<double>::Ptr createFilterCoefficientsForGui (const RegularFilterType type, const double sampleRate, const float frequency, const float Q, const float gain);
 
     // filter dummy for GUI
     IIR::Coefficients<double>::Ptr guiCoefficients[numFilterBands];
@@ -121,9 +121,9 @@ private:
     IIR::Coefficients<float>::Ptr additionalTempCoefficients[2];
 
     // data for interleaving audio
-    HeapBlock<char> interleavedBlockData[16], zeroData; //todo: dynamically?
-    OwnedArray<AudioBlock<IIRfloat>> interleavedData;
-    AudioBlock<float> zero;
+    juce::HeapBlock<char> interleavedBlockData[16], zeroData; //todo: dynamically?
+    juce::OwnedArray<juce::dsp::AudioBlock<IIRfloat>> interleavedData;
+    juce::dsp::AudioBlock<float> zero;
 
 
     // list of used audio parameters
@@ -135,10 +135,10 @@ private:
     std::atomic<float>* filterGain[numFilterBands];
 
     // filters for processing
-    OwnedArray<IIR::Filter<IIRfloat>> filterArrays[numFilterBands];
-    OwnedArray<IIR::Filter<IIRfloat>> additionalFilterArrays[2];
+    juce::OwnedArray<IIR::Filter<IIRfloat>> filterArrays[numFilterBands];
+    juce::OwnedArray<IIR::Filter<IIRfloat>> additionalFilterArrays[2];
 
-    Atomic<bool> userHasChangedFilterSettings = true;
+    juce::Atomic<bool> userHasChangedFilterSettings = true;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MultiEQAudioProcessor)

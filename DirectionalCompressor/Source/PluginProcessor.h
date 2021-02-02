@@ -26,7 +26,6 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "../../resources/efficientSHvanilla.h"
 #include "../../resources/tDesignN7.h"
-#include <Eigen/Dense>
 #include "../../resources/ambisonicTools.h"
 #include "../../resources/AudioProcessorBase.h"
 #include "../../resources/Compressor.h"
@@ -50,10 +49,10 @@ public:
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;
 
-    void processBlock (AudioSampleBuffer&, MidiBuffer&) override;
+    void processBlock (juce::AudioSampleBuffer&, juce::MidiBuffer&) override;
 
     //==============================================================================
-    AudioProcessorEditor* createEditor() override;
+    juce::AudioProcessorEditor* createEditor() override;
     bool hasEditor() const override;
 
 
@@ -61,18 +60,18 @@ public:
     int getNumPrograms() override;
     int getCurrentProgram() override;
     void setCurrentProgram (int index) override;
-    const String getProgramName (int index) override;
-    void changeProgramName (int index, const String& newName) override;
+    const juce::String getProgramName (int index) override;
+    void changeProgramName (int index, const juce::String& newName) override;
 
     //==============================================================================
-    void getStateInformation (MemoryBlock& destData) override;
+    void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
     //======= Parameters ===========================================================
-    std::vector<std::unique_ptr<RangedAudioParameter>> createParameterLayout();
+    std::vector<std::unique_ptr<juce::RangedAudioParameter>> createParameterLayout();
     //==============================================================================
 
-    void parameterChanged (const String &parameterID, float newValue) override;
+    void parameterChanged (const juce::String &parameterID, float newValue) override;
 
     float c1MaxRMS;
     float c1MaxGR;
@@ -80,7 +79,7 @@ public:
     float c2MaxGR;
 
     void calcParams();
-    Atomic<bool> updatedPositionData;
+    juce::Atomic<bool> updatedPositionData;
 
 
 private:
@@ -89,31 +88,27 @@ private:
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DirectionalCompressorAudioProcessor)
 
-    AudioBuffer<float> omniW;
-    AudioBuffer<float> maskBuffer;
+    juce::AudioBuffer<float> omniW;
+    juce::AudioBuffer<float> maskBuffer;
 
-    Eigen::Matrix<float,64,tDesignN> Y;
-    Eigen::Matrix<float,tDesignN,64> YH;
-
-    Eigen::DiagonalMatrix<float, tDesignN> W;
-    Eigen::Matrix<float,tDesignN,64> tempMat;
-    Eigen::Matrix<float,64,64> P1;
+    juce::dsp::Matrix<float> Y;
+    juce::dsp::Matrix<float> YH;
+    juce::dsp::Matrix<float> tempMat;
+    juce::dsp::Matrix<float> P1;
 
     float dist[tDesignN];
 
     const float *drivingPointers[3];
 
-    Array<float> c1Gains;
-    Array<float> c2Gains;
+    juce::Array<float> c1Gains;
+    juce::Array<float> c2Gains;
 
     float c1GR;
     float c2GR;
 
-    float sumMaskWeights;
+    std::atomic<bool> paramChanged { true };
 
-    bool paramChanged = true;
-
-    Compressor compressor1, compressor2;
+    iem::Compressor compressor1, compressor2;
     // == PARAMETERS ==
     // settings and mask
     std::atomic<float>* orderSetting;

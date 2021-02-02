@@ -34,14 +34,14 @@
 
 #define ProcessorClass SimpleDecoderAudioProcessor
 
-using namespace dsp;
+using namespace juce::dsp;
 //==============================================================================
 class SimpleDecoderAudioProcessor  :   public AudioProcessorBase<IOTypes::Ambisonics<>, IOTypes::AudioChannels<>>
 {
 public:
     constexpr static int numberOfInputChannels = 64;
     constexpr static int numberOfOutputChannels = 64;
-    static const StringArray weightsStrings;
+    static const juce::StringArray weightsStrings;
 
     //==============================================================================
     SimpleDecoderAudioProcessor();
@@ -51,42 +51,42 @@ public:
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;
 
-    void processBlock (AudioSampleBuffer&, MidiBuffer&) override;
+    void processBlock (juce::AudioSampleBuffer&, juce::MidiBuffer&) override;
 
     //==============================================================================
-    AudioProcessorEditor* createEditor() override;
+    juce::AudioProcessorEditor* createEditor() override;
     bool hasEditor() const override;
 
     //==============================================================================
     int getNumPrograms() override;
     int getCurrentProgram() override;
     void setCurrentProgram (int index) override;
-    const String getProgramName (int index) override;
-    void changeProgramName (int index, const String& newName) override;
+    const juce::String getProgramName (int index) override;
+    void changeProgramName (int index, const juce::String& newName) override;
 
     //==============================================================================
-    void getStateInformation (MemoryBlock& destData) override;
+    void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
     //==============================================================================
-    void parameterChanged (const String &parameterID, float newValue) override;
+    void parameterChanged (const juce::String &parameterID, float newValue) override;
     void updateBuffers() override; // use this to implement a buffer update method
 
 
     //======= Parameters ===========================================================
-    std::vector<std::unique_ptr<RangedAudioParameter>> createParameterLayout();
+    std::vector<std::unique_ptr<juce::RangedAudioParameter>> createParameterLayout();
 
     //======= OSC ==================================================================
-    inline const bool processNotYetConsumedOSCMessage (const OSCMessage &message) override;
+    inline const bool processNotYetConsumedOSCMessage (const juce::OSCMessage &message) override;
 
     //==============================================================================
-    File getLastDir() {return lastDir;}
-    void setLastDir(File newLastDir);
-    void loadConfiguration(const File& presetFile);
+    juce::File getLastDir() {return lastDir;}
+    void setLastDir(juce::File newLastDir);
+    void loadConfiguration(const juce::File& presetFile);
 
-    Atomic<bool> updateDecoderInfo = true;
-    Atomic<bool> messageChanged {true};
-    String getMessageForEditor() {return messageForEditor;}
+    juce::Atomic<bool> updateDecoderInfo = true;
+    juce::Atomic<bool> messageChanged {true};
+    juce::String getMessageForEditor() {return messageForEditor;}
 
     ReferenceCountedDecoder::Ptr getCurrentDecoderConfig()
     {
@@ -94,17 +94,17 @@ public:
     }
 
     IIR::Coefficients<double>::Ptr cascadedHighPassCoeffs, cascadedLowPassCoeffs;
-    Atomic<bool> guiUpdateLowPassCoefficients = true;
-    Atomic<bool> guiUpdateHighPassCoefficients = true;
-    Atomic<bool> guiUpdateLowPassGain = true;
-    Atomic<bool> guiUpdateSampleRate = true;
+    juce::Atomic<bool> guiUpdateLowPassCoefficients = true;
+    juce::Atomic<bool> guiUpdateHighPassCoefficients = true;
+    juce::Atomic<bool> guiUpdateLowPassGain = true;
+    juce::Atomic<bool> guiUpdateSampleRate = true;
 
 private:
     //==============================================================================
     void updateLowPassCoefficients (double sampleRate, float frequency);
     void updateHighPassCoefficients (double sampleRate, float frequency);
 
-    void loadConfigFromString (String string);
+    void loadConfigFromString (juce::String string);
 
     // list of used audio parameters
     std::atomic<float>* inputOrderSetting;
@@ -121,13 +121,13 @@ private:
 
     float omniGain = 0.0f;
 
-    File lastDir;
+    juce::File lastDir;
 
-    String lastConfigString;
+    juce::String lastConfigString;
 
-    std::unique_ptr<PropertiesFile> properties;
+    std::unique_ptr<juce::PropertiesFile> properties;
 
-    AudioBuffer<float> swBuffer;
+    juce::AudioBuffer<float> swBuffer;
 
 
     // processors
@@ -139,14 +139,14 @@ private:
     ProcessorDuplicator<IIR::Filter<float>, IIR::Coefficients<float>> highPass1;
     ProcessorDuplicator<IIR::Filter<float>, IIR::Coefficients<float>> highPass2;
 
-    dsp::Gain<float> masterGain;
+    juce::dsp::Gain<float> masterGain;
 
-    ProcessSpec highPassSpecs {48000, 0, 0};
+    juce::dsp::ProcessSpec highPassSpecs {48000, 0, 0};
 
     AmbisonicDecoder decoder;
 
     ReferenceCountedDecoder::Ptr decoderConfig {nullptr};
-    String messageForEditor {""};
+    juce::String messageForEditor {""};
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SimpleDecoderAudioProcessor)
 };

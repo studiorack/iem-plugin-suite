@@ -25,11 +25,11 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 
 
-// This class is copied from AudioProcessorValueTreeState.cpp to make it accessible.
-struct AttachedControlBase  : public AudioProcessorValueTreeState::Listener,
-public AsyncUpdater
+// This class is copied from juce::AudioProcessorValueTreeState.cpp to make it accessible.
+struct AttachedControlBase  : public juce::AudioProcessorValueTreeState::Listener,
+public juce::AsyncUpdater
 {
-    AttachedControlBase (AudioProcessorValueTreeState& s, const String& p)
+    AttachedControlBase (juce::AudioProcessorValueTreeState& s, const juce::String& p)
     : state (s), paramID (p), lastValue (0)
     {
         state.addParameterListener (paramID, this);
@@ -42,7 +42,7 @@ public AsyncUpdater
 
     void setNewUnnormalisedValue (float newUnnormalisedValue)
     {
-        if (AudioProcessorParameter* p = state.getParameter (paramID))
+        if (juce::AudioProcessorParameter* p = state.getParameter (paramID))
         {
             const float newValue = state.getParameterRange (paramID)
             .convertTo0to1 (newUnnormalisedValue);
@@ -54,7 +54,7 @@ public AsyncUpdater
 
     void setNewNormalisedValue (float newNormalisedValue)
     {
-        if (AudioProcessorParameter* p = state.getParameter (paramID))
+        if (juce::AudioProcessorParameter* p = state.getParameter (paramID))
         {
             if (p->getValue() != newNormalisedValue)
             p->setValueNotifyingHost (newNormalisedValue);
@@ -67,11 +67,11 @@ public AsyncUpdater
             parameterChanged (paramID, *v);
     }
 
-    void parameterChanged (const String&, float newValue) override
+    void parameterChanged (const juce::String&, float newValue) override
     {
         lastValue = newValue;
 
-        if (MessageManager::getInstance()->isThisTheMessageThread())
+        if (juce::MessageManager::getInstance()->isThisTheMessageThread())
         {
             cancelPendingUpdate();
             setValue (newValue);
@@ -84,7 +84,7 @@ public AsyncUpdater
 
     void beginParameterChange()
     {
-        if (AudioProcessorParameter* p = state.getParameter (paramID))
+        if (juce::AudioProcessorParameter* p = state.getParameter (paramID))
         {
             if (state.undoManager != nullptr)
             state.undoManager->beginNewTransaction();
@@ -95,7 +95,7 @@ public AsyncUpdater
 
     void endParameterChange()
     {
-        if (AudioProcessorParameter* p = state.getParameter (paramID))
+        if (juce::AudioProcessorParameter* p = state.getParameter (paramID))
         p->endChangeGesture();
     }
 
@@ -106,8 +106,8 @@ public AsyncUpdater
 
     virtual void setValue (float) = 0;
 
-    AudioProcessorValueTreeState& state;
-    String paramID;
+    juce::AudioProcessorValueTreeState& state;
+    juce::String paramID;
     float lastValue;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AttachedControlBase)
@@ -116,12 +116,12 @@ public AsyncUpdater
 
 // This one I wrote myself ;-)
 class LabelAttachment : private AttachedControlBase,
-private Label::Listener
+private juce::Label::Listener
 {
 public:
-    LabelAttachment (AudioProcessorValueTreeState& stateToControl,
-                      const String& parameterID,
-                     Label& labelToControl)
+    LabelAttachment (juce::AudioProcessorValueTreeState& stateToControl,
+                      const juce::String& parameterID,
+                     juce::Label& labelToControl)
     : AttachedControlBase (stateToControl, parameterID),
     label (labelToControl), ignoreCallbacks (false)
     {
@@ -136,10 +136,10 @@ public:
         removeListener();
     }
 
-    void labelTextChanged (Label *labelThatHasChanged) override
+    void labelTextChanged (juce::Label *labelThatHasChanged) override
     {
         auto newValue = getNormalizedValueFromText (label.getText());
-        const ScopedLock selfCallbackLock (selfCallbackMutex);
+        const juce::ScopedLock selfCallbackLock (selfCallbackMutex);
 
         if (! ignoreCallbacks)
         {
@@ -151,7 +151,7 @@ public:
         updateText();
     }
 
-    float getNormalizedValueFromText (const String& text)
+    float getNormalizedValueFromText (const juce::String& text)
     {
         float value = text.getFloatValue();
         return value;
@@ -160,27 +160,27 @@ public:
 
     void setValue (float newValue) override
     {
-        const ScopedLock selfCallbackLock (selfCallbackMutex);
+        const juce::ScopedLock selfCallbackLock (selfCallbackMutex);
 
         {
-            ScopedValueSetter<bool> svs (ignoreCallbacks, true);
+            juce::ScopedValueSetter<bool> svs (ignoreCallbacks, true);
             updateText();
         }
     }
 
     void updateText()
     {
-        String text = parameter->getText (parameter->getValue(), 2) + " " + parameter->label;
-        label.setText (text, NotificationType::dontSendNotification);
+        juce::String text = parameter->getText (parameter->getValue(), 2) + " " + parameter->label;
+        label.setText (text, juce::NotificationType::dontSendNotification);
     }
 
 
 private:
-    Label& label;
+    juce::Label& label;
     bool ignoreCallbacks;
-    CriticalSection selfCallbackMutex;
+    juce::CriticalSection selfCallbackMutex;
 
-    const AudioProcessorParameterWithID* parameter {nullptr};
+    const juce::AudioProcessorParameterWithID* parameter {nullptr};
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (LabelAttachment)
 };

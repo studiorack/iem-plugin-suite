@@ -35,7 +35,7 @@ static const unsigned char powerButtonData[] = { 110,109,43,135,207,65,0,0,0,0,9
     221,36,224,65,98,188,116,255,64,231,251,186,65,133,235,27,65,180,200,151,65,199,75,79,65,74,12,122,65,98,217,206,103,65,250,126,96,65,219,249,102,65,221,36,56,65,90,100,77,65,227,165,31,65,98,141,151,64,65,115,104,19,65,98,16,48,65,104,145,13,65,70,182,
     31,65,133,235,13,65,99,109,70,182,31,65,133,235,13,65,99,101,0,0 };
 
-class OnOffButton : public ToggleButton
+class OnOffButton : public juce::ToggleButton
 {
 public:
     OnOffButton()
@@ -47,12 +47,12 @@ public:
     {
     }
 
-    void paint (Graphics& g) override
+    void paint (juce::Graphics& g) override
     {
         auto bounds = getLocalBounds();
 
         const float boxSize = bounds.getWidth() * 0.8f;
-        Rectangle<float> buttonArea(0.5f * (bounds.getWidth() - boxSize), 0.5f * (bounds.getHeight() - boxSize), boxSize, boxSize);
+        juce::Rectangle<float> buttonArea(0.5f * (bounds.getWidth() - boxSize), 0.5f * (bounds.getHeight() - boxSize), boxSize, boxSize);
 
         const bool isButtonDown = isMouseButtonDown();
         const bool isMouseOverButton = isMouseOver();
@@ -64,17 +64,17 @@ public:
         else if (isMouseOverButton)
             buttonArea.reduce (0.4f, 0.4f);
 
-        g.setColour (findColour (ToggleButton::tickColourId).withMultipliedAlpha (ticked ? 1.0f : isMouseOverButton ? 0.7f : 0.5f));
+        g.setColour (findColour (juce::ToggleButton::tickColourId).withMultipliedAlpha (ticked ? 1.0f : isMouseOverButton ? 0.7f : 0.5f));
 
         g.drawEllipse (buttonArea, 1.0f);
 
         buttonArea.reduce(1.5f, 1.5f);
 
-        g.setColour (findColour (ToggleButton::tickColourId).withMultipliedAlpha (ticked ? 1.0f : isMouseOverButton ? 0.5f : 0.2f));
+        g.setColour (findColour (juce::ToggleButton::tickColourId).withMultipliedAlpha (ticked ? 1.0f : isMouseOverButton ? 0.5f : 0.2f));
 
         g.fillEllipse (buttonArea);
 
-        g.setColour (ticked ? findColour (ResizableWindow::backgroundColourId) :  findColour (ToggleButton::tickColourId).withMultipliedAlpha (isMouseOverButton ? 0.7f : 0.5f));
+        g.setColour (ticked ? findColour (juce::ResizableWindow::backgroundColourId) :  findColour (juce::ToggleButton::tickColourId).withMultipliedAlpha (isMouseOverButton ? 0.7f : 0.5f));
 
         g.fillPath (powerButton, powerButton.getTransformToScaleToFit (buttonArea.reduced (2.0f), true));
     }
@@ -84,6 +84,6 @@ public:
     }
 
 private:
-    Path powerButton;
+    juce::Path powerButton;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OnOffButton)
 };

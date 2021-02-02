@@ -84,113 +84,113 @@ public:
 
     // =============== IMPORT ======================================================
     /**
-     Loads a JSON-file (fileToParse) and writes the parsed content to a var object (dest).
+     Loads a JSON-file (fileToParse) and writes the parsed content to a juce::var object (dest).
      */
-    static Result parseFile (const File& fileToParse, var& dest)
+    static juce::Result parseFile (const juce::File& fileToParse, juce::var& dest)
     {
         if (!fileToParse.exists())
-            return Result::fail ("File '" + fileToParse.getFullPathName() + "' does not exist!");
+            return juce::Result::fail ("File '" + fileToParse.getFullPathName() + "' does not exist!");
 
-        String jsonString = fileToParse.loadFileAsString();
-        Result result = JSON::parse (jsonString, dest);
-        if (!result.wasOk())
-            return Result::fail ("File '" + fileToParse.getFullPathName() + "' could not be parsed:\n" + result.getErrorMessage());
+        juce::String jsonString = fileToParse.loadFileAsString();
+        juce::Result result = juce::JSON::parse (jsonString, dest);
+        if (! result.wasOk())
+            return juce::Result::fail ("File '" + fileToParse.getFullPathName() + "' could not be parsed:\n" + result.getErrorMessage());
 
-        return Result::ok();
+        return juce::Result::ok();
     }
 
 #if CONFIGURATIONHELPER_ENABLE_MATRIX_METHODS
     /**
      Loads a JSON-file (fileToParse) and tries to parse for a TransformationMatrix object. If successful, writes the matrix into the destination (dest).
      */
-    static Result parseFileForTransformationMatrix (const File& fileToParse, ReferenceCountedMatrix::Ptr* dest)
+    static juce::Result parseFileForTransformationMatrix (const juce::File& fileToParse, ReferenceCountedMatrix::Ptr* dest)
     {
         jassert (dest != nullptr);
 
         // parsing configuration file
-        var parsedJson;
+        juce::var parsedJson;
         {
-            Result result = parseFile (fileToParse, parsedJson);
+            juce::Result result = parseFile (fileToParse, parsedJson);
             if (! result.wasOk())
-                return Result::fail(result.getErrorMessage());
+                return juce::Result::fail (result.getErrorMessage());
         }
 
         // looking for a 'TransformationMatrix' object
-        var tmVar = parsedJson.getProperty("TransformationMatrix", parsedJson);
-        Result result = convertTransformationMatrixVarToMatrix (tmVar, dest,
-                                                                parsedJson.getProperty("Name", var("")), parsedJson.getProperty("Description", var("")));
+        juce::var tmVar = parsedJson.getProperty("TransformationMatrix", parsedJson);
+        juce::Result result = convertTransformationMatrixVarToMatrix (tmVar, dest,
+                                                                parsedJson.getProperty ("Name", juce::var ("")), parsedJson.getProperty ("Description", juce::var ("")));
 
         if (! result.wasOk())
-            return Result::fail (result.getErrorMessage());
+            return juce::Result::fail (result.getErrorMessage());
 
-        return Result::ok();
+        return juce::Result::ok();
     }
 
     /**
-     Converts the Matrix object within a TransformationMatrix var object (tmVar) to a ReferenceCountedMatrix (matrix).
+     Converts the juce::dsp::Matrix object within a TransformationMatrix juce::var object (tmVar) to a ReferenceCountedMatrix (matrix).
      */
-    static Result convertTransformationMatrixVarToMatrix (var& tmVar, ReferenceCountedMatrix::Ptr* matrix, var nameFallback = var (""), var descriptionFallback = var (""))
+    static juce::Result convertTransformationMatrixVarToMatrix (juce::var& tmVar, ReferenceCountedMatrix::Ptr* matrix, juce::var nameFallback = juce::var (""), juce::var descriptionFallback = juce::var (""))
     {
         jassert (matrix != nullptr);
 
-        String name = tmVar.getProperty (Identifier ("Name"), nameFallback);
-        String description = tmVar.getProperty (Identifier ("Description"), descriptionFallback);
+        juce::String name = tmVar.getProperty (juce::Identifier ("Name"), nameFallback);
+        juce::String description = tmVar.getProperty (juce::Identifier ("Description"), descriptionFallback);
 
         if (! tmVar.hasProperty ("Matrix"))
-            return Result::fail ("There is no 'Matrix' array.");
+            return juce::Result::fail ("There is no 'Matrix' array.");
 
         int rows, cols;
-        var matrixData = tmVar.getProperty ("Matrix", var());
-        Result result = getMatrixDataSize (matrixData, rows, cols);
+        juce::var matrixData = tmVar.getProperty ("Matrix", juce::var());
+        auto result = getMatrixDataSize (matrixData, rows, cols);
 
         if (! result.wasOk())
-            return Result::fail(result.getErrorMessage());
+            return juce::Result::fail (result.getErrorMessage());
 
         ReferenceCountedMatrix::Ptr newMatrix = new ReferenceCountedMatrix (name, description, rows, cols);
-        result = getMatrix(matrixData, rows, cols, newMatrix->getMatrix());
+        result = getMatrix (matrixData, rows, cols, newMatrix->getMatrix());
 
         if (! result.wasOk())
-            return Result::fail (result.getErrorMessage());
+            return juce::Result::fail (result.getErrorMessage());
 
         *matrix = newMatrix;
-        return Result::ok();
+        return juce::Result::ok();
     }
 
     /**
-     Converts a 'Matrix' var object to a Matrix<float> object.
+     Converts a 'Matrix' juce::var object to a juce::dsp::Matrix<float> object.
      */
-    static Result getMatrix (var&  matrixData, const int rows, const int cols, Matrix<float>& dest)
+    static juce::Result getMatrix (juce::var& matrixData, int rows, int cols, juce::dsp::Matrix<float>& dest)
     {
         for (int r = 0; r < rows; ++r)
         {
-            var rowVar = matrixData.getArray()->getUnchecked(r);
+            auto rowVar = matrixData.getArray()->getUnchecked (r);
             if (rowVar.size() != cols)
-                return Result::fail("Matrix row " + String(r+1) + " has wrong length (should be " + String(cols) + ").");
+                return juce::Result::fail ("Matrix row " + juce::String (r+1) + " has wrong length (should be " + juce::String (cols) + ").");
 
             for (int c = 0; c < cols; ++c)
             {
-                var colVar = rowVar.getArray()->getUnchecked(c);
+                auto colVar = rowVar.getArray()->getUnchecked(c);
                 if (colVar.isDouble() || colVar.isInt())
                 {
                     dest(r, c) = colVar;
                 }
                 else
-                    return Result::fail("Datatype of matrix element (" + String(r+1) + "," + String(c+1) + ") could not be parsed.");
+                    return juce::Result::fail ("Datatype of matrix element (" + juce::String (r+1) + "," + juce::String (c+1) + ") could not be parsed.");
             }
 
         }
-        return Result::ok();
+        return juce::Result::ok();
     }
 
     /**
-     Extracts the number of rows and columns out of a 'Matrix' var object.
+     Extracts the number of rows and columns out of a 'Matrix' juce::var object.
      */
-    static Result getMatrixDataSize (var& matrixData, int& rows, int& cols)
+    static juce::Result getMatrixDataSize (juce::var& matrixData, int& rows, int& cols)
     {
         rows = matrixData.size();
         cols = matrixData.getArray()->getUnchecked(0).size();
 
-        return Result::ok();
+        return juce::Result::ok();
     }
 
 
@@ -199,42 +199,42 @@ public:
 
 #if CONFIGURATIONHELPER_ENABLE_DECODER_METHODS
     /**
-     Converts a Decoder var object (decoderVar) to a ReferenceCountedDecoder (decoder).
+     Converts a Decoder juce::var object (decoderVar) to a ReferenceCountedDecoder (decoder).
      */
-    static Result DecoderVar (var& decoderVar, ReferenceCountedDecoder::Ptr* decoder, var nameFallback = var (""), var descriptionFallback = var (""))
+    static juce::Result DecoderVar (juce::var& decoderVar, ReferenceCountedDecoder::Ptr* decoder, juce::var nameFallback = juce::var (""), juce::var descriptionFallback = juce::var (""))
     {
         jassert (decoder != nullptr);
 
-        String name = decoderVar.getProperty (Identifier("Name"), nameFallback);
-        String description = decoderVar.getProperty (Identifier ("Description"), descriptionFallback);
+        juce::String name = decoderVar.getProperty (juce::Identifier("Name"), nameFallback);
+        juce::String description = decoderVar.getProperty (juce::Identifier ("Description"), descriptionFallback);
 
         if (! decoderVar.hasProperty ("Matrix"))
-            return Result::fail ("There is no 'Matrix' array within the 'Decoder' object.");
+            return juce::Result::fail ("There is no 'Matrix' array within the 'Decoder' object.");
 
         // get matrix size
         int rows, cols;
-        var matrixData = decoderVar.getProperty ("Matrix", var());
-        Result result = getMatrixDataSize (matrixData, rows, cols);
+        auto matrixData = decoderVar.getProperty ("Matrix", juce::var());
+        auto result = getMatrixDataSize (matrixData, rows, cols);
         if (! result.wasOk())
-            return Result::fail (result.getErrorMessage());
+            return juce::Result::fail (result.getErrorMessage());
 
         //check if cols is a valid number of Ambisonic channels
         const int decoderOrder = sqrt (cols) - 1;
-        if (cols != square (decoderOrder + 1))
-            return Result::fail ("Decoder matrix's number of columns is no valid Ambisonic channel count: nCh = (order+1)^2.");
+        if (cols != juce::square (decoderOrder + 1))
+            return juce::Result::fail ("Decoder matrix's number of columns is no valid Ambisonic channel count: nCh = (order+1)^2.");
 
         // create decoder and get matrix from 'Decoder' object
         ReferenceCountedDecoder::Ptr newDecoder = new ReferenceCountedDecoder (name, description, rows, cols);
         result = getMatrix (matrixData, rows, cols, newDecoder->getMatrix());
         if (! result.wasOk())
-            return Result::fail (result.getErrorMessage());
+            return juce::Result::fail (result.getErrorMessage());
 
         if (decoderVar.hasProperty ("Routing"))
         {
-            var routingData = decoderVar.getProperty ("Routing", var());
+            auto routingData = decoderVar.getProperty ("Routing", juce::var());
             result = getRoutingArray (routingData, rows, newDecoder);
             if (! result.wasOk())
-                return Result::fail (result.getErrorMessage());
+                return juce::Result::fail (result.getErrorMessage());
         }
 
 
@@ -242,22 +242,22 @@ public:
         ReferenceCountedDecoder::Settings settings;
         // normalization
         if (! decoderVar.hasProperty ("ExpectedInputNormalization"))
-            Result::fail ("Could not find 'ExpectedInputNormalization' attribute.");
+            juce::Result::fail ("Could not find 'ExpectedInputNormalization' attribute.");
 
 
-        var expectedNormalization (decoderVar.getProperty ("ExpectedInputNormalization", var()));
+        auto expectedNormalization (decoderVar.getProperty ("ExpectedInputNormalization", juce::var()));
         if (expectedNormalization.toString().equalsIgnoreCase ("sn3d"))
             settings.expectedNormalization = ReferenceCountedDecoder::Normalization::sn3d;
         else if (expectedNormalization.toString().equalsIgnoreCase ("n3d"))
             settings.expectedNormalization = ReferenceCountedDecoder::Normalization::n3d;
         else
-            return Result::fail ("Could not parse 'ExpectedInputNormalization' attribute. Expected 'sn3d' or 'n3d' but got '" + expectedNormalization.toString() + "'.");
+            return juce::Result::fail ("Could not parse 'ExpectedInputNormalization' attribute. Expected 'sn3d' or 'n3d' but got '" + expectedNormalization.toString() + "'.");
 
 
         // weights
         if (decoderVar.hasProperty("Weights"))
         {
-            var weights (decoderVar.getProperty ("Weights", var()));
+            auto weights (decoderVar.getProperty ("Weights", juce::var()));
             if (weights.toString().equalsIgnoreCase ("maxrE"))
                 settings.weights = ReferenceCountedDecoder::Weights::maxrE;
             else if (weights.toString().equalsIgnoreCase ("inPhase"))
@@ -265,100 +265,98 @@ public:
             else if (weights.toString().equalsIgnoreCase ("none"))
                 settings.weights = ReferenceCountedDecoder::Weights::none;
             else
-                return Result::fail("Could not parse 'Weights' attribute. Expected 'maxrE', 'inPhase' or 'none' but got '" + weights.toString() + "'.");
+                return juce::Result::fail("Could not parse 'Weights' attribute. Expected 'maxrE', 'inPhase' or 'none' but got '" + weights.toString() + "'.");
         }
 
         // weights already applied
         if (decoderVar.hasProperty ("WeightsAlreadyApplied"))
         {
-            var weightsAlreadyApplied (decoderVar.getProperty ("WeightsAlreadyApplied", var()));
+            auto weightsAlreadyApplied (decoderVar.getProperty ("WeightsAlreadyApplied", juce::var()));
             if (weightsAlreadyApplied.isBool())
                 settings.weightsAlreadyApplied = weightsAlreadyApplied;
             else
-                return Result::fail ("Could not parse 'WeightsAlreadyApplied' attribute. Expected bool but got '" + weightsAlreadyApplied.toString() + "'.");
+                return juce::Result::fail ("Could not parse 'WeightsAlreadyApplied' attribute. Expected bool but got '" + weightsAlreadyApplied.toString() + "'.");
         }
         if (decoderVar.hasProperty ("SubwooferChannel"))
         {
-            var subwooferChannel (decoderVar.getProperty ("SubwooferChannel", var()));
+            auto subwooferChannel (decoderVar.getProperty ("SubwooferChannel", juce::var()));
             if (subwooferChannel.isInt())
             {
                 if (static_cast<int>(subwooferChannel) < 1 || static_cast<int>(subwooferChannel) > 64)
-                    return Result::fail ("'SubwooferChannel' attribute is not a valid channel number (1 <= subwooferChannel <= 64).");
+                    return juce::Result::fail ("'SubwooferChannel' attribute is not a valid channel number (1 <= subwooferChannel <= 64).");
 
                 settings.subwooferChannel = subwooferChannel;
             }
             else
-                return Result::fail("Could not parse 'SubwooferChannel' attribute. Expected channel number (int) but got '" + subwooferChannel.toString() + "'.");
+                return juce::Result::fail("Could not parse 'SubwooferChannel' attribute. Expected channel number (int) but got '" + subwooferChannel.toString() + "'.");
         }
 
         newDecoder->setSettings(settings);
 
         *decoder = newDecoder;
-        return Result::ok();
+        return juce::Result::ok();
     }
 
 
     /**
      Extracts the routing array from a 'Routing' Var object and writes it to the ReferenceCountedMatrix object.
      */
-    static Result getRoutingArray (var& routingData, const int rows, ReferenceCountedMatrix::Ptr dest)
+    static juce::Result getRoutingArray (juce::var& routingData, const int rows, ReferenceCountedMatrix::Ptr dest)
     {
         if (routingData.size() != rows)
-            return Result::fail("Length of 'Routing' attribute does not match number of matrix outputs (rows).");
+            return juce::Result::fail("Length of 'Routing' attribute does not match number of matrix outputs (rows).");
 
-        Array<int>& routingArray = dest->getRoutingArrayReference();
+        auto& routingArray = dest->getRoutingArrayReference();
         for (int r = 0; r < rows; ++r)
         {
-            var element = routingData.getArray()->getUnchecked(r);
+            auto element = routingData.getArray()->getUnchecked (r);
 
             if (element.isInt())
-            {
                 routingArray.set(r, (int) element - 1);
-            }
             else
-                return Result::fail("Datatype of 'Routing' element at position " + String(r+1) + " could not be interpreted (expected integer).");
+                return juce::Result::fail ("Datatype of 'Routing' element at position " + juce::String (r+1) + " could not be interpreted (expected integer).");
         }
-        return Result::ok();
+        return juce::Result::ok();
     }
 
     /**
      Loads a JSON-file (fileToParse) and tries to parse for a 'Decoder' object. If successful, writes the decoder into the destination (decoder).
      */
-    static Result parseFileForDecoder (const File& fileToParse, ReferenceCountedDecoder::Ptr* decoder)
+    static juce::Result parseFileForDecoder (const juce::File& fileToParse, ReferenceCountedDecoder::Ptr* decoder)
     {
         jassert (decoder != nullptr);
 
         // parsing configuration file
-        var parsedJson;
-        Result result = parseFile (fileToParse, parsedJson);
+        juce::var parsedJson;
+        juce::Result result = parseFile (fileToParse, parsedJson);
         if (! result.wasOk())
-            return Result::fail (result.getErrorMessage());
+            return juce::Result::fail (result.getErrorMessage());
 
         result = parseVarForDecoder (parsedJson, decoder);
         if (! result.wasOk())
-            return Result::fail (result.getErrorMessage());
+            return juce::Result::fail (result.getErrorMessage());
 
-        return Result::ok();
+        return juce::Result::ok();
     }
 
-    /** Parses a 'Decoder' object from a JSON var. If successful, writes the decoder into the destination (decoder).
+    /** Parses a 'Decoder' object from a JSON juce::var. If successful, writes the decoder into the destination (decoder).
      */
-    static Result parseVarForDecoder (const var& jsonVar, ReferenceCountedDecoder::Ptr* decoder)
+    static juce::Result parseVarForDecoder (const juce::var& jsonVar, ReferenceCountedDecoder::Ptr* decoder)
     {
         jassert (decoder != nullptr);
 
         // looking for a 'Decoder' object
         if (! jsonVar.hasProperty ("Decoder"))
-            return Result::fail ("No 'Decoder' object found in the configuration file.");
+            return juce::Result::fail ("No 'Decoder' object found in the configuration file.");
 
-        var decoderObject = jsonVar.getProperty ("Decoder", jsonVar);
+        auto decoderObject = jsonVar.getProperty ("Decoder", jsonVar);
         auto result = DecoderVar (decoderObject, decoder,
-                             jsonVar.getProperty ("Name", var("")), jsonVar.getProperty ("Description", var("")));
+                             jsonVar.getProperty ("Name", juce::var ("")), jsonVar.getProperty ("Description", juce::var ("")));
 
         if (! result.wasOk())
-            return Result::fail (result.getErrorMessage());
+            return juce::Result::fail (result.getErrorMessage());
 
-        return Result::ok();
+        return juce::Result::ok();
     }
 
 #endif //#if CONFIGURATIONHELPER_ENABLE_DECODER_METHODS
@@ -367,7 +365,7 @@ public:
     /**
      Loads a JSON-file (fileToParse) and tries to parse for a 'LoudspeakerLayout' object. If successful, writes the loudspeakers (named 'elements') into a ValeTree object (loudspeakers). Set 'undoManager' to nullptr in case you don't want to use a undoManager.
      */
-    static Result parseFileForLoudspeakerLayout (const File& fileToParse, ValueTree& loudspeakers, UndoManager* undoManager)
+    static juce::Result parseFileForLoudspeakerLayout (const juce::File& fileToParse, juce::ValueTree& loudspeakers, juce::UndoManager* undoManager)
     {
         return parseFileForGenericLayout(fileToParse, loudspeakers, undoManager);
     }
@@ -376,119 +374,119 @@ public:
 
 #if CONFIGURATIONHELPER_ENABLE_GENERICLAYOUT_METHODS
     /**
-     Loads a JSON-file (fileToParse) and tries to parse for a 'LoudspeakerLayout' or 'GenericLayout' object. If successful, writes the generic object into a ValueTree object (elements). Set 'undoManager' to nullptr in case you don't want to use a undoManager.
+     Loads a JSON-file (fileToParse) and tries to parse for a 'LoudspeakerLayout' or 'GenericLayout' object. If successful, writes the generic object into a juce::ValueTree object (elements). Set 'undoManager' to nullptr in case you don't want to use a undoManager.
      */
-    static Result parseFileForGenericLayout (const File& fileToParse, ValueTree& elements, UndoManager* undoManager)
+    static juce::Result parseFileForGenericLayout (const juce::File& fileToParse, juce::ValueTree& elements, juce::UndoManager* undoManager)
     {
         // parse configuration file
-        var parsedJson;
-        Result result = parseFile (fileToParse, parsedJson);
+        juce::var parsedJson;
+        juce::Result result = parseFile (fileToParse, parsedJson);
         if (! result.wasOk())
-            return Result::fail (result.getErrorMessage());
+            return juce::Result::fail (result.getErrorMessage());
 
         // looks for a 'GenericLayout' or 'LoudspeakerLayout' object
-        var genericLayout;
+        juce::var genericLayout;
         if (parsedJson.hasProperty ("GenericLayout"))
-            genericLayout = parsedJson.getProperty ("GenericLayout", var());
+            genericLayout = parsedJson.getProperty ("GenericLayout", juce::var());
         else if (parsedJson.hasProperty ("LoudspeakerLayout"))
-            genericLayout = parsedJson.getProperty ("LoudspeakerLayout", var());
+            genericLayout = parsedJson.getProperty ("LoudspeakerLayout", juce::var());
         else
-            return Result::fail ("No 'GenericLayout' or 'LoudspeakerLayout' object found in the configuration file.");
+            return juce::Result::fail ("No 'GenericLayout' or 'LoudspeakerLayout' object found in the configuration file.");
 
         // looks for a 'GenericLayout' or 'LoudspeakerLayout' object
-        var elementArray;
+        juce::var elementArray;
         if (genericLayout.hasProperty ("Elements"))
-            elementArray = genericLayout.getProperty ("Elements", var());
+            elementArray = genericLayout.getProperty ("Elements", juce::var());
         else if (genericLayout.hasProperty ("Loudspeakers"))
-            elementArray = genericLayout.getProperty ("Loudspeakers", var());
+            elementArray = genericLayout.getProperty ("Loudspeakers", juce::var());
         else
-            return Result::fail ("No 'Elements' or 'Loudspeakers' attribute found within the 'GenericLayout' or 'LoudspeakerLayout' object.");
+            return juce::Result::fail ("No 'Elements' or 'Loudspeakers' attribute found within the 'GenericLayout' or 'LoudspeakerLayout' object.");
 
         result = addElementsToValueTree (elementArray, elements, undoManager);
 
         if (! result.wasOk())
-            return Result::fail (result.getErrorMessage());
+            return juce::Result::fail (result.getErrorMessage());
 
-        return Result::ok();
+        return juce::Result::ok();
     }
 
     /**
-     Appends all elements within the GenericLayout to the elements ValueTree.
+     Appends all elements within the GenericLayout to the elements juce::ValueTree.
      */
-    static Result addElementsToValueTree (var& elementArray, ValueTree& elements, UndoManager* undoManager)
+    static juce::Result addElementsToValueTree (juce::var& elementArray, juce::ValueTree& elements, juce::UndoManager* undoManager)
     {
         if (! elementArray.isArray())
-            return Result::fail ("'elementArray' is not an array.");
+            return juce::Result::fail ("'elementArray' is not an array.");
 
         const int nElements = elementArray.size();
 
         for (int i = 0; i < nElements; ++i)
         {
-            var& element = elementArray[i];
+            juce::var& element = elementArray[i];
             float azimuth, elevation, radius, gain;
             int channel;
             bool isImaginary;
 
             if (! element.hasProperty ("Azimuth"))
-                return Result::fail ("No 'Azimuth' attribute for element #" + String (i+1) + ".");
-            var azi = element.getProperty ("Azimuth", var());
+                return juce::Result::fail ("No 'Azimuth' attribute for element #" + juce::String (i+1) + ".");
+            auto azi = element.getProperty ("Azimuth", juce::var());
             if (azi.isDouble() || azi.isInt())
                 azimuth = azi;
             else
-                return Result::fail ("Wrong datatype for attribute 'Azimuth' for element #" + String (i+1) + ".");
+                return juce::Result::fail ("Wrong datatype for attribute 'Azimuth' for element #" + juce::String (i+1) + ".");
 
             if (! element.hasProperty ("Elevation"))
-                return Result::fail ("No 'Elevation' attribute for element #" + String (i+1) + ".");
-            var ele = element.getProperty ("Elevation", var());
+                return juce::Result::fail ("No 'Elevation' attribute for element #" + juce::String (i+1) + ".");
+            auto ele = element.getProperty ("Elevation", juce::var());
             if (ele.isDouble() || ele.isInt())
                 elevation = ele;
             else
-                return Result::fail ("Wrong datatype for attribute 'Elevation' for element #" + String (i+1) + ".");
+                return juce::Result::fail ("Wrong datatype for attribute 'Elevation' for element #" + juce::String (i+1) + ".");
 
             if (! element.hasProperty ("Radius"))
-                return Result::fail ("No 'Radius' attribute for element #" + String (i+1) + ".");
-            var rad = element.getProperty ("Radius", var());
+                return juce::Result::fail ("No 'Radius' attribute for element #" + juce::String (i+1) + ".");
+            auto rad = element.getProperty ("Radius", juce::var());
             if (rad.isDouble() || rad.isInt())
                 radius = rad;
             else
-                return Result::fail("Wrong datatype for attribute 'Radius' for element #" + String (i+1) + ".");
+                return juce::Result::fail("Wrong datatype for attribute 'Radius' for element #" + juce::String (i+1) + ".");
 
             if (! element.hasProperty ("Gain"))
-                return Result::fail ("No 'Gain' attribute for element #" + String (i+1) + ".");
-            var g = element.getProperty ("Gain", var());
+                return juce::Result::fail ("No 'Gain' attribute for element #" + juce::String (i+1) + ".");
+            auto g = element.getProperty ("Gain", juce::var());
             if (g.isDouble() || g.isInt())
                 gain = g;
             else
-                return Result::fail ("Wrong datatype for attribute 'Gain' for element #" + String (i+1) + ".");
+                return juce::Result::fail ("Wrong datatype for attribute 'Gain' for element #" + juce::String (i+1) + ".");
 
             if (! element.hasProperty ("Channel"))
-                return Result::fail ("No 'Channel' attribute for element #" + String (i+1) + ".");
-            var ch = element.getProperty ("Channel", var());
+                return juce::Result::fail ("No 'Channel' attribute for element #" + juce::String (i+1) + ".");
+            auto ch = element.getProperty ("Channel", juce::var());
             if (ch.isInt())
                 channel = ch;
             else
-                return Result::fail ("Wrong datatype for attribute 'Channel' for element #" + String (i+1) + ".");
+                return juce::Result::fail ("Wrong datatype for attribute 'Channel' for element #" + juce::String (i+1) + ".");
 
             if (! element.hasProperty ("IsImaginary"))
-                return Result::fail ("No 'IsImaginary' attribute for element #" + String(i+1) + ".");
-            var im = element.getProperty ("IsImaginary", var());
+                return juce::Result::fail ("No 'IsImaginary' attribute for element #" + juce::String(i+1) + ".");
+            auto im = element.getProperty ("IsImaginary", juce::var());
             if (im.isBool())
                 isImaginary = im;
             else
-                return Result::fail ("Wrong datatype for attribute 'IsImaginary' for element #" + String (i+1) + ".");
+                return juce::Result::fail ("Wrong datatype for attribute 'IsImaginary' for element #" + juce::String (i+1) + ".");
 
             elements.appendChild (createElement(azimuth, elevation, radius, channel, isImaginary, gain), undoManager);
         }
 
-        return Result::ok();
+        return juce::Result::ok();
     }
 
     /**
-     Creates a single element ValueTree, which can be appended to another ValueTree holding several elements.
+     Creates a single element juce::ValueTree, which can be appended to another juce::ValueTree holding several elements.
      */
-    static ValueTree createElement (const float azimuth, const float elevation, const float radius, const int channel, const bool isImaginary, const float gain)
+    static juce::ValueTree createElement (float azimuth, float elevation, float radius, int channel, bool isImaginary, float gain)
     {
-        ValueTree newElement ("Element");
+        juce::ValueTree newElement ("Element");
 
         newElement.setProperty ("Azimuth", azimuth, nullptr);
         newElement.setProperty ("Elevation", elevation, nullptr);
@@ -505,14 +503,14 @@ public:
 #if CONFIGURATIONHELPER_ENABLE_DECODER_METHODS
     // =============== EXPORT ======================================================
     /**
-     Converts a ReferenceCountedDecoder object to a var object. Useful for writing the Decoder to a configuration file.
+     Converts a ReferenceCountedDecoder object to a juce::var object. Useful for writing the Decoder to a configuration file.
      */
-    static var convertDecoderToVar (ReferenceCountedDecoder::Ptr& decoder)
+    static juce::var convertDecoderToVar (ReferenceCountedDecoder::Ptr& decoder)
     {
         if (decoder == nullptr)
-            return var();
+            return juce::var();
 
-        DynamicObject* obj = new DynamicObject();
+        auto* obj = new juce::DynamicObject();
         obj->setProperty ("Name", decoder->getName());
         obj->setProperty ("Description", decoder->getDescription());
 
@@ -521,85 +519,84 @@ public:
         obj->setProperty ("ExpectedInputNormalization", settings.expectedNormalization == ReferenceCountedDecoder::n3d ? "n3d" : "sn3d");
 
         obj->setProperty ("Weights", settings.weights == ReferenceCountedDecoder::maxrE ? "maxrE" : settings.weights == ReferenceCountedDecoder::inPhase ? "inPhase" : "none");
-        obj->setProperty ("WeightsAlreadyApplied", var(settings.weightsAlreadyApplied));
+        obj->setProperty ("WeightsAlreadyApplied", juce::var (settings.weightsAlreadyApplied));
 
         const int subwooferChannel = settings.subwooferChannel;
         if (subwooferChannel > 0)
             obj->setProperty ("SubwooferChannel", subwooferChannel);
 
         // decoder matrix
-        var decoderMatrix = convertMatrixToVar (decoder->getMatrix());
+        juce::var decoderMatrix = convertMatrixToVar (decoder->getMatrix());
         obj->setProperty ("Matrix", decoderMatrix);
 
         // routing array
-        var routing;
-        Array<int>& routingArray = decoder->getRoutingArrayReference();
+        juce::var routing;
+        juce::Array<int>& routingArray = decoder->getRoutingArrayReference();
         for (int i = 0; i < routingArray.size(); ++i)
             routing.append(routingArray[i] + 1); // one count
 
         obj->setProperty ("Routing", routing);
 
-        return var(obj);
+        return juce::var (obj);
     }
 
 #endif // #if CONFIGURATIONHELPER_ENABLE_DECODER_METHODS
 
 #if CONFIGURATIONHELPER_ENABLE_MATRIX_METHODS
     /**
-     Converts a Matrix<float> object to a var object.
+     Converts a juce::dsp::Matrix<float> object to a juce::var object.
      */
-    static var convertMatrixToVar (Matrix<float>& mat)
+    static juce::var convertMatrixToVar (juce::dsp::Matrix<float>& mat)
     {
-        var matrixVar;
+        juce::var matrixVar;
         for (int m = 0; m < mat.getSize()[0]; ++m)
         {
-            var row;
+            juce::var row;
             for (int n = 0; n < mat.getSize()[1]; ++n)
-            {
                 row.append(mat(m,n));
-            }
-            matrixVar.append(row);
+
+            matrixVar.append (row);
         }
         return matrixVar;
     }
 
     /**
-     Converts a ReferenceCountedMatrix object to a var object. Useful for writing the Matrix to a configuration file.
+     Converts a ReferenceCountedMatrix object to a juce::var object. Useful for writing the juce::dsp::Matrix to a configuration file.
      */
-    static var convertTransformationMatrixToVar (ReferenceCountedMatrix::Ptr& matrix)
+    static juce::var convertTransformationMatrixToVar (ReferenceCountedMatrix::Ptr& matrix)
     {
         if (matrix == nullptr)
-            return var();
+            return juce::var();
 
-        DynamicObject* obj = new DynamicObject();
+        auto* obj = new juce::DynamicObject();
         obj->setProperty ("Name", matrix->getName());
         obj->setProperty ("Description", matrix->getDescription());
 
-        var transformationMatrix = convertMatrixToVar (matrix->getMatrix());
+        auto transformationMatrix = convertMatrixToVar (matrix->getMatrix());
 
         obj->setProperty ("Matrix", transformationMatrix);
-        return var(obj);
+        return juce::var (obj);
     }
 
 #endif // #if CONFIGURATIONHELPER_ENABLE_MATRIX_METHODS
 
 #if CONFIGURATIONHELPER_ENABLE_LOUDSPEAKERLAYOUT_METHODS
     /**
-     Converts a loudspeakers ValueTree object to a var object. Useful for writing the loudspeakers to a configuration file ('LoudspeakerLayout'). Make sure the ValueTree contains valid loudspeakers.
+     Converts a loudspeakers juce::ValueTree object to a juce::var object. Useful for writing the loudspeakers to a configuration file ('LoudspeakerLayout'). Make sure the juce::ValueTree contains valid loudspeakers.
      */
-    static var convertLoudspeakersToVar (ValueTree& loudspeakers, String name = "", String description = "")
+    static juce::var convertLoudspeakersToVar (juce::ValueTree& loudspeakers, juce::String name = "", juce::String description = "")
     {
-        DynamicObject* obj = new DynamicObject(); // loudspeaker layout object
+        auto* obj = new juce::DynamicObject(); // loudspeaker layout object
         if (! name.isEmpty())
             obj->setProperty("Name", name);
         if (! description.isEmpty())
             obj->setProperty("Description", description);
 
-        var loudspeakerArray;
+        juce::var loudspeakerArray;
 
-        for (ValueTree::Iterator it = loudspeakers.begin() ; it != loudspeakers.end(); ++it)
+        for (juce::ValueTree::Iterator it = loudspeakers.begin() ; it != loudspeakers.end(); ++it)
         {
-            DynamicObject* loudspeaker = new DynamicObject(); // loudspeaker which get's added to the loudspeakerArray var
+            auto* loudspeaker = new juce::DynamicObject(); // loudspeaker which get's added to the loudspeakerArray juce::var
 
             loudspeaker->setProperty ("Azimuth", (*it).getProperty ("Azimuth"));
             loudspeaker->setProperty ("Elevation", (*it).getProperty ("Elevation"));
@@ -608,32 +605,32 @@ public:
             loudspeaker->setProperty ("Channel", (*it).getProperty("Channel"));
             loudspeaker->setProperty ("Gain", (*it).getProperty("Gain"));
 
-            loudspeakerArray.append(var(loudspeaker));
+            loudspeakerArray.append (juce::var (loudspeaker));
         }
 
-        obj->setProperty("Loudspeakers", loudspeakerArray);
-        return var(obj);
+        obj->setProperty ("Loudspeakers", loudspeakerArray);
+        return juce::var (obj);
     }
 
 #endif //#if CONFIGURATIONHELPER_ENABLE_LOUDSPEAKERLAYOUT_METHODS
 
 #if CONFIGURATIONHELPER_ENABLE_GENERICLAYOUT_METHODS
     /**
-     Converts a elements ValueTree object to a var object. Useful for writing the sources to a configuration file ('GenericLayout'). Make sure the ValueTree contains valid elements.
+     Converts a elements juce::ValueTree object to a juce::var object. Useful for writing the sources to a configuration file ('GenericLayout'). Make sure the juce::ValueTree contains valid elements.
      */
-    static var convertElementsToVar (ValueTree& elements, String name = "", String description = "")
+    static juce::var convertElementsToVar (juce::ValueTree& elements, juce::String name = "", juce::String description = "")
     {
-        DynamicObject* obj = new DynamicObject();
+        auto* obj = new juce::DynamicObject();
         if (! name.isEmpty())
             obj->setProperty("Name", name);
         if (! description.isEmpty())
             obj->setProperty("Description", description);
 
-        var elementArray;
+        juce::var elementArray;
 
-        for (ValueTree::Iterator it = elements.begin() ; it != elements.end(); ++it)
+        for (juce::ValueTree::Iterator it = elements.begin() ; it != elements.end(); ++it)
         {
-            DynamicObject* element = new DynamicObject();
+            auto* element = new juce::DynamicObject();
 
             element->setProperty ("Azimuth", (*it).getProperty ("Azimuth"));
             element->setProperty ("Elevation", (*it).getProperty ("Elevation"));
@@ -642,31 +639,31 @@ public:
             element->setProperty ("Channel", (*it).getProperty("Channel"));
             element->setProperty ("Gain", (*it).getProperty("Gain"));
 
-            elementArray.append(var(element));
+            elementArray.append (juce::var (element));
         }
 
         obj->setProperty("Elements", elementArray);
-        return var(obj);
+        return juce::var (obj);
     }
 
 #endif //#if CONFIGURATIONHELPER_ENABLE_GENERICLAYOUT_METHODS
 
     /**
-     Writes a configuration var to a JSON file.
+     Writes a configuration juce::var to a JSON file.
      Example use-case:
         DynamicObject* configuration = new DynamicObject();
-        configuration->setProperty("Name", var("Configuration Name"));
-        configuration->setProperty("Description", var("Description"));
+        configuration->setProperty("Name", juce::var("Configuration Name"));
+        configuration->setProperty("Description", juce::var("Description"));
         configuration->setProperty ("Decoder", ConfigurationHelper::convertDecoderToVar (referenceCountedDecoder));
         configuration->setProperty ("LoudspeakerLayout", ConfigurationHelper::convertLoudspeakersToVar (loudspeakersValueTree));
-        ConfigurationHelper::writeConfigurationToFile (fileName, var (configuration));
+        ConfigurationHelper::writeConfigurationToFile (fileName, juce::var (configuration));
      */
-    static Result writeConfigurationToFile (File& fileToWrite, var configuration)
+    static juce::Result writeConfigurationToFile (juce::File& fileToWrite, juce::var configuration)
     {
-        String jsonString = JSON::toString (configuration);
+        juce::String jsonString = juce::JSON::toString (configuration);
         if (fileToWrite.replaceWithText (jsonString))
-            return Result::ok();
+            return juce::Result::ok();
         else
-            return Result::fail ("Writing configuration failed.");
+            return juce::Result::fail ("Writing configuration failed.");
     }
 };

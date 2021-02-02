@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <JUCERPROJECT id="VK9lv8" name="RoomEncoder" displaySplashScreen="0" reportAppUsage="0"
-              splashScreenColour="Dark" projectType="audioplug" version="1.3.1"
+              splashScreenColour="Dark" projectType="audioplug" version="1.3.2"
               bundleIdentifier="at.iem.RoomEncoder" includeBinaryInAppConfig="1"
               buildVST="1" buildVST3="0" buildAU="0" buildAUv3="0" buildRTAS="0"
               buildAAX="0" buildStandalone="1" enableIAA="0" pluginName="RoomEncoder"
@@ -9,10 +9,11 @@
               pluginCode="RoEn" pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
               pluginAUExportPrefix="RoomEncoderAU" aaxIdentifier="at.iem.RoomEncoder"
-              pluginAAXCategory="2" jucerVersion="5.4.7" companyName="IEM"
-              companyWebsite="iem.at" cppLanguageStandard="latest" companyCopyright="IEM - Daniel Rudrich"
+              pluginAAXCategory="2" companyName="IEM" companyWebsite="iem.at"
+              cppLanguageStandard="14" companyCopyright="IEM - Daniel Rudrich"
               headerPath="../../../resources/" pluginFormats="buildStandalone,buildVST"
-              defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1">
+              defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1" projectLineFeed="&#10;"
+              addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1">
   <MAINGROUP id="ONcHIf" name="RoomEncoder">
     <GROUP id="{73A2D79E-8872-0E13-E660-320741A2D50C}" name="Standalone">
       <FILE id="OiAf10" name="IEM_AudioDeviceSelectorComponent.cpp" compile="1"

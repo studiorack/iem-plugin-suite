@@ -25,13 +25,13 @@
 
 
 //==============================================================================
-DualDelayAudioProcessorEditor::DualDelayAudioProcessorEditor (DualDelayAudioProcessor& p, AudioProcessorValueTreeState& vts)
-    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts), footer (p.getOSCParameterInterface())
+DualDelayAudioProcessorEditor::DualDelayAudioProcessorEditor (DualDelayAudioProcessor& p, juce::AudioProcessorValueTreeState& vts)
+    : juce::AudioProcessorEditor (&p), processor (p), valueTreeState(vts), footer (p.getOSCParameterInterface())
 {
     setLookAndFeel (&globalLaF);
 
     addAndMakeVisible(&title);
-    title.setTitle(String("Dual"),String("Delay"));
+    title.setTitle(juce::String("Dual"),juce::String("Delay"));
     title.setFont(globalLaF.robotoBold,globalLaF.robotoLight);
     addAndMakeVisible(&footer);
 
@@ -40,44 +40,44 @@ DualDelayAudioProcessorEditor::DualDelayAudioProcessorEditor (DualDelayAudioProc
 
     addAndMakeVisible(&SlDryGain);
     SlDryGainAttachment.reset (new SliderAttachment (valueTreeState, "dryGain", SlDryGain));
-    SlDryGain.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
+    SlDryGain.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     SlDryGain.setTextValueSuffix(" dB");
-    SlDryGain.setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
-    SlDryGain.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
+    SlDryGain.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 15);
+    SlDryGain.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
 
 
     // =========================== LEFT SIDE ==============================================================
 
     addAndMakeVisible(&SlLeftRot);
     SlLeftRotAttachment.reset (new SliderAttachment (valueTreeState, "rotationL", SlLeftRot));
-    SlLeftRot.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
+    SlLeftRot.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     SlLeftRot.setReverse(true);
     SlLeftRot.setTextValueSuffix(" deg");
-    SlLeftRot.setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
-    SlLeftRot.setRotaryParameters(MathConstants<float>::pi, 3*MathConstants<float>::pi, false);
-    SlLeftRot.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
+    SlLeftRot.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 15);
+    SlLeftRot.setRotaryParameters(juce::MathConstants<float>::pi, 3 * juce::MathConstants<float>::pi, false);
+    SlLeftRot.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
 
     addAndMakeVisible(&SlLeftDelay);
     SlLeftDelayAttachment.reset (new SliderAttachment (valueTreeState, "delayTimeL", SlLeftDelay));
-    SlLeftDelay.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
+    SlLeftDelay.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     SlLeftDelay.setTextValueSuffix(" ms");
-    SlLeftDelay.setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
-    SlLeftDelay.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
+    SlLeftDelay.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 15);
+    SlLeftDelay.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
 
     addAndMakeVisible(&SlLeftLfoRate);
     SlLeftLfoRateAttachment.reset (new SliderAttachment (valueTreeState, "lfoRateL", SlLeftLfoRate));
-    SlLeftLfoRate.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
+    SlLeftLfoRate.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     SlLeftLfoRate.setTextValueSuffix(" Hz");
-    SlLeftLfoRate.setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
-    SlLeftLfoRate.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
+    SlLeftLfoRate.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 15);
+    SlLeftLfoRate.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
 
 
     addAndMakeVisible(&SlLeftLfoDepth);
     SlLeftLfoDepthAttachment.reset (new SliderAttachment (valueTreeState, "lfoDepthL", SlLeftLfoDepth));
-    SlLeftLfoDepth.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
+    SlLeftLfoDepth.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     SlLeftLfoDepth.setTextValueSuffix(" ms");
-    SlLeftLfoDepth.setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
-    SlLeftLfoDepth.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
+    SlLeftLfoDepth.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 15);
+    SlLeftLfoDepth.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
 
 
     addAndMakeVisible(&dblSlLeftFilter);
@@ -89,24 +89,24 @@ DualDelayAudioProcessorEditor::DualDelayAudioProcessorEditor (DualDelayAudioProc
 
     addAndMakeVisible(&SlLeftFb);
     SlLeftFbAttachment.reset (new SliderAttachment (valueTreeState, "feedbackL", SlLeftFb));
-    SlLeftFb.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
+    SlLeftFb.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     SlLeftFb.setTextValueSuffix(" dB");
-    SlLeftFb.setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
-    SlLeftFb.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[3]);
+    SlLeftFb.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 15);
+    SlLeftFb.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[3]);
 
     addAndMakeVisible(&SlLeftCrossFb);
     SlLeftCrossFbAttachment.reset (new SliderAttachment (valueTreeState, "xfeedbackL", SlLeftCrossFb));
-    SlLeftCrossFb.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
+    SlLeftCrossFb.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     SlLeftCrossFb.setTextValueSuffix(" dB");
-    SlLeftCrossFb.setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
-    SlLeftCrossFb.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[3]);
+    SlLeftCrossFb.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 15);
+    SlLeftCrossFb.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[3]);
 
     addAndMakeVisible(&SlLeftGain);
     SlLeftGainAttachment.reset (new SliderAttachment (valueTreeState, "wetGainL", SlLeftGain));
-    SlLeftGain.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
+    SlLeftGain.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     SlLeftGain.setTextValueSuffix(" dB");
-    SlLeftGain.setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
-    SlLeftGain.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
+    SlLeftGain.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 15);
+    SlLeftGain.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
 
 
 
@@ -116,34 +116,34 @@ DualDelayAudioProcessorEditor::DualDelayAudioProcessorEditor (DualDelayAudioProc
 
     addAndMakeVisible(&SlRightRot);
     SlRightRotAttachment.reset (new SliderAttachment (valueTreeState, "rotationR", SlRightRot));
-    SlRightRot.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
+    SlRightRot.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     SlRightRot.setReverse(true);
     SlRightRot.setTextValueSuffix(" deg");
-    SlRightRot.setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
-    SlRightRot.setRotaryParameters(MathConstants<float>::pi, 3*MathConstants<float>::pi, false);
-    SlRightRot.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
+    SlRightRot.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 15);
+    SlRightRot.setRotaryParameters(juce::MathConstants<float>::pi, 3 * juce::MathConstants<float>::pi, false);
+    SlRightRot.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
 
     addAndMakeVisible(&SlRightDelay);
     SlRightDelayAttachment.reset (new SliderAttachment (valueTreeState, "delayTimeR", SlRightDelay));
-    SlRightDelay.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
+    SlRightDelay.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     SlRightDelay.setTextValueSuffix(" ms");
-    SlRightDelay.setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
-    SlRightDelay.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
+    SlRightDelay.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 15);
+    SlRightDelay.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[1]);
 
     addAndMakeVisible(&SlRightLfoRate);
     SlRightLfoRateAttachment.reset (new SliderAttachment (valueTreeState, "lfoRateR", SlRightLfoRate));
-    SlRightLfoRate.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
+    SlRightLfoRate.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     SlRightLfoRate.setTextValueSuffix(" Hz");
-    SlRightLfoRate.setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
-    SlRightLfoRate.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
+    SlRightLfoRate.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 15);
+    SlRightLfoRate.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
 
 
     addAndMakeVisible(&SlRightLfoDepth);
     SlRightLfoDepthAttachment.reset (new SliderAttachment (valueTreeState, "lfoDepthR", SlRightLfoDepth));
-    SlRightLfoDepth.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
+    SlRightLfoDepth.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     SlRightLfoDepth.setTextValueSuffix(" ms");
-    SlRightLfoDepth.setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
-    SlRightLfoDepth.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
+    SlRightLfoDepth.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 15);
+    SlRightLfoDepth.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
 
 
     addAndMakeVisible(&dblSlRightFilter);
@@ -158,53 +158,53 @@ DualDelayAudioProcessorEditor::DualDelayAudioProcessorEditor (DualDelayAudioProc
 
     addAndMakeVisible(&SlRightFb);
     SlRightFbAttachment.reset (new SliderAttachment (valueTreeState, "feedbackR", SlRightFb));
-    SlRightFb.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
+    SlRightFb.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     SlRightFb.setTextValueSuffix(" dB");
-    SlRightFb.setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
-    SlRightFb.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[3]);
+    SlRightFb.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 15);
+    SlRightFb.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[3]);
 
     addAndMakeVisible(&SlRightCrossFb);
     SlRightCrossFbAttachment.reset (new SliderAttachment (valueTreeState, "xfeedbackR", SlRightCrossFb));
-    SlRightCrossFb.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
+    SlRightCrossFb.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     SlRightCrossFb.setTextValueSuffix(" dB");
-    SlRightCrossFb.setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
-    SlRightCrossFb.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[3]);
+    SlRightCrossFb.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 15);
+    SlRightCrossFb.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[3]);
 
     addAndMakeVisible(&SlRightGain);
     SlRightGainAttachment.reset (new SliderAttachment (valueTreeState, "wetGainR", SlRightGain));
-    SlRightGain.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
+    SlRightGain.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     SlRightGain.setTextValueSuffix(" dB");
-    SlRightGain.setTextBoxStyle(Slider::TextBoxBelow, false, 50, 15);
-    SlRightGain.setColour (Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
+    SlRightGain.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 15);
+    SlRightGain.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
 
     // ============ GROUPCOMPONENTS =========
     addAndMakeVisible(&gcRotDelL);
     gcRotDelL.setText("Rotation & Delay");
-    gcRotDelL.setTextLabelPosition(Justification::centred);
+    gcRotDelL.setTextLabelPosition(juce::Justification::centred);
 
     addAndMakeVisible(&gcRotDelR);
     gcRotDelR.setText("Rotation & Delay");
-    gcRotDelR.setTextLabelPosition(Justification::centred);
+    gcRotDelR.setTextLabelPosition(juce::Justification::centred);
 
     addAndMakeVisible(&gcFiltL);
     gcFiltL.setText("Spectral Filter");
-    gcFiltL.setTextLabelPosition(Justification::centred);
+    gcFiltL.setTextLabelPosition(juce::Justification::centred);
 
     addAndMakeVisible(&gcFiltR);
     gcFiltR.setText("Spectral Filter");
-    gcFiltR.setTextLabelPosition(Justification::centred);
+    gcFiltR.setTextLabelPosition(juce::Justification::centred);
 
     addAndMakeVisible(&gcFbL);
     gcFbL.setText("Feedback");
-    gcFbL.setTextLabelPosition(Justification::centred);
+    gcFbL.setTextLabelPosition(juce::Justification::centred);
 
     addAndMakeVisible(&gcFbR);
     gcFbR.setText("Feedback");
-    gcFbR.setTextLabelPosition(Justification::centred);
+    gcFbR.setTextLabelPosition(juce::Justification::centred);
 
     addAndMakeVisible(&gcOutput);
     gcOutput.setText("Output Mix");
-    gcOutput.setTextLabelPosition(Justification::centred);
+    gcOutput.setTextLabelPosition(juce::Justification::centred);
 
     // ============ LABELS =========
     addAndMakeVisible(&lbRotL);
@@ -264,7 +264,7 @@ DualDelayAudioProcessorEditor::~DualDelayAudioProcessorEditor()
 }
 
 //==============================================================================
-void DualDelayAudioProcessorEditor::paint (Graphics& g)
+void DualDelayAudioProcessorEditor::paint (juce::Graphics& g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
     g.fillAll (globalLaF.ClBackground);
@@ -280,21 +280,21 @@ void DualDelayAudioProcessorEditor::resized()
     const int textHeight = 14;
     const int sliderHeight = 70;
 
-    Rectangle<int> area (getLocalBounds());
-    Rectangle<int> groupArea;
-    Rectangle<int> sliderRow;
+    juce::Rectangle<int> area (getLocalBounds());
+    juce::Rectangle<int> groupArea;
+    juce::Rectangle<int> sliderRow;
 
-    Rectangle<int> footerArea (area.removeFromBottom (footerHeight));
+    juce::Rectangle<int> footerArea (area.removeFromBottom (footerHeight));
     footer.setBounds(footerArea);
 
     area.removeFromLeft(leftRightMargin);
     area.removeFromRight(leftRightMargin);
-    Rectangle<int> headerArea = area.removeFromTop    (headerHeight);
+    juce::Rectangle<int> headerArea = area.removeFromTop    (headerHeight);
     title.setBounds (headerArea);
     area.removeFromTop(10);
 
 
-    Rectangle<int> tempArea;
+    juce::Rectangle<int> tempArea;
 
     // ======== BEGIN: Rotations and Delays =========
     tempArea = area.removeFromTop(30+sliderHeight+textHeight);
@@ -411,7 +411,7 @@ void DualDelayAudioProcessorEditor::resized()
     // ======== BEGIN: Output Mix ===========
     int actualWidth = tempArea.getWidth();
     int wantedWidth = 186;
-    tempArea.removeFromLeft(roundToInt((actualWidth-wantedWidth)/2));
+    tempArea.removeFromLeft(juce::roundToInt((actualWidth-wantedWidth)/2));
     tempArea.setWidth(wantedWidth);
 
     gcOutput.setBounds(tempArea);
@@ -441,7 +441,7 @@ void DualDelayAudioProcessorEditor::timerCallback()
 {
     // === update titleBar widgets according to available input/output channel counts
     auto sizes = processor.getMaxSize();
-    sizes.first = jmin (sizes.first, sizes.second);
+    sizes.first = juce::jmin (sizes.first, sizes.second);
     sizes.second = sizes.first;
     title.setMaxSize (sizes);
     // ==========================================

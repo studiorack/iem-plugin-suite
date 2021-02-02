@@ -29,26 +29,26 @@
 #include "../../resources/lookAndFeel/IEM_LaF.h"
 #include "../../resources/customComponents/TitleBar.h"
 
-//Custom Components
+//Custom juce::Components
 #include "../../resources/customComponents/ReverseSlider.h"
 #include "../../resources/customComponents/SimpleLabel.h"
 
 
 typedef ReverseSlider::SliderAttachment SliderAttachment; // all ReverseSliders will make use of the parameters' valueToText() function
-typedef AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
-typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
+typedef juce::AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
+typedef juce::AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 
 //==============================================================================
 /**
 */
-class ToolBoxAudioProcessorEditor  : public AudioProcessorEditor, private Timer
+class ToolBoxAudioProcessorEditor  : public juce::AudioProcessorEditor, private juce::Timer
 {
 public:
-    ToolBoxAudioProcessorEditor (ToolBoxAudioProcessor&, AudioProcessorValueTreeState&);
+    ToolBoxAudioProcessorEditor (ToolBoxAudioProcessor&, juce::AudioProcessorValueTreeState&);
     ~ToolBoxAudioProcessorEditor();
 
     //==============================================================================
-    void paint (Graphics&) override;
+    void paint (juce::Graphics&) override;
     void resized() override;
 
 
@@ -59,9 +59,9 @@ private:
     // lookAndFeel class with the IEM plug-in suite design
     LaF globalLaF;
 
-    // stored references to the AudioProcessor and ValueTreeState holding all the parameters
+    // stored references to the AudioProcessor and juce::ValueTreeState holding all the parameters
     ToolBoxAudioProcessor& processor;
-    AudioProcessorValueTreeState& valueTreeState;
+    juce::AudioProcessorValueTreeState& valueTreeState;
 
 
     /* title and footer component
@@ -82,16 +82,16 @@ private:
     std::unique_ptr<ComboBoxAttachment> cbInputNormalizationSettingAttachment;
     std::unique_ptr<ComboBoxAttachment> cbOutputNormalizationSettingAttachment;
 
-    GroupComponent gcFlip;
-    ToggleButton tbFlipX, tbFlipY, tbFlipZ;
+    juce::GroupComponent gcFlip;
+    juce::ToggleButton tbFlipX, tbFlipY, tbFlipZ;
     std::unique_ptr<ButtonAttachment> tbFlipXAttachment, tbFlipYAttachment, tbFlipZAttachment;
 
-    GroupComponent gcLOAWeighting;
-    ComboBox cbLoaWeights;
+    juce::GroupComponent gcLOAWeighting;
+    juce::ComboBox cbLoaWeights;
     std::unique_ptr<ComboBoxAttachment> cbLoaWeightsAttachment;
     SimpleLabel lbLoaWeights;
 
-    GroupComponent gcGain;
+    juce::GroupComponent gcGain;
     ReverseSlider slGain;
     std::unique_ptr<SliderAttachment> slGainAttachment;
 

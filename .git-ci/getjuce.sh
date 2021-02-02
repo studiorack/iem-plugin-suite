@@ -9,7 +9,7 @@ OUTDIR=$3
 rm -rf "${OUTDIR}"
 mkdir -p "${OUTDIR}"
 
-URL=https://github.com/WeAreROLI/JUCE/releases/download/${JUCEVERSION}/juce-${JUCEVERSION}-${OSFLAVOUR}.zip
+URL=https://github.com/juce-framework/JUCE/releases/download/${JUCEVERSION}/juce-${JUCEVERSION}-${OSFLAVOUR}.zip
 echo "getting juce.zip from ${URL}"
 
 curl -L -o juce.zip "${URL}"

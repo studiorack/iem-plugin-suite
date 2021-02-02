@@ -28,32 +28,32 @@
 //==============================================================================
 /*
 */
-class LoudspeakerTableComponent : public Component, public TableListBoxModel
+class LoudspeakerTableComponent : public juce::Component, public juce::TableListBoxModel
 {
 
 public:
-    LoudspeakerTableComponent(ValueTree& loudspeakers, LoudspeakerVisualizer& visualizer, EnergyDistributionVisualizer& energyVis, UndoManager& undoM, AllRADecoderAudioProcessor& audioProcessor) : data(loudspeakers), undoManager(undoM), processor(audioProcessor), lspVisualizer(visualizer), engVisualizer(energyVis)
+    LoudspeakerTableComponent (juce::ValueTree& loudspeakers, LoudspeakerVisualizer& visualizer, EnergyDistributionVisualizer& energyVis, juce::UndoManager& undoM, AllRADecoderAudioProcessor& audioProcessor) : data(loudspeakers), undoManager(undoM), processor(audioProcessor), lspVisualizer(visualizer), engVisualizer(energyVis)
     {
         typeFace = getLookAndFeel().getTypefaceForFont(12);
 
         addAndMakeVisible (table);
         table.setModel (this);
-        table.setColour (ListBox::outlineColourId, Colours::grey);
+        table.setColour (juce::ListBox::outlineColourId, juce::Colours::grey);
         table.setOutlineThickness (1);
 
-        table.getHeader().addColumn(getAttributeNameForColumnId(1), 1, 23, 20, 25, TableHeaderComponent::notSortable);
-        table.getHeader().addColumn(getAttributeNameForColumnId(2), 2, 55);
-        table.getHeader().addColumn(getAttributeNameForColumnId(3), 3, 55);
-        table.getHeader().addColumn(getAttributeNameForColumnId(4), 4, 45);
-        table.getHeader().addColumn(getAttributeNameForColumnId(5), 5, 50);
-        table.getHeader().addColumn(getAttributeNameForColumnId(6), 6, 50);
-        table.getHeader().addColumn(getAttributeNameForColumnId(7), 7, 33);
-        table.getHeader().addColumn(getAttributeNameForColumnId(9), 9, 40, 40, 40, TableHeaderComponent::notSortable);
-        table.getHeader().addColumn(getAttributeNameForColumnId(8), 8, 60, 60, 60, TableHeaderComponent::notSortable);
+        table.getHeader().addColumn (getAttributeNameForColumnId (1), 1, 23, 20, 25, juce::TableHeaderComponent::notSortable);
+        table.getHeader().addColumn (getAttributeNameForColumnId (2), 2, 55);
+        table.getHeader().addColumn (getAttributeNameForColumnId (3), 3, 55);
+        table.getHeader().addColumn (getAttributeNameForColumnId (4), 4, 45);
+        table.getHeader().addColumn (getAttributeNameForColumnId (5), 5, 50);
+        table.getHeader().addColumn (getAttributeNameForColumnId (6), 6, 50);
+        table.getHeader().addColumn (getAttributeNameForColumnId (7), 7, 33);
+        table.getHeader().addColumn (getAttributeNameForColumnId (9), 9, 40, 40, 40, juce::TableHeaderComponent::notSortable);
+        table.getHeader().addColumn (getAttributeNameForColumnId (8), 8, 60, 60, 60, juce::TableHeaderComponent::notSortable);
 
         table.setHeaderHeight(23);
         table.setMultipleSelectionEnabled (false);
-        table.setColour (ListBox::outlineColourId, Colours::steelblue);
+        table.setColour (juce::ListBox::outlineColourId, juce::Colours::steelblue);
         table.setOutlineThickness (0);
     }
 
@@ -63,7 +63,7 @@ public:
 
     void playNoise (const int row)
     {
-        const auto& modifiers = ModifierKeys::getCurrentModifiers();
+        const auto& modifiers = juce::ModifierKeys::getCurrentModifiers();
         if (modifiers.isAltDown())
         {
             const float azimuth = (float) data.getChild (row).getProperty ("Azimuth");
@@ -86,12 +86,12 @@ public:
         engVisualizer.setActiveSpeakerIndex(lastRowSelected);
     }
 
-    void paintRowBackground (Graphics& g, int rowNumber, int /*width*/, int /*height*/, bool rowIsSelected) override
+    void paintRowBackground (juce::Graphics& g, int rowNumber, int /*width*/, int /*height*/, bool rowIsSelected) override
     {
-        const Colour alternateColour (getLookAndFeel().findColour (ListBox::backgroundColourId)
-                                      .interpolatedWith (getLookAndFeel().findColour (ListBox::textColourId), 0.03f));
+        const juce::Colour alternateColour (getLookAndFeel().findColour (juce::ListBox::backgroundColourId)
+                                      .interpolatedWith (getLookAndFeel().findColour (juce::ListBox::textColourId), 0.03f));
         if (rowIsSelected)
-            g.fillAll (Colours::limegreen.withMultipliedAlpha(0.3f));
+            g.fillAll (juce::Colours::limegreen.withMultipliedAlpha(0.3f));
         else if (rowNumber % 2)
             g.fillAll (alternateColour);
     }
@@ -101,16 +101,16 @@ public:
         return data.getNumChildren();
     }
 
-    void paintCell (Graphics& g, int rowNumber, int columnId,
+    void paintCell (juce::Graphics& g, int rowNumber, int columnId,
                     int width, int height, bool /*rowIsSelected*/) override
     {
-        g.setColour (getLookAndFeel().findColour (ListBox::textColourId));
+        g.setColour (getLookAndFeel().findColour (juce::ListBox::textColourId));
         g.setFont (typeFace);
 
         if (columnId == 1)
-            g.drawText (String(rowNumber + 1), 2, 0, width - 4, height, Justification::centred, true);
+            g.drawText (juce::String(rowNumber + 1), 2, 0, width - 4, height, juce::Justification::centred, true);
         else
-            g.drawText (getText(columnId, rowNumber), 2, 0, width - 4, height, Justification::centred, true);
+            g.drawText (getText(columnId, rowNumber), 2, 0, width - 4, height, juce::Justification::centred, true);
 
     }
 
@@ -133,27 +133,14 @@ public:
     }
 
     // This is overloaded from TableListBoxModel, and must update any custom components that we're using
-    Component* refreshComponentForCell (int rowNumber, int columnId, bool /*isRowSelected*/,
-                                        Component* existingComponentToUpdate) override
+    juce::Component* refreshComponentForCell (int rowNumber, int columnId, bool /*isRowSelected*/,
+                                        juce::Component* existingComponentToUpdate) override
     {
         if (columnId == 1) // The ID and Length columns do not have a custom component
         {
             jassert (existingComponentToUpdate == nullptr);
             return nullptr;
         }
-
-//        if (columnId == 5) // For the ratings column, we return the custom combobox component
-//        {
-//            RatingColumnCustomComponent* ratingsBox = static_cast<RatingColumnCustomComponent*> (existingComponentToUpdate);
-//
-//            // If an existing component is being passed-in for updating, we'll re-use it, but
-//            // if not, we'll have to create one.
-//            if (ratingsBox == nullptr)
-//                ratingsBox = new RatingColumnCustomComponent (*this);
-//
-//            ratingsBox->setRowAndColumn (rowNumber, columnId);
-//            return ratingsBox;
-//        }
 
         else if (columnId == 6) // Imaginary
         {
@@ -187,7 +174,7 @@ public:
         }
 
 
-        // The other columns are editable text columns, for which we use the custom Label component
+        // The other columns are editable text columns, for which we use the custom juce::Label component
         EditableTextCustomComponent* textLabel = static_cast<EditableTextCustomComponent*> (existingComponentToUpdate);
 
         // same as above...
@@ -198,7 +185,7 @@ public:
         return textLabel;
     }
 
-    String getAttributeNameForColumnId (const int columnId) const
+    juce::String getAttributeNameForColumnId (const int columnId) const
     {
         switch (columnId) {
             case 1: return "ID"; break;
@@ -231,19 +218,19 @@ public:
         table.setBounds(getLocalBounds());
     }
 
-    String getText (const int columnId, const int rowNumber) const
+    juce::String getText (const int columnId, const int rowNumber) const
     {
         if (columnId == 5 && data.getChild(rowNumber).getProperty(getAttributeNameForColumnId(columnId)).isInt())
         {
             const int value = data.getChild(rowNumber).getProperty(getAttributeNameForColumnId(columnId));
-            return String(value);
+            return juce::String(value);
         }
         else if (data.getChild(rowNumber).getProperty(getAttributeNameForColumnId(columnId)).isDouble())
         {
             const float value = data.getChild(rowNumber).getProperty(getAttributeNameForColumnId(columnId));
-            String ret = String(value, 0);
+            juce::String ret = juce::String (value, 0);
             if (columnId == 2 || columnId == 3)
-                ret = ret + String(CharPointer_UTF8 (R"(°)"));
+                ret = ret + juce::String (juce::CharPointer_UTF8 (R"(°)"));
             return ret;
         }
         else return("NaN");
@@ -273,28 +260,28 @@ public:
     }
 
 private:
-    TableListBox table;     // the table component itself
-    Typeface::Ptr typeFace;
-    ValueTree& data;
-    UndoManager& undoManager;
+    juce::TableListBox table;     // the table component itself
+    juce::Typeface::Ptr typeFace;
+    juce::ValueTree& data;
+    juce::UndoManager& undoManager;
 
     AllRADecoderAudioProcessor& processor;
     LoudspeakerVisualizer& lspVisualizer;
     EnergyDistributionVisualizer& engVisualizer;
 
-    class EditableTextCustomComponent  : public Label
+    class EditableTextCustomComponent  : public juce::Label
     {
     public:
         EditableTextCustomComponent (LoudspeakerTableComponent& td)  : owner (td)
         {
             setEditable (false, true, false);
-            setJustificationType(Justification::centred);
+            setJustificationType (juce::Justification::centred);
         }
 
-        void mouseDown (const MouseEvent& event) override
+        void mouseDown (const juce::MouseEvent& event) override
         {
             owner.table.selectRowsBasedOnModifierKeys (row, event.mods, false);
-            Label::mouseDown (event);
+            juce::Label::mouseDown (event);
         }
 
         void textWasEdited() override
@@ -309,52 +296,52 @@ private:
         {
             row = newRow;
             columnId = newColumn;
-            setText (owner.getText(columnId, row), dontSendNotification);
+            setText (owner.getText(columnId, row), juce::dontSendNotification);
         }
 
-        void paint (Graphics& g) override
+        void paint (juce::Graphics& g) override
         {
             if (! isBeingEdited())
             {
                 const float alpha = isEnabled() ? 1.0f : 0.5f;
 
                 if ((columnId == 4 || columnId == 7) && ! owner.data.getChild(row).getProperty("Imaginary"))
-                    g.setColour (Colours::white.withMultipliedAlpha(0.4f));
+                    g.setColour (juce::Colours::white.withMultipliedAlpha(0.4f));
                 else
                 {
                     if (columnId == 5 && owner.data.getChild(row).getProperty("Imaginary"))
-                        g.setColour (Colours::white.withMultipliedAlpha(0.4f));
+                        g.setColour (juce::Colours::white.withMultipliedAlpha(0.4f));
                     else
-                        g.setColour (Colours::white);
+                        g.setColour (juce::Colours::white);
                 }
 
 
-                g.setFont (getLookAndFeel().getTypefaceForFont(Font(12.0f)));
+                g.setFont (getLookAndFeel().getTypefaceForFont (juce::Font(12.0f)));
                 g.setFont (13.f);
 
-                Rectangle<int> textArea (getBorderSize().subtractedFrom (getLocalBounds()));
+                juce::Rectangle<int> textArea (getBorderSize().subtractedFrom (getLocalBounds()));
 
                 g.drawFittedText (getText(), textArea, getJustificationType(),
-                                  jmax (1, (int) (textArea.getHeight() / 12.0f)),
+                                  juce::jmax (1, (int) (textArea.getHeight() / 12.0f)),
                                   getMinimumHorizontalScale());
 
-                g.setColour (findColour (Label::outlineColourId).withMultipliedAlpha (alpha));
+                g.setColour (findColour (juce::Label::outlineColourId).withMultipliedAlpha (alpha));
             }
         }
 
     private:
         LoudspeakerTableComponent& owner;
         int row, columnId;
-        Colour textColour;
+        juce::Colour textColour;
     };
 
-    class RemoveButton  : public TextButton
+    class RemoveButton  : public juce::TextButton
     {
     public:
         RemoveButton (LoudspeakerTableComponent& td)  : owner (td)
         {
             setButtonText("Remove");
-            setColour(TextButton::buttonColourId, Colours::orangered);
+            setColour(juce::TextButton::buttonColourId, juce::Colours::orangered);
             onClick = [this](){ owner.undoManager.beginNewTransaction(); owner.data.removeChild(owner.data.getChild(row), &owner.undoManager);};
         }
 
@@ -364,14 +351,14 @@ private:
             columnId = newColumn;
         }
 
-        void paintButton (Graphics& g, bool isMouseOverButton, bool isButtonDown) override
+        void paintButton (juce::Graphics& g, bool isMouseOverButton, bool isButtonDown) override
         {
-            LookAndFeel& lf = getLookAndFeel();
+            juce::LookAndFeel& lf = getLookAndFeel();
 
-            Rectangle<float> buttonArea(0.0f, 0.0f, getWidth(), getHeight());
+            juce::Rectangle<float> buttonArea(0.0f, 0.0f, getWidth(), getHeight());
             buttonArea.reduce(2.0f, 2.0f);
 
-            g.setColour(findColour(TextButton::buttonColourId).withMultipliedAlpha(isButtonDown ? 1.0f : isMouseOverButton ? 0.7f : 0.5f));
+            g.setColour(findColour(juce::TextButton::buttonColourId).withMultipliedAlpha(isButtonDown ? 1.0f : isMouseOverButton ? 0.7f : 0.5f));
             if (isButtonDown)
                 buttonArea.reduce(0.8f, 0.8f);
             else if (isMouseOverButton)
@@ -380,7 +367,7 @@ private:
             g.drawRoundedRectangle(buttonArea, 2.0f, 1.0f);
 
             buttonArea.reduce(1.5f, 1.5f);
-            g.setColour(findColour(TextButton::buttonColourId).withMultipliedAlpha(isButtonDown ? 1.0f : isMouseOverButton ? 0.5f : 0.2f));
+            g.setColour(findColour(juce::TextButton::buttonColourId).withMultipliedAlpha(isButtonDown ? 1.0f : isMouseOverButton ? 0.5f : 0.2f));
 
             g.fillRoundedRectangle(buttonArea, 2.0f);
 
@@ -392,13 +379,13 @@ private:
         int row, columnId;
     };
 
-    class NoiseButton  : public TextButton
+    class NoiseButton  : public juce::TextButton
     {
     public:
         NoiseButton (LoudspeakerTableComponent& td)  : owner (td)
         {
             setButtonText("Noise");
-            setColour(TextButton::buttonColourId, Colours::green);
+            setColour (juce::TextButton::buttonColourId, juce::Colours::green);
             onClick = [this](){ owner.playNoise(row); };
         }
 
@@ -408,14 +395,14 @@ private:
             column = newColumn;
         }
 
-        void paintButton (Graphics& g, bool isMouseOverButton, bool isButtonDown) override
+        void paintButton (juce::Graphics& g, bool isMouseOverButton, bool isButtonDown) override
         {
-            LookAndFeel& lf = getLookAndFeel();
+            juce::LookAndFeel& lf = getLookAndFeel();
 
-            Rectangle<float> buttonArea(0.0f, 0.0f, getWidth(), getHeight());
+            juce::Rectangle<float> buttonArea(0.0f, 0.0f, getWidth(), getHeight());
             buttonArea.reduce(2.0f, 2.0f);
 
-            g.setColour(findColour(TextButton::buttonColourId).withMultipliedAlpha(isButtonDown ? 1.0f : isMouseOverButton ? 0.7f : 0.5f));
+            g.setColour(findColour(juce::TextButton::buttonColourId).withMultipliedAlpha(isButtonDown ? 1.0f : isMouseOverButton ? 0.7f : 0.5f));
             if (isButtonDown)
                 buttonArea.reduce(0.8f, 0.8f);
             else if (isMouseOverButton)
@@ -424,7 +411,7 @@ private:
             g.drawRoundedRectangle(buttonArea, 2.0f, 1.0f);
 
             buttonArea.reduce(1.5f, 1.5f);
-            g.setColour(findColour(TextButton::buttonColourId).withMultipliedAlpha(isButtonDown ? 1.0f : isMouseOverButton ? 0.5f : 0.2f));
+            g.setColour(findColour(juce::TextButton::buttonColourId).withMultipliedAlpha(isButtonDown ? 1.0f : isMouseOverButton ? 0.5f : 0.2f));
 
             g.fillRoundedRectangle(buttonArea, 2.0f);
 
@@ -437,21 +424,21 @@ private:
     };
 
 
-    class ImaginaryButton  : public Component
+    class ImaginaryButton  : public juce::Component
     {
     public:
         ImaginaryButton (LoudspeakerTableComponent& td)  : owner (td)
         {
             addAndMakeVisible(button);
             button.setButtonText("");
-            button.setColour(ToggleButton::tickColourId, Colours::orange);
+            button.setColour (juce::ToggleButton::tickColourId, juce::Colours::orange);
             button.onClick = [this](){
                 owner.setBool(columnId, row, button.getToggleState());
                 owner.repaint();
             };
         }
 
-        void mouseDown (const MouseEvent& event) override
+        void mouseDown (const juce::MouseEvent& event) override
         {
             owner.table.selectRowsBasedOnModifierKeys (row, event.mods, false);
         }
@@ -460,12 +447,12 @@ private:
         {
             row = newRow;
             columnId = newColumn;
-            button.setToggleState(owner.getBool(columnId, row), dontSendNotification);
+            button.setToggleState(owner.getBool(columnId, row), juce::dontSendNotification);
         }
 
         void resized() override
         {
-            Rectangle<int> bounds = getLocalBounds();
+            juce::Rectangle<int> bounds = getLocalBounds();
             const int height = bounds.getHeight();
             button.setBounds(bounds.reduced((bounds.getWidth() - height)/2, 0));
         }
@@ -473,19 +460,19 @@ private:
     private:
         LoudspeakerTableComponent& owner;
         int row, columnId;
-        ToggleButton button;
+        juce::ToggleButton button;
     };
 
     class DataSorter
     {
     public:
-        DataSorter (const String& attributeToSortBy, bool forwards)
+        DataSorter (const juce::String& attributeToSortBy, bool forwards)
         : attributeToSort (attributeToSortBy),
         direction (forwards ? 1 : -1)
         {
         }
 
-        int compareElements (const ValueTree& first, const ValueTree& second) const
+        int compareElements (const juce::ValueTree& first, const juce::ValueTree& second) const
         {
             int result = first.getProperty(attributeToSort).toString()
             .compareNatural (second.getProperty(attributeToSort).toString());
@@ -493,7 +480,7 @@ private:
         }
 
     private:
-        String attributeToSort;
+        juce::String attributeToSort;
         int direction;
     };
 

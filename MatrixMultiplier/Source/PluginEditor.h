@@ -29,32 +29,32 @@
 #include "../../resources/lookAndFeel/IEM_LaF.h"
 #include "../../resources/customComponents/TitleBar.h"
 
-//Custom Components
+//Custom juce::Components
 #include "../../resources/customComponents/ReverseSlider.h"
 #include "../../resources/customComponents/SimpleLabel.h"
 
 
 typedef ReverseSlider::SliderAttachment SliderAttachment; // all ReverseSliders will make use of the parameters' valueToText() function
-typedef AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
-typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
+typedef juce::AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
+typedef juce::AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 
 //==============================================================================
 /**
 */
-class MatrixMultiplierAudioProcessorEditor  : public AudioProcessorEditor, private Timer, private Button::Listener
+class MatrixMultiplierAudioProcessorEditor  : public juce::AudioProcessorEditor, private juce::Timer, private juce::Button::Listener
 {
 public:
-    MatrixMultiplierAudioProcessorEditor (MatrixMultiplierAudioProcessor&, AudioProcessorValueTreeState&);
+    MatrixMultiplierAudioProcessorEditor (MatrixMultiplierAudioProcessor&, juce::AudioProcessorValueTreeState&);
     ~MatrixMultiplierAudioProcessorEditor();
 
     //==============================================================================
-    void paint (Graphics&) override;
+    void paint (juce::Graphics&) override;
     void resized() override;
 
 
     void timerCallback() override;
-    void buttonClicked (Button* button) override;
-    void buttonStateChanged (Button* button) override;
+    void buttonClicked (juce::Button* button) override;
+    void buttonStateChanged (juce::Button* button) override;
     void loadConfigurationFile();
 
 
@@ -63,9 +63,9 @@ private:
     // lookAndFeel class with the IEM plug-in suite design
     LaF globalLaF;
 
-    // stored references to the AudioProcessor and ValueTreeState holding all the parameters
+    // stored references to the AudioProcessor and juce::ValueTreeState holding all the parameters
     MatrixMultiplierAudioProcessor& processor;
-    AudioProcessorValueTreeState& valueTreeState;
+    juce::AudioProcessorValueTreeState& valueTreeState;
 
 
     /* title and footer component
@@ -82,8 +82,8 @@ private:
     // Attachments to create a connection between IOWidgets comboboxes
     // and the associated parameters
 
-    TextButton btLoadFile;
-    TextEditor edOutput;
+    juce::TextButton btLoadFile;
+    juce::TextEditor edOutput;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MatrixMultiplierAudioProcessorEditor)
 };

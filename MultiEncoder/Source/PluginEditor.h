@@ -32,26 +32,26 @@
 #include "../../resources/customComponents/SpherePanner.h"
 #include "MasterControlWithText.h"
 #include "EncoderList.h"
-
+#include "EnergySpherePanner.h"
 
 
 typedef ReverseSlider::SliderAttachment SliderAttachment;
-typedef AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
-typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
+typedef juce::AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
+typedef juce::AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 
 //==============================================================================
 /**
 */
-class MultiEncoderAudioProcessorEditor  : public AudioProcessorEditor,
-private Timer,
+class MultiEncoderAudioProcessorEditor  : public juce::AudioProcessorEditor,
+private juce::Timer,
 private SpherePanner::Listener
 {
 public:
-    MultiEncoderAudioProcessorEditor (MultiEncoderAudioProcessor&, AudioProcessorValueTreeState&);
+    MultiEncoderAudioProcessorEditor (MultiEncoderAudioProcessor&, juce::AudioProcessorValueTreeState&);
     ~MultiEncoderAudioProcessorEditor();
 
     //==============================================================================
-    void paint (Graphics&) override;
+    void paint (juce::Graphics&) override;
     void resized() override;
 
     void importLayout();
@@ -61,20 +61,33 @@ private:
     OSCFooter footer;
 
     void timerCallback() override;
-    void mouseWheelOnSpherePannerMoved (SpherePanner* sphere, const MouseEvent &event, const MouseWheelDetails &wheel) override;
+    void mouseWheelOnSpherePannerMoved (SpherePanner* sphere, const juce::MouseEvent &event, const juce::MouseWheelDetails &wheel) override;
 
     MultiEncoderAudioProcessor& processor;
-    AudioProcessorValueTreeState& valueTreeState;
+    juce::AudioProcessorValueTreeState& valueTreeState;
 
-    GroupComponent masterGroup, encoderGroup;
-    TextButton tbImport;
+    juce::GroupComponent masterGroup, encoderGroup, rmsGroup;
+    juce::TextButton tbImport;
 
     ReverseSlider slMasterAzimuth, slMasterElevation, slMasterRoll;
+    juce::ToggleButton tbLockedToMaster;
 
-    ToggleButton tbLockedToMaster;
-    ComboBox inputChooser;
+    ReverseSlider slDynamicRange;
+    std::unique_ptr<SliderAttachment> slDynamicRangeAttachment;
+    SimpleLabel lbDynamicRange;
 
-    SpherePanner sphere;
+    ReverseSlider slPeakLevel;
+    std::unique_ptr<SliderAttachment> slPeakLevelAttachment;
+    SimpleLabel lbPeakLevel;
+
+
+    juce::ToggleButton tbAnalyzeRMS;
+    std::unique_ptr<ButtonAttachment> tbAnalyzeRMSAttachment;
+
+
+    juce::ComboBox inputChooser;
+
+    EnergySpherePanner sphere;
     SpherePanner::AzimuthElevationParameterElement masterElement;
 
     std::unique_ptr<SliderAttachment> slMasterAzimuthAttachment;
@@ -85,10 +98,10 @@ private:
     std::unique_ptr<ComboBoxAttachment> cbNumInputChannelsAttachment, cbNormalizationAtachment;
     std::unique_ptr<ComboBoxAttachment> cbOrderAtachment;
 
-    Viewport viewport;
-    EncoderList encoderList;
+    juce::Viewport viewport;
+    std::unique_ptr<EncoderList> encoderList;
 
-    TooltipWindow tooltipWin;
+    juce::TooltipWindow tooltipWin;
 
     int maxPossibleOrder = -1;
     int maxNumInputs = -1;
@@ -96,7 +109,7 @@ private:
 
     // labels
     SimpleLabel lbNum;
-    MasterControlWithText lbAzimuth, lbElevation, lbGain;
+    std::unique_ptr<MasterControlWithText> lbAzimuth, lbElevation, lbGain;
     SimpleLabel lbMasterAzimuth, lbMasterElevation, lbMasterRoll;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MultiEncoderAudioProcessorEditor)

@@ -29,7 +29,7 @@
 #include "../../resources/lookAndFeel/IEM_LaF.h"
 #include "../../resources/customComponents/TitleBar.h"
 
-//Custom Components
+//Custom juce::Components
 #include "../../resources/customComponents/ReverseSlider.h"
 #include "../../resources/customComponents/SimpleLabel.h"
 #include "../../resources/customComponents/HammerAitovGrid.h"
@@ -38,32 +38,32 @@
 
 
 typedef ReverseSlider::SliderAttachment SliderAttachment;
-typedef AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
-typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
+typedef juce::AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
+typedef juce::AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 
 //==============================================================================
 /**
 */
-class EnergyVisualizerAudioProcessorEditor  : public AudioProcessorEditor, private Timer, Slider::Listener
+class EnergyVisualizerAudioProcessorEditor  : public juce::AudioProcessorEditor, private juce::Timer, juce::Slider::Listener
 {
 public:
-    EnergyVisualizerAudioProcessorEditor (EnergyVisualizerAudioProcessor&, AudioProcessorValueTreeState&);
+    EnergyVisualizerAudioProcessorEditor (EnergyVisualizerAudioProcessor&, juce::AudioProcessorValueTreeState&);
     ~EnergyVisualizerAudioProcessorEditor();
 
     //==============================================================================
-    void paint (Graphics&) override;
+    void paint (juce::Graphics&) override;
     void resized() override;
 
 private:
     LaF globalLaF;
 
     EnergyVisualizerAudioProcessor& processor;
-    AudioProcessorValueTreeState& valueTreeState;
+    juce::AudioProcessorValueTreeState& valueTreeState;
 
     VisualizerComponent visualizer;
     VisualizerColormap colormap;
 
-    void sliderValueChanged (Slider *slider) override;
+    void sliderValueChanged (juce::Slider *slider) override;
     void timerCallback() override;
 
     TitleBar<AmbisonicIOWidget<>, NoIOWidget> title;

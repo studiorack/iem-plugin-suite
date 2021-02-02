@@ -24,7 +24,7 @@
 #pragma once
 #include "WalshHadamard/fwht.h"
 #include "../JuceLibraryCode/JuceHeader.h"
-using namespace dsp;
+using namespace juce::dsp;
 class FeedbackDelayNetwork : private ProcessorBase
 {
     static constexpr int maxDelayLength = 30;
@@ -68,7 +68,7 @@ public:
         params.dryWetChanged = true;
     }
 
-    void prepare (const ProcessSpec& newSpec) override {
+    void prepare (const juce::dsp::ProcessSpec& newSpec) override {
         spec = newSpec;
 
         indices = indexGen (fdnSize, delayLength);
@@ -82,8 +82,8 @@ public:
         }
     }
 
-    void process (const ProcessContextReplacing<float>& context) override {
-        ScopedNoDenormals noDenormals;
+    void process (const juce::dsp::ProcessContextReplacing<float>& context) override {
+        juce::ScopedNoDenormals noDenormals;
 
         // parameter change thread safety
         if (params.dryWetChanged)
@@ -128,7 +128,7 @@ public:
         params.needParameterUpdate = false;
 
 
-        AudioBlock<float>& buffer = context.getOutputBlock();
+        juce::dsp::AudioBlock<float>& buffer = context.getOutputBlock();
 
         const int nChannels = static_cast<int> (buffer.getNumChannels());
         const int numSamples = static_cast<int> (buffer.getNumSamples());
@@ -244,7 +244,7 @@ public:
 
     void setDelayLength (int newDelayLength)
     {
-        params.newDelayLength = jmin (newDelayLength, maxDelayLength);
+        params.newDelayLength = juce::jmin (newDelayLength, maxDelayLength);
         params.delayLengthChanged = true;
     }
 
@@ -274,17 +274,17 @@ public:
 
     void getT60ForFrequencyArray(double* frequencies, double* t60Data, size_t numSamples) {
         juce::dsp::IIR::Coefficients<float> coefficients;
-        coefficients = *IIR::Coefficients<float>::makeLowShelf (spec.sampleRate, jmin (0.5 * spec.sampleRate, static_cast<double> (lowShelfParameters.frequency)), lowShelfParameters.q, lowShelfParameters.linearGain);
+        coefficients = *IIR::Coefficients<float>::makeLowShelf (spec.sampleRate, juce::jmin (0.5 * spec.sampleRate, static_cast<double> (lowShelfParameters.frequency)), lowShelfParameters.q, lowShelfParameters.linearGain);
 
         std::vector<double> temp;
         temp.resize(numSamples);
 
         coefficients.getMagnitudeForFrequencyArray(frequencies, t60Data, numSamples, spec.sampleRate);
-        coefficients = *IIR::Coefficients<float>::makeHighShelf (spec.sampleRate, jmin (0.5 * spec.sampleRate, static_cast<double> (highShelfParameters.frequency)), highShelfParameters.q, highShelfParameters.linearGain);
+        coefficients = *IIR::Coefficients<float>::makeHighShelf (spec.sampleRate, juce::jmin (0.5 * spec.sampleRate, static_cast<double> (highShelfParameters.frequency)), highShelfParameters.q, highShelfParameters.linearGain);
         coefficients.getMagnitudeForFrequencyArray(frequencies, &temp[0], numSamples, spec.sampleRate);
 
-        FloatVectorOperations::multiply (&temp[0], t60Data, static_cast<int> (numSamples));
-        FloatVectorOperations::multiply (&temp[0], overallGain, static_cast<int> (numSamples));
+        juce::FloatVectorOperations::multiply (&temp[0], t60Data, static_cast<int> (numSamples));
+        juce::FloatVectorOperations::multiply (&temp[0], overallGain, static_cast<int> (numSamples));
 
         for (int i = 0; i < numSamples; ++i)
         {
@@ -314,14 +314,14 @@ public:
 
 private:
     //==============================================================================
-    ProcessSpec spec = {-1, 0, 0};
+    juce::dsp::ProcessSpec spec = {-1, 0, 0};
 
-    OwnedArray<AudioBuffer<float>> delayBufferVector;
-    OwnedArray<IIRFilter> highShelfFilters;
-    OwnedArray<IIRFilter> lowShelfFilters;
-    Array<int> delayPositionVector;
-    Array<float> feedbackGainVector;
-    Array<float> transferVector;
+    juce::OwnedArray<juce::AudioBuffer<float>> delayBufferVector;
+    juce::OwnedArray<juce::IIRFilter> highShelfFilters;
+    juce::OwnedArray<juce::IIRFilter> lowShelfFilters;
+    juce::Array<int> delayPositionVector;
+    juce::Array<float> feedbackGainVector;
+    juce::Array<float> transferVector;
 
     std::vector<int> primeNumbers;
     std::vector<int> indices;
@@ -459,18 +459,18 @@ private:
             for (int channel = 0; channel < fdnSize; ++channel)
             {
                 lowShelfFilters[channel]->setCoefficients (
-                    IIRCoefficients::makeLowShelf (
+                    juce::IIRCoefficients::makeLowShelf (
                         spec.sampleRate,
-                        jmin (0.5 * spec.sampleRate, static_cast<double> (lowShelfParameters.frequency)),
+                        juce::jmin (0.5 * spec.sampleRate, static_cast<double> (lowShelfParameters.frequency)),
                         lowShelfParameters.q,
                         channelGainConversion (
                             channel,
                             lowShelfParameters.linearGain)));
 
                 highShelfFilters[channel]->setCoefficients (
-                    IIRCoefficients::makeHighShelf (
+                    juce::IIRCoefficients::makeHighShelf (
                         spec.sampleRate,
-                        jmin (0.5 * spec.sampleRate, static_cast<double> (highShelfParameters.frequency)),
+                        juce::jmin (0.5 * spec.sampleRate, static_cast<double> (highShelfParameters.frequency)),
                         highShelfParameters.q,
                         channelGainConversion (
                             channel,
@@ -486,9 +486,9 @@ private:
             {
                 for (int i = 0; i < diff; i++)
                 {
-                    delayBufferVector.add (new AudioBuffer<float>());
-                    highShelfFilters.add (new IIRFilter());
-                    lowShelfFilters.add (new IIRFilter());
+                    delayBufferVector.add (new juce::AudioBuffer<float>());
+                    highShelfFilters.add (new juce::IIRFilter());
+                    lowShelfFilters.add (new juce::IIRFilter());
                 }
             }
             else

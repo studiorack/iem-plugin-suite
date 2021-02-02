@@ -2,10 +2,10 @@
 
 variables:
 ## leave this uncommented to build all projects (except _PluginTemplate)
-#  PROJECTS: AllRADecoder BinauralDecoder DirectionalCompressor DirectivityShaper DistanceCompensator DualDelay EnergyVisualizer FdnReverb MatrixMultiplier MultiEncoder OmniCompressor ProbeDecoder RoomEncoder SimpleDecoder StereoEncoder ToolBox
+  #PROJECTS: AllRADecoder BinauralDecoder CoordinateConverter DirectionalCompressor DirectivityShaper DistanceCompensator DualDelay EnergyVisualizer FdnReverb MatrixMultiplier MultiBandCompressor MultiEncoder MultiEQ OmniCompressor ProbeDecoder RoomEncoder SceneRotator SimpleDecoder StereoEncoder ToolBox
 
   CONFIG: Release
-  JUCEVERSION: 5.4.7
+  JUCEVERSION: 6.0.7
 
 ###################################################
 # cleanup after the job (e.g. rename files for the artifacts...)
@@ -19,6 +19,7 @@ variables:
   only:
     - master
     - develop
+    - fix-ci
   except:
     - tags
   artifacts: &snapshot_artifacts
@@ -37,7 +38,7 @@ variables:
 
 .build:linux: &build_linux
   stage: build
-  image: ubuntu:disco
+  image: ubuntu:focal
   tags:
     - docker
   variables:
@@ -45,15 +46,16 @@ variables:
   script:
 # install dependencies
     - apt-get update -y
-    - apt-get dist-upgrade -y
-    - apt-get install -y --no-install-recommends xvfb xauth curl unzip build-essential ca-certificates
-    - apt-get install -y --no-install-recommends libwebkit2gtk-4.0-dev libasound2-dev libfreetype6-dev libcurl4-gnutls-dev libgl1-mesa-dev libx11-dev libxext-dev libxinerama-dev libxrandr-dev libgtk-3-dev
-    - apt-get install -y --no-install-recommends libjack-dev libfftw3-dev
+    - DEBIAN_FRONTEND=noninteractive apt-get dist-upgrade -y
+    - DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends xvfb xauth curl unzip build-essential ca-certificates
+    - DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends libwebkit2gtk-4.0-dev libasound2-dev libfreetype6-dev libcurl4-gnutls-dev libgl1-mesa-dev libx11-dev libxext-dev libxinerama-dev libxrandr-dev libgtk-3-dev
+    - DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends libjack-dev libfftw3-dev
     - .git-ci/getjuce.sh "${JUCEVERSION}" linux ~/JUCE
     - xvfb-run -a ~/JUCE/Projucer --set-global-search-path linux defaultJuceModulePath ~/JUCE/modules/
 # run the actual build
+    - test -z "${PROJECTS}" && PROJECTS=$(make showprojects)
     - make system V=1 CONFIG=${CONFIG} CPPFLAGS=-DJUCE_JACK=1 CFLAGS="$(pkg-config --cflags ${PKGLIBS})" LDFLAGS="$(pkg-config --libs ${PKGLIBS})" PARALLEL=$(nproc) TARGET_ARCH=-march=core2 PROJUCER=~/JUCE/Projucer
-    - xvfb-run -a make V=1 CONFIG=${CONFIG} CPPFLAGS=-DJUCE_JACK=1 CFLAGS="$(pkg-config --cflags ${PKGLIBS})" LDFLAGS="$(pkg-config --libs ${PKGLIBS})" PARALLEL=$(nproc) TARGET_ARCH=-march=core2 PROJUCER=~/JUCE/Projucer remove_intermediates=yes
+    - xvfb-run -a make V=1 CONFIG=${CONFIG} CPPFLAGS=-DJUCE_JACK=1 CFLAGS="$(pkg-config --cflags ${PKGLIBS})" LDFLAGS="$(pkg-config --libs ${PKGLIBS})" PARALLEL=$(nproc) TARGET_ARCH=-march=core2 PROJUCER=~/JUCE/Projucer PROJECTS="${PROJECTS}" remove_intermediates=yes
 
 # collect binaries for artifacts
     - mkdir -p IEM/standalone/
@@ -93,7 +95,7 @@ variables:
     - .git-ci/getjuce.sh "${JUCEVERSION}" windows /c/JUCE
     - .git-ci/fftw4win.sh $BITS
 # tell JUCE where to look for the vstheaders
-    - /c/JUCE/Projucer --set-global-search-path windows vst3Path ";C:/JUCE/modules/juce_audio_processors/format_types/VST3_SDK/"
+    - /c/JUCE/Projucer --set-global-search-path windows vstLegacyPath ";C:/JUCE/modules/juce_audio_processors/format_types/VST3_SDK/"
 # run the actual build
     - test -z "${PROJECTS}" && PROJECTS=$(make showprojects)
     - make system CONFIG=$CONFIG BITS=$BITS PROJUCER="/c/JUCE/Projucer.exe"

@@ -45,29 +45,29 @@ public:
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;
 
-    void processBlock (AudioSampleBuffer&, MidiBuffer&) override;
+    void processBlock (juce::AudioSampleBuffer&, juce::MidiBuffer&) override;
 
     //==============================================================================
-    AudioProcessorEditor* createEditor() override;
+    juce::AudioProcessorEditor* createEditor() override;
     bool hasEditor() const override;
 
     //==============================================================================
     int getNumPrograms() override;
     int getCurrentProgram() override;
     void setCurrentProgram (int index) override;
-    const String getProgramName (int index) override;
-    void changeProgramName (int index, const String& newName) override;
+    const juce::String getProgramName (int index) override;
+    void changeProgramName (int index, const juce::String& newName) override;
 
     //==============================================================================
-    void getStateInformation (MemoryBlock& destData) override;
+    void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
-    void parameterChanged (const String &parameterID, float newValue) override;
+    void parameterChanged (const juce::String &parameterID, float newValue) override;
     void updateBuffers() override;
 
 
     //======= Parameters ===========================================================
-    std::vector<std::unique_ptr<RangedAudioParameter>> createParameterLayout();
+    std::vector<std::unique_ptr<juce::RangedAudioParameter>> createParameterLayout();
     //==============================================================================
 
 private:
@@ -96,24 +96,24 @@ private:
 
     float _delayL, _delayR;
 
-    AudioBuffer<float> AudioIN;
+    juce::AudioBuffer<float> AudioIN;
 
-    AudioBuffer<float> delayBufferLeft;
-    AudioBuffer<float> delayBufferRight;
-    AudioBuffer<float> delayOutLeft;
-    AudioBuffer<float> delayOutRight;
-    AudioBuffer<float> delayInLeft;
-    AudioBuffer<float> delayInRight;
+    juce::AudioBuffer<float> delayBufferLeft;
+    juce::AudioBuffer<float> delayBufferRight;
+    juce::AudioBuffer<float> delayOutLeft;
+    juce::AudioBuffer<float> delayOutRight;
+    juce::AudioBuffer<float> delayInLeft;
+    juce::AudioBuffer<float> delayInRight;
 
-    AudioBuffer<float> delayTempBuffer;
-
-
-    Array<float> delay;
-    Array<int> interpCoeffIdx;
-    Array<int> idx;
+    juce::AudioBuffer<float> delayTempBuffer;
 
 
-    dsp::Oscillator<float> LFOLeft, LFORight;
+    juce::Array<float> delay;
+    juce::Array<int> interpCoeffIdx;
+    juce::Array<int> idx;
+
+
+    juce::dsp::Oscillator<float> LFOLeft, LFORight;
 
     int writeOffsetLeft;
     int writeOffsetRight;
@@ -121,17 +121,17 @@ private:
     int readOffsetRight;
 
     float* readPointer;
-    Array<float> sin_z;
-    Array<float> cos_z;
+    juce::Array<float> sin_z;
+    juce::Array<float> cos_z;
 
     void calcParams(float phi);
-    void rotateBuffer(AudioBuffer<float>* bufferToRotate, const int nChannels, const int samples);
+    void rotateBuffer(juce::AudioBuffer<float>* bufferToRotate, const int nChannels, const int samples);
     float feedback = 0.8f;
 
-    OwnedArray<IIRFilter> lowPassFiltersLeft;
-    OwnedArray<IIRFilter> lowPassFiltersRight;
-    OwnedArray<IIRFilter> highPassFiltersLeft;
-    OwnedArray<IIRFilter> highPassFiltersRight;
+    juce::OwnedArray<juce::IIRFilter> lowPassFiltersLeft;
+    juce::OwnedArray<juce::IIRFilter> lowPassFiltersRight;
+    juce::OwnedArray<juce::IIRFilter> highPassFiltersLeft;
+    juce::OwnedArray<juce::IIRFilter> highPassFiltersRight;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DualDelayAudioProcessor)
 };

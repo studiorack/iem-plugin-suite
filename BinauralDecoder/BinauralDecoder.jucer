@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <JUCERPROJECT id="mbpAgi" name="BinauralDecoder" displaySplashScreen="0" reportAppUsage="0"
-              splashScreenColour="Dark" projectType="audioplug" version="0.6.1"
+              splashScreenColour="Dark" projectType="audioplug" version="0.6.2"
               bundleIdentifier="at.iem.BinauralDecoder" includeBinaryInAppConfig="1"
               cppLanguageStandard="14" buildVST="1" buildVST3="0" buildAU="0"
               buildAUv3="0" buildRTAS="0" buildAAX="0" buildStandalone="1"
@@ -10,9 +10,10 @@
               pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
               pluginAUExportPrefix="BinauralDecoderAU" aaxIdentifier="at.iem.BinauralDecoder"
-              pluginAAXCategory="2" jucerVersion="5.4.7" companyCopyright="IEM - Daniel Rudrich"
+              pluginAAXCategory="2" companyCopyright="IEM - Daniel Rudrich"
               companyName="IEM" companyWebsite="iem.at" headerPath="../../../resources/"
-              pluginFormats="buildStandalone,buildVST" defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1">
+              pluginFormats="buildStandalone,buildVST" defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1"
+              projectLineFeed="&#10;" addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1">
   <MAINGROUP id="LpzrV9" name="BinauralDecoder">
     <GROUP id="{EF7AC960-9D48-4ED8-A418-138BEA7D0F5D}" name="Standalone">
       <FILE id="ffzwPo" name="IEM_AudioDeviceSelectorComponent.cpp" compile="1"
@@ -108,8 +109,7 @@
     </GROUP>
   </MAINGROUP>
   <EXPORTFORMATS>
-    <XCODE_MAC targetFolder="Builds/MacOSX" externalLibraries="fftw3f" smallIcon="xiu314"
-               bigIcon="xiu314">
+    <XCODE_MAC targetFolder="Builds/MacOSX" smallIcon="xiu314" bigIcon="xiu314">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="BinauralDecoder"
                        enablePluginBinaryCopyStep="1" vstBinaryLocation="$(HOME)/Library/Audio/Plug-Ins/VST/IEM/"
@@ -139,7 +139,7 @@
       </MODULEPATHS>
     </XCODE_MAC>
     <VS2017 targetFolder="Builds/VisualStudio2017" externalLibraries="libfftwf-3.3.lib"
-            smallIcon="xiu314" bigIcon="xiu314">
+            smallIcon="xiu314" bigIcon="xiu314" extraDefs="JUCE_DSP_USE_STATIC_FFTW=1">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" winWarningLevel="4" generateManifest="1" winArchitecture="x64"
                        isDebug="1" optimisation="1" targetName="BinauralDecoder" debugInformationFormat="ProgramDatabase"
@@ -175,7 +175,7 @@
       </MODULEPATHS>
     </VS2017>
     <LINUX_MAKE targetFolder="Builds/LinuxMakefile" externalLibraries="fftw3f"
-                smallIcon="xiu314" bigIcon="xiu314">
+                smallIcon="xiu314" bigIcon="xiu314" extraDefs="JUCE_DSP_USE_STATIC_FFTW=1">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="BinauralDecoder"
                        headerPath="/usr/local/include" libraryPath="/usr/local/lib/"/>
@@ -219,7 +219,7 @@
     <MODULE id="juce_opengl" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_osc" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
   </MODULES>
-  <JUCEOPTIONS JUCE_QUICKTIME="disabled" JUCE_WEB_BROWSER="0" JUCE_DSP_USE_STATIC_FFTW="1"/>
+  <JUCEOPTIONS JUCE_QUICKTIME="disabled" JUCE_WEB_BROWSER="0"/>
   <LIVE_SETTINGS>
     <OSX/>
     <LINUX/>

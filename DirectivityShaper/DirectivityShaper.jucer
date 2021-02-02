@@ -2,7 +2,7 @@
 
 <JUCERPROJECT id="mbpAgi" name="DirectivityShaper" displaySplashScreen="0"
               reportAppUsage="0" splashScreenColour="Dark" projectType="audioplug"
-              version="0.8.1" bundleIdentifier="at.iem.DirectivityShaper" includeBinaryInAppConfig="1"
+              version="0.8.2" bundleIdentifier="at.iem.DirectivityShaper" includeBinaryInAppConfig="1"
               cppLanguageStandard="14" buildVST="1" buildVST3="0" buildAU="0"
               buildAUv3="0" buildRTAS="0" buildAAX="0" buildStandalone="1"
               enableIAA="0" pluginName="DirectivityShaper" pluginDesc="DirectivityShaper"
@@ -10,9 +10,10 @@
               pluginChannelConfigs="" pluginIsSynth="0" pluginWantsMidiIn="0"
               pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0"
               pluginAUExportPrefix="DirectivityShaperAU" aaxIdentifier="at.iem.DirectivityShaper"
-              pluginAAXCategory="2" jucerVersion="5.4.7" companyCopyright="IEM - Daniel Rudrich"
+              pluginAAXCategory="2" companyCopyright="IEM - Daniel Rudrich"
               companyName="IEM" companyWebsite="IEM.at" headerPath="../../../resources/"
-              pluginFormats="buildStandalone,buildVST" defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1">
+              pluginFormats="buildStandalone,buildVST" defines="JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1"
+              jucerFormatVersion="1" addUsingNamespaceToJuceHeader="0" projectLineFeed="&#10;">
   <MAINGROUP id="LpzrV9" name="DirectivityShaper">
     <GROUP id="{593BE55D-7887-2009-01B0-19A4C55BAF49}" name="Standalone">
       <FILE id="NeuBez" name="IEM_AudioDeviceSelectorComponent.cpp" compile="1"
