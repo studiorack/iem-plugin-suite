@@ -538,7 +538,8 @@ void RoomEncoderAudioProcessor::processBlock (juce::AudioSampleBuffer& buffer, j
 
     for (int q=0; q<workingNumRefl+1; ++q)
     {
-        if (const int idx = filterPoints.indexOf (q); idx != -1)
+        const int idx = filterPoints.indexOf (q);
+        if (idx != -1)
         {
             for (int i = 0; i<nSIMDFilters; ++i)
             {
