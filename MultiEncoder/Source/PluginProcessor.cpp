@@ -153,6 +153,7 @@ void MultiEncoderAudioProcessor::releaseResources()
 
 void MultiEncoderAudioProcessor::processBlock (juce::AudioSampleBuffer& buffer, juce::MidiBuffer& midiMessages)
 {
+    juce::ScopedNoDenormals noDenormals;
     checkInputAndOutput (this, *inputSetting, *orderSetting);
 
     const int nChOut = juce::jmin(buffer.getNumChannels(), output.getNumberOfChannels());
@@ -163,7 +164,7 @@ void MultiEncoderAudioProcessor::processBlock (juce::AudioSampleBuffer& buffer, 
     {
         const float oneMinusTimeConstant = 1.0f - timeConstant;
         for (int ch = 0; ch < nChIn; ++ch)
-            rms[ch] = timeConstant * rms[ch] + oneMinusTimeConstant * buffer.getRMSLevel(ch, 0, buffer.getNumSamples());
+            rms[ch] = timeConstant * rms[ch] + oneMinusTimeConstant * buffer.getRMSLevel (ch, 0, buffer.getNumSamples());
     }
 
     for (int i = 0; i < nChIn; ++i)
