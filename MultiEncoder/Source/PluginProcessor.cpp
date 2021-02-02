@@ -37,7 +37,8 @@ MultiEncoderAudioProcessor::MultiEncoderAudioProcessor()
 #endif
                  ,
 #endif
-createParameterLayout())
+createParameterLayout()),
+rms (64)
 {
     // global properties
     juce::PropertiesFile::Options options;
@@ -83,11 +84,12 @@ createParameterLayout())
     masterRoll = parameters.getRawParameterValue("masterRoll");
     lockedToMaster = parameters.getRawParameterValue("locking");
 
-
-
     inputSetting = parameters.getRawParameterValue("inputSetting");
     orderSetting = parameters.getRawParameterValue ("orderSetting");
     useSN3D = parameters.getRawParameterValue ("useSN3D");
+
+    analyzeRMS = parameters.getRawParameterValue ("analyzeRMS");
+    dynamicRange = parameters.getRawParameterValue ("dynamicRange");
     processorUpdatingParams = false;
 
     yprInput = true; //input from ypr
@@ -101,6 +103,8 @@ createParameterLayout())
     }
 
     updateQuaternions();
+
+    std::fill (rms.begin(), rms.end(), 0.0f);
 }
 
 MultiEncoderAudioProcessor::~MultiEncoderAudioProcessor()
@@ -136,6 +140,9 @@ void MultiEncoderAudioProcessor::changeProgramName (int index, const juce::Strin
 void MultiEncoderAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     checkInputAndOutput(this, *inputSetting, *orderSetting, true);
+
+    timeConstant = exp (-1.0 / (sampleRate * 0.1 / samplesPerBlock)); // 100ms RMS averaging
+    std::fill (rms.begin(), rms.end(), 0.0f);
 }
 
 void MultiEncoderAudioProcessor::releaseResources()
@@ -151,6 +158,13 @@ void MultiEncoderAudioProcessor::processBlock (juce::AudioSampleBuffer& buffer, 
     const int nChOut = juce::jmin(buffer.getNumChannels(), output.getNumberOfChannels());
     const int nChIn = juce::jmin(buffer.getNumChannels(), input.getSize());
     const int ambisonicOrder = output.getOrder();
+
+    if (*analyzeRMS > 0.5f)
+    {
+        const float oneMinusTimeConstant = 1.0f - timeConstant;
+        for (int ch = 0; ch < nChIn; ++ch)
+            rms[ch] = timeConstant * rms[ch] + oneMinusTimeConstant * buffer.getRMSLevel(ch, 0, buffer.getNumSamples());
+    }
 
     for (int i = 0; i < nChIn; ++i)
         bufferCopy.copyFrom (i, 0, buffer.getReadPointer (i), buffer.getNumSamples());
@@ -464,6 +478,20 @@ std::vector<std::unique_ptr<juce::RangedAudioParameter>> MultiEncoderAudioProces
                                         juce::NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
                                         [](float value) {return (value >= 0.5f) ? "soloed" : "not soloed";}, nullptr));
     }
+
+    params.push_back (OSCParameterInterface::createParameterTheOldWay("analyzeRMS", "Analzes RMS", "",
+                                                                      juce::NormalisableRange<float> (0.0f, 1.0f, 1.0f), 0.0f,
+                                                                      [](float value) {return (value >= 0.5f) ? "on" : "off";}, nullptr));
+
+
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("peakLevel", "Peak level", "dB",
+        juce::NormalisableRange<float> (-50.0f, 10.0f, 0.1f), 0.0,
+        [](float value) {return juce::String (value, 1);}, nullptr));
+
+    params.push_back (OSCParameterInterface::createParameterTheOldWay ("dynamicRange", "Dynamic juce::Range", "dB",
+                                                                       juce::NormalisableRange<float> (10.0f, 60.0f, 1.f), 35.0,
+                                                                       [](float value) {return juce::String (value, 0);}, nullptr));
+
 
 
     return params;

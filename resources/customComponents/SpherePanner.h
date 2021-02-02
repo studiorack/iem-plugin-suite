@@ -567,7 +567,7 @@ public:
         background.setElevationStyle(linear);
     };
 
-private:
+protected:
     float radius = 1.0f;
     juce::Rectangle<float> sphereArea;
     juce::Point<int> centre;

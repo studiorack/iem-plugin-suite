@@ -27,12 +27,9 @@
 //==============================================================================
 MultiEncoderAudioProcessorEditor::MultiEncoderAudioProcessorEditor (MultiEncoderAudioProcessor& p, juce::AudioProcessorValueTreeState& vts)
 : juce::AudioProcessorEditor (&p), footer (p.getOSCParameterInterface()), processor (p), valueTreeState(vts),
+sphere (p.rms),
 masterElement(*valueTreeState.getParameter("masterAzimuth"), valueTreeState.getParameterRange("masterAzimuth"),
-              *valueTreeState.getParameter("masterElevation"), valueTreeState.getParameterRange("masterElevation")),
-encoderList (p, sphere, &vts),
-lbAzimuth (encoderList.getAzimuthArray()),
-lbElevation (encoderList.getElevationArray()),
-lbGain (encoderList.getGainArray())
+              *valueTreeState.getParameter("masterElevation"), valueTreeState.getParameterRange("masterElevation"))
 {
     setLookAndFeel (&globalLaF);
 
@@ -45,6 +42,10 @@ lbGain (encoderList.getGainArray())
     masterElement.setTextColour(juce::Colours::white);
     masterElement.setLabel("M");
 
+    encoderList = std::make_unique<EncoderList> (p, sphere, &vts);
+    lbAzimuth = std::make_unique<MasterControlWithText> (encoderList->getAzimuthArray());
+    lbElevation = std::make_unique<MasterControlWithText>(encoderList->getElevationArray());
+    lbGain = std::make_unique<MasterControlWithText>(encoderList->getGainArray());
     // ======================================
 
     addAndMakeVisible(&title);
@@ -56,7 +57,6 @@ lbGain (encoderList.getGainArray())
     tooltipWin.setLookAndFeel (&globalLaF);
     tooltipWin.setMillisecondsBeforeTipAppears(500);
     tooltipWin.setOpaque (false);
-
 
 
     cbNumInputChannelsAttachment.reset (new ComboBoxAttachment (valueTreeState,"inputSetting",*title.getInputWidgetPtr()->getChannelsCbPointer()));
@@ -78,7 +78,7 @@ lbGain (encoderList.getGainArray())
     tbImport.onClick = [&] () { importLayout(); };
 
     addAndMakeVisible(&viewport);
-    viewport.setViewedComponent(&encoderList);
+    viewport.setViewedComponent (encoderList.get());
 
     // ====================== GRAB GROUP
     masterGroup.setText("Master");
@@ -118,19 +118,56 @@ lbGain (encoderList.getGainArray())
     tbLockedToMaster.setName("locking");
     tbLockedToMaster.setButtonText("Lock Directions");
 
+    // ======================== RMS group
+    rmsGroup.setText("RMS");
+    rmsGroup.setTextLabelPosition (juce::Justification::centredLeft);
+    rmsGroup.setColour (juce::GroupComponent::outlineColourId, globalLaF.ClSeperator);
+    rmsGroup.setColour (juce::GroupComponent::textColourId, juce::Colours::white);
+    addAndMakeVisible (&rmsGroup);
+
+    
+    addAndMakeVisible (&slPeakLevel);
+    slPeakLevel.onValueChange = [&] () { sphere.setPeakLevel (slPeakLevel.getValue()); };
+    slPeakLevelAttachment.reset (new SliderAttachment (valueTreeState, "peakLevel", slPeakLevel));
+    slPeakLevel.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slPeakLevel.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 100, 12);
+    slPeakLevel.setTextValueSuffix (" dB");
+    slPeakLevel.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
+    
+    addAndMakeVisible(&lbPeakLevel);
+    lbPeakLevel.setText ("Peak level");
+
+
+    addAndMakeVisible(&slDynamicRange);
+    slDynamicRange.onValueChange = [&] () { sphere.setDynamicRange (slDynamicRange.getValue()); };
+    slDynamicRangeAttachment.reset (new SliderAttachment (valueTreeState, "dynamicRange", slDynamicRange));
+    slDynamicRange.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    slDynamicRange.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 100, 12);
+    slDynamicRange.setTextValueSuffix (" dB");
+    slDynamicRange.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[0]);
+    slDynamicRange.setReverse (false);
+
+    addAndMakeVisible (&lbDynamicRange);
+    lbDynamicRange.setText ("Range");
+
+
+    addAndMakeVisible (&tbAnalyzeRMS);
+    tbAnalyzeRMS.onStateChange = [&] () { sphere.visualizeRMS (tbAnalyzeRMS.getToggleState()); };
+    tbAnalyzeRMSAttachment.reset (new ButtonAttachment (valueTreeState, "analyzeRMS", tbAnalyzeRMS));
+    tbAnalyzeRMS.setButtonText ("Visualize");
 
     // ================ LABELS ===================
     addAndMakeVisible(&lbNum);
     lbNum.setText("#");
 
-    addAndMakeVisible(&lbAzimuth);
-    lbAzimuth.setText("Azimuth");
+    addAndMakeVisible (*lbAzimuth);
+    lbAzimuth->setText("Azimuth");
 
-    addAndMakeVisible(&lbElevation);
-    lbElevation.setText("Elevation");
+    addAndMakeVisible (*lbElevation);
+    lbElevation->setText("Elevation");
 
-    addAndMakeVisible(&lbGain);
-    lbGain.setText("Gain");
+    addAndMakeVisible (*lbGain);
+    lbGain->setText("Gain");
 
     addAndMakeVisible(&lbMasterAzimuth);
     lbMasterAzimuth.setText("Azimuth");
@@ -141,7 +178,7 @@ lbGain (encoderList.getGainArray())
     addAndMakeVisible(&lbMasterRoll);
     lbMasterRoll.setText("Roll");
 
-    setResizeLimits(590, 455, 800, 1200);
+    setResizeLimits (590, 505, 800, 1200);
     startTimer (40);
 }
 
@@ -166,7 +203,7 @@ void MultiEncoderAudioProcessorEditor::timerCallback()
     const int nChIn = processor.input.getSize();
     if (nChIn != lastSetNumChIn)
     {
-        encoderList.setNumberOfChannels(nChIn);
+        encoderList->setNumberOfChannels (nChIn);
         lastSetNumChIn = nChIn;
         sphere.repaint();
     }
@@ -175,16 +212,12 @@ void MultiEncoderAudioProcessorEditor::timerCallback()
     {
         if (! processor.soloMask.isZero()) {
             for (int i = 0; i<lastSetNumChIn; ++i)
-            {
-                encoderList.sphereElementArray[i]->setActive(processor.soloMask[i]);
-            }
+                encoderList->sphereElementArray[i]->setActive(processor.soloMask[i]);
         }
         else
         {
             for (int i = 0; i<lastSetNumChIn; ++i)
-            {
-                encoderList.sphereElementArray[i]->setActive(!processor.muteMask[i]);
-            }
+                encoderList->sphereElementArray[i]->setActive(!processor.muteMask[i]);
         }
         processor.soloMuteChanged = false;
         sphere.repaint();
@@ -193,9 +226,13 @@ void MultiEncoderAudioProcessorEditor::timerCallback()
     if (processor.updateColours)
     {
         processor.updateColours = false;
-        encoderList.updateColours();
+        encoderList->updateColours();
         sphere.repaint();
     }
+    
+    if (tbAnalyzeRMS.getToggleState())
+        sphere.repaint();
+
     if (processor.updateSphere)
     {
         processor.updateSphere = false;
@@ -253,18 +290,18 @@ void MultiEncoderAudioProcessorEditor::resized()
     sliderRow = yprArea.removeFromTop (15);
     lbNum.setBounds (sliderRow.removeFromLeft (15));
     sliderRow.removeFromLeft (3);
-    lbAzimuth.setBounds (sliderRow.removeFromLeft (rotSliderWidth + 10));
+    lbAzimuth->setBounds (sliderRow.removeFromLeft (rotSliderWidth + 10));
     sliderRow.removeFromLeft (rotSliderSpacing - 7);
-    lbElevation.setBounds (sliderRow.removeFromLeft (rotSliderWidth + 13));
+    lbElevation->setBounds (sliderRow.removeFromLeft (rotSliderWidth + 13));
     sliderRow.removeFromLeft (rotSliderSpacing - 5);
-    lbGain.setBounds(sliderRow.removeFromLeft(rotSliderWidth));
+    lbGain->setBounds(sliderRow.removeFromLeft(rotSliderWidth));
 
     viewport.setBounds(yprArea);
 
 
     // ============== SIDEBAR LEFT ====================
 
-    const int masterAreaHeight = 90;
+    const int masterAreaHeight = 110;
     area.removeFromRight(10); // spacing
 
     juce::Rectangle<int> sphereArea (area);
@@ -278,13 +315,23 @@ void MultiEncoderAudioProcessorEditor::resized()
 
     area.removeFromTop(sphereArea.getHeight());
 
+    // ============= Settings =========================
+    auto row = area.removeFromTop (masterAreaHeight);
+
     // ------------- Master Grabber ------------------------
-    juce::Rectangle<int> masterArea (area.removeFromTop(masterAreaHeight));
+    juce::Rectangle<int> masterArea (row.removeFromLeft (160));
     masterGroup.setBounds (masterArea);
-    masterArea.removeFromTop(25); //for box headline
+    masterArea.removeFromTop (25); //for box headline
 
+    sliderRow = masterArea.removeFromTop (53);
+    slMasterAzimuth.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
+    sliderRow.removeFromLeft(rotSliderSpacing);
+    slMasterElevation.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
+    sliderRow.removeFromLeft(rotSliderSpacing);
+    slMasterRoll.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
+    sliderRow.removeFromLeft(rotSliderSpacing);
 
-    sliderRow = (masterArea.removeFromBottom(12));
+    sliderRow = (masterArea.removeFromTop (12));
     lbMasterAzimuth.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
     sliderRow.removeFromLeft(rotSliderSpacing - 5);
     lbMasterElevation.setBounds (sliderRow.removeFromLeft(rotSliderWidth + 10));
@@ -292,14 +339,29 @@ void MultiEncoderAudioProcessorEditor::resized()
     lbMasterRoll.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
     sliderRow.removeFromLeft(rotSliderSpacing);
 
+    masterArea.removeFromTop (3);
     sliderRow = masterArea;
-    slMasterAzimuth.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
+    tbLockedToMaster.setBounds (sliderRow);
+
+    // ------------- RMS ------------------------
+    row.removeFromLeft (10);
+    juce::Rectangle<int> rmsArea = row.removeFromLeft (90);
+    rmsGroup.setBounds (rmsArea);
+    rmsArea.removeFromTop (25); //for box headline
+
+    sliderRow = rmsArea.removeFromTop (53);
+    slPeakLevel.setBounds (sliderRow.removeFromLeft (rotSliderWidth));
     sliderRow.removeFromLeft(rotSliderSpacing);
-    slMasterElevation.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
+    slDynamicRange.setBounds (sliderRow.removeFromLeft (rotSliderWidth));
+
+    sliderRow = rmsArea.removeFromTop (12);
+    lbPeakLevel.setBounds (sliderRow.removeFromLeft (rotSliderWidth));
     sliderRow.removeFromLeft(rotSliderSpacing);
-    slMasterRoll.setBounds (sliderRow.removeFromLeft(rotSliderWidth));
-    sliderRow.removeFromLeft(rotSliderSpacing);
-    tbLockedToMaster.setBounds (sliderRow.removeFromLeft(100));
+    lbDynamicRange.setBounds (sliderRow.removeFromLeft (rotSliderWidth));
+
+    rmsArea.removeFromTop (3);
+    sliderRow = rmsArea;
+    tbAnalyzeRMS.setBounds (sliderRow);
 }
 
 void MultiEncoderAudioProcessorEditor::importLayout()

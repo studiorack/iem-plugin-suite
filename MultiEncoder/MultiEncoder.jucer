@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<JUCERPROJECT id="cBXtXS" name="MultiEncoder" projectType="audioplug" version="0.6.2"
+<JUCERPROJECT id="cBXtXS" name="MultiEncoder" projectType="audioplug" version="1.0.0"
               bundleIdentifier="at.iem.MultiEncoder" includeBinaryInAppConfig="1"
               buildVST="1" buildVST3="0" buildAU="0" buildAUv3="0" buildRTAS="0"
               buildAAX="0" pluginName="MultiEncoder" pluginDesc="MultiEncoder"
@@ -50,6 +50,8 @@
       <FILE id="gYILB2" name="OSCUtilities.h" compile="0" resource="0" file="../resources/OSC/OSCUtilities.h"/>
     </GROUP>
     <GROUP id="{93EB888E-6BA4-D232-5298-BD06600ED3A9}" name="Source">
+      <FILE id="DuDgkU" name="EnergySpherePanner.h" compile="0" resource="0"
+            file="Source/EnergySpherePanner.h"/>
       <FILE id="EYYIng" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
       <FILE id="qcbk5m" name="PluginProcessor.h" compile="0" resource="0"

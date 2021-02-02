@@ -102,6 +102,11 @@ public:
     std::atomic<float>* orderSetting;
     std::atomic<float>* useSN3D;
 
+    std::atomic<float>* analyzeRMS;
+    std::atomic<float>* dynamicRange;
+
+    std::vector<float> rms;
+    float timeConstant;
 
     bool yprInput;
     double phi, theta;

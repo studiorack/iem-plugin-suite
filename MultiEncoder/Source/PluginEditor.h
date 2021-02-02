@@ -32,7 +32,7 @@
 #include "../../resources/customComponents/SpherePanner.h"
 #include "MasterControlWithText.h"
 #include "EncoderList.h"
-
+#include "EnergySpherePanner.h"
 
 
 typedef ReverseSlider::SliderAttachment SliderAttachment;
@@ -66,15 +66,28 @@ private:
     MultiEncoderAudioProcessor& processor;
     juce::AudioProcessorValueTreeState& valueTreeState;
 
-    juce::GroupComponent masterGroup, encoderGroup;
+    juce::GroupComponent masterGroup, encoderGroup, rmsGroup;
     juce::TextButton tbImport;
 
     ReverseSlider slMasterAzimuth, slMasterElevation, slMasterRoll;
-
     juce::ToggleButton tbLockedToMaster;
+
+    ReverseSlider slDynamicRange;
+    std::unique_ptr<SliderAttachment> slDynamicRangeAttachment;
+    SimpleLabel lbDynamicRange;
+
+    ReverseSlider slPeakLevel;
+    std::unique_ptr<SliderAttachment> slPeakLevelAttachment;
+    SimpleLabel lbPeakLevel;
+
+
+    juce::ToggleButton tbAnalyzeRMS;
+    std::unique_ptr<ButtonAttachment> tbAnalyzeRMSAttachment;
+
+
     juce::ComboBox inputChooser;
 
-    SpherePanner sphere;
+    EnergySpherePanner sphere;
     SpherePanner::AzimuthElevationParameterElement masterElement;
 
     std::unique_ptr<SliderAttachment> slMasterAzimuthAttachment;
@@ -86,7 +99,7 @@ private:
     std::unique_ptr<ComboBoxAttachment> cbOrderAtachment;
 
     juce::Viewport viewport;
-    EncoderList encoderList;
+    std::unique_ptr<EncoderList> encoderList;
 
     juce::TooltipWindow tooltipWin;
 
@@ -96,7 +109,7 @@ private:
 
     // labels
     SimpleLabel lbNum;
-    MasterControlWithText lbAzimuth, lbElevation, lbGain;
+    std::unique_ptr<MasterControlWithText> lbAzimuth, lbElevation, lbGain;
     SimpleLabel lbMasterAzimuth, lbMasterElevation, lbMasterRoll;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MultiEncoderAudioProcessorEditor)
