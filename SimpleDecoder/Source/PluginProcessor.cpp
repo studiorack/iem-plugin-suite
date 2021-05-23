@@ -23,6 +23,8 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
+#include <Presets.h>
+
 const juce::StringArray SimpleDecoderAudioProcessor::weightsStrings =  juce::StringArray ("basic", "maxrE", "inphase");
 
 //==============================================================================
@@ -149,43 +151,43 @@ void SimpleDecoderAudioProcessor::setCurrentProgram (int index)
         case 0:
             return;
         case 1:
-            preset = juce::String (BinaryData::CUBE_json, BinaryData::CUBE_jsonSize);
+            preset = juce::String (Presets::CUBE_json, Presets::CUBE_jsonSize);
             break;
 
         case 2:
-            preset = juce::String (BinaryData::Produktionsstudio_json, BinaryData::Produktionsstudio_jsonSize);
+            preset = juce::String (Presets::Produktionsstudio_json, Presets::Produktionsstudio_jsonSize);
             break;
 
         case 3:
-            preset = juce::String (BinaryData::MSDecoder_json, BinaryData::MSDecoder_jsonSize);
+            preset = juce::String (Presets::MSDecoder_json, Presets::MSDecoder_jsonSize);
             break;
 
         case 4:
-            preset = juce::String (BinaryData::Quadraphonic_json, BinaryData::Quadraphonic_jsonSize);
+            preset = juce::String (Presets::Quadraphonic_json, Presets::Quadraphonic_jsonSize);
             break;
 
         case 5:
-            preset = juce::String (BinaryData::_5point1_json, BinaryData::_5point1_jsonSize);
+            preset = juce::String (Presets::_5point1_json, Presets::_5point1_jsonSize);
             break;
 
         case 6:
-            preset = juce::String (BinaryData::_7point1_json, BinaryData::_7point1_jsonSize);
+            preset = juce::String (Presets::_7point1_json, Presets::_7point1_jsonSize);
             break;
 
         case 7:
-            preset = juce::String (BinaryData::_5point1point4_json, BinaryData::_5point1point4_jsonSize);
+            preset = juce::String (Presets::_5point1point4_json, Presets::_5point1point4_jsonSize);
             break;
 
         case 8:
-            preset = juce::String (BinaryData::_7point1point4_json, BinaryData::_7point1point4_jsonSize);
+            preset = juce::String (Presets::_7point1point4_json, Presets::_7point1point4_jsonSize);
             break;
 
         case 9:
-            preset = juce::String (BinaryData::Cube_8ch_json, BinaryData::Cube_8ch_jsonSize);
+            preset = juce::String (Presets::Cube_8ch_json, Presets::Cube_8ch_jsonSize);
             break;
 
         case 10:
-            preset = juce::String (BinaryData::_22_2_NHK_json, BinaryData::_22_2_NHK_jsonSize);
+            preset = juce::String (Presets::_22_2_NHK_json, Presets::_22_2_NHK_jsonSize);
             break;
 
         default:

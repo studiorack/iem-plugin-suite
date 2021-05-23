@@ -42,10 +42,27 @@ target_compile_definitions(SimpleDecoder PRIVATE
     JUCE_DISPLAY_SPLASH_SCREEN=0
     JUCE_VST3_CAN_REPLACE_VST2=0)
 
+juce_add_binary_data (SimpleDecoderPresets
+    HEADER_NAME "Presets.h"
+    NAMESPACE Presets
+    SOURCES
+    Source/Presets/5point1.json
+    Source/Presets/5point1point4.json
+    Source/Presets/7point1.json
+    Source/Presets/7point1point4.json
+    Source/Presets/22_2_NHK.json
+    Source/Presets/Cube_8ch.json
+    Source/Presets/CUBE.json
+    Source/Presets/MSDecoder.json
+    Source/Presets/Produktionsstudio.json
+    Source/Presets/Quadraphonic.json)
+
+
 target_include_directories(SimpleDecoder PRIVATE Source)
 
 target_link_libraries(SimpleDecoder PRIVATE
     LAF_fonts
+    SimpleDecoderPresets
     juce::juce_audio_utils
     juce::juce_audio_plugin_client
     juce::juce_osc
