@@ -22,6 +22,8 @@
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include <IRData.h>
+#include <EQData.h>
 
 
 const juce::StringArray BinauralDecoderAudioProcessor::headphoneEQs = juce::StringArray ("AKG-K141MK2", "AKG-K240DF", "AKG-K240MK2", "AKG-K271MK2", "AKG-K271STUDIO", "AKG-K601", "AKG-K701", "AKG-K702", "AKG-K1000-Closed", "AKG-K1000-Open", "AudioTechnica-ATH-M50", "Beyerdynamic-DT250", "Beyerdynamic-DT770PRO-250Ohms", "Beyerdynamic-DT880", "Beyerdynamic-DT990PRO", "Presonus-HD7", "Sennheiser-HD430", "Sennheiser-HD480", "Sennheiser-HD560ovationII", "Sennheiser-HD565ovation", "Sennheiser-HD600", "Sennheiser-HD650", "SHURE-SRH940");
@@ -57,13 +59,13 @@ createParameterLayout())
     juce::WavAudioFormat wavFormat;
 
     juce::MemoryInputStream* mis[7];
-    mis[0] = new juce::MemoryInputStream (BinaryData::irsOrd1_wav, BinaryData::irsOrd1_wavSize, false);
-    mis[1] = new juce::MemoryInputStream (BinaryData::irsOrd2_wav, BinaryData::irsOrd2_wavSize, false);
-    mis[2] = new juce::MemoryInputStream (BinaryData::irsOrd3_wav, BinaryData::irsOrd3_wavSize, false);
-    mis[3] = new juce::MemoryInputStream (BinaryData::irsOrd4_wav, BinaryData::irsOrd4_wavSize, false);
-    mis[4] = new juce::MemoryInputStream (BinaryData::irsOrd5_wav, BinaryData::irsOrd5_wavSize, false);
-    mis[5] = new juce::MemoryInputStream (BinaryData::irsOrd6_wav, BinaryData::irsOrd6_wavSize, false);
-    mis[6] = new juce::MemoryInputStream (BinaryData::irsOrd7_wav, BinaryData::irsOrd7_wavSize, false);
+    mis[0] = new juce::MemoryInputStream (IRData::irsOrd1_wav, IRData::irsOrd1_wavSize, false);
+    mis[1] = new juce::MemoryInputStream (IRData::irsOrd2_wav, IRData::irsOrd2_wavSize, false);
+    mis[2] = new juce::MemoryInputStream (IRData::irsOrd3_wav, IRData::irsOrd3_wavSize, false);
+    mis[3] = new juce::MemoryInputStream (IRData::irsOrd4_wav, IRData::irsOrd4_wavSize, false);
+    mis[4] = new juce::MemoryInputStream (IRData::irsOrd5_wav, IRData::irsOrd5_wavSize, false);
+    mis[5] = new juce::MemoryInputStream (IRData::irsOrd6_wav, IRData::irsOrd6_wavSize, false);
+    mis[6] = new juce::MemoryInputStream (IRData::irsOrd7_wav, IRData::irsOrd7_wavSize, false);
 
     for (int i = 0; i < 7; ++i)
     {
@@ -288,7 +290,7 @@ void BinauralDecoderAudioProcessor::parameterChanged (const juce::String &parame
         {
             int sourceDataSize;
             juce::String name = headphoneEQs[sel-1].replace("-", "") + "_wav";
-            auto* sourceData = BinaryData::getNamedResource(name.toUTF8(), sourceDataSize);
+            auto* sourceData = EQData::getNamedResource(name.toUTF8(), sourceDataSize);
             if (sourceData == nullptr)
                 DBG("error");
             EQ.loadImpulseResponse (sourceData,
