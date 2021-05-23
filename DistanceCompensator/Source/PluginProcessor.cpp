@@ -31,9 +31,9 @@ DistanceCompensatorAudioProcessor::DistanceCompensatorAudioProcessor()
                       BusesProperties()
 #if ! JucePlugin_IsMidiEffect
 #if ! JucePlugin_IsSynth
-                  .withInput  ("Input",  juce::AudioChannelSet::discreteChannels(10), true)
+                  .withInput  ("Input",  juce::AudioChannelSet::discreteChannels (64), true)
 #endif
-                  .withOutput ("Output", juce::AudioChannelSet::discreteChannels(64), true)
+                  .withOutput ("Output", juce::AudioChannelSet::discreteChannels (64), true)
 #endif
                   ,
 #endif
