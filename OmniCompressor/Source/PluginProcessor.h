@@ -42,7 +42,7 @@ public:
     constexpr static int numberOfOutputChannels = 64;
     //==============================================================================
     OmniCompressorAudioProcessor();
-    ~OmniCompressorAudioProcessor();
+    ~OmniCompressorAudioProcessor() override;
 
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;

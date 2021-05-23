@@ -40,7 +40,7 @@ public:
     constexpr static int numberOfOutputChannels = 1;
     //==============================================================================
     ProbeDecoderAudioProcessor();
-    ~ProbeDecoderAudioProcessor();
+    ~ProbeDecoderAudioProcessor() override;
 
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;

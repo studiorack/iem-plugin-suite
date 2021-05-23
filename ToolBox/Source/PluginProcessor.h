@@ -38,7 +38,7 @@ public:
     constexpr static int numberOfOutputChannels = 64;
     //==============================================================================
     ToolBoxAudioProcessor();
-    ~ToolBoxAudioProcessor();
+    ~ToolBoxAudioProcessor() override;
 
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;

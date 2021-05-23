@@ -409,7 +409,7 @@ void OSCStatus::paint (juce::Graphics& g)
         text += ")";
     }
 
-    auto textWidth = g.getCurrentFont().getStringWidthFloat (text);
+    auto textWidth = juce::roundToInt (g.getCurrentFont().getStringWidthFloat (text));
 
     const int targetSize = 12 + 2 + textWidth + 2 + 12;
 

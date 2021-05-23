@@ -66,8 +66,8 @@ public:
      */
     void setValue (juce::String paramID, float value);
 
-    OSCReceiverPlus& getOSCReceiver() { return oscReceiver; };
-    OSCSenderPlus& getOSCSender() { return oscSender; };
+    OSCReceiverPlus& getOSCReceiver() { return oscReceiver; }
+    OSCSenderPlus& getOSCSender() { return oscSender; }
 
     void oscMessageReceived (const juce::OSCMessage& message) override;
     void oscBundleReceived (const juce::OSCBundle& bundle) override;
@@ -78,7 +78,7 @@ public:
     void sendParameterChanges (bool forceSend = false);
     void setOSCAddress (juce::String newAddress);
 
-    juce::String getOSCAddress() const { return address; };
+    juce::String getOSCAddress() const { return address; }
 
     void setInterval (int interValInMilliseconds);
     int getInterval() const { return getTimerInterval(); }

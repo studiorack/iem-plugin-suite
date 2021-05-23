@@ -47,7 +47,7 @@ public:
         openGLContext.attachTo(*this);
     }
 
-    ~LoudspeakerVisualizer()
+    ~LoudspeakerVisualizer() override
     {
         openGLContext.detach();
         openGLContext.setRenderer(nullptr);
@@ -62,25 +62,22 @@ public:
     {
         using namespace juce;
 
-        const float alpha = 0.8;
+        const float alphaVal = 0.8f;
         PixelARGB colormapData[8];
 
         colormapData[0] = juce::Colours::limegreen.getPixelARGB(); // selected colour
         colormapData[1] = juce::Colours::orange.getPixelARGB(); // imaginary colour
         colormapData[2] = juce::Colours::cornflowerblue.getPixelARGB(); // regular colour
-        colormapData[3] = juce::Colours::cornflowerblue.withMultipliedAlpha(alpha).getPixelARGB();
-        colormapData[4] = juce::Colours::limegreen.withMultipliedAlpha(alpha).getPixelARGB();
-        colormapData[5] = juce::Colours::cornflowerblue.withMultipliedAlpha(alpha).getPixelARGB();
-        colormapData[6] = juce::Colours::orange.withMultipliedAlpha(alpha).getPixelARGB();
-        colormapData[7] = juce::Colours::red.withMultipliedAlpha(alpha).getPixelARGB();
+        colormapData[3] = juce::Colours::cornflowerblue.withMultipliedAlpha (alphaVal).getPixelARGB();
+        colormapData[4] = juce::Colours::limegreen.withMultipliedAlpha (alphaVal).getPixelARGB();
+        colormapData[5] = juce::Colours::cornflowerblue.withMultipliedAlpha (alphaVal).getPixelARGB();
+        colormapData[6] = juce::Colours::orange.withMultipliedAlpha (alphaVal).getPixelARGB();
+        colormapData[7] = juce::Colours::red.withMultipliedAlpha (alphaVal).getPixelARGB();
 
         texture.loadARGB(colormapData, 8, 1);
 
-
-
         openGLContext.extensions.glActiveTexture (GL_TEXTURE0);
         glEnable (GL_TEXTURE_2D);
-
 
         texture.bind();
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // linear interpolation when too small
@@ -133,7 +130,7 @@ public:
             // making sure that triangles are facing outward
             if (normal * ((b-a)^(c-a)) < 0.0f) // incorrect but no swap because of inverse y axis swap
             {
-                vertices.push_back({a.x, a.z, -a.y, col});
+                vertices.push_back({{a.x, a.z, -a.y}, col});
                 vertices.push_back({b.x, b.z, -b.y, col});
             }
             else // correct -> swap (inverse y axis)

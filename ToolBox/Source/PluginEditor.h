@@ -45,7 +45,7 @@ class ToolBoxAudioProcessorEditor  : public juce::AudioProcessorEditor, private 
 {
 public:
     ToolBoxAudioProcessorEditor (ToolBoxAudioProcessor&, juce::AudioProcessorValueTreeState&);
-    ~ToolBoxAudioProcessorEditor();
+    ~ToolBoxAudioProcessorEditor() override;
 
     //==============================================================================
     void paint (juce::Graphics&) override;

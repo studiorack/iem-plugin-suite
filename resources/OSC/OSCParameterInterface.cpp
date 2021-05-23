@@ -79,8 +79,8 @@ const bool OSCParameterInterface::processOSCMessage (juce::OSCMessage oscMessage
         {
             if (auto* ptr = dynamic_cast<juce::AudioProcessorParameterWithID*> (item)) // that's maybe not the best solution, but it does the job for now
             {
-                auto address = ptr->paramID;
-                if (pattern.matches (juce::OSCAddress ("/" + address)))
+                auto paramAddress = ptr->paramID;
+                if (pattern.matches (juce::OSCAddress ("/" + paramAddress)))
                 {
                     if (oscMessage.size() > 0)
                     {
@@ -93,15 +93,15 @@ const bool OSCParameterInterface::processOSCMessage (juce::OSCMessage oscMessage
                         else
                             return true;
 
-                        setValue (address, value);
+                        setValue (paramAddress, value);
                     }
                 }
             }
         }
     }
 
-    juce::String address = oscMessage.getAddressPattern().toString().substring(1); // trimming forward slash
-    if (auto parameter = parameters.getParameter (address))
+    juce::String paramAddress = oscMessage.getAddressPattern().toString().substring(1); // trimming forward slash
+    if (auto parameter = parameters.getParameter (paramAddress))
     {
         if (oscMessage.size() > 0)
         {
@@ -114,7 +114,7 @@ const bool OSCParameterInterface::processOSCMessage (juce::OSCMessage oscMessage
             else
                 return true;
 
-            setValue (address, value);
+            setValue (paramAddress, value);
         }
         return true;
     }

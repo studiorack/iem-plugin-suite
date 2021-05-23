@@ -47,7 +47,7 @@ class MultiEQAudioProcessorEditor  : public juce::AudioProcessorEditor, private 
 {
 public:
     MultiEQAudioProcessorEditor (MultiEQAudioProcessor&, juce::AudioProcessorValueTreeState&);
-    ~MultiEQAudioProcessorEditor();
+    ~MultiEQAudioProcessorEditor() override;
 
     //==============================================================================
     void paint (juce::Graphics&) override;

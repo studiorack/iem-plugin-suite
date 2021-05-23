@@ -173,5 +173,5 @@ public:
     /**
      Use this method to send additional juce::OSCMessages during the OSCSender's send routine.
      */
-    virtual void sendAdditionalOSCMessages (juce::OSCSender& oscSender, const juce::OSCAddressPattern& address) {}
+    virtual void sendAdditionalOSCMessages (juce::OSCSender&, const juce::OSCAddressPattern&) {}
 };

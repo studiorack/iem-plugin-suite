@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include "../JuceLibraryCode/JuceHeader.h"
+#include <JuceHeader.h>
 #include "../../resources/AudioProcessorBase.h"
 
 #define ProcessorClass BinauralDecoderAudioProcessor
