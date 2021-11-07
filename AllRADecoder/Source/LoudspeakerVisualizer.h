@@ -61,6 +61,7 @@ public:
     void initialise()
     {
         using namespace juce;
+        using namespace juce::gl;
 
         const float alphaVal = 0.8f;
         PixelARGB colormapData[8];
@@ -163,6 +164,7 @@ public:
         void uploadBuffers() // this should only be called by the openGl thread
         {
             using namespace juce;
+            using namespace juce::gl;
 
             openGLContext.extensions.glDeleteBuffers(1, &vertexBuffer);
             openGLContext.extensions.glDeleteBuffers(1, &indexBuffer);
@@ -184,6 +186,7 @@ public:
     void renderOpenGL() override
     {
         using namespace juce;
+        using namespace juce::gl;
         
         jassert (juce::OpenGLHelpers::isContextActive());
 
