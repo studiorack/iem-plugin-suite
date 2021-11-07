@@ -12,7 +12,7 @@ juce_add_plugin (BinauralDecoder
 
 juce_generate_juce_header(BinauralDecoder)
 
-target_sources(BinauralDecoder PRIVATE
+target_sources (BinauralDecoder PRIVATE
     Source/PluginEditor.cpp
     Source/PluginEditor.h
     Source/PluginProcessor.cpp
@@ -34,14 +34,14 @@ target_sources(BinauralDecoder PRIVATE
     ../resources/efficientSHvanilla.cpp
     )
 
-target_compile_definitions(BinauralDecoder PRIVATE
+target_compile_definitions (BinauralDecoder PRIVATE
     JUCE_USE_CURL=0
     JUCE_WEB_BROWSER=0
     JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1
     JUCE_DISPLAY_SPLASH_SCREEN=0
     JUCE_VST3_CAN_REPLACE_VST2=0)
 
-target_include_directories(BinauralDecoder PRIVATE Source)
+target_include_directories (BinauralDecoder PRIVATE Source)
 
 
 juce_add_binary_data (BinauralDecoderEQs
@@ -84,7 +84,7 @@ juce_add_binary_data (BinauralDecoderIRs
         Source/IRs/irsOrd3.wav
         Source/IRs/irsOrd2.wav)
 
-target_link_libraries(BinauralDecoder PRIVATE
+target_link_libraries (BinauralDecoder PRIVATE
     LAF_fonts
     BinauralDecoderEQs
     BinauralDecoderIRs

@@ -10,9 +10,9 @@ juce_add_plugin (MatrixMultiplier
     VERSION "0.3.3")
 
 
-juce_generate_juce_header(MatrixMultiplier)
+juce_generate_juce_header (MatrixMultiplier)
 
-target_sources(MatrixMultiplier PRIVATE
+target_sources (MatrixMultiplier PRIVATE
     Source/PluginEditor.cpp
     Source/PluginEditor.h
     Source/PluginProcessor.cpp
@@ -34,16 +34,16 @@ target_sources(MatrixMultiplier PRIVATE
     ../resources/efficientSHvanilla.cpp
     )
 
-target_compile_definitions(MatrixMultiplier PRIVATE
+target_compile_definitions (MatrixMultiplier PRIVATE
     JUCE_USE_CURL=0
     JUCE_WEB_BROWSER=0
     JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1
     JUCE_DISPLAY_SPLASH_SCREEN=0
     JUCE_VST3_CAN_REPLACE_VST2=0)
 
-target_include_directories(MatrixMultiplier PRIVATE Source)
+target_include_directories (MatrixMultiplier PRIVATE Source)
 
-target_link_libraries(MatrixMultiplier PRIVATE
+target_link_libraries (MatrixMultiplier PRIVATE
     LAF_fonts
     juce::juce_audio_utils
     juce::juce_audio_plugin_client

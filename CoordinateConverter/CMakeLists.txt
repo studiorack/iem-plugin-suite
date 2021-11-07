@@ -10,9 +10,9 @@ juce_add_plugin (CoordinateConverter
     VERSION "0.4.3")
 
 
-juce_generate_juce_header(CoordinateConverter)
+juce_generate_juce_header (CoordinateConverter)
 
-target_sources(CoordinateConverter PRIVATE
+target_sources (CoordinateConverter PRIVATE
     Source/PluginEditor.cpp
     Source/PluginEditor.h
     Source/PluginProcessor.cpp
@@ -34,16 +34,16 @@ target_sources(CoordinateConverter PRIVATE
     ../resources/efficientSHvanilla.cpp
     )
 
-target_compile_definitions(CoordinateConverter PRIVATE
+target_compile_definitions (CoordinateConverter PRIVATE
     JUCE_USE_CURL=0
     JUCE_WEB_BROWSER=0
     JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1
     JUCE_DISPLAY_SPLASH_SCREEN=0
     JUCE_VST3_CAN_REPLACE_VST2=0)
 
-target_include_directories(CoordinateConverter PRIVATE Source)
+target_include_directories (CoordinateConverter PRIVATE Source)
 
-target_link_libraries(CoordinateConverter PRIVATE
+target_link_libraries (CoordinateConverter PRIVATE
     LAF_fonts
     juce::juce_audio_utils
     juce::juce_audio_plugin_client

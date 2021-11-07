@@ -1,10 +1,10 @@
 
 cmake_minimum_required(VERSION 3.12)
 
-project(IEMPluginSuite VERSION 1.12.1 LANGUAGES C CXX)
+project (IEMPluginSuite VERSION 1.12.1 LANGUAGES C CXX)
 
-set_property(GLOBAL PROPERTY USE_FOLDERS YES)
-set_property(GLOBAL PROPERTY JUCE_COPY_PLUGIN_AFTER_BUILD ON)
+set_property (GLOBAL PROPERTY USE_FOLDERS YES)
+set_property (GLOBAL PROPERTY JUCE_COPY_PLUGIN_AFTER_BUILD ON)
 
 add_subdirectory (JUCE)
 
@@ -15,7 +15,8 @@ else()
 endif()
 
 include_directories (resources/ /usr/local/include)
-add_compile_definitions(DONT_SET_USING_JUCE_NAMESPACE=1)
+add_compile_definitions (DONT_SET_USING_JUCE_NAMESPACE=1
+                         JUCE_MODAL_LOOPS_PERMITTED=1)
 
 juce_add_binary_data (LAF_fonts SOURCES
     resources/lookAndFeel/Roboto-Bold.ttf

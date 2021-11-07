@@ -10,9 +10,9 @@ juce_add_plugin (StereoEncoder
     VERSION "1.4.3")
 
 
-juce_generate_juce_header(StereoEncoder)
+juce_generate_juce_header (StereoEncoder)
 
-target_sources(StereoEncoder PRIVATE
+target_sources (StereoEncoder PRIVATE
     Source/PluginEditor.cpp
     Source/PluginEditor.h
     Source/PluginProcessor.cpp
@@ -34,16 +34,16 @@ target_sources(StereoEncoder PRIVATE
     ../resources/efficientSHvanilla.cpp
     )
 
-target_compile_definitions(StereoEncoder PRIVATE
+target_compile_definitions (StereoEncoder PRIVATE
     JUCE_USE_CURL=0
     JUCE_WEB_BROWSER=0
     JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1
     JUCE_DISPLAY_SPLASH_SCREEN=0
     JUCE_VST3_CAN_REPLACE_VST2=0)
 
-target_include_directories(StereoEncoder PRIVATE Source)
+target_include_directories (StereoEncoder PRIVATE Source)
 
-target_link_libraries(StereoEncoder PRIVATE
+target_link_libraries (StereoEncoder PRIVATE
     LAF_fonts
     juce::juce_audio_utils
     juce::juce_audio_plugin_client

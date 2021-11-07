@@ -10,9 +10,9 @@ juce_add_plugin (DirectionalCompressor
     VERSION "1.3.3")
 
 
-juce_generate_juce_header(DirectionalCompressor)
+juce_generate_juce_header (DirectionalCompressor)
 
-target_sources(DirectionalCompressor PRIVATE
+target_sources (DirectionalCompressor PRIVATE
     Source/PluginEditor.cpp
     Source/PluginEditor.h
     Source/PluginProcessor.cpp
@@ -34,16 +34,16 @@ target_sources(DirectionalCompressor PRIVATE
     ../resources/efficientSHvanilla.cpp
     )
 
-target_compile_definitions(DirectionalCompressor PRIVATE
+target_compile_definitions (DirectionalCompressor PRIVATE
     JUCE_USE_CURL=0
     JUCE_WEB_BROWSER=0
     JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1
     JUCE_DISPLAY_SPLASH_SCREEN=0
     JUCE_VST3_CAN_REPLACE_VST2=0)
 
-target_include_directories(DirectionalCompressor PRIVATE Source)
+target_include_directories (DirectionalCompressor PRIVATE Source)
 
-target_link_libraries(DirectionalCompressor PRIVATE
+target_link_libraries (DirectionalCompressor PRIVATE
     LAF_fonts
     juce::juce_audio_utils
     juce::juce_audio_plugin_client
