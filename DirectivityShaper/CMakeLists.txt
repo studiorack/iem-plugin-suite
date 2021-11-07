@@ -6,7 +6,7 @@ juce_add_plugin (DirectivityShaper
     ICON_SMALL "../resources/Standalone/IEMPluginSuiteSmall.png"
     COMPANY_NAME "IEM"
     PRODUCT_NAME "DirectivityShaper"
-    FORMATS VST Standalone
+    FORMATS ${IEM_FORMATS}
     VERSION "0.8.3")
 
 

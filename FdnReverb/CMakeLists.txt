@@ -6,7 +6,7 @@ juce_add_plugin (FdnReverb
     ICON_SMALL "../resources/Standalone/IEMPluginSuiteSmall.png"
     COMPANY_NAME "IEM"
     PRODUCT_NAME "FdnReverb"
-    FORMATS VST Standalone
+    FORMATS ${IEM_FORMATS}
     VERSION "1.2.3")
 
 

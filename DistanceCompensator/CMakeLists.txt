@@ -6,7 +6,7 @@ juce_add_plugin (DistanceCompensator
     ICON_SMALL "../resources/Standalone/IEMPluginSuiteSmall.png"
     COMPANY_NAME "IEM"
     PRODUCT_NAME "DistanceCompensator"
-    FORMATS VST Standalone
+    FORMATS ${IEM_FORMATS}
     VERSION "0.3.3")
 
 

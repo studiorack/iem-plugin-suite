@@ -6,7 +6,7 @@ juce_add_plugin (ToolBox
     ICON_SMALL "../resources/Standalone/IEMPluginSuiteSmall.png"
     COMPANY_NAME "IEM"
     PRODUCT_NAME "ToolBox"
-    FORMATS VST Standalone
+    FORMATS ${IEM_FORMATS}
     VERSION "0.5.3")
 
 

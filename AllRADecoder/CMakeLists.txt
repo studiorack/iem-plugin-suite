@@ -6,7 +6,7 @@ juce_add_plugin (AllRADecoder
     ICON_SMALL "../resources/Standalone/IEMPluginSuiteSmall.png"
     COMPANY_NAME "IEM"
     PRODUCT_NAME "AllRADecoder"
-    FORMATS VST Standalone
+    FORMATS ${IEM_FORMATS}
     VERSION "0.9.2")
 
 

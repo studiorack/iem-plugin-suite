@@ -6,7 +6,7 @@ juce_add_plugin (MultiEQ
     ICON_SMALL "../resources/Standalone/IEMPluginSuiteSmall.png"
     COMPANY_NAME "IEM"
     PRODUCT_NAME "MultiEQ"
-    FORMATS VST Standalone
+    FORMATS ${IEM_FORMATS}
     VERSION "0.2.3")
 
 

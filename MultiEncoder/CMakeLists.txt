@@ -6,7 +6,7 @@ juce_add_plugin (MultiEncoder
     ICON_SMALL "../resources/Standalone/IEMPluginSuiteSmall.png"
     COMPANY_NAME "IEM"
     PRODUCT_NAME "MultiEncoder"
-    FORMATS VST Standalone
+    FORMATS ${IEM_FORMATS}
     VERSION "1.0.1")
 
 

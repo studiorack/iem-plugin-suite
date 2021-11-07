@@ -6,7 +6,7 @@ juce_add_plugin (EnergyVisualizer
     ICON_SMALL "../resources/Standalone/IEMPluginSuiteSmall.png"
     COMPANY_NAME "IEM"
     PRODUCT_NAME "EnergyVisualizer"
-    FORMATS VST Standalone
+    FORMATS ${IEM_FORMATS}
     VERSION "1.0.3")
 
 

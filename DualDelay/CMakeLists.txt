@@ -6,7 +6,7 @@ juce_add_plugin (DualDelay
     ICON_SMALL "../resources/Standalone/IEMPluginSuiteSmall.png"
     COMPANY_NAME "IEM"
     PRODUCT_NAME "DualDelay"
-    FORMATS VST Standalone
+    FORMATS ${IEM_FORMATS}
     VERSION "0.5.1")
 
 

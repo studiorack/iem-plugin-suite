@@ -6,7 +6,7 @@ juce_add_plugin (MultiBandCompressor
     ICON_SMALL "../resources/Standalone/IEMPluginSuiteSmall.png"
     COMPANY_NAME "IEM"
     PRODUCT_NAME "MultiBandCompressor"
-    FORMATS VST Standalone
+    FORMATS ${IEM_FORMATS}
     VERSION "0.2.3")
 
 
