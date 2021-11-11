@@ -46,8 +46,29 @@ option (IEM_BUILD_STANDALONE "Build standalones of the plug-ins." OFF)
 project (IEMPluginSuite VERSION 1.12.1 LANGUAGES C CXX)
 
 set_property (GLOBAL PROPERTY USE_FOLDERS YES)
-set_property (GLOBAL PROPERTY JUCE_COPY_PLUGIN_AFTER_BUILD ON)
+set_directory_properties (PROPERTIES JUCE_COPY_PLUGIN_AFTER_BUILD ON)
 
+# set copy paths for built plug-ins
+if (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    set_directory_properties (PROPERTIES JUCE_VST_COPY_DIR "$ENV{HOME}/Library/Audio/Plug-Ins/VST/IEM")
+    set_directory_properties (PROPERTIES JUCE_VST3_COPY_DIR "$ENV{HOME}/Library/Audio/Plug-Ins/VST3/IEM")
+
+elseif (CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+        set_directory_properties (PROPERTIES JUCE_VST_COPY_DIR "$ENV{ProgramW6432}/Steinberg/Vstplugins/IEM")
+        set (prefix "$ENV{CommonProgramW6432}")
+    else()
+        set_directory_properties (PROPERTIES JUCE_VST_COPY_DIR "$ENV{programfiles\(x86\)}/Steinberg/Vstplugins/IEM")
+        set (prefix "$ENV{CommonProgramFiles\(x86\)}")
+    endif()
+    set_directory_properties (PROPERTIES JUCE_VST3_COPY_DIR "${prefix}/VST3/IEM")
+
+elseif ((CMAKE_SYSTEM_NAME STREQUAL "Linux") OR (CMAKE_SYSTEM_NAME MATCHES ".*BSD"))
+    set_directory_properties (PROPERTIES JUCE_VST_COPY_DIR "$ENV{HOME}/.vst/IEM")
+    set_directory_properties (PROPERTIES JUCE_VST3_COPY_DIR "$ENV{HOME}/.vst3/IEM")
+endif()
+
+# add JUCE dependency
 add_subdirectory (JUCE)
 
 # formats
@@ -87,33 +108,3 @@ juce_add_binary_data (LAF_fonts SOURCES
 foreach (subproject IN LISTS PLUGINS_TO_BUILD)
     add_subdirectory (${subproject})
 endforeach()
-
-
-if (IEM_BUILD_VST2)
-    foreach (subproject IN LISTS PLUGINS_TO_BUILD)
-        set_target_properties (${subproject}_VST
-            PROPERTIES
-                ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/artifacts/VST2"
-                LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/artifacts/VST2"
-        )
-    endforeach()
-endif()
-
-if (IEM_BUILD_VST3)
-    foreach (subproject IN LISTS PLUGINS_TO_BUILD)
-        set_target_properties (${subproject}_VST3
-            PROPERTIES
-                ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/artifacts/VST3"
-                LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/artifacts/VST3"
-        )
-    endforeach()
-endif()
-
-if (IEM_BUILD_STANDALONE)
-    foreach (subproject IN LISTS PLUGINS_TO_BUILD)
-        set_target_properties (${subproject}_Standalone
-            PROPERTIES
-                RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/artifacts/Standalone"
-        )
-    endforeach()
-endif()
