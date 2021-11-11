@@ -326,7 +326,7 @@ void BinauralDecoderAudioProcessor::updateBuffers()
     nMidCh = juce::square (order + 1) - nSideCh;   //nMidCh = nCh - nSideCh; //nCh should be equalt to (order+1)^2
 
     if (order < 1)
-        return;
+        order = 1; // just use first order filters
 
     juce::AudioBuffer<float> resampledIRs;
     bool useResampled = false;
