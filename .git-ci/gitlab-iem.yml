@@ -19,12 +19,12 @@ variables:
   only:
     - master
     - develop
-    - fix-ci
+    - ci-test
   except:
     - tags
   artifacts: &snapshot_artifacts
     paths:
-      - IEM
+      # - IEM
       - ChangeLog.md
     expire_in: 1 week
 
@@ -50,17 +50,16 @@ variables:
     - DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends xvfb xauth curl unzip build-essential ca-certificates
     - DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends libwebkit2gtk-4.0-dev libasound2-dev libfreetype6-dev libcurl4-gnutls-dev libgl1-mesa-dev libx11-dev libxext-dev libxinerama-dev libxrandr-dev libgtk-3-dev
     - DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends libjack-dev libfftw3-dev
-    - .git-ci/getjuce.sh "${JUCEVERSION}" linux ~/JUCE
-    - xvfb-run -a ~/JUCE/Projucer --set-global-search-path linux defaultJuceModulePath ~/JUCE/modules/
 # run the actual build
-    - test -z "${PROJECTS}" && PROJECTS=$(make showprojects)
-    - make system V=1 CONFIG=${CONFIG} CPPFLAGS=-DJUCE_JACK=1 CFLAGS="$(pkg-config --cflags ${PKGLIBS})" LDFLAGS="$(pkg-config --libs ${PKGLIBS})" PARALLEL=$(nproc) TARGET_ARCH=-march=core2 PROJUCER=~/JUCE/Projucer
-    - xvfb-run -a make V=1 CONFIG=${CONFIG} CPPFLAGS=-DJUCE_JACK=1 CFLAGS="$(pkg-config --cflags ${PKGLIBS})" LDFLAGS="$(pkg-config --libs ${PKGLIBS})" PARALLEL=$(nproc) TARGET_ARCH=-march=core2 PROJUCER=~/JUCE/Projucer PROJECTS="${PROJECTS}" remove_intermediates=yes
+    - mkdir build
+    - cd build
+    - cmake .. -DCMAKE_BUILD_TYPE=Release
+    - make
 
 # collect binaries for artifacts
-    - mkdir -p IEM/standalone/
-    - cp */Builds/*/build/*.so IEM/
-    - find */Builds/*/build/ -maxdepth 1 -type f -executable -not -name "*.so" -exec cp {} IEM/standalone/ ";"
+    # - mkdir -p IEM/standalone/
+    # - cp */Builds/*/build/*.so IEM/
+    # - find */Builds/*/build/ -maxdepth 1 -type f -executable -not -name "*.so" -exec cp {} IEM/standalone/ ";"
 
 .build:osx: &build_osx
   stage: build
@@ -68,20 +67,20 @@ variables:
     - osx10.14
   script:
 # install dependencies
-    - brew install fftw
     - brew install jack
     - .git-ci/getjuce.sh "${JUCEVERSION}" osx ~/JUCE
 # run the actual build
-    - test -z "${PROJECTS}" && PROJECTS=$(make showprojects)
-    - make system CONFIG=$CONFIG PROJUCER="~/JUCE/Projucer.app/Contents/MacOS/Projucer"
-    - make CONFIG=$CONFIG PROJUCER="~/JUCE/Projucer.app/Contents/MacOS/Projucer" PROJECTS="${PROJECTS}" remove_intermediates=yes
-# collect binaries for artifacts
-    - mkdir -p IEM/standalone
-    - cp -R -H */Builds/*/build/${CONFIG}/*.vst IEM/
-    - cp -R -H */Builds/*/build/${CONFIG}/*.app IEM/standalone/
-# embed non-standard libraries in the bundles
-    - for f in IEM/*.vst/Contents/MacOS/*; do .git-ci/osx_embedlibs.sh "${f}"; done
-    - for f in IEM/standalone/*.app/Contents/MacOS/*; do .git-ci/osx_embedlibs.sh "${f}"; done
+    - mkdir build
+    - cd build
+    - cmake .. -DCMAKE_BUILD_TYPE=Release
+#     - make
+# # collect binaries for artifacts
+#     - mkdir -p IEM/standalone
+#     - cp -R -H */Builds/*/build/${CONFIG}/*.vst IEM/
+#     - cp -R -H */Builds/*/build/${CONFIG}/*.app IEM/standalone/
+# # embed non-standard libraries in the bundles
+#     - for f in IEM/*.vst/Contents/MacOS/*; do .git-ci/osx_embedlibs.sh "${f}"; done
+#     - for f in IEM/standalone/*.app/Contents/MacOS/*; do .git-ci/osx_embedlibs.sh "${f}"; done
 
 .build:windows: &build_windows
   stage: build
@@ -91,23 +90,22 @@ variables:
     IEMCI_CONFIGURATIONS: vs2017
   script:
     - test -f .myenv && . .myenv
-# install dependencies
-    - .git-ci/getjuce.sh "${JUCEVERSION}" windows /c/JUCE
-    - .git-ci/fftw4win.sh $BITS
-# tell JUCE where to look for the vstheaders
-    - /c/JUCE/Projucer --set-global-search-path windows vstLegacyPath ";C:/JUCE/modules/juce_audio_processors/format_types/VST3_SDK/"
 # run the actual build
+    - mkdir build
+    - cd build
+    - cmake ..
+    - cmake --build . --target ALL_BUILD --config Release
     - test -z "${PROJECTS}" && PROJECTS=$(make showprojects)
     - make system CONFIG=$CONFIG BITS=$BITS PROJUCER="/c/JUCE/Projucer.exe"
     - make CONFIG=$CONFIG BITS=$BITS PROJUCER="/c/JUCE/Projucer.exe" PROJECTS="${PROJECTS}" remove_intermediates=yes
 # collect binaries for artifacts
-    - mkdir -p IEM/standalone
-    - cp */Builds/*/*/*/VST/*.dll IEM/
-    - cp */Builds/*/*/*/*/*.exe IEM/standalone/
-# embed non-standard libraries in the bundles
-# FIXME: this requires that we have either x64 or x86, not both
-    - cp resources/fftw3/*/libfftwf*.dll IEM/standalone/
-    - cp resources/fftw3/*/libfftwf*.dll IEM/
+#     - mkdir -p IEM/standalone
+#     - cp */Builds/*/*/*/VST/*.dll IEM/
+#     - cp */Builds/*/*/*/*/*.exe IEM/standalone/
+# # embed non-standard libraries in the bundles
+# # FIXME: this requires that we have either x64 or x86, not both
+#     - cp resources/fftw3/*/libfftwf*.dll IEM/standalone/
+#     - cp resources/fftw3/*/libfftwf*.dll IEM/
 
 ###################################################
 # expand the templates to real jobs
