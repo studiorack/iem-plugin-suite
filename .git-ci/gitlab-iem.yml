@@ -3,7 +3,7 @@
 variables:
 ## leave this uncommented to build all projects (except _PluginTemplate)
   #PROJECTS: AllRADecoder BinauralDecoder CoordinateConverter DirectionalCompressor DirectivityShaper DistanceCompensator DualDelay EnergyVisualizer FdnReverb MatrixMultiplier MultiBandCompressor MultiEncoder MultiEQ OmniCompressor ProbeDecoder RoomEncoder SceneRotator SimpleDecoder StereoEncoder ToolBox
-
+  GIT_SUBMODULE_STRATEGY: recursive
   CONFIG: Release
   JUCEVERSION: 6.0.7
 
