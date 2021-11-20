@@ -59,10 +59,11 @@ variables:
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Release
     - make
+    - cd ..
 
 # collect binaries for artifacts
-    # - mkdir -p IEM/standalone/
-    # - cp */Builds/*/build/*.so IEM/
+    - mkdir -p IEM/VST3/
+    - cp -r build/*/*_artefacts/Release/VST3/*.vst3 IEM/VST3/
     # - find */Builds/*/build/ -maxdepth 1 -type f -executable -not -name "*.so" -exec cp {} IEM/standalone/ ";"
 
 .build:osx: &build_osx
@@ -71,13 +72,12 @@ variables:
     - osx10.14
   script:
 # install dependencies
-    - brew install jack
-    - .git-ci/getjuce.sh "${JUCEVERSION}" osx ~/JUCE
+    - HOMEBREW_NO_AUTO_UPDATE=1 brew install jack || true
 # run the actual build
     - mkdir build
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Release
-#     - make
+    - make
 # # collect binaries for artifacts
 #     - mkdir -p IEM/standalone
 #     - cp -R -H */Builds/*/build/${CONFIG}/*.vst IEM/
@@ -122,12 +122,12 @@ linux_snapshot:
     <<: *snapshot_artifacts
     name: IEMPluginSuite_linux
 
-# osx_snapshot:
-#   <<: *build_osx
-#   <<: *snapshot
-#   artifacts:
-#     <<: *snapshot_artifacts
-#     name: IEMPluginSuite_macOS
+osx_snapshot:
+  <<: *build_osx
+  <<: *snapshot
+  artifacts:
+    <<: *snapshot_artifacts
+    name: IEMPluginSuite_macOS
 
 # windows32_snapshot:
 #   before_script:
