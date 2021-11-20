@@ -73,7 +73,7 @@ variables:
     - mkdir VST
     - cp -r build/*/*_artefacts/Release/VST/*.so VST/
     - mkdir Standalone
-    - find build/*/*_artefacts/Release/Standalone/-maxdepth 1 -type f -executable -not -name "*.so" -exec cp {} Standalone/ ";"
+    - find build/*/*_artefacts/Release/Standalone/ -maxdepth 1 -type f -executable -not -name "*.so" -exec cp {} Standalone/ ";"
 
 .build:osx: &build_osx
   stage: build
