@@ -53,11 +53,14 @@ Start up your shell and use the following:
 ```sh
 mkdir build  # creates a build folder, recommended!
 cd build     # enter it
-cmake ..     # execute cmake and let it look for the project in the parent folder
-             # feel free to add those optiones from above after ..
-             # for using an IDE use cmake' s -G flag like -G Xcode
-# on Linux or macOS without IDE
-make         # build the plug-ins / standalones
+
+# execute cmake and let it look for the project in the parent folder
+# use CMAKE_BUILD_TYPE=Release for optimized release builds
+# feel free to add those optiones from above
+# for using an IDE use cmake' s -G flag like -G Xcode
+cmake .. -DCMAKE_BUILD_TYPE=Release
+
+cmake --build .  # build the plug-ins / standalones
 # alternatively, open the xcode project, msvc solution, or whatever floats your development boat
 ```
 
