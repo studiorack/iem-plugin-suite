@@ -43,6 +43,8 @@ option (IEM_BUILD_STANDALONE "Build standalones of the plug-ins." OFF)
 option (IEM_STANDALONE_JACK_SUPPORT "Build standalones with JACK support." ON)
 
 
+set (CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 # Actual project configuration
 project (IEMPluginSuite VERSION 1.12.1 LANGUAGES C CXX)
 
