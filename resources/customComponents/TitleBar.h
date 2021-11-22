@@ -264,9 +264,9 @@ public:
         cbNormalization.addItem ("N3D", 1);
         cbNormalization.addItem ("SN3D", 2);
         cbNormalization.setBounds (35, 0, 70, 15);
-    };
+    }
 
-    ~AmbisonicIOWidget() {};
+    ~AmbisonicIOWidget() override {}
 
     void setOrderIfUnselectable (int newOrder)
     {

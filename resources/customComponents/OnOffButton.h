@@ -43,9 +43,7 @@ public:
         powerButton.loadPathFromData (powerButtonData, sizeof (powerButtonData));
     }
 
-    ~OnOffButton()
-    {
-    }
+    ~OnOffButton() override = default;
 
     void paint (juce::Graphics& g) override
     {

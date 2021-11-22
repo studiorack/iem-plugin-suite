@@ -70,7 +70,6 @@ public:
         }
 
 
-
         outline.startNewSubPath(anglesToPoint(180, -90));
         for (int ele = -85; ele <= 90; ele += 5)
         {
@@ -81,14 +80,9 @@ public:
             outline.lineTo(anglesToPoint(-180, ele));
         }
         outline.closeSubPath();
-
-
-
     }
 
-    ~HammerAitovGrid()
-    {
-    }
+    ~HammerAitovGrid() override = default;
 
     void paint (juce::Graphics& g) override
     {

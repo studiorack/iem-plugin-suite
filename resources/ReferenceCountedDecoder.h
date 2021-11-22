@@ -31,22 +31,23 @@ class ReferenceCountedDecoder : public ReferenceCountedMatrix
 public:
     typedef juce::ReferenceCountedObjectPtr<ReferenceCountedDecoder> Ptr;
 
-    enum Normalization
+    enum class Normalization
     {
         n3d,
         sn3d
     };
 
-    enum Weights
+    enum class Weights
     {
         none,
         maxrE,
         inPhase
     };
 
-    struct Settings {
-        Normalization expectedNormalization = sn3d;
-        Weights weights = none;
+    struct Settings
+    {
+        Normalization expectedNormalization = Normalization::sn3d;
+        Weights weights = Weights::none;
         bool weightsAlreadyApplied = false;
         int subwooferChannel = -1;
     };
@@ -56,8 +57,7 @@ public:
     :   ReferenceCountedMatrix(nameToUse, descriptionToUse, rows, columns), order(isqrt(columns)-1)
     {}
 
-    ~ReferenceCountedDecoder()
-    {}
+    ~ReferenceCountedDecoder() override = default;
 
     virtual juce::String getConstructorMessage() const override
     {
@@ -89,12 +89,12 @@ public:
         return settings;
     }
 
-    const juce::String getWeightsString()
+    const juce::String getWeightsString() const
     {
         switch (settings.weights)
         {
-            case 1: return "maxrE";
-            case 2: return "inPhase";
+            case Weights::maxrE: return "maxrE";
+            case Weights::inPhase: return "inPhase";
             default: return "none";
         }
     }
@@ -106,14 +106,16 @@ public:
     {
         if (settings.weightsAlreadyApplied && settings.weights != Weights::none)
         {
+            const auto nCols = static_cast<int> (matrix.getNumColumns());
+            const auto nRows = static_cast<int> (matrix.getNumRows());
             if (settings.weights == Weights::maxrE)
-                for (int i = 0; i < matrix.getNumColumns(); ++i)
-                    for (int j = 0; j < matrix.getNumRows(); ++j)
-                        matrix(j,i) = matrix(j,i) / getMaxRELUT(order)[i];
+                for (int i = 0; i < nCols; ++i)
+                    for (int j = 0; j < nRows; ++j)
+                        matrix(j,i) /= getMaxRELUT(order)[i];
             else if (settings.weights == Weights::inPhase)
-                for (int i = 0; i < matrix.getNumColumns(); ++i)
-                    for (int j = 0; j < matrix.getNumRows(); ++j)
-                        matrix(j,i) = matrix(j,i) / getInPhaseLUT(order)[i];
+                for (int i = 0; i < nCols; ++i)
+                    for (int j = 0; j < nRows; ++j)
+                        matrix(j,i) /= getInPhaseLUT(order)[i];
             settings.weightsAlreadyApplied = false;
         }
     }

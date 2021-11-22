@@ -59,20 +59,20 @@ public:
     FilterVisualizer() : overallGainInDb (0.0f), sampleRate (48000.0)
     {
         init();
-    };
+    }
 
     FilterVisualizer (float fMin, float fMax, float dbMin, float dbMax, float gridDiv, bool gainHandleLin = false) : overallGainInDb (0.0f), sampleRate (48000.0), s {fMin, fMax, dbMin, dbMax, gridDiv, gainHandleLin}
     {
         init();
-    };
+    }
 
-    ~FilterVisualizer() {};
+    ~FilterVisualizer() override {}
 
-    void init ()
+    void init()
     {
-        dyn = s.dbMax - s.dbMin;
-        zero = 2.0f * s.dbMax / dyn;
-        scale = 1.0f / (zero + std::tanh (s.dbMin / dyn * -2.0f));
+        dynamic = s.dbMax - s.dbMin;
+        zero = 2.0f * s.dbMax / dynamic;
+        scale = 1.0f / (zero + std::tanh (s.dbMin / dynamic * -2.0f));
     }
 
 
@@ -86,20 +86,23 @@ public:
 
         // db labels
         float dyn = s.dbMax - s.dbMin;
-        int numgridlines = dyn / s.gridDiv + 1;
+        int numgridlines = juce::roundToInt (dyn / s.gridDiv + 1);
 
         //g.setFont(juce::Font(getLookAndFeel().getTypefaceForFont (juce::Font(10.0f, 1)));
         g.setColour (juce::Colours::white);
         int lastTextDrawPos = -1;
         for (int i = 0; i < numgridlines; ++i)
         {
-            float db_val = s.dbMax - i * s.gridDiv;
-            lastTextDrawPos = drawLevelMark (g, 0, 20, db_val, juce::String (db_val, 0), lastTextDrawPos);
+            const auto db_val = s.dbMax - i * s.gridDiv;
+            lastTextDrawPos = drawLevelMark (g, 0, 20,
+                                             juce::roundToInt (db_val),
+                                             juce::String (db_val, 0),
+                                             lastTextDrawPos);
         }
 
 
         // frequency labels
-        for (float f = s.fMin; f <= s.fMax; f += pow (10, floor (log10 (f)))) {
+        for (float f = s.fMin; f <= s.fMax; f += pow (10.0f, floor (log10 (f)))) {
             int xpos = hzToX (f);
 
             juce::String axislabel;
@@ -174,8 +177,10 @@ public:
 
             for (int i = 1; i < numPixels; ++i)
             {
-                float db = juce::Decibels::gainToDecibels (magnitudes[i]) + additiveDB;
-                float y = juce::jlimit (static_cast<float> (yMin), static_cast<float> (yMax) + OH + 1.0f, dbToYFloat (db));
+                const auto decibels = juce::Decibels::gainToDecibels (magnitudes[i]) + additiveDB;
+                float y = juce::jlimit (static_cast<float> (yMin),
+                                        static_cast<float> (yMax) + OH + 1.0f,
+                                        dbToYFloat (decibels));
                 float x = xMin + i;
                 magnitude.lineTo (x, y);
             }
@@ -259,13 +264,13 @@ public:
             g.setColour (activeElem == i ? handle->colour : handle->colour.withSaturation (0.2));
             g.fillEllipse (circX - 5.0f, circY - 5.0f , 10.0f, 10.0f);
         }
-    };
+    }
 
     int inline drawLevelMark (juce::Graphics& g, int x, int width, const int level, const juce::String& label, int lastTextDrawPos = -1)
     {
         float yPos = dbToYFloat (level);
-        x = x + 1.0f;
-        width = width - 2.0f;
+        x = x + 1;
+        width = width - 2;
 
         if (yPos - 4 > lastTextDrawPos)
         {
@@ -275,21 +280,21 @@ public:
         return lastTextDrawPos;
     }
 
-    int dbToY (const float dB)
+    int dbToY (float dB)
     {
-        int ypos = dbToYFloat(dB);
+        int ypos = juce::roundToInt (dbToYFloat (dB));
         return ypos;
     }
 
-    float dbToYFloat (const float dB)
+    float dbToYFloat (float dB)
     {
         const float height = static_cast<float> (getHeight()) - mB - mT;
         if (height <= 0.0f) return 0.0f;
         float temp;
         if (dB < 0.0f)
-            temp = zero + std::tanh(dB / dyn * -2.0f);
+            temp = zero + std::tanh(dB / dynamic * -2.0f);
         else
-            temp = zero - 2.0f * dB / dyn;
+            temp = zero - 2.0f * dB / dynamic;
 
         return mT + scale * height * temp;
     }
@@ -301,9 +306,9 @@ public:
         float temp = (y - mT) / height / scale - zero;
         float dB;
         if (temp > 0.0f)
-            dB =  std::atanh (temp) * dyn * -0.5f;
+            dB =  std::atanh (temp) * dynamic * -0.5f;
         else
-            dB = - 0.5f * temp * dyn;
+            dB = - 0.5f * temp * dynamic;
         return std::isnan (dB) ? s.dbMin : dB;
     }
 
@@ -501,7 +506,7 @@ private:
 
     int activeElem = -1;
 
-    float dyn, zero, scale;
+    float dynamic, zero, scale;
 
     Settings s;
     juce::Path dbGridPath;

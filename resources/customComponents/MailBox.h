@@ -38,9 +38,9 @@ class Display : public juce::Component
 public:
     Display() : juce::Component() {
 
-    };
+    }
 
-    ~Display() {};
+    ~Display() override {}
 
     void paint (juce::Graphics& g) override
     {
@@ -66,7 +66,9 @@ public:
         g.setFont (getLookAndFeel().getTypefaceForFont (juce::Font (12.0f, 2)));
         g.setFont (14.0f);
 
-        g.drawFittedText (message.text, textArea, juce::Justification::topLeft, textArea.getHeight() / 13.0f);
+        g.drawFittedText (message.text, textArea,
+                          juce::Justification::topLeft,
+                          juce::roundToInt (textArea.getHeight() / 13.0f));
     }
 
     void resized () override

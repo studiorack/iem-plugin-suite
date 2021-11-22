@@ -32,7 +32,7 @@ public:
     Delay()
     {
     }
-    ~Delay() {}
+    ~Delay() override = default;
 
     void setDelayTime (float delayTimeInSeconds)
     {

@@ -48,7 +48,7 @@ public:
     constexpr static int numberOfOutputChannels = 64;
     //==============================================================================
     MultiEQAudioProcessor();
-    ~MultiEQAudioProcessor();
+    ~MultiEQAudioProcessor() override;
 
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;

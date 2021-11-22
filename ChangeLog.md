@@ -3,6 +3,12 @@ For a list of all changes and bugfixes see the git log.
 
 Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They might lead to an unexpected behaviour and might not be compatible with your previous projects without making some adaptions. See the [Breaking changes article](https://plugins.iem.at/docs/breakingchanges/) for more information.
 
+
+## v1.13.0
+- general changes
+  - moved from Projucer to CMake build setup
+  - added VST3 support (which may have some limitations)
+
 ## v1.12.0
 - general changes
     - moved to JUCE 6
@@ -12,7 +18,7 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
     - **Multi**Encoder
         - fixed bug where coordinates weren't recalled correctly when master rotation was active
         - adds visualization of input levels
-        
+
 ## v1.11.1
 - general changes
     - standalones: prevents crashes when there's no audio input device
@@ -30,14 +36,14 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
 - general changes
     - new standalone versions with JACK support on linux and macOS
     - adds OSC Send capabilities to each plug-in
-    
+
 - plug-in specific changes
     -**AllRA**Decoder
         - adds Ambisonic weight selector: switch between basic, maxrE, and inPhase weights
         - selected weights are exported to JSON
-        - changes decibel range of energy visualization from +-/3dB to +/- 1.5dB 
+        - changes decibel range of energy visualization from +-/3dB to +/- 1.5dB
     - **Binaural**Decoder
-        - fixes bug which lead to +6dB per sampleRate doubling 
+        - fixes bug which lead to +6dB per sampleRate doubling
     - **Energy**Visualizer
         - performance improvements
         - sends RMS values for 426 sample points via OSC
@@ -50,7 +56,7 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
         - adds master gain
         - Ambisonic weight selector: switch between basic, maxrE, and inPhase weights
         - modified level compensation for different input orders
-        
+
 ## v1.10.2
 - general changes
     - fixed bug in SIMD IIR processing (**MultiBand**Compressor, **Multi**EQ, **Room**Encoder), which in some constellations led to very loud output
@@ -61,7 +67,7 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
 - plug-in specific changes
     - **Room**Encoder
         - fixed faulty room sync on channel #4
-    
+
 
 ## v1.10.1
 - plug-in specific changes
@@ -70,12 +76,12 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
         - adds extra parameters to adjust an additional attenuation per wall
         - fixes crackles bug
     - **Simple**Decoder
-        - fixes bug: reset of Ambisonic order when re-opening GUI 
+        - fixes bug: reset of Ambisonic order when re-opening GUI
     - **Tool**Box
         - adds overall gain control
     - **Directivity**Shaper
         - fixing directions of elevation sliders
-        
+
 ## v1.10.0
 - new plug-ins
     - **MultiBand**Compressor
@@ -84,7 +90,7 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
     - Linux Builds: JACK clients name will be the plug-in's name
     - all parameters can be controlled via vendorSpecific calls
     - OSCPort can be opened via vendorSpecific calls
-    
+
 - plug-in specific changes
     - **Fdn**Reverb
         - reverberation time visualization bug fixed
@@ -98,12 +104,12 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
     - **Scene**Rotator
         - MIDI Devices can now be opened directly to receive rotation data (for now support for MrHeadTracker only, more will follow)
 
-    
+
 ## v1.9.0
 - general changes
     - plug-in host will be notified when paramater values change automatically (e.g. conversions)
     - osc port can be changed on the fly when opened, plug-ins will close and re-open port immediately
-    
+
 - plug-in specific changes
     - **Binaural**Decoder
         - output level reduced by 10dB
@@ -119,12 +125,12 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
 ## v1.8.1
 - plug-in specific changes
     - **AllRA**Decoder
-        - fixes: AllRADecoder forgetting layout when loading previous state 
+        - fixes: AllRADecoder forgetting layout when loading previous state
 
 ## v1.8.0
 - general changes
     - rafactored widgets (internal change)
-    
+
 - new plug-ins:
     - **Multi**EQ
         - equalizer plug-in with several filter types, filtering up to 64 audio channels
@@ -141,10 +147,10 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
 - general changes
     - smaller GUI re-draw improvements
     - support for GenericLayout in configuration files
-    
+
  - plug-in specific changes
     - **Room**Encoder
-        - fixes possible crashs when host's buffersize is smaller than reported (can happen with loops) 
+        - fixes possible crashs when host's buffersize is smaller than reported (can happen with loops)
     - **Stereo**Encoder
         - performance improvements
     - **Matrix**Multiplier
@@ -154,7 +160,7 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
 - general changes
     - OSC 'connect/disconnect' buttons replaced by  'open/close' buttons
     - support for OSC bundles
-    
+
 - plug-in specific changes
     - **Fdn**Reverb
         - fade-in functionality for more diffuseness at the beginning
@@ -208,7 +214,7 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
     - **Omni**Compressor
         - added visualization of the compressor's characteristic
         - added look-ahead feature to avoid distortion artifacts when brickwall-limiting
-        
+
 ## v1.3.1
 - plug-in specific changes
     - **Energy**Visualizer
@@ -263,11 +269,11 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
         - new bass-management (`!!BREAKING CHANGE!!`)
         - added warning, showing if subwoofer channel is already occupied
 
-        
+
 ## v1.2.0
 - new plug-ins:
     - **AllRA**Decoder
-    
+
 - plug-in specific changes
     - **Binaural**Decoder
         - refactored convolution -> way better performance on all platforms
@@ -279,7 +285,7 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
     - added binaural IO widget
     - directivity IO widget now shows the normalization (which is N3D)
     - added warning sign to titlebar widgets when bus is too small
-    
+
 - plug-in specific changes
     - **Multi**Encoder
         - changed element colours are now displayed at once
@@ -305,13 +311,13 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
 
 - general changes
     - switched to JUCE develop branch !!
-    - added configurations (decoders,...)  
-    - some GUIs now resizable  
+    - added configurations (decoders,...)
+    - some GUIs now resizable
     - smaller GUI layout changes (e.g. ComboBox PopupMenu)
 
 - plug-in specific changes
     - **Multi**Encoder
-        - maximum input channel size increased to 64 
+        - maximum input channel size increased to 64
         - parameters and colours are stored correctly now
         - MasterPanner is now controllable with mouse wheel (and modifiers)
         - GUI resizable
@@ -328,4 +334,4 @@ Please note, that breaking changes are marked with `!!BREAKING CHANGE!!`. They m
         -  added floor reflections (now up to 236 reflections possible)
         -  default number of reflections set to 19 (chosen arbitrarily)
     -  **Stereo**Encoder
-        -  added hidden high-quality mode  
+        -  added hidden high-quality mode

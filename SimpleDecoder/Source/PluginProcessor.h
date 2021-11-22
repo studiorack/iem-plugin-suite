@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include "../JuceLibraryCode/JuceHeader.h"
+#include <JuceHeader.h>
 #include "../../resources/AudioProcessorBase.h"
 #include "../../resources/AmbisonicDecoder.h"
 
@@ -45,7 +45,7 @@ public:
 
     //==============================================================================
     SimpleDecoderAudioProcessor();
-    ~SimpleDecoderAudioProcessor();
+    ~SimpleDecoderAudioProcessor() override;
 
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;

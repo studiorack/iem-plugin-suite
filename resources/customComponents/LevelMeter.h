@@ -32,8 +32,8 @@ class LevelMeter : public juce::Component
     class Overlay : public juce::Component
     {
     public:
-        Overlay() { setBufferedToImage (true); };
-        ~Overlay() {};
+        Overlay() { setBufferedToImage (true); }
+        ~Overlay() override = default;
 
         const float decibelsToY (const float dB)
         {

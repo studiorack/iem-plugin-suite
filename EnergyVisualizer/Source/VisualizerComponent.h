@@ -81,6 +81,7 @@ public:
     void renderOpenGL() override
     {
         using namespace juce;
+        using namespace juce::gl;
         
         jassert (juce::OpenGLHelpers::isContextActive());
 

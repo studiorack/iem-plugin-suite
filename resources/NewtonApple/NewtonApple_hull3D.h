@@ -44,15 +44,15 @@ struct Tri
   int ab, bc, ac;  // adjacent edges index to neighbouring triangle.
   float er, ec, ez; // visible normal to triangular facet.
 
-  Tri() {};
+  Tri() {}
   Tri(int x, int y, int q) : id(0), keep(1),
 			     a(x), b(y),c(q), 
 			     ab(-1), bc(-1), ac(-1),  
-			     er(0), ec(0), ez(0) {};
+			     er(0), ec(0), ez(0) {}
   Tri(const Tri &p) : id(p.id), keep(p.keep),
 		      a(p.a), b(p.b), c(p.c), 
 		      ab(p.ab), bc(p.bc), ac(p.ac), 
-		      er(p.er), ec(p.ec), ez(p.ez) {};
+		      er(p.er), ec(p.ec), ez(p.ez) {}
 
   Tri &operator=(const Tri &p)
   {
@@ -71,7 +71,7 @@ struct Tri
     ez = p.ez;
 
     return *this;
-  };
+  }
 };
 
 
@@ -87,9 +87,9 @@ struct R3
     float gain;
     int channel = -1;
 
-  R3() {};
-  R3(float xc, float yc, float zc) : id(-1), x(xc), y(yc), z(zc)  {};
-  R3(const R3 &p) : id(p.id), lspNum(p.lspNum), realLspNum(p.realLspNum), x(p.x), y(p.y), z(p.z), azimuth(p.azimuth), elevation(p.elevation), radius(p.radius), isImaginary(p.isImaginary), gain(p.gain), channel(p.channel) {};
+  R3() {}
+  R3(float xc, float yc, float zc) : id(-1), x(xc), y(yc), z(zc)  {}
+  R3(const R3 &p) : id(p.id), lspNum(p.lspNum), realLspNum(p.realLspNum), x(p.x), y(p.y), z(p.z), azimuth(p.azimuth), elevation(p.elevation), radius(p.radius), isImaginary(p.isImaginary), gain(p.gain), channel(p.channel) {}
 
   R3 &operator=(const R3 &p)
   {
@@ -106,7 +106,7 @@ struct R3
     y = p.y;
     z = p.z;
     return *this;
-  };
+  }
 
 };
 
@@ -121,7 +121,7 @@ inline bool operator<(const R3 &a, const R3 &b)
     return a.x < b.x;
   }
   return a.z <  b.z;
-};
+}
 
 
 
@@ -129,10 +129,10 @@ inline bool operator<(const R3 &a, const R3 &b)
 struct Snork
 {
   int id;
-  int a,b ;
-  Snork() : id(-1), a(0), b(0) {};
-  Snork(int i, int r, int x) : id(i), a(r), b(x) {};
-  Snork(const Snork &p) : id(p.id), a(p.a), b(p.b){};
+  int a,b;
+  Snork() : id(-1), a(0), b(0) {}
+  Snork(int i, int r, int x) : id(i), a(r), b(x) {}
+  Snork(const Snork &p) : id(p.id), a(p.a), b(p.b){}
 
   Snork &operator=(const Snork &p)
   {
@@ -141,7 +141,7 @@ struct Snork
     b = p.b;
 
     return *this;
-  };
+  }
 
 };
 
@@ -154,7 +154,7 @@ inline bool operator<(const Snork &a, const Snork &b)
   }
   return a.a < b.a;
 
-};
+}
 
 
 
