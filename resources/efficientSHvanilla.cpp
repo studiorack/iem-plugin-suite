@@ -25,7 +25,7 @@
  */
 
 // order 0
-void SHEval0(const float fX, const float fY, const float fZ, float *pSH)
+void SHEval0(const float, const float, const float, float *pSH)
 {
     pSH[0] = 0.2820947917738781f;
 }

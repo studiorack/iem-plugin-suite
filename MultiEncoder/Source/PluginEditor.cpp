@@ -135,7 +135,7 @@ masterElement(*valueTreeState.getParameter("masterAzimuth"), valueTreeState.getP
     slPeakLevel.setColour (juce::Slider::rotarySliderOutlineColourId, globalLaF.ClWidgetColours[2]);
     
     addAndMakeVisible(&lbPeakLevel);
-    lbPeakLevel.setText ("Peak level");
+    lbPeakLevel.setText ("Peak");
 
 
     addAndMakeVisible(&slDynamicRange);

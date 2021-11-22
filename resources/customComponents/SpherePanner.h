@@ -42,9 +42,8 @@ public:
         auto sphere = getLocalBounds().reduced (10, 10).toFloat();
 
         radius = 0.5f * juce::jmin (sphere.getWidth(), sphere.getHeight());
-        centre = getLocalBounds().getCentre();
         sphereArea.setBounds (0, 0, 2 * radius, 2 * radius);
-        sphereArea.setCentre (centre.toFloat());
+        sphereArea.setCentre (getLocalBounds().getCentre().toFloat());
     };
 
     void paint (juce::Graphics& g) override
@@ -101,7 +100,6 @@ public:
 private:
     float radius = 1.0f;
     juce::Rectangle<float> sphereArea;
-    juce::Point<int> centre;
     bool linearElevation = false;
 };
 
@@ -116,9 +114,9 @@ public:
 
         addAndMakeVisible (background);
         background.addMouseListener (this, false); // could this be risky?
-    };
+    }
 
-    ~SpherePanner() {};
+    ~SpherePanner() override = default;
 
 
     class Listener
@@ -134,9 +132,9 @@ public:
         Element() {}
         virtual ~Element() {}
 
-        virtual void startMovement() { };
+        virtual void startMovement() { }
         virtual void moveElement (const juce::MouseEvent &event, juce::Point<int> centre, float radius, bool upBeforeDrag,  bool linearElevation, bool rightClick = false) = 0;
-        virtual void stopMovement() { };
+        virtual void stopMovement() { }
 
         /**
          Get cartesian coordinates
@@ -159,7 +157,7 @@ public:
         void setGrabRadius (float newRadius) { grabRadius = newRadius; }
         float getGrabRadius() { return grabRadius; }
 
-        juce::String getLabel() {return label;};
+        juce::String getLabel() { return label; }
 
     private:
         bool active = true;
@@ -265,7 +263,7 @@ public:
         {
             azimuth.endChangeGesture();
             elevation.endChangeGesture();
-        };
+        }
 
         const float getAzimuthInRadians()
         {
@@ -285,7 +283,7 @@ public:
         juce::Vector3D<float> getCoordinates() override
         {
             return Conversions<float>::sphericalToCartesian (getAzimuthInRadians(), getElevationInRadians());
-        };
+        }
 
     private:
         juce::AudioProcessorParameter& azimuth;
@@ -303,7 +301,7 @@ public:
         {
             roll.beginChangeGesture();
             width.beginChangeGesture();
-        };
+        }
 
         void moveElement (const juce::MouseEvent &event, juce::Point<int> centre, float radius, bool upBeforeDrag, bool linearElevation, bool rightClick) override
         {
@@ -351,7 +349,7 @@ public:
         {
             roll.endChangeGesture();
             width.endChangeGesture();
-        };
+        }
 
         /*
          Get cartesian coordinates
@@ -376,7 +374,7 @@ public:
             iem::Quaternion<float> quatL = quat * quatLRot;
 
             return quatL.getCartesian();
-        };
+        }
 
         void setMirrored (bool mirrored) { isMirrored = mirrored; }
 
@@ -389,7 +387,7 @@ public:
         bool isMirrored = false;
     };
 
-    void resized () override
+    void resized() override
     {
         background.setBounds(getLocalBounds());
         const auto sphere = getLocalBounds().reduced(10, 10).toFloat();
@@ -446,7 +444,7 @@ public:
             g.setFont (isUp ? 15.0f : 10.0f);
             g.drawText (handle->getLabel(), circleArea.toNearestInt(), juce::Justification::centred, false);
         }
-    };
+    }
 
 
     void mouseWheelMove (const juce::MouseEvent &event, const juce::MouseWheelDetails &wheel) override
@@ -542,30 +540,30 @@ public:
         jassert (listener != nullptr);
         if (listener != nullptr)
             listeners.add (listener);
-    };
+    }
 
     void removeListener (Listener* const listener)
     {
         listeners.removeFirstMatchingValue (listener);
-    };
+    }
 
     void addElement (Element* const element)
     {
         jassert (element != nullptr);
         if (element != nullptr)
             elements.addIfNotAlreadyThere (element);
-    };
+    }
 
     void removeElement (Element* const element)
     {
         elements.removeFirstMatchingValue (element);
-    };
+    }
 
     void setElevationStyle (bool linear)
     {
         linearElevation = linear;
         background.setElevationStyle(linear);
-    };
+    }
 
 protected:
     float radius = 1.0f;

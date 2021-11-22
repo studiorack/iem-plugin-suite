@@ -23,7 +23,7 @@
 
 #pragma once
 
-#include "../JuceLibraryCode/JuceHeader.h"
+#include <JuceHeader.h>
 
 #include "OSC/OSCInputStream.h"
 #include "OSC/OSCParameterInterface.h"

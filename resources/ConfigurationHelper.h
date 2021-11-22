@@ -516,9 +516,9 @@ public:
 
         ReferenceCountedDecoder::Settings settings = decoder->getSettings();
 
-        obj->setProperty ("ExpectedInputNormalization", settings.expectedNormalization == ReferenceCountedDecoder::n3d ? "n3d" : "sn3d");
+        obj->setProperty ("ExpectedInputNormalization", settings.expectedNormalization == ReferenceCountedDecoder::Normalization::n3d ? "n3d" : "sn3d");
 
-        obj->setProperty ("Weights", settings.weights == ReferenceCountedDecoder::maxrE ? "maxrE" : settings.weights == ReferenceCountedDecoder::inPhase ? "inPhase" : "none");
+        obj->setProperty ("Weights", settings.weights == ReferenceCountedDecoder::Weights::maxrE ? "maxrE" : settings.weights == ReferenceCountedDecoder::Weights::inPhase ? "inPhase" : "none");
         obj->setProperty ("WeightsAlreadyApplied", juce::var (settings.weightsAlreadyApplied));
 
         const int subwooferChannel = settings.subwooferChannel;

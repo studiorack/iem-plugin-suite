@@ -176,13 +176,9 @@ void SceneRotatorAudioProcessor::processBlock (juce::AudioSampleBuffer& buffer, 
     {
         removeNextBlockOfMessages (midiMessages, buffer.getNumSamples());
 
-        juce::MidiBuffer::Iterator i (midiMessages);
-        juce::MidiMessage message;
-        int time;
-
-
-        while (i.getNextEvent (message, time))
+        for (const auto& msg : midiMessages)
         {
+            const auto message = msg.getMessage();
 
             if (! message.isController())
                 break;

@@ -350,19 +350,19 @@ listenerElement(*valueTreeState.getParameter("listenerX"), valueTreeState.getPar
 
     addAndMakeVisible (&tbDirectPathUnityGain);
     tbDirectPathUnityGainAttachment.reset (new ButtonAttachment (valueTreeState, "directPathUnityGain", tbDirectPathUnityGain));
-    tbDirectPathUnityGain.setButtonText ("Direct juce::Path Unity Gain");
+    tbDirectPathUnityGain.setButtonText ("Direct Path Unity Gain");
     tbDirectPathUnityGain.setColour (juce::ToggleButton::tickColourId, globalLaF.ClWidgetColours[0]);
 
     addAndMakeVisible (&tbDirectPathZeroDelay);
     tbDirectPathZeroDelayAttachment.reset (new ButtonAttachment (valueTreeState, "directPathZeroDelay", tbDirectPathZeroDelay));
-    tbDirectPathZeroDelay.setButtonText ("Direct juce::Path Zero Delay");
+    tbDirectPathZeroDelay.setButtonText ("Direct Path Zero Delay");
     tbDirectPathZeroDelay.setColour (juce::ToggleButton::tickColourId, globalLaF.ClWidgetColours[1]);
     rv.setZeroDelay (tbDirectPathZeroDelay.getToggleState());
     tbDirectPathZeroDelay.addListener (this);
 
     addAndMakeVisible (&tbRenderDirectPath);
     tbRenderDirectPathAttachment.reset (new ButtonAttachment (valueTreeState, "renderDirectPath", tbRenderDirectPath));
-    tbRenderDirectPath.setButtonText ("Render Direct juce::Path");
+    tbRenderDirectPath.setButtonText ("Render Direct Path");
     tbRenderDirectPath.setColour (juce::ToggleButton::tickColourId, globalLaF.ClWidgetColours[2]);
     tbRenderDirectPath.addListener (this);
 
