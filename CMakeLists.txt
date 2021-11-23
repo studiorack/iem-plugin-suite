@@ -133,6 +133,6 @@ endif()
 # disable JACK support
 if (IEM_BUILD_STANDALONE AND NOT IEM_STANDALONE_JACK_SUPPORT)
     foreach (subproject IN LISTS PLUGINS_TO_BUILD)
-        target_compile_definitions(${subproject}_Standalone PUBLIC DONT_BUILD_WITH_JACK_SUPPORT=1)
+        target_compile_definitions(${subproject} PUBLIC DONT_BUILD_WITH_JACK_SUPPORT=1)
     endforeach()
 endif()

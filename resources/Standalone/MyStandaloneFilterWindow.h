@@ -55,14 +55,15 @@
 #include "IEM_AudioDeviceSelectorComponent.h"
 
 #if JUCE_MAC || JUCE_LINUX
-    #define BUILD_WITH_JACK_SUPPORT 1
+    #if DONT_BUILD_WITH_JACK_SUPPORT
+        #define BUILD_WITH_JACK_SUPPORT 0
+    #else
+        #define BUILD_WITH_JACK_SUPPORT 1
+    #endif
 #else
     #define BUILD_WITH_JACK_SUPPORT 0
 #endif
 
-#if DONT_BUILD_WITH_JACK_SUPPORT
-    #define BUILD_WITH_JACK_SUPPORT 0
-#endif
 
 #if BUILD_WITH_JACK_SUPPORT
     #include "IEM_JackAudio.h"
