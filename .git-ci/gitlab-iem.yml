@@ -64,7 +64,7 @@ variables:
     - mkdir build
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Release -DIEM_BUILD_VST2=ON -DVST2SDKPATH=src/VST_SDK/VST2_SDK/ -DIEM_BUILD_STANDALONE=ON
-    - make
+    - make -j $(nproc)
     - cd ..
 
 # collect binaries for artifacts
@@ -88,7 +88,7 @@ variables:
     - mkdir build
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Release  -DIEM_BUILD_VST2=ON -DVST2SDKPATH=src/VST_SDK/VST2_SDK/ -DIEM_BUILD_STANDALONE=ON
-    - make
+    - make -j $(sysctl -n hw.ncpu)
     - cd ..
 # collect binaries for artifacts
     - mkdir VST3
