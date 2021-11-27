@@ -19,12 +19,6 @@ target_sources(OmniCompressor PRIVATE
     Source/PluginProcessor.h
     Source/LookAheadGainReduction.h
 
-    ../resources/Standalone/StandaloneApp.cpp
-    ../resources/Standalone/MyStandaloneFilterWindow.h
-    ../resources/Standalone/IEM_JackAudio.h
-    ../resources/Standalone/IEM_AudioDeviceSelectorComponent.cpp
-    ../resources/Standalone/IEM_AudioDeviceSelectorComponent.h
-
     ../resources/OSC/OSCInputStream.h
     ../resources/OSC/OSCParameterInterface.cpp
     ../resources/OSC/OSCParameterInterface.h
