@@ -14,3 +14,7 @@ _compiledPlugins
 **/Builds
 **/JuceLibraryCode
 build
+src
+VST
+VST3
+Standalone
