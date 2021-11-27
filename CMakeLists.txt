@@ -130,9 +130,20 @@ if (BinauralDecoder IN_LIST PLUGINS_TO_BUILD AND NOT CMAKE_SYSTEM_NAME STREQUAL 
     target_link_libraries ("BinauralDecoder" PRIVATE fftw3f)
 endif()
 
-# disable JACK support
-if (IEM_BUILD_STANDALONE AND NOT IEM_STANDALONE_JACK_SUPPORT)
+
+if (IEM_BUILD_STANDALONE)
     foreach (subproject IN LISTS PLUGINS_TO_BUILD)
-        target_compile_definitions(${subproject} PUBLIC DONT_BUILD_WITH_JACK_SUPPORT=1)
+        target_sources(${subproject} PRIVATE
+            resources/Standalone/StandaloneApp.cpp
+            resources/Standalone/MyStandaloneFilterWindow.h
+            resources/Standalone/IEM_JackAudio.h
+            resources/Standalone/IEM_AudioDeviceSelectorComponent.cpp
+            resources/Standalone/IEM_AudioDeviceSelectorComponent.h)
     endforeach()
+
+    if (NOT IEM_STANDALONE_JACK_SUPPORT)
+        foreach (subproject IN LISTS PLUGINS_TO_BUILD)
+            target_compile_definitions(${subproject} PUBLIC DONT_BUILD_WITH_JACK_SUPPORT=1)
+        endforeach()
+    endif()
 endif()
